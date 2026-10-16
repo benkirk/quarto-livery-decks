@@ -26,3 +26,6 @@ _baseline/
 _check/
 _check.diff
 __pycache__/
+# a livery's reference deck and its extracted pictures: large, and on Drive
+_extensions/engine/liveries/*/reference/media/
+_extensions/engine/liveries/*/reference/*.pptx
