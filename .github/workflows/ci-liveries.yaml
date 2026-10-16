@@ -75,6 +75,10 @@ jobs:
       - name: Check the livery is built
         run: python3 docs/common/_extensions/benkirk/engine/livery_build.py --check "docs/common/liveries/$LIVERY"
 
+      # the files it names, the template's pandoc compliance and that it rebuilds from the data
+      - name: Check the livery
+        run: python3 docs/common/utils/livery_check.py "docs/common/liveries/$LIVERY"
+
       - name: Build pptx and HTML with LIVERY=${{ matrix.livery }}
         run: timeout 600 make -C docs/quickstart pptx html LIVERY="$LIVERY"
 

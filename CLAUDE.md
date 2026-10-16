@@ -320,9 +320,12 @@ bit while building it:
 ## CI
 
 `.github/workflows/ci-build-sample.yaml` renders the sample deck;
-`ci-liveries.yaml` renders the quickstart deck once per directory under
-`docs/common/liveries/` with `LIVERY=<name>` and checks the livery reached the
-pptx (a new livery joins the matrix by existing). Notes:
+`ci-liveries.yaml` runs `utils/livery_check.py` on each directory under
+`docs/common/liveries/` (build freshness, the files the data names, the
+template's pandoc compliance and that it rebuilds byte-identically from the
+data, contrast warnings), then renders the quickstart deck under it with
+`LIVERY=<name>` and checks the livery reached the pptx (a new livery joins the
+matrix by existing). Notes:
 login-shell default (`bash -el`) is required for conda activation, and
 because of it a `run:` script must not end with `exit N` (in a login shell
 `exit` runs `~/.bash_logout`, which returns 1 on the runner and overrides
