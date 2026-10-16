@@ -1,5 +1,12 @@
 # NSF NCAR / UCAR Beamer Template
 
+> **This repository is `beamer-livery-theme`**, the multi-brand successor of
+> [`benkirk/NCAR_beamer_template`](https://github.com/benkirk/NCAR_beamer_template):
+> one layout engine, many brand "liveries". The NCAR theme stays in that repository.
+> Until the engine refactor lands ([design](docs/design/engine-and-liveries.md),
+> Phase 2), this repository is identical to NCAR_beamer_template v2.8.0 and everything
+> below applies unchanged.
+
 Branded slides for NSF NCAR, UCAR and UCP, written in **LaTeX beamer** or
 **Quarto Markdown**: a PDF, and from the same Markdown an **HTML** (revealjs)
 deck to present in a browser. The theme follows the 2026 Brand Guide: the
