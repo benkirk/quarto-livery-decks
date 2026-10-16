@@ -17,7 +17,10 @@ way: the theme is renamed and reads a livery. The reference liveries live in the
 (`_extensions/benkirk/engine/liveries/`; `docs/common/liveries/ncar` is a link to its
 `ncar`), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`;
 `utils/livery.py` reads the json for the post-render scripts. NCAR decks still build
-byte-identically to upstream.
+byte-identically to upstream. Phase 3 (onboarding a brand from a reference PowerPoint,
+design section 6) is under way: `utils/livery_inspect.py` writes a livery's
+`reference/report.md` from the deck; the reference decks themselves live on Drive, not
+in git.
 
 Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
 machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua

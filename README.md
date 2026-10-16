@@ -95,6 +95,7 @@ quarto-docs-framework/
 │   │   │                       #   template.pptx, _brand.yml, livery.yml, fonts/, logos/,
 │   │   │                       #   build/livery.{json,sty,css} (generated, committed)
 │   │   └── utils/
+│   │       ├── livery_inspect.py   # reports on a reference pptx, seeds a livery (onboarding)
 │   │       ├── embed_fonts.py      # post-render font embedder (the livery's blobs)
 │   │       └── enable_autofit.py   # primes "Shrink text on overflow"
 │   ├── quickstart/                 # the short exemplar deck: copy this one
