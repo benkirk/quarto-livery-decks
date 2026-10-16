@@ -32,10 +32,12 @@ format:
     slide-level: 2
     toc: false
   engine-beamer:           # engine beamer theme, vendored in common/_extensions
+    highlight-style: _livery/build/livery.theme   # the livery's code colors (its default is ncar's)
     toc: false
     fontsize: 10pt        # ~pptx text density; beamer has no autofit
     themeoptions: [fonts=bundled]  # bundled Poppins; skip the system-font probe
   engine-revealjs:         # engine revealjs (HTML) theme, same extension
+    highlight-style: _livery/build/livery.theme
     toc: false
     # footer: "Deck title | CISL"   # small text, bottom center
     # embed-resources: true         # one self-contained .html (needs chalkboard: false)

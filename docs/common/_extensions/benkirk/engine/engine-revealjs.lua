@@ -74,7 +74,7 @@ local function load_livery(meta, brand)
   local f = io.open(pandoc.path.join({ dir, "build", "livery.json" }))
   if not f then
     error("engine-revealjs: no livery at " .. dir .. " (build/livery.json is missing): set `livery:` "
-      .. "to a livery directory, or themeoptions brand=ncar|ucar|ncarucar for a bundled one")
+      .. "to a livery directory, or themeoptions brand=ncar|ucar|ucp|ncarucar for a bundled one")
   end
   local livery = quarto.json.decode(f:read("a")); f:close()
   livery.dir = dir

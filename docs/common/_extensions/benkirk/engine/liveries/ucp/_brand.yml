@@ -1,0 +1,19 @@
+# UCAR Community Programs: the UCAR palette (Brand Guide p18, "UCAR & UCP have two primary
+# aqua colors") with the UCP half-Earth lockup (p8). Everything else comes from ../ucar.
+meta:
+  name: UCP
+  link: https://www.ucar.edu/community-programs
+
+logo:
+  images:
+    ucp-color:
+      path: logos/UCP-Logo_Color_RGB.svg
+    ucp-white:
+      path: logos/UCP-Logo_White_RGB.svg
+    ucp-color-print:
+      path: logos/UCP-Logo_Color_RGB.pdf
+    ucp-white-print:
+      path: logos/UCP-Logo_White_RGB.pdf
+  medium:
+    light: ucp-color
+    dark: ucp-white

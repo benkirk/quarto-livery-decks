@@ -1,0 +1,9 @@
+# UCP as a flavor of ucar: only the lockup differs. Its box is squarer than UCAR's (the
+# three-line wordmark), so it is drawn taller for the same width.
+name: ucp
+extends: ucar
+
+geometry:
+  logo:
+    height: 0.0644        # 58 px of 900, the NSF NCAR lockup's height
+    aspect: 2.746         # UCP-Logo_Color_RGB.pdf, 335/122

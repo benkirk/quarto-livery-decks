@@ -342,6 +342,24 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 2, step 3 (beamer-livery-theme PR #5, this repo PR #7): roles only.
+  No palette name is read outside `build/livery.sty`: the color, inner and outer themes, the
+  check marks and listings style, Quarto's callouts and the Sass all read roles, with a new
+  `highlight` role (ncar: UCAR Aqua Contrast, the guide's small-text accent) and the blends
+  `alert-text` and `rule`. The Sass keeps its `$ncar-*` variables as the compile-time defaults
+  Quarto's own rules need, sets every engine color as `var(--engine-*)`, and restates the
+  visible Quarto rules (links, code, callouts, asides, selection) with the roles; mermaid's
+  `--mermaid-*` come from the livery's css. `engine.theme` is now the highlight theme's
+  template (`$role` colors) and `livery_build.py` fills `build/livery.theme`; the formats
+  default to the ncar copy and the shared `_quarto.yml` points `highlight-style` at
+  `_livery/build/livery.theme`. Parity: text and HTML unchanged; every HTML slide of both
+  engine decks pixel-identical; the PDF pages that differ are the footnotes and full-figure
+  captions (CoolGray7 joins the muted role, planned since Phase 1) and, in the ucar and ucp
+  variants, the places where NCAR blue leaked (check marks, code keywords, the feature
+  subtitle). Also in: the `ucp` livery (PR #4), a flavor of `ucar` with the UCP lockup, so the
+  engine carries the guide's full set. Next: step 4, geometry from the livery (the lengths in
+  `beamerouterthemeEngine.sty` and the Sass, `section_subtitle.py`'s block, the logo heights
+  per livery), then step 5, the waves as art files.
 - **2026-10-16** Phase 2, step 2 (beamer-livery-theme PR #3, this repo PR #6): the engine
   reads a livery. `_extensions/engine/liveries/{ncar,ucar,ncarucar}` hold the reference
   liveries (the framework's ncar livery with its fonts and logos moved beside it; `ucar` and
