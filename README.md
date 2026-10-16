@@ -1,4 +1,10 @@
-# quarto-docs-framework
+# quarto-livery-decks
+
+> **This repository is `quarto-livery-decks`**, the multi-brand successor of
+> [`benkirk/quarto-docs-framework`](https://github.com/benkirk/quarto-docs-framework):
+> the same deck framework, driven by brand "liveries" instead of one baked-in brand.
+> The design is [`docs/design/engine-and-liveries.md`](docs/design/engine-and-liveries.md);
+> NCAR decks keep building unchanged while it lands, and everything below applies.
 
 NCAR-branded [Quarto](https://quarto.org) template for HPC-style
 documentation decks (`.pptx` / `.html` / `.pdf`). Clone, set up the conda

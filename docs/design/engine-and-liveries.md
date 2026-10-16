@@ -337,3 +337,17 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
   engine change.
 - Naming is settled (section 2). The nouns were picked before the forks were created, since
   they end up in format names, macro namespaces and CSS classes.
+
+## 10. Log
+
+Newest first. The first unchecked item of section 7 is the next step.
+
+- **2026-10-16** Phase 0 done. Nouns settled (section 2), the design merged into
+  `quarto-docs-framework` (#31) and the two repositories created from the full
+  histories: `benkirk/beamer-livery-theme` (NCAR_beamer_template `724c3e6`, v2.8.0)
+  and `benkirk/quarto-livery-decks` (quarto-docs-framework `cfeb1f7`). Each carries
+  the design, a CLAUDE.md and a README banner; `upstream` remotes point at the NCAR
+  repos. The fresh clone builds: `docs/quickstart` renders all three formats with
+  `make qa` clean; `docs/sample` renders but its PDF QA fails on pre-existing overflow
+  (slides 3, 6, 9, 27), so for the sample deck parity, not QA, is the Phase 1 criterion.
+  Not done: `BENKIRK_GITHUB_TOKEN` for `cron-clean-action-log.yaml` (Ben).
