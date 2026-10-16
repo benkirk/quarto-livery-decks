@@ -51,8 +51,8 @@ divider:
   tab: true
 
 art:                      # no wave curves: the title field ends in a straight edge
-  content: art/content-flatirons.jpg   # the deck's Flatirons-and-campus photo, desaturated and 88%
-                                       # white, behind content slides (Ben's pick over the space photo)
+  content: art/content-flatirons.jpg   # the Flatirons, desaturated, 78% white, contrast 0.8 (Ben's pick;
+                                       # reference/notes.md on its source and rights)
 
 latex:                    # build/livery.sty: the palette's LaTeX color names (black and white
   colors:                 # must not shadow xcolor's)
