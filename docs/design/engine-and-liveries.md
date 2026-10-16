@@ -362,8 +362,12 @@ Newest first. The first unchecked item of section 7 is the next step.
   the layout's placeholder onto every slide. Tooling: `make vendor-engine` syncs an engine
   checkout into the vendored copy (an unmerged engine branch testable in the framework),
   `parity.sh` snapshots every deck under every livery in `PARITY_LIVERIES` (ncar as the
-  parity fixture, cu as the regression check). Next: `livery_check.py` with a CI step per
-  livery and the README's "Adding a livery" walkthrough, then NSI.
+  parity fixture, cu as the regression check). `livery_check.py` (section 6 step 3) checks
+  build freshness, the files the data names, the template's pandoc compliance and that it
+  rebuilds byte-identically from the data, and warns on small-text contrast (the ncar family's
+  muted gray is 4.2:1 on white); CI runs it per livery, and the README gained an "Adding a
+  livery" walkthrough. cu's content background is the deck's Flatirons photo, muted (Ben's
+  pick over the space photo and a faint monogram). Next: NSI.
 - **2026-10-16** The first non-NCAR livery: `cu` (University of Colorado Boulder), a real
   directory in `docs/common/liveries/` (this repo PR #13; beamer-livery-theme PR #10). The
   reference is the CU Center for National Security Initiatives' master deck (Ben's download, a

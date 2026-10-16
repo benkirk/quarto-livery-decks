@@ -382,6 +382,38 @@ extra extensions, etc.) can replace the symlinked `_quarto.yml` with a
 real file — `make` sees the file already exists and skips the symlink
 recipe.
 
+## Adding a livery
+
+A livery is a brand as a directory of data and assets (`docs/design/engine-and-liveries.md`,
+sections 4 and 6; `docs/common/liveries/cu/` is the worked example, its `reference/notes.md`
+the decisions it took). From a reference PowerPoint to a deck in the new brand:
+
+1. **Inspect the reference deck.** `python3 docs/common/utils/livery_inspect.py <deck.pptx>
+   docs/common/liveries/<name>` writes `reference/report.md` (slide size, theme slots, fonts,
+   layouts and placeholders, the colors by frequency, the media) and seeds `_brand.yml` and
+   `livery.yml`. The deck itself stays out of git.
+2. **Decide the data.** `_brand.yml` (the brand.yml standard): the palette with the brand's
+   names, `primary`/`secondary`/`foreground`/`background`, the font files (free, bundleable:
+   a brand's proprietary face is named in the pptx and stood in for elsewhere), the light and
+   dark logos. `livery.yml` (engine knobs): the roles (`primary-text`, `primary-contrast`,
+   `accent`, `highlight`, `muted`, `surface`, `warning`, `dark`), the geometry (copy ncar's
+   fractions, set the lockup's `aspect` and the marks' corners), a `signoff` lockup if the
+   brand wants one at the foot, `art` (wave curves, or a picture per slide kind, or nothing),
+   `pptx.typeface`, and `extends:` for a flavor of another livery. Write the judgement calls
+   into `reference/notes.md` as you make them.
+3. **Build.** `python3 docs/common/_extensions/benkirk/engine/livery_build.py
+   docs/common/liveries/<name>` resolves everything into `build/livery.{json,sty,css,theme}`;
+   `python3 docs/common/utils/livery_template.py docs/common/liveries/<name>` generates
+   `template.pptx` from it. Rerun both after any change; never edit the template by hand.
+4. **Check.** `python3 docs/common/utils/livery_check.py docs/common/liveries/<name> --qa`:
+   build freshness, every file the data names, the template's pandoc compliance and that it
+   rebuilds from the data, contrast warnings for the small-text roles, then the quickstart
+   deck's `make qa` under the livery.
+5. **Look.** `make -C docs/quickstart pptx html pdf LIVERY=<name>`; open the pptx in
+   PowerPoint (the "Repair?" prompt cannot be automated), the HTML in a browser, the PDF.
+   Commit `build/`, `template.pptx`, the assets and the notes. CI builds the quickstart under
+   every livery directory, so the new one is checked from its first push.
+
 ## Using the framework from another repo
 
 A project can keep its decks in its own tree and take this framework as a git
