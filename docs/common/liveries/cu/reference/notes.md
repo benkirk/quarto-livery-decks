@@ -53,12 +53,14 @@ the deck.
 
 ## Art
 
-No wave curves: the title field ends in a straight edge in every format. `art.content` is the
-deck's Flatirons-and-campus photo (its `image3.png`), desaturated and blended 88% to white
-(`art/content-flatirons.jpg`), Ben's choice over the deck's space photo and over a faint CU
-monogram (a translucent lockup alters its colors, which the brand forbids; the buffalo marks are
-Athletics'). The brand's sanctioned textures live in its CU-only backgrounds library. Swap the
-file to change it.
+No wave curves: the title field ends in a straight edge in every format. `art.content`
+(`art/content-flatirons.jpg`) is a Flatirons photo desaturated, blended 78% to white and
+softened (contrast 0.8): Ben's choice over the deck's space photo, the deck's own campus photo
+and a faint CU monogram (a translucent lockup alters its colors, which the brand forbids; the
+buffalo marks are Athletics'). Its source is a Reddit wallpaper post (r/wallpaper `hr1v4a`,
+"The Flatirons, Boulder, CO", user HellsJuggernaut, `i.redd.it/o6c18zg6vta51.jpg`): the rights
+are unverified, so before any public use swap it for a photo from the brand's CU-only textured
+backgrounds library or one CU owns. Swap the file to change it.
 
 ## Follow-ups
 
