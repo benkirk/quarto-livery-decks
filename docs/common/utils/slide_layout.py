@@ -1,23 +1,15 @@
 #!/usr/bin/env python3
 """Apply the theme's per-slide layout controls to a pandoc-rendered pptx.
 
-pandoc drops slide classes, so common/slide-layout.lua leaves one speaker-notes
-line, "ncar-layout: vcenter scale=1.4", on each slide that asks for a layout.
-This step removes the line and applies what pptx can express:
-
-  vcenter   body text anchored at the middle of its placeholder; a table moved
-            to the middle of the area pandoc gave it (an estimate: PowerPoint
-            sizes table rows itself, so the height is rows x line height)
-  scale=S   every body and table run at S times its inherited size
-  hcenter, fill   nothing: a text box cannot shrink-wrap, and nothing measures
-  caution   the body text box on a soft yellow field with a brand-yellow bar at
-            its left (pptx cannot move the footnotes out, so they sit inside it)
-  full      the one picture fills the slide, keeping its shape; no title and no
-            master art (logo, tab, rule, waves); pandoc's caption box becomes a
-            centered muted line under it; the slide number stays
-
-Footnote paragraphs (style_footnotes.py) keep their size. Idempotent: the
-marker is gone after the first pass."""
+pandoc drops slide classes, so common/slide-layout.lua leaves one speaker-notes line,
+"ncar-layout: vcenter scale=1.4", on each slide that asks for a layout; this removes the line
+and applies what pptx can express. vcenter: body text anchored mid-placeholder, a table moved to
+the middle of its area (an estimate: PowerPoint sizes rows itself). scale=S: every body and
+table run at S times its inherited size. hcenter, fill: nothing (a text box cannot shrink-wrap).
+caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
+stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
+art, pandoc's caption box centered under it in the muted color, the slide number kept.
+Footnote paragraphs (style_footnotes.py) keep their size. Idempotent: the marker is gone after one pass."""
 
 import sys
 from pathlib import Path

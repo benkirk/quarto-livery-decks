@@ -128,10 +128,11 @@ Per deck, `make pptx` runs:
    - Merges the paragraph after a `#` section heading back onto the
      Section Header slide as its subtitle. Pandoc otherwise drops it onto
      a separate untitled slide.
-   - Then dresses every divider as the HTML and PDF decks draw it: a
-     "SECTION n" label, the orange tab, and the label, title and subtitle
-     centered as one block. The blue field, logo and waves come from the
-     template's Section Header layout (see "Template constraints").
+   - Then dresses every divider as the HTML and PDF decks draw it: the
+     livery's "SECTION n" label, its tab, and the label, title and subtitle
+     centered as one block, measured in the livery's fonts. The blue field,
+     logo and waves come from the template's Section Header layout (see
+     "Template constraints").
 3. `python3 ../common/utils/enable_autofit.py <deck>.pptx`
    - Flips every body placeholder's autofit dropdown from "Do not Autofit"
      to "Shrink text on overflow." See "About text autofit" below.
@@ -141,8 +142,8 @@ Per deck, `make pptx` runs:
      back so the font travels with the file.
 5. `python3 ../common/utils/style_footnotes.py <deck>.pptx`
    - Restyles body paragraphs that start with `†` or `‡` as footnotes (smaller,
-     muted, the marker in accent orange), since pandoc ignores inline size and
-     color in markdown. HTML and PDF go further: the theme moves them to the
+     in the livery's muted color, the marker in its accent), since pandoc
+     ignores inline size and color in markdown. HTML and PDF go further: the theme moves them to the
      slide's foot under a short rule.
 6. `python3 ../common/utils/link_captions.py <deck>.pptx`
    - Captions each linked picture (see "Linked images" below) with its URL,
@@ -153,8 +154,8 @@ Per deck, `make pptx` runs:
      line because pandoc drops slide classes; the line is removed.
 8. `python3 ../common/utils/style_tables.py <deck>.pptx`
    - Styles every table as the HTML theme does: a bold capitalized header
-     over an NCAR Blue rule, thin rules between rows, every second row light
-     gray. Pandoc always writes PowerPoint's "Medium Style 2", so the look is
+     over a rule in the livery's primary color, thin rules between rows, every
+     second row banded, the blends derived by `livery_build.py`. Pandoc always writes PowerPoint's "Medium Style 2", so the look is
      set cell by cell. Evenly split columns are re-split by content. The PDF
      gets the same look from the beamer theme itself, apart from the rules
      between rows.

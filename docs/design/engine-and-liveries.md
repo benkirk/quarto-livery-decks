@@ -342,6 +342,20 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Three more post-processors read the livery (PR #3): `section_subtitle.py`
+  takes the divider label, the tab (`geometry.tab`, `divider.tab`) and the fonts it measures
+  with (`typography.headings` 700, `typography.base` 400, via `livery.font_file()`);
+  `style_tables.py`, `style_footnotes.py` and `slide_layout.py` take their colors as scheme
+  slots (`dk2`, `accent4`, resolved to hex through `pptx.scheme` so the XML stays `srgbClr`),
+  roles (`muted`, `warning`) and the new `derived` blends `livery_build.py` computes from the
+  roles (`table-rule`, `table-band`, `caution-fill`; a `derived:` key in `livery.yml`
+  overrides). Settled on the way: `divider.label` is `Section` (each format sets the
+  capitals), `muted` is `#6B7C99` (the HTML and pptx value; the PDF's CoolGray7 `#6686AF`
+  joins it in Phase 2), and the caution bar is the `warning` role because the ncar template's
+  `accent5` (`FDD509`) is not the brand yellow. Parity held byte-for-byte at each step. Next:
+  `link_captions.py` and `linked-images.lua` (muted from the livery; Lua through
+  `quarto.json.decode` of `_livery/build/livery.json`), `site_index.py`, `deck_qa.py` (`EDGE`
+  from `geometry.edge`), then the CI livery matrix.
 - **2026-10-16** Phase 1 begun (PR #2): `utils/parity.sh baseline|check` snapshots both
   reference decks and gates every step; `branding/ncar/` is `liveries/ncar/` with
   `_brand.yml`, `livery.yml` and the generated `build/livery.json` (`livery_build.py`,
