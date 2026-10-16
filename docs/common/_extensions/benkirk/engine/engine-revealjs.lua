@@ -339,17 +339,11 @@ end
 ---------------------------------------------------------------------------
 -- brand waves (y runs down here, up in TikZ)
 ---------------------------------------------------------------------------
--- The brand's three wave lines (tools/fit-waves.py): each is two cubics
--- from the top edge to the bottom edge, as {x, y} fractions of the slide
--- (y down): start, ctrl, ctrl, peak, ctrl, ctrl, end.
-local WAVES = {
-  { {0.4862, 0.0000}, {0.5087, 0.1976}, {0.6068, 0.4965}, {0.6068, 0.6766}, {0.6068, 0.8741}, {0.5756, 0.9681}, {0.5674, 1.0000} },
-  { {0.5138, 0.0000}, {0.5402, 0.1583}, {0.6570, 0.4747}, {0.6570, 0.6423}, {0.6570, 0.8307}, {0.6286, 0.9166}, {0.6000, 1.0000} },
-  { {0.5427, 0.0000}, {0.5762, 0.1381}, {0.7073, 0.4410}, {0.7073, 0.6182}, {0.7073, 0.8242}, {0.6639, 0.9245}, {0.6320, 1.0000} },
-}
--- where the waves sit on each slide type: the shift of the cover art, whose
--- line 1 starts at 0.49 of the width (the same numbers as the beamer theme)
-local SHIFT = { title = 0.20, section = 0.26, content = 0.27 }
+-- The livery's wave lines (art.waves in livery.json; tools/fit-waves.py fits them): each
+-- two cubics from the top edge to the bottom edge, as {x, y} fractions of the slide (y
+-- down): start, ctrl, ctrl, peak, ctrl, ctrl, end; and the shift of the cover art per
+-- slide kind. Set from the livery in Pandoc(); nil when the livery has no waves.
+local WAVES, SHIFT = nil, {}
 
 local function n(v) return string.format("%.1f", v) end
 local function P(k, i, dx)
@@ -426,6 +420,7 @@ end
 -- title and closing slides without a photo, and section dividers: the lines
 -- with the brand's translucent bands between them (Brand Guide p24)
 local function waves(c, dx)
+  if not WAVES then return "" end
   return svg(band(1, 2, dx, c.secondary, 0.18) .. band(2, 3, dx, c.secondary, 0.10)
     .. lines(dx, c.secondary))
 end
@@ -435,12 +430,16 @@ end
 -- A plain <img> behind the svg, not an svg <image>: pandoc's embed-resources
 -- inlines the former only.
 local function photo_waves(c, fieldcolor, src)
-  return string.format('<img class="engine-title-photo-img" src="%s" alt="">', src)
-    .. svg(field(2, 0, fieldcolor) .. band(2, 3, 0, fieldcolor, 0.65) .. lines(0, c.secondary))
+  local img = string.format('<img class="engine-title-photo-img" src="%s" alt="">', src)
+  if not WAVES then   -- no waves: the field over the left half, a straight edge
+    return img .. svg(string.format('<path d="M 0 0 H %d V %d H 0 Z" fill="%s"/>', W / 2, H, fieldcolor))
+  end
+  return img .. svg(field(2, 0, fieldcolor) .. band(2, 3, 0, fieldcolor, 0.65) .. lines(0, c.secondary))
 end
 
 -- content slides: the faint lines of the brand's content slides (p26), in the surface color
 local function content_waves(c)
+  if not WAVES then return "" end
   return svg(lines(SHIFT.content, c.surface))
 end
 
@@ -466,6 +465,9 @@ local function add_dependency(livery)
   end
   for _, v in ipairs({ "light", "dark" }) do
     add(livery.logo.images[livery.logo.medium[v]].path)
+  end
+  for _, kind in ipairs({ "title", "section", "closing", "content" }) do   -- static art files
+    if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
   end
   quarto.doc.add_html_dependency({
     name = "engine-revealjs",
@@ -493,12 +495,16 @@ function Pandoc(doc)
   local opts = theme_options(meta)
 
   local livery = load_livery(meta, opts.brand or "ncar")
+  if livery.art and livery.art.waves then
+    WAVES, SHIFT = livery.art.waves.lines, livery.art.waves.shift
+  end
   local r = livery.roles
   local c = { primary = r.primary, primary_text = r["primary-text"], secondary = r.secondary,
               surface = r.surface, dark = r.dark }
   local light = (opts.title == "light")
   local titlefield = light and r.background or c.primary
   local content_art = opts.waves ~= "false" and content_waves(c) or nil
+  if content_art == "" then content_art = nil end
 
   add_dependency(livery)
   quarto.doc.include_text("in-header", string.format(

@@ -181,6 +181,25 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         elif not isinstance(v, list):
             L.append(f"\\def\\engine@geom@{k.replace('-', '')}{{{v}}}")
     L.append(f"\\def\\engine@divider@label{{{livery.get('divider', {}).get('label', 'Section')}}}")
+    art = livery.get("art", {})
+    waves = art.get("waves")
+    if waves:
+        L.append("% the wave lines (art.waves): line n top to bottom, shifted right by #1 of the width,")
+        L.append("% and the same path bottom to top, for filling between two lines")
+        fmt = lambda p: f"({{({p[0]:.4f}+#1)*\\paperwidth}},{1 - p[1]:.4f}\\paperheight)"
+        for i, pts in enumerate(waves["lines"], 1):
+            n = "i" * i
+            L.append(f"\\def\\engine@wave@{n}@down#1{{{fmt(pts[0])}")
+            L.append(f"  .. controls {fmt(pts[1])} and {fmt(pts[2])} .. {fmt(pts[3])}")
+            L.append(f"  .. controls {fmt(pts[4])} and {fmt(pts[5])} .. {fmt(pts[6])}}}")
+            L.append(f"\\def\\engine@wave@{n}@up#1{{{fmt(pts[6])}")
+            L.append(f"  .. controls {fmt(pts[5])} and {fmt(pts[4])} .. {fmt(pts[3])}")
+            L.append(f"  .. controls {fmt(pts[2])} and {fmt(pts[1])} .. {fmt(pts[0])}}}")
+        for k, v in waves.get("shift", {}).items():
+            L.append(f"\\def\\engine@waveshift@{k}{{{v}}}")
+    for kind in ("title", "section", "closing", "content"):
+        if isinstance(art.get(kind), str):
+            L.append(f"\\def\\engine@art@{kind}{{\\engineliverydir {Path(art[kind]).with_suffix('').as_posix()}}}")
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
     return "\n".join(L) + "\n"
@@ -226,6 +245,12 @@ def emit_css(livery: dict) -> str:
              "\n  --mermaid-node-fg-color: var(--engine-foreground);\n  --mermaid-fg-color: var(--engine-foreground);"
              "\n  --mermaid-edge-color: var(--engine-foreground);\n  --mermaid-label-bg-color: var(--engine-background);"
              "\n  --mermaid-label-fg-color: var(--engine-primary-contrast);\n}")
+    SEL = {"title": "section.engine-title", "section": "section.slide.engine-section",
+           "closing": "section.slide.level2.closing", "content": "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full)"}
+    for kind, sel in SEL.items():   # a static background per slide kind (the engine draws no waves there)
+        f = livery.get("art", {}).get(kind)
+        if isinstance(f, str):
+            L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
     light, dark = (Path(logo_path(livery, v, False)).name for v in ("light", "dark"))
     L.append(".reveal .slides section.slide::after,\n.reveal .slides section.engine-title::after "
              f'{{ background-image: url("{light}"); }}')
