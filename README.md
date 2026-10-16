@@ -306,7 +306,8 @@ Code, the `deck-polish` skill (`.claude/skills/`) covers what to do with the fin
 site that works as is: `python3 -m http.server -d _site`. Every deck's `<deck>_files/libs/`
 is a subset of one union, so the site keeps a single `libs/` and rewrites the references
 (a 13-deck directory goes from ~140 MB to ~16 MB); `images/` ships beside the decks, and
-`index.html` lists them by their front matter, first deck first.
+`index.html` lists them by their front matter, first deck first, in the livery's colors
+and font (its files copied to `fonts/`, so the page needs no font CDN).
 
 `make publish` pushes `_site/` to a GitHub Pages branch. The branch is a build artifact,
 not a record: each publish replaces it with **one** parentless commit, so nothing

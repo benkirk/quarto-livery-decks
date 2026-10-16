@@ -12,7 +12,8 @@ stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap:
 a generalized **engine** (the vendored theme, forked as
 `benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
 `docs/common/liveries/`; its section 10 logs progress and names the next step.
-Until the design's Phase 1 lands, NCAR decks build exactly as they did upstream.
+Phase 1 (the framework reads the livery) is done; NCAR decks build byte-identically
+to upstream, and Phase 2 (the engine) is next.
 
 Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
 machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua
@@ -47,7 +48,8 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `style_footnotes.py`, `link_captions.py`, `slide_layout.py`, and
   `style_tables.py` (tables drawn as in the HTML theme).
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
-  `libs/`, `images/`, `SITE_EXTRA` directories, an index from `site_index.py`;
+  `libs/`, `images/`, `SITE_EXTRA` directories, an index from `site_index.py` in
+  the livery's colors with its fonts copied to `fonts/`;
   `SITE_NOINDEX=1` marks every page noindex) and `make publish` force-pushes it
   as the one commit on `PUBLISH_BRANCH` (gh-pages) under `PUBLISH_PREFIX`.
   README "Publishing the HTML decks".
@@ -287,7 +289,10 @@ bit while building it:
 
 ## CI
 
-`.github/workflows/ci-build-sample.yaml` renders the sample deck. Notes:
+`.github/workflows/ci-build-sample.yaml` renders the sample deck;
+`ci-liveries.yaml` renders the quickstart deck once per directory under
+`docs/common/liveries/` with `LIVERY=<name>` and checks the livery reached the
+pptx (a new livery joins the matrix by existing). Notes:
 login-shell default (`bash -el`) is required for conda activation, and
 because of it a `run:` script must not end with `exit N` (in a login shell
 `exit` runs `~/.bash_logout`, which returns 1 on the runner and overrides
