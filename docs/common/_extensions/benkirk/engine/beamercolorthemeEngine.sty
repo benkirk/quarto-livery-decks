@@ -1,22 +1,21 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{beamercolorthemeEngine}[2026/09/30 v2.3 engine beamer color theme]
-% Maps the brand palette (engine_livery.sty) onto beamer's color slots.
-% Rules encoded (Brand Guide p16-22): Dark Blue is the text color on white
-% and Light Gray; white on NCAR Blue; Space on UCAR Aqua; accent colors
-% (orange/yellow) only in small amounts.
+% Maps the livery's roles (build/livery.sty) onto beamer's color slots; no palette name
+% appears here. Rules encoded (Brand Guide p16-22): the text role on the background and
+% surface colors, the primary-text role on the primary field, accents in small amounts.
 \mode<presentation>
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 
-\setbeamercolor{normal text}{fg=BrandText,bg=white}
-\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{normal text}{fg=BrandText,bg=BrandBackground}
+\setbeamercolor{background canvas}{bg=BrandBackground}
 \setbeamercolor{structure}{fg=BrandPrimaryContrast}
 \setbeamercolor{alerted text}{fg=BrandPrimaryContrast}
-\setbeamercolor{example text}{fg=UCARAquaContrast}
+\setbeamercolor{example text}{fg=BrandHighlight}
 
 \setbeamercolor{titlelike}{fg=BrandText}
 \setbeamercolor{frametitle}{fg=BrandText}
 \setbeamercolor{framesubtitle}{fg=BrandPrimaryContrast}
-\setbeamercolor{frametitle rule}{fg=LightGray!70!DarkBlue!40}
+\setbeamercolor{frametitle rule}{fg=BrandSurface!70!BrandText!40}
 \setbeamercolor{frametitle tab}{fg=BrandAccent}
 
 % title / closing / section slides
@@ -38,13 +37,13 @@
 \setbeamercolor{section in toc}{fg=BrandText}
 \setbeamercolor{subsection in toc}{fg=BrandPrimaryContrast}
 
-% blocks: plain = brand primary; example = dark blue; alert = accent bar
+% blocks: plain = primary; example = the text role; alert = accent bar
 \setbeamercolor{block title}{fg=BrandPrimaryText,bg=BrandPrimary}
-\setbeamercolor{block body}{fg=BrandText,bg=LightGray}
-\setbeamercolor{block title example}{fg=white,bg=DarkBlue}
-\setbeamercolor{block body example}{fg=BrandText,bg=LightGray}
-\setbeamercolor{block title alerted}{fg=Space,bg=BrandAccent}
-\setbeamercolor{block body alerted}{fg=BrandText,bg=LightGray}
+\setbeamercolor{block body}{fg=BrandText,bg=BrandSurface}
+\setbeamercolor{block title example}{fg=BrandBackground,bg=BrandText}
+\setbeamercolor{block body example}{fg=BrandText,bg=BrandSurface}
+\setbeamercolor{block title alerted}{fg=BrandDark,bg=BrandAccent}
+\setbeamercolor{block body alerted}{fg=BrandText,bg=BrandSurface}
 
 % footline
 \setbeamercolor{page number in head/foot}{fg=BrandText}
@@ -57,6 +56,6 @@
 \setbeamercolor{bibliography entry location}{fg=BrandText!70}
 \setbeamercolor{bibliography entry note}{fg=BrandText!70}
 \setbeamercolor{button}{bg=BrandPrimary,fg=BrandPrimaryText}
-\setbeamercolor{note page}{bg=LightGray,fg=BrandText}
+\setbeamercolor{note page}{bg=BrandSurface,fg=BrandText}
 
 \mode<all>

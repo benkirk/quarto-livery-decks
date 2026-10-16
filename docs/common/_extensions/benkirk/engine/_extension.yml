@@ -15,7 +15,7 @@ contributes:
       # figures (incl. mermaid) are sized in inches; the 16:9 text area is ~5.6in wide
       fig-width: 5.5
       fig-height: 3.5
-      highlight-style: engine.theme
+      highlight-style: liveries/ncar/build/livery.theme   # a project: _livery/build/livery.theme
       filters:
         - quarto          # run after quarto's filters (mermaid images exist by then)
         - engine-beamer.lua
@@ -36,7 +36,7 @@ contributes:
       transition-speed: fast
       background-transition: fade
       preview-links: auto
-      highlight-style: engine.theme
+      highlight-style: liveries/ncar/build/livery.theme
       menu:
         side: left
         numbers: true

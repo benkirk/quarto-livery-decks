@@ -327,20 +327,20 @@ local function load_theme(doc)
     "\\edef\\input@path{\\input@path{" .. extdir .. "/}}",
     "\\makeatother",
     "\\usetheme[" .. table.concat(opts, ",") .. "]{Engine}",
-    -- Quarto callouts (tcolorbox) in brand colors; Quarto defines its own
+    -- Quarto callouts (tcolorbox) in the livery's roles; Quarto defines its own
     -- after header-includes, hence \AtBeginDocument
     "\\AtBeginDocument{%",
-    "  \\colorlet{quarto-callout-color}{DarkBlue}%",
-    "  \\colorlet{quarto-callout-note-color}{NCARBlue}%",
-    "  \\colorlet{quarto-callout-note-color-frame}{NCARBlue}%",
-    "  \\colorlet{quarto-callout-tip-color}{UCARAquaContrast}%",
-    "  \\colorlet{quarto-callout-tip-color-frame}{UCARAquaContrast}%",
-    "  \\colorlet{quarto-callout-important-color}{DarkBlue}%",
-    "  \\colorlet{quarto-callout-important-color-frame}{DarkBlue}%",
-    "  \\colorlet{quarto-callout-warning-color}{BrandOrange}%",
-    "  \\colorlet{quarto-callout-warning-color-frame}{BrandOrange}%",
-    "  \\colorlet{quarto-callout-caution-color}{BrandOrange}%",
-    "  \\colorlet{quarto-callout-caution-color-frame}{BrandOrange}}",
+    "  \\colorlet{quarto-callout-color}{BrandText}%",
+    "  \\colorlet{quarto-callout-note-color}{BrandPrimaryContrast}%",
+    "  \\colorlet{quarto-callout-note-color-frame}{BrandPrimaryContrast}%",
+    "  \\colorlet{quarto-callout-tip-color}{BrandHighlight}%",
+    "  \\colorlet{quarto-callout-tip-color-frame}{BrandHighlight}%",
+    "  \\colorlet{quarto-callout-important-color}{BrandText}%",
+    "  \\colorlet{quarto-callout-important-color-frame}{BrandText}%",
+    "  \\colorlet{quarto-callout-warning-color}{BrandAccent}%",
+    "  \\colorlet{quarto-callout-warning-color-frame}{BrandAccent}%",
+    "  \\colorlet{quarto-callout-caution-color}{BrandAccent}%",
+    "  \\colorlet{quarto-callout-caution-color-frame}{BrandAccent}}",
   }, "\n")
   local hi = header_includes(doc)
   hi:insert(1, pandoc.Blocks({ latex(tex) }))

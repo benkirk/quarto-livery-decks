@@ -201,7 +201,7 @@
 
 % field behind the title/closing slides (title=dark|light)
 \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp
-  \colorlet{EngineTitleField}{white}\else\colorlet{EngineTitleField}{BrandPrimary}\fi
+  \colorlet{EngineTitleField}{BrandBackground}\else\colorlet{EngineTitleField}{BrandPrimary}\fi
 \def\engine@titlefield{EngineTitleField}
 
 % where the waves sit on each page type: the shift of the cover art, whose
@@ -214,7 +214,7 @@
   \begin{tikzpicture}[x=1pt,y=1pt]
     \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
     \engine@ifstyle{normal}{%
-      \ifengine@waves\engine@lines{\engine@waveshift@content}{LightGray}\fi
+      \ifengine@waves\engine@lines{\engine@waveshift@content}{BrandSurface}\fi
       \ifengine@framelogo
         \node[anchor=north east,inner sep=0pt]
           at (\paperwidth-\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
@@ -249,7 +249,7 @@
   \node[anchor=center,inner sep=0pt] at (0.5\paperwidth,0.5\paperheight)
     {\engine@coverbox{\paperwidth}{\paperheight}{\includegraphics{\engine@featureimage}}};
   \ifx\engine@featuretitle\@empty\else\ifx\beamer@frametitle\@empty\else
-    \fill[Space,opacity=0.72] (0,\paperheight) rectangle
+    \fill[BrandDark,opacity=0.72] (0,\paperheight) rectangle
       (\paperwidth,\paperheight-\engine@featuretitle);
   \fi\fi}
 
@@ -261,7 +261,7 @@
   \engine@fullfloor=0.075\paperheight
   \ifx\engine@fullcaption\@empty\else
     \node[anchor=south,inner sep=0pt,text width=0.8\paperwidth,align=center,
-      font=\scriptsize,text=CoolGray7] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
+      font=\scriptsize,text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
     \advance\engine@fullfloor 0.06\paperheight
   \fi
   \node[anchor=center,inner sep=0pt]
@@ -312,7 +312,7 @@ block body example,block title alerted,block body alerted}
   \def\engine@featuretitle{0.2\paperheight}%
   \engine@atframe{%
     \setbeamercolor{frametitle}{fg=white}%
-    \setbeamercolor{framesubtitle}{fg=LightBlue}%
+    \setbeamercolor{framesubtitle}{fg=BrandSecondary}%
     \engine@featureblocks}}
 % [enginefull=<image>]: the image fills the frame; no title, logo, rule or
 % waves, the frame number kept.  \enginefullcaption{...} in the body (global:

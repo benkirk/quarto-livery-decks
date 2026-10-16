@@ -2,7 +2,9 @@
   "art": {},
   "aspect": "16:9",
   "derived": {
+    "alert-text": "#B5540A",
     "caution-fill": "#FFF9DA",
+    "rule": "#A9B8CB",
     "table-band": "#F7F6F5",
     "table-rule": "#C1CBD7"
   },
@@ -107,6 +109,7 @@
     "background": "#FFFFFF",
     "dark": "#011837",
     "foreground": "#00357A",
+    "highlight": "#00818F",
     "muted": "#6B7C99",
     "primary": "#00A2B4",
     "primary-contrast": "#00818F",

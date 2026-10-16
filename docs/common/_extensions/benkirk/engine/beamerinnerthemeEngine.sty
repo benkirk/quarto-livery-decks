@@ -165,12 +165,12 @@
 
 % blocks on photo ("feature") frames: translucent so the image shows through
 \def\engine@featureblocks{%
-  \setbeamercolor{block title}{fg=white,bg=Space}%
-  \setbeamercolor{block body}{fg=Space,bg=white}%
-  \setbeamercolor{block title example}{fg=Space,bg=LightBlue}%
-  \setbeamercolor{block body example}{fg=Space,bg=white}%
-  \setbeamercolor{block title alerted}{fg=Space,bg=BrandAccent}%
-  \setbeamercolor{block body alerted}{fg=white,bg=Space}%
+  \setbeamercolor{block title}{fg=white,bg=BrandDark}%
+  \setbeamercolor{block body}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block title example}{fg=BrandDark,bg=BrandSecondary}%
+  \setbeamercolor{block body example}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block title alerted}{fg=BrandDark,bg=BrandAccent}%
+  \setbeamercolor{block body alerted}{fg=white,bg=BrandDark}%
   \engine@translucenttrue
 }
 \def\engine@blockopacity{\ifengine@translucent\pgfsetfillopacity{0.88}\fi}
@@ -195,8 +195,8 @@
 \newcommand\enginefootnotespring{\par\vskip 0pt plus 1filll\relax}
 \newenvironment{enginefootnotes}{%
   \par\noindent\begin{minipage}[b]{0.6\textwidth}\raggedright
-  \scriptsize\color{CoolGray7}%
-  {\color{CoolGray4}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
+  \scriptsize\color{BrandMuted}%
+  {\color{BrandText!30}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
   {\end{minipage}\par}
 \newcommand\enginefootnote[2]{%
   \par\hangindent=1.1em\hangafter=1\noindent
@@ -206,13 +206,13 @@
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
 % bar at its left (the Quarto filter writes it for {.caution})
 % ---------------------------------------------------------------------------
-\colorlet{enginecautionfill}{BrandYellow!18!white}
+\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}
 \newsavebox\engine@cautionbox
 \newenvironment{enginecaution}{%
   \par\noindent\begin{lrbox}{\engine@cautionbox}%
   \begin{minipage}{\dimexpr\linewidth-3pt-1.1em\relax}}%
   {\end{minipage}\end{lrbox}%
-  \hbox{{\color{BrandYellow}\vrule width 3pt}%
+  \hbox{{\color{BrandWarning}\vrule width 3pt}%
     {\setlength\fboxsep{0.55em}\colorbox{enginecautionfill}{\usebox\engine@cautionbox}}}\par}
 
 % ---------------------------------------------------------------------------
@@ -223,8 +223,8 @@
 % \rowcolor{enginetableband}.  Hand-written tabulars are left alone.
 % ---------------------------------------------------------------------------
 \RequirePackage{colortbl}
-\colorlet{enginetableband}{LightGray!60}
-\colorlet{enginetablerule}{BrandText!20!LightGray}
+\colorlet{enginetableband}{BrandSurface!60!BrandBackground}
+\colorlet{enginetablerule}{BrandText!20!BrandSurface}
 \newcommand\engineth[1]{{\usebeamercolor[fg]{normal text}\bfseries
   \fontsize{\fpeval{0.8*\f@size}pt}{\fpeval{0.8*\strip@pt\dimexpr\f@baselineskip\relax}pt}%
   \selectfont\engine@tracking\MakeUppercase{#1}}}
