@@ -27,7 +27,7 @@ geometry:
   body-sizes-pt: [20, 18, 16, 14, 12]   # the master's ladder; autofit must never fire
 
 divider:
-  label: SECTION          # "SECTION n" eyebrow over the title
+  label: Section          # "Section n" eyebrow over the title; each format sets it in capitals
   tab: true
 
 art: {}                   # the waves are still procedural (TikZ, SVG, build_divider_layout.py)

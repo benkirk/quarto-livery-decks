@@ -1,40 +1,14 @@
 #!/usr/bin/env python3
-"""Merge a section-divider slide's orphaned subtitle back onto the same slide.
+"""Merge a section-divider slide's orphaned subtitle back onto the same slide, then dress it.
 
-pandoc's pptx writer renders a heading above slide-level (a `#` when
-`slide-level: 2`) as a title-only "Section Header" slide, and drops any markdown
-that follows it — before the next slide-level heading — onto a SEPARATE,
-untitled "Title and Content" slide. The NCAR template's Section Header layout
-has a body/subtitle placeholder (idx=1) that pandoc never fills, so the two
-render as two slides instead of one.
-
-This closes that gap. For every Section Header slide immediately followed by
-such an orphan (no title text, but body text), it moves the orphan's body into
-the Section Header slide's subtitle placeholder and deletes the orphan, so:
-
-    # Job Sort
-
-    Prioritizing job execution — one subtitle line.
-
-    ## The End Goal
-    ...
-
-renders as a single divider slide carrying the subtitle. Authoring stays
-ordinary markdown — no raw OpenXML, no per-slide attributes.
-
-It then dresses every divider as the HTML and PDF decks do, on top of the
-template's blue Section Header layout (liveries/ncar/build_divider_layout.py):
-a "SECTION n" label in the layout's accent1, n counting dividers in deck order;
-the orange tab beside the title; and the label, title and subtitle stacked and
-centered as one block, with each line count measured in Poppins.
-
-Raw-zip surgery via lxml (no python-pptx), so it composes with the other
-post-render utilities. **Run it FIRST in the pptx recipe**, before
-embed_poppins.py rewrites presentation.xml with embedded fonts.
-
-Idempotent: a Section Header already carrying body text, or one followed by a
-normal titled slide, is not merged again, and the label and tab are replaced,
-not added twice."""
+pandoc renders a `#` heading (with `slide-level: 2`) as a title-only "Section Header" slide and
+drops the markdown after it onto a separate, untitled slide; the template's Section Header
+layout has a subtitle placeholder (idx=1) pandoc never fills, so this moves the orphan's body
+there and deletes the orphan. It then dresses every divider as HTML and PDF do: the livery's
+divider label ("Section n") in accent1, the tab beside the title, and label, title and subtitle
+stacked and centered as one block, line counts measured in the livery's heading and body fonts.
+Raw-zip surgery via lxml. Run it FIRST in the pptx recipe, before embed_fonts.py rewrites
+presentation.xml. Idempotent: merged dividers stay merged; label and tab are replaced."""
 
 import copy
 import functools
@@ -47,6 +21,8 @@ from pathlib import Path
 
 from lxml import etree
 from PIL import ImageFont
+
+import livery as livery_mod
 
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -61,14 +37,16 @@ CHROME_PH = {"dt", "ftr", "sldNum"}  # date, footer, slide number — ignore
 
 # Divider geometry in the revealjs theme's 1600x900 px (1 px = 7620 EMU, and
 # 1 px of type = 0.6 pt), from its section-slide rules (ncar-revealjs.scss).
+LIVERY = livery_mod.load()
 PX = 7620
 BLOCK_TOP, BLOCK_BOTTOM = 120, 820         # padding: 120px ... 80px
-TAB_W = 29                                  # $ncar-tab
+TAB_W = round(LIVERY["geometry"]["tab"] * 1600)   # the divider's tab, geometry.tab of the width
+TAB = LIVERY["divider"].get("tab", True)
+LABEL = LIVERY["divider"]["label"]          # "Section"; cap="all" sets it in capitals
 LABEL_PT, LABEL_GAP = 12, 10                # 0.7em, margin-bottom 0.5em
 BODY_GAP = 22                               # .ncar-subtitle margin-top 0.7em
-LINE = 1.4                                  # Poppins ascent + descent, in em
-FONTS = (Path(__file__).resolve().parent.parent
-         / "_extensions/benkirk/ncar/ncar-assets/fonts/Poppins")
+LINE = 1.4                                  # ascent + descent of the heading font, in em
+TYPE = LIVERY["typography"]                 # headings face measures the title, base the subtitle
 DECOR = ("ncar-section-label", "ncar-section-tab")
 
 
@@ -170,8 +148,8 @@ def _ph_style(layout_root, ph_type):
 
 
 @functools.lru_cache
-def _font(face, pt):
-    return ImageFont.truetype(str(FONTS / f"Poppins-{face}.ttf"), round(pt / 0.6))
+def _font(family, weight, pt):
+    return ImageFont.truetype(str(livery_mod.font_file(LIVERY, family, weight)), round(pt / 0.6))
 
 
 def _lines(paragraphs, font, width):
@@ -231,14 +209,14 @@ def _dress(root, layout_root, number):
     if title is None or t_style is None:
         return
 
-    def height(style, sp, face):
+    def height(style, sp, family, weight):
         _x, w, pt, spacing = style
-        return _lines(_paragraphs(sp), _font(face, pt), w) * LINE * spacing * pt / 0.6
+        return _lines(_paragraphs(sp), _font(family, weight, pt), w) * LINE * spacing * pt / 0.6
 
     label_h = LINE * LABEL_PT / 0.6
-    title_h = height(t_style, title, "Bold") + 4
+    title_h = height(t_style, title, TYPE["headings"], 700) + 4
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
-    body_h = height(b_style, body, "Regular") + 4 if body_text else 0
+    body_h = height(b_style, body, TYPE["base"], 400) + 4 if body_text else 0
     total = label_h + LABEL_GAP + title_h + (BODY_GAP + body_h if body_text else 0)
     y = (BLOCK_TOP + BLOCK_BOTTOM - total) / 2
 
@@ -250,7 +228,7 @@ def _dress(root, layout_root, number):
                    '<a:noAutofit/></a:bodyPr><a:lstStyle/><a:p>'
                    f'<a:r><a:rPr lang="en-US" sz="{LABEL_PT * 100}" b="1" cap="all" spc="{LABEL_PT * 10}">'
                    '<a:solidFill><a:schemeClr val="accent1"/></a:solidFill>'
-                   f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>Section {number}</a:t></a:r></a:p></p:txBody>')
+                   f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>{LABEL} {number}</a:t></a:r></a:p></p:txBody>')
     y += label_h + LABEL_GAP
     _set_xfrm(title, t_style[0], y, t_style[1], title_h)
     inset = 0.08 * t_style[2] / 0.6
@@ -258,7 +236,8 @@ def _dress(root, layout_root, number):
                  '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill>'
                  '<a:schemeClr val="accent4"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>')
     tree.append(label)
-    tree.append(tab)
+    if TAB:
+        tree.append(tab)
     if body_text:
         _set_xfrm(body, b_style[0], y + title_h + BODY_GAP, b_style[1], body_h)
 
