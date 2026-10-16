@@ -117,7 +117,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `ncar-revealjs.lua` for HTML. Only plain
   paragraphs qualify; anything else after a divider stays a slide of its own.
   In pptx the blue field, logo and waves are the template's Section Header
-  layout, built by `branding/ncar/build_divider_layout.py` (rerun it after any
+  layout, built by `liveries/ncar/build_divider_layout.py` (rerun it after any
   template edit); `section_subtitle.py` adds "SECTION n", the tab and placement.
 - **Front matter must be line 1** of every deck `.qmd`: anything above the
   opening `---` (an editor mode-line, a comment) hides it from Quarto, and

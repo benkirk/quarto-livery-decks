@@ -94,6 +94,9 @@ jobs:
           # ~/.bash_logout, whose last status (1 on the runner) replaces ours
           test "$bad" -eq 0
 
+      - name: Check the committed liveries are built
+        run: python3 docs/common/utils/livery_build.py --check docs/common/liveries/*/
+
       - name: Build Sample PPTX
         run: |
           timeout 600 make -C docs/sample || {

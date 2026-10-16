@@ -18,7 +18,7 @@ and the vertical placement of the title block.
 Run from anywhere; rewrites template.pptx in place, and a second run produces
 the same layout:
 
-    python3 docs/common/branding/ncar/build_divider_layout.py
+    python3 docs/common/liveries/ncar/build_divider_layout.py
 """
 
 import posixpath

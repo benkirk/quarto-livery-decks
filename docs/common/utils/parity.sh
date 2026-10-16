@@ -6,7 +6,8 @@
 #
 # Default decks: docs/quickstart docs/sample, relative to the repository root. A snapshot
 # holds, per deck: every XML part of the unzipped pptx (zip timestamps live only in the
-# zip directory, docProps/core.xml carries the render time and is skipped), the pptx
+# zip directory; docProps/core.xml carries the render time and custom.xml pandoc's dump of
+# the YAML metadata, so both are skipped), the pptx
 # member list, `pdftotext -layout` of the PDF, the HTML file (Jupyter's random cell ids
 # normalized), the three brand greps CI runs, and for docs/quickstart the README
 # screenshots, reshot into the snapshot (the committed PNGs are restored afterwards: they
@@ -27,7 +28,7 @@ snapshot() {   # <deck dir> <out dir>
   local dir=$1 out=$2 name; name=$(basename "$dir")
   rm -rf "$out"; mkdir -p "$out/pptx"
   make -C "$ROOT/$dir" clean all >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; return 1; }
-  unzip -q -o "$ROOT/$dir/$name.pptx" -d "$out/pptx" -x docProps/core.xml
+  unzip -q -o "$ROOT/$dir/$name.pptx" -d "$out/pptx" -x docProps/core.xml docProps/custom.xml
   unzip -l "$ROOT/$dir/$name.pptx" | awk 'NR>3 {print $NF}' | sort >"$out/pptx-members.txt"
   pdftotext -layout "$ROOT/$dir/$name.pdf" "$out/pdf.txt"
   sed -E 's/id="[0-9a-f]{8}" class="cell"/id="CELL" class="cell"/' "$ROOT/$dir/$name.html" >"$out/deck.html"

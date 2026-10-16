@@ -1,0 +1,120 @@
+{
+  "art": {},
+  "aspect": "16:9",
+  "divider": {
+    "label": "SECTION",
+    "tab": true
+  },
+  "geometry": {
+    "body-sizes-pt": [
+      20,
+      18,
+      16,
+      14,
+      12
+    ],
+    "edge": 0.94,
+    "logo": {
+      "aspect": 3.934,
+      "height": 0.0644,
+      "top": 0.0533
+    },
+    "margin": 0.06,
+    "tab": 0.018
+  },
+  "logo": {
+    "images": {
+      "ncar-color": {
+        "path": "../../_extensions/benkirk/ncar/ncar-assets/web/NSF-NCAR_Logo_FullColor_RGB.png"
+      },
+      "ncar-color-print": {
+        "path": "../../_extensions/benkirk/ncar/ncar-assets/logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
+      },
+      "ncar-white": {
+        "path": "../../_extensions/benkirk/ncar/ncar-assets/web/NSF-NCAR_Logo_Color-White_RGB.png"
+      },
+      "ncar-white-print": {
+        "path": "../../_extensions/benkirk/ncar/ncar-assets/logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
+      }
+    },
+    "medium": {
+      "dark": "ncar-white",
+      "light": "ncar-color"
+    }
+  },
+  "name": "ncar",
+  "palette": {
+    "dark-blue": "#00357A",
+    "light-aqua": "#34E1F4",
+    "light-blue": "#42C0FF",
+    "light-gray": "#F1F0EE",
+    "ncar-blue": "#0057C2",
+    "orange": "#FAA119",
+    "space": "#011837",
+    "ucar-aqua": "#00A2B4",
+    "ucar-aqua-contrast": "#00818F",
+    "white": "#FFFFFF",
+    "yellow": "#FFDD31"
+  },
+  "pptx": {
+    "fonts": "fonts/pptx",
+    "scheme": {
+      "accent1": "#42C0FF",
+      "accent4": "#FAA119",
+      "accent5": "#FDD509",
+      "dk1": "#00357A",
+      "dk2": "#0057C2",
+      "lt1": "#FFFFFF",
+      "lt2": "#F1F0EE"
+    },
+    "template": "template.pptx",
+    "typeface": "Poppins"
+  },
+  "roles": {
+    "accent": "#FAA119",
+    "background": "#FFFFFF",
+    "dark": "#011837",
+    "foreground": "#00357A",
+    "muted": "#6686AF",
+    "primary": "#0057C2",
+    "primary-contrast": "#0057C2",
+    "primary-text": "#FFFFFF",
+    "secondary": "#42C0FF",
+    "surface": "#F1F0EE",
+    "warning": "#FFDD31"
+  },
+  "typography": {
+    "base": "Poppins",
+    "fonts": [
+      {
+        "family": "Poppins",
+        "files": [
+          {
+            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-Regular.ttf",
+            "weight": 400
+          },
+          {
+            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-Italic.ttf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-SemiBold.ttf",
+            "weight": 600
+          },
+          {
+            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-Bold.ttf",
+            "weight": 700
+          },
+          {
+            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-BoldItalic.ttf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
+      }
+    ],
+    "headings": "Poppins"
+  }
+}
