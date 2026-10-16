@@ -342,6 +342,24 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 2 complete, step 5 (beamer-livery-theme PR #7, this repo PR #9): the
+  waves leave the engine as data, not files. Decided with Ben against section 4's letter:
+  static art per slide kind would freeze the roles' colors into files per livery, drop the
+  photo-in-the-wave title slide (a clip path has to exist at render time) and change nothing
+  in pptx, whose master waves are already a raster. So `art.waves` in `livery.yml` carries the
+  three curves (control points, `tools/fit-waves.py` prints the block) and the per-kind
+  shifts; `livery_build.py` writes the TikZ macros into `livery.sty`, the Lua reads
+  `livery.json`, the pptx divider layout is built from the same numbers. A livery without
+  `art.waves` draws plain fields (straight-edged title photo); a livery may name a static
+  background file per slide kind (`art.title|section|closing|content`), placed by both
+  formats (tested with a throwaway flavor). To be reassessed once the brand kit's own wave
+  art (Canto) has been looked at. Parity: every PDF page pixel-identical, every HTML slide
+  pixel-identical. The engine now holds no NCAR data: palette, roles, fonts, logos, geometry
+  and art are the livery's. Section 7's Phase 2 is done; the framework's `liveries/ncar`
+  is a link to the vendored reference livery. Next: Phase 3, the first foreign livery, with
+  the onboarding tools of section 6 (`livery_inspect.py`, `livery_template.py`,
+  `livery_check.py`), measured against the brand's official pptx templates on Drive; and the
+  template question, since the ncar template's own geometry is tighter than the brand's.
 - **2026-10-16** Phase 2, step 4 (beamer-livery-theme PR #6, this repo PR #8): geometry from
   the livery. The `geometry` block (fractions of the slide) carries the margin, the tab, the
   logo's height per slide kind, top and aspect, the divider block's padding and the

@@ -21,6 +21,7 @@ the same layout:
     python3 liveries/ncar/build_divider_layout.py   # from _extensions/engine/
 """
 
+import json
 import posixpath
 import shutil
 import sys
@@ -54,18 +55,11 @@ LOGO_W = round(LOGO_H * 1200 / 313)
 TITLE_Y, TITLE_W, TITLE_PT = 400, 0.62 * W, 44     # h1: 2.6em of 28px, 62% wide
 BODY_Y, BODY_W, BODY_PT = 520, 0.60 * W, 18        # .ncar-subtitle: 1.1em, 60%
 
-# The brand's three wave lines (engine-revealjs.lua WAVES, from tools/fit-waves.py
-# in the beamer theme): two cubics each, top edge to bottom edge, as {x, y}
-# fractions of the slide: start, ctrl, ctrl, peak, ctrl, ctrl, end.
-WAVES = [
-    [(0.4862, 0.0000), (0.5087, 0.1976), (0.6068, 0.4965), (0.6068, 0.6766),
-     (0.6068, 0.8741), (0.5756, 0.9681), (0.5674, 1.0000)],
-    [(0.5138, 0.0000), (0.5402, 0.1583), (0.6570, 0.4747), (0.6570, 0.6423),
-     (0.6570, 0.8307), (0.6286, 0.9166), (0.6000, 1.0000)],
-    [(0.5427, 0.0000), (0.5762, 0.1381), (0.7073, 0.4410), (0.7073, 0.6182),
-     (0.7073, 0.8242), (0.6639, 0.9245), (0.6320, 1.0000)],
-]
-SHIFT = 0.26                     # SHIFT.section
+# The brand's wave lines and the section slide's shift, from the livery's build/livery.json
+# (art.waves): each line two cubics, top edge to bottom edge, as [x, y] fractions of the slide.
+_ART = json.loads((HERE / "build" / "livery.json").read_text())["art"]["waves"]
+WAVES = [[tuple(p) for p in line] for line in _ART["lines"]]
+SHIFT = _ART["shift"]["section"]
 LINE_PX = 2.4                    # stroke-width
 BANDS = [(0, 1, 18000), (1, 2, 10000)]   # line k to line m, alpha (1/1000 %)
 PATH_W, PATH_H = 16000, 9000     # path units: 0.1 px

@@ -133,61 +133,49 @@
 % ---------------------------------------------------------------------------
 % backgrounds
 % ---------------------------------------------------------------------------
-% The brand's three wave lines (tools/fit-waves.py), each two cubics from
-% the top edge to the bottom edge.  \engine@wave@<n>@down{<dx>} is line n
-% shifted right by dx (a fraction of \paperwidth); @up is the same path
-% bottom to top, for filling between two lines.
-\def\engine@wave@i@down#1{%
-  ({(0.4862+#1)*\paperwidth},1.0000\paperheight)
-    .. controls ({(0.5087+#1)*\paperwidth},0.8024\paperheight) and ({(0.6068+#1)*\paperwidth},0.5035\paperheight) .. ({(0.6068+#1)*\paperwidth},0.3234\paperheight)
-    .. controls ({(0.6068+#1)*\paperwidth},0.1259\paperheight) and ({(0.5756+#1)*\paperwidth},0.0319\paperheight) .. ({(0.5674+#1)*\paperwidth},0.0000\paperheight)}
-\def\engine@wave@i@up#1{%
-  ({(0.5674+#1)*\paperwidth},0.0000\paperheight)
-    .. controls ({(0.5756+#1)*\paperwidth},0.0319\paperheight) and ({(0.6068+#1)*\paperwidth},0.1259\paperheight) .. ({(0.6068+#1)*\paperwidth},0.3234\paperheight)
-    .. controls ({(0.6068+#1)*\paperwidth},0.5035\paperheight) and ({(0.5087+#1)*\paperwidth},0.8024\paperheight) .. ({(0.4862+#1)*\paperwidth},1.0000\paperheight)}
-\def\engine@wave@ii@down#1{%
-  ({(0.5138+#1)*\paperwidth},1.0000\paperheight)
-    .. controls ({(0.5402+#1)*\paperwidth},0.8417\paperheight) and ({(0.6570+#1)*\paperwidth},0.5253\paperheight) .. ({(0.6570+#1)*\paperwidth},0.3577\paperheight)
-    .. controls ({(0.6570+#1)*\paperwidth},0.1693\paperheight) and ({(0.6286+#1)*\paperwidth},0.0834\paperheight) .. ({(0.6000+#1)*\paperwidth},0.0000\paperheight)}
-\def\engine@wave@ii@up#1{%
-  ({(0.6000+#1)*\paperwidth},0.0000\paperheight)
-    .. controls ({(0.6286+#1)*\paperwidth},0.0834\paperheight) and ({(0.6570+#1)*\paperwidth},0.1693\paperheight) .. ({(0.6570+#1)*\paperwidth},0.3577\paperheight)
-    .. controls ({(0.6570+#1)*\paperwidth},0.5253\paperheight) and ({(0.5402+#1)*\paperwidth},0.8417\paperheight) .. ({(0.5138+#1)*\paperwidth},1.0000\paperheight)}
-\def\engine@wave@iii@down#1{%
-  ({(0.5427+#1)*\paperwidth},1.0000\paperheight)
-    .. controls ({(0.5762+#1)*\paperwidth},0.8619\paperheight) and ({(0.7073+#1)*\paperwidth},0.5590\paperheight) .. ({(0.7073+#1)*\paperwidth},0.3818\paperheight)
-    .. controls ({(0.7073+#1)*\paperwidth},0.1758\paperheight) and ({(0.6639+#1)*\paperwidth},0.0755\paperheight) .. ({(0.6320+#1)*\paperwidth},0.0000\paperheight)}
-\def\engine@wave@iii@up#1{%
-  ({(0.6320+#1)*\paperwidth},0.0000\paperheight)
-    .. controls ({(0.6639+#1)*\paperwidth},0.0755\paperheight) and ({(0.7073+#1)*\paperwidth},0.1758\paperheight) .. ({(0.7073+#1)*\paperwidth},0.3818\paperheight)
-    .. controls ({(0.7073+#1)*\paperwidth},0.5590\paperheight) and ({(0.5762+#1)*\paperwidth},0.8619\paperheight) .. ({(0.5427+#1)*\paperwidth},1.0000\paperheight)}
-
+% The livery's wave lines (art.waves in its livery.yml, three lines of two cubics each,
+% from the top edge to the bottom): \engine@wave@<n>@down{<dx>} and @up come from its
+% build/livery.sty, with \engine@waveshift@<kind>. A livery without them draws none.
+\newif\ifengine@haswaves
+\ifdefined\engine@wave@i@down\engine@haswavestrue\fi
 % \engine@wdown{<n>}{<dx>} / \engine@wup{<n>}{<dx>}: line n (1-3), shifted right by dx
 \def\engine@wdown#1#2{\csname engine@wave@\romannumeral#1 @down\endcsname{#2}}
 \def\engine@wup#1#2{\csname engine@wave@\romannumeral#1 @up\endcsname{#2}}
-% \engine@field{<n>}{<dx>}{<fill>}: fill the page left of line n
+% \engine@field{<n>}{<dx>}{<fill>}: fill the page left of line n (the left half without waves)
 \def\engine@field#1#2#3{%
-  \fill[#3] (0,0) -- (0,\paperheight) -- \engine@wdown{#1}{#2} -- cycle;}
+  \ifengine@haswaves
+    \fill[#3] (0,0) -- (0,\paperheight) -- \engine@wdown{#1}{#2} -- cycle;
+  \else
+    \fill[#3] (0,0) rectangle (0.5\paperwidth,\paperheight);
+  \fi}
 % \engine@band{<n>}{<m>}{<dx>}{<fill>}{<opacity>}: fill between lines n and m
 \def\engine@band#1#2#3#4#5{%
-  \fill[#4,opacity=#5] \engine@wdown{#1}{#3} -- \engine@wup{#2}{#3} -- cycle;}
+  \ifengine@haswaves\fill[#4,opacity=#5] \engine@wdown{#1}{#3} -- \engine@wup{#2}{#3} -- cycle;\fi}
 % \engine@lines{<dx>}{<color>}: the three lines
 \def\engine@lines#1#2{%
-  \draw[#2,line width=0.8pt] \engine@wdown{1}{#1};
-  \draw[#2,line width=0.8pt] \engine@wdown{2}{#1};
-  \draw[#2,line width=0.8pt] \engine@wdown{3}{#1};}
+  \ifengine@haswaves
+    \draw[#2,line width=0.8pt] \engine@wdown{1}{#1};
+    \draw[#2,line width=0.8pt] \engine@wdown{2}{#1};
+    \draw[#2,line width=0.8pt] \engine@wdown{3}{#1};
+  \fi}
 % \engine@waves{<dx>}{<color>}: lines with the brand's translucent bands between
 % them (the "banded color transition blocks", Brand Guide p24)
 \def\engine@waves#1#2{%
-  \engine@band{1}{2}{#1}{#2}{0.18}%
-  \engine@band{2}{3}{#1}{#2}{0.10}%
-  \engine@lines{#1}{#2}}
+  \ifengine@haswaves
+    \engine@band{1}{2}{#1}{#2}{0.18}%
+    \engine@band{2}{3}{#1}{#2}{0.10}%
+    \engine@lines{#1}{#2}%
+  \fi}
 
 % cover-scaled image clipped to the region right of line 1
 \newsavebox\engine@imgbox
 \def\engine@photo#1{% #1 = image box
   \begin{scope}
-    \clip \engine@wdown{1}{0} -- (\paperwidth,0) -- (\paperwidth,\paperheight) -- cycle;
+    \ifengine@haswaves
+      \clip \engine@wdown{1}{0} -- (\paperwidth,0) -- (\paperwidth,\paperheight) -- cycle;
+    \else
+      \clip (0.5\paperwidth,0) rectangle (\paperwidth,\paperheight);
+    \fi
     \node[anchor=north east,inner sep=0pt] at (\paperwidth,\paperheight) {#1};
   \end{scope}}
 % \engine@coverbox{<width>}{<height>}{<image-or-box>}: scale to cover
@@ -205,16 +193,18 @@
   \colorlet{EngineTitleField}{BrandBackground}\else\colorlet{EngineTitleField}{BrandPrimary}\fi
 \def\engine@titlefield{EngineTitleField}
 
-% where the waves sit on each page type: the shift of the cover art, whose
-% line 1 starts at 0.49 of the width
-\def\engine@waveshift@title{0.20}     % title without a photo, closing
-\def\engine@waveshift@section{0.26}
-\def\engine@waveshift@content{0.27}   % the guide's content slides (p26)
+% \engine@art{<kind>}: the livery's static background for a slide kind, if it names one
+\def\engine@art#1{%
+  \ifcsname engine@art@#1\endcsname
+    \node[anchor=south west,inner sep=0pt] at (0,0)
+      {\includegraphics[width=\paperwidth,height=\paperheight]{\csname engine@art@#1\endcsname}};
+  \fi}
 
 \defbeamertemplate*{background}{Engine}{%
   \begin{tikzpicture}[x=1pt,y=1pt]
     \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
     \engine@ifstyle{normal}{%
+      \engine@art{content}%
       \ifengine@waves\engine@lines{\engine@waveshift@content}{BrandSurface}\fi
       \ifengine@framelogo
         \node[anchor=north east,inner sep=0pt]
@@ -242,9 +232,11 @@
   \fi}
 \def\engine@drawclosingbg{%
   \fill[\engine@titlefield] (0,0) rectangle (\paperwidth,\paperheight);
+  \engine@ifstyle{title}{\engine@art{title}}{\engine@art{closing}}%
   \engine@waves{\engine@waveshift@title}{BrandSecondary}}
 \def\engine@drawsectionbg{%
   \fill[BrandPrimary] (0,0) rectangle (\paperwidth,\paperheight);
+  \engine@art{section}%
   \engine@waves{\engine@waveshift@section}{BrandSecondary}}
 \def\engine@drawfeaturebg{%
   \node[anchor=center,inner sep=0pt] at (0.5\paperwidth,0.5\paperheight)
