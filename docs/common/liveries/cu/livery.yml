@@ -1,0 +1,65 @@
+# Engine knobs the brand.yml standard has no slot for. Role values are palette names from
+# _brand.yml or hex. Geometry is in fractions of the slide; the numbers are the ncar livery's
+# (the engine's reference geometry), the lockup aspect is this brand's.
+name: cu
+extends: null
+
+roles:
+  primary-text: black             # text on the gold field
+  primary-contrast: accessible-gold   # the brand's gold for small text on white
+  accent: cu-gold
+  highlight: sky-blue             # a second small-text accent on white: examples, tips, strings
+  muted: dark-gray
+  surface: light-gold
+  warning: cu-gold                # the caution slide's bar; its fill is the derived blend
+  dark: black
+
+aspect: "16:9"
+
+geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
+  margin: 0.06
+  tab: 0.018
+  logo:
+    height: 0.0644
+    top: 0.0533
+    aspect: 6.413         # the Research & Innovation Office lockup, 1911/298
+    title: 0.09
+    section: 0.08
+    closing: 0.10
+  divider:
+    top: 0.1333
+    bottom: 0.0889
+  full:
+    pad: 0.025
+    floor: 0.075
+    caption: 0.06
+  body-sizes-pt: [20, 18, 16, 14, 12]
+
+divider:
+  label: Section
+  tab: true
+
+art:                      # no wave curves: the title field ends in a straight edge
+  content: art/content-faint.jpg   # the reference deck's faded space photo behind content slides,
+                                   # a demonstration of art.content; swap the file for the brand's
+
+latex:                    # build/livery.sty: the palette's LaTeX color names (black and white
+  colors:                 # must not shadow xcolor's)
+    cu-gold: CUGold
+    black: CUBlack
+    dark-gray: CUDarkGray
+    light-gray: CULightGray
+    accessible-gold: CUAccessibleGold
+    sky-blue: CUSkyBlue
+    light-gold: CULightGold
+    dark-blue: CUDarkBlue
+    light-blue: CULightBlue
+    white: CUWhite
+
+pptx:
+  template: template.pptx
+  typeface: Helvetica Neue   # the brand's font by name: Macs have it, Windows substitutes Arial;
+                             # no `fonts:` blobs, so embed_fonts.py leaves the deck alone
+  scheme:                    # the slot contract (livery_build.py SLOT_ROLES) except the links:
+    hlink: accessible-gold   # gold on white is not accessible
+    folHlink: sky-blue

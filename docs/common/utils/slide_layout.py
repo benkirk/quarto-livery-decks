@@ -261,7 +261,8 @@ def _frame(shape, x, y, w, h, width, height):
 
 def cover(slide, width, height, photo):
     """The brand cover: the photo at the back, cropped to cover the slide, the field, band and
-    wave lines over it (pptx_waves), the dark logo top left. Returns the next free shape id."""
+    wave lines over it (pptx_waves; a straight-edged field without waves), the dark logo top left.
+    Returns the next free shape id."""
     tree = slide.shapes._spTree
     pic = slide.shapes.add_picture(io.BytesIO(photo), 0, 0, width, height)
     iw, ih = pic.image.size
@@ -272,10 +273,11 @@ def cover(slide, width, height, photo):
     tree.remove(pic._element)
     tree.insert(2, pic._element)   # after nvGrpSpPr and grpSpPr: the back of the slide
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
-    if WAVES:
-        for i, xml in enumerate(pptx_waves.cover_shapes(WAVES["lines"], sid, width, height)):
-            tree.insert(3 + i, etree.fromstring(xml))
-            sid += 1
+    shapes = (pptx_waves.cover_shapes(WAVES["lines"], sid, width, height) if WAVES
+              else pptx_waves.straight_cover_shapes(sid, width, height))
+    for i, xml in enumerate(shapes):
+        tree.insert(3 + i, etree.fromstring(xml))
+        sid += 1
     logo_h = GEOM["logo"].get("title", 0.09)
     logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "dark")),
                                     int(GEOM["margin"] * width), int(0.06 * height), height=int(logo_h * height))

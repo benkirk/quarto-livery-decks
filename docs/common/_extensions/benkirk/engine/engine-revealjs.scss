@@ -21,7 +21,7 @@ $ncar-yellow: #FFDD31;
 $ucar-aqua-contrast: #00818F;
 $ncar-muted: #6B7C99;
 
-// type (Brand Guide p20): Poppins Bold headlines, Regular body; Helvetica
+// type: the ncar family as the Sass literal; the livery's --engine-font-family wins below
 $font-family-sans-serif: "Poppins", Helvetica, Arial, sans-serif;
 $font-family-monospace: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 $presentation-font-size-root: 28px;  // ~ the pptx body size once autofit has had its say
@@ -638,7 +638,7 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   bottom: 14px;
   background: transparent;
   color: var(--engine-foreground);
-  font-family: $font-family-sans-serif;
+  font-family: var(--engine-font-family, $font-family-sans-serif), Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 14px;
   a { color: inherit; }
@@ -675,8 +675,24 @@ html.reveal-print .reveal .slides {
 // Quarto's own rules that show a color, restated with the livery's roles (their
 // Sass variables above are the ncar literals the compiler needs)
 // ---------------------------------------------------------------------------
+// reveal's own custom properties, set by Quarto from the Sass literals above
+:root {
+  --r-main-font: var(--engine-font-family, "Poppins"), Helvetica, Arial, sans-serif;
+  --r-heading-font: var(--engine-font-family, "Poppins"), Helvetica, Arial, sans-serif;
+  --r-background-color: var(--engine-background);
+  --r-main-color: var(--engine-foreground);
+  --r-heading-color: var(--engine-foreground);
+  --r-link-color: var(--engine-primary-contrast);
+  --r-link-color-dark: color-mix(in srgb, var(--engine-primary-contrast) 70%, black);
+  --r-link-color-hover: color-mix(in srgb, var(--engine-primary-contrast) 75%, white);
+  --r-selection-background-color: var(--engine-secondary);
+  --r-selection-color: var(--engine-dark);
+  --quarto-body-color: var(--engine-foreground);
+  --quarto-text-muted: var(--engine-muted);
+  --quarto-border-color: var(--engine-surface);
+}
 .reveal section.has-light-background a, .reveal section.has-light-background a:hover,
-.reveal .footer a { color: var(--engine-primary); }
+.reveal .footer a { color: var(--engine-primary-contrast); }
 .reveal section.has-dark-background a, .reveal section.has-dark-background a:hover { color: var(--engine-secondary); }
 .reveal section.has-dark-background code { color: var(--engine-warning); }
 .reveal pre { background-color: var(--engine-surface); }

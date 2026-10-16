@@ -8,3 +8,7 @@ __pycache__/
 
 # Playwright MCP screenshots and page snapshots from browser sessions
 .playwright-mcp/
+
+# a livery's reference deck and its extracted media stay out of the repo (reference/report.md is in)
+docs/common/liveries/*/reference/media/
+docs/common/liveries/*/reference/*.pptx

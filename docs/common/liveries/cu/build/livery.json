@@ -1,0 +1,148 @@
+{
+  "art": {
+    "content": "art/content-faint.jpg"
+  },
+  "aspect": "16:9",
+  "derived": {
+    "alert-text": "#958459",
+    "caution-fill": "#F6F2E7",
+    "rule": "#AAA8A3",
+    "table-band": "#F8F6F2",
+    "table-rule": "#C2C0BA"
+  },
+  "divider": {
+    "label": "Section",
+    "tab": true
+  },
+  "geometry": {
+    "body-sizes-pt": [
+      20,
+      18,
+      16,
+      14,
+      12
+    ],
+    "divider": {
+      "bottom": 0.0889,
+      "top": 0.1333
+    },
+    "full": {
+      "caption": 0.06,
+      "floor": 0.075,
+      "pad": 0.025
+    },
+    "logo": {
+      "aspect": 6.413,
+      "closing": 0.1,
+      "height": 0.0644,
+      "section": 0.08,
+      "title": 0.09,
+      "top": 0.0533
+    },
+    "margin": 0.06,
+    "tab": 0.018
+  },
+  "latex": {
+    "colors": {
+      "accessible-gold": "CUAccessibleGold",
+      "black": "CUBlack",
+      "cu-gold": "CUGold",
+      "dark-blue": "CUDarkBlue",
+      "dark-gray": "CUDarkGray",
+      "light-blue": "CULightBlue",
+      "light-gold": "CULightGold",
+      "light-gray": "CULightGray",
+      "sky-blue": "CUSkyBlue",
+      "white": "CUWhite"
+    }
+  },
+  "logo": {
+    "images": {
+      "rio-color": {
+        "path": "logos/cu-rio-lockup.png"
+      },
+      "rio-white": {
+        "path": "logos/cu-rio-lockup-white.png"
+      }
+    },
+    "medium": {
+      "dark": "rio-color",
+      "light": "rio-color"
+    }
+  },
+  "name": "cu",
+  "palette": {
+    "accessible-gold": "#8D7334",
+    "black": "#000000",
+    "cu-gold": "#CFB87C",
+    "dark-blue": "#0A3758",
+    "dark-gray": "#565A5C",
+    "light-blue": "#EEF5F8",
+    "light-gold": "#F3F0E9",
+    "light-gray": "#A2A4A3",
+    "sky-blue": "#096FAE",
+    "white": "#FFFFFF"
+  },
+  "pptx": {
+    "scheme": {
+      "accent1": "#565A5C",
+      "accent2": "#096FAE",
+      "accent3": "#000000",
+      "accent4": "#CFB87C",
+      "accent5": "#CFB87C",
+      "accent6": "#8D7334",
+      "dk1": "#000000",
+      "dk2": "#CFB87C",
+      "folHlink": "#096FAE",
+      "hlink": "#8D7334",
+      "lt1": "#FFFFFF",
+      "lt2": "#F3F0E9"
+    },
+    "template": "template.pptx",
+    "typeface": "Helvetica Neue"
+  },
+  "roles": {
+    "accent": "#CFB87C",
+    "background": "#FFFFFF",
+    "dark": "#000000",
+    "foreground": "#000000",
+    "highlight": "#096FAE",
+    "muted": "#565A5C",
+    "primary": "#CFB87C",
+    "primary-contrast": "#8D7334",
+    "primary-text": "#000000",
+    "secondary": "#565A5C",
+    "surface": "#F3F0E9",
+    "warning": "#CFB87C"
+  },
+  "typography": {
+    "base": "TeX Gyre Heros",
+    "fonts": [
+      {
+        "family": "TeX Gyre Heros",
+        "files": [
+          {
+            "path": "fonts/texgyreheros-regular.otf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/texgyreheros-italic.otf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/texgyreheros-bold.otf",
+            "weight": 700
+          },
+          {
+            "path": "fonts/texgyreheros-bolditalic.otf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
+      }
+    ],
+    "headings": "TeX Gyre Heros"
+  }
+}
