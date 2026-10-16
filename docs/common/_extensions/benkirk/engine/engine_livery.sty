@@ -6,17 +6,21 @@
 % UCAR / UCP Brand Guide (pp. 17-21).
 %
 % Options:
-%   brand=ncar|ucar|ncarucar  which palette/logo lockup is primary   (ncar)
-%   fonts=poppins|bundled|helvetica   brand font, bundled copy, or the
-%                             sanctioned substitute (default: poppins under
-%                             XeTeX/LuaTeX, helvetica under pdfTeX)
-%   brandedfonts              legacy (v1) spelling of fonts=poppins
+%   livery=<dir>             the livery directory (build/livery.sty, fonts/, logos/); absolute,
+%                             or relative to TeX's search path (default: the bundled
+%                             liveries/<brand>)
+%   brand=ncar|ucar|ncarucar  the old spelling of livery=liveries/<brand>       (ncar)
+%   fonts=brand|bundled|helvetica   the livery's font (poppins is its old spelling), its
+%                             bundled copy only, or the sanctioned substitute (default:
+%                             brand under XeTeX/LuaTeX, helvetica under pdfTeX)
+%   brandedfonts              legacy (v1) spelling of fonts=brand
 %   mathfont=serif|lm|stix|pagella|sans|poppins|keep|<font>
 %                             math font (default: a serif math font; see
 %                             "Math font" below)
 %
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=engine,prefix=engine@}
+\DeclareStringOption[]{livery}
 \DeclareStringOption[ncar]{brand}
 \DeclareStringOption[auto]{fonts}
 \DeclareStringOption[serif]{mathfont}
@@ -28,72 +32,33 @@
 \RequirePackage{graphicx}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Colors (Brand Guide p17-19)
+% The livery: palette, roles (BrandPrimary, BrandPrimaryText, BrandPrimaryContrast,
+% BrandSecondary, BrandAccent, BrandText, BrandBackground, BrandMuted, BrandSurface,
+% BrandWarning, BrandDark), blends, logos, fonts and geometry, generated into
+% build/livery.sty by livery_build.py; its overrides/livery-extra.sty is appended there.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% primary
-\definecolor{NCARBlue}{HTML}{0057C2}
-\definecolor{DarkBlue}{HTML}{00357A}   % primary text color on light backgrounds
-\definecolor{UCARAqua}{HTML}{00A2B4}
-\definecolor{UCARAquaContrast}{HTML}{00818F} % small text on white only
-% secondary
-\definecolor{Space}{HTML}{011837}
-\definecolor{LightBlue}{HTML}{42C0FF}
-\definecolor{LightAqua}{HTML}{34E1F4}
-\definecolor{LightGray}{HTML}{F1F0EE}
-\definecolor{BrandWhite}{HTML}{FFFFFF}
-% accents -- small amounts only (charts, highlights, the title/tab bars)
-\definecolor{BrandOrange}{HTML}{FAA119}
-\definecolor{BrandYellow}{HTML}{FFDD31}
-
-% semantic roles, switched by brand=
-\def\engine@tmp{ucar}\ifx\engine@brand\engine@tmp
-  \colorlet{BrandPrimary}{UCARAqua}
-  \colorlet{BrandPrimaryText}{Space}     % text on BrandPrimary
-  \colorlet{BrandPrimaryContrast}{UCARAquaContrast}
-  \colorlet{BrandSecondary}{LightAqua}
-  \colorlet{BrandAccent}{BrandYellow}
-\else
-  \colorlet{BrandPrimary}{NCARBlue}
-  \colorlet{BrandPrimaryText}{white}
-  \colorlet{BrandPrimaryContrast}{NCARBlue}
-  \colorlet{BrandSecondary}{LightBlue}
-  \colorlet{BrandAccent}{BrandOrange}
-\fi
-\colorlet{BrandText}{DarkBlue}
-
-% legacy (v1, 2020 brand) names, mapped onto the nearest 2026 color so old
-% documents still compile.  Prefer the names above in new work.
-\colorlet{NCARLighterBlue}{NCARBlue}
-\colorlet{NCARLightestBlue}{LightBlue}
-\colorlet{DeepBlue}{DarkBlue}
-\colorlet{UCARGreen}{UCARAquaContrast}
-\colorlet{UCARLighterGreen}{UCARAqua}
-\colorlet{UCARLightestGreen}{LightAqua}
-\colorlet{HilightGreen}{NCARBlue}   % was a text highlight: keep it legible on white
-\colorlet{CoolGray11}{DarkBlue}
-\colorlet{CoolGray7}{DarkBlue!60}
-\colorlet{CoolGray4}{DarkBlue!30}
-\colorlet{CoolGray1}{LightGray}
-\colorlet{TitleBoxGray}{Space}
-\colorlet{BackgroundBlue1}{LightBlue!30}
-\colorlet{BackgroundBlue2}{LightGray}
-\colorlet{BackgroundBlue3}{LightGray}
+\ifx\engine@livery\@empty\edef\engine@livery{liveries/\engine@brand}\fi
+\edef\engineliverydir{\engine@livery/}
+\InputIfFileExists{\engineliverydir build/livery.sty}{}{%
+  \PackageError{engine_livery}{no livery at \engineliverydir: build/livery.sty is missing}
+    {Pass livery=<dir> (a directory holding build/livery.sty, from livery_build.py),
+     or brand=ncar|ucar|ncarucar for a bundled one.}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Fonts (Brand Guide p20): Poppins Bold headlines, Poppins Regular body;
-% Helvetica is the sanctioned substitute.
+% Fonts: the livery's base family (Brand Guide p20: Poppins Bold headlines, Poppins
+% Regular body; Helvetica is the sanctioned substitute).
 %
-%   fonts=poppins   the bundled copy where TeX can find it, else an installed
-%                   system Poppins
+%   fonts=brand     the bundled copy where TeX can find it, else an installed system
+%                   copy of the family (fonts=poppins is the old spelling)
 %   fonts=bundled   always the bundled copy (an error if TeX cannot find it)
 %   fonts=helvetica Helvetica (pdfLaTeX) / TeX Gyre Heros (XeLaTeX, LuaLaTeX)
 %
-% The bundled copy lives in \engineassetdir fonts/Poppins/.  \engineassetdir
-% defaults to the relative `ncar-assets/'; the Quarto extension defines it as
-% an absolute path, and plain-LaTeX builds find the relative path through
-% kpathsea (TEXINPUTS=<theme>// for logos, TTFONTS=<theme>// for fonts).
+% The bundled copy lives in \engine@font@dir (the livery's fonts/), its files named by
+% livery.sty.  The Quarto extension passes an absolute livery directory; plain-LaTeX
+% builds find the relative one through kpathsea (TEXINPUTS=<theme>// for logos and
+% TTFONTS=<theme>// for fonts).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\providecommand\engineassetdir{ncar-assets/}
+\def\engine@tmp{brand}\ifx\engine@fonts\engine@tmp\def\engine@fonts{poppins}\fi
 \newif\ifengine@poppins \engine@poppinsfalse
 \newif\ifengine@bundledpoppins \engine@bundledpoppinsfalse
 \def\engine@tmp{auto}\ifx\engine@fonts\engine@tmp
@@ -103,15 +68,15 @@
   \iftutex
     \RequirePackage{fontspec}
     \def\engine@bundledpoppins{%
-      \edef\engine@tmp{\noexpand\setsansfont{Poppins}[%
-        Scale          = 1.0,  % pandoc sets Scale=MatchLowercase, shrinking Poppins
-        Path           = \engineassetdir fonts/Poppins/,
+      \edef\engine@tmp{\noexpand\setsansfont{\engine@font@family}[%
+        Scale          = 1.0,  % pandoc sets Scale=MatchLowercase, shrinking the face
+        Path           = \engine@font@dir,
         Extension      = .ttf,
-        UprightFont    = *-Regular,
-        BoldFont       = *-Bold,
-        ItalicFont     = *-Italic,
-        BoldItalicFont = *-BoldItalic,
-        FontFace       = {sb}{n}{*-SemiBold}]}%
+        UprightFont    = \engine@font@regular,
+        BoldFont       = \engine@font@bold,
+        ItalicFont     = \engine@font@italic,
+        BoldItalicFont = \engine@font@bolditalic,
+        \ifdefined\engine@font@semibold FontFace = {sb}{n}{\engine@font@semibold},\fi]}%
       \engine@tmp\engine@poppinstrue\engine@bundledpoppinstrue}
     \def\engine@tmp{bundled}\ifx\engine@fonts\engine@tmp
       \engine@bundledpoppins
@@ -120,11 +85,12 @@
       % system by name goes through fontconfig, which on a TeX Live whose
       % font cache is cold (Overleaf, each compile) takes longer than a
       % free-plan compile is allowed -- and then found nothing anyway.
-      \edef\engine@tmp{\noexpand\IfFontExistsTF{\engineassetdir fonts/Poppins/Poppins-Regular.ttf}}%
+      \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@dir\engine@font@regular.ttf}}%
       \engine@tmp{\engine@bundledpoppins}{%
-        \IfFontExistsTF{Poppins}{%
-          \setsansfont{Poppins}[Scale=1.0,FontFace={sb}{n}{Font=* SemiBold}]%
-          \engine@poppinstrue
+        \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@family}}%
+        \engine@tmp{%
+          \edef\engine@tmp{\noexpand\setsansfont{\engine@font@family}[Scale=1.0,FontFace={sb}{n}{Font=* SemiBold}]}%
+          \engine@tmp\engine@poppinstrue
         }{\engine@bundledpoppins}}%
     \fi
   \else
@@ -228,14 +194,14 @@
   \@ifpackageloaded{unicode-math}{%
     \engine@setmath{latinmodern-math.otf}{Scale=1.0}%
     \ifengine@bundledpoppins
-      \edef\engine@tmp{\noexpand\setmathfont{Poppins-Italic.ttf}[range=it/{latin,Latin},
-        Path=\engineassetdir fonts/Poppins/,\engine@mathversionopt]%
-        \noexpand\setmathfont{Poppins-Regular.ttf}[range=up/{latin,Latin,num},
-        Path=\engineassetdir fonts/Poppins/,\engine@mathversionopt]}%
+      \edef\engine@tmp{\noexpand\setmathfont{\engine@font@italic.ttf}[range=it/{latin,Latin},
+        Path=\engine@font@dir,\engine@mathversionopt]%
+        \noexpand\setmathfont{\engine@font@regular.ttf}[range=up/{latin,Latin,num},
+        Path=\engine@font@dir,\engine@mathversionopt]}%
       \engine@tmp
     \else\ifengine@poppins
-      \edef\engine@tmp{\noexpand\setmathfont{Poppins Italic}[range=it/{latin,Latin},\engine@mathversionopt]%
-        \noexpand\setmathfont{Poppins}[range=up/{latin,Latin,num},\engine@mathversionopt]}%
+      \edef\engine@tmp{\noexpand\setmathfont{\engine@font@family\space Italic}[range=it/{latin,Latin},\engine@mathversionopt]%
+        \noexpand\setmathfont{\engine@font@family}[range=up/{latin,Latin,num},\engine@mathversionopt]}%
       \engine@tmp
     \fi\fi
   }{}}
@@ -283,22 +249,9 @@
 \newcommand{\supertinyfont}[1]{{\fontsize{5}{6}\selectfont #1}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Logos (Brand Guide p3-8).  Full-color on white/Light Gray; the
-% "Color-White" (NSF color + white-reversed) lockup on dark backgrounds.
-% The NCAR logo must always be locked up with the NSF logo.
+% Logos: the livery's light (on white and the surface color) and dark (on the brand
+% field) lockups, \engine@logo@light and \engine@logo@dark from livery.sty.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\def\engine@logodir{\engineassetdir logos/}
-\def\engine@tmp{ucar}\ifx\engine@brand\engine@tmp
-  \def\engine@logo@light{\engine@logodir UCAR-Logo_Color_RGB}
-  \def\engine@logo@dark {\engine@logodir UCAR-Logo_White_RGB}
-\else\def\engine@tmp{ncarucar}\ifx\engine@brand\engine@tmp
-  \def\engine@logo@light{\engine@logodir NSF-NCAR-UCAR_Logo_FullColor_RGB}
-  \def\engine@logo@dark {\engine@logodir NSF-NCAR-UCAR_Logo_Color-White_RGB}
-\else
-  \def\engine@logo@light{\engine@logodir NSF-NCAR_Logo_FullColor_RGB}
-  \def\engine@logo@dark {\engine@logodir NSF-NCAR_Logo_Color-White_RGB}
-\fi\fi
-
 % \enginelogo[<includegraphics opts>]{light|dark}
 \newcommand{\enginelogo}[2][height=1cm]{%
   \includegraphics[#1]{\csname engine@logo@#2\endcsname}}

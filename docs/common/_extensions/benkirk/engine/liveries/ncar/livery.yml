@@ -33,6 +33,20 @@ divider:
 
 art: {}                   # the waves are still procedural (TikZ, SVG, build_divider_layout.py)
 
+latex:                    # build/livery.sty: the palette's LaTeX color names (default: CamelCase of the key)
+  colors:
+    ncar-blue: NCARBlue
+    dark-blue: DarkBlue
+    ucar-aqua: UCARAqua
+    ucar-aqua-contrast: UCARAquaContrast
+    space: Space
+    light-blue: LightBlue
+    light-aqua: LightAqua
+    light-gray: LightGray
+    white: BrandWhite
+    orange: BrandOrange
+    yellow: BrandYellow
+
 pptx:
   template: template.pptx
   typeface: Poppins

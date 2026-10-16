@@ -20,9 +20,9 @@ contributes:
         - quarto          # run after quarto's filters (mermaid images exist by then)
         - engine-beamer.lua
     revealjs:
-      # Palette, type and slide furniture: engine-revealjs.scss (compiled into the
-      # reveal theme) and engine-revealjs.css (fonts and logos, which need url()s;
-      # attached by engine-revealjs.lua).  The same `themeoptions:` as beamer.
+      # Slide furniture: engine-revealjs.scss (compiled into the reveal theme); the
+      # livery's colors, fonts and logos: its build/livery.css, attached by
+      # engine-revealjs.lua.  `livery:` and `themeoptions:` as for beamer.
       theme: [default, engine-revealjs.scss]
       template-partials: [title-slide.html]
       width: 1600          # 16:9 like the pptx and beamer decks; every length

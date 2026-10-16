@@ -1,0 +1,3 @@
+# brand=ncarucar as a flavor of ncar: only the lockup differs.
+name: ncarucar
+extends: ncar

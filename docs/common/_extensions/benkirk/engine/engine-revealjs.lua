@@ -24,7 +24,7 @@ The same Markdown as the beamer theme (engine-beamer.lua):
       content slide on Space, white text, the white-reversed logo (HTML only;
       pptx and beamer draw an ordinary slide)
 
-  metadata `themeoptions: [brand=ucar, title=light]`, `titlegraphic:`,
+  metadata `livery: <dir>` or `themeoptions: [brand=ucar, title=light]`, `titlegraphic:`,
   `fineprint:`, `institute:` -- as for beamer; HTML also reads `autofit=false`
 
 Overflowing content slides shrink their body text to fit (engine-revealjs.js);
@@ -40,10 +40,11 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
       .caution sets the body on a soft yellow field with a brand-yellow bar
       at its left: the warning slides (footnotes stay below it)
 
-Colors, type and layout live in engine-revealjs.scss; the fonts and logos,
-which need url()s relative to their files, in engine-revealjs.css, attached
-here (with the autofit script) as an HTML dependency (Quarto copies it with its resources into
-<deck>_files/libs/, or inlines everything under `embed-resources: true`).
+Layout lives in engine-revealjs.scss; colors, fonts and logos come from the livery
+(`livery:` in the metadata, else the bundled liveries/<brand>): its build/livery.css,
+attached here with the font and logo files and the autofit script as an HTML dependency
+(Quarto copies them into <deck>_files/libs/, or inlines everything under
+`embed-resources: true`), and build/livery.json for the roles the waves are drawn in.
 
 The waves are inline SVG drawn in slide pixels (the theme fixes the slide at
 1600x900) from the same fitted curves as beamerouterthemeEngine.sty (see
@@ -58,12 +59,27 @@ end
 local VERSION = "3.0.0"
 local W, H = 1600, 900
 
--- Brand Guide pp. 17-19; roles as in engine_livery.sty
-local SPACE = "#011837"
-local BRANDS = {
-  ncar = { primary = "#0057C2", primary_text = "#FFFFFF", secondary = "#42C0FF" },
-  ucar = { primary = "#00A2B4", primary_text = SPACE, secondary = "#34E1F4" },
-}
+-- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
+-- project), else the bundled liveries/<brand> for themeoptions brand= (ncar). Its
+-- build/livery.json carries the roles the waves and fields are drawn in; build/livery.css,
+-- attached with the font and logo files, the rest.
+local EXTDIR = pandoc.path.directory(quarto.utils.resolve_path("engine-revealjs.lua"))
+
+local function load_livery(meta, brand)
+  local dir = meta["livery"] and pandoc.utils.stringify(meta["livery"])
+  if dir and not pandoc.path.is_absolute(dir) then
+    dir = pandoc.path.join({ pandoc.system.get_working_directory(), dir })
+  end
+  dir = dir or pandoc.path.join({ EXTDIR, "liveries", brand })
+  local f = io.open(pandoc.path.join({ dir, "build", "livery.json" }))
+  if not f then
+    error("engine-revealjs: no livery at " .. dir .. " (build/livery.json is missing): set `livery:` "
+      .. "to a livery directory, or themeoptions brand=ncar|ucar|ncarucar for a bundled one")
+  end
+  local livery = quarto.json.decode(f:read("a")); f:close()
+  livery.dir = dir
+  return livery
+end
 
 local slide_level = 2
 
@@ -334,7 +350,6 @@ local WAVES = {
 -- where the waves sit on each slide type: the shift of the cover art, whose
 -- line 1 starts at 0.49 of the width (the same numbers as the beamer theme)
 local SHIFT = { title = 0.20, section = 0.26, content = 0.27 }
-local LIGHT_GRAY = "#F1F0EE"
 
 local function n(v) return string.format("%.1f", v) end
 local function P(k, i, dx)
@@ -424,28 +439,38 @@ local function photo_waves(c, fieldcolor, src)
     .. svg(field(2, 0, fieldcolor) .. band(2, 3, 0, fieldcolor, 0.65) .. lines(0, c.secondary))
 end
 
--- content slides: the faint lines of the brand's content slides (p26)
-local function content_waves()
-  return svg(lines(SHIFT.content, LIGHT_GRAY))
+-- content slides: the faint lines of the brand's content slides (p26), in the surface color
+local function content_waves(c)
+  return svg(lines(SHIFT.content, c.surface))
 end
 
 ---------------------------------------------------------------------------
 -- document setup
 ---------------------------------------------------------------------------
-local function add_dependency()
-  local res = {}
-  for _, f in ipairs({ "Regular", "Italic", "SemiBold", "Bold", "BoldItalic" }) do
-    table.insert(res, { name = "Poppins-" .. f .. ".ttf",
-      path = "ncar-assets/fonts/Poppins/Poppins-" .. f .. ".ttf" })
+-- livery.css with the font and logo files beside it (its url()s are bare names), and the
+-- autofit script; paths relative to this filter's directory, as the dependency wants
+local function add_dependency(livery)
+  local function rel(p)
+    if not pandoc.path.is_absolute(p) then p = pandoc.path.join({ livery.dir, p }) end
+    return pandoc.path.make_relative(p, EXTDIR)
   end
-  for _, f in ipairs({ "NSF-NCAR_Logo_FullColor_RGB.png", "NSF-NCAR_Logo_Color-White_RGB.png",
-                       "UCAR-Logo_Color_RGB.svg", "UCAR-Logo_White_RGB.svg" }) do
-    table.insert(res, { name = f, path = "ncar-assets/web/" .. f })
+  local res, seen = {}, {}
+  local function add(p)
+    local name = pandoc.path.filename(p)
+    if not seen[name] then seen[name] = true; table.insert(res, { name = name, path = rel(p) }) end
+  end
+  for _, font in ipairs(livery.typography.fonts or {}) do
+    if font.family == livery.typography.base then
+      for _, f in ipairs(font.files or {}) do add(f.path) end
+    end
+  end
+  for _, v in ipairs({ "light", "dark" }) do
+    add(livery.logo.images[livery.logo.medium[v]].path)
   end
   quarto.doc.add_html_dependency({
     name = "engine-revealjs",
     version = VERSION,
-    stylesheets = { "engine-revealjs.css" },
+    stylesheets = { rel("build/livery.css") },
     scripts = { "engine-revealjs.js" },
     resources = res,
   })
@@ -467,23 +492,18 @@ function Pandoc(doc)
   local meta = doc.meta
   local opts = theme_options(meta)
 
-  local brand = opts.brand or "ncar"
-  if brand == "ncarucar" then
-    quarto.log.warning("engine-revealjs: no web copy of the NSF NCAR-UCAR lockup yet; "
-      .. "using the NSF NCAR logo (brand=ncarucar)")
-  elseif not BRANDS[brand] then
-    quarto.log.warning("engine-revealjs: unknown brand=" .. brand .. "; using brand=ncar")
-    brand = "ncar"
-  end
-  local c = BRANDS[brand] or BRANDS.ncar
+  local livery = load_livery(meta, opts.brand or "ncar")
+  local r = livery.roles
+  local c = { primary = r.primary, primary_text = r["primary-text"], secondary = r.secondary,
+              surface = r.surface, dark = r.dark }
   local light = (opts.title == "light")
-  local titlefield = light and "#FFFFFF" or c.primary
-  local content_art = opts.waves ~= "false" and content_waves() or nil
+  local titlefield = light and r.background or c.primary
+  local content_art = opts.waves ~= "false" and content_waves(c) or nil
 
-  add_dependency()
+  add_dependency(livery)
   quarto.doc.include_text("in-header", string.format(
-    "<script>document.documentElement.classList.add('engine-brand-%s','engine-title-%s'%s)</script>",
-    brand == "ucar" and "ucar" or "ncar", light and "light" or "dark",
+    "<script>document.documentElement.classList.add('engine-title-%s'%s)</script>",
+    light and "light" or "dark",
     opts.autofit == "false" and ",'engine-no-autofit'" or ""))
 
   -- title slide: brand field (or white), waves or the photo
@@ -528,7 +548,7 @@ function Pandoc(doc)
       -- photo so reveal flags the slide dark (white slide number), and a
       -- missing photo is not white-on-white
       if not blk.attributes["data-background-color"] and not blk.attributes["background-color"] then
-        blk.attributes["data-background-color"] = SPACE
+        blk.attributes["data-background-color"] = c.dark
       end
       out:insert(blk)
       i = i + 1
@@ -576,7 +596,7 @@ function Pandoc(doc)
         out:extend(slide)
       end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "brand-dark") then
-      blk.attributes["data-background-color"] = SPACE
+      blk.attributes["data-background-color"] = c.dark
       blk.classes:insert("engine-field")
       out:insert(blk)
       i = i + 1

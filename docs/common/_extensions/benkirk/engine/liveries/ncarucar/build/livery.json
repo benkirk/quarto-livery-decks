@@ -26,27 +26,54 @@
     "margin": 0.06,
     "tab": 0.018
   },
+  "latex": {
+    "colors": {
+      "dark-blue": "DarkBlue",
+      "light-aqua": "LightAqua",
+      "light-blue": "LightBlue",
+      "light-gray": "LightGray",
+      "ncar-blue": "NCARBlue",
+      "orange": "BrandOrange",
+      "space": "Space",
+      "ucar-aqua": "UCARAqua",
+      "ucar-aqua-contrast": "UCARAquaContrast",
+      "white": "BrandWhite",
+      "yellow": "BrandYellow"
+    }
+  },
   "logo": {
     "images": {
       "ncar-color": {
-        "path": "../../_extensions/benkirk/engine/ncar-assets/web/NSF-NCAR_Logo_FullColor_RGB.png"
+        "path": "../ncar/logos/NSF-NCAR_Logo_FullColor_RGB.png"
       },
       "ncar-color-print": {
-        "path": "../../_extensions/benkirk/engine/ncar-assets/logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
+        "path": "../ncar/logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
       },
       "ncar-white": {
-        "path": "../../_extensions/benkirk/engine/ncar-assets/web/NSF-NCAR_Logo_Color-White_RGB.png"
+        "path": "../ncar/logos/NSF-NCAR_Logo_Color-White_RGB.png"
       },
       "ncar-white-print": {
-        "path": "../../_extensions/benkirk/engine/ncar-assets/logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
+        "path": "../ncar/logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
+      },
+      "ncarucar-color": {
+        "path": "../ncar/logos/NSF-NCAR_Logo_FullColor_RGB.png"
+      },
+      "ncarucar-color-print": {
+        "path": "logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.pdf"
+      },
+      "ncarucar-white": {
+        "path": "../ncar/logos/NSF-NCAR_Logo_Color-White_RGB.png"
+      },
+      "ncarucar-white-print": {
+        "path": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.pdf"
       }
     },
     "medium": {
-      "dark": "ncar-white",
-      "light": "ncar-color"
+      "dark": "ncarucar-white",
+      "light": "ncarucar-color"
     }
   },
-  "name": "ncar",
+  "name": "ncarucar",
   "palette": {
     "dark-blue": "#00357A",
     "light-aqua": "#34E1F4",
@@ -61,7 +88,7 @@
     "yellow": "#FFDD31"
   },
   "pptx": {
-    "fonts": "fonts/pptx",
+    "fonts": "../ncar/fonts/pptx",
     "scheme": {
       "accent1": "#42C0FF",
       "accent4": "#FAA119",
@@ -71,7 +98,7 @@
       "lt1": "#FFFFFF",
       "lt2": "#F1F0EE"
     },
-    "template": "template.pptx",
+    "template": "../ncar/template.pptx",
     "typeface": "Poppins"
   },
   "roles": {
@@ -94,24 +121,24 @@
         "family": "Poppins",
         "files": [
           {
-            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Regular.ttf",
+            "path": "../ncar/fonts/Poppins-Regular.ttf",
             "weight": 400
           },
           {
-            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Italic.ttf",
+            "path": "../ncar/fonts/Poppins-Italic.ttf",
             "style": "italic",
             "weight": 400
           },
           {
-            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-SemiBold.ttf",
+            "path": "../ncar/fonts/Poppins-SemiBold.ttf",
             "weight": 600
           },
           {
-            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Bold.ttf",
+            "path": "../ncar/fonts/Poppins-Bold.ttf",
             "weight": 700
           },
           {
-            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-BoldItalic.ttf",
+            "path": "../ncar/fonts/Poppins-BoldItalic.ttf",
             "style": "italic",
             "weight": 700
           }

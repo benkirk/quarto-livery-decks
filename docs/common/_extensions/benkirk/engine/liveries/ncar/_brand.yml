@@ -29,16 +29,16 @@ typography:
     - family: Poppins
       source: file
       files:
-        - path: ../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Regular.ttf
+        - path: fonts/Poppins-Regular.ttf
           weight: 400
-        - path: ../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Italic.ttf
+        - path: fonts/Poppins-Italic.ttf
           weight: 400
           style: italic
-        - path: ../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-SemiBold.ttf
+        - path: fonts/Poppins-SemiBold.ttf
           weight: 600
-        - path: ../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Bold.ttf
+        - path: fonts/Poppins-Bold.ttf
           weight: 700
-        - path: ../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-BoldItalic.ttf
+        - path: fonts/Poppins-BoldItalic.ttf
           weight: 700
           style: italic
   base: Poppins
@@ -47,13 +47,13 @@ typography:
 logo:
   images:
     ncar-color:
-      path: ../../_extensions/benkirk/engine/ncar-assets/web/NSF-NCAR_Logo_FullColor_RGB.png
+      path: logos/NSF-NCAR_Logo_FullColor_RGB.png
     ncar-white:
-      path: ../../_extensions/benkirk/engine/ncar-assets/web/NSF-NCAR_Logo_Color-White_RGB.png
+      path: logos/NSF-NCAR_Logo_Color-White_RGB.png
     ncar-color-print:
-      path: ../../_extensions/benkirk/engine/ncar-assets/logos/NSF-NCAR_Logo_FullColor_RGB.pdf
+      path: logos/NSF-NCAR_Logo_FullColor_RGB.pdf
     ncar-white-print:
-      path: ../../_extensions/benkirk/engine/ncar-assets/logos/NSF-NCAR_Logo_Color-White_RGB.pdf
+      path: logos/NSF-NCAR_Logo_Color-White_RGB.pdf
   medium:
     light: ncar-color     # on light backgrounds
     dark: ncar-white      # on the brand field
