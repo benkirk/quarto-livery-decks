@@ -1,0 +1,61 @@
+# Engine knobs the brand.yml standard has no slot for. Role values are palette names from
+# _brand.yml or hex. Geometry is in fractions of the slide; today's numbers come from
+# beamerouterthemeEngine.sty, engine-revealjs.scss (1600x900 slide px), section_subtitle.py and
+# deck_qa.py, and must agree with them until Phase 2 makes them the one source.
+name: ncar
+extends: null
+
+roles:
+  primary-text: white           # text on primary
+  primary-contrast: ncar-blue   # primary as small text on white
+  accent: orange
+  muted: "#6B7C99"              # $ncar-muted: HTML, pptx; the PDF's CoolGray7 (#6686AF) joins it in Phase 2
+  surface: light-gray
+  warning: yellow
+  dark: space
+
+derived: {}               # blends livery_build.py computes from the roles (BLENDS); set a key to override
+
+aspect: "16:9"
+
+geometry:
+  margin: 0.06            # 96 px of 1600; beamer 0.06\paperwidth; deck_qa.py's overflow edge is 1 - margin
+  tab: 0.018              # 29 px; the divider's orange tab
+  logo:
+    height: 0.0644        # 58 px of 900
+    top: 0.0533           # 48 px; dividers use 0.08 (72 px)
+    aspect: 3.934         # NSF NCAR lockup, 1200/305
+  body-sizes-pt: [20, 18, 16, 14, 12]   # the master's ladder; autofit must never fire
+
+divider:
+  label: Section          # "Section n" eyebrow over the title; each format sets it in capitals
+  tab: true
+
+art: {}                   # the waves are still procedural (TikZ, SVG, build_divider_layout.py)
+
+latex:                    # build/livery.sty: the palette's LaTeX color names (default: CamelCase of the key)
+  colors:
+    ncar-blue: NCARBlue
+    dark-blue: DarkBlue
+    ucar-aqua: UCARAqua
+    ucar-aqua-contrast: UCARAquaContrast
+    space: Space
+    light-blue: LightBlue
+    light-aqua: LightAqua
+    light-gray: LightGray
+    white: BrandWhite
+    orange: BrandOrange
+    yellow: BrandYellow
+
+pptx:
+  template: template.pptx
+  typeface: Poppins
+  fonts: fonts/pptx       # <typeface>-{regular,bold,italic,bolditalic}.fntdata, embed_fonts.py
+  scheme:                 # theme1.xml as shipped; the slot contract of design section 4
+    dk1: "#00357A"
+    lt1: "#FFFFFF"
+    dk2: "#0057C2"
+    lt2: "#F1F0EE"
+    accent1: "#42C0FF"
+    accent4: "#FAA119"
+    accent5: "#FDD509"

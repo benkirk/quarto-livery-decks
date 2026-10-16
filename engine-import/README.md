@@ -100,11 +100,13 @@ latexmk -xelatex my-talk.tex
 ```
 
 ```latex
-\usetheme[brand=ncar]{Engine}
+\usetheme{Engine}                 % the bundled ncar livery
+\usetheme[brand=ucar]{Engine}     % another bundled one (ucar, ncarucar)
+\usetheme[livery=/path/to/livery]{Engine}   % your own: a directory holding build/livery.sty
 ```
 
 **An existing Overleaf project:** upload the `_extensions/engine` folder from the
-release zip (the `.sty` files, `ncar-assets/fonts/`, `ncar-assets/logos/`) and
+release zip (the `.sty` files and the liveries' fonts and PDF logos) and
 the zip's `latexmkrc` at the project root, then `\usetheme[...]{Engine}` and set
 the compiler to XeLaTeX.
 
@@ -245,6 +247,7 @@ the better choice.
 
 | option | values | default | |
 |---|---|---|---|
+| `livery` | a directory holding `build/livery.sty` | the bundled `liveries/<brand>` | the brand: colors, fonts, logos ([design](docs/design/engine-and-liveries.md), section 4) |
 | `brand` | `ncar`, `ucar`, `ncarucar` | `ncar` | palette and logo lockup: NSF NCAR, UCAR, or NSF NCAR-UCAR |
 | `title` | `dark`, `light` | `dark` | title/closing slide field: brand color with the white-reversed logo, or white with the full-color logo |
 | `fonts` | `poppins`, `bundled`, `helvetica` | `poppins` | `poppins` uses the bundled copy where TeX can find it, else an installed Poppins (probing the system by name is slow on a cold font cache, so the bundled copy comes first); `bundled` always uses the bundled copy; `helvetica` is the brand's sanctioned substitute (and the only choice under pdfLaTeX) |
@@ -256,8 +259,8 @@ the better choice.
 | `autofit` | `true`, `false` | `true` | HTML only: shrink overflowing content slides to fit |
 
 The HTML format reads `brand`, `title`, `waves` and `autofit` and ignores the
-rest. It has no NSF NCAR-UCAR web lockup yet, so `brand=ncarucar` shows the
-NSF NCAR logo there.
+rest. The `ncarucar` livery has no RGB web copy of its lockup, so the HTML deck
+shows the NSF NCAR logo there.
 
 `make variants` builds `examples/template.tex` in UCAR, NCAR-UCAR, light-title,
 4:3, pdfLaTeX and `mathfont=poppins` flavors.
@@ -306,8 +309,10 @@ Use the palette by name:
 - **UCAR/UCP:** `UCARAqua`, `UCARAquaContrast`, `LightAqua`
 - **Accents:** `BrandOrange`, `BrandYellow`
 
-There are also brand-aware roles that follow the `brand=` option: `BrandPrimary`, `BrandPrimaryText`, `BrandSecondary`,
-`BrandAccent` and `BrandText`.
+The themes themselves read roles, which the livery sets: `BrandPrimary`,
+`BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`, `BrandText`,
+`BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and `BrandDark`. The names
+above are the ncar livery's palette (`liveries/ncar/livery.yml`, `latex.colors`).
 
 ## Brand rules the theme follows
 
@@ -340,13 +345,15 @@ latexmkrc                   points latexmk at the theme (Overleaf reads it)
 images/                     photos (examples use images/wallpaper/)
 _extensions/engine/           the theme: Quarto extension *and* LaTeX sources
   beamerthemeEngine.sty         options; loads the color/font/inner/outer themes
-  engine_livery.sty             palette, fonts, logos, listings style (also for non-beamer docs)
+  engine_livery.sty             loads the livery; fonts, math font, listings style (also for non-beamer docs)
   engine-beamer.lua             Quarto: loads the theme; Markdown sugar
-  engine-revealjs.{scss,css,js,lua}, title-slide.html
+  engine-revealjs.{scss,js,lua}, title-slide.html
                               the HTML (revealjs) format
   engine.theme                  syntax-highlighting colors
-  ncar-assets/                  logos and bundled Poppins; web/ holds the HTML logos
-tools/web-logos.sh          regenerates ncar-assets/web/ from the brand kit
+  liveries/<name>/              a brand: _brand.yml, livery.yml, fonts/, logos/, template.pptx,
+                                build/livery.{json,sty,css} (generated, committed)
+  livery_build.py               writes build/ from _brand.yml and livery.yml (--check in CI)
+tools/web-logos.sh          regenerates the liveries' web logos from the brand kit
 tools/fit-waves.py          fits the wave curves to the brand's cover art
 examples/                   feature showcase (LaTeX, Quarto, article), math font specimen
   diagrams/                   one Graphviz and one mermaid source, shared by both
@@ -415,11 +422,10 @@ covers the theme and the starter files, not what you put in your deck.
 
 These parts are **not** covered by that license:
 
-- **NSF, NCAR, UCAR and UCP logos** (`_extensions/engine/ncar-assets/logos/`
-  and `ncar-assets/web/`).
+- **NSF, NCAR, UCAR and UCP logos** (`_extensions/engine/liveries/*/logos/`).
   These are trademarks used under the
   [UCAR brand guidelines](https://ucar.canto.com/v/branding).
-- **The Poppins font** (`_extensions/engine/ncar-assets/fonts/Poppins/`) is
+- **The Poppins font** (`_extensions/engine/liveries/ncar/fonts/`) is
   licensed under the SIL Open Font License; see `OFL.txt` in that directory.
 - **The photographs in `images/wallpaper/`** are carried over from the
   original template as example imagery. Replace them with your own.

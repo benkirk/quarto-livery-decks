@@ -90,7 +90,7 @@ overleaf: engine-beamer-overleaf.zip
 engine-beamer-overleaf.zip: talk.tex latexmkrc FORCE
 	rm -f $@
 	zip -q $@ talk.tex latexmkrc images/wallpaper/mesa_lab_sunset.jpg images/wallpaper/mesa_lab.jpg
-	zip -qr $@ _extensions/engine -i '*.sty' '*/ncar-assets/fonts/*' '*/ncar-assets/logos/*'
+	zip -qr $@ _extensions/engine -i '*.sty' '*/liveries/*/fonts/*.ttf' '*/liveries/*/logos/*.pdf'
 
 clean:
 	latexmk -C -quiet talk.tex 2>/dev/null; rm -f talk-quarto.pdf talk-quarto.tex talk-quarto.html

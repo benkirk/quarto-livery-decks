@@ -1,0 +1,23 @@
+# The UCAR flavor of the NSF NCAR brand: the aqua palette roles and the UCAR lockup
+# (ncar_branding.sty's brand=ucar). Everything else comes from ../ncar (livery.yml: extends).
+meta:
+  name: UCAR
+  link: https://www.ucar.edu
+
+color:
+  primary: ucar-aqua
+  secondary: light-aqua
+
+logo:
+  images:
+    ucar-color:
+      path: logos/UCAR-Logo_Color_RGB.svg
+    ucar-white:
+      path: logos/UCAR-Logo_White_RGB.svg
+    ucar-color-print:
+      path: logos/UCAR-Logo_Color_RGB.pdf
+    ucar-white-print:
+      path: logos/UCAR-Logo_White_RGB.pdf
+  medium:
+    light: ucar-color
+    dark: ucar-white

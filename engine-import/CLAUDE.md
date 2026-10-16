@@ -13,14 +13,15 @@ nouns on the way.
 
 The founding design is `docs/design/engine-and-liveries.md` (the engine
 contract is its section 5; the progress log lives in the `quarto-livery-decks`
-copy). Phase 2 of that design is under way. Done: the rename, from
-NCAR_beamer_template v2.8.0, to `_extensions/engine/`, the formats
-`engine-beamer` / `engine-revealjs`, `\usetheme{Engine}`, `engine_livery.sty`
-and the `engine@` namespace (brand things keep their names: the palette colors,
-`brand=ncar|ucar|ncarucar`, `ncar-assets/`). Still to do: `livery=` with the
-generated `build/livery.sty`, every color read moved to a role, geometry from
-the livery, backgrounds from `art/`, the reference liveries under
-`_extensions/engine/liveries/`.
+copy). Phase 2 of that design is under way. Done: the rename (from
+NCAR_beamer_template v2.8.0) to `_extensions/engine/`, `engine-beamer` /
+`engine-revealjs`, `\usetheme{Engine}` and the `engine@` namespace; and
+`livery=`: the reference liveries live in `_extensions/engine/liveries/`
+(`ncar`; `ucar` and `ncarucar` extend it), `livery_build.py` writes each one's
+`build/livery.{json,sty,css}` (committed, `--check` in CI), `engine_livery.sty`
+inputs the `.sty` and both Lua filters take the directory from the `livery:`
+metadata key (else `liveries/<brand>`). Still to do: every color read moved to
+a role, geometry from the livery, backgrounds from `art/`.
 
 The framework that consumes this engine is `benkirk/quarto-livery-decks`
 (vendored there under `docs/common/_extensions/`; re-vendor with
