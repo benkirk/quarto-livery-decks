@@ -3,8 +3,9 @@
 
 Each deck's title and subtitle come from <deck>.qmd's front matter, in the order given;
 the first deck names the page. `--extra DIR` (repeatable) adds every DIR/*.html under
-the site, titled by its <title>; `--noindex` adds the robots meta tag. Brand colors and
-Poppins as in the revealjs theme.
+the site, titled by its <title>; `--noindex` adds the robots meta tag. Colors are the
+livery's roles (dark mode blends them toward the dark role); the base font family's files
+are copied to <site>/fonts/ as @font-face, or linked from Google Fonts for a google source.
 """
 
 import argparse
@@ -12,9 +13,12 @@ import datetime
 import html
 import pathlib
 import re
+import shutil
 import sys
 
 import yaml
+
+import livery as livery_mod
 
 PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -22,24 +26,20 @@ PAGE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {robots}<title>{title}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-<style>
+{fonts}<style>
 :root {{
-  --bg: #F1F0EE; --surface: #FFFFFF; --ink: #00357A; --text: #1F2A3C; --muted: #6B7C99;
-  --line: #D9DBE0; --brand: #0057C2; --accent: #FAA119;
+{light}
 }}
 @media (prefers-color-scheme: dark) {{
   :root {{
-    --bg: #011837; --surface: #0A2246; --ink: #E3EAF4; --text: #D5DEEA; --muted: #9AABC2;
-    --line: #22395E; --brand: #42C0FF; color-scheme: dark;
+{dark}
+    color-scheme: dark;
   }}
 }}
 * {{ box-sizing: border-box; }}
 body {{
   margin: 0; background: var(--bg); color: var(--text);
-  font-family: Poppins, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5;
+  font-family: "{family}", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5;
   padding: 40px 16px 56px;
 }}
 main {{ max-width: 760px; margin: 0 auto; }}
@@ -76,6 +76,41 @@ footer {{ margin-top: 40px; color: var(--muted); font-size: 13px; }}
 </body>
 </html>
 """
+
+
+def palette(livery):
+    """The page's custom properties from the roles: light as they are, dark blended toward dark."""
+    r, mix = livery["roles"], livery_mod.mix
+    light = {"bg": r["surface"], "surface": r["background"], "ink": r["foreground"],
+             "text": mix(r["dark"], r["background"], 0.88), "muted": r["muted"],
+             "line": mix(r["foreground"], r["surface"], 0.10), "brand": r["primary"], "accent": r["accent"]}
+    dark = {"bg": r["dark"], "surface": mix(r["secondary"], r["dark"], 0.08),
+            "ink": mix(r["background"], r["dark"], 0.90), "text": mix(r["background"], r["dark"], 0.84),
+            "muted": mix(r["background"], r["dark"], 0.60), "line": mix(r["secondary"], r["dark"], 0.22),
+            "brand": r["secondary"]}
+    css = lambda d, indent: indent + " ".join(f"--{k}: {v};" for k, v in d.items())
+    return css(light, "  "), css(dark, "    ")
+
+
+def fonts(livery, out):
+    """The base family as @font-face rules over files copied to <out>/fonts/, or a Google Fonts link."""
+    family = livery["typography"].get("base", "sans-serif")
+    for font in livery["typography"].get("fonts", []):
+        if font.get("family") != family:
+            continue
+        if font.get("source") == "google":
+            weights = ";".join(sorted({str(f.get("weight", 400)) for f in font.get("files", [])}) or ["400", "700"])
+            return family, (f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
+                            f'family={family.replace(" ", "+")}:wght@{weights}&display=swap">\n')
+        (out / "fonts").mkdir(parents=True, exist_ok=True)
+        faces = []
+        for f in font.get("files", []):
+            src = pathlib.Path(livery["dir"]) / f["path"]
+            shutil.copy(src, out / "fonts" / src.name)
+            faces.append(f'@font-face {{ font-family: "{family}"; src: url(fonts/{src.name}); '
+                         f'font-weight: {f.get("weight", 400)}; font-style: {f.get("style", "normal")}; }}')
+        return family, "<style>\n" + "\n".join(faces) + "\n</style>\n"
+    return family, ""
 
 
 def front_matter(qmd):
@@ -122,8 +157,12 @@ def main():
     extra_block = f"<h2>Companion pages</h2>\n<ul>\n{chr(10).join(extras)}\n</ul>" if extras else ""
 
     args.out.mkdir(parents=True, exist_ok=True)
+    livery = livery_mod.load()
+    light, dark = palette(livery)
+    family, font_block = fonts(livery, args.out)
     (args.out / "index.html").write_text(PAGE.format(
         robots='<meta name="robots" content="noindex">\n' if args.noindex else "",
+        fonts=font_block, light=light, dark=dark, family=family,
         title=html.escape(title),
         subtitle=f'<p class="sub">{html.escape(subtitle)}</p>' if subtitle else "",
         decks="\n".join(cards),

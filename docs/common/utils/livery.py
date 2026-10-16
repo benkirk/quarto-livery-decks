@@ -25,6 +25,12 @@ def load(path: str | os.PathLike | None = None) -> dict:
     return data
 
 
+def mix(a: str, b: str, share: float) -> str:
+    """Sass mix(): a's share of each channel plus b's remainder, rounded; '#RRGGBB' in and out."""
+    pairs = zip(bytes.fromhex(a.lstrip("#")), bytes.fromhex(b.lstrip("#")))
+    return "#" + "".join(f"{round(x * share + y * (1 - share)):02X}" for x, y in pairs)
+
+
 def color(livery: dict, role: str) -> str:
     """A role's hex without '#', as the pptx scripts write it."""
     return livery["roles"][role].lstrip("#").upper()
