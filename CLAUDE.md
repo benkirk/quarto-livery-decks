@@ -90,6 +90,15 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
   one picture to the slide and centers pandoc's caption box under it. Any other
   body is left alone with a warning. `make qa` fails a caption that wraps.
+- **Photo slides** (`{.feature background-image=...}`, and `titlegraphic:` for the
+  title slide): HTML and PDF are the theme's. pptx builds the brand cover from
+  parts in `slide_layout.py`: pandoc's slide background (or the `titlegraphic`
+  it records in `docProps/custom.xml`) becomes a full-slide picture at the back
+  of the shape order, cropped to cover, with the livery's opaque field, 65% band
+  and wave lines over it (`utils/pptx_waves.py`, shared with the template
+  builder), the dark lockup, and the title and body moved onto the field.
+  A `###` block is the body's lead line. Slide shapes always draw above layout
+  shapes, so the cover must redraw the waves and logo on the slide itself.
 - **PDF** is `--to engine-beamer`: the engine beamer theme, vendored from
   `benkirk/beamer-livery-theme` into `docs/common/_extensions/benkirk/engine/`.
   Don't edit the vendored copy. Change the theme repo, then re-vendor with
@@ -126,8 +135,10 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `engine-revealjs.lua` for HTML. Only plain
   paragraphs qualify; anything else after a divider stays a slide of its own.
   In pptx the blue field, logo and waves are the template's Section Header
-  layout, built by `liveries/ncar/build_divider_layout.py` (rerun it after any
-  template edit); `section_subtitle.py` adds "SECTION n", the tab and placement.
+  layout, which `utils/livery_template.py` generates with the rest of the
+  template from the livery's data (rerun it after a livery change, never edit
+  `template.pptx` by hand); `section_subtitle.py` adds "SECTION n", the tab and
+  placement.
 - **Front matter must be line 1** of every deck `.qmd`: anything above the
   opening `---` (an editor mode-line, a comment) hides it from Quarto, and
   `date: last-modified` renders literally (#7). CI checks this; set editor

@@ -37,6 +37,10 @@ ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
             "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
+# theme1.xml slot -> role, the slot contract of design section 4 (livery_template.py writes it)
+SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2": "surface",
+              "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
+              "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 
 
 def mix(a: str, b: str, share: float) -> str:
@@ -65,8 +69,8 @@ def rebase(data: dict, parent: Path, child: Path) -> dict:
         img["path"] = rel(img["path"])
     pptx = data.get("pptx", {})
     for k in ("template", "fonts"):
-        if k in pptx:
-            pptx[k] = rel(pptx[k])
+        if k in pptx:   # the child's own file when it has one (livery_template.py builds every livery's)
+            pptx[k] = pptx[k] if (child / pptx[k]).exists() else rel(pptx[k])
     return data
 
 
@@ -76,7 +80,9 @@ def read(d: Path) -> dict:
     merged = {"brand": brand, **{k: v for k, v in knobs.items() if k != "extends"}}
     parent = knobs.get("extends")
     if parent:
-        merged = merge(rebase(read(d.parent / parent), d.parent / parent, d), merged)
+        inherited = rebase(read(d.parent / parent), d.parent / parent, d)
+        inherited.get("pptx", {}).pop("scheme", None)   # a flavor's scheme follows its own roles
+        merged = merge(inherited, merged)
     return merged
 
 
@@ -109,6 +115,9 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("aspect", "geometry", "divider", "art", "pptx", "overrides", "latex"):
         if key in data:
             out[key] = data[key]
+    out.setdefault("pptx", {})
+    if "scheme" not in out["pptx"]:   # the slot contract, from the roles
+        out["pptx"]["scheme"] = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
     tmpl = d / out.get("pptx", {}).get("template", "template.pptx")
     if not tmpl.exists():
         sys.exit(f"{d.name}: pptx template {tmpl} missing")

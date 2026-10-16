@@ -1,5 +1,5 @@
 -- pptx only. The theme's per-slide layout controls (.hcenter, .vcenter,
--- .center, scale="S", .fill, .full, .caution; see the vendored engine-revealjs.lua) mean nothing
+-- .center, scale="S", .fill, .full, .caution, .feature; see the vendored engine-revealjs.lua) mean nothing
 -- to pandoc's pptx writer, which drops slide classes. Carry them to
 -- utils/slide_layout.py as one speaker-notes line,
 --   engine-layout: hcenter vcenter scale=1.4
@@ -11,11 +11,11 @@ if not quarto.doc.is_format("pptx") then
 end
 
 local CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, full = true,
-                  caution = true }
+                  caution = true, feature = true }
 
 local function take_layout(blk)
   local words, kept = {}, pandoc.List({})
-  local h, v, fill, full, caution = false, false, false, false, false
+  local h, v, fill, full, caution, feature = false, false, false, false, false, false
   for _, c in ipairs(blk.classes) do
     if CLASSES[c] then
       h = h or c == "hcenter" or c == "center"
@@ -23,6 +23,7 @@ local function take_layout(blk)
       fill = fill or c == "fill"
       full = full or c == "full"
       caution = caution or c == "caution"
+      feature = feature or c == "feature"
     else
       kept:insert(c)
     end
@@ -32,6 +33,7 @@ local function take_layout(blk)
   if fill then table.insert(words, "fill") end
   if full then table.insert(words, "full") end
   if caution then table.insert(words, "caution") end
+  if feature then table.insert(words, "feature") end
   local scale = blk.attributes["scale"]
   if scale then
     blk.attributes["scale"] = nil

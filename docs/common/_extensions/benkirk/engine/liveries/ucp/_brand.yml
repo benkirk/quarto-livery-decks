@@ -7,9 +7,9 @@ meta:
 logo:
   images:
     ucp-color:
-      path: logos/UCP-Logo_Color_RGB.svg
+      path: logos/UCP-Logo_Color_RGB.png
     ucp-white:
-      path: logos/UCP-Logo_White_RGB.svg
+      path: logos/UCP-Logo_White_RGB.png
     ucp-color-print:
       path: logos/UCP-Logo_Color_RGB.pdf
     ucp-white-print:

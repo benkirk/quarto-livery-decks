@@ -11,7 +11,7 @@ roles:
 geometry:
   logo:
     height: 0.0516        # 46.4 px of 900
-    aspect: 3.928         # 381/97
+    aspect: 3.950         # UCAR-Logo_Color_RGB.png, 1588/402
 
 divider:
   label-color: "#011837"  # Space on Aqua: Light Aqua is too light for the eyebrow (Brand Guide p22)

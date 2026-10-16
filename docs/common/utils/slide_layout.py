@@ -9,8 +9,13 @@ table run at S times its inherited size. hcenter, fill: nothing (a text box cann
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
 art, pandoc's caption box centered under it in the muted color, the slide number kept.
-Footnote paragraphs (style_footnotes.py) keep their size. Idempotent: the marker is gone after one pass."""
+feature: the brand cover, as the title slide with a `titlegraphic:` (pandoc records it in
+docProps/custom.xml): the photo pushed to the back of the slide, cropped to cover, the livery's
+field, band and wave lines over it, the text and logo on the field. Footnote paragraphs
+(style_footnotes.py) keep their size. Idempotent: the marker is gone after one pass."""
 
+import copy
+import io
 import sys
 from pathlib import Path
 
@@ -23,6 +28,7 @@ from pptx.oxml.ns import qn
 from pptx.util import Pt
 
 import livery as livery_mod
+import pptx_waves
 
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
@@ -40,6 +46,11 @@ CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill")) 
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
 CAUTION_W    = Pt(6)
+GEOM         = LIVERY["geometry"]
+WAVES        = LIVERY.get("art", {}).get("waves")
+FIELD_TEXT   = RGBColor.from_string(livery_mod.color(LIVERY, "primary-text"))
+# the feature cover's text on the field, of the slide: title (top, height, pt), rule, body
+COVER_TITLE, COVER_RULE, COVER_BODY = (0.34, 0.16, 32), 0.525, (0.55, 0.36, 18)
 
 
 def _take_marker(slide):
@@ -219,6 +230,99 @@ def full_slide(slide, width, height):
     return True
 
 
+def _title_graphic(prs, deck_dir):
+    """The deck's `titlegraphic:` path from docProps/custom.xml, or None."""
+    for part in prs.part.package.iter_parts():
+        if str(part.partname) == "/docProps/custom.xml":
+            for prop in etree.fromstring(part.blob):
+                if prop.get("name") == "titlegraphic":
+                    value = "".join(prop.itertext()).strip()
+                    return deck_dir / value if value else None
+    return None
+
+
+def _background_photo(slide):
+    """The bytes of pandoc's `background-image` (a slide <p:bg> blip), removed; or None."""
+    csld = slide._element.find(qn("p:cSld"))
+    bg = csld.find(qn("p:bg"))
+    blip = bg.find(".//" + qn("a:blip")) if bg is not None else None
+    if blip is None:
+        return None
+    blob = slide.part.related_part(blip.get(qn("r:embed"))).blob
+    csld.remove(bg)
+    return blob
+
+
+def _frame(shape, x, y, w, h, width, height):
+    """All four of a placeholder's frame, in slide fractions (setting one leaves the rest at 0)."""
+    shape.left, shape.top = int(x * width), int(y * height)
+    shape.width, shape.height = int(w * width), int(h * height)
+
+
+def cover(slide, width, height, photo):
+    """The brand cover: the photo at the back, cropped to cover the slide, the field, band and
+    wave lines over it (pptx_waves), the dark logo top left. Returns the next free shape id."""
+    tree = slide.shapes._spTree
+    pic = slide.shapes.add_picture(io.BytesIO(photo), 0, 0, width, height)
+    iw, ih = pic.image.size
+    if iw * height > ih * width:
+        pic.crop_left = pic.crop_right = (1 - (width / height) / (iw / ih)) / 2
+    else:
+        pic.crop_top = pic.crop_bottom = (1 - (iw / ih) / (width / height)) / 2
+    tree.remove(pic._element)
+    tree.insert(2, pic._element)   # after nvGrpSpPr and grpSpPr: the back of the slide
+    sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
+    if WAVES:
+        for i, xml in enumerate(pptx_waves.cover_shapes(WAVES["lines"], sid, width, height)):
+            tree.insert(3 + i, etree.fromstring(xml))
+            sid += 1
+    logo_h = GEOM["logo"].get("title", 0.09)
+    logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "dark")),
+                                    int(GEOM["margin"] * width), int(0.06 * height), height=int(logo_h * height))
+    logo.name = "Logo (dark)"
+    return sid
+
+
+def title_cover(slide, width, height, photo):
+    """The title slide over its photo: the layout's tab and rule (hidden by the photo) are copied
+    onto the slide; its placeholders already sit on top."""
+    cover(slide, width, height, photo)
+    tree = slide.shapes._spTree
+    for sp in slide.slide_layout.shapes:
+        if sp.is_placeholder or sp.shape_type == MSO_SHAPE_TYPE.PICTURE or sp.name.startswith("Wave "):
+            continue
+        tree.append(copy.deepcopy(sp._element))
+
+
+def _field_text(shape, pt):
+    for p in shape.text_frame.paragraphs:
+        for r in p.runs:
+            r.font.size, r.font.color.rgb = Pt(pt), FIELD_TEXT
+
+
+def feature_cover(slide, width, height, photo):
+    """A {.feature} slide as a cover: title and body on the field, in the title slide's manner."""
+    cover(slide, width, height, photo)
+    slide._element.set("showMasterSp", "0")
+    m, w = GEOM["margin"], 0.44
+    tab = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, int(COVER_TITLE[0] * height),
+                                 int(GEOM["tab"] * width), int(COVER_TITLE[1] * height))
+    tab.fill.solid(); tab.fill.fore_color.rgb = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))
+    tab.line.fill.background(); tab.shadow.inherit = False
+    rule = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, int(m * width), int(COVER_RULE * height),
+                                  int(0.065 * width), int(1.5 * width / 1600))
+    rule.fill.solid(); rule.fill.fore_color.rgb = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent1"))
+    rule.line.fill.background(); rule.shadow.inherit = False
+    title = slide.shapes.title
+    if title is not None:
+        _frame(title, m, COVER_TITLE[0], w, COVER_TITLE[1], width, height)
+        title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
+        _field_text(title, COVER_TITLE[2])
+    for shape in [sh for sh in slide.shapes if _is_body(sh)]:
+        _frame(shape, m, COVER_BODY[0], w, COVER_BODY[1], width, height)
+        _field_text(shape, COVER_BODY[2])
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("usage: slide_layout.py <file.pptx>", file=sys.stderr)
@@ -229,13 +333,28 @@ def main() -> int:
         return 2
 
     prs = Presentation(str(pptx))
+    w, h = prs.slide_width, prs.slide_height
     done = 0
+    graphic = _title_graphic(prs, pptx.parent)
+    if graphic is not None and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
+        if graphic.exists():
+            title_cover(prs.slides[0], w, h, graphic.read_bytes())
+            done += 1
+        else:
+            print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
     for slide in prs.slides:
         words = _take_marker(slide)
         if words is None:
             continue
-        if "full" in words:
-            if not full_slide(slide, prs.slide_width, prs.slide_height):
+        if "feature" in words:
+            photo = _background_photo(slide)
+            if photo is None:
+                print("slide_layout: WARNING: {.feature} slide without a background-image; left as it is",
+                      file=sys.stderr)
+            else:
+                feature_cover(slide, w, h, photo)
+        elif "full" in words:
+            if not full_slide(slide, w, h):
                 title = slide.shapes.title
                 print("slide_layout: WARNING: {.full} slide %r needs one picture and at most a "
                       "caption; left as it is" % (title.text_frame.text if title else ""),

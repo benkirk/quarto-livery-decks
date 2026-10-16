@@ -110,8 +110,8 @@ screenshot recipe; it fits all three.
 
 ## Full-bleed photo {.feature background-image="images/example.jpg"}
 
-The `.feature` class makes the PDF and HTML decks a full-bleed photo slide
-with the text on a translucent panel; pptx shows a plain title slide.
+The `.feature` class makes a full-bleed photo slide: HTML and PDF put the text
+on a translucent panel; pptx builds the brand cover, the photo behind the wave band.
 
 ## Full-slide image {.full}
 
