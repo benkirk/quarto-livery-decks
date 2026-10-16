@@ -1,11 +1,11 @@
 --[[
-ncar-revealjs.lua -- the NCAR theme's slide furniture for revealjs (HTML) output
+engine-revealjs.lua -- the engine theme's slide furniture for revealjs (HTML) output
 
-The same Markdown as the beamer theme (ncar-beamer.lua):
+The same Markdown as the beamer theme (engine-beamer.lua):
 
   # Section
   One paragraph right after the divider heading.
-      NCAR Blue divider with the brand waves, a "SECTION n" eyebrow, and the
+      brand-field divider with the brand waves, a "SECTION n" eyebrow, and the
       paragraph as its subtitle
 
   ## Thank you! {.closing}
@@ -27,7 +27,7 @@ The same Markdown as the beamer theme (ncar-beamer.lua):
   metadata `themeoptions: [brand=ucar, title=light]`, `titlegraphic:`,
   `fineprint:`, `institute:` -- as for beamer; HTML also reads `autofit=false`
 
-Overflowing content slides shrink their body text to fit (ncar-revealjs.js);
+Overflowing content slides shrink their body text to fit (engine-revealjs.js);
 {.no-autofit} or {.scrollable} on a slide opts out.
 
   ## Title {.center scale="1.4"}
@@ -40,13 +40,13 @@ Overflowing content slides shrink their body text to fit (ncar-revealjs.js);
       .caution sets the body on a soft yellow field with a brand-yellow bar
       at its left: the warning slides (footnotes stay below it)
 
-Colors, type and layout live in ncar-revealjs.scss; the fonts and logos,
-which need url()s relative to their files, in ncar-revealjs.css, attached
+Colors, type and layout live in engine-revealjs.scss; the fonts and logos,
+which need url()s relative to their files, in engine-revealjs.css, attached
 here (with the autofit script) as an HTML dependency (Quarto copies it with its resources into
 <deck>_files/libs/, or inlines everything under `embed-resources: true`).
 
 The waves are inline SVG drawn in slide pixels (the theme fixes the slide at
-1600x900) from the same fitted curves as beamerouterthemeNCAR.sty (see
+1600x900) from the same fitted curves as beamerouterthemeEngine.sty (see
 tools/fit-waves.py); `themeoptions: [waves=false]` drops them from content
 slides.
 ]]
@@ -55,10 +55,10 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "2.8.0"
+local VERSION = "3.0.0"
 local W, H = 1600, 900
 
--- Brand Guide pp. 17-19; roles as in ncar_branding.sty
+-- Brand Guide pp. 17-19; roles as in engine_livery.sty
 local SPACE = "#011837"
 local BRANDS = {
   ncar = { primary = "#0057C2", primary_text = "#FFFFFF", secondary = "#42C0FF" },
@@ -132,7 +132,7 @@ end
 
 local function dagger(p)
   local inl = pandoc.Inlines({ pandoc.RawInline("html",
-    '<span class="ncar-dagger">' .. footnote_marker(p) .. "</span>") })
+    '<span class="engine-dagger">' .. footnote_marker(p) .. "</span>") })
   inl:extend(strip_marker(p.content))
   return pandoc.Para(inl)
 end
@@ -163,7 +163,7 @@ local function take_layout(blk)
     blk.attributes["scale"] = nil
     found = true
     if not tonumber(scale) then
-      quarto.log.warning("ncar-revealjs: scale=\"" .. scale .. "\" is not a number; ignored")
+      quarto.log.warning("engine-revealjs: scale=\"" .. scale .. "\" is not a number; ignored")
       scale = nil
     end
   end
@@ -182,19 +182,19 @@ local function wrap_layout(blocks)
       and not has_class(blk, "feature") and not has_class(blk, "closing")
       and not has_class(blk, "full") and take_layout(blk)
     if lay then
-      blk.classes:insert("ncar-layout")
-      if lay.h then blk.classes:insert("ncar-hcenter") end
-      if lay.v then blk.classes:insert("ncar-vcenter") end
-      if lay.fill then blk.classes:insert("ncar-fill") end
-      if lay.caution then blk.classes:insert("ncar-caution") end
-      if lay.scale then blk.attributes["data-ncar-scale"] = lay.scale end
+      blk.classes:insert("engine-layout")
+      if lay.h then blk.classes:insert("engine-hcenter") end
+      if lay.v then blk.classes:insert("engine-vcenter") end
+      if lay.fill then blk.classes:insert("engine-fill") end
+      if lay.caution then blk.classes:insert("engine-caution") end
+      if lay.scale then blk.attributes["data-engine-scale"] = lay.scale end
       local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do
         local b = blocks[i]
         if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
         i = i + 1
       end
-      out:insert(pandoc.Div(body, pandoc.Attr("", { "ncar-body" })))
+      out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-body" })))
       out:extend(notes)
     end
   end
@@ -204,8 +204,8 @@ end
 local function unwrap_layout(blocks)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and has_class(b, "ncar-body") then
-      out:insert(html('<div class="ncar-body">'))
+    if b.t == "Div" and has_class(b, "engine-body") then
+      out:insert(html('<div class="engine-body">'))
       out:extend(b.content)
       out:insert(html("</div>"))
     else
@@ -216,7 +216,7 @@ local function unwrap_layout(blocks)
 end
 
 -- raw tags, not a Div (see the feature body); before the notes, after the body.
--- Content slides only, as in ncar-beamer.lua: a feature slide's text sits on
+-- Content slides only, as in engine-beamer.lua: a feature slide's text sits on
 -- its panel, and the floor of a closing slide is the brand field.
 local function hoist_footnotes(blocks)
   local out, i = pandoc.Blocks({}), 1
@@ -239,7 +239,7 @@ local function hoist_footnotes(blocks)
           if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
         end
         out:extend(body)
-        out:insert(html('<div class="ncar-footnotes">'))
+        out:insert(html('<div class="engine-footnotes">'))
         for _, p in ipairs(notes) do out:insert(dagger(p)) end
         out:insert(html("</div>"))
         out:extend(tail)
@@ -302,7 +302,7 @@ function Image(el)
   if style ~= "" and not style:match(";%s*$") then style = style .. ";" end
   el.attributes.height = nil
   el.attributes.style = string.format(
-    "%s max-height: calc(%.0fpx * var(--ncar-fit, 1)); width: auto;", style, px):gsub("^ ", "")
+    "%s max-height: calc(%.0fpx * var(--engine-fit, 1)); width: auto;", style, px):gsub("^ ", "")
   return el
 end
 
@@ -404,7 +404,7 @@ local function lines(dx, stroke)
 end
 
 local function svg(body)
-  return string.format('<svg class="ncar-waves" viewBox="0 0 %d %d" '
+  return string.format('<svg class="engine-waves" viewBox="0 0 %d %d" '
     .. 'preserveAspectRatio="none" aria-hidden="true" focusable="false">%s</svg>', W, H, body)
 end
 
@@ -420,7 +420,7 @@ end
 -- A plain <img> behind the svg, not an svg <image>: pandoc's embed-resources
 -- inlines the former only.
 local function photo_waves(c, fieldcolor, src)
-  return string.format('<img class="ncar-title-photo-img" src="%s" alt="">', src)
+  return string.format('<img class="engine-title-photo-img" src="%s" alt="">', src)
     .. svg(field(2, 0, fieldcolor) .. band(2, 3, 0, fieldcolor, 0.65) .. lines(0, c.secondary))
 end
 
@@ -443,10 +443,10 @@ local function add_dependency()
     table.insert(res, { name = f, path = "ncar-assets/web/" .. f })
   end
   quarto.doc.add_html_dependency({
-    name = "ncar-revealjs",
+    name = "engine-revealjs",
     version = VERSION,
-    stylesheets = { "ncar-revealjs.css" },
-    scripts = { "ncar-revealjs.js" },
+    stylesheets = { "engine-revealjs.css" },
+    scripts = { "engine-revealjs.js" },
     resources = res,
   })
 end
@@ -469,10 +469,10 @@ function Pandoc(doc)
 
   local brand = opts.brand or "ncar"
   if brand == "ncarucar" then
-    quarto.log.warning("ncar-revealjs: no web copy of the NSF NCAR-UCAR lockup yet; "
+    quarto.log.warning("engine-revealjs: no web copy of the NSF NCAR-UCAR lockup yet; "
       .. "using the NSF NCAR logo (brand=ncarucar)")
   elseif not BRANDS[brand] then
-    quarto.log.warning("ncar-revealjs: unknown brand=" .. brand .. "; using brand=ncar")
+    quarto.log.warning("engine-revealjs: unknown brand=" .. brand .. "; using brand=ncar")
     brand = "ncar"
   end
   local c = BRANDS[brand] or BRANDS.ncar
@@ -482,27 +482,27 @@ function Pandoc(doc)
 
   add_dependency()
   quarto.doc.include_text("in-header", string.format(
-    "<script>document.documentElement.classList.add('ncar-brand-%s','ncar-title-%s'%s)</script>",
+    "<script>document.documentElement.classList.add('engine-brand-%s','engine-title-%s'%s)</script>",
     brand == "ucar" and "ucar" or "ncar", light and "light" or "dark",
-    opts.autofit == "false" and ",'ncar-no-autofit'" or ""))
+    opts.autofit == "false" and ",'engine-no-autofit'" or ""))
 
   -- title slide: brand field (or white), waves or the photo
   title_slide_attributes(meta, { ["data-background-color"] = titlefield })
   local tg = meta["titlegraphic"]
   local art = tg and photo_waves(c, titlefield, pandoc.utils.stringify(tg)) or waves(c, SHIFT.title)
-  meta["ncar-title-art"] = pandoc.RawInline("html", art)
-  meta["ncar-title-class"] = light and "" or " ncar-field"
+  meta["engine-title-art"] = pandoc.RawInline("html", art)
+  meta["engine-title-class"] = light and "" or " engine-field"
 
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(doc.blocks), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then
-      blk.classes:extend({ "ncar-section", "ncar-field" })
+      blk.classes:extend({ "engine-section", "engine-field" })
       blk.attributes["data-background-color"] = c.primary
       if not has_class(blk, "unnumbered") then
         section = section + 1
-        blk.attributes["data-ncar-section"] = tostring(section)
+        blk.attributes["data-engine-section"] = tostring(section)
       end
       out:insert(blk)
       out:insert(html(waves(c, SHIFT.section)))
@@ -514,12 +514,12 @@ function Pandoc(doc)
         j = j + 1
       end
       if #paras > 0 and (j > #blocks or is_slide_break(blocks[j])) then
-        out:insert(pandoc.Div(paras, pandoc.Attr("", { "ncar-subtitle" })))
+        out:insert(pandoc.Div(paras, pandoc.Attr("", { "engine-subtitle" })))
         i = j
       end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "closing") then
       blk.attributes["data-background-color"] = titlefield
-      if not light then blk.classes:insert("ncar-field") end
+      if not light then blk.classes:insert("engine-field") end
       out:insert(blk)
       out:insert(html(waves(c, SHIFT.title)))
       i = i + 1
@@ -541,7 +541,7 @@ function Pandoc(doc)
       -- raw tags, not a Div: pandoc turns a Div that starts with a heading
       -- into a <section>, which reveal would count as a slide of its own
       if #body > 0 then
-        out:insert(html('<div class="ncar-feature-body">'))
+        out:insert(html('<div class="engine-feature-body">'))
         out:extend(body)
         out:insert(html('</div>'))
       end
@@ -555,20 +555,20 @@ function Pandoc(doc)
       end
       local fig, caption, rest = split_full(slide)
       if fig then
-        if #caption > 0 then blk.classes:insert("ncar-captioned") end
+        if #caption > 0 then blk.classes:insert("engine-captioned") end
         out:insert(blk)
         -- raw tags, not a Div (the <section> trap; see the feature body)
-        out:insert(html('<div class="ncar-full-figure">'))
+        out:insert(html('<div class="engine-full-figure">'))
         out:insert(fig)
         out:insert(html("</div>"))
         if #caption > 0 then
-          out:insert(html('<div class="ncar-full-caption">'))
+          out:insert(html('<div class="engine-full-caption">'))
           out:extend(caption)
           out:insert(html("</div>"))
         end
         out:extend(rest)
       else
-        quarto.log.warning("ncar-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
+        quarto.log.warning("engine-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
           .. "\" needs one figure, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
@@ -577,7 +577,7 @@ function Pandoc(doc)
       end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "brand-dark") then
       blk.attributes["data-background-color"] = SPACE
-      blk.classes:insert("ncar-field")
+      blk.classes:insert("engine-field")
       out:insert(blk)
       i = i + 1
     else

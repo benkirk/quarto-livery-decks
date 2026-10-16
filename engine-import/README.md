@@ -3,9 +3,10 @@
 > **This repository is `beamer-livery-theme`**, the multi-brand successor of
 > [`benkirk/NCAR_beamer_template`](https://github.com/benkirk/NCAR_beamer_template):
 > one layout engine, many brand "liveries". The NCAR theme stays in that repository.
-> Until the engine refactor lands ([design](docs/design/engine-and-liveries.md),
-> Phase 2), this repository is identical to NCAR_beamer_template v2.8.0 and everything
-> below applies unchanged.
+> The engine refactor ([design](docs/design/engine-and-liveries.md), Phase 2) is
+> under way: the rename has landed (`_extensions/engine/`, the formats `engine-beamer`
+> and `engine-revealjs`, `\usetheme{Engine}`); the brand data still lives in the
+> theme until the liveries follow. Everything below applies with the new names.
 
 Branded slides for NSF NCAR, UCAR and UCP, written in **LaTeX beamer** or
 **Quarto Markdown**: a PDF, and from the same Markdown an **HTML** (revealjs)
@@ -25,7 +26,7 @@ Click **Use this template → Create a new repository** at the top of this
 page. Or, from the command line:
 
 ```bash
-gh repo create my-talk --template benkirk/NCAR_beamer_template --private --clone
+gh repo create my-talk --template benkirk/beamer-livery-theme --private --clone
 cd my-talk
 ```
 
@@ -62,10 +63,10 @@ Stuck? `examples/` shows every feature: [`template.tex`](examples/template.tex),
 No TeX to install: open the LaTeX starter deck as a new Overleaf project, with
 the compiler already set to XeLaTeX:
 
-[**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/NCAR_beamer_template/releases/latest/download/ncar-beamer-overleaf.zip&engine=xelatex)
+[**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/beamer-livery-theme/releases/latest/download/engine-beamer-overleaf.zip&engine=xelatex)
 
-Or by hand: download `ncar-beamer-overleaf.zip` from the
-[latest release](https://github.com/benkirk/NCAR_beamer_template/releases/latest),
+Or by hand: download `engine-beamer-overleaf.zip` from the
+[latest release](https://github.com/benkirk/beamer-livery-theme/releases/latest),
 **New Project → Upload Project**, then **Settings → Compiler → XeLaTeX**
 (under pdfLaTeX the deck still builds, but in Helvetica with Computer Modern
 math: the theme's pdfLaTeX fallback) and **Recompile**.
@@ -74,7 +75,7 @@ math: the theme's pdfLaTeX fallback) and **Recompile**.
 
 ![Overleaf compiler setting](docs/overleaf-compiler.png)
 
-The project is `talk.tex`, its photos, the theme in `_extensions/ncar/`, and a
+The project is `talk.tex`, its photos, the theme in `_extensions/engine/`, and a
 `latexmkrc` at the root that points TeX at the theme (Overleaf reads it; it is
 the only way to set `TEXINPUTS` there). Poppins comes bundled, so it works on
 the free plan's compile time limit. Quarto decks stay local: Overleaf has no
@@ -82,29 +83,29 @@ Quarto.
 
 ## Already have a project?
 
-**A Quarto project:** add the extension to it, then use `format: ncar-beamer`
-(PDF) or `format: ncar-revealjs` (HTML), or list both:
+**A Quarto project:** add the extension to it, then use `format: engine-beamer`
+(PDF) or `format: engine-revealjs` (HTML), or list both:
 
 ```bash
-quarto add benkirk/NCAR_beamer_template
+quarto add benkirk/beamer-livery-theme
 ```
 
 **An existing LaTeX deck:** point TeX at the theme directory and switch the
 theme:
 
 ```bash
-export TEXINPUTS=/path/to/NCAR_beamer_template/_extensions/ncar//:
-export TTFONTS=/path/to/NCAR_beamer_template/_extensions/ncar//:   # bundled Poppins
+export TEXINPUTS=/path/to/beamer-livery-theme/_extensions/engine//:
+export TTFONTS=/path/to/beamer-livery-theme/_extensions/engine//:   # bundled Poppins
 latexmk -xelatex my-talk.tex
 ```
 
 ```latex
-\usetheme[brand=ncar]{NCAR}
+\usetheme[brand=ncar]{Engine}
 ```
 
-**An existing Overleaf project:** upload the `_extensions/ncar` folder from the
+**An existing Overleaf project:** upload the `_extensions/engine` folder from the
 release zip (the `.sty` files, `ncar-assets/fonts/`, `ncar-assets/logos/`) and
-the zip's `latexmkrc` at the project root, then `\usetheme[...]{NCAR}` and set
+the zip's `latexmkrc` at the project root, then `\usetheme[...]{Engine}` and set
 the compiler to XeLaTeX.
 
 ## Cheat sheet
@@ -119,19 +120,19 @@ the compiler to XeLaTeX.
 | Slide | `\begin{frame}{Title}` | `## Title` |
 | Blocks | `block`, `exampleblock`, `alertblock` | `### Title`, `### Title {.example}`, `### Title {.alert}` |
 | Emphasis | `\alert{...}` | `[text]{.alert}` |
-| Slide footnote (an aside at the foot, under a short rule) | `\ncarfootnotespring` first and before `\begin{ncarfootnotes}\ncarfootnote{†}{...}\end{ncarfootnotes}` | a paragraph that starts with `†` or `‡`, anywhere on a content slide |
-| Photo "feature" slide | `\begin{frame}[ncarbg=photo.jpg]` | `## Title {.feature background="photo.jpg"}` |
-| Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[ncarfull=diagram.pdf]`, `\ncarfullcaption{...}` in the body | `## Title {.full}`, one figure, then an optional caption paragraph (below) |
-| Closing slide | `\ncarclosingframe{Thank you!}{...}` | `## Thank you! {.closing}` |
+| Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first and before `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` | a paragraph that starts with `†` or `‡`, anywhere on a content slide |
+| Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]` | `## Title {.feature background="photo.jpg"}` |
+| Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body | `## Title {.full}`, one figure, then an optional caption paragraph (below) |
+| Closing slide | `\engineclosingframe{Thank you!}{...}` | `## Thank you! {.closing}` |
 | Center or scale a short slide's body | `\begin{frame}[c]`, `\fontsize` | `## Title {.center scale="1.4"}` (below) |
 | Code | `lstlisting` (styled automatically) | fenced code blocks (brand-colored highlighting) |
-| Table | your own `tabular`, unstyled; `\ncarth{...}` for a header cell and `\rowcolor{ncartableband}` for a band are there to use | a markdown table, drawn as in HTML: a small capitalized header over a heavy rule in the brand color, Light Gray bands, a light closing rule |
+| Table | your own `tabular`, unstyled; `\engineth{...}` for a header cell and `\rowcolor{enginetableband}` for a band are there to use | a markdown table, drawn as in HTML: a small capitalized header over a heavy rule in the brand color, Light Gray bands, a light closing rule |
 | Callouts | | `::: {.callout-note}` and the other callout types |
 | Extra logo or slide decoration | `\logo{...}`: bottom right, above the footer (space reserved) | `logo: file.png` |
-| Theme options | `\usetheme[<options>]{NCAR}` | `themeoptions: [<options>]` |
-| Math font | `\usetheme[mathfont=stix]{NCAR}` | `themeoptions: [mathfont=stix]` |
+| Theme options | `\usetheme[<options>]{Engine}` | `themeoptions: [<options>]` |
+| Math font | `\usetheme[mathfont=stix]{Engine}` | `themeoptions: [mathfont=stix]` |
 
-Everything in the Quarto column works in both `ncar-beamer` and `ncar-revealjs`.
+Everything in the Quarto column works in both `engine-beamer` and `engine-revealjs`.
 The HTML format adds a few things of its own (next section).
 
 **Slide footnotes.** A paragraph that starts with `†` (or `‡`) is an aside, not
@@ -153,7 +154,7 @@ the body: everything but the title, speaker notes and footnotes.
 | `.center` | both (not Quarto's `.center`, which moves the title too) | yes | as above |
 | `scale="S"` | sizes text, tables and code by S (0.8 shrinks) | yes; autofit still shrinks an overshoot | a `\fontsize` group; no autofit, so check the page |
 | `.fill` | grows the body until it just fits, up to 3× | yes | nothing (LaTeX can't measure it); add `scale=` for the PDF |
-| `.caution` | sets the body on a soft yellow field with a brand-yellow bar at its left, for warning slides; footnotes stay below | yes | the `ncarcaution` box |
+| `.caution` | sets the body on a soft yellow field with a brand-yellow bar at its left, for warning slides; footnotes stay below | yes | the `enginecaution` box |
 
 ```markdown
 ## Who's still on legacy {.center scale="1.4"}
@@ -188,14 +189,14 @@ invisible U+FE0E written after that ⚠ keeps browsers from drawing an emoji;
 the PDF prints nothing for it. Other missing characters still drop out, with
 a warning in the log.
 
-## HTML slides (`ncar-revealjs`)
+## HTML slides (`engine-revealjs`)
 
 The same Markdown renders as a [revealjs](https://revealjs.com) web deck, in the
 same layouts: the title slide with waves or a photo, section dividers,
 content slides with the accent tab and logo, feature and closing slides.
 
 ```bash
-quarto render talk-quarto.qmd --to ncar-revealjs    # or: make html
+quarto render talk-quarto.qmd --to engine-revealjs    # or: make html
 ```
 
 Open `talk-quarto.html` in a browser; keep `talk-quarto_files/` beside it.
@@ -230,7 +231,7 @@ so turn it off at the same time:
 
 ```yaml
 format:
-  ncar-revealjs:
+  engine-revealjs:
     embed-resources: true
     chalkboard: false
 ```
@@ -293,8 +294,8 @@ In Quarto, `themeoptions: [mathfont=stix]` does the same, and Quarto's own
 `mathfont:` key still works (the theme then leaves math alone). The HTML deck
 is unaffected: MathJax sets its own serif math.
 
-`\ncarmathfont{<preset>}` selects a preset later in the preamble, and
-`\ncarmathversion{<version>}{<preset>}` sets one up as a math version to
+`\enginemathfont{<preset>}` selects a preset later in the preamble, and
+`\enginemathversion{<version>}{<preset>}` sets one up as a math version to
 compare several in one document; `examples/mathfonts.tex` is the specimen
 above.
 
@@ -337,14 +338,14 @@ designhelp@ucar.edu. Poppins is distributed under the SIL Open Font License.
 talk.tex, talk-quarto.qmd   your starter decks
 latexmkrc                   points latexmk at the theme (Overleaf reads it)
 images/                     photos (examples use images/wallpaper/)
-_extensions/ncar/           the theme: Quarto extension *and* LaTeX sources
-  beamerthemeNCAR.sty         options; loads the color/font/inner/outer themes
-  ncar_branding.sty           palette, fonts, logos, listings style (also for non-beamer docs)
-  ncar-beamer.lua             Quarto: loads the theme; Markdown sugar
-  ncar-revealjs.{scss,css,js,lua}, title-slide.html
+_extensions/engine/           the theme: Quarto extension *and* LaTeX sources
+  beamerthemeEngine.sty         options; loads the color/font/inner/outer themes
+  engine_livery.sty             palette, fonts, logos, listings style (also for non-beamer docs)
+  engine-beamer.lua             Quarto: loads the theme; Markdown sugar
+  engine-revealjs.{scss,css,js,lua}, title-slide.html
                               the HTML (revealjs) format
-  ncar.theme                  syntax-highlighting colors
-  ncar-assets/                logos and bundled Poppins; web/ holds the HTML logos
+  engine.theme                  syntax-highlighting colors
+  ncar-assets/                  logos and bundled Poppins; web/ holds the HTML logos
 tools/web-logos.sh          regenerates ncar-assets/web/ from the brand kit
 tools/fit-waves.py          fits the wave curves to the brand's cover art
 examples/                   feature showcase (LaTeX, Quarto, article), math font specimen
@@ -353,17 +354,17 @@ examples/                   feature showcase (LaTeX, Quarto, article), math font
                               template.tex includes (needs Graphviz and npx)
 ```
 
-**Releasing:** bump `version` in `_extensions/ncar/_extension.yml` (and
-`VERSION` in `ncar-revealjs.lua`), merge, then tag it: `git tag v2.3.1 && git
+**Releasing:** bump `version` in `_extensions/engine/_extension.yml` (and
+`VERSION` in `engine-revealjs.lua`), merge, then tag it: `git tag v2.3.1 && git
 push origin v2.3.1`. The `release` workflow builds `make overleaf`'s zip and
 publishes a GitHub Release with it, which is what the Overleaf link above
 opens; it refuses a tag that does not match the extension version. Quarto users
-can pin one: `quarto add benkirk/NCAR_beamer_template@v2.3.1`.
+can pin one: `quarto add benkirk/beamer-livery-theme@v3.0.0`.
 
 ## Migrating a 2020-brand (v1) deck
 
-1. Change `\usetheme{ncar}` to `\usetheme{NCAR}`.
-2. Point `TEXINPUTS` and `TTFONTS` at this repo's `_extensions/ncar/` (see
+1. Change `\usetheme{ncar}` to `\usetheme{Engine}`.
+2. Point `TEXINPUTS` and `TTFONTS` at this repo's `_extensions/engine/` (see
    "Already have a project?" above).
 
 Everything else carries over:
@@ -414,11 +415,11 @@ covers the theme and the starter files, not what you put in your deck.
 
 These parts are **not** covered by that license:
 
-- **NSF, NCAR, UCAR and UCP logos** (`_extensions/ncar/ncar-assets/logos/`
+- **NSF, NCAR, UCAR and UCP logos** (`_extensions/engine/ncar-assets/logos/`
   and `ncar-assets/web/`).
   These are trademarks used under the
   [UCAR brand guidelines](https://ucar.canto.com/v/branding).
-- **The Poppins font** (`_extensions/ncar/ncar-assets/fonts/Poppins/`) is
+- **The Poppins font** (`_extensions/engine/ncar-assets/fonts/Poppins/`) is
   licensed under the SIL Open Font License; see `OFL.txt` in that directory.
 - **The photographs in `images/wallpaper/`** are carried over from the
   original template as example imagery. Replace them with your own.

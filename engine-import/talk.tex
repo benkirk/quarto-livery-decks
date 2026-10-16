@@ -3,7 +3,7 @@
 \documentclass[aspectratio=169]{beamer}
 
 % brand=ncar|ucar|ncarucar   title=dark|light   footer=minimal|full   mathfont=serif|stix|sans|...
-\usetheme[brand=ncar, title=dark]{NCAR}
+\usetheme[brand=ncar, title=dark]{Engine}
 
 \usepackage{booktabs}
 \usepackage{listings}
@@ -39,10 +39,10 @@
   \end{block}
 \end{frame}
 
-\begin{frame}[ncarbg=images/wallpaper/mesa_lab.jpg]{A Photo Slide}
+\begin{frame}[enginebg=images/wallpaper/mesa_lab.jpg]{A Photo Slide}
   \vfill
   \begin{block}{Blocks turn translucent on photos}
-    \texttt{\textbackslash begin\{frame\}[ncarbg=photo.jpg]}
+    \texttt{\textbackslash begin\{frame\}[enginebg=photo.jpg]}
   \end{block}
 \end{frame}
 
@@ -57,7 +57,7 @@ mpiexec ./my_model
 \end{lstlisting}
 \end{frame}
 
-\ncarclosingframe{Thank you!}{%
+\engineclosingframe{Thank you!}{%
   Questions?\par\medskip
   \textbf{Your Name}\\ \texttt{you@ucar.edu}}
 

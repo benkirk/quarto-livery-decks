@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerthemeNCAR}[2026/09/30 v2.3 NSF NCAR / UCAR beamer theme]
+\ProvidesPackage{beamerthemeEngine}[2026/09/30 v2.3 engine beamer theme]
 %
-% \usetheme[<options>]{NCAR}
+% \usetheme[<options>]{Engine}
 %
 %   brand=ncar|ucar|ncarucar   palette + logo lockup                  (ncar)
 %   title=dark|light           title/closing slide field:
@@ -9,73 +9,73 @@
 %                              white w/ full-color logo               (dark)
 %   fonts=poppins|helvetica    (poppins under XeLaTeX/LuaLaTeX)
 %   mathfont=serif|lm|stix|pagella|sans|poppins|keep|<font>
-%                              math font (serif; see ncar_branding.sty)
+%                              math font (serif; see engine_livery.sty)
 %   footer=minimal|full        page number only, or + section/short title/date
 %   sectionpages=true|false    automatic divider frame per \section   (true)
 %   logo=true|false            logo in the top-right of content frames (true)
 %   waves=true|false           faint brand waves behind content frames  (true)
 %
 % Frame extensions (see README):
-%   \begin{frame}[ncarbg=<image>]   full-bleed photo "feature" frame
-%   \begin{frame}[ncarclosing]      closing / thank-you frame
-%   \ncarclosingframe{Thank you}{contact text}
+%   \begin{frame}[enginebg=<image>]   full-bleed photo "feature" frame
+%   \begin{frame}[engineclosing]      closing / thank-you frame
+%   \engineclosingframe{Thank you}{contact text}
 %
 \mode<presentation>
 
-\def\ncar@opt@brand{ncar}
-\def\ncar@titlestyle{dark}
-\def\ncar@opt@fonts{auto}
-\def\ncar@opt@mathfont{serif}
-\def\ncar@footer{minimal}
-\newif\ifncar@sectionpages \ncar@sectionpagestrue
-\newif\ifncar@framelogo    \ncar@framelogotrue
-\newif\ifncar@waves        \ncar@wavestrue
+\def\engine@opt@brand{ncar}
+\def\engine@titlestyle{dark}
+\def\engine@opt@fonts{auto}
+\def\engine@opt@mathfont{serif}
+\def\engine@footer{minimal}
+\newif\ifengine@sectionpages \engine@sectionpagestrue
+\newif\ifengine@framelogo    \engine@framelogotrue
+\newif\ifengine@waves        \engine@wavestrue
 
-\DeclareOptionBeamer{brand}{\def\ncar@opt@brand{#1}}
-\DeclareOptionBeamer{title}{\def\ncar@titlestyle{#1}}
-\DeclareOptionBeamer{fonts}{\def\ncar@opt@fonts{#1}}
-\DeclareOptionBeamer{mathfont}{\def\ncar@opt@mathfont{#1}}
-\DeclareOptionBeamer{footer}{\def\ncar@footer{#1}}
-\DeclareOptionBeamer{sectionpages}[true]{\csname ncar@sectionpages#1\endcsname}
-\DeclareOptionBeamer{logo}[true]{\csname ncar@framelogo#1\endcsname}
-\DeclareOptionBeamer{waves}[true]{\csname ncar@waves#1\endcsname}
+\DeclareOptionBeamer{brand}{\def\engine@opt@brand{#1}}
+\DeclareOptionBeamer{title}{\def\engine@titlestyle{#1}}
+\DeclareOptionBeamer{fonts}{\def\engine@opt@fonts{#1}}
+\DeclareOptionBeamer{mathfont}{\def\engine@opt@mathfont{#1}}
+\DeclareOptionBeamer{footer}{\def\engine@footer{#1}}
+\DeclareOptionBeamer{sectionpages}[true]{\csname engine@sectionpages#1\endcsname}
+\DeclareOptionBeamer{logo}[true]{\csname engine@framelogo#1\endcsname}
+\DeclareOptionBeamer{waves}[true]{\csname engine@waves#1\endcsname}
 \ProcessOptionsBeamer
 
 \mode<all>
-\@ifpackageloaded{ncar_branding}{}{%
-  \edef\ncar@tmp{\noexpand\RequirePackage[brand=\ncar@opt@brand,fonts=\ncar@opt@fonts,mathfont=\ncar@opt@mathfont]{ncar_branding}}%
-  \ncar@tmp}
+\@ifpackageloaded{engine_livery}{}{%
+  \edef\engine@tmp{\noexpand\RequirePackage[brand=\engine@opt@brand,fonts=\engine@opt@fonts,mathfont=\engine@opt@mathfont]{engine_livery}}%
+  \engine@tmp}
 \mode<presentation>
 
-\usecolortheme{NCAR}
-\usefonttheme{NCAR}
+\usecolortheme{Engine}
+\usefonttheme{Engine}
 % pdfLaTeX: serif math from Computer Modern (the branding package settles
 % mathfont= for XeLaTeX/LuaLaTeX with unicode-math)
-\@ifundefined{ifncar@cmmath}{}{\ifncar@cmmath\usefonttheme[onlymath]{serif}\fi}
-\useinnertheme{NCAR}
-\useoutertheme{NCAR}
+\@ifundefined{ifengine@cmmath}{}{\ifengine@cmmath\usefonttheme[onlymath]{serif}\fi}
+\useinnertheme{Engine}
+\useoutertheme{Engine}
 
 \setbeamertemplate{navigation symbols}{}
 
 % ---------------------------------------------------------------------------
 % v1 (2020-brand theme) compatibility, so existing decks build after changing
-% \usetheme{ncar} to \usetheme{NCAR}
+% \usetheme{ncar} to \usetheme{Engine}
 % ---------------------------------------------------------------------------
 \RequirePackage{environ}
 % \begin{NCARprettyframe}[<image>] ... : photo feature frame; without an image,
 % a brand-field frame
 \NewEnviron{NCARprettyframe}[1][]{%
-  \def\ncar@tmp{#1}%
-  \ifx\ncar@tmp\@empty
-    \begin{frame}[ncarclosing]\BODY\end{frame}%
+  \def\engine@tmp{#1}%
+  \ifx\engine@tmp\@empty
+    \begin{frame}[engineclosing]\BODY\end{frame}%
   \else
-    \begin{frame}[ncarbg={#1}]\BODY\end{frame}%
+    \begin{frame}[enginebg={#1}]\BODY\end{frame}%
   \fi}
 % \begin{NCARtitleframe}[<image>] ... : the title page.  The body (v1 decks put
 % spacing and \maketitle there) is ignored; the new title page lays itself out.
 \NewEnviron{NCARtitleframe}[1][]{%
-  \def\ncar@tmp{#1}%
-  \ifx\ncar@tmp\@empty\else\titlegraphic{\includegraphics{#1}}\fi
+  \def\engine@tmp{#1}%
+  \ifx\engine@tmp\@empty\else\titlegraphic{\includegraphics{#1}}\fi
   \begin{frame}[plain,noframenumbering]\titlepage\end{frame}}
 \providecommand\titlebackground{}
 \providecommand\nobackground{}

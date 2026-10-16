@@ -1,13 +1,13 @@
 --[[
-ncar-beamer.lua -- Markdown sugar for the NCAR beamer theme (beamer output only)
+engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output only)
 
   ## Title {.feature background="photo.jpg"}
-      full-bleed photo frame (-> \begin{frame}[ncarbg=photo.jpg])
+      full-bleed photo frame (-> \begin{frame}[enginebg=photo.jpg])
 
   ## Title {.full}
       one figure (a diagram cell or an image) fills the frame, with no title,
-      logo, rule or waves (-> \begin{frame}[ncarfull=image]); the paragraphs
-      after it become one caption line (\ncarfullcaption)
+      logo, rule or waves (-> \begin{frame}[enginefull=image]); the paragraphs
+      after it become one caption line (\enginefullcaption)
 
   ## Thank you! {.closing}
       closing frame on the brand field; the heading becomes the large
@@ -16,13 +16,13 @@ ncar-beamer.lua -- Markdown sugar for the NCAR beamer theme (beamer output only)
   # Section
   One paragraph right after the divider heading.
       the paragraph becomes the divider's subtitle instead of a slide of
-      its own (declared in the preamble as \ncarsectionsubtitle{n}{...},
+      its own (declared in the preamble as \enginesectionsubtitle{n}{...},
       so no stray block before the section can open an empty frame)
 
   A paragraph that starts with † (or ‡)
       a slide footnote: every one on the frame, columns included, moves to
-      the frame's foot under a short rule (\ncarfootnotes; see
-      beamerinnerthemeNCAR.sty)
+      the frame's foot under a short rule (\enginefootnotes; see
+      beamerinnerthemeEngine.sty)
 
   ## Title {.center scale="1.4"}
       per-slide layout of the body (everything but the title, notes and
@@ -31,16 +31,16 @@ ncar-beamer.lua -- Markdown sugar for the NCAR beamer theme (beamer output only)
       frame option c, .hcenter centers prose and lists as a block (tables
       and captioned figures center on their own; with one of those or
       columns it does nothing), .center is both, and .fill does nothing;
-      .caution boxes the body on a soft yellow field (ncarcaution)
+      .caution boxes the body on a soft yellow field (enginecaution)
 
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
 
   metadata `themeoptions: [brand=ucar, title=light, ...]`
-      options for \usetheme{NCAR} (see beamerthemeNCAR.sty)
+      options for \usetheme{Engine} (see beamerthemeEngine.sty)
 
 The filter also loads the theme: it puts this extension's directory on
-LaTeX's \input@path and defines \ncarassetdir, so the .sty files, logos
+LaTeX's \input@path and defines \engineassetdir, so the .sty files, logos
 and bundled fonts are used in place -- nothing is copied next to the
 document.
 ]]
@@ -108,7 +108,7 @@ end
 -- The footnote is a raw block, so pandoc cannot see a Code inline in it when it
 -- decides on [fragile]; fine with \texttt, NOT with `listings: true` (\lstinline).
 local function footnote_latex(p)
-  return "\\ncarfootnote{" .. footnote_marker(p) .. "}{"
+  return "\\enginefootnote{" .. footnote_marker(p) .. "}{"
     .. inlines_to_latex(strip_marker(p.content)) .. "}"
 end
 
@@ -134,11 +134,11 @@ local function hoist_footnotes(blocks)
         i = i + 1
       end
       if #notes > 0 then
-        out:insert(latex("\\ncarfootnotespring"))
+        out:insert(latex("\\enginefootnotespring"))
         out:extend(body)
-        local tex = pandoc.List({ "\\ncarfootnotespring", "\\begin{ncarfootnotes}" })
+        local tex = pandoc.List({ "\\enginefootnotespring", "\\begin{enginefootnotes}" })
         for _, p in ipairs(notes) do tex:insert(footnote_latex(p)) end
-        tex:insert("\\end{ncarfootnotes}")
+        tex:insert("\\end{enginefootnotes}")
         out:insert(latex(table.concat(tex, "\n")))
       else
         out:extend(body)
@@ -173,7 +173,7 @@ local function take_layout(blk)
     blk.attributes["scale"] = nil
     found = true
     if not tonumber(scale) then
-      quarto.log.warning("ncar-beamer: scale=\"" .. scale .. "\" is not a number; ignored")
+      quarto.log.warning("engine-beamer: scale=\"" .. scale .. "\" is not a number; ignored")
       scale = nil
     end
   end
@@ -202,7 +202,7 @@ local function wrap_layout(blocks)
       if lay.scale then attr["scale"] = lay.scale end
       if lay.h then attr["hcenter"] = "1" end
       if lay.caution then attr["caution"] = "1" end
-      out:insert(pandoc.Div(body, pandoc.Attr("", { "ncar-body" }, attr)))
+      out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-body" }, attr)))
       out:extend(notes)
     end
   end
@@ -229,16 +229,16 @@ end
 local function unwrap_layout(blocks)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and has_class(b, "ncar-body") then
+    if b.t == "Div" and has_class(b, "engine-body") then
       local open, close = "", ""
       local scale = b.attributes["scale"]
       if scale then
         used.scale = true
-        open, close = "\\ncarscalebegin{" .. scale .. "}", "\\ncarscaleend"
+        open, close = "\\enginescalebegin{" .. scale .. "}", "\\enginescaleend"
       end
       if b.attributes["caution"] then
-        open = open .. "\\begin{ncarcaution}"
-        close = "\\end{ncarcaution}" .. close
+        open = open .. "\\begin{enginecaution}"
+        close = "\\end{enginecaution}" .. close
       end
       if b.attributes["hcenter"] and boxable(b.content) then
         used.hcenter = true
@@ -255,19 +255,19 @@ local function unwrap_layout(blocks)
   return out
 end
 
--- \ncarscalebegin{S}: the body at S times the current size; beamer's sub-item
+-- \enginescalebegin{S}: the body at S times the current size; beamer's sub-item
 -- sizes are absolute (\small, \footnotesize), so they are scaled too, all
 -- expanded when the group opens (inside it, \f@size is already scaled)
 local SCALE_TEX = table.concat({
   "\\makeatletter",
-  "\\newcommand\\ncar@size[2]{\\noexpand\\fontsize{\\fpeval{#1*#2*\\f@size}pt}"
+  "\\newcommand\\engine@size[2]{\\noexpand\\fontsize{\\fpeval{#1*#2*\\f@size}pt}"
     .. "{\\fpeval{#1*#2*\\strip@pt\\dimexpr\\f@baselineskip\\relax}pt}}",
-  "\\newcommand\\ncarscalebegin[1]{\\begingroup",
-  "  \\edef\\ncar@sub{\\ncar@size{#1}{0.9}}\\edef\\ncar@subsub{\\ncar@size{#1}{0.8}}%",
-  "  \\setbeamerfont{itemize/enumerate subbody}{size=\\ncar@sub}%",
-  "  \\setbeamerfont{itemize/enumerate subsubbody}{size=\\ncar@subsub}%",
-  "  \\edef\\ncar@body{\\ncar@size{#1}{1}}\\ncar@body\\selectfont}",
-  "\\newcommand\\ncarscaleend{\\endgroup}",
+  "\\newcommand\\enginescalebegin[1]{\\begingroup",
+  "  \\edef\\engine@sub{\\engine@size{#1}{0.9}}\\edef\\engine@subsub{\\engine@size{#1}{0.8}}%",
+  "  \\setbeamerfont{itemize/enumerate subbody}{size=\\engine@sub}%",
+  "  \\setbeamerfont{itemize/enumerate subsubbody}{size=\\engine@subsub}%",
+  "  \\edef\\engine@body{\\engine@size{#1}{1}}\\engine@body\\selectfont}",
+  "\\newcommand\\enginescaleend{\\endgroup}",
   "\\makeatother",
 }, "\n")
 
@@ -282,12 +282,12 @@ local function header_includes(doc)
 end
 
 local function load_theme(doc)
-  local extdir = pandoc.path.directory(quarto.utils.resolve_path("ncar_branding.sty"))
+  local extdir = pandoc.path.directory(quarto.utils.resolve_path("engine_livery.sty"))
   if not pandoc.path.is_absolute(extdir) then
     extdir = pandoc.path.join({ pandoc.system.get_working_directory(), extdir })
   end
   if extdir:find("[%s%%#]") then
-    quarto.log.warning("ncar-beamer: extension path contains spaces or special "
+    quarto.log.warning("engine-beamer: extension path contains spaces or special "
       .. "characters, which LaTeX's \\input@path cannot handle: " .. extdir)
   end
   local opts = {}
@@ -314,8 +314,8 @@ local function load_theme(doc)
     "\\providecommand\\input@path{}",
     "\\edef\\input@path{\\input@path{" .. extdir .. "/}}",
     "\\makeatother",
-    "\\def\\ncarassetdir{" .. extdir .. "/ncar-assets/}",
-    "\\usetheme[" .. table.concat(opts, ",") .. "]{NCAR}",
+    "\\def\\engineassetdir{" .. extdir .. "/ncar-assets/}",
+    "\\usetheme[" .. table.concat(opts, ",") .. "]{Engine}",
     -- Quarto callouts (tcolorbox) in brand colors; Quarto defines its own
     -- after header-includes, hence \AtBeginDocument
     "\\AtBeginDocument{%",
@@ -356,8 +356,8 @@ function Span(el)
   end
 end
 
--- Tables in the theme's style (beamerinnerthemeNCAR.sty, "tables"): each
--- header cell in \ncarth, and every second body row starting with \rowcolor,
+-- Tables in the theme's style (beamerinnerthemeEngine.sty, "tables"): each
+-- header cell in \engineth, and every second body row starting with \rowcolor,
 -- which colortbl requires to be the first thing in the row
 local function raw(s) return pandoc.RawInline("latex", s) end
 
@@ -366,7 +366,7 @@ function Table(tbl)
     for _, cell in ipairs(row.cells) do
       for _, blk in ipairs(cell.contents) do
         if blk.t == "Plain" or blk.t == "Para" then
-          blk.content:insert(1, raw("\\ncarth{"))
+          blk.content:insert(1, raw("\\engineth{"))
           blk.content:insert(raw("}"))
         end
       end
@@ -378,9 +378,9 @@ function Table(tbl)
       if k % 2 == 0 and first then
         local blk = first.contents[1]
         if blk and (blk.t == "Plain" or blk.t == "Para") then
-          blk.content:insert(1, raw("\\rowcolor{ncartableband}"))
+          blk.content:insert(1, raw("\\rowcolor{enginetableband}"))
         else
-          first.contents:insert(1, pandoc.Plain({ raw("\\rowcolor{ncartableband}") }))
+          first.contents:insert(1, pandoc.Plain({ raw("\\rowcolor{enginetableband}") }))
         end
       end
     end
@@ -442,7 +442,7 @@ local function full_frames(blocks)
       end
       local src, caption, rest = split_full(slide)
       if src then
-        add_frameoption(blk, "ncarfull=" .. src)
+        add_frameoption(blk, "enginefull=" .. src)
         blk.content = pandoc.Inlines({})
         out:insert(blk)
         if #caption > 0 then
@@ -451,11 +451,11 @@ local function full_frames(blocks)
             if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
             text:extend(p.content)
           end
-          out:insert(latex("\\ncarfullcaption{" .. inlines_to_latex(text) .. "}"))
+          out:insert(latex("\\enginefullcaption{" .. inlines_to_latex(text) .. "}"))
         end
         out:extend(rest)
       else
-        quarto.log.warning("ncar-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
+        quarto.log.warning("engine-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
           .. "\" needs one figure, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
@@ -519,7 +519,7 @@ function Pandoc(doc)
       if has_class(blk, "feature") then
         local bg = blk.attributes["background"] or blk.attributes["background-image"]
         if bg then
-          add_frameoption(blk, "ncarbg=" .. bg)
+          add_frameoption(blk, "enginebg=" .. bg)
           blk.attributes["background"] = nil
           blk.attributes["background-image"] = nil
         end
@@ -528,10 +528,10 @@ function Pandoc(doc)
       elseif has_class(blk, "closing") then
         -- move the heading into the frame body as the closing headline
         local headline = inlines_to_latex(blk.content)
-        add_frameoption(blk, "ncarclosing,plain,noframenumbering")
+        add_frameoption(blk, "engineclosing,plain,noframenumbering")
         blk.content = pandoc.Inlines({})
         out:insert(blk)
-        out:insert(latex("\\ncarclosingcontent{" .. headline .. "}{%"))
+        out:insert(latex("\\engineclosingcontent{" .. headline .. "}{%"))
         i = i + 1
         while i <= #blocks and not is_slide_break(blocks[i]) do
           out:insert(blocks[i])
@@ -557,7 +557,7 @@ function Pandoc(doc)
           if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
           text:extend(p.content)
         end
-        subtitles:insert(latex("\\ncarsectionsubtitle{" .. section .. "}{"
+        subtitles:insert(latex("\\enginesectionsubtitle{" .. section .. "}{"
           .. inlines_to_latex(text) .. "}"))
         out:insert(blk)
         i = j

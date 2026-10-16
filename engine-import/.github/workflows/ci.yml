@@ -44,7 +44,7 @@ jobs:
       - name: Build the Overleaf project
         run: |
           make overleaf
-          rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q ncar-beamer-overleaf.zip -d /tmp/overleaf
+          rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q engine-beamer-overleaf.zip -d /tmp/overleaf
           cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -q Poppins-Bold
 
@@ -68,10 +68,10 @@ jobs:
       - name: Check the HTML decks carry the theme
         run: |
           for f in talk-quarto.html examples/quarto-demo.html; do
-            grep -q 'ncar-revealjs.css' "$f"   # fonts and logos attached
-            grep -q 'class="ncar-waves"' "$f"  # the Lua filter ran
+            grep -q 'engine-revealjs.css' "$f"   # fonts and logos attached
+            grep -q 'class="engine-waves"' "$f"  # the Lua filter ran
           done
-          ls talk-quarto_files/libs/quarto-contrib/ncar-revealjs-*/Poppins-Bold.ttf
+          ls talk-quarto_files/libs/quarto-contrib/engine-revealjs-*/Poppins-Bold.ttf
 
       - uses: actions/upload-artifact@v7
         if: always()

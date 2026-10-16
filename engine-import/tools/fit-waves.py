@@ -7,8 +7,8 @@ them.  This script traces the line centres in that PNG and fits each line as
 two cubic Bézier segments joined at its rightmost point, then prints the
 control points as fractions of the slide width and height:
 
-  * a TikZ block for beamerouterthemeNCAR.sty (y up), and
-  * a Lua table for ncar-revealjs.lua (y down).
+  * a TikZ block for beamerouterthemeEngine.sty (y up), and
+  * a Lua table for engine-revealjs.lua (y down).
 
 Paste both; re-run to check that they still agree with each other and with the
 art.  Usage:
@@ -151,18 +151,18 @@ def print_lua(lines):
 
 def print_tikz(lines):
     print("% The brand's three wave lines (tools/fit-waves.py), each two cubics from")
-    print("% the top edge to the bottom edge.  \\ncar@wave@<n>@down{<dx>} is line n")
+    print("% the top edge to the bottom edge.  \\engine@wave@<n>@down{<dx>} is line n")
     print("% shifted right by dx (a fraction of \\paperwidth); @up is the same path")
     print("% bottom to top, for filling between two lines.")
     for i, pts in enumerate(lines, 1):
         def c(p):
             return f"({{({f(p[0])}+#1)*\\paperwidth}},{f(1 - p[1])}\\paperheight)"
         n = "i" * i
-        print(f"\\def\\ncar@wave@{n}@down#1{{%")
+        print(f"\\def\\engine@wave@{n}@down#1{{%")
         print(f"  {c(pts[0])}")
         print(f"    .. controls {c(pts[1])} and {c(pts[2])} .. {c(pts[3])}")
         print(f"    .. controls {c(pts[4])} and {c(pts[5])} .. {c(pts[6])}}}")
-        print(f"\\def\\ncar@wave@{n}@up#1{{%")
+        print(f"\\def\\engine@wave@{n}@up#1{{%")
         print(f"  {c(pts[6])}")
         print(f"    .. controls {c(pts[5])} and {c(pts[4])} .. {c(pts[3])}")
         print(f"    .. controls {c(pts[2])} and {c(pts[1])} .. {c(pts[0])}}}")

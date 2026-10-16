@@ -1,25 +1,25 @@
-% NSF NCAR / UCAR beamer theme -- math font specimen.
+% engine beamer theme -- math font specimen.
 %
 % One slide per mathfont= preset, and a summary slide with every preset on
-% it (docs/math-fonts.png).  \usetheme[mathfont=<preset>]{NCAR} picks one for
-% a deck; here \ncarmathversion sets each up as a math version so a single
+% it (docs/math-fonts.png).  \usetheme[mathfont=<preset>]{Engine} picks one for
+% a deck; here \enginemathversion sets each up as a math version so a single
 % document can show them all (poppins, which cannot be a version, is the
 % document's normal math).  Build: make examples/mathfonts.pdf
 %
 \documentclass[aspectratio=169]{beamer}
-\usetheme[mathfont=keep,logo=false]{NCAR}
+\usetheme[mathfont=keep,logo=false]{Engine}
 
-\ncarmathversion{serif}{serif}
-\ncarmathversion{lm}{lm}
-\ncarmathversion{stix}{stix}
-\ncarmathversion{pagella}{pagella}
-\ncarmathversion{sans}{sans}
-\ncarmathversion{fira}{fira}
-\ncarmathfont{poppins}
+\enginemathversion{serif}{serif}
+\enginemathversion{lm}{lm}
+\enginemathversion{stix}{stix}
+\enginemathversion{pagella}{pagella}
+\enginemathversion{sans}{sans}
+\enginemathversion{fira}{fira}
+\enginemathfont{poppins}
 
 \title{Math fonts}
-\subtitle{\texttt{mathfont=} presets of the NCAR theme}
-\author{\texttt{\textbackslash usetheme[mathfont=serif]\{NCAR\}} (the default)}
+\subtitle{\texttt{mathfont=} presets of the engine theme}
+\author{\texttt{\textbackslash usetheme[mathfont=serif]\{Engine\}} (the default)}
 \date{}
 
 % the same equations under each version

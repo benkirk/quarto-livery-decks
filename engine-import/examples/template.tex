@@ -1,18 +1,18 @@
-% NSF NCAR / UCAR beamer theme -- feature showcase.
+% engine beamer theme -- feature showcase.
 %
 % Build (from the repository root):   make            -> examples/template.pdf
 % Variants: make variants  (brand=ucar|ncarucar, title=light, 4:3, pdflatex)
 %
-\providecommand\ncarthemeoptions{}
-\providecommand\ncaraspectratio{169}
-\documentclass[aspectratio=\ncaraspectratio]{beamer}
+\providecommand\enginethemeoptions{}
+\providecommand\engineaspectratio{169}
+\documentclass[aspectratio=\engineaspectratio]{beamer}
 
 \usepackage{booktabs}
 \usepackage{listings}
 \usepackage{relsize}
 \usepackage{lipsum}
 
-\expandafter\usetheme\expandafter[\ncarthemeoptions]{NCAR}
+\expandafter\usetheme\expandafter[\enginethemeoptions]{Engine}
 
 \title{Title Lorem Sit Ipsum Dolor Nonummy Aliquip}
 \subtitle{Optional subhead: the NSF NCAR beamer theme}
@@ -104,7 +104,7 @@
   \end{exampleblock}
 \end{frame}
 
-\begin{frame}[ncarbg=images/wallpaper/mesa_lab.jpg]{Feature Frame}{\texttt{\textbackslash begin\{frame\}[ncarbg=<image>]}}
+\begin{frame}[enginebg=images/wallpaper/mesa_lab.jpg]{Feature Frame}{\texttt{\textbackslash begin\{frame\}[enginebg=<image>]}}
   \vfill
   \begin{columns}
     \begin{column}{0.55\textwidth}
@@ -173,7 +173,7 @@
   \swatch{BrandOrange}{Orange (accent)}{FAA119}\hfill
   \swatch{BrandYellow}{Yellow (accent)}{FFDD31}\hfill
   \begin{minipage}[t]{0.48\textwidth}\scriptsize
-    Colors are defined by \texttt{ncar\_branding.sty}; use the names above.
+    Colors are defined by \texttt{engine\_livery.sty}; use the names above.
     Legacy (2020) names such as \texttt{NCARBlue} and \texttt{CoolGray11} still compile.
   \end{minipage}
 \end{frame}
@@ -204,7 +204,7 @@
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\ncarclosingframe{Thank you!}{%
+\engineclosingframe{Thank you!}{%
   Questions? \par\medskip
   \textsb{Presenter Name}\\
   \texttt{name@ucar.edu}}

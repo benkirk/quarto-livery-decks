@@ -11,15 +11,15 @@ fineprint: >-
   Atmospheric Research, a major facility sponsored by the U.S. National
   Science Foundation.
 format:
-  ncar-beamer:
+  engine-beamer:
     # themeoptions: [brand=ucar, title=light, footer=full, mathfont=stix]
     keep-tex: false
 ---
 
 ## Overview
 
-- Install once per project: `quarto add benkirk/NCAR_beamer_template`
-- Render with `format: ncar-beamer` (PDF) or `ncar-revealjs` (HTML)
+- Install once per project: `quarto add benkirk/beamer-livery-theme`
+- Render with `format: engine-beamer` (PDF) or `engine-revealjs` (HTML)
 - Every beamer feature of the LaTeX theme is reachable from Markdown
 
 # Basics

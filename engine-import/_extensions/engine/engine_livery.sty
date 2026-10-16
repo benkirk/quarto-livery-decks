@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ncar_branding}[2026/09/30 v2.3 NSF NCAR / UCAR brand colors, fonts & logos]
+\ProvidesPackage{engine_livery}[2026/09/30 v2.3 the livery's colors, fonts & logos]
 %
-% Brand primitives shared by the NCAR beamer theme and plain documents
+% Brand primitives shared by the engine beamer theme and plain documents
 % (see examples/paper.tex).  Values follow the 2026 "Vermilion" NSF NCAR /
 % UCAR / UCP Brand Guide (pp. 17-21).
 %
@@ -16,11 +16,11 @@
 %                             "Math font" below)
 %
 \RequirePackage{kvoptions}
-\SetupKeyvalOptions{family=ncar,prefix=ncar@}
+\SetupKeyvalOptions{family=engine,prefix=engine@}
 \DeclareStringOption[ncar]{brand}
 \DeclareStringOption[auto]{fonts}
 \DeclareStringOption[serif]{mathfont}
-\DeclareVoidOption{brandedfonts}{\def\ncar@fonts{poppins}}
+\DeclareVoidOption{brandedfonts}{\def\engine@fonts{poppins}}
 \ProcessKeyvalOptions*
 
 \RequirePackage{iftex}
@@ -46,7 +46,7 @@
 \definecolor{BrandYellow}{HTML}{FFDD31}
 
 % semantic roles, switched by brand=
-\def\ncar@tmp{ucar}\ifx\ncar@brand\ncar@tmp
+\def\engine@tmp{ucar}\ifx\engine@brand\engine@tmp
   \colorlet{BrandPrimary}{UCARAqua}
   \colorlet{BrandPrimaryText}{Space}     % text on BrandPrimary
   \colorlet{BrandPrimaryContrast}{UCARAquaContrast}
@@ -88,52 +88,52 @@
 %   fonts=bundled   always the bundled copy (an error if TeX cannot find it)
 %   fonts=helvetica Helvetica (pdfLaTeX) / TeX Gyre Heros (XeLaTeX, LuaLaTeX)
 %
-% The bundled copy lives in \ncarassetdir fonts/Poppins/.  \ncarassetdir
+% The bundled copy lives in \engineassetdir fonts/Poppins/.  \engineassetdir
 % defaults to the relative `ncar-assets/'; the Quarto extension defines it as
 % an absolute path, and plain-LaTeX builds find the relative path through
 % kpathsea (TEXINPUTS=<theme>// for logos, TTFONTS=<theme>// for fonts).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\providecommand\ncarassetdir{ncar-assets/}
-\newif\ifncar@poppins \ncar@poppinsfalse
-\newif\ifncar@bundledpoppins \ncar@bundledpoppinsfalse
-\def\ncar@tmp{auto}\ifx\ncar@fonts\ncar@tmp
-  \iftutex\def\ncar@fonts{poppins}\else\def\ncar@fonts{helvetica}\fi
+\providecommand\engineassetdir{ncar-assets/}
+\newif\ifengine@poppins \engine@poppinsfalse
+\newif\ifengine@bundledpoppins \engine@bundledpoppinsfalse
+\def\engine@tmp{auto}\ifx\engine@fonts\engine@tmp
+  \iftutex\def\engine@fonts{poppins}\else\def\engine@fonts{helvetica}\fi
 \fi
-\def\ncar@tmp{helvetica}\ifx\ncar@fonts\ncar@tmp\else
+\def\engine@tmp{helvetica}\ifx\engine@fonts\engine@tmp\else
   \iftutex
     \RequirePackage{fontspec}
-    \def\ncar@bundledpoppins{%
-      \edef\ncar@tmp{\noexpand\setsansfont{Poppins}[%
+    \def\engine@bundledpoppins{%
+      \edef\engine@tmp{\noexpand\setsansfont{Poppins}[%
         Scale          = 1.0,  % pandoc sets Scale=MatchLowercase, shrinking Poppins
-        Path           = \ncarassetdir fonts/Poppins/,
+        Path           = \engineassetdir fonts/Poppins/,
         Extension      = .ttf,
         UprightFont    = *-Regular,
         BoldFont       = *-Bold,
         ItalicFont     = *-Italic,
         BoldItalicFont = *-BoldItalic,
         FontFace       = {sb}{n}{*-SemiBold}]}%
-      \ncar@tmp\ncar@poppinstrue\ncar@bundledpoppinstrue}
-    \def\ncar@tmp{bundled}\ifx\ncar@fonts\ncar@tmp
-      \ncar@bundledpoppins
+      \engine@tmp\engine@poppinstrue\engine@bundledpoppinstrue}
+    \def\engine@tmp{bundled}\ifx\engine@fonts\engine@tmp
+      \engine@bundledpoppins
     \else
       % The bundled copy first, looked up as a file (kpathsea).  Probing the
       % system by name goes through fontconfig, which on a TeX Live whose
       % font cache is cold (Overleaf, each compile) takes longer than a
       % free-plan compile is allowed -- and then found nothing anyway.
-      \edef\ncar@tmp{\noexpand\IfFontExistsTF{\ncarassetdir fonts/Poppins/Poppins-Regular.ttf}}%
-      \ncar@tmp{\ncar@bundledpoppins}{%
+      \edef\engine@tmp{\noexpand\IfFontExistsTF{\engineassetdir fonts/Poppins/Poppins-Regular.ttf}}%
+      \engine@tmp{\engine@bundledpoppins}{%
         \IfFontExistsTF{Poppins}{%
           \setsansfont{Poppins}[Scale=1.0,FontFace={sb}{n}{Font=* SemiBold}]%
-          \ncar@poppinstrue
-        }{\ncar@bundledpoppins}}%
+          \engine@poppinstrue
+        }{\engine@bundledpoppins}}%
     \fi
   \else
-    \PackageWarningNoLine{ncar_branding}{fonts=\ncar@fonts\space needs XeLaTeX or
+    \PackageWarningNoLine{engine_livery}{fonts=\engine@fonts\space needs XeLaTeX or
       LuaLaTeX; falling back to Helvetica}%
   \fi
 \fi
 
-\ifncar@poppins\else
+\ifengine@poppins\else
   \iftutex
     \RequirePackage{fontspec}
     \IfFontExistsTF{TeX Gyre Heros}{\setsansfont{TeX Gyre Heros}[Scale=1.0]}{}%
@@ -150,15 +150,15 @@
 \iftutex
   \IfFontExistsTF{DejaVuSans.ttf}{%
     \RequirePackage{newunicodechar}%
-    \newfontfamily\ncar@symbols{DejaVuSans}[Extension=.ttf, BoldFont=*-Bold]%
+    \newfontfamily\engine@symbols{DejaVuSans}[Extension=.ttf, BoldFont=*-Bold]%
     % the bookmark gets the character itself (read here, before it turns active)
-    \def\ncar@symbol#1#2{\texorpdfstring{{\ncar@symbols\symbol{#1}}}{#2}}%
+    \def\engine@symbol#1#2{\texorpdfstring{{\engine@symbols\symbol{#1}}}{#2}}%
     \AtBeginDocument{\providecommand\texorpdfstring[2]{#1}}%
-    \newunicodechar{^^^^26a0}{\ncar@symbol{"26A0}{^^^^26a0}}%
-    \newunicodechar{^^^^2192}{\ncar@symbol{"2192}{^^^^2192}}%
-    \newunicodechar{^^^^2190}{\ncar@symbol{"2190}{^^^^2190}}%
-    \newunicodechar{^^^^2194}{\ncar@symbol{"2194}{^^^^2194}}%
-    \newunicodechar{^^^^21d2}{\ncar@symbol{"21D2}{^^^^21d2}}%
+    \newunicodechar{^^^^26a0}{\engine@symbol{"26A0}{^^^^26a0}}%
+    \newunicodechar{^^^^2192}{\engine@symbol{"2192}{^^^^2192}}%
+    \newunicodechar{^^^^2190}{\engine@symbol{"2190}{^^^^2190}}%
+    \newunicodechar{^^^^2194}{\engine@symbol{"2194}{^^^^2194}}%
+    \newunicodechar{^^^^21d2}{\engine@symbol{"21D2}{^^^^21d2}}%
     \newunicodechar{^^^^fe0e}{}%
   }{}
 \fi
@@ -184,96 +184,96 @@
 %   mathfont=<font>   any OpenType math font, by name or file
 %
 % Presets fall back to the document's math font, with a warning, if the font
-% is not installed.  The beamer theme reads \ifncar@cmmath for pdfLaTeX.
+% is not installed.  The beamer theme reads \ifengine@cmmath for pdfLaTeX.
 %
-% \ncarmathfont{<preset or font>} selects one later in the preamble, and
-% \ncarmathversion{<version>}{<preset or font>} sets one up as a math version
+% \enginemathfont{<preset or font>} selects one later in the preamble, and
+% \enginemathversion{<version>}{<preset or font>} sets one up as a math version
 % for comparing them in one document (examples/mathfonts.tex):
 % \mathversion{<version>} switches to it.  (poppins cannot be a version:
 % unicode-math's range= ignores version=.)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newif\ifncar@cmmath \ncar@cmmathfalse
-\def\ncar@mathversionopt{}
-% \ncar@setmath{<font>}{<fontspec options>}: the math font, if it exists
-\def\ncar@setmath#1#2{%
+\newif\ifengine@cmmath \engine@cmmathfalse
+\def\engine@mathversionopt{}
+% \engine@setmath{<font>}{<fontspec options>}: the math font, if it exists
+\def\engine@setmath#1#2{%
   \IfFontExistsTF{#1}{%
     \@ifpackageloaded{unicode-math}{}{\RequirePackage{unicode-math}}%
-    \edef\ncar@tmp{\noexpand\setmathfont{#1}[\unexpanded{#2},\ncar@mathversionopt]}%
-    \ncar@tmp
+    \edef\engine@tmp{\noexpand\setmathfont{#1}[\unexpanded{#2},\engine@mathversionopt]}%
+    \engine@tmp
   }{%
-    \PackageWarningNoLine{ncar_branding}{math font "#1" not found; keeping
+    \PackageWarningNoLine{engine_livery}{math font "#1" not found; keeping
       the document's math font}%
     % a math version must still exist to switch to: Latin Modern Math there
-    \ifx\ncar@mathversionopt\@empty\else
+    \ifx\engine@mathversionopt\@empty\else
       \@ifpackageloaded{unicode-math}{}{\RequirePackage{unicode-math}}%
-      \edef\ncar@tmp{\noexpand\setmathfont{latinmodern-math.otf}[\ncar@mathversionopt]}%
-      \ncar@tmp
+      \edef\engine@tmp{\noexpand\setmathfont{latinmodern-math.otf}[\engine@mathversionopt]}%
+      \engine@tmp
     \fi}}
-% \ncar@setmathor{<font>}{<fallback font>}{<options>}
-\def\ncar@setmathor#1#2#3{\IfFontExistsTF{#1}{\ncar@setmath{#1}{#3}}{\ncar@setmath{#2}{#3}}}
+% \engine@setmathor{<font>}{<fallback font>}{<options>}
+\def\engine@setmathor#1#2#3{\IfFontExistsTF{#1}{\engine@setmath{#1}{#3}}{\engine@setmath{#2}{#3}}}
 % Scale: between matching Poppins' x-height (1.27 for Computer Modern) and
 % its cap height (1.02), so lowercase reads and capitals do not shout
-\@namedef{ncar@mathpreset@serif}{\ncar@setmathor{NewCMMath-Book.otf}{latinmodern-math.otf}{Scale=1.10}}
-\@namedef{ncar@mathpreset@lm}{\ncar@setmath{latinmodern-math.otf}{Scale=1.10}}
-\@namedef{ncar@mathpreset@stix}{\ncar@setmath{STIXTwoMath-Regular.otf}{Scale=1.10}}
-\@namedef{ncar@mathpreset@pagella}{\ncar@setmath{texgyrepagella-math.otf}{Scale=1.08}}
-\@namedef{ncar@mathpreset@sans}{\ncar@setmathor{LeteSansMath.otf}{FiraMath-Regular.otf}{Scale=1.10}}
-\@namedef{ncar@mathpreset@fira}{\ncar@setmath{FiraMath-Regular.otf}{Scale=1.02}}
-\@namedef{ncar@mathpreset@keep}{}
+\@namedef{engine@mathpreset@serif}{\engine@setmathor{NewCMMath-Book.otf}{latinmodern-math.otf}{Scale=1.10}}
+\@namedef{engine@mathpreset@lm}{\engine@setmath{latinmodern-math.otf}{Scale=1.10}}
+\@namedef{engine@mathpreset@stix}{\engine@setmath{STIXTwoMath-Regular.otf}{Scale=1.10}}
+\@namedef{engine@mathpreset@pagella}{\engine@setmath{texgyrepagella-math.otf}{Scale=1.08}}
+\@namedef{engine@mathpreset@sans}{\engine@setmathor{LeteSansMath.otf}{FiraMath-Regular.otf}{Scale=1.10}}
+\@namedef{engine@mathpreset@fira}{\engine@setmath{FiraMath-Regular.otf}{Scale=1.02}}
+\@namedef{engine@mathpreset@keep}{}
 % poppins: nothing, and beamer substitutes Poppins for the letters at
 % \begin{document}.  If unicode-math is already loaded (Quarto's template
 % loads it), it has disabled that substitution, so lay Poppins over the
 % letter and digit ranges of Latin Modern Math instead.
-\@namedef{ncar@mathpreset@poppins}{%
+\@namedef{engine@mathpreset@poppins}{%
   \@ifpackageloaded{unicode-math}{%
-    \ncar@setmath{latinmodern-math.otf}{Scale=1.0}%
-    \ifncar@bundledpoppins
-      \edef\ncar@tmp{\noexpand\setmathfont{Poppins-Italic.ttf}[range=it/{latin,Latin},
-        Path=\ncarassetdir fonts/Poppins/,\ncar@mathversionopt]%
+    \engine@setmath{latinmodern-math.otf}{Scale=1.0}%
+    \ifengine@bundledpoppins
+      \edef\engine@tmp{\noexpand\setmathfont{Poppins-Italic.ttf}[range=it/{latin,Latin},
+        Path=\engineassetdir fonts/Poppins/,\engine@mathversionopt]%
         \noexpand\setmathfont{Poppins-Regular.ttf}[range=up/{latin,Latin,num},
-        Path=\ncarassetdir fonts/Poppins/,\ncar@mathversionopt]}%
-      \ncar@tmp
-    \else\ifncar@poppins
-      \edef\ncar@tmp{\noexpand\setmathfont{Poppins Italic}[range=it/{latin,Latin},\ncar@mathversionopt]%
-        \noexpand\setmathfont{Poppins}[range=up/{latin,Latin,num},\ncar@mathversionopt]}%
-      \ncar@tmp
+        Path=\engineassetdir fonts/Poppins/,\engine@mathversionopt]}%
+      \engine@tmp
+    \else\ifengine@poppins
+      \edef\engine@tmp{\noexpand\setmathfont{Poppins Italic}[range=it/{latin,Latin},\engine@mathversionopt]%
+        \noexpand\setmathfont{Poppins}[range=up/{latin,Latin,num},\engine@mathversionopt]}%
+      \engine@tmp
     \fi\fi
   }{}}
-% \ncar@mathselect{<preset or font>}
-\def\ncar@mathselect#1{%
-  \ifcsname ncar@mathpreset@#1\endcsname
-    \csname ncar@mathpreset@#1\endcsname
+% \engine@mathselect{<preset or font>}
+\def\engine@mathselect#1{%
+  \ifcsname engine@mathpreset@#1\endcsname
+    \csname engine@mathpreset@#1\endcsname
   \else
-    \ncar@setmath{#1}{Scale=MatchLowercase}%
+    \engine@setmath{#1}{Scale=MatchLowercase}%
   \fi}
-\newcommand\ncarmathfont[1]{%
-  \iftutex\ncar@mathselect{#1}\else
-    \PackageWarningNoLine{ncar_branding}{\string\ncarmathfont\space needs
+\newcommand\enginemathfont[1]{%
+  \iftutex\engine@mathselect{#1}\else
+    \PackageWarningNoLine{engine_livery}{\string\enginemathfont\space needs
       XeLaTeX or LuaLaTeX}%
   \fi}
-\newcommand\ncarmathversion[2]{%
+\newcommand\enginemathversion[2]{%
   \iftutex
-    \def\ncar@mathversionopt{version=#1}%
-    \ncar@mathselect{#2}%
-    \def\ncar@mathversionopt{}%
+    \def\engine@mathversionopt{version=#1}%
+    \engine@mathselect{#2}%
+    \def\engine@mathversionopt{}%
   \else
-    \PackageWarningNoLine{ncar_branding}{\string\ncarmathversion\space needs
+    \PackageWarningNoLine{engine_livery}{\string\enginemathversion\space needs
       XeLaTeX or LuaLaTeX}%
   \fi}
 \iftutex
-  \ncar@mathselect{\ncar@mathfont}%
+  \engine@mathselect{\engine@mathfont}%
 \else
-  \def\ncar@tmp{serif}\ifx\ncar@mathfont\ncar@tmp\ncar@cmmathtrue\else
-  \def\ncar@tmp{poppins}\ifx\ncar@mathfont\ncar@tmp\else
-  \def\ncar@tmp{keep}\ifx\ncar@mathfont\ncar@tmp\else
-    \PackageWarningNoLine{ncar_branding}{mathfont=\ncar@mathfont\space needs
+  \def\engine@tmp{serif}\ifx\engine@mathfont\engine@tmp\engine@cmmathtrue\else
+  \def\engine@tmp{poppins}\ifx\engine@mathfont\engine@tmp\else
+  \def\engine@tmp{keep}\ifx\engine@mathfont\engine@tmp\else
+    \PackageWarningNoLine{engine_livery}{mathfont=\engine@mathfont\space needs
       XeLaTeX or LuaLaTeX; using Computer Modern math}%
-    \ncar@cmmathtrue
+    \engine@cmmathtrue
   \fi\fi\fi
 \fi
 
 % semibold where available (Poppins SemiBold), else bold
-\ifncar@poppins
+\ifengine@poppins
   \DeclareRobustCommand{\sbseries}{\fontseries{sb}\selectfont}
 \else
   \DeclareRobustCommand{\sbseries}{\bfseries}
@@ -287,21 +287,21 @@
 % "Color-White" (NSF color + white-reversed) lockup on dark backgrounds.
 % The NCAR logo must always be locked up with the NSF logo.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\def\ncar@logodir{\ncarassetdir logos/}
-\def\ncar@tmp{ucar}\ifx\ncar@brand\ncar@tmp
-  \def\ncar@logo@light{\ncar@logodir UCAR-Logo_Color_RGB}
-  \def\ncar@logo@dark {\ncar@logodir UCAR-Logo_White_RGB}
-\else\def\ncar@tmp{ncarucar}\ifx\ncar@brand\ncar@tmp
-  \def\ncar@logo@light{\ncar@logodir NSF-NCAR-UCAR_Logo_FullColor_RGB}
-  \def\ncar@logo@dark {\ncar@logodir NSF-NCAR-UCAR_Logo_Color-White_RGB}
+\def\engine@logodir{\engineassetdir logos/}
+\def\engine@tmp{ucar}\ifx\engine@brand\engine@tmp
+  \def\engine@logo@light{\engine@logodir UCAR-Logo_Color_RGB}
+  \def\engine@logo@dark {\engine@logodir UCAR-Logo_White_RGB}
+\else\def\engine@tmp{ncarucar}\ifx\engine@brand\engine@tmp
+  \def\engine@logo@light{\engine@logodir NSF-NCAR-UCAR_Logo_FullColor_RGB}
+  \def\engine@logo@dark {\engine@logodir NSF-NCAR-UCAR_Logo_Color-White_RGB}
 \else
-  \def\ncar@logo@light{\ncar@logodir NSF-NCAR_Logo_FullColor_RGB}
-  \def\ncar@logo@dark {\ncar@logodir NSF-NCAR_Logo_Color-White_RGB}
+  \def\engine@logo@light{\engine@logodir NSF-NCAR_Logo_FullColor_RGB}
+  \def\engine@logo@dark {\engine@logodir NSF-NCAR_Logo_Color-White_RGB}
 \fi\fi
 
-% \ncarlogo[<includegraphics opts>]{light|dark}
-\newcommand{\ncarlogo}[2][height=1cm]{%
-  \includegraphics[#1]{\csname ncar@logo@#2\endcsname}}
+% \enginelogo[<includegraphics opts>]{light|dark}
+\newcommand{\enginelogo}[2][height=1cm]{%
+  \includegraphics[#1]{\csname engine@logo@#2\endcsname}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Small marks
@@ -318,7 +318,7 @@
 \IfFileExists{listings.sty}{\RequirePackage{listings}}{}
 \AddToHook{begindocument/before}{%
   \@ifpackageloaded{listings}{%
-    \lstdefinestyle{ncar}{
+    \lstdefinestyle{engine}{
       backgroundcolor=\color{LightGray},
       basicstyle=\footnotesize\ttfamily\color{Space},
       keywordstyle=\color{NCARBlue}\bfseries,
@@ -331,7 +331,8 @@
       breaklines=true, showstringspaces=false, captionpos=b,
       numbers=none, numbersep=5pt, tabsize=2,
     }%
-    \lstset{style=ncar}%
+    \lstdefinestyle{ncar}{style=engine}% the style's old name
+    \lstset{style=engine}%
   }{}%
 }
 

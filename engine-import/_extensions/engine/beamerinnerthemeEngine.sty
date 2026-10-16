@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerinnerthemeNCAR}[2026/09/30 v2.3 NSF NCAR / UCAR beamer inner theme]
+\ProvidesPackage{beamerinnerthemeEngine}[2026/09/30 v2.3 engine beamer inner theme]
 %
 % Title page, section divider, closing frame, blocks and lists.
 % Title page layout follows the brand's slide template (Brand Guide p26):
@@ -8,30 +8,30 @@
 % \titlegraphic) masked by the brand waves on the right.
 %
 \mode<presentation>
-\@ifpackageloaded{ncar_branding}{}{\RequirePackage{ncar_branding}}
+\@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
-\providecommand\ncar@titlestyle{dark}
-\newif\ifncar@translucent
-\@ifundefined{ifncar@sectionpages}{\newif\ifncar@sectionpages\ncar@sectionpagestrue}{}
+\providecommand\engine@titlestyle{dark}
+\newif\ifengine@translucent
+\@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
 
 % optional fine print under the title block, e.g. an NSF funding statement
-\def\ncar@fineprint{}
-\newcommand\titlefineprint[1]{\def\ncar@fineprint{#1}}
+\def\engine@fineprint{}
+\newcommand\titlefineprint[1]{\def\engine@fineprint{#1}}
 
 % vertical accent bar spanning box #1, flush with the paper's left edge
-\def\ncar@accentbar#1{%
+\def\engine@accentbar#1{%
   \hbox{\hskip-\beamer@leftmargin
     {\usebeamercolor[fg]{frametitle tab}%
-     \vrule width\ncar@tabwidth height\ht#1 depth\dp#1}%
-    \hskip\dimexpr\beamer@leftmargin-\ncar@tabwidth\relax
+     \vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
+    \hskip\dimexpr\beamer@leftmargin-\engine@tabwidth\relax
     \box#1}}
 
 % ---------------------------------------------------------------------------
 % title page
 % ---------------------------------------------------------------------------
-\defbeamertemplate*{title page}{NCAR}{%
-  \gdef\ncar@bodystyle{title}%
-  \ncar@darkfieldcolors
+\defbeamertemplate*{title page}{Engine}{%
+  \gdef\engine@bodystyle{title}%
+  \engine@darkfieldcolors
   \@tempdima=\ifx\inserttitlegraphic\@empty 0.62\paperwidth\else 0.47\paperwidth\fi
   \setbox\@tempboxa=\vbox{\hsize=\@tempdima \raggedright
     {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}%
@@ -41,15 +41,15 @@
     \fi}%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.06\paperheight
-    \hbox{\def\ncar@tmp{light}%
-      \ifx\ncar@titlestyle\ncar@tmp\ncarlogo[height=0.09\paperheight]{light}%
-      \else\ncarlogo[height=0.09\paperheight]{dark}\fi}%
+    \hbox{\def\engine@tmp{light}%
+      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=0.09\paperheight]{light}%
+      \else\enginelogo[height=0.09\paperheight]{dark}\fi}%
     \vskip0.055\paperheight
     \ifx\insertdate\@empty\else
       {\usebeamerfont{date}\usebeamercolor[fg]{date}\MakeUppercase{\insertdate}\par}%
       \vskip0.02\paperheight
     \fi
-    \ncar@accentbar\@tempboxa
+    \engine@accentbar\@tempboxa
     \vskip0.035\paperheight
     {\usebeamercolor[fg]{title rule}\vrule width0.13\paperwidth height1.2pt}\par
     \vskip0.035\paperheight
@@ -59,30 +59,30 @@
       \ifx\insertinstitute\@empty\else
         {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}\fi}%
     \vfill
-    \ifx\ncar@fineprint\@empty\else
+    \ifx\engine@fineprint\@empty\else
       \vbox{\hsize=\@tempdima \raggedright
-        \usebeamerfont{title fineprint}\ncar@fineprint\par}%
+        \usebeamerfont{title fineprint}\engine@fineprint\par}%
     \fi
     \vskip0.02\paperheight}%
 }
 % keep the title frame free of frame numbering by default
-\def\ncar@titlepageframe{%
+\def\engine@titlepageframe{%
   {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}
 
 % ---------------------------------------------------------------------------
 % section divider;  \sectionsubtitle{...} before \section{...} adds a line
 % under the heading, cleared again once that divider is drawn
 % ---------------------------------------------------------------------------
-\def\ncar@sectionsubtitle{}
-\newcommand\sectionsubtitle[1]{\gdef\ncar@sectionsubtitle{#1}}
+\def\engine@sectionsubtitle{}
+\newcommand\sectionsubtitle[1]{\gdef\engine@sectionsubtitle{#1}}
 % the same, keyed by section number and declared in the preamble (Quarto filter)
-\newcommand\ncarsectionsubtitle[2]{\expandafter\gdef\csname ncar@secsub@#1\endcsname{#2}}
-\defbeamertemplate*{section page}{NCAR}{%
-  \gdef\ncar@bodystyle{section}%
+\newcommand\enginesectionsubtitle[2]{\expandafter\gdef\csname engine@secsub@#1\endcsname{#2}}
+\defbeamertemplate*{section page}{Engine}{%
+  \gdef\engine@bodystyle{section}%
   \usebeamercolor[fg]{section page}%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
-    \hbox{\ncarlogo[height=0.08\paperheight]{dark}}%
+    \hbox{\enginelogo[height=0.08\paperheight]{dark}}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \ifnum\thesection>0
@@ -90,50 +90,50 @@
           \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
       \fi
       {\usebeamerfont{section title}\insertsectionhead\par}%
-      \ifx\ncar@sectionsubtitle\@empty\else
+      \ifx\engine@sectionsubtitle\@empty\else
         \vskip1.2ex
-        {\usebeamerfont{section subtitle}\ncar@sectionsubtitle\par}%
+        {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
       \fi}%
-    \ncar@accentbar\@tempboxa
+    \engine@accentbar\@tempboxa
     \vfill\vfill}%
 }
 \def\insertsectionnumberlabel{\sectionname~\insertsectionnumber}
 \providecommand\sectionname{Section}
-\defbeamertemplate*{subsection page}{NCAR}{%
+\defbeamertemplate*{subsection page}{Engine}{%
   \vbox{\raggedright
     {\usebeamerfont{section number}\usebeamercolor[fg]{structure}%
       \MakeUppercase{\insertsectionhead}\par}\vskip0.8ex
     {\usebeamerfont{subsection title}\usebeamercolor[fg]{frametitle}%
       \insertsubsectionhead\par}}}
 
-\ifncar@sectionpages
+\ifengine@sectionpages
   \AtBeginSection[]{%
-    \@ifundefined{ncar@secsub@\thesection}{}{%
-      \expandafter\gdef\expandafter\ncar@sectionsubtitle\expandafter
-        {\csname ncar@secsub@\thesection\endcsname}}%
+    \@ifundefined{engine@secsub@\thesection}{}{%
+      \expandafter\gdef\expandafter\engine@sectionsubtitle\expandafter
+        {\csname engine@secsub@\thesection\endcsname}}%
     {\setbeamercolor{normal text}{fg=BrandPrimaryText}%
      \begin{frame}[plain,noframenumbering]\sectionpage\end{frame}}%
-    \gdef\ncar@sectionsubtitle{}}
+    \gdef\engine@sectionsubtitle{}}
 \fi
 
 % ---------------------------------------------------------------------------
-% closing frame:  \ncarclosingframe{Thank you!}{contact details ...}
-% or \begin{frame}[ncarclosing] ... \end{frame}
+% closing frame:  \engineclosingframe{Thank you!}{contact details ...}
+% or \begin{frame}[engineclosing] ... \end{frame}
 % ---------------------------------------------------------------------------
-\newcommand\ncarclosingframe[2]{%
-  \begin{frame}[ncarclosing,plain,noframenumbering]
-    \ncarclosingcontent{#1}{#2}
+\newcommand\engineclosingframe[2]{%
+  \begin{frame}[engineclosing,plain,noframenumbering]
+    \engineclosingcontent{#1}{#2}
   \end{frame}}
-\newcommand\ncarclosingcontent[2]{%
+\newcommand\engineclosingcontent[2]{%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
-    \hbox{\def\ncar@tmp{light}%
-      \ifx\ncar@titlestyle\ncar@tmp\ncarlogo[height=0.10\paperheight]{light}%
-      \else\ncarlogo[height=0.10\paperheight]{dark}\fi}%
+    \hbox{\def\engine@tmp{light}%
+      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=0.10\paperheight]{light}%
+      \else\enginelogo[height=0.10\paperheight]{dark}\fi}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \usebeamerfont{section title}#1\par}%
-    \ncar@accentbar\@tempboxa
+    \engine@accentbar\@tempboxa
     \vskip0.05\paperheight
     \vbox{\hsize=0.62\paperwidth \raggedright \usebeamerfont{normal text}#2\par}%
     \vfill\vfill}}
@@ -164,41 +164,41 @@
 \addtobeamertemplate{block begin}{}{\vskip-0.2ex}
 
 % blocks on photo ("feature") frames: translucent so the image shows through
-\def\ncar@featureblocks{%
+\def\engine@featureblocks{%
   \setbeamercolor{block title}{fg=white,bg=Space}%
   \setbeamercolor{block body}{fg=Space,bg=white}%
   \setbeamercolor{block title example}{fg=Space,bg=LightBlue}%
   \setbeamercolor{block body example}{fg=Space,bg=white}%
   \setbeamercolor{block title alerted}{fg=Space,bg=BrandAccent}%
   \setbeamercolor{block body alerted}{fg=white,bg=Space}%
-  \ncar@translucenttrue
+  \engine@translucenttrue
 }
-\def\ncar@blockopacity{\ifncar@translucent\pgfsetfillopacity{0.88}\fi}
-\addtobeamertemplate{block begin}{\ncar@blockopacity}{\pgfsetfillopacity{1}}
-\addtobeamertemplate{block example begin}{\ncar@blockopacity}{\pgfsetfillopacity{1}}
-\addtobeamertemplate{block alerted begin}{\ncar@blockopacity}{\pgfsetfillopacity{1}}
+\def\engine@blockopacity{\ifengine@translucent\pgfsetfillopacity{0.88}\fi}
+\addtobeamertemplate{block begin}{\engine@blockopacity}{\pgfsetfillopacity{1}}
+\addtobeamertemplate{block example begin}{\engine@blockopacity}{\pgfsetfillopacity{1}}
+\addtobeamertemplate{block alerted begin}{\engine@blockopacity}{\pgfsetfillopacity{1}}
 
 % ---------------------------------------------------------------------------
 % slide footnotes: asides at the foot of a frame, under a short muted rule,
 % the marker hanging in the accent color
-%   \ncarfootnotespring          % first thing in the frame
+%   \enginefootnotespring          % first thing in the frame
 %   ... the frame's content ...
-%   \ncarfootnotespring
-%   \begin{ncarfootnotes}
-%     \ncarfootnote{†}{An aside.}
-%     \ncarfootnote{‡}{Another.}
-%   \end{ncarfootnotes}
+%   \enginefootnotespring
+%   \begin{enginefootnotes}
+%     \enginefootnote{†}{An aside.}
+%     \enginefootnote{‡}{Another.}
+%   \end{enginefootnotes}
 % The two springs (filll) outweigh the frame's own centering (fill): the
 % content stays centered above, the footnotes stand on the floor.  The Quarto
 % filter writes all of this for paragraphs that start with † or ‡.
 % ---------------------------------------------------------------------------
-\newcommand\ncarfootnotespring{\par\vskip 0pt plus 1filll\relax}
-\newenvironment{ncarfootnotes}{%
+\newcommand\enginefootnotespring{\par\vskip 0pt plus 1filll\relax}
+\newenvironment{enginefootnotes}{%
   \par\noindent\begin{minipage}[b]{0.6\textwidth}\raggedright
   \scriptsize\color{CoolGray7}%
   {\color{CoolGray4}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
   {\end{minipage}\par}
-\newcommand\ncarfootnote[2]{%
+\newcommand\enginefootnote[2]{%
   \par\hangindent=1.1em\hangafter=1\noindent
   \makebox[1.1em][l]{\textcolor{BrandAccent}{\bfseries #1}}#2\par\vskip0.4ex}
 
@@ -206,38 +206,38 @@
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
 % bar at its left (the Quarto filter writes it for {.caution})
 % ---------------------------------------------------------------------------
-\colorlet{ncarcautionfill}{BrandYellow!18!white}
-\newsavebox\ncar@cautionbox
-\newenvironment{ncarcaution}{%
-  \par\noindent\begin{lrbox}{\ncar@cautionbox}%
+\colorlet{enginecautionfill}{BrandYellow!18!white}
+\newsavebox\engine@cautionbox
+\newenvironment{enginecaution}{%
+  \par\noindent\begin{lrbox}{\engine@cautionbox}%
   \begin{minipage}{\dimexpr\linewidth-3pt-1.1em\relax}}%
   {\end{minipage}\end{lrbox}%
   \hbox{{\color{BrandYellow}\vrule width 3pt}%
-    {\setlength\fboxsep{0.55em}\colorbox{ncarcautionfill}{\usebox\ncar@cautionbox}}}\par}
+    {\setlength\fboxsep{0.55em}\colorbox{enginecautionfill}{\usebox\engine@cautionbox}}}\par}
 
 % ---------------------------------------------------------------------------
 % tables: pandoc's longtable, drawn as the HTML theme draws them -- no top
 % rule, a heavy rule in the brand color under the header, a light one at the
 % foot, and every second body row on Light Gray.  The Quarto filter wraps
-% each header cell in \ncarth and starts each banded row with
-% \rowcolor{ncartableband}.  Hand-written tabulars are left alone.
+% each header cell in \engineth and starts each banded row with
+% \rowcolor{enginetableband}.  Hand-written tabulars are left alone.
 % ---------------------------------------------------------------------------
 \RequirePackage{colortbl}
-\colorlet{ncartableband}{LightGray!60}
-\colorlet{ncartablerule}{BrandText!20!LightGray}
-\newcommand\ncarth[1]{{\usebeamercolor[fg]{normal text}\bfseries
+\colorlet{enginetableband}{LightGray!60}
+\colorlet{enginetablerule}{BrandText!20!LightGray}
+\newcommand\engineth[1]{{\usebeamercolor[fg]{normal text}\bfseries
   \fontsize{\fpeval{0.8*\f@size}pt}{\fpeval{0.8*\strip@pt\dimexpr\f@baselineskip\relax}pt}%
-  \selectfont\ncar@tracking\MakeUppercase{#1}}}
-\def\ncar@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=4}}{}}
+  \selectfont\engine@tracking\MakeUppercase{#1}}}
+\def\engine@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=4}}{}}
 % \arrayrulecolor is global, so put it back after each table
 \AddToHook{env/longtable/begin}{%
-  \let\ncar@arc\CT@arc@
+  \let\engine@arc\CT@arc@
   \setlength\aboverulesep{0pt}\setlength\belowrulesep{0pt}%
   \setlength\extrarowheight{0pt}%
   \def\toprule{}%
   \def\midrule{\arrayrulecolor{BrandPrimaryContrast}\specialrule{1.5pt}{0.3ex}{0pt}}%
-  \def\bottomrule{\arrayrulecolor{ncartablerule}\specialrule{0.6pt}{0pt}{0pt}}}
-\AddToHook{env/longtable/end}{\global\let\CT@arc@\ncar@arc}
+  \def\bottomrule{\arrayrulecolor{enginetablerule}\specialrule{0.6pt}{0pt}{0pt}}}
+\AddToHook{env/longtable/end}{\global\let\CT@arc@\engine@arc}
 
 % ---------------------------------------------------------------------------
 % misc
