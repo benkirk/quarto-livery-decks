@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerouterthemeNCAR}[2026/09/30 v2.3 NSF NCAR / UCAR beamer outer theme]
+\ProvidesPackage{beamerouterthemeEngine}[2026/09/30 v2.3 engine beamer outer theme]
 %
 % Page furniture, following the brand's slide template (Brand Guide p26):
 %   content frames: accent tab at the left edge beside a bold Dark Blue
@@ -7,70 +7,70 @@
 %
 % Every page is drawn by the `background' template according to a page
 % style: normal | title | section | closing | feature.
-%   * frame keys (ncarbg=, ncarclosing) set \ncar@framestyle locally, so the
+%   * frame keys (enginebg=, engineclosing) set \engine@framestyle locally, so the
 %     style holds for every overlay of that frame;
-%   * the title/section page templates set \ncar@bodystyle globally from
+%   * the title/section page templates set \engine@bodystyle globally from
 %     inside the frame body; it is reset after each shipout.
 %
 \mode<presentation>
-\@ifpackageloaded{ncar_branding}{}{\RequirePackage{ncar_branding}}
+\@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
-\providecommand\ncar@footer{minimal}
-\providecommand\ncar@titlestyle{dark}
-\@ifundefined{ifncar@framelogo}{\newif\ifncar@framelogo\ncar@framelogotrue}{}
-\@ifundefined{ifncar@waves}{\newif\ifncar@waves\ncar@wavestrue}{}
+\providecommand\engine@footer{minimal}
+\providecommand\engine@titlestyle{dark}
+\@ifundefined{ifengine@framelogo}{\newif\ifengine@framelogo\engine@framelogotrue}{}
+\@ifundefined{ifengine@waves}{\newif\ifengine@waves\engine@wavestrue}{}
 
-\def\ncar@framestyle{normal}
-\def\ncar@bodystyle{}
-\AddToHook{shipout/after}{\gdef\ncar@bodystyle{}}
-\def\ncar@style{\ifx\ncar@bodystyle\@empty\ncar@framestyle\else\ncar@bodystyle\fi}
-% \ncar@ifstyle{<style>}{<true>}{<false>}
-\def\ncar@ifstyle#1{%
-  \edef\ncar@tmpa{\ncar@style}\def\ncar@tmpb{#1}%
-  \ifx\ncar@tmpa\ncar@tmpb\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
-\def\ncar@ifplainstyle#1#2{% true for everything except normal frames
-  \ncar@ifstyle{normal}{#2}{#1}}
+\def\engine@framestyle{normal}
+\def\engine@bodystyle{}
+\AddToHook{shipout/after}{\gdef\engine@bodystyle{}}
+\def\engine@style{\ifx\engine@bodystyle\@empty\engine@framestyle\else\engine@bodystyle\fi}
+% \engine@ifstyle{<style>}{<true>}{<false>}
+\def\engine@ifstyle#1{%
+  \edef\engine@tmpa{\engine@style}\def\engine@tmpb{#1}%
+  \ifx\engine@tmpa\engine@tmpb\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+\def\engine@ifplainstyle#1#2{% true for everything except normal frames
+  \engine@ifstyle{normal}{#2}{#1}}
 
 % ---------------------------------------------------------------------------
 % geometry (relative to the paper, so 16:9, 16:10 and 4:3 all work)
 % ---------------------------------------------------------------------------
-\newdimen\ncar@margin      \ncar@margin=0.06\paperwidth
-\newdimen\ncar@tabwidth    \ncar@tabwidth=0.018\paperwidth
-\newdimen\ncar@logoheight  \ncar@logoheight=0.06\paperheight
-\newdimen\ncar@logotop     \ncar@logotop=0.055\paperheight
-\setbeamersize{text margin left=\ncar@margin,text margin right=\ncar@margin}
+\newdimen\engine@margin      \engine@margin=0.06\paperwidth
+\newdimen\engine@tabwidth    \engine@tabwidth=0.018\paperwidth
+\newdimen\engine@logoheight  \engine@logoheight=0.06\paperheight
+\newdimen\engine@logotop     \engine@logotop=0.055\paperheight
+\setbeamersize{text margin left=\engine@margin,text margin right=\engine@margin}
 
 % brand lockup shown at the top right of content frames
-\def\ncar@framelogo{\ncarlogo[height=\ncar@logoheight]{light}}
+\def\engine@framelogo{\enginelogo[height=\engine@logoheight]{light}}
 % a user \logo{...} (or Quarto's `logo:') is beamer's secondary logo: set in
 % the footline, bottom right, at its natural size (as in beamer's default
 % themes and the v1 theme), so beamer reserves room for it and content stops
 % above it -- scaled down only if unreasonably tall
-\newsavebox\ncar@userlogo
-\def\ncar@userlogorow{%
+\newsavebox\engine@userlogo
+\def\engine@userlogorow{%
   \ifbeamertemplateempty{logo}{}{%
-    \sbox\ncar@userlogo{\insertlogo}%
-    \ifdim\ht\ncar@userlogo>0.35\paperheight
-      \sbox\ncar@userlogo{\resizebox{!}{0.15\paperheight}{\usebox\ncar@userlogo}}%
+    \sbox\engine@userlogo{\insertlogo}%
+    \ifdim\ht\engine@userlogo>0.35\paperheight
+      \sbox\engine@userlogo{\resizebox{!}{0.15\paperheight}{\usebox\engine@userlogo}}%
     \fi
-    \hbox to\paperwidth{\hfil\usebox\ncar@userlogo
-      \ifdim\wd\ncar@userlogo<0.8\paperwidth\hskip\ncar@margin\fi}%
+    \hbox to\paperwidth{\hfil\usebox\engine@userlogo
+      \ifdim\wd\engine@userlogo<0.8\paperwidth\hskip\engine@margin\fi}%
     \vskip0.01\paperheight}}
-\newdimen\ncar@logowidth
+\newdimen\engine@logowidth
 \AtBeginDocument{%
-  \settowidth\ncar@logowidth{\ncar@framelogo}%
-  \ifncar@framelogo\else\ncar@logowidth=0pt\fi}
+  \settowidth\engine@logowidth{\engine@framelogo}%
+  \ifengine@framelogo\else\engine@logowidth=0pt\fi}
 
 % ---------------------------------------------------------------------------
 % frame title
 % ---------------------------------------------------------------------------
-\defbeamertemplate*{frametitle}{NCAR}{%
+\defbeamertemplate*{frametitle}{Engine}{%
   \nointerlineskip
   \@tempdima=\paperwidth
-  \advance\@tempdima by -2\ncar@margin
-  \ifdim\ncar@logowidth>0pt
-    \ncar@ifstyle{normal}{\advance\@tempdima by -\ncar@logowidth
+  \advance\@tempdima by -2\engine@margin
+  \ifdim\engine@logowidth>0pt
+    \engine@ifstyle{normal}{\advance\@tempdima by -\engine@logowidth
       \advance\@tempdima by -0.03\paperwidth}{}%
   \fi
   \setbox\@tempboxa=\vbox{%
@@ -85,16 +85,16 @@
     \vskip0.045\paperheight
     \hbox{%
       \hskip-\beamer@leftmargin % frametitle is typeset at the text margin
-      \ncar@ifstyle{normal}{%
+      \engine@ifstyle{normal}{%
         {\usebeamercolor[fg]{frametitle tab}%
-         \vrule width\ncar@tabwidth height\ht\@tempboxa depth\dp\@tempboxa}%
-        \hskip\dimexpr\ncar@margin-\ncar@tabwidth\relax
-      }{\hskip\ncar@margin}%
+         \vrule width\engine@tabwidth height\ht\@tempboxa depth\dp\@tempboxa}%
+        \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
+      }{\hskip\engine@margin}%
       \box\@tempboxa}%
     \vskip0.6ex
-    \ncar@ifstyle{normal}{%
+    \engine@ifstyle{normal}{%
       \hbox{{\usebeamercolor[fg]{frametitle rule}%
-        \vrule width\dimexpr\paperwidth-2\ncar@margin\relax height0.4pt}}%
+        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height0.4pt}}%
     }{}%
     \vskip0.02\paperheight}%
 }
@@ -106,19 +106,19 @@
 % beamer's default `sidebar right' also typesets \insertlogo (and the
 % navigation symbols); the logo lives in our footline instead
 \setbeamertemplate{sidebar right}{}
-\defbeamertemplate*{footline}{NCAR}{%
-  \ncar@ifstyle{normal}{\ncar@footline}{%
-    \ncar@ifstyle{full}{\ncar@footline}{%
-    \ncar@ifstyle{feature}{{\color{white}\ncar@footline}}{%
+\defbeamertemplate*{footline}{Engine}{%
+  \engine@ifstyle{normal}{\engine@footline}{%
+    \engine@ifstyle{full}{\engine@footline}{%
+    \engine@ifstyle{feature}{{\color{white}\engine@footline}}{%
       \vbox to 0.075\paperheight{\vfil}}}}}
-\def\ncar@footline{%
-  \ncar@userlogorow
+\def\engine@footline{%
+  \engine@userlogorow
   \vbox to 0.075\paperheight{%
     \vfil
     \hbox to\paperwidth{%
-      \hskip\ncar@margin
+      \hskip\engine@margin
       {\usebeamerfont{page number in head/foot}\insertframenumber}%
-      \def\ncar@tmp{full}\ifx\ncar@footer\ncar@tmp
+      \def\engine@tmp{full}\ifx\engine@footer\engine@tmp
         \hfil
         {\usebeamerfont{footline}\usebeamercolor[fg]{footline}%
           \ifx\insertsectionhead\@empty\else
@@ -126,149 +126,149 @@
           \insertshorttitle\ifx\insertshortdate\@empty\else
           \enspace\textbar\enspace\insertshortdate\fi}%
       \else\hfil\fi
-      \hskip\ncar@margin}%
+      \hskip\engine@margin}%
     \vskip0.035\paperheight}}
 
 % ---------------------------------------------------------------------------
 % backgrounds
 % ---------------------------------------------------------------------------
 % The brand's three wave lines (tools/fit-waves.py), each two cubics from
-% the top edge to the bottom edge.  \ncar@wave@<n>@down{<dx>} is line n
+% the top edge to the bottom edge.  \engine@wave@<n>@down{<dx>} is line n
 % shifted right by dx (a fraction of \paperwidth); @up is the same path
 % bottom to top, for filling between two lines.
-\def\ncar@wave@i@down#1{%
+\def\engine@wave@i@down#1{%
   ({(0.4862+#1)*\paperwidth},1.0000\paperheight)
     .. controls ({(0.5087+#1)*\paperwidth},0.8024\paperheight) and ({(0.6068+#1)*\paperwidth},0.5035\paperheight) .. ({(0.6068+#1)*\paperwidth},0.3234\paperheight)
     .. controls ({(0.6068+#1)*\paperwidth},0.1259\paperheight) and ({(0.5756+#1)*\paperwidth},0.0319\paperheight) .. ({(0.5674+#1)*\paperwidth},0.0000\paperheight)}
-\def\ncar@wave@i@up#1{%
+\def\engine@wave@i@up#1{%
   ({(0.5674+#1)*\paperwidth},0.0000\paperheight)
     .. controls ({(0.5756+#1)*\paperwidth},0.0319\paperheight) and ({(0.6068+#1)*\paperwidth},0.1259\paperheight) .. ({(0.6068+#1)*\paperwidth},0.3234\paperheight)
     .. controls ({(0.6068+#1)*\paperwidth},0.5035\paperheight) and ({(0.5087+#1)*\paperwidth},0.8024\paperheight) .. ({(0.4862+#1)*\paperwidth},1.0000\paperheight)}
-\def\ncar@wave@ii@down#1{%
+\def\engine@wave@ii@down#1{%
   ({(0.5138+#1)*\paperwidth},1.0000\paperheight)
     .. controls ({(0.5402+#1)*\paperwidth},0.8417\paperheight) and ({(0.6570+#1)*\paperwidth},0.5253\paperheight) .. ({(0.6570+#1)*\paperwidth},0.3577\paperheight)
     .. controls ({(0.6570+#1)*\paperwidth},0.1693\paperheight) and ({(0.6286+#1)*\paperwidth},0.0834\paperheight) .. ({(0.6000+#1)*\paperwidth},0.0000\paperheight)}
-\def\ncar@wave@ii@up#1{%
+\def\engine@wave@ii@up#1{%
   ({(0.6000+#1)*\paperwidth},0.0000\paperheight)
     .. controls ({(0.6286+#1)*\paperwidth},0.0834\paperheight) and ({(0.6570+#1)*\paperwidth},0.1693\paperheight) .. ({(0.6570+#1)*\paperwidth},0.3577\paperheight)
     .. controls ({(0.6570+#1)*\paperwidth},0.5253\paperheight) and ({(0.5402+#1)*\paperwidth},0.8417\paperheight) .. ({(0.5138+#1)*\paperwidth},1.0000\paperheight)}
-\def\ncar@wave@iii@down#1{%
+\def\engine@wave@iii@down#1{%
   ({(0.5427+#1)*\paperwidth},1.0000\paperheight)
     .. controls ({(0.5762+#1)*\paperwidth},0.8619\paperheight) and ({(0.7073+#1)*\paperwidth},0.5590\paperheight) .. ({(0.7073+#1)*\paperwidth},0.3818\paperheight)
     .. controls ({(0.7073+#1)*\paperwidth},0.1758\paperheight) and ({(0.6639+#1)*\paperwidth},0.0755\paperheight) .. ({(0.6320+#1)*\paperwidth},0.0000\paperheight)}
-\def\ncar@wave@iii@up#1{%
+\def\engine@wave@iii@up#1{%
   ({(0.6320+#1)*\paperwidth},0.0000\paperheight)
     .. controls ({(0.6639+#1)*\paperwidth},0.0755\paperheight) and ({(0.7073+#1)*\paperwidth},0.1758\paperheight) .. ({(0.7073+#1)*\paperwidth},0.3818\paperheight)
     .. controls ({(0.7073+#1)*\paperwidth},0.5590\paperheight) and ({(0.5762+#1)*\paperwidth},0.8619\paperheight) .. ({(0.5427+#1)*\paperwidth},1.0000\paperheight)}
 
-% \ncar@wdown{<n>}{<dx>} / \ncar@wup{<n>}{<dx>}: line n (1-3), shifted right by dx
-\def\ncar@wdown#1#2{\csname ncar@wave@\romannumeral#1 @down\endcsname{#2}}
-\def\ncar@wup#1#2{\csname ncar@wave@\romannumeral#1 @up\endcsname{#2}}
-% \ncar@field{<n>}{<dx>}{<fill>}: fill the page left of line n
-\def\ncar@field#1#2#3{%
-  \fill[#3] (0,0) -- (0,\paperheight) -- \ncar@wdown{#1}{#2} -- cycle;}
-% \ncar@band{<n>}{<m>}{<dx>}{<fill>}{<opacity>}: fill between lines n and m
-\def\ncar@band#1#2#3#4#5{%
-  \fill[#4,opacity=#5] \ncar@wdown{#1}{#3} -- \ncar@wup{#2}{#3} -- cycle;}
-% \ncar@lines{<dx>}{<color>}: the three lines
-\def\ncar@lines#1#2{%
-  \draw[#2,line width=0.8pt] \ncar@wdown{1}{#1};
-  \draw[#2,line width=0.8pt] \ncar@wdown{2}{#1};
-  \draw[#2,line width=0.8pt] \ncar@wdown{3}{#1};}
-% \ncar@waves{<dx>}{<color>}: lines with the brand's translucent bands between
+% \engine@wdown{<n>}{<dx>} / \engine@wup{<n>}{<dx>}: line n (1-3), shifted right by dx
+\def\engine@wdown#1#2{\csname engine@wave@\romannumeral#1 @down\endcsname{#2}}
+\def\engine@wup#1#2{\csname engine@wave@\romannumeral#1 @up\endcsname{#2}}
+% \engine@field{<n>}{<dx>}{<fill>}: fill the page left of line n
+\def\engine@field#1#2#3{%
+  \fill[#3] (0,0) -- (0,\paperheight) -- \engine@wdown{#1}{#2} -- cycle;}
+% \engine@band{<n>}{<m>}{<dx>}{<fill>}{<opacity>}: fill between lines n and m
+\def\engine@band#1#2#3#4#5{%
+  \fill[#4,opacity=#5] \engine@wdown{#1}{#3} -- \engine@wup{#2}{#3} -- cycle;}
+% \engine@lines{<dx>}{<color>}: the three lines
+\def\engine@lines#1#2{%
+  \draw[#2,line width=0.8pt] \engine@wdown{1}{#1};
+  \draw[#2,line width=0.8pt] \engine@wdown{2}{#1};
+  \draw[#2,line width=0.8pt] \engine@wdown{3}{#1};}
+% \engine@waves{<dx>}{<color>}: lines with the brand's translucent bands between
 % them (the "banded color transition blocks", Brand Guide p24)
-\def\ncar@waves#1#2{%
-  \ncar@band{1}{2}{#1}{#2}{0.18}%
-  \ncar@band{2}{3}{#1}{#2}{0.10}%
-  \ncar@lines{#1}{#2}}
+\def\engine@waves#1#2{%
+  \engine@band{1}{2}{#1}{#2}{0.18}%
+  \engine@band{2}{3}{#1}{#2}{0.10}%
+  \engine@lines{#1}{#2}}
 
 % cover-scaled image clipped to the region right of line 1
-\newsavebox\ncar@imgbox
-\def\ncar@photo#1{% #1 = image box
+\newsavebox\engine@imgbox
+\def\engine@photo#1{% #1 = image box
   \begin{scope}
-    \clip \ncar@wdown{1}{0} -- (\paperwidth,0) -- (\paperwidth,\paperheight) -- cycle;
+    \clip \engine@wdown{1}{0} -- (\paperwidth,0) -- (\paperwidth,\paperheight) -- cycle;
     \node[anchor=north east,inner sep=0pt] at (\paperwidth,\paperheight) {#1};
   \end{scope}}
-% \ncar@coverbox{<width>}{<height>}{<image-or-box>}: scale to cover
-\newcommand\ncar@coverbox[3]{%
-  \sbox\ncar@imgbox{#3}%
-  \@tempdima=\dimexpr#2*\wd\ncar@imgbox/\ht\ncar@imgbox\relax
+% \engine@coverbox{<width>}{<height>}{<image-or-box>}: scale to cover
+\newcommand\engine@coverbox[3]{%
+  \sbox\engine@imgbox{#3}%
+  \@tempdima=\dimexpr#2*\wd\engine@imgbox/\ht\engine@imgbox\relax
   \ifdim\@tempdima<#1\relax
-    \resizebox{#1}{!}{\usebox\ncar@imgbox}%
+    \resizebox{#1}{!}{\usebox\engine@imgbox}%
   \else
-    \resizebox{!}{#2}{\usebox\ncar@imgbox}%
+    \resizebox{!}{#2}{\usebox\engine@imgbox}%
   \fi}
 
 % field behind the title/closing slides (title=dark|light)
-\def\ncar@tmp{light}\ifx\ncar@titlestyle\ncar@tmp
-  \colorlet{NCARTitleField}{white}\else\colorlet{NCARTitleField}{BrandPrimary}\fi
-\def\ncar@titlefield{NCARTitleField}
+\def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp
+  \colorlet{EngineTitleField}{white}\else\colorlet{EngineTitleField}{BrandPrimary}\fi
+\def\engine@titlefield{EngineTitleField}
 
 % where the waves sit on each page type: the shift of the cover art, whose
 % line 1 starts at 0.49 of the width
-\def\ncar@waveshift@title{0.20}     % title without a photo, closing
-\def\ncar@waveshift@section{0.26}
-\def\ncar@waveshift@content{0.27}   % the guide's content slides (p26)
+\def\engine@waveshift@title{0.20}     % title without a photo, closing
+\def\engine@waveshift@section{0.26}
+\def\engine@waveshift@content{0.27}   % the guide's content slides (p26)
 
-\defbeamertemplate*{background}{NCAR}{%
+\defbeamertemplate*{background}{Engine}{%
   \begin{tikzpicture}[x=1pt,y=1pt]
     \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
-    \ncar@ifstyle{normal}{%
-      \ifncar@waves\ncar@lines{\ncar@waveshift@content}{LightGray}\fi
-      \ifncar@framelogo
+    \engine@ifstyle{normal}{%
+      \ifengine@waves\engine@lines{\engine@waveshift@content}{LightGray}\fi
+      \ifengine@framelogo
         \node[anchor=north east,inner sep=0pt]
-          at (\paperwidth-\ncar@margin,\paperheight-\ncar@logotop) {\ncar@framelogo};
+          at (\paperwidth-\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
       \fi
     }{}%
-    \ncar@ifstyle{title}{\ncar@drawtitlebg}{}%
-    \ncar@ifstyle{closing}{\ncar@drawclosingbg}{}%
-    \ncar@ifstyle{section}{\ncar@drawsectionbg}{}%
-    \ncar@ifstyle{feature}{\ncar@drawfeaturebg}{}%
-    \ncar@ifstyle{full}{\ncar@drawfullbg}{}%
+    \engine@ifstyle{title}{\engine@drawtitlebg}{}%
+    \engine@ifstyle{closing}{\engine@drawclosingbg}{}%
+    \engine@ifstyle{section}{\engine@drawsectionbg}{}%
+    \engine@ifstyle{feature}{\engine@drawfeaturebg}{}%
+    \engine@ifstyle{full}{\engine@drawfullbg}{}%
   \end{tikzpicture}}
 
 % title page: field + (photo | waves).  With a photo, the brand's cover: the
 % field runs to line 2, is translucent between lines 2 and 3, and the photo
 % shows right of that.
-\def\ncar@drawtitlebg{%
+\def\engine@drawtitlebg{%
   \ifx\inserttitlegraphic\@empty
-    \ncar@drawclosingbg
+    \engine@drawclosingbg
   \else
-    \ncar@photo{\ncar@coverbox{0.52\paperwidth}{\paperheight}{\inserttitlegraphic}}%
-    \ncar@field{2}{0}{\ncar@titlefield}%
-    \ncar@band{2}{3}{0}{\ncar@titlefield}{0.65}%
-    \ncar@lines{0}{BrandSecondary}%
+    \engine@photo{\engine@coverbox{0.52\paperwidth}{\paperheight}{\inserttitlegraphic}}%
+    \engine@field{2}{0}{\engine@titlefield}%
+    \engine@band{2}{3}{0}{\engine@titlefield}{0.65}%
+    \engine@lines{0}{BrandSecondary}%
   \fi}
-\def\ncar@drawclosingbg{%
-  \fill[\ncar@titlefield] (0,0) rectangle (\paperwidth,\paperheight);
-  \ncar@waves{\ncar@waveshift@title}{BrandSecondary}}
-\def\ncar@drawsectionbg{%
+\def\engine@drawclosingbg{%
+  \fill[\engine@titlefield] (0,0) rectangle (\paperwidth,\paperheight);
+  \engine@waves{\engine@waveshift@title}{BrandSecondary}}
+\def\engine@drawsectionbg{%
   \fill[BrandPrimary] (0,0) rectangle (\paperwidth,\paperheight);
-  \ncar@waves{\ncar@waveshift@section}{BrandSecondary}}
-\def\ncar@drawfeaturebg{%
+  \engine@waves{\engine@waveshift@section}{BrandSecondary}}
+\def\engine@drawfeaturebg{%
   \node[anchor=center,inner sep=0pt] at (0.5\paperwidth,0.5\paperheight)
-    {\ncar@coverbox{\paperwidth}{\paperheight}{\includegraphics{\ncar@featureimage}}};
-  \ifx\ncar@featuretitle\@empty\else\ifx\beamer@frametitle\@empty\else
+    {\engine@coverbox{\paperwidth}{\paperheight}{\includegraphics{\engine@featureimage}}};
+  \ifx\engine@featuretitle\@empty\else\ifx\beamer@frametitle\@empty\else
     \fill[Space,opacity=0.72] (0,\paperheight) rectangle
-      (\paperwidth,\paperheight-\ncar@featuretitle);
+      (\paperwidth,\paperheight-\engine@featuretitle);
   \fi\fi}
 
 % full frame: the image contained (never cropped) between a thin margin and
 % the footline, with the caption line, if any, just above the footline
-\newdimen\ncar@fullpad    \ncar@fullpad=0.025\paperwidth
-\newdimen\ncar@fullfloor
-\def\ncar@drawfullbg{%
-  \ncar@fullfloor=0.075\paperheight
-  \ifx\ncar@fullcaption\@empty\else
+\newdimen\engine@fullpad    \engine@fullpad=0.025\paperwidth
+\newdimen\engine@fullfloor
+\def\engine@drawfullbg{%
+  \engine@fullfloor=0.075\paperheight
+  \ifx\engine@fullcaption\@empty\else
     \node[anchor=south,inner sep=0pt,text width=0.8\paperwidth,align=center,
-      font=\scriptsize,text=CoolGray7] at (0.5\paperwidth,\ncar@fullfloor) {\ncar@fullcaption};
-    \advance\ncar@fullfloor 0.06\paperheight
+      font=\scriptsize,text=CoolGray7] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
+    \advance\engine@fullfloor 0.06\paperheight
   \fi
   \node[anchor=center,inner sep=0pt]
-    at (0.5\paperwidth,{0.5*(\paperheight-\ncar@fullpad+\ncar@fullfloor)})
-    {\includegraphics[width=\dimexpr\paperwidth-2\ncar@fullpad\relax,
-      height=\dimexpr\paperheight-\ncar@fullpad-\ncar@fullfloor\relax,
-      keepaspectratio]{\ncar@fullimage}};}
+    at (0.5\paperwidth,{0.5*(\paperheight-\engine@fullpad+\engine@fullfloor)})
+    {\includegraphics[width=\dimexpr\paperwidth-2\engine@fullpad\relax,
+      height=\dimexpr\paperheight-\engine@fullpad-\engine@fullfloor\relax,
+      keepaspectratio]{\engine@fullimage}};}
 
 % ---------------------------------------------------------------------------
 % frame keys
@@ -278,57 +278,57 @@
 % `environment' key to every frame before the user's keys, which makes it the
 % reset point.  Key handlers run inside \setkeys{beamerframe}, where
 % \setbeamercolor would clobber keyval's state, so color changes are deferred
-% to \ncar@framehook; that runs from \beamer@calculateheadfoot, which beamer
+% to \engine@framehook; that runs from \beamer@calculateheadfoot, which beamer
 % calls right after the keys (\beamer@frametemplate is unusable: `plain'
 % replaces it).  Colors touched by the hook are snapshotted at
 % \begin{document} and restored on reset.
-\def\ncar@framehook{}
-\def\ncar@atframe#1{%
-  \expandafter\def\expandafter\ncar@framehook\expandafter{\ncar@framehook#1}}
-\let\ncar@calculateheadfoot\beamer@calculateheadfoot
-\def\beamer@calculateheadfoot{\ncar@framehook\ncar@calculateheadfoot}
+\def\engine@framehook{}
+\def\engine@atframe#1{%
+  \expandafter\def\expandafter\engine@framehook\expandafter{\engine@framehook#1}}
+\let\engine@calculateheadfoot\beamer@calculateheadfoot
+\def\beamer@calculateheadfoot{\engine@framehook\engine@calculateheadfoot}
 
-\def\ncar@touchedcolors{normal text,title,subtitle,author,institute,date,%
+\def\engine@touchedcolors{normal text,title,subtitle,author,institute,date,%
 frametitle,framesubtitle,structure,item,subitem,subsubitem,local structure,%
 enumerate item,alerted text,block title,block body,block title example,%
 block body example,block title alerted,block body alerted}
-\def\ncar@colorslots{thcfg,thcbg,thcinherits,thcuse}
-\def\ncar@copycolors#1#2{% #1 -> #2 prefixes, for every touched color & slot
-  \@for\ncar@c:=\ncar@touchedcolors\do{%
-    \@for\ncar@s:=\ncar@colorslots\do{%
-      \expandafter\let\csname #2\ncar@s @\ncar@c\expandafter\endcsname
-        \csname #1\ncar@s @\ncar@c\endcsname}}}
-\AtBeginDocument{\ncar@copycolors{beamer@}{ncar@saved@}}
-\def\ncar@resetframe{%
-  \def\ncar@framestyle{normal}\def\ncar@featuretitle{}%
-  \def\ncar@framehook{}\ncar@translucentfalse
-  \ncar@copycolors{ncar@saved@}{beamer@}}
-\let\ncar@envkey\KV@beamerframe@environment
-\def\KV@beamerframe@environment#1{\ncar@resetframe\ncar@envkey{#1}}
+\def\engine@colorslots{thcfg,thcbg,thcinherits,thcuse}
+\def\engine@copycolors#1#2{% #1 -> #2 prefixes, for every touched color & slot
+  \@for\engine@c:=\engine@touchedcolors\do{%
+    \@for\engine@s:=\engine@colorslots\do{%
+      \expandafter\let\csname #2\engine@s @\engine@c\expandafter\endcsname
+        \csname #1\engine@s @\engine@c\endcsname}}}
+\AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}}
+\def\engine@resetframe{%
+  \def\engine@framestyle{normal}\def\engine@featuretitle{}%
+  \def\engine@framehook{}\engine@translucentfalse
+  \engine@copycolors{engine@saved@}{beamer@}}
+\let\engine@envkey\KV@beamerframe@environment
+\def\KV@beamerframe@environment#1{\engine@resetframe\engine@envkey{#1}}
 
-% [ncarbg=<image>]: full-bleed photo; no logo (never on busy photos)
-\define@key{beamerframe}{ncarbg}{%
-  \def\ncar@framestyle{feature}\def\ncar@featureimage{#1}%
-  \def\ncar@featuretitle{0.2\paperheight}%
-  \ncar@atframe{%
+% [enginebg=<image>]: full-bleed photo; no logo (never on busy photos)
+\define@key{beamerframe}{enginebg}{%
+  \def\engine@framestyle{feature}\def\engine@featureimage{#1}%
+  \def\engine@featuretitle{0.2\paperheight}%
+  \engine@atframe{%
     \setbeamercolor{frametitle}{fg=white}%
     \setbeamercolor{framesubtitle}{fg=LightBlue}%
-    \ncar@featureblocks}}
-% [ncarfull=<image>]: the image fills the frame; no title, logo, rule or
-% waves, the frame number kept.  \ncarfullcaption{...} in the body (global:
+    \engine@featureblocks}}
+% [enginefull=<image>]: the image fills the frame; no title, logo, rule or
+% waves, the frame number kept.  \enginefullcaption{...} in the body (global:
 % the background is drawn after the body) adds a caption line.
-\define@key{beamerframe}{ncarfull}{%
-  \def\ncar@framestyle{full}\def\ncar@fullimage{#1}\gdef\ncar@fullcaption{}}
-\def\ncar@fullcaption{}
-\newcommand\ncarfullcaption[1]{\gdef\ncar@fullcaption{#1}}
-% [ncarclosing]: brand field, like the title slide
-\define@key{beamerframe}{ncarclosing}[true]{%
-  \def\ncar@framestyle{closing}%
-  \ncar@atframe{\ncar@darkfieldcolors}}
+\define@key{beamerframe}{enginefull}{%
+  \def\engine@framestyle{full}\def\engine@fullimage{#1}\gdef\engine@fullcaption{}}
+\def\engine@fullcaption{}
+\newcommand\enginefullcaption[1]{\gdef\engine@fullcaption{#1}}
+% [engineclosing]: brand field, like the title slide
+\define@key{beamerframe}{engineclosing}[true]{%
+  \def\engine@framestyle{closing}%
+  \engine@atframe{\engine@darkfieldcolors}}
 
 % colors for text sitting on the brand field (title=dark) or white (light)
-\def\ncar@darkfieldcolors{%
-  \def\ncar@tmp{light}\ifx\ncar@titlestyle\ncar@tmp\else
+\def\engine@darkfieldcolors{%
+  \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp\else
     \setbeamercolor{normal text}{fg=BrandPrimaryText}%
     \usebeamercolor[fg]{normal text}%
     \setbeamercolor{title}{fg=BrandPrimaryText}%

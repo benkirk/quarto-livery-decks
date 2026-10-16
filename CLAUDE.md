@@ -32,7 +32,7 @@ layout, template constraints, and font embedding.
 Other repos can take the framework as a submodule and keep their decks in their
 own tree (README "Using the framework from another repo"); the deck Makefile
 includes `../framework/docs/Make.common`. So nothing may assume a deck sits in
-`docs/<deck>/`: the shared `_quarto.yml` reaches `common/` as `_ncar/`, a link
+`docs/<deck>/`: the shared `_quarto.yml` reaches `common/` as `_engine/`, a link
 Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 
 ## Environment & build
@@ -66,7 +66,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
   `{.fill}`, each independent): the theme (>= 2.5.0) centers and scales the
   body in HTML and PDF. pptx drops slide classes, so `common/slide-layout.lua`
-  writes them as a notes line, `ncar-layout: vcenter scale=1.4`, which
+  writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
   centers a table by an estimated height. `.center` is the theme's, not
   Quarto's (which moves the title). README "Centering and scaling a short slide".
@@ -79,14 +79,14 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - **Full-slide figures** (`{.full}`, theme >= 2.7.0): one diagram or image fills
   the slide, the paragraph after it is a one-line caption. HTML and PDF are the
   theme's (PDF frame key `ncarfull=`). pptx: `slide-layout.lua` writes
-  `ncar-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
+  `engine-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
   one picture to the slide and centers pandoc's caption box under it. Any other
   body is left alone with a warning. `make qa` fails a caption that wraps.
-- **PDF** is `--to ncar-beamer`: the NCAR beamer theme, vendored from
-  `benkirk/NCAR_beamer_template` into `docs/common/_extensions/benkirk/ncar/`.
+- **PDF** is `--to engine-beamer`: the engine beamer theme, vendored from
+  `benkirk/beamer-livery-theme` into `docs/common/_extensions/benkirk/engine/`.
   Don't edit the vendored copy. Change the theme repo, then re-vendor with
-  `cd docs/common && quarto update benkirk/NCAR_beamer_template` (the
+  `cd docs/common && quarto update benkirk/beamer-livery-theme` (the
   vendored `_extension.yml` records no source, so the bare `quarto update`
   fails). The extension's Lua filter loads the theme in place
   through `\input@path`, so nothing is copied into deck directories. Needs
@@ -96,7 +96,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   or add `{.shrink}` to the heading. A full-width 16:9 screenshot is taller than
   the frame's content area; cap it with `{height="72%" fig-align="center"}`
   (pptx ignores the attribute and fits the placeholder anyway).
-- **HTML** is `--to ncar-revealjs`, from the same vendored extension (see
+- **HTML** is `--to engine-revealjs`, from the same vendored extension (see
   "revealjs (HTML) theme" below).
 - **Theme options** (`themeoptions:` in a deck's front matter) replace the
   shared list in `docs/common/_quarto.yml`, so a deck that sets any must
@@ -108,7 +108,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   The waves are fitted to the brand's cover art by `tools/fit-waves.py` in
   the theme repo, which prints the TikZ and Lua blocks to paste.
 - **Format conditionals**: `when-format="beamer"` matches the custom
-  `ncar-beamer` format; `when-format="ncar-beamer"` matches nothing. Always
+  `engine-beamer` format; `when-format="engine-beamer"` matches nothing. Always
   write `beamer`.
 - **Poppins has no arrows or ⚠**: theme 2.6 borrows ⚠ → ← ↔ ⇒ from DejaVu
   Sans in the PDF, so `## ⚠︎ Title` and `A → B` work in every format. Any other
@@ -116,7 +116,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - **Divider subtitles**: a paragraph right after a `#` divider becomes that
   divider's subtitle in every format: `section_subtitle.py` for pptx, the
   theme's `\sectionsubtitle` (via its Lua filter) for beamer, and
-  `ncar-revealjs.lua` for HTML. Only plain
+  `engine-revealjs.lua` for HTML. Only plain
   paragraphs qualify; anything else after a divider stays a slide of its own.
   In pptx the blue field, logo and waves are the template's Section Header
   layout, built by `liveries/ncar/build_divider_layout.py` (rerun it after any
@@ -180,14 +180,14 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 
 ## revealjs (HTML) theme
 
-Lives in the vendored extension (`ncar-revealjs.{scss,css,js,lua}`,
+Lives in the vendored extension (`engine-revealjs.{scss,css,js,lua}`,
 `title-slide.html`); change it in the theme repo, like beamer. Things that
 bit while building it:
 
 - **The slide is 1600x900 slide pixels** (`width`/`height`, `margin: 0`);
   every length in the scss is in those units and reveal scales the whole
   slide. The waves are inline SVG in slide pixels, drawn by the Lua filter.
-- **`url()`s go in `ncar-revealjs.css`, never the scss.** The scss compiles
+- **`url()`s go in `engine-revealjs.css`, never the scss.** The scss compiles
   into `libs/revealjs/dist/theme/`, where relative URLs break; the css is an
   HTML dependency whose resources (fonts, `ncar-assets/web/` logos) are
   copied beside it and inlined under `embed-resources`. Web logos are
@@ -203,8 +203,8 @@ bit while building it:
 - **pandoc's embed-resources inlines `<img src>`, not SVG `<image href>`**:
   the title photo is an `<img>` behind the wave SVG.
 - **Mermaid pins its SVG to its natural width** (tiny labels); the scss
-  lets it fill the column, capped by `calc(600px * var(--ncar-fit))`. The
-  autofit script (`ncar-revealjs.js`) sets `--ncar-fit` when it shrinks a
+  lets it fill the column, capped by `calc(600px * var(--engine-fit))`. The
+  autofit script (`engine-revealjs.js`) sets `--engine-fit` when it shrinks a
   slide; `em` does not work there (mermaid sets `font-size: 16px`). Graphviz
   SVGs get the same cap.
 - **Mermaid must render unscaled.** Quarto renders each diagram inside its

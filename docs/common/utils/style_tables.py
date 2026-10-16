@@ -3,7 +3,7 @@
 
 pandoc writes each table with PowerPoint's "Medium Style 2 - Accent 1" (filled header, banded
 rows) and no way to choose another. This replaces the style with direct cell formatting, which
-PowerPoint and LibreOffice both render, in the livery's colors (ncar-revealjs.scss `table`): a
+PowerPoint and LibreOffice both render, in the livery's colors (engine-revealjs.scss `table`): a
 header row with no fill, bold letter-spaced capitals at 0.8x the body size and a 3 px rule in
 the primary slot (dk2); body rows with a 1 px rule in the derived table-rule blend, every second
 row filled with the table-band blend; columns left alone when pandoc took widths from the

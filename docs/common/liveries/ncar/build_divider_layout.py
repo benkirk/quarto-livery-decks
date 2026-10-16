@@ -3,7 +3,7 @@
 
 The HTML and PDF decks draw every `#` divider on the brand field: NCAR Blue,
 the white logo top left, and the brand's waves in Light Blue with translucent
-bands between them (ncar-revealjs.lua, beamerouterthemeNCAR.sty). This writes
+bands between them (engine-revealjs.lua, beamerouterthemeEngine.sty). This writes
 the same into the template's Section Header layout, which pandoc uses for `#`:
 
   * background `tx2` (dk2, NCAR Blue), master art hidden (showMasterSp="0")
@@ -32,7 +32,7 @@ from lxml import etree
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.pptx"
-LOGO = (HERE.parent.parent / "_extensions/benkirk/ncar/ncar-assets/web"
+LOGO = (HERE.parent.parent / "_extensions/benkirk/engine/ncar-assets/web"
         / "NSF-NCAR_Logo_Color-White_RGB.png")
 # pandoc keeps only the template's media named ppt/media/image*
 LOGO_PART = "ppt/media/image-divider-logo.png"
@@ -55,7 +55,7 @@ LOGO_W = round(LOGO_H * 1200 / 313)
 TITLE_Y, TITLE_W, TITLE_PT = 400, 0.62 * W, 44     # h1: 2.6em of 28px, 62% wide
 BODY_Y, BODY_W, BODY_PT = 520, 0.60 * W, 18        # .ncar-subtitle: 1.1em, 60%
 
-# The brand's three wave lines (ncar-revealjs.lua WAVES, from tools/fit-waves.py
+# The brand's three wave lines (engine-revealjs.lua WAVES, from tools/fit-waves.py
 # in the beamer theme): two cubics each, top edge to bottom edge, as {x, y}
 # fractions of the slide: start, ctrl, ctrl, peak, ctrl, ctrl, end.
 WAVES = [

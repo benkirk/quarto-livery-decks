@@ -1,7 +1,7 @@
 project:
   type: default
 
-quarto-required: ">=1.6.0"   # the NCAR beamer theme needs pandoc >= 3.2.1
+quarto-required: ">=1.6.0"   # the engine beamer theme needs pandoc >= 3.2.1
 
 # `date: last-modified` / `today` render as "September 29, 2026", not ISO
 date-format: "MMMM D, YYYY"
@@ -14,15 +14,15 @@ date-format: "MMMM D, YYYY"
 # moving every slide's notes to its end makes any placement safe.
 # single-body.lua: content after a table or diagram splits the pptx slide;
 # the paragraphs after one move into its caption, at the slide's foot.
-# Paths go through _ncar/, Make.common's link to this directory, so they hold
+# Paths go through _engine/, Make.common's link to this directory, so they hold
 # wherever the deck directory is (here, or in a repo using this as a submodule).
 # _livery/ is Make.common's link to the brand's directory (LIVERY, default ncar).
 filters:
-  - _ncar/strip-raw-figure.lua
-  - _ncar/slide-layout.lua   # pptx: the theme's .center/scale= etc. as a notes line
-  - _ncar/notes-last.lua
-  - _ncar/single-body.lua    # pptx: after notes-last
-  - _ncar/linked-images.lua   # [![](x.png)](url): a link line on the slide
+  - _engine/strip-raw-figure.lua
+  - _engine/slide-layout.lua   # pptx: the theme's .center/scale= etc. as a notes line
+  - _engine/notes-last.lua
+  - _engine/single-body.lua    # pptx: after notes-last
+  - _engine/linked-images.lua   # [![](x.png)](url): a link line on the slide
 
 livery: _livery   # how the engine's Lua filters will find the livery (design section 5)
 
@@ -31,11 +31,11 @@ format:
     reference-doc: _livery/template.pptx
     slide-level: 2
     toc: false
-  ncar-beamer:           # NCAR beamer theme, vendored in common/_extensions
+  engine-beamer:           # engine beamer theme, vendored in common/_extensions
     toc: false
     fontsize: 10pt        # ~pptx text density; beamer has no autofit
     themeoptions: [fonts=bundled]  # bundled Poppins; skip the system-font probe
-  ncar-revealjs:         # NCAR revealjs (HTML) theme, same extension
+  engine-revealjs:         # engine revealjs (HTML) theme, same extension
     toc: false
     # footer: "Deck title | CISL"   # small text, bottom center
     # embed-resources: true         # one self-contained .html (needs chalkboard: false)

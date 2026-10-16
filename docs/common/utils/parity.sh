@@ -15,9 +15,13 @@
 # differences are reported as hints, not failures: reveal's transition timing leaves a
 # few-pixel sliver between two shoots of the same deck.
 #
+# NORMALIZE (a sed program) is applied to the XML parts and the HTML of a snapshot, so a
+# rename can be checked with its nouns folded; apply it to an existing _baseline/ by hand.
+#
 # TRAP: `date: last-modified` renders the .qmd's mtime, so baseline and check must run on
 # the same checkout on the same day, or the title slide differs for that reason alone.
 set -euo pipefail
+: "${NORMALIZE:=}"
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
 verb=${1:-}; shift || true
@@ -31,7 +35,7 @@ snapshot() {   # <deck dir> <out dir>
   unzip -q -o "$ROOT/$dir/$name.pptx" -d "$out/pptx" -x docProps/core.xml docProps/custom.xml
   unzip -l "$ROOT/$dir/$name.pptx" | awk 'NR>3 {print $NF}' | sort >"$out/pptx-members.txt"
   pdftotext -layout "$ROOT/$dir/$name.pdf" "$out/pdf.txt"
-  sed -E 's/id="[0-9a-f]{8}" class="cell"/id="CELL" class="cell"/' "$ROOT/$dir/$name.html" >"$out/deck.html"
+  sed -E 's/id="[0-9a-f]{8}" class="cell"/id="CELL" class="cell"/' "$ROOT/$dir/$name.html" | sed -E "${NORMALIZE:-;}" >"$out/deck.html"
   if [ -f "$ROOT/$dir/screenshots.py" ]; then
     make -C "$ROOT/$dir" screenshots >"$out/screenshots.log" 2>&1 || { tail -20 "$out/screenshots.log"; return 1; }
     cp -R "$ROOT/$dir/screenshots" "$out/screenshots"
@@ -39,9 +43,11 @@ snapshot() {   # <deck dir> <out dir>
   fi
   {
     grep -c 'image-divider-logo.png' "$out/pptx-members.txt" || true
-    cat "$out"/pptx/ppt/slides/*.xml | grep -o 'ncar-section-label' | wc -l | tr -d ' '
+    cat "$out"/pptx/ppt/slides/*.xml | grep -o 'engine-section-label' | wc -l | tr -d ' '
     grep -c 'embeddedFontLst' "$out/pptx/ppt/presentation.xml" || true
   } >"$out/greps.txt"
+  # after the greps, which read the engine's own names
+  [ -z "$NORMALIZE" ] || find "$out/pptx" \( -name '*.xml' -o -name '*.rels' \) -exec sed -i '' -E "$NORMALIZE" {} +
 }
 
 bad=0

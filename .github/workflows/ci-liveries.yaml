@@ -93,7 +93,7 @@ jobs:
           unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "$primary"
           unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
           unzip -p quickstart.pptx ppt/presentation.xml | grep -q "typeface=\"$typeface\""
-          grep -q 'ncar-revealjs.css' quickstart.html
+          grep -q 'engine-revealjs.css' quickstart.html
 
       - name: Upload the deck
         uses: actions/upload-artifact@v4

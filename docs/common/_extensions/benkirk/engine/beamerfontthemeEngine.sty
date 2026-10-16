@@ -1,9 +1,9 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerfontthemeNCAR}[2026/09/30 v2.3 NSF NCAR / UCAR beamer font theme]
+\ProvidesPackage{beamerfontthemeEngine}[2026/09/30 v2.3 engine beamer font theme]
 % Poppins Bold for headlines & subheads, Poppins Regular for body
-% (Brand Guide p20).  Font selection itself lives in ncar_branding.sty.
+% (Brand Guide p20).  Font selection itself lives in engine_livery.sty.
 \mode<presentation>
-\@ifpackageloaded{ncar_branding}{}{\RequirePackage{ncar_branding}}
+\@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 
 \setbeamerfont{normal text}{family=\sffamily}
 \setbeamerfont{structure}{family=\sffamily}
@@ -35,5 +35,5 @@
 \setbeamerfont{caption name}{series=\sbseries}
 \setbeamerfont{footnote}{size=\tiny}
 
-% math: set by ncar_branding (mathfont=; a serif math font by default)
+% math: set by engine_livery (mathfont=; a serif math font by default)
 \mode<all>

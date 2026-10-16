@@ -76,8 +76,8 @@ jobs:
           | Format | Built by |
           |--------|----------|
           | pptx | pandoc and the post-render steps |
-          | HTML | the NCAR revealjs theme |
-          | PDF | the NCAR beamer theme |
+          | HTML | the engine revealjs theme |
+          | PDF | the engine beamer theme |
           EOF
 
       - name: Build pptx and HTML
@@ -89,10 +89,10 @@ jobs:
         run: |
           set -e   # the login shell has no -e: without it only the last line gates
           cd "$DECK"
-          ls -l _quarto.yml _extensions _ncar _livery
+          ls -l _quarto.yml _extensions _engine _livery
           unzip -l hello.pptx | grep -q 'ppt/media/image-divider-logo.png'
-          unzip -p hello.pptx 'ppt/slides/*.xml' | grep -q 'ncar-section-label'
-          grep -q 'ncar-revealjs.css' hello.html
+          unzip -p hello.pptx 'ppt/slides/*.xml' | grep -q 'engine-section-label'
+          grep -q 'engine-revealjs.css' hello.html
 
       # the static site: one shared libs/, references rewritten, an index
       - name: Build the site

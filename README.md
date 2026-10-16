@@ -39,7 +39,7 @@ conda activate ./conda-env
 cd docs/quickstart
 make pptx              # → quickstart.pptx (NCAR-branded, fonts embedded)
 make html              # → quickstart.html (revealjs, NCAR web theme)
-make pdf               # → quickstart.pdf  (beamer, NCAR beamer theme; needs TeX)
+make pdf               # → quickstart.pdf  (beamer, the engine theme; needs TeX)
 ```
 
 Open `quickstart.pptx` (or `quickstart.html` in a browser), then copy
@@ -90,7 +90,7 @@ quarto-docs-framework/
 │   ├── Make.common        # shared per-deck recipes (pptx/html/pdf/clean)
 │   ├── common/
 │   │   ├── _quarto.yml    # shared Quarto config (symlinked into decks)
-│   │   ├── _extensions/benkirk/ncar/  # NCAR beamer theme (vendored; symlinked into decks)
+│   │   ├── _extensions/benkirk/engine/  # the engine (vendored theme; symlinked into decks)
 │   │   ├── liveries/ncar/      # the brand: template.pptx, _brand.yml, livery.yml,
 │   │   │                       #   build/livery.json (generated, committed)
 │   │   └── utils/
@@ -104,7 +104,7 @@ quarto-docs-framework/
 │       ├── Makefile        (3-line include of ../Make.common)
 │       ├── _quarto.yml     (symlink → ../common/_quarto.yml)
 │       ├── _extensions     (symlink → ../common/_extensions, made by make)
-│       ├── _ncar           (symlink → ../common, made by make)
+│       ├── _engine         (symlink → ../common, made by make)
 │       ├── sample.qmd      (the cookbook)
 │       ├── old.qmd         (richer real-world example, kept for reference)
 │       └── images/         (drop your PNGs / JPGs here)
@@ -200,9 +200,9 @@ vendored theme (>= 2.5.0); pptx gets them through step 7.
 
 ### PDF (beamer)
 
-`make pdf` renders with `--to ncar-beamer`. That format comes from the NSF NCAR
-beamer theme ([benkirk/NCAR_beamer_template](https://github.com/benkirk/NCAR_beamer_template)),
-which is vendored in `docs/common/_extensions/benkirk/ncar/`. Make symlinks
+`make pdf` renders with `--to engine-beamer`. That format comes from the engine's
+beamer theme ([benkirk/beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)),
+which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
 `_extensions` into each deck directory, just as it does for `_quarto.yml`.
 
 - **You need Quarto 1.6 or newer** (the conda env pins it): the theme's Lua
@@ -211,7 +211,7 @@ which is vendored in `docs/common/_extensions/benkirk/ncar/`. Make symlinks
   tinytex`) works and installs missing LaTeX packages on the fly. So does a
   system TeX Live. (Plain-LaTeX decks, not Quarto ones, can also be written
   on Overleaf: the theme README's
-  [Overleaf section](https://github.com/benkirk/NCAR_beamer_template#overleaf)
+  [Overleaf section](https://github.com/benkirk/beamer-livery-theme#overleaf)
   has a one-click link.)
 - **No fonts to install.** The theme bundles Poppins and the official logo
   lockups.
@@ -242,11 +242,11 @@ which is vendored in `docs/common/_extensions/benkirk/ncar/`. Make symlinks
 - **Beamer never shrinks overflowing text.** The shared config uses 10pt,
   which matches the pptx template's text density. Add `{.shrink}` to a dense
   slide's heading to scale that one slide down; pptx ignores the class.
-- **To update the theme:** `cd docs/common && quarto update benkirk/NCAR_beamer_template`.
+- **To update the theme:** `cd docs/common && quarto update benkirk/beamer-livery-theme`.
 
 ### HTML (revealjs)
 
-`make html` renders with `--to ncar-revealjs`, the web format from the same
+`make html` renders with `--to engine-revealjs`, the web format from the same
 vendored extension. The deck looks like the PDF: title slide with the brand
 waves (or `titlegraphic:`), section dividers with subtitles, content slides
 with the accent tab and logo, `.feature` and `.closing` slides. The same
@@ -265,7 +265,7 @@ and keep `<deck>_files/` beside it.
 - **One file to share:** in a deck's front matter,
   ```yaml
   format:
-    ncar-revealjs:
+    engine-revealjs:
       embed-resources: true
       chalkboard: false     # the whiteboard can't be embedded
   ```
@@ -392,7 +392,7 @@ make pptx
   everything else from that path. A symlink to it would not work: the path
   would be the link's own directory.
 - **Make links the rest into the deck directory on the first build:**
-  `_quarto.yml`, `_extensions` and `_ncar` (this repo's `docs/common/`, which
+  `_quarto.yml`, `_extensions` and `_engine` (this repo's `docs/common/`, which
   the shared `_quarto.yml` reaches its filters and pptx template through). The
   consumer gitignores those three links, and its build outputs.
 - **Everything else works as it does here:** `DECKS`, `_*.qmd` fragments,
@@ -403,7 +403,7 @@ make pptx
   gitignored there.
 - **A framework fix goes here first.** Merge it here, then move the
   consumer's pin (`git -C docs/presentations/framework pull`, then commit the
-  new pointer). The NCAR beamer theme follows the same path one level down.
+  new pointer). The engine follows the same path one level down.
 - **The deck-polish skill:** a consumer can link
   `.claude/skills/deck-polish` to `docs/presentations/framework/.claude/skills/deck-polish`.
 
