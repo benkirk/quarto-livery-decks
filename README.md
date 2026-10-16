@@ -115,9 +115,10 @@ quarto-docs-framework/
 
 Liveries (`docs/common/liveries/<name>/`, chosen with `make LIVERY=<name>`): `ncar`
 links to the engine's reference livery; `cu` is the University of Colorado Boulder
-(brand palette, TeX Gyre Heros standing in for Helvetica Neue in HTML and PDF, the
-pptx naming Helvetica Neue unembedded, a placeholder unit lockup until the plain CU
-Boulder lockup arrives; its `reference/notes.md` records the decisions). A new livery
+(brand palette, TeX Gyre Heros and Heros Condensed standing in for Helvetica Neue in
+HTML and PDF, the pptx naming Helvetica Neue unembedded, the lockup as a sign-off
+bottom-left with the page number bottom-right, a placeholder unit lockup until the
+plain CU Boulder lockup arrives; its `reference/notes.md` records the decisions). A new livery
 drops in as a sibling directory and CI builds the quickstart deck under it; additional
 shared assets (`docs/common/assets/images/`) likewise.
 

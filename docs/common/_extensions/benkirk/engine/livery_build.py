@@ -67,6 +67,10 @@ def rebase(data: dict, parent: Path, child: Path) -> dict:
             f["path"] = rel(f["path"])
     for img in brand.get("logo", {}).get("images", {}).values():
         img["path"] = rel(img["path"])
+    art = data.get("art", {})
+    for kind in ("title", "section", "closing", "content"):   # static art files; waves are data
+        if isinstance(art.get(kind), str):
+            art[kind] = rel(art[kind])
     pptx = data.get("pptx", {})
     for k in ("template", "fonts"):
         if k in pptx:   # the child's own file when it has one (livery_template.py builds every livery's)
@@ -115,6 +119,23 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("aspect", "geometry", "divider", "art", "pptx", "overrides", "latex"):
         if key in data:
             out[key] = data[key]
+    for corner, legal in (("logo", ("top-right", "top-left", "none")), ("pagenumber", ("bottom-left", "bottom-right"))):
+        v = out.get("geometry", {}).get(corner, {}).get("corner")
+        if v is not None and v not in legal:
+            sys.exit(f"{d.name}: geometry.{corner}.corner {v!r} is not one of {legal}")
+    if "signoff" in data:   # the sign-off lockup: image names from logo.images, resolved to paths
+        so = dict(data["signoff"])
+        images = out["logo"].get("images", {})
+        for v in ("light", "dark"):
+            if so.get(v) not in images:
+                sys.exit(f"{d.name}: signoff.{v} {so.get(v)!r} is not a logo.images name")
+            so[v] = images[so[v]]["path"]
+        if so.get("corner", "bottom-left") not in ("bottom-left", "bottom-right"):
+            sys.exit(f"{d.name}: signoff.corner {so['corner']!r} is not bottom-left or bottom-right")
+        so.setdefault("height", 0.05); so.setdefault("bottom", 0.03); so.setdefault("corner", "bottom-left")
+        if "aspect" not in so:
+            sys.exit(f"{d.name}: signoff.aspect (width / height of the image) is required")
+        out["signoff"] = so
     out.setdefault("pptx", {})
     # the slot contract, from the roles; a livery's own pptx.scheme overrides slot by slot
     scheme = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
@@ -146,6 +167,17 @@ def base_font(livery: dict) -> tuple[str, list]:
     return family, []
 
 
+def heading_font(livery: dict) -> tuple[str, list]:
+    """The headings family and its files when it is a second family with files of its own."""
+    t = livery["typography"]
+    family = t.get("headings", "")
+    if family and family != t.get("base", ""):
+        for font in t.get("fonts", []):
+            if font.get("family") == family and font.get("files"):
+                return family, font["files"]
+    return "", []
+
+
 def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     """The .sty text; `extra` (the override files) goes before the catcode restore."""
     names = livery.get("latex", {}).get("colors", {})
@@ -173,6 +205,13 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for variant in ("light", "dark"):
         p = Path(logo_path(livery, variant, True))
         L.append(f"\\def\\engine@logo@{variant}{{\\engineliverydir {p.with_suffix('').as_posix()}}}")
+    if "signoff" in livery:   # the sign-off lockup at the foot (its corner, height and bottom are geometry)
+        so = livery["signoff"]
+        L.append("% the sign-off lockup (signoff), light and dark, and its box")
+        for variant in ("light", "dark"):
+            L.append(f"\\def\\engine@signoff@{variant}{{\\engineliverydir {Path(so[variant]).with_suffix('').as_posix()}}}")
+        for k in ("height", "bottom", "corner"):
+            L.append(f"\\def\\engine@signoff{k}{{{so[k]}}}")
     family, files = base_font(livery)
     L.append("% fonts: the base family's files, by weight and style")
     L.append(f"\\def\\engine@font@family{{{family}}}")
@@ -184,6 +223,16 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         face = faces.get((f.get("weight", 400), f.get("style") == "italic"))
         if face:
             L.append(f"\\def\\engine@font@{face}{{{Path(f['path']).stem}}}")
+    hfamily, hfiles = heading_font(livery)
+    if hfamily:   # a second family for headings (typography.headings), same shape
+        L.append("% the headings family's files, when it is a family of its own")
+        L.append(f"\\def\\engine@headfont@family{{{hfamily}}}")
+        L.append(f"\\def\\engine@headfont@dir{{\\engineliverydir {Path(hfiles[0]['path']).parent.as_posix()}/}}")
+        L.append(f"\\def\\engine@headfont@ext{{{Path(hfiles[0]['path']).suffix}}}")
+        for f in hfiles:
+            face = faces.get((f.get("weight", 400), f.get("style") == "italic"))
+            if face:
+                L.append(f"\\def\\engine@headfont@{face}{{{Path(f['path']).stem}}}")
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
     for k, v in geom.items():
@@ -217,15 +266,17 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     return "\n".join(L) + "\n"
 
 
-def emit_css(livery: dict) -> str:
+def emit_css(livery: dict, extra: str = "") -> str:
     L = ["/* build/livery.css: GENERATED by livery_build.py from _brand.yml and livery.yml; do not edit.",
          f" * livery {livery['name']}. Attached by engine-revealjs.lua with the font and logo files",
          " * beside it, so the url()s are bare file names. */"]
     family, files = base_font(livery)
-    for f in files:
-        L.append(f'@font-face {{ font-family: "{family}"; font-style: {f.get("style", "normal")}; '
-                 f'font-weight: {f.get("weight", 400)}; font-display: block; '
-                 f'src: url("{Path(f["path"]).name}") format("{"opentype" if Path(f["path"]).suffix == ".otf" else "truetype"}"); }}')
+    hfamily, hfiles = heading_font(livery)
+    for fam, fs in ((family, files), (hfamily, hfiles)):
+        for f in fs:
+            L.append(f'@font-face {{ font-family: "{fam}"; font-style: {f.get("style", "normal")}; '
+                     f'font-weight: {f.get("weight", 400)}; font-display: block; '
+                     f'src: url("{Path(f["path"]).name}") format("{"opentype" if Path(f["path"]).suffix == ".otf" else "truetype"}"); }}')
     props = [f"--engine-{k}: {v};" for k, v in livery["roles"].items()]
     props += [f"--engine-{k}: {v};" for k, v in livery["derived"].items()]
     geom = livery.get("geometry", {})
@@ -250,7 +301,32 @@ def emit_css(livery: dict) -> str:
     if "label-color" in livery.get("divider", {}):
         props.append(f"--engine-divider-label: {livery['divider']['label-color']};")
     props.append(f'--engine-font-family: "{family}";')
+    if hfamily:
+        props.append(f'--engine-heading-font-family: "{hfamily}";')
     props.append("--engine-overlay: color-mix(in srgb, var(--engine-dark) 72%, transparent);")
+    # the content-slide mark's corner (top-right | top-left | none) and the page number's; the title
+    # box gives way on the mark's side
+    corner = logo.get("corner", "top-right")
+    margin = "var(--engine-margin)"
+    beside = f"calc({margin} + 40px + var(--engine-logo-w))"
+    props.append(f"--engine-logo-left: {margin if corner == 'top-left' else 'auto'};")
+    props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else margin};")
+    props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
+    props.append(f"--engine-logo-content: {'none' if corner == 'none' else '\"\"'};")
+    props.append(f"--engine-title-left: {beside if corner == 'top-left' else margin};")
+    props.append(f"--engine-title-right: {beside if corner == 'top-right' else margin};")
+    pn = geom.get("pagenumber", {}).get("corner", "bottom-left")
+    props.append(f"--engine-pagenumber-left: {'auto' if pn == 'bottom-right' else '50px'};")
+    props.append(f"--engine-pagenumber-right: {'50px' if pn == 'bottom-right' else 'auto'};")
+    if "signoff" in livery:
+        so = livery["signoff"]
+        props.append("--engine-signoff-display: block;")
+        props.append(f"--engine-signoff-h: {px(so['height'])};")
+        props.append(f"--engine-signoff-w: {round(so['height'] * H, 1) * so['aspect']:.1f}px;")
+        props.append(f"--engine-signoff-bottom: {px(so['bottom'])};")
+        props.append(f"--engine-signoff-left: {margin if so['corner'] == 'bottom-left' else 'auto'};")
+        props.append(f"--engine-signoff-right: {'auto' if so['corner'] == 'bottom-left' else margin};")
+        props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
     L.append("html:root {\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
@@ -269,7 +345,13 @@ def emit_css(livery: dict) -> str:
              f'{{ background-image: url("{light}"); }}')
     L.append(".reveal .slides section.slide.engine-field::after,\n.reveal .slides section.engine-title.engine-field::after "
              f'{{ background-image: url("{dark}"); }}')
-    return "\n".join(L) + "\n"
+    if "signoff" in livery:
+        light, dark = (Path(livery["signoff"][v]).name for v in ("light", "dark"))
+        L.append(f'.reveal .slides section .engine-signoff {{ background-image: url("{light}"); }}')
+        L.append(".reveal .slides section.engine-field .engine-signoff,\n.reveal .slides section.engine-title.engine-field .engine-signoff "
+                 f'{{ background-image: url("{dark}"); }}')
+    L.append(extra.rstrip("\n"))
+    return "\n".join(L).rstrip("\n") + "\n"
 
 
 def ancestors(d: Path) -> list[Path]:
@@ -279,13 +361,13 @@ def ancestors(d: Path) -> list[Path]:
     return (ancestors(d.parent / parent) if parent else []) + [d]
 
 
-def overrides(d: Path, name: str) -> str:
+def overrides(d: Path, name: str, comment: str = "% {}") -> str:
     """The livery's and its ancestors' overrides/<name>, concatenated, parents first."""
     out = ""
     for a in ancestors(d):
         f = a / "overrides" / name
         if f.exists():
-            out += f"% overrides from {os.path.relpath(f, d)}\n" + f.read_text()
+            out += comment.format(f"overrides from {os.path.relpath(f, d)}") + "\n" + f.read_text()
     return out
 
 
@@ -306,7 +388,7 @@ def outputs(d: Path) -> dict[Path, str]:
     return {build / "livery.json": json.dumps(livery, indent=2, sort_keys=True) + "\n",
             build / "livery.theme": emit_theme(livery),
             build / "livery.sty": emit_sty(livery, sources, overrides(d, "livery-extra.sty")),
-            build / "livery.css": emit_css(livery)}
+            build / "livery.css": emit_css(livery, overrides(d, "livery-extra.css", "/* {} */"))}
 
 
 def main():

@@ -41,6 +41,14 @@
   --engine-divider-label: #011837;
   --engine-font-family: "Poppins";
   --engine-overlay: color-mix(in srgb, var(--engine-dark) 72%, transparent);
+  --engine-logo-left: auto;
+  --engine-logo-right: var(--engine-margin);
+  --engine-logo-position: right top;
+  --engine-logo-content: "";
+  --engine-title-left: var(--engine-margin);
+  --engine-title-right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
+  --engine-pagenumber-left: 50px;
+  --engine-pagenumber-right: auto;
 }
 html:root {
   --mermaid-bg-color: var(--engine-background);

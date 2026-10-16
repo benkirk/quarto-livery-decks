@@ -2,8 +2,10 @@
 \ProvidesPackage{beamerouterthemeEngine}[2026/09/30 v2.3 engine beamer outer theme]
 %
 % Page furniture, following the brand's slide template (Brand Guide p26):
-%   content frames: accent tab at the left edge beside a bold Dark Blue
-%   title, hairline rule, logo top-right, page number bottom-left.
+%   content frames: accent tab at the left edge beside a bold title, hairline
+%   rule, the mark top-right (geometry.logo.corner: top-right | top-left | none),
+%   page number bottom-left (geometry.pagenumber.corner), and the livery's
+%   sign-off lockup at the foot when it has one (signoff.*).
 %
 % Every page is drawn by the `background' template according to a page
 % style: normal | title | section | closing | feature.
@@ -40,6 +42,11 @@
 \newdimen\engine@tabwidth    \engine@tabwidth=\engine@geom@tab\paperwidth
 \newdimen\engine@logoheight  \engine@logoheight=\engine@geom@logoheight\paperheight
 \newdimen\engine@logotop     \engine@logotop=\engine@geom@logotop\paperheight
+\providecommand\engine@geom@logocorner{top-right}
+\providecommand\engine@geom@pagenumbercorner{bottom-left}
+% \engine@ifcorner{<macro>}{<value>}{<true>}{<false>}
+\def\engine@ifcorner#1#2{\edef\engine@tmpa{#1}\def\engine@tmpb{#2}%
+  \ifx\engine@tmpa\engine@tmpb\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
 \setbeamersize{text margin left=\engine@margin,text margin right=\engine@margin}
 
 % brand lockup shown at the top right of content frames
@@ -61,7 +68,19 @@
 \newdimen\engine@logowidth
 \AtBeginDocument{%
   \settowidth\engine@logowidth{\engine@framelogo}%
-  \ifengine@framelogo\else\engine@logowidth=0pt\fi}
+  \ifengine@framelogo\else\engine@logowidth=0pt\fi
+  \engine@ifcorner{\engine@geom@logocorner}{none}{\engine@logowidth=0pt}{}}
+% the sign-off lockup (signoff in livery.yml), at the foot, when the livery has one
+\def\engine@signoff#1{%
+  \ifcsname engine@signoff@#1\endcsname
+    \engine@ifcorner{\engine@signoffcorner}{bottom-right}{%
+      \node[anchor=south east,inner sep=0pt] at (\paperwidth-\engine@margin,\engine@signoffbottom\paperheight)
+        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@signoff@#1\endcsname}};
+    }{%
+      \node[anchor=south west,inner sep=0pt] at (\engine@margin,\engine@signoffbottom\paperheight)
+        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@signoff@#1\endcsname}};
+    }%
+  \fi}
 
 % ---------------------------------------------------------------------------
 % frame title
@@ -90,6 +109,9 @@
         {\usebeamercolor[fg]{frametitle tab}%
          \vrule width\engine@tabwidth height\ht\@tempboxa depth\dp\@tempboxa}%
         \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
+        % a top-left mark: the title starts beside it
+        \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
+          \ifdim\engine@logowidth>0pt\hskip\dimexpr\engine@logowidth+0.03\paperwidth\relax\fi}{}%
       }{\hskip\engine@margin}%
       \box\@tempboxa}%
     \vskip0.6ex
@@ -118,7 +140,8 @@
     \vfil
     \hbox to\paperwidth{%
       \hskip\engine@margin
-      {\usebeamerfont{page number in head/foot}\insertframenumber}%
+      \engine@ifcorner{\engine@geom@pagenumbercorner}{bottom-right}{}{%
+        {\usebeamerfont{page number in head/foot}\insertframenumber}}%
       \def\engine@tmp{full}\ifx\engine@footer\engine@tmp
         \hfil
         {\usebeamerfont{footline}\usebeamercolor[fg]{footline}%
@@ -127,6 +150,8 @@
           \insertshorttitle\ifx\insertshortdate\@empty\else
           \enspace\textbar\enspace\insertshortdate\fi}%
       \else\hfil\fi
+      \engine@ifcorner{\engine@geom@pagenumbercorner}{bottom-right}{%
+        {\usebeamerfont{page number in head/foot}\insertframenumber}}{}%
       \hskip\engine@margin}%
     \vskip0.035\paperheight}}
 
@@ -207,9 +232,15 @@
       \engine@art{content}%
       \ifengine@waves\engine@lines{\engine@waveshift@content}{BrandSurface}\fi
       \ifengine@framelogo
-        \node[anchor=north east,inner sep=0pt]
-          at (\paperwidth-\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
+        \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
+          \node[anchor=north west,inner sep=0pt]
+            at (\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
+        }{\engine@ifcorner{\engine@geom@logocorner}{none}{}{%
+          \node[anchor=north east,inner sep=0pt]
+            at (\paperwidth-\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
+        }}%
       \fi
+      \engine@signoff{light}%
     }{}%
     \engine@ifstyle{title}{\engine@drawtitlebg}{}%
     \engine@ifstyle{closing}{\engine@drawclosingbg}{}%
@@ -229,15 +260,18 @@
     \engine@field{2}{0}{\engine@titlefield}%
     \engine@band{2}{3}{0}{\engine@titlefield}{0.65}%
     \engine@lines{0}{BrandSecondary}%
+    \engine@signoff{dark}%
   \fi}
 \def\engine@drawclosingbg{%
   \fill[\engine@titlefield] (0,0) rectangle (\paperwidth,\paperheight);
   \engine@ifstyle{title}{\engine@art{title}}{\engine@art{closing}}%
-  \engine@waves{\engine@waveshift@title}{BrandSecondary}}
+  \engine@waves{\engine@waveshift@title}{BrandSecondary}%
+  \engine@signoff{dark}}
 \def\engine@drawsectionbg{%
   \fill[BrandPrimary] (0,0) rectangle (\paperwidth,\paperheight);
   \engine@art{section}%
-  \engine@waves{\engine@waveshift@section}{BrandSecondary}}
+  \engine@waves{\engine@waveshift@section}{BrandSecondary}%
+  \engine@signoff{dark}}
 \def\engine@drawfeaturebg{%
   \node[anchor=center,inner sep=0pt] at (0.5\paperwidth,0.5\paperheight)
     {\engine@coverbox{\paperwidth}{\paperheight}{\includegraphics{\engine@featureimage}}};

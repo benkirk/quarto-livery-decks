@@ -8,6 +8,13 @@
 % \titlegraphic) masked by the brand waves on the right.
 %
 \mode<presentation>
+% the mark on a field slide (title, section, closing): the light lockup on a light title
+% field, else the dark one; geometry.logo.corner `none' drops it everywhere, keeping its room
+\def\engine@fieldlogo#1{%
+  \engine@ifcorner{\engine@geom@logocorner}{none}{\vrule width0pt height#1\paperheight}{%
+    \def\engine@tmp{light}%
+    \ifx\engine@titlestyle\engine@tmp\enginelogo[height=#1\paperheight]{light}%
+    \else\enginelogo[height=#1\paperheight]{dark}\fi}}
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
 \providecommand\engine@titlestyle{dark}
@@ -41,9 +48,7 @@
     \fi}%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.06\paperheight
-    \hbox{\def\engine@tmp{light}%
-      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=\engine@geom@logotitle\paperheight]{light}%
-      \else\enginelogo[height=\engine@geom@logotitle\paperheight]{dark}\fi}%
+    \hbox{\engine@fieldlogo{\engine@geom@logotitle}}%
     \vskip0.055\paperheight
     \ifx\insertdate\@empty\else
       {\usebeamerfont{date}\usebeamercolor[fg]{date}\MakeUppercase{\insertdate}\par}%
@@ -82,7 +87,7 @@
   \usebeamercolor[fg]{section page}%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
-    \hbox{\enginelogo[height=\engine@geom@logosection\paperheight]{dark}}%
+    \hbox{\engine@fieldlogo{\engine@geom@logosection}}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \ifnum\thesection>0
@@ -127,9 +132,7 @@
 \newcommand\engineclosingcontent[2]{%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
-    \hbox{\def\engine@tmp{light}%
-      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=\engine@geom@logoclosing\paperheight]{light}%
-      \else\enginelogo[height=\engine@geom@logoclosing\paperheight]{dark}\fi}%
+    \hbox{\engine@fieldlogo{\engine@geom@logoclosing}}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \usebeamerfont{section title}#1\par}%
