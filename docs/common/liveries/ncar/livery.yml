@@ -19,13 +19,12 @@ derived: {}               # blends livery_build.py computes from the roles (BLEN
 aspect: "16:9"
 
 geometry:
-  margin: 0.06            # 96 px of 1600; beamer 0.06\paperwidth
+  margin: 0.06            # 96 px of 1600; beamer 0.06\paperwidth; deck_qa.py's overflow edge is 1 - margin
   tab: 0.018              # 29 px; the divider's orange tab
   logo:
     height: 0.0644        # 58 px of 900
     top: 0.0533           # 48 px; dividers use 0.08 (72 px)
     aspect: 3.934         # NSF NCAR lockup, 1200/305
-  edge: 0.94              # deck_qa.py: text past this fraction of the width overflows
   body-sizes-pt: [20, 18, 16, 14, 12]   # the master's ladder; autofit must never fire
 
 divider:

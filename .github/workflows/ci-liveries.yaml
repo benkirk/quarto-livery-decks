@@ -1,0 +1,106 @@
+name: Check Every Livery
+
+# Renders the quickstart deck once per directory under docs/common/liveries/ with
+# `make LIVERY=<name>` (design section 5, CI), so a livery that cannot build, or
+# whose colors and typeface do not reach the pptx, fails here. The list job turns
+# the directory listing into the matrix, so a new livery joins by existing.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, staging]
+    paths-ignore:
+      - 'README.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+# Login shell, so setup-miniconda's activation applies to every step
+# (see ci-build-sample.yaml).
+defaults:
+  run:
+    shell: bash -el {0}
+
+jobs:
+  list:
+    name: List the liveries
+    runs-on: ubuntu-latest
+    outputs:
+      liveries: ${{ steps.ls.outputs.liveries }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: ls
+        shell: bash
+        run: echo "liveries=$(ls -d docs/common/liveries/*/ | xargs -n1 basename | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build the quickstart deck
+    needs: list
+    if: >-
+      !contains(github.event.head_commit.message, '[skip ci]')
+      && !contains(github.event.head_commit.message, '[ci skip]')
+      && !contains(github.event.head_commit.message, '[no ci]')
+      && !contains(github.event.pull_request.title, '[skip ci]')
+      && !contains(github.event.pull_request.title, '[ci skip]')
+      && !contains(github.event.pull_request.title, '[no ci]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        livery: ${{ fromJson(needs.list.outputs.liveries) }}
+    env:
+      LIVERY: ${{ matrix.livery }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: ./conda-env/
+          environment-file: conda-env.yaml
+          miniforge-version: latest
+          use-mamba: true
+
+      - name: Register bash Jupyter kernel
+        run: python -m bash_kernel.install --sys-prefix
+
+      # quarto wedges against the runner's system Chrome (see ci-build-sample.yaml)
+      - name: Install Chrome Headless Shell (mermaid rendering)
+        run: quarto install chrome-headless-shell --no-prompt
+
+      - name: Check the livery is built
+        run: python3 docs/common/utils/livery_build.py --check "docs/common/liveries/$LIVERY"
+
+      - name: Build pptx and HTML with LIVERY=${{ matrix.livery }}
+        run: timeout 600 make -C docs/quickstart pptx html LIVERY="$LIVERY"
+
+      # the livery reached the output: Make's link and stamp, the template's primary
+      # slot in the theme, the embedded typeface. The HTML check for the livery's css
+      # arrives with the engine (Phase 2); until then the vendored theme's css.
+      - name: Check the livery was applied
+        run: |
+          set -e   # the login shell has no -e: without it only the last line gates
+          cd docs/quickstart
+          test "$(cat .livery)" = "$LIVERY"
+          test "$(basename "$(readlink _livery)")" = "$LIVERY"
+          json=../common/liveries/$LIVERY/build/livery.json
+          primary=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['scheme']['dk2'].lstrip('#'))" "$json")
+          typeface=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['typeface'])" "$json")
+          unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "$primary"
+          unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
+          unzip -p quickstart.pptx ppt/presentation.xml | grep -q "typeface=\"$typeface\""
+          grep -q 'ncar-revealjs.css' quickstart.html
+
+      - name: Upload the deck
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickstart-${{ matrix.livery }}
+          path: |
+            docs/quickstart/quickstart.pptx
+            docs/quickstart/quickstart.html
+          if-no-files-found: error
+          retention-days: 14

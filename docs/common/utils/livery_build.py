@@ -18,6 +18,8 @@ from pathlib import Path
 
 import yaml
 
+from livery import mix
+
 HEX = "#0123456789abcdefABCDEF"
 # (key, role a, role b, share of a): the theme's recipes, ncar-revealjs.scss `table` and
 # `.ncar-caution`, beamerinnerthemeNCAR.sty `ncarcautionfill`
@@ -26,12 +28,6 @@ BLENDS = [
     ("table-band", "surface", "background", 0.60),
     ("caution-fill", "warning", "background", 0.18),
 ]
-
-
-def mix(a: str, b: str, share: float) -> str:
-    """Sass mix(): a's share of each channel plus b's remainder, rounded."""
-    pairs = zip(bytes.fromhex(a.lstrip("#")), bytes.fromhex(b.lstrip("#")))
-    return "#" + "".join(f"{round(x * share + y * (1 - share)):02X}" for x, y in pairs)
 
 
 def merge(base, over):

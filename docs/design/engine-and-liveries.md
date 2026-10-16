@@ -342,6 +342,20 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 1 complete (PR #4): `link_captions.py` and `linked-images.lua`
+  take muted from the livery (the Lua filter reads `build/livery.json` by the `livery:`
+  metadata key, else `$LIVERY_DIR`, else `_livery`); `deck_qa.py`'s edge is `1 - margin`
+  (the redundant `geometry.edge` key is gone); `site_index.py` draws the index from the
+  roles (dark mode blended toward `dark` with `livery.mix()`) and copies the base family's
+  files to `_site/fonts/` as `@font-face`, a Google Fonts link only for a `google` source;
+  `ci-liveries.yaml` is the livery matrix (listed from the directory, so a new livery joins
+  by existing; it checks the stamp and link, the primary slot in `theme1.xml` and the
+  typeface in `embeddedFontLst`; the `livery.css` check waits for the engine). Parity held
+  byte-for-byte for both decks; the QA report and the index page were compared separately
+  (identical report; the index indistinguishable in light and dark mode). Every post-render
+  script and filter now reads the livery; what still names the brand is the engine's
+  (`ncar-layout:`, `ncar-section-*`, the `_ncar` link, the `ncar-*` formats). Next: Phase 2
+  in `beamer-livery-theme`, the engine refactor of section 5.
 - **2026-10-16** Three more post-processors read the livery (PR #3): `section_subtitle.py`
   takes the divider label, the tab (`geometry.tab`, `divider.tab`) and the fonts it measures
   with (`typography.headings` 700, `typography.base` 400, via `livery.font_file()`);
