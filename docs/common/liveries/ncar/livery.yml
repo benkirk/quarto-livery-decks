@@ -35,7 +35,7 @@ art: {}                   # the waves are still procedural (TikZ, SVG, build_div
 pptx:
   template: template.pptx
   typeface: Poppins
-  fonts: fonts/pptx       # *.fntdata embedded by embed_fonts.py
+  fonts: fonts/pptx       # <typeface>-{regular,bold,italic,bolditalic}.fntdata, embed_fonts.py
   scheme:                 # theme1.xml as shipped; the slot contract of design section 4
     dk1: "#00357A"
     lt1: "#FFFFFF"

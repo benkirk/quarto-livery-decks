@@ -91,11 +91,10 @@ quarto-docs-framework/
 │   ├── common/
 │   │   ├── _quarto.yml    # shared Quarto config (symlinked into decks)
 │   │   ├── _extensions/benkirk/ncar/  # NCAR beamer theme (vendored; symlinked into decks)
-│   │   ├── assets/fonts/  # Poppins .fntdata blobs (EOT-subsetted)
 │   │   ├── liveries/ncar/      # the brand: template.pptx, _brand.yml, livery.yml,
 │   │   │                       #   build/livery.json (generated, committed)
 │   │   └── utils/
-│   │       ├── embed_poppins.py    # post-render font embedder
+│   │       ├── embed_fonts.py      # post-render font embedder (the livery's blobs)
 │   │       └── enable_autofit.py   # primes "Shrink text on overflow"
 │   ├── quickstart/                 # the short exemplar deck: copy this one
 │   │   ├── quickstart.qmd
@@ -136,8 +135,8 @@ Per deck, `make pptx` runs:
 3. `python3 ../common/utils/enable_autofit.py <deck>.pptx`
    - Flips every body placeholder's autofit dropdown from "Do not Autofit"
      to "Shrink text on overflow." See "About text autofit" below.
-4. `python3 ../common/utils/embed_poppins.py <deck>.pptx`
-   - Re-injects the four Poppins variants as `<p:embeddedFont>` entries.
+4. `python3 ../common/utils/embed_fonts.py <deck>.pptx`
+   - Re-injects the livery's four font variants as `<p:embeddedFont>` entries.
      Pandoc strips these on reference-doc copy; the script puts them
      back so the font travels with the file.
 5. `python3 ../common/utils/style_footnotes.py <deck>.pptx`
@@ -507,9 +506,9 @@ the `.pptx` will be opened on a machine without Poppins installed —
 without the embed, PowerPoint substitutes (typically Calibri) and the
 deck loses its look.
 
-If portability stops mattering, drop the `embed_poppins.py` step from
-`docs/Make.common` and delete `docs/common/assets/fonts/` +
-`docs/common/utils/embed_poppins.py`.
+If portability stops mattering, drop the `embed_fonts.py` step from
+`docs/Make.common` and delete the liveries' `fonts/pptx/` +
+`docs/common/utils/embed_fonts.py`.
 
 ## License
 
@@ -527,5 +526,5 @@ These parts are **not** covered by that license:
   `docs/common/liveries/` and in the vendored theme. They are trademarks
   used under the
   [UCAR brand guidelines](https://ucar.canto.com/v/branding).
-- **The Poppins font** (`docs/common/assets/fonts/` and the vendored theme)
+- **The Poppins font** (`docs/common/liveries/ncar/fonts/` and the vendored theme)
   is licensed under the [SIL Open Font License](https://openfontlicense.org).

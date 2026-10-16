@@ -17,7 +17,7 @@
 .DELETE_ON_ERROR:
 
 PRESENTATIONS_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
-EMBED_POPPINS      := $(PRESENTATIONS_ROOT)common/utils/embed_poppins.py
+EMBED_FONTS        := $(PRESENTATIONS_ROOT)common/utils/embed_fonts.py
 ENABLE_AUTOFIT     := $(PRESENTATIONS_ROOT)common/utils/enable_autofit.py
 SECTION_SUBTITLE   := $(PRESENTATIONS_ROOT)common/utils/section_subtitle.py
 STYLE_FOOTNOTES    := $(PRESENTATIONS_ROOT)common/utils/style_footnotes.py
@@ -142,7 +142,7 @@ define render_pptx
 	quarto render $< --to pptx -o $@
 	python3 $(SECTION_SUBTITLE) $@
 	python3 $(ENABLE_AUTOFIT) $@
-	python3 $(EMBED_POPPINS) $@
+	python3 $(EMBED_FONTS) $@
 	python3 $(STYLE_FOOTNOTES) $@
 	python3 $(LINK_CAPTIONS) $@
 	python3 $(SLIDE_LAYOUT) $@

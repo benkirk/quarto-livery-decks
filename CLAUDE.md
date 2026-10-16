@@ -43,7 +43,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory.
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe post-processes with
-  `section_subtitle.py`, `enable_autofit.py`, `embed_poppins.py`,
+  `section_subtitle.py`, `enable_autofit.py`, `embed_fonts.py`,
   `style_footnotes.py`, `link_captions.py`, `slide_layout.py`, and
   `style_tables.py` (tables drawn as in the HTML theme).
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
