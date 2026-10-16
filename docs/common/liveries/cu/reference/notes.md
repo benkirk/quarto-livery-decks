@@ -33,9 +33,12 @@ are overridden to the accessible gold and sky blue for the same reason.
 The brand's Helvetica Neue (Condensed for headlines, Regular for body) is Monotype's and cannot be
 bundled. The pptx names `Helvetica Neue` without embedding (Macs have it; Windows substitutes
 Arial, which the deck itself uses as its second font). HTML and PDF bundle TeX Gyre Heros (a free
-Helvetica clone, GUST Font License, from TeX Live) in four faces. Follow-ups: Heros Condensed for
-headings once the engine takes a second family; embedding Heros into the pptx (CFF outlines need
-converting, and PowerPoint's fntdata blobs come from PowerPoint).
+Helvetica clone, GUST Font License, from TeX Live) in four faces, and Heros Condensed as the
+headings family for the brand's condensed headlines (`typography.headings`; the pptx keeps
+Helvetica Neue for titles too: "Helvetica Neue Condensed Bold" is a face of that family on macOS,
+not a family name PowerPoint resolves everywhere, so `pptx.heading-typeface` stays unset).
+Follow-up: embedding Heros into the pptx (CFF outlines need converting, and PowerPoint's fntdata
+blobs come from PowerPoint).
 
 ## Lockups
 
@@ -43,15 +46,21 @@ The deck carries unit lockups only (NSI; the Research & Innovation Office). The 
 lockup lives in the lockup library (ucomm-exten2.colorado.edu, CU login). Until Ben supplies it,
 the RIO lockup from the deck is the placeholder (`logos/cu-rio-lockup.png`, dark text for light
 backgrounds; `cu-rio-lockup-white.png` is the same PNG recolored white by alpha; the deck's own
-white version is an EMF). The brand wants the lockup as a "sign off" at the bottom; the engine
-places the content-slide logo top right, a follow-up if it matters.
+white version is an EMF). The brand wants the lockup as a "sign off" at the bottom, so it is the
+livery's `signoff` (bottom-left, the deck's placement), `geometry.logo.corner` is `none` (no mark
+top right; the NSI flavor puts its own mark top-left) and the page number sits bottom-right as in
+the deck.
 
 ## Art
 
-No wave curves: the title field ends in a straight edge in every format. `art.content` is the
-deck's pre-faded space photo behind content slides (`art/content-faint.jpg`, cropped to 16:9), a
-demonstration of the static-art option; the brand reserves the buffalo marks for Athletics, so
-no buffalo. Swap the file to change it.
+No wave curves: the title field ends in a straight edge in every format. `art.content`
+(`art/content-flatirons.jpg`) is a Flatirons photo desaturated, blended 78% to white and
+softened (contrast 0.8): Ben's choice over the deck's space photo, the deck's own campus photo
+and a faint CU monogram (a translucent lockup alters its colors, which the brand forbids; the
+buffalo marks are Athletics'). Its source is a Reddit wallpaper post (r/wallpaper `hr1v4a`,
+"The Flatirons, Boulder, CO", user HellsJuggernaut, `i.redd.it/o6c18zg6vta51.jpg`): the rights
+are unverified, so before any public use swap it for a photo from the brand's CU-only textured
+backgrounds library or one CU owns. Swap the file to change it.
 
 ## Follow-ups
 

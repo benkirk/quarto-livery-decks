@@ -12,7 +12,9 @@ art, pandoc's caption box centered under it in the muted color, the slide number
 feature: the brand cover, as the title slide with a `titlegraphic:` (pandoc records it in
 docProps/custom.xml): the photo pushed to the back of the slide, cropped to cover, the livery's
 field, band and wave lines over it, the text and logo on the field. Footnote paragraphs
-(style_footnotes.py) keep their size. Idempotent: the marker is gone after one pass."""
+(style_footnotes.py) keep their size. Every slide also gets its layout's slide-number placeholder, which pandoc never writes
+(so decks had no numbers). Idempotent: the marker is gone after one pass, a slide that has a
+number keeps it."""
 
 import copy
 import io
@@ -278,10 +280,17 @@ def cover(slide, width, height, photo):
     for i, xml in enumerate(shapes):
         tree.insert(3 + i, etree.fromstring(xml))
         sid += 1
-    logo_h = GEOM["logo"].get("title", 0.09)
-    logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "dark")),
-                                    int(GEOM["margin"] * width), int(0.06 * height), height=int(logo_h * height))
-    logo.name = "Logo (dark)"
+    if GEOM["logo"].get("corner", "top-right") != "none":   # none: no mark anywhere
+        logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "dark")),
+                                        int(GEOM["margin"] * width), int(0.06 * height),
+                                        height=int(GEOM["logo"].get("title", 0.09) * height))
+        logo.name = "Logo (dark)"
+    if LIVERY.get("signoff"):   # the sign-off lockup, dark, in its corner
+        so, m = LIVERY["signoff"], GEOM["margin"]
+        h = int(so["height"] * height); w = int(so["height"] * so["aspect"] * height)
+        x = int(m * width) if so["corner"] == "bottom-left" else width - int(m * width) - w
+        signoff = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / so["dark"]), x, height - int(so["bottom"] * height) - h, height=h)
+        signoff.name = "Sign-off (dark)"
     return sid
 
 
@@ -325,6 +334,21 @@ def feature_cover(slide, width, height, photo):
         _field_text(shape, COVER_BODY[2])
 
 
+def add_slide_number(slide):
+    """The layout's slide-number placeholder, copied onto the slide (pandoc leaves it out)."""
+    for sh in slide.placeholders:
+        if sh.placeholder_format.type == PP_PLACEHOLDER.SLIDE_NUMBER:
+            return False
+    for sh in slide.slide_layout.placeholders:
+        if sh.placeholder_format.type == PP_PLACEHOLDER.SLIDE_NUMBER:
+            el = copy.deepcopy(sh._element)
+            for e in el.iter(qn("p:cNvPr")):
+                e.set("id", str(max(int(c.get("id")) for c in slide.shapes._spTree.iter(qn("p:cNvPr"))) + 1))
+            slide.shapes._spTree.append(el)
+            return True
+    return False
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("usage: slide_layout.py <file.pptx>", file=sys.stderr)
@@ -344,6 +368,7 @@ def main() -> int:
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
+    numbered = sum(add_slide_number(slide) for slide in prs.slides)
     for slide in prs.slides:
         words = _take_marker(slide)
         if words is None:
@@ -365,7 +390,7 @@ def main() -> int:
             lay_out(slide, words)
         done += 1
     prs.save(str(pptx))
-    print(f"slide_layout: laid out {done} slide(s) → {pptx.name}")
+    print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")
     return 0
 
 

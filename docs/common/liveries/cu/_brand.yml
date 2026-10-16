@@ -38,8 +38,21 @@ typography:
         - path: fonts/texgyreheros-bolditalic.otf
           weight: 700
           style: italic
+    - family: TeX Gyre Heros Cn     # the brand's condensed headlines (Helvetica Neue Condensed)
+      source: file
+      files:
+        - path: fonts/texgyreheroscn-regular.otf
+          weight: 400
+        - path: fonts/texgyreheroscn-italic.otf
+          weight: 400
+          style: italic
+        - path: fonts/texgyreheroscn-bold.otf
+          weight: 700
+        - path: fonts/texgyreheroscn-bolditalic.otf
+          weight: 700
+          style: italic
   base: TeX Gyre Heros
-  headings: TeX Gyre Heros
+  headings: TeX Gyre Heros Cn
 
 logo:
   # placeholders from the NSI reference deck until the plain CU Boulder lockup (lockup library,

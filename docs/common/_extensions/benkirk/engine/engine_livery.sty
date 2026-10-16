@@ -101,6 +101,21 @@
   \fi
 \fi
 
+% the headings family (typography.headings with files of its own, \engine@headfont@* from
+% livery.sty): \engineheadingfont, which the font theme gives the titles
+\iftutex\ifdefined\engine@headfont@family
+  \RequirePackage{fontspec}
+  \edef\engine@tmp{\noexpand\newfontfamily\noexpand\engineheadingfont{\engine@headfont@family}[%
+    Scale          = 1.0,
+    Path           = \engine@headfont@dir,
+    Extension      = \engine@headfont@ext,
+    UprightFont    = \engine@headfont@regular,
+    BoldFont       = \engine@headfont@bold,
+    ItalicFont     = \engine@headfont@italic,
+    BoldItalicFont = \engine@headfont@bolditalic]}%
+  \engine@tmp
+\fi\fi
+
 \ifengine@poppins\else
   \iftutex
     \RequirePackage{fontspec}

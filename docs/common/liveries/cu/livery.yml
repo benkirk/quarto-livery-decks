@@ -16,16 +16,27 @@ roles:
 
 aspect: "16:9"
 
+signoff:                  # the lockup as the brand's "sign off" at the foot of every slide
+  light: rio-color
+  dark: rio-color
+  aspect: 6.413           # the Research & Innovation Office lockup, 1911/298
+  height: 0.05
+  bottom: 0.03
+  corner: bottom-left
+
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06
   tab: 0.018
   logo:
+    corner: none          # no mark top right: the sign-off carries the lockup (the NSI flavor puts its mark top-left)
     height: 0.0644
     top: 0.0533
-    aspect: 6.413         # the Research & Innovation Office lockup, 1911/298
+    aspect: 6.413
     title: 0.09
     section: 0.08
     closing: 0.10
+  pagenumber:
+    corner: bottom-right  # the reference deck's
   divider:
     top: 0.1333
     bottom: 0.0889
@@ -40,8 +51,8 @@ divider:
   tab: true
 
 art:                      # no wave curves: the title field ends in a straight edge
-  content: art/content-faint.jpg   # the reference deck's faded space photo behind content slides,
-                                   # a demonstration of art.content; swap the file for the brand's
+  content: art/content-flatirons.jpg   # the Flatirons, desaturated, 78% white, contrast 0.8 (Ben's pick;
+                                       # reference/notes.md on its source and rights)
 
 latex:                    # build/livery.sty: the palette's LaTeX color names (black and white
   colors:                 # must not shadow xcolor's)

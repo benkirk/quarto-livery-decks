@@ -234,6 +234,21 @@ end
 -- raw tags, not a Div (see the feature body); before the notes, after the body.
 -- Content slides only, as in engine-beamer.lua: a feature slide's text sits on
 -- its panel, and the floor of a closing slide is the brand field.
+-- the sign-off lockup's box on every content, section and closing slide (the title slide's is
+-- in title-slide.html); livery.css shows and places it when the livery has one. Raw tags, not
+-- a Div (the <section> trap).
+local function add_signoff(blocks)
+  local out = pandoc.Blocks({})
+  for _, blk in ipairs(blocks) do
+    out:insert(blk)
+    if blk.t == "Header" and (blk.level == 1 or blk.level == slide_level)
+        and not has_class(blk, "feature") and not has_class(blk, "full") then
+      out:insert(html('<div class="engine-signoff"></div>'))
+    end
+  end
+  return out
+end
+
 local function hoist_footnotes(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
@@ -458,13 +473,14 @@ local function add_dependency(livery)
     local name = pandoc.path.filename(p)
     if not seen[name] then seen[name] = true; table.insert(res, { name = name, path = rel(p) }) end
   end
-  for _, font in ipairs(livery.typography.fonts or {}) do
-    if font.family == livery.typography.base then
+  for _, font in ipairs(livery.typography.fonts or {}) do   -- the base family and a headings family
+    if font.family == livery.typography.base or font.family == livery.typography.headings then
       for _, f in ipairs(font.files or {}) do add(f.path) end
     end
   end
   for _, v in ipairs({ "light", "dark" }) do
     add(livery.logo.images[livery.logo.medium[v]].path)
+    if livery.signoff then add(livery.signoff[v]) end
   end
   for _, kind in ipairs({ "title", "section", "closing", "content" }) do   -- static art files
     if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
@@ -618,6 +634,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = unwrap_layout(hoist_footnotes(out))
+  doc.blocks = unwrap_layout(hoist_footnotes(add_signoff(out)))
   return doc
 end

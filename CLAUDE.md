@@ -103,13 +103,20 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   and wave lines over it (`utils/pptx_waves.py`, shared with the template
   builder), the dark lockup, and the title and body moved onto the field.
   A `###` block is the body's lead line. Slide shapes always draw above layout
-  shapes, so the cover must redraw the waves and logo on the slide itself.
+  shapes, so the cover must redraw the waves, logo and sign-off on the slide itself.
+- **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
+  `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
+  and `livery_template.py` all honor. pandoc writes no slide-number box, so
+  `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
+  `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).
 - **PDF** is `--to engine-beamer`: the engine beamer theme, vendored from
   `benkirk/beamer-livery-theme` into `docs/common/_extensions/benkirk/engine/`.
   Don't edit the vendored copy. Change the theme repo, then re-vendor with
   `cd docs/common && quarto update benkirk/beamer-livery-theme` (the
   vendored `_extension.yml` records no source, so the bare `quarto update`
-  fails). The extension's Lua filter loads the theme in place
+  fails). To build against an engine branch before it is merged, `make
+  vendor-engine` (root Makefile, `ENGINE=../beamer-livery-theme`) syncs that
+  checkout in; the `quarto update` after the merge must then show no diff. The extension's Lua filter loads the theme in place
   through `\input@path`, so nothing is copied into deck directories. Needs
   XeLaTeX (TinyTeX or TeX Live) and Quarto >= 1.6 (`quarto-required` in the
   shared `_quarto.yml`; `conda-env.yaml` pins it). Beamer has no autofit: dense slides
@@ -313,9 +320,12 @@ bit while building it:
 ## CI
 
 `.github/workflows/ci-build-sample.yaml` renders the sample deck;
-`ci-liveries.yaml` renders the quickstart deck once per directory under
-`docs/common/liveries/` with `LIVERY=<name>` and checks the livery reached the
-pptx (a new livery joins the matrix by existing). Notes:
+`ci-liveries.yaml` runs `utils/livery_check.py` on each directory under
+`docs/common/liveries/` (build freshness, the files the data names, the
+template's pandoc compliance and that it rebuilds byte-identically from the
+data, contrast warnings), then renders the quickstart deck under it with
+`LIVERY=<name>` and checks the livery reached the pptx (a new livery joins the
+matrix by existing). Notes:
 login-shell default (`bash -el`) is required for conda activation, and
 because of it a `run:` script must not end with `exit N` (in a login shell
 `exit` runs `~/.bash_logout`, which returns 1 on the runner and overrides

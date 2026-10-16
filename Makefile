@@ -5,7 +5,7 @@ CONDA_ROOT := $(shell conda info --base)
 # Common way to initialize environment across various types of systems
 config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/profile.d/conda.sh
 
-.PHONY: help clean clobber distclean fixperms check perf check-db-vs-orms docker-build docker-up docker-down docker-restart
+.PHONY: help vendor-engine clean clobber distclean fixperms check perf check-db-vs-orms docker-build docker-up docker-down docker-restart
 
 # -------------------------------------------------------------------
 # Default target: help
@@ -27,6 +27,16 @@ help: ## Show this help message
 	@echo -e "\033[1mExample:\033[0m"
 	@echo -e "  \033[33mmake conda-env\033[0m           Create conda environment from conda-env.yaml"
 	@echo ""
+
+# The engine (the vendored theme) comes from benkirk/beamer-livery-theme through
+# `cd docs/common && quarto update benkirk/beamer-livery-theme` once a change is on its main.
+# To build against an engine branch first, sync a checkout of it in; after the merge the
+# quarto update must then show no diff.
+ENGINE ?= ../beamer-livery-theme
+vendor-engine: ## Sync $(ENGINE)/_extensions/engine/ into the vendored copy (an unmerged engine branch)
+	rsync -a --delete --exclude __pycache__ --exclude 'reference/media' --exclude 'reference/*.pptx' \
+	  $(ENGINE)/_extensions/engine/ docs/common/_extensions/benkirk/engine/
+	git status --short docs/common/_extensions
 
 clean: ## Remove temporary files (*~)
 	rm *~

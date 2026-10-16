@@ -62,7 +62,7 @@ MEASURE_JS = r"""
   const shift = parseFloat(s.style.getPropertyValue('--engine-shift')) || 0;
   const fit = parseFloat(s.style.getPropertyValue('--engine-fit')) || 1;
   const scale = parseFloat(s.getAttribute('data-engine-scale')) || 1;
-  const skip = 'h2, svg.engine-waves, .engine-footnotes, aside, style, script, .footer';
+  const skip = 'h2, svg.engine-waves, .engine-footnotes, .engine-signoff, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
   for (const k of kids) for (const e of [k, ...k.querySelectorAll('*')]) {
@@ -200,7 +200,12 @@ def pdf_problems(w, h, words, lines, slide=None):
         for b in solid[i + 1:]:
             vo = min(a[3], b[3]) - max(a[1], b[1])
             ho = min(a[2], b[2]) - max(a[0], b[0])
-            if ho > 1.0 and vo > 0.5 * min(a[3] - a[1], b[3] - b[1]):
+            ha, hb = a[3] - a[1], b[3] - b[1]
+            # a sub- or superscript is its own word, tucked under its base's italic overhang:
+            # much shorter than the base, and the overlap a sliver (TeX Gyre Heros showed it)
+            if min(ha, hb) < 0.75 * max(ha, hb) and ho < 0.5 * min(a[2] - a[0], b[2] - b[0]):
+                continue
+            if ho > 1.0 and vo > 0.5 * min(ha, hb):
                 out.append(("overlapping text", "%r/%r" % (a[4], b[4])))
     if slide and slide.get("kind") == "table":
         out += table_overruns(lines, w, h)
