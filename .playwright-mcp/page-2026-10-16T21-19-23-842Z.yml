@@ -1,0 +1,190 @@
+- main [active] [ref=e1]:
+  - heading "canto" [level=1]
+  - generic:
+    - generic:
+      - generic [ref=e2]:
+        - button "File Input" [ref=e3]
+        - generic: ^ _
+        - generic [ref=e5]:
+          - link [ref=e8] [cursor=pointer]:
+            - /url: /v/branding
+            - img "Logo" [ref=e9]
+          - generic [ref=e11]:
+            - textbox "search box,Enter key to search" [ref=e12]:
+              - /placeholder: Try something like, “close-up of person wearing red backpack”
+            - generic [ref=e13]:
+              - generic [ref=e14] [cursor=pointer]: 
+              - generic [ref=e15] [cursor=pointer]: AI Enabled
+            - generic [ref=e17]: 
+            - generic: Y 2 3 2 3 Y Y Y Y Y Y Y Y Y Y Y
+          - generic [ref=e21]:
+            - button "Select language" [ref=e22] [cursor=pointer]: EN
+            - text: ▼
+        - generic: 
+        - generic: 
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - text: 
+            - paragraph [ref=e27]:
+              - generic [ref=e28]: 3 Items
+          - generic [ref=e29]:
+            - button "Select content type" [ref=e31] [cursor=pointer]:
+              - generic [ref=e32]: 
+              - generic [ref=e33]: All Files
+            - generic [ref=e35]:
+              - generic [ref=e36]:
+                - button "set content sort,now is date" [ref=e38] [cursor=pointer]:
+                  - generic [ref=e39]: 
+                  - text: Sort by Date
+                - text:     
+              - button "set content sort Ascending,now is descending" [ref=e41] [cursor=pointer]
+            - group "set thumbnail size" [ref=e42]:
+              - separator [ref=e43]
+              - button "set thumbnail small size" [pressed] [ref=e44] [cursor=pointer]
+              - button "set thumbnail medium size" [ref=e45] [cursor=pointer]
+              - button "set thumbnail big size" [ref=e46] [cursor=pointer]
+            - group "select content display style" [ref=e47]:
+              - button "display content list view" [ref=e48] [cursor=pointer]: 
+              - button "display content Thumbnail View" [ref=e49] [cursor=pointer]: 
+              - button "display content marsonry View" [pressed] [ref=e50] [cursor=pointer]: 
+              - button "display content map View" [ref=e51] [cursor=pointer]: 
+            - button "show filetr panel and hide treeview" [ref=e53] [cursor=pointer]: "5"
+        - text: 
+      - generic [ref=e55]:
+        - generic:
+          - generic [ref=e58]:
+            - group "sort,refresh,expand" [ref=e59]:
+              - generic [ref=e60]:
+                - button "sort treeview by name,chose a to z or z to a" [ref=e61] [cursor=pointer]:
+                  - generic [ref=e62]: 
+                - button "sort treeview by date,chose Newest or Oldest" [ref=e63] [cursor=pointer]:
+                  - generic [ref=e64]: 
+                - button "sort treeview by type,chose forder or album" [ref=e65] [cursor=pointer]:
+                  - generic [ref=e66]: 
+                - button "sort treeview by custom sort" [ref=e67] [cursor=pointer]:
+                  - generic [ref=e68]: 
+                - button "refresh treeview structure" [ref=e69] [cursor=pointer]:
+                  - generic [ref=e70]: ‰
+                - button "hide forder tree" [ref=e71] [cursor=pointer]:
+                  - generic [ref=e72]: 
+              - generic [ref=e74]:
+                - button "sort treeview by date with Newest" [ref=e75] [cursor=pointer]: Newest
+                - button "sort treeview by date with Oldest" [ref=e76] [cursor=pointer]: Oldest
+            - tree "treeview structure" [ref=e78]:
+              - treeitem "main library" [expanded] [ref=e79] [cursor=pointer]:
+                - text: 
+                - generic [ref=e80]: 
+                - text:  Library
+              - group "the tree under main library" [ref=e81]:
+                - group "node" [ref=e82]:
+                  - treeitem "folder Branding assets" [expanded] [ref=e83]:
+                    - generic [ref=e84] [cursor=pointer]:
+                      - generic [ref=e85]: 
+                      - generic [ref=e86]: 
+                      - text: 
+                      - generic [ref=e87]: Branding assets
+                    - group "the tree under main library" [ref=e88]:
+                      - group "node" [ref=e89]:
+                        - treeitem "album Brand Guide" [ref=e90]:
+                          - generic [ref=e91] [cursor=pointer]:
+                            - text: 
+                            - generic [ref=e92]: 
+                            - text: 
+                            - generic [ref=e93]: Brand Guide
+                        - treeitem "folder Wave graphics" [expanded] [ref=e94]:
+                          - generic [ref=e95] [cursor=pointer]:
+                            - generic [ref=e96]: 
+                            - generic [ref=e97]: 
+                            - text: 
+                            - generic [ref=e98]: Wave graphics
+                          - group "the tree under main library" [ref=e151]:
+                            - group "node" [ref=e152]:
+                              - treeitem "folder Wave graphics (files for graphic designers)" [expanded] [selected] [ref=e153]:
+                                - generic [ref=e154] [cursor=pointer]:
+                                  - generic [ref=e155]: 
+                                  - generic [ref=e156]: 
+                                  - text: 
+                                  - generic [ref=e157]: Wave graphics (files for graphic designers)
+                                - group "the tree under main library" [ref=e189]:
+                                  - group "node" [ref=e190]:
+                                    - treeitem "folder Wave graphics - NCAR (for graphic designers)" [ref=e191]:
+                                      - generic [ref=e192] [cursor=pointer]:
+                                        - generic [ref=e193]: 
+                                        - generic [ref=e194]: 
+                                        - text: 
+                                        - generic [ref=e195]: Wave graphics - NCAR (for graphic designers)
+                                    - treeitem "folder Wave graphics - UCAR (for graphic designers)" [ref=e196]:
+                                      - generic [ref=e197] [cursor=pointer]:
+                                        - generic [ref=e198]: 
+                                        - generic [ref=e199]: 
+                                        - text: 
+                                        - generic [ref=e200]: Wave graphics - UCAR (for graphic designers)
+                                    - treeitem "folder Wave graphics - neutral (for graphic designers)" [ref=e201]:
+                                      - generic [ref=e202] [cursor=pointer]:
+                                        - generic [ref=e203]: 
+                                        - generic [ref=e204]: 
+                                        - text: 
+                                        - generic [ref=e205]: Wave graphics - neutral (for graphic designers)
+                              - treeitem "folder Wave graphics (.png files for general use)" [ref=e158]:
+                                - generic [ref=e159] [cursor=pointer]:
+                                  - generic [ref=e160]: 
+                                  - generic [ref=e161]: 
+                                  - text: 
+                                  - generic [ref=e162]: Wave graphics (.png files for general use)
+                        - treeitem "folder Logos" [ref=e99]:
+                          - generic "Refreshed organization logos, current as of October 2025." [ref=e100] [cursor=pointer]:
+                            - generic [ref=e101]: 
+                            - generic [ref=e102]: 
+                            - text: 
+                            - generic [ref=e103]: Logos
+              - text:           F
+            - generic [ref=e104]:
+              - text:   · 8 
+              - button "folder detail" [ref=e105] [cursor=pointer]:
+                - generic [ref=e106]: 
+              - text: F     · F · F
+          - generic [ref=e107]:  
+        - generic [ref=e109]:
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - generic [ref=e114] [cursor=pointer]: 
+              - generic [ref=e115]: Library/
+            - generic [ref=e116]:
+              - generic [ref=e117] [cursor=pointer]: 
+              - generic [ref=e163]: Branding assets/
+            - generic [ref=e164]:
+              - generic [ref=e165] [cursor=pointer]: 
+              - generic [ref=e206]: Wave graphics/
+            - generic [ref=e207]:
+              - generic [ref=e208] [cursor=pointer]: 
+              - text: Wave graphics (files for graphic designers)
+          - list [ref=e122]:
+            - listitem [ref=e209]: 2025-10-17
+            - listitem [ref=e210] [cursor=pointer]:
+              - generic:
+                - generic [ref=e211]: 
+                - generic [ref=e214]:
+                  - generic [ref=e216]:
+                    - text: 
+                    - generic [ref=e217]: 
+                  - generic [ref=e219]:
+                    - generic [ref=e220]: Wave graphics - NCAR (for graphic designers)
+                    - generic "Download" [ref=e223]: w
+                    - text: w
+            - listitem [ref=e224] [cursor=pointer]:
+              - generic [ref=e225]:
+                - generic [ref=e227]:
+                  - text: 
+                  - generic [ref=e228]: 
+                - generic [ref=e229]: Wave graphics - UCAR (for graphic designers)
+            - listitem [ref=e232] [cursor=pointer]:
+              - generic [ref=e233]:
+                - generic [ref=e235]:
+                  - text: 
+                  - generic [ref=e236]: 
+                - generic [ref=e237]: Wave graphics - neutral (for graphic designers)
+          - text:    !       
+      - generic: "   8 :             ·         8 ·  : ·           F        >  "
+  - textbox "elastic"
+  - status [ref=e150]
+  - textbox "elastic"

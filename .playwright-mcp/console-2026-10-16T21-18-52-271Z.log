@@ -1,0 +1,130 @@
+[    1164ms] [WARNING] The specified value "!" does not conform to the required format.  The value must be a valid CSS color. @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1215ms] [WARNING] $modal is now deprecated. Use $uibModal instead. @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1289ms] [ERROR] TypeError: Cannot read properties of null (reading 'classList')
+    at $scope.hasEyebrowBanner (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:3126602)
+    at fn (eval at compile (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:404731), <anonymous>:4:525)
+    at a.$eval (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:427509)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:453936
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:362033
+    at i.$eval (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:427509)
+    at i.$digest (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:425832)
+    at i.$apply (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:427789)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:379789
+    at b (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382477) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1291ms] [ERROR] TypeError: Cannot read properties of null (reading 'classList')
+    at $scope.hasEyebrowBanner (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:3126602)
+    at Array.fn1 (eval at compile (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:404731), <anonymous>:4:972)
+    at Object.get (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:418825)
+    at i.$digest (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:425947)
+    at i.$apply (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:427789)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:379789
+    at b (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382477)
+    at d.onload (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382178)
+    at XMLHttpRequest.nrWrapper (https://ucar.canto.com/index.html:16:26434) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1432ms] [ERROR] TypeError: Cannot read properties of null (reading 'classList')
+    at $scope.hasEyebrowBanner (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:3126602)
+    at Array.fn1 (eval at compile (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:404731), <anonymous>:4:972)
+    at Object.get (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:418825)
+    at i.$digest (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:425947)
+    at i.$apply (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:427789)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:379789
+    at b (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382477)
+    at d.onload (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382178)
+    at XMLHttpRequest.nrWrapper (https://ucar.canto.com/index.html:16:26434) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1473ms] [ERROR] TypeError: Cannot read properties of null (reading 'classList')
+    at $scope.defaultDisplayTreeview (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:3189283)
+    at Object.fn (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:3629310)
+    at i.$digest (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:426108)
+    at i.$apply (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:427789)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:379789
+    at b (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382477)
+    at d.onload (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:5:382178)
+    at XMLHttpRequest.nrWrapper (https://ucar.canto.com/index.html:16:26434) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1483ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at su (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:106183)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:124202 @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:9
+[    1484ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at su (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:106183)
+    at https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:124202 @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1484ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at eu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:102779)
+    at Vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:118258) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:9
+[    1485ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at eu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:102779)
+    at Vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:118258) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1485ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at eu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:102779)
+    at Vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:118258) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:9
+[    1485ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at eu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:102779)
+    at Vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:118258) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4
+[    1486ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at eu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:102779)
+    at Vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:118258) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:9
+[    1486ms] [ERROR] TypeError: a is not a function
+    at MN (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:1052:118)
+    at mi (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:60319)
+    at ws (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:119591)
+    at vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108747)
+    at hu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108675)
+    at mu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:108538)
+    at iu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:105679)
+    at Ao (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:46678)
+    at eu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:102779)
+    at Vu (https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/flight-legacy/index.min.2026.09.15.195240.js:10:118258) @ https://d2hqlhbe1d8j2s.cloudfront.net/static/2nd/assets/app.js?version=2419:4

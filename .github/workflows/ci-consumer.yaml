@@ -90,7 +90,7 @@ jobs:
           set -e   # the login shell has no -e: without it only the last line gates
           cd "$DECK"
           ls -l _quarto.yml _extensions _engine _livery
-          unzip -l hello.pptx | grep -q 'ppt/media/image-divider-logo.png'
+          unzip -p hello.pptx ppt/slideLayouts/slideLayout3.xml | grep -q 'name="Section Header"'
           unzip -p hello.pptx 'ppt/slides/*.xml' | grep -q 'engine-section-label'
           grep -q 'livery.css' hello.html
 

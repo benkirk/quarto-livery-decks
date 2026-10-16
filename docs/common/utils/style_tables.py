@@ -22,7 +22,7 @@ import livery as livery_mod
 LIVERY      = livery_mod.load()
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
 PX          = 7620                     # EMU per revealjs px (1600 px wide)
-HEAD_RULE   = (3 * PX, livery_mod.scheme(LIVERY, "dk2"))        # 3px solid var(--ncar-primary)
+HEAD_RULE   = (3 * PX, livery_mod.scheme(LIVERY, "dk2"))        # 3px solid var(--engine-primary)
 ROW_RULE    = (1 * PX, livery_mod.derived(LIVERY, "table-rule"))  # mix(foreground, surface, 20%)
 BAND_FILL   = livery_mod.derived(LIVERY, "table-band")            # surface at 60% on white
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td

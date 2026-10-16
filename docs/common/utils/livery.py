@@ -56,3 +56,11 @@ def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False
                 return Path(livery["dir"]) / f["path"]
     raise FileNotFoundError(f"livery {livery['name']}: no {family} file at weight {weight}"
                             f"{' italic' if italic else ''}")
+
+
+def logo_path(livery: dict, variant: str, print_: bool = False) -> str:
+    """The light or dark logo's path, relative to the livery dir (the `-print` image for LaTeX)."""
+    images, name = livery["logo"]["images"], livery["logo"]["medium"][variant]
+    if print_ and name + "-print" in images:
+        name += "-print"
+    return images[name]["path"]

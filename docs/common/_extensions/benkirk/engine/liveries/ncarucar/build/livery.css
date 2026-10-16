@@ -25,8 +25,8 @@
   --engine-alert-text: #B5540A;
   --engine-rule: #A9B8CB;
   --engine-logo-h: 58px;
-  --engine-logo-w: 228.2px;
-  --engine-logo-aspect: 3.934;
+  --engine-logo-w: 185.9px;
+  --engine-logo-aspect: 3.206;
   --engine-logo-top: 48px;
   --engine-logo-title-h: 81px;
   --engine-logo-section-h: 72px;
@@ -51,6 +51,6 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
 }
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("NSF-NCAR_Logo_FullColor_RGB.png"); }
+.reveal .slides section.engine-title::after { background-image: url("NSF-NCAR-UCAR_Logo_FullColor_RGB.png"); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("NSF-NCAR_Logo_Color-White_RGB.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: url("NSF-NCAR-UCAR_Logo_Color-White_RGB.png"); }

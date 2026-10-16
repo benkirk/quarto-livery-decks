@@ -1,6 +1,5 @@
 # The NSF NCAR | UCAR flavor: the ncar palette and roles with the joint lockup
-# (ncar_branding.sty's brand=ncarucar). No RGB web copy of the lockup exists and the CMYK
-# conversion is off-color, so the HTML deck shows the NSF NCAR lockup (tools/web-logos.sh).
+# (ncar_branding.sty's brand=ncarucar); the RGB web copies are the brand kit's (Canto).
 meta:
   name: NSF NCAR | UCAR
   link: https://ncar.ucar.edu
@@ -8,9 +7,9 @@ meta:
 logo:
   images:
     ncarucar-color:
-      path: ../ncar/logos/NSF-NCAR_Logo_FullColor_RGB.png
+      path: logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.png
     ncarucar-white:
-      path: ../ncar/logos/NSF-NCAR_Logo_Color-White_RGB.png
+      path: logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.png
     ncarucar-color-print:
       path: logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.pdf
     ncarucar-white-print:

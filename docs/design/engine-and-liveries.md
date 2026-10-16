@@ -342,6 +342,27 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 3 begun, a light pass on the NCAR family first (Ben: "refreshing our
+  own NCAR/ucar/ucp from the sample pptx and canto elements, then CU"). `livery_inspect.py`
+  (this repo PR #10) read UCAR Communications' four official templates into each livery's
+  `reference/report.md` (beamer-livery-theme PR #8): a 10 x 5.625 in canvas, 5% margins with
+  the body from 27% down, PowerPoint-named layouts with few placeholders (the covers are flat
+  pictures), a theme two digits off the guide, Aptos as scheme font. Decided with Ben: keep
+  the 13.33 x 7.5 in canvas, a full-width body with small margins, the title slide rebuilt
+  from parts. `livery_template.py` (this repo PR #11) generates a livery's `template.pptx`
+  from its data: theme slots by the slot contract (`livery_build.py` now derives
+  `pptx.scheme` from the roles, `SLOT_ROLES`; a flavor no longer inherits its parent's), the
+  typeface, the master with title, tab, rule, lockup and faint waves at the HTML/PDF geometry,
+  the seven pandoc layouts with the chrome placeholders at idx 20-22 (a trap: pandoc matches
+  content boxes by idx, and a date at idx 2 swallowed a second column). The four liveries
+  (beamer-livery-theme PR #9) each have their own generated template; the UCAR, UCP and
+  NSF NCAR-UCAR web logos are the brand kit's RGB PNGs from Canto, whose portal is public
+  with a REST API (ids in the memory notes). Reviewed: both reference decks rendered with
+  LibreOffice (Poppins installed in its profile fonts) slide by slide. The ncar pptx is thus
+  no longer byte-parity with upstream, by design; PDF and HTML are unchanged. Next: the title
+  photo (`titlegraphic:` into the pptx title slide, clipped to wave line 1), `livery_check.py`,
+  then the Canto wave vectors (PDF-compatible .ai: Fills A-H, Lines-Only, narrow) as an art
+  option to reassess the curves-as-data choice, then CU.
 - **2026-10-16** Phase 2 complete, step 5 (beamer-livery-theme PR #7, this repo PR #9): the
   waves leave the engine as data, not files. Decided with Ben against section 4's letter:
   static art per slide kind would freeze the roles' colors into files per livery, drop the

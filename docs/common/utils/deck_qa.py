@@ -42,8 +42,8 @@ MEASURE_JS = r"""
   const cls = [...s.classList];
   if (s.classList.contains('full')) {
     // use: the drawn figure's share of its box (it keeps its shape, so one axis is full)
-    const box = s.querySelector(':scope > .ncar-full-figure');
-    const cap = s.querySelector(':scope > .ncar-full-caption');
+    const box = s.querySelector(':scope > .engine-full-figure');
+    const cap = s.querySelector(':scope > .engine-full-caption');
     const fig = box && box.querySelector('svg:not(svg *), img');
     let use = 0;
     if (fig) {
@@ -59,9 +59,9 @@ MEASURE_JS = r"""
             capOver: !!cap && cap.scrollHeight > cap.clientHeight + 1, noFigure: !fig};
   }
   const sr = s.getBoundingClientRect(), cs = getComputedStyle(s);
-  const shift = parseFloat(s.style.getPropertyValue('--ncar-shift')) || 0;
-  const fit = parseFloat(s.style.getPropertyValue('--ncar-fit')) || 1;
-  const scale = parseFloat(s.getAttribute('data-ncar-scale')) || 1;
+  const shift = parseFloat(s.style.getPropertyValue('--engine-shift')) || 0;
+  const fit = parseFloat(s.style.getPropertyValue('--engine-fit')) || 1;
+  const scale = parseFloat(s.getAttribute('data-engine-scale')) || 1;
   const skip = 'h2, svg.engine-waves, .engine-footnotes, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
@@ -273,6 +273,12 @@ def check_html(decks, qa):
                     os.remove(old)
                 page.goto(base + deck + ".html")
                 page.wait_for_function("window.Reveal && Reveal.isReady()")
+                # mermaid draws after reveal is ready; measuring a {.full} diagram before it
+                # has finished reads an empty figure (seen on a busy machine)
+                try:
+                    page.wait_for_function("document.querySelectorAll('pre.mermaid-js').length === 0", timeout=20000)
+                except Exception:
+                    print("deck_qa: mermaid still rendering after 20 s; measuring anyway", file=sys.stderr)
                 page.evaluate("document.fonts.ready.then(() => true)")
                 page.evaluate("Reveal.configure({transition: 'none', backgroundTransition: 'none'})")
                 n = page.evaluate("Reveal.getTotalSlides()")
@@ -306,10 +312,10 @@ def html_findings(slides):
             fails.append("%s: the {.full} caption runs past its line; shorten it" % tag)
         if s.get("noFigure"):
             fails.append("%s: {.full} slide without a drawn figure" % tag)
-        if "smaller" in cls and "ncar-fill" not in cls:
+        if "smaller" in cls and "engine-fill" not in cls:
             hints.append("%s: .smaller without .fill shrinks the HTML text; drop it, or add "
                          ".fill with a PDF scale=" % tag)
-        floor = 1.0 if "ncar-fill" in cls else s["scale"]
+        floor = 1.0 if "engine-fill" in cls else s["scale"]
         if s["fit"] < floor - 0.05:
             hints.append("%s: HTML autofit shrank it to %.2f; the PDF (no autofit) may "
                          "overflow" % (tag, s["fit"]))

@@ -9,7 +9,7 @@
 # zip directory; docProps/core.xml carries the render time and custom.xml pandoc's dump of
 # the YAML metadata, so both are skipped), the pptx
 # member list, `pdftotext -layout` of the PDF, the HTML file (Jupyter's random cell ids
-# normalized), the three brand greps CI runs, and for docs/quickstart the README
+# normalized), three greps (media count, divider labels, embedded fonts), and for docs/quickstart the README
 # screenshots, reshot into the snapshot (the committed PNGs are restored afterwards: they
 # were shot on another machine and differ in rasterization and date). Screenshot
 # differences are reported as hints, not failures: reveal's transition timing leaves a
@@ -42,7 +42,7 @@ snapshot() {   # <deck dir> <out dir>
     git -C "$ROOT" checkout -q -- "$dir/screenshots"
   fi
   {
-    grep -c 'image-divider-logo.png' "$out/pptx-members.txt" || true
+    grep -c 'ppt/media/image' "$out/pptx-members.txt" || true
     cat "$out"/pptx/ppt/slides/*.xml | grep -o 'engine-section-label' | wc -l | tr -d ' '
     grep -c 'embeddedFontLst' "$out/pptx/ppt/presentation.xml" || true
   } >"$out/greps.txt"
