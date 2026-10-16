@@ -30,6 +30,9 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Pt
 
+import livery as livery_mod
+
+LIVERY    = livery_mod.load()
 MARKER    = "ncar-layout:"
 FOOTNOTES = ("†", "‡")
 NOT_BODY  = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
@@ -39,10 +42,11 @@ CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 FULL_PAD   = 0.025        # full: margin round the figure, a fraction of the width
 FULL_FLOOR = 0.075        # full: the footline (slide number), a fraction of the height
 FULL_CAP   = 0.06         # full: the caption line, a fraction of the height
-CAP_SIZE   = Pt(13)       # style_footnotes.py's size and color: the theme's muted text
-CAP_COLOR  = RGBColor(0x6B, 0x7C, 0x99)
-CAUTION_FILL = RGBColor(0xFF, 0xF9, 0xDA)   # brand Yellow at 18% on white, as in the theme
-CAUTION_BAR  = RGBColor(0xFF, 0xDD, 0x31)   # brand Yellow
+CAP_SIZE   = Pt(13)       # style_footnotes.py's size and color: the livery's muted text
+CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
+CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill"))  # warning at 18% on white
+# the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
+CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
 CAUTION_W    = Pt(6)
 
 
