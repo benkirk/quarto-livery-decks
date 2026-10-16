@@ -31,9 +31,9 @@ NOT_BODY  = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.D
              PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
 LINE      = 1.2           # line height / font size, for the table estimate
 CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
-FULL_PAD   = 0.025        # full: margin round the figure, a fraction of the width
-FULL_FLOOR = 0.075        # full: the footline (slide number), a fraction of the height
-FULL_CAP   = 0.06         # full: the caption line, a fraction of the height
+FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
+FULL_FLOOR = LIVERY["geometry"]["full"]["floor"]     # the footline (slide number) and the caption
+FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
 CAP_SIZE   = Pt(13)       # style_footnotes.py's size and color: the livery's muted text
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill"))  # warning at 18% on white

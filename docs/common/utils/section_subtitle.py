@@ -38,9 +38,11 @@ CHROME_PH = {"dt", "ftr", "sldNum"}  # date, footer, slide number — ignore
 # Divider geometry in the revealjs theme's 1600x900 px (1 px = 7620 EMU, and
 # 1 px of type = 0.6 pt), from its section-slide rules (engine-revealjs.scss).
 LIVERY = livery_mod.load()
+GEOM = LIVERY["geometry"]
 PX = 7620
-BLOCK_TOP, BLOCK_BOTTOM = 120, 820         # padding: 120px ... 80px
-TAB_W = round(LIVERY["geometry"]["tab"] * 1600)   # the divider's tab, geometry.tab of the width
+BLOCK_TOP = round(GEOM["divider"]["top"] * 900)          # the divider block's band: padding
+BLOCK_BOTTOM = 900 - round(GEOM["divider"]["bottom"] * 900)   # above and below (120 ... 820 px)
+TAB_W = round(GEOM["tab"] * 1600)           # the divider's tab, geometry.tab of the width
 TAB = LIVERY["divider"].get("tab", True)
 LABEL = LIVERY["divider"]["label"]          # "Section"; cap="all" sets it in capitals
 LABEL_PT, LABEL_GAP = 12, 10                # 0.7em, margin-bottom 0.5em

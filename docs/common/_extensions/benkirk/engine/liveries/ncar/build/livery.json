@@ -20,9 +20,21 @@
       14,
       12
     ],
+    "divider": {
+      "bottom": 0.0889,
+      "top": 0.1333
+    },
+    "full": {
+      "caption": 0.06,
+      "floor": 0.075,
+      "pad": 0.025
+    },
     "logo": {
       "aspect": 3.934,
+      "closing": 0.1,
       "height": 0.0644,
+      "section": 0.08,
+      "title": 0.09,
       "top": 0.0533
     },
     "margin": 0.06,
