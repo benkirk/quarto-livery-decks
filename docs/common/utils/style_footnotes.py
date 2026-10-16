@@ -1,24 +1,14 @@
 #!/usr/bin/env python3
 """Restyle on-slide footnotes in a pandoc-rendered pptx.
 
-Pandoc's pptx writer ignores inline font size/color from markdown, so a
-"footnote" authored in the `.qmd` renders at full body size and the brand
-text color — indistinguishable from an ordinary paragraph. This script
-finds every paragraph whose text begins with a footnote marker (`†`, or
-`‡` for a second one), or a caption line that does, and restyles it to read
-as a footnote, left-aligned: the
-theme's muted gray, a smaller size, a little space above to set it off from
-the bullets, and the marker itself in the brand accent orange (the HTML and
-PDF themes draw the same, and also move footnotes to the slide's foot, which
-pptx cannot do without splitting the slide). Author the line
-in the deck as a normal paragraph, e.g.
+pandoc's pptx writer ignores inline size and color, so a footnote authored in the .qmd (a
+paragraph starting with `†`, or `‡` for a second; `*† text*` works too) renders like any
+paragraph. This finds each such paragraph, or a caption line that holds one, and restyles it
+left-aligned in the livery's muted color at a smaller size, a little space above, the marker
+in the accent slot (accent4). HTML and PDF draw the same and also move footnotes to the
+slide's foot, which pptx cannot do without splitting the slide.
 
-    *† Shown for CPU jobs to keep it concrete — the idea generalizes …*
-
-and this step does the rest. The leading marker stays visible.
-
-Idempotent: re-running only re-applies the same properties. Harmless to
-decks with no footnote paragraphs (it touches nothing)."""
+Idempotent; a deck with no footnotes is untouched."""
 
 import copy
 import sys
@@ -30,10 +20,13 @@ from pptx.oxml.ns import qn
 from pptx.util import Pt
 from pptx.dml.color import RGBColor
 
+import livery as livery_mod
+
+LIVERY      = livery_mod.load()
 MARKERS     = ("†", "‡")               # dagger, double dagger
 FOOT_SIZE   = Pt(13)                   # body is 18–20 pt; this is a clear step down
-FOOT_COLOR  = RGBColor(0x6B, 0x7C, 0x99)   # the theme's $ncar-muted
-MARK_COLOR  = RGBColor(0xFA, 0xA1, 0x19)   # BrandOrange, the theme's accent
+FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
+MARK_COLOR  = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))   # the accent slot
 FOOT_BEFORE = Pt(10)                   # vertical gap above the footnote
 
 

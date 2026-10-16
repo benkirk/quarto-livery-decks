@@ -28,3 +28,25 @@ def load(path: str | os.PathLike | None = None) -> dict:
 def color(livery: dict, role: str) -> str:
     """A role's hex without '#', as the pptx scripts write it."""
     return livery["roles"][role].lstrip("#").upper()
+
+
+def scheme(livery: dict, slot: str) -> str:
+    """The hex of a theme1.xml scheme slot (dk2, accent4, ...; design section 4)."""
+    return livery["pptx"]["scheme"][slot].lstrip("#").upper()
+
+
+def derived(livery: dict, key: str) -> str:
+    """The hex of a blend livery_build.py derived from the roles (table-rule, caution-fill, ...)."""
+    return livery["derived"][key].lstrip("#").upper()
+
+
+def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False) -> Path:
+    """The TTF of one face of a brand.yml font family, resolved against the livery directory."""
+    for font in livery["typography"]["fonts"]:
+        if font.get("family") != family:
+            continue
+        for f in font.get("files", []):
+            if f.get("weight", 400) == weight and (f.get("style") == "italic") == italic:
+                return Path(livery["dir"]) / f["path"]
+    raise FileNotFoundError(f"livery {livery['name']}: no {family} file at weight {weight}"
+                            f"{' italic' if italic else ''}")

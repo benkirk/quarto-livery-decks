@@ -1,23 +1,15 @@
 #!/usr/bin/env python3
 """Apply the theme's per-slide layout controls to a pandoc-rendered pptx.
 
-pandoc drops slide classes, so common/slide-layout.lua leaves one speaker-notes
-line, "ncar-layout: vcenter scale=1.4", on each slide that asks for a layout.
-This step removes the line and applies what pptx can express:
-
-  vcenter   body text anchored at the middle of its placeholder; a table moved
-            to the middle of the area pandoc gave it (an estimate: PowerPoint
-            sizes table rows itself, so the height is rows x line height)
-  scale=S   every body and table run at S times its inherited size
-  hcenter, fill   nothing: a text box cannot shrink-wrap, and nothing measures
-  caution   the body text box on a soft yellow field with a brand-yellow bar at
-            its left (pptx cannot move the footnotes out, so they sit inside it)
-  full      the one picture fills the slide, keeping its shape; no title and no
-            master art (logo, tab, rule, waves); pandoc's caption box becomes a
-            centered muted line under it; the slide number stays
-
-Footnote paragraphs (style_footnotes.py) keep their size. Idempotent: the
-marker is gone after the first pass."""
+pandoc drops slide classes, so common/slide-layout.lua leaves one speaker-notes line,
+"ncar-layout: vcenter scale=1.4", on each slide that asks for a layout; this removes the line
+and applies what pptx can express. vcenter: body text anchored mid-placeholder, a table moved to
+the middle of its area (an estimate: PowerPoint sizes rows itself). scale=S: every body and
+table run at S times its inherited size. hcenter, fill: nothing (a text box cannot shrink-wrap).
+caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
+stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
+art, pandoc's caption box centered under it in the muted color, the slide number kept.
+Footnote paragraphs (style_footnotes.py) keep their size. Idempotent: the marker is gone after one pass."""
 
 import sys
 from pathlib import Path
@@ -30,6 +22,9 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Pt
 
+import livery as livery_mod
+
+LIVERY    = livery_mod.load()
 MARKER    = "ncar-layout:"
 FOOTNOTES = ("†", "‡")
 NOT_BODY  = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
@@ -39,10 +34,11 @@ CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 FULL_PAD   = 0.025        # full: margin round the figure, a fraction of the width
 FULL_FLOOR = 0.075        # full: the footline (slide number), a fraction of the height
 FULL_CAP   = 0.06         # full: the caption line, a fraction of the height
-CAP_SIZE   = Pt(13)       # style_footnotes.py's size and color: the theme's muted text
-CAP_COLOR  = RGBColor(0x6B, 0x7C, 0x99)
-CAUTION_FILL = RGBColor(0xFF, 0xF9, 0xDA)   # brand Yellow at 18% on white, as in the theme
-CAUTION_BAR  = RGBColor(0xFF, 0xDD, 0x31)   # brand Yellow
+CAP_SIZE   = Pt(13)       # style_footnotes.py's size and color: the livery's muted text
+CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
+CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill"))  # warning at 18% on white
+# the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
+CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
 CAUTION_W    = Pt(6)
 
 

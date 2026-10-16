@@ -1,22 +1,14 @@
 #!/usr/bin/env python3
 """Style every table in a pandoc-rendered pptx as the HTML deck draws them.
 
-pandoc writes each table with PowerPoint's built-in "Medium Style 2 - Accent 1"
-and no way to choose another, so tables come out with a Light Blue header and
-banded fills, unlike the revealjs theme (ncar-revealjs.scss, `table`). This
-replaces the style with direct cell formatting, which PowerPoint and
-LibreOffice both render:
-
-  header row   no fill; bold Dark Blue capitals, letter-spaced, at 0.8x the body
-               size; a 3 px NCAR Blue rule beneath
-  body rows    a 1 px rule beneath each, in Dark Blue 20% into Light Gray; every
-               second row filled with Light Gray at 60% on white
-  columns      left alone when pandoc took widths from the source (the dash
-               counts of a wide pipe table); when it split them evenly, re-split
-               in proportion to each column's longest cell, each 10-60% wide
-
-Run it last, after slide_layout.py has scaled the runs. Idempotent: a second
-pass writes the same properties."""
+pandoc writes each table with PowerPoint's "Medium Style 2 - Accent 1" (filled header, banded
+rows) and no way to choose another. This replaces the style with direct cell formatting, which
+PowerPoint and LibreOffice both render, in the livery's colors (ncar-revealjs.scss `table`): a
+header row with no fill, bold letter-spaced capitals at 0.8x the body size and a 3 px rule in
+the primary slot (dk2); body rows with a 1 px rule in the derived table-rule blend, every second
+row filled with the table-band blend; columns left alone when pandoc took widths from the
+source, else re-split in proportion to each column's longest cell, each 10-60% wide.
+Run it last, after slide_layout.py has scaled the runs. Idempotent."""
 
 import sys
 from pathlib import Path
@@ -25,11 +17,14 @@ from lxml import etree
 from pptx import Presentation
 from pptx.oxml.ns import qn
 
+import livery as livery_mod
+
+LIVERY      = livery_mod.load()
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
 PX          = 7620                     # EMU per revealjs px (1600 px wide)
-HEAD_RULE   = (3 * PX, "0057C2")       # 3px solid var(--ncar-primary)
-ROW_RULE    = (1 * PX, "C1CBD7")       # mix(#00357A, #F1F0EE, 20%)
-BAND_FILL   = "F7F6F5"                 # rgba(#F1F0EE, 0.6) on white
+HEAD_RULE   = (3 * PX, livery_mod.scheme(LIVERY, "dk2"))        # 3px solid var(--ncar-primary)
+ROW_RULE    = (1 * PX, livery_mod.derived(LIVERY, "table-rule"))  # mix(foreground, surface, 20%)
+BAND_FILL   = livery_mod.derived(LIVERY, "table-band")            # surface at 60% on white
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = 0.04                     # letter-spacing: 0.04em
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
