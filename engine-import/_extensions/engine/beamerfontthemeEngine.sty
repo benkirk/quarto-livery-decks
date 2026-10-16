@@ -10,6 +10,15 @@
 \setbeamerfont{alerted text}{series=\sbseries}
 
 \setbeamerfont{title}{size=\Large,series=\bfseries}
+% a livery with a headings family of its own (engine_livery's \engineheadingfont) sets the
+% titles in it; the base family stays for everything else
+\AtBeginDocument{\ifdefined\engineheadingfont
+  \setbeamerfont{title}{family=\engineheadingfont}
+  \setbeamerfont{subtitle}{family=\engineheadingfont}
+  \setbeamerfont{frametitle}{family=\engineheadingfont}
+  \setbeamerfont{section title}{family=\engineheadingfont}
+  \setbeamerfont{subsection title}{family=\engineheadingfont}
+\fi}
 \setbeamerfont{subtitle}{size=\normalsize,series=\bfseries}
 \setbeamerfont{author}{size=\normalsize,series=\bfseries}
 \setbeamerfont{institute}{size=\small,series=\mdseries}

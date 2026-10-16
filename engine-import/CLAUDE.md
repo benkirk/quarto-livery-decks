@@ -25,10 +25,14 @@ read outside `build/livery.sty`, the Sass sets every color as `var(--engine-*)`
 (its `$ncar-*` variables are compile-time defaults for Quarto's own rules, which
 are restated with the roles at the end of the file), and the highlight theme is
 generated per livery from `engine.theme`; and geometry: the margin, tab,
-logo box (height per slide kind, top, aspect), divider block and full-figure
-lengths are the livery's `geometry` fractions, `engine@geom@*` in the `.sty`
-and `--engine-*` pixels in the css (the ncar values are the HTML/PDF numbers,
-not the pptx template's tighter ones); and art: the brand's wave curves are
+logo box (height per slide kind, top, aspect, and its corner on content
+slides: top-right, top-left or none), the page number's corner, divider
+block and full-figure lengths are the livery's `geometry` fractions,
+`engine@geom@*` in the `.sty` and `--engine-*` pixels in the css (the ncar
+values are the HTML/PDF numbers, not the pptx template's tighter ones); a
+livery may add a sign-off lockup at the foot (`signoff`: light and dark
+images, aspect, height, bottom, corner), drawn on every slide but feature
+and full, in the dark variant on fields; and art: the brand's wave curves are
 livery data (`art.waves`: control points and per-kind shifts, drawn by the
 engine in the roles' colors, the pptx divider layout built from the same
 numbers), a livery without them draws plain fields, and a livery may name a

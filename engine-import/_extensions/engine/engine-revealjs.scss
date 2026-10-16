@@ -95,23 +95,42 @@ $mermaid-label-fg-color: $ncar-blue;
   padding: 150px var(--engine-margin) 70px;
 }
 
-// the logo: top right on content slides (NSF NCAR full color; the images
-// are set in engine-revealjs.css)
+// the mark on content slides: top right unless the livery's geometry.logo.corner says
+// top-left or none (livery.css resolves the corner into the --engine-logo-* vars; the
+// images are set there too)
 .reveal .slides section.slide::after,
 .reveal .slides section.engine-title::after {
-  content: "";
+  content: var(--engine-logo-content, "");
   position: absolute;
   top: var(--engine-logo-top);
-  right: var(--engine-margin);
+  left: var(--engine-logo-left, auto);
+  right: var(--engine-logo-right, var(--engine-margin));
   width: var(--engine-logo-w);
   height: var(--engine-logo-h);
   background-repeat: no-repeat;
-  background-position: right top;
+  background-position: var(--engine-logo-position, right top);
+  background-size: contain;
+  pointer-events: none;
+}
+// the sign-off lockup at the foot (signoff in livery.yml): the Lua puts the box on every
+// slide, livery.css shows and places it when the livery has one
+.reveal .slides section .engine-signoff {
+  display: var(--engine-signoff-display, none);
+  position: absolute;
+  bottom: var(--engine-signoff-bottom, 0);
+  left: var(--engine-signoff-left, var(--engine-margin));
+  right: var(--engine-signoff-right, auto);
+  width: var(--engine-signoff-w, 0);
+  height: var(--engine-signoff-h, 0);
+  margin: 0;
+  background-repeat: no-repeat;
+  background-position: var(--engine-signoff-position, left bottom);
   background-size: contain;
   pointer-events: none;
 }
 // no logo on busy photos (Brand Guide p11)
 .reveal .slides section.slide.feature::after { content: none; }
+.reveal .slides section.slide.feature .engine-signoff, .reveal .slides section.slide.full .engine-signoff { display: none; }
 
 // ---------------------------------------------------------------------------
 // content slides: accent tab beside the title, hairline rule, logo
@@ -119,8 +138,8 @@ $mermaid-label-fg-color: $ncar-blue;
 .reveal .slides section.slide.level2 > h2 {
   position: absolute;
   top: 44px;
-  left: var(--engine-margin);
-  right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
+  left: var(--engine-title-left, var(--engine-margin));   // the title gives way on the mark's side
+  right: var(--engine-title-right, calc(var(--engine-margin) + 40px + var(--engine-logo-w)));
   min-height: 70px;
   margin: 0;
   display: flex;
@@ -131,7 +150,7 @@ $mermaid-label-fg-color: $ncar-blue;
   &::before {
     content: "";
     position: absolute;
-    left: calc(-1 * var(--engine-margin));
+    left: calc(-1 * var(--engine-title-left, var(--engine-margin)));
     top: 0;
     bottom: 0;
     width: var(--engine-tab);
@@ -633,8 +652,8 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
 .reveal .progress { height: 4px; color: var(--engine-accent); }
 .reveal .controls { color: var(--engine-primary-contrast); }
 .reveal .slide-number {
-  left: 50px;
-  right: auto;
+  left: var(--engine-pagenumber-left, 50px);     // geometry.pagenumber.corner, via livery.css
+  right: var(--engine-pagenumber-right, auto);
   bottom: 14px;
   background: transparent;
   color: var(--engine-foreground);
@@ -678,7 +697,7 @@ html.reveal-print .reveal .slides {
 // reveal's own custom properties, set by Quarto from the Sass literals above
 :root {
   --r-main-font: var(--engine-font-family, "Poppins"), Helvetica, Arial, sans-serif;
-  --r-heading-font: var(--engine-font-family, "Poppins"), Helvetica, Arial, sans-serif;
+  --r-heading-font: var(--engine-heading-font-family, var(--engine-font-family, "Poppins")), Helvetica, Arial, sans-serif;
   --r-background-color: var(--engine-background);
   --r-main-color: var(--engine-foreground);
   --r-heading-color: var(--engine-foreground);
