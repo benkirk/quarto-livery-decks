@@ -91,10 +91,10 @@ quarto-docs-framework/
 │   ├── common/
 │   │   ├── _quarto.yml    # shared Quarto config (symlinked into decks)
 │   │   ├── _extensions/benkirk/ncar/  # NCAR beamer theme (vendored; symlinked into decks)
-│   │   ├── assets/fonts/  # Poppins .fntdata blobs (EOT-subsetted)
-│   │   ├── branding/ncar/template.pptx
+│   │   ├── liveries/ncar/      # the brand: template.pptx, _brand.yml, livery.yml,
+│   │   │                       #   build/livery.json (generated, committed)
 │   │   └── utils/
-│   │       ├── embed_poppins.py    # post-render font embedder
+│   │       ├── embed_fonts.py      # post-render font embedder (the livery's blobs)
 │   │       └── enable_autofit.py   # primes "Shrink text on overflow"
 │   ├── quickstart/                 # the short exemplar deck: copy this one
 │   │   ├── quickstart.qmd
@@ -111,8 +111,8 @@ quarto-docs-framework/
 └── conda-env/              # local conda prefix, gitignored
 ```
 
-Room to grow: additional brand packages (`docs/common/branding/ucar/`,
-`.../cisl/`) or additional shared assets (`docs/common/assets/images/`)
+Room to grow: additional liveries (`docs/common/liveries/cu/`,
+`.../nasa/`, built with `make LIVERY=<name>`) or additional shared assets (`docs/common/assets/images/`)
 drop in as sibling subdirs without disturbing existing decks.
 
 ## Build pipeline
@@ -120,7 +120,8 @@ drop in as sibling subdirs without disturbing existing decks.
 Per deck, `make pptx` runs:
 
 1. `quarto render <deck>.qmd --to pptx -o <deck>.pptx`
-   - Uses `reference-doc: _ncar/branding/ncar/template.pptx` from the
+   - Uses `reference-doc: _livery/template.pptx` (the `ncar` livery unless
+     `make LIVERY=<name>`) from the
      deck's `_quarto.yml`, so the output inherits NCAR theme colors,
      title slide layout, masters, etc.
 2. `python3 ../common/utils/section_subtitle.py <deck>.pptx`
@@ -134,8 +135,8 @@ Per deck, `make pptx` runs:
 3. `python3 ../common/utils/enable_autofit.py <deck>.pptx`
    - Flips every body placeholder's autofit dropdown from "Do not Autofit"
      to "Shrink text on overflow." See "About text autofit" below.
-4. `python3 ../common/utils/embed_poppins.py <deck>.pptx`
-   - Re-injects the four Poppins variants as `<p:embeddedFont>` entries.
+4. `python3 ../common/utils/embed_fonts.py <deck>.pptx`
+   - Re-injects the livery's four font variants as `<p:embeddedFont>` entries.
      Pandoc strips these on reference-doc copy; the script puts them
      back so the font travels with the file.
 5. `python3 ../common/utils/style_footnotes.py <deck>.pptx`
@@ -466,7 +467,7 @@ with `themeoptions: [autofit=false]`.
 
 ## Template constraints
 
-The reference template under `docs/common/branding/ncar/template.pptx`
+The reference template under `docs/common/liveries/ncar/template.pptx`
 must stay pandoc-compliant. Two things pandoc is strict about:
 
 - **`slideLayout1` placeholders**: must include all five of `ctrTitle`,
@@ -482,7 +483,7 @@ must stay pandoc-compliant. Two things pandoc is strict about:
   slide).
 
 - **The Section Header layout is generated** by
-  `docs/common/branding/ncar/build_divider_layout.py`: the NCAR Blue field
+  `docs/common/liveries/ncar/build_divider_layout.py`: the NCAR Blue field
   (`tx2`), the white logo, and the brand waves (`accent1`), drawn from the
   same curves as the revealjs theme. Rerun it after editing the template in
   PowerPoint, rather than editing that layout by hand. Pandoc keeps only
@@ -491,7 +492,7 @@ must stay pandoc-compliant. Two things pandoc is strict about:
 Verify after any template edit:
 
 ```bash
-unzip -p docs/common/branding/ncar/template.pptx \
+unzip -p docs/common/liveries/ncar/template.pptx \
   ppt/slideLayouts/slideLayout1.xml | grep -oE '<p:ph[^/]*/>'
 # expect 5 matches
 ```
@@ -505,9 +506,9 @@ the `.pptx` will be opened on a machine without Poppins installed —
 without the embed, PowerPoint substitutes (typically Calibri) and the
 deck loses its look.
 
-If portability stops mattering, drop the `embed_poppins.py` step from
-`docs/Make.common` and delete `docs/common/assets/fonts/` +
-`docs/common/utils/embed_poppins.py`.
+If portability stops mattering, drop the `embed_fonts.py` step from
+`docs/Make.common` and delete the liveries' `fonts/pptx/` +
+`docs/common/utils/embed_fonts.py`.
 
 ## License
 
@@ -522,8 +523,8 @@ provided you distribute your changes under the same license.
 These parts are **not** covered by that license:
 
 - **NSF, NCAR, UCAR and UCP logos and brand marks.** These appear in
-  `docs/common/branding/` and in the vendored theme. They are trademarks
+  `docs/common/liveries/` and in the vendored theme. They are trademarks
   used under the
   [UCAR brand guidelines](https://ucar.canto.com/v/branding).
-- **The Poppins font** (`docs/common/assets/fonts/` and the vendored theme)
+- **The Poppins font** (`docs/common/liveries/ncar/fonts/` and the vendored theme)
   is licensed under the [SIL Open Font License](https://openfontlicense.org).

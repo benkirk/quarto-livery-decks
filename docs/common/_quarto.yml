@@ -16,6 +16,7 @@ date-format: "MMMM D, YYYY"
 # the paragraphs after one move into its caption, at the slide's foot.
 # Paths go through _ncar/, Make.common's link to this directory, so they hold
 # wherever the deck directory is (here, or in a repo using this as a submodule).
+# _livery/ is Make.common's link to the brand's directory (LIVERY, default ncar).
 filters:
   - _ncar/strip-raw-figure.lua
   - _ncar/slide-layout.lua   # pptx: the theme's .center/scale= etc. as a notes line
@@ -23,9 +24,11 @@ filters:
   - _ncar/single-body.lua    # pptx: after notes-last
   - _ncar/linked-images.lua   # [![](x.png)](url): a link line on the slide
 
+livery: _livery   # how the engine's Lua filters will find the livery (design section 5)
+
 format:
   pptx:
-    reference-doc: _ncar/branding/ncar/template.pptx
+    reference-doc: _livery/template.pptx
     slide-level: 2
     toc: false
   ncar-beamer:           # NCAR beamer theme, vendored in common/_extensions

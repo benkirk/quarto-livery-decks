@@ -23,7 +23,7 @@ renders as a single divider slide carrying the subtitle. Authoring stays
 ordinary markdown — no raw OpenXML, no per-slide attributes.
 
 It then dresses every divider as the HTML and PDF decks do, on top of the
-template's blue Section Header layout (branding/ncar/build_divider_layout.py):
+template's blue Section Header layout (liveries/ncar/build_divider_layout.py):
 a "SECTION n" label in the layout's accent1, n counting dividers in deck order;
 the orange tab beside the title; and the label, title and subtitle stacked and
 centered as one block, with each line count measured in Poppins.

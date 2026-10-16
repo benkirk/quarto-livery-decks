@@ -43,7 +43,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory.
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe post-processes with
-  `section_subtitle.py`, `enable_autofit.py`, `embed_poppins.py`,
+  `section_subtitle.py`, `enable_autofit.py`, `embed_fonts.py`,
   `style_footnotes.py`, `link_captions.py`, `slide_layout.py`, and
   `style_tables.py` (tables drawn as in the HTML theme).
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
@@ -117,7 +117,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `ncar-revealjs.lua` for HTML. Only plain
   paragraphs qualify; anything else after a divider stays a slide of its own.
   In pptx the blue field, logo and waves are the template's Section Header
-  layout, built by `branding/ncar/build_divider_layout.py` (rerun it after any
+  layout, built by `liveries/ncar/build_divider_layout.py` (rerun it after any
   template edit); `section_subtitle.py` adds "SECTION n", the tab and placement.
 - **Front matter must be line 1** of every deck `.qmd`: anything above the
   opening `---` (an editor mode-line, a comment) hides it from Quarto, and

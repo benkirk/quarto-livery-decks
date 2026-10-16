@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Re-embed Poppins into a pandoc-rendered pptx.
+"""Re-embed the livery's typeface into a pandoc-rendered pptx.
 
-Reads the four EOT-subsetted Poppins blobs from assets/fonts/ (produced once by
-prepare_template.py) and injects them into the given .pptx:
+Reads the four EOT-subsetted blobs <family>-{regular,bold,italic,bolditalic}.fntdata
+from the livery's fonts/pptx/ (embedded once by hand in PowerPoint: Options > Save >
+Embed fonts, then extracted; no reliable Python writer exists) and injects them:
 
-  * adds ppt/fonts/poppins-{regular,bold,italic,bolditalic}.fntdata
+  * adds ppt/fonts/<family>-{regular,bold,italic,bolditalic}.fntdata
   * adds a <Default Extension="fntdata" .../> entry to [Content_Types].xml
   * adds four font Relationships to ppt/_rels/presentation.xml.rels
   * adds embedTrueTypeFonts="1" + <p:embeddedFontLst> to ppt/presentation.xml
@@ -12,8 +13,8 @@ prepare_template.py) and injects them into the given .pptx:
 Idempotent: replaces any existing <p:embeddedFontLst> and skips duplicate
 Relationships / Content-Types entries.
 
-Run after `quarto render ... --to pptx`. Exits non-zero (with guidance) if the
-required font blobs are missing."""
+Run after `quarto render ... --to pptx`, where LIVERY_DIR or a _livery link names the
+livery (utils/livery.py). Exits non-zero (with guidance) if the font blobs are missing."""
 
 import re
 import shutil
@@ -22,15 +23,17 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-FONTS_DIR = HERE.parent / "assets" / "fonts"  # common/utils/ → common/assets/fonts/
+import livery as livery_mod
+
+LIVERY = livery_mod.load()
+TYPEFACE = LIVERY["pptx"]["typeface"]
+FAMILY = TYPEFACE.lower().replace(" ", "")
+FONTS_DIR = Path(LIVERY["dir"]) / LIVERY["pptx"].get("fonts", "fonts/pptx")
 
 VARIANTS = [
     # (xml tag, blob filename, arcname inside pptx)
-    ("regular",    "poppins-regular.fntdata",    "ppt/fonts/poppins-regular.fntdata"),
-    ("bold",       "poppins-bold.fntdata",       "ppt/fonts/poppins-bold.fntdata"),
-    ("italic",     "poppins-italic.fntdata",     "ppt/fonts/poppins-italic.fntdata"),
-    ("boldItalic", "poppins-bolditalic.fntdata", "ppt/fonts/poppins-bolditalic.fntdata"),
+    (tag, f"{FAMILY}-{tag.lower()}.fntdata", f"ppt/fonts/{FAMILY}-{tag.lower()}.fntdata")
+    for tag in ("regular", "bold", "italic", "boldItalic")
 ]
 
 FONT_REL_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font"
@@ -43,9 +46,9 @@ def check_fonts() -> dict[str, bytes]:
     missing = [b for _, b, _ in VARIANTS if not (FONTS_DIR / b).exists()]
     if missing:
         sys.exit(
-            "embed_poppins: missing font blob(s): "
+            "embed_fonts: missing font blob(s): "
             + ", ".join(missing)
-            + f"\n  expected under {FONTS_DIR}/"
+            + f"\n  expected under {FONTS_DIR}/ (livery {LIVERY['name']})"
         )
     return {b: (FONTS_DIR / b).read_bytes() for _, b, _ in VARIANTS}
 
@@ -69,7 +72,7 @@ def next_rids(rels_xml: str, count: int) -> list[str]:
 
 def patch_rels(xml: str, rids: list[str]) -> str:
     # Skip any font rel already pointing at our targets (idempotency).
-    existing_targets = set(re.findall(r'Target="(fonts/poppins-[^"]+\.fntdata)"', xml))
+    existing_targets = set(re.findall(r'Target="(fonts/' + re.escape(FAMILY) + r'-[^"]+\.fntdata)"', xml))
     to_add = []
     for (_, blob, arc), rid in zip(VARIANTS, rids):
         target = f"fonts/{blob}"
@@ -89,7 +92,7 @@ def effective_font_rids(rels_xml: str) -> dict[str, str]:
     """Map blob filename → rId, scanning the post-patch rels."""
     out = {}
     for rid, target in re.findall(
-        r'<Relationship[^>]+Id="(rId\d+)"[^>]+Type="' + re.escape(FONT_REL_TYPE) + r'"[^>]+Target="fonts/(poppins-[^"]+\.fntdata)"',
+        r'<Relationship[^>]+Id="(rId\d+)"[^>]+Type="' + re.escape(FONT_REL_TYPE) + r'"[^>]+Target="fonts/(' + re.escape(FAMILY) + r'-[^"]+\.fntdata)"',
         rels_xml,
     ):
         out[target] = rid
@@ -101,12 +104,12 @@ def build_embedded_font_lst(blob_to_rid: dict[str, str]) -> str:
     for tag, blob, _ in VARIANTS:
         rid = blob_to_rid.get(blob)
         if rid is None:
-            sys.exit(f"embed_poppins: internal error — no rId for {blob}")
+            sys.exit(f"embed_fonts: internal error: no rId for {blob}")
         children.append(f'<p:{tag} r:id="{rid}"/>')
     return (
         "<p:embeddedFontLst>"
         "<p:embeddedFont>"
-        '<p:font typeface="Poppins" pitchFamily="2" charset="77"/>'
+        f'<p:font typeface="{TYPEFACE}" pitchFamily="2" charset="77"/>'
         + "".join(children)
         + "</p:embeddedFont>"
         "</p:embeddedFontLst>"
@@ -136,7 +139,7 @@ def patch_presentation_xml(xml: str, embedded_font_lst: str) -> str:
     # <p:notesSz cx=".." cy=".."/> (self-closing). Insert right after it.
     m = re.search(r"<p:notesSz[^/]*/>", xml)
     if not m:
-        sys.exit("embed_poppins: couldn't locate <p:notesSz/> in presentation.xml")
+        sys.exit("embed_fonts: couldn't locate <p:notesSz/> in presentation.xml")
     insert_at = m.end()
     return xml[:insert_at] + embedded_font_lst + xml[insert_at:]
 
@@ -193,16 +196,16 @@ def rewrite_pptx(pptx_path: Path, blobs: dict[str, bytes]) -> tuple[int, int]:
 
 def main() -> None:
     if len(sys.argv) != 2:
-        sys.exit("usage: embed_poppins.py <output.pptx>")
+        sys.exit("usage: embed_fonts.py <output.pptx>")
     pptx_path = Path(sys.argv[1]).resolve()
     if not pptx_path.exists():
-        sys.exit(f"embed_poppins: no such file: {pptx_path}")
+        sys.exit(f"embed_fonts: no such file: {pptx_path}")
 
     blobs = check_fonts()
     variants, replaced = rewrite_pptx(pptx_path, blobs)
     action = "replaced" if replaced else "embedded"
     print(
-        f"embed_poppins: {action} Poppins "
+        f"embed_fonts: {action} {TYPEFACE} "
         f"({variants} variants) → {pptx_path.name}"
     )
 

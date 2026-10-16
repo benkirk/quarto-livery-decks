@@ -342,6 +342,17 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 1 begun (PR #2): `utils/parity.sh baseline|check` snapshots both
+  reference decks and gates every step; `branding/ncar/` is `liveries/ncar/` with
+  `_brand.yml`, `livery.yml` and the generated `build/livery.json` (`livery_build.py`,
+  `--check` in CI; `utils/livery.py` reads it); `Make.common` has `LIVERY`, the exported
+  `LIVERY_DIR` and the `_livery` link that follows the stamp; `_quarto.yml` takes the
+  template from `_livery/` and names `livery: _livery`; `embed_fonts.py` (was
+  `embed_poppins.py`) takes the blobs and typeface from the livery. Parity held at each
+  step; the only differences were pandoc's metadata dump (`docProps/custom.xml`, now
+  excluded) and the sample deck's slide 27, which quotes `_quarto.yml`. Next: section 5's
+  remaining post-processors, one per commit (`section_subtitle.py` first: divider label
+  and geometry from the livery), then the CI livery matrix.
 - **2026-10-16** Phase 0 done. Nouns settled (section 2), the design merged into
   `quarto-docs-framework` (#31) and the two repositories created from the full
   histories: `benkirk/beamer-livery-theme` (NCAR_beamer_template `724c3e6`, v2.8.0)

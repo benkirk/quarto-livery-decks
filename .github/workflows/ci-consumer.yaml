@@ -84,12 +84,12 @@ jobs:
         run: timeout 600 make -C "$DECK" pptx html
 
       # each format really came from the framework: the pptx template's
-      # divider layout (through _ncar), and the revealjs theme (_extensions)
+      # divider layout (through _livery), and the revealjs theme (_extensions)
       - name: Check the framework was applied
         run: |
           set -e   # the login shell has no -e: without it only the last line gates
           cd "$DECK"
-          ls -l _quarto.yml _extensions _ncar
+          ls -l _quarto.yml _extensions _ncar _livery
           unzip -l hello.pptx | grep -q 'ppt/media/image-divider-logo.png'
           unzip -p hello.pptx 'ppt/slides/*.xml' | grep -q 'ncar-section-label'
           grep -q 'ncar-revealjs.css' hello.html

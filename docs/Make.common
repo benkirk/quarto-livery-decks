@@ -17,7 +17,7 @@
 .DELETE_ON_ERROR:
 
 PRESENTATIONS_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
-EMBED_POPPINS      := $(PRESENTATIONS_ROOT)common/utils/embed_poppins.py
+EMBED_FONTS        := $(PRESENTATIONS_ROOT)common/utils/embed_fonts.py
 ENABLE_AUTOFIT     := $(PRESENTATIONS_ROOT)common/utils/enable_autofit.py
 SECTION_SUBTITLE   := $(PRESENTATIONS_ROOT)common/utils/section_subtitle.py
 STYLE_FOOTNOTES    := $(PRESENTATIONS_ROOT)common/utils/style_footnotes.py
@@ -29,6 +29,13 @@ SITE_INDEX         := $(PRESENTATIONS_ROOT)common/utils/site_index.py
 SHARED_QUARTO_YML  := $(PRESENTATIONS_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(PRESENTATIONS_ROOT)common/_extensions
 SHARED_COMMON      := $(PRESENTATIONS_ROOT)common
+
+# The brand: a directory under common/liveries/ (docs/design/engine-and-liveries.md,
+# section 4). `make LIVERY=cu` switches it; LIVERY_DIR is exported for the post-render
+# scripts, which read $(LIVERY_DIR)/build/livery.json through utils/livery.py.
+LIVERY     ?= ncar
+LIVERY_DIR ?= $(SHARED_COMMON)/liveries/$(LIVERY)
+export LIVERY_DIR
 
 OUT   ?= $(notdir $(CURDIR))
 DECKS ?= $(OUT)
@@ -49,7 +56,7 @@ PUBLISH_PREFIX ?=
 # metadata: {{< include >}}, ![](...), filters: and _metadata.yml are invisible to
 # make, so an edit to any of them rebuilds every deck in the directory.
 FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua)
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _ncar
+DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _ncar _livery
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -117,11 +124,25 @@ _extensions:
 _ncar:
 	ln -s $(SHARED_COMMON) $@
 
+# The livery link follows LIVERY. A missing-only rule like the three above would
+# silently keep the old livery after `make LIVERY=cu`, so the link is remade whenever
+# the .livery stamp (whose content is the livery's name) changes, and the stamp is
+# phony until it matches.
+ifneq ($(shell cat .livery 2>/dev/null),$(LIVERY))
+.PHONY: .livery
+endif
+.livery:
+	@test -d $(LIVERY_DIR) || { echo "no livery '$(LIVERY)': $(LIVERY_DIR) is missing" >&2; exit 1; }
+	@echo $(LIVERY) > $@
+
+_livery: .livery
+	ln -sfn $(LIVERY_DIR) $@
+
 define render_pptx
 	quarto render $< --to pptx -o $@
 	python3 $(SECTION_SUBTITLE) $@
 	python3 $(ENABLE_AUTOFIT) $@
-	python3 $(EMBED_POPPINS) $@
+	python3 $(EMBED_FONTS) $@
 	python3 $(STYLE_FOOTNOTES) $@
 	python3 $(LINK_CAPTIONS) $@
 	python3 $(SLIDE_LAYOUT) $@
@@ -158,7 +179,7 @@ $(OUT).pdf: $(QFILE) $(DEPS)
 endif
 
 clean:
-	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf)
+	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery
 	rm -rf $(DECKS:=_files) $(SITE)
 
 distclean:
