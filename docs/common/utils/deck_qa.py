@@ -30,8 +30,8 @@ import unicodedata
 import zipfile
 
 SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
-EDGE = 0.94           # beamerouterthemeNCAR.sty: text margin = 0.06 \paperwidth
-COLS_EDGE = 0.97      # beamer columns overhang that margin, to ~0.96 W
+EDGE = COLS_EDGE = None   # set in main() from the livery's margin: 1 - margin, and 1 - margin/2
+                          # for beamer columns, which overhang the text margin by half
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
 
 MEASURE_JS = r"""
@@ -405,6 +405,10 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
+    global EDGE, COLS_EDGE
+    import livery as livery_mod   # here, not at import: screenshots.py imports serve() alone
+    margin = livery_mod.load()["geometry"]["margin"]
+    EDGE, COLS_EDGE = 1 - margin, 1 - margin / 2
 
     html_res = check_html(args.decks, qa)
     report, usage, failed = [], ["deck\tslide\tkind\tuse\tfit\ttitle\tclasses"], False
