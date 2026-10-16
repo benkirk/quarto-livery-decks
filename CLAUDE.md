@@ -5,16 +5,21 @@ structure or conventions below change.
 
 ## What this is
 
-An NCAR-branded [Quarto](https://quarto.org) framework for documentation decks
-(`.pptx` primary; `.html`/revealjs and `.pdf`/beamer secondary). Decks live
-under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared machinery is in
-`docs/common/` (branded `template.pptx`, `_quarto.yml`, Lua filter, post-render
-utilities) and `docs/Make.common`. `docs/quickstart/quickstart.qmd` is the
-short exemplar to copy for new decks; `docs/sample/sample.qmd` is the cookbook
-of every pattern. The README covers layout, template constraints, and font
-embedding. `docs/design/engine-and-liveries.md` is the design for a multi-brand
-successor (a generalized engine plus per-brand "liveries"), intended for two forked
-repos; nothing in this repo implements it yet.
+A [Quarto](https://quarto.org) framework for documentation decks (`.pptx`
+primary; `.html`/revealjs and `.pdf`/beamer secondary), and the **multi-brand
+successor** of `benkirk/quarto-docs-framework` (the `upstream` remote), which
+stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap:
+a generalized **engine** (the vendored theme, forked as
+`benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
+`docs/common/liveries/`; its section 10 logs progress and names the next step.
+Until the design's Phase 1 lands, NCAR decks build exactly as they did upstream.
+
+Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
+machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua
+filters, post-render utilities) and `docs/Make.common`.
+`docs/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
+`docs/sample/sample.qmd` is the cookbook of every pattern. The README covers
+layout, template constraints, and font embedding.
 
 - **README images** are `docs/quickstart/screenshots/*.png`, committed. After
   editing the quickstart deck run `make screenshots` there, look at them, and
