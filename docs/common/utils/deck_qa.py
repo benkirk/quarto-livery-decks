@@ -62,7 +62,7 @@ MEASURE_JS = r"""
   const shift = parseFloat(s.style.getPropertyValue('--ncar-shift')) || 0;
   const fit = parseFloat(s.style.getPropertyValue('--ncar-fit')) || 1;
   const scale = parseFloat(s.getAttribute('data-ncar-scale')) || 1;
-  const skip = 'h2, svg.ncar-waves, .ncar-footnotes, aside, style, script, .footer';
+  const skip = 'h2, svg.engine-waves, .engine-footnotes, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
   for (const k of kids) for (const e of [k, ...k.querySelectorAll('*')]) {
@@ -71,7 +71,7 @@ MEASURE_JS = r"""
       bot = Math.max(bot, r.bottom - sr.top); right = Math.max(right, r.right - sr.left);
     }
   }
-  const foot = s.querySelector(':scope > .ncar-footnotes');
+  const foot = s.querySelector(':scope > .engine-footnotes');
   const floor = s.clientHeight - parseFloat(cs.paddingBottom);
   const limit = foot ? foot.getBoundingClientRect().top - sr.top : floor;
   const top = h.getBoundingClientRect().bottom - sr.top + 20;
@@ -313,7 +313,7 @@ def html_findings(slides):
         if s["fit"] < floor - 0.05:
             hints.append("%s: HTML autofit shrank it to %.2f; the PDF (no autofit) may "
                          "overflow" % (tag, s["fit"]))
-        special = {"ncar-layout", "feature", "closing", "brand-dark"}
+        special = {"engine-layout", "feature", "closing", "brand-dark"}
         if s["kind"] in ("text", "columns") and s["use"] <= SHORT_USE and not special & set(cls):
             hints.append('%s: short (%s, uses %.0f%% of the body); try {.vcenter scale="1.15"}'
                          % (tag, s["kind"], 100 * s["use"]))

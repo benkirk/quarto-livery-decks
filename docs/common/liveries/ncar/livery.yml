@@ -1,6 +1,6 @@
 # Engine knobs the brand.yml standard has no slot for. Role values are palette names from
 # _brand.yml or hex. Geometry is in fractions of the slide; today's numbers come from
-# beamerouterthemeNCAR.sty, ncar-revealjs.scss (1600x900 slide px), section_subtitle.py and
+# beamerouterthemeEngine.sty, engine-revealjs.scss (1600x900 slide px), section_subtitle.py and
 # deck_qa.py, and must agree with them until Phase 2 makes them the one source.
 name: ncar
 extends: null

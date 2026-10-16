@@ -29,16 +29,16 @@
   "logo": {
     "images": {
       "ncar-color": {
-        "path": "../../_extensions/benkirk/ncar/ncar-assets/web/NSF-NCAR_Logo_FullColor_RGB.png"
+        "path": "../../_extensions/benkirk/engine/ncar-assets/web/NSF-NCAR_Logo_FullColor_RGB.png"
       },
       "ncar-color-print": {
-        "path": "../../_extensions/benkirk/ncar/ncar-assets/logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
+        "path": "../../_extensions/benkirk/engine/ncar-assets/logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
       },
       "ncar-white": {
-        "path": "../../_extensions/benkirk/ncar/ncar-assets/web/NSF-NCAR_Logo_Color-White_RGB.png"
+        "path": "../../_extensions/benkirk/engine/ncar-assets/web/NSF-NCAR_Logo_Color-White_RGB.png"
       },
       "ncar-white-print": {
-        "path": "../../_extensions/benkirk/ncar/ncar-assets/logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
+        "path": "../../_extensions/benkirk/engine/ncar-assets/logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
       }
     },
     "medium": {
@@ -94,24 +94,24 @@
         "family": "Poppins",
         "files": [
           {
-            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-Regular.ttf",
+            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Regular.ttf",
             "weight": 400
           },
           {
-            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-Italic.ttf",
+            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Italic.ttf",
             "style": "italic",
             "weight": 400
           },
           {
-            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-SemiBold.ttf",
+            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-SemiBold.ttf",
             "weight": 600
           },
           {
-            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-Bold.ttf",
+            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-Bold.ttf",
             "weight": 700
           },
           {
-            "path": "../../_extensions/benkirk/ncar/ncar-assets/fonts/Poppins/Poppins-BoldItalic.ttf",
+            "path": "../../_extensions/benkirk/engine/ncar-assets/fonts/Poppins/Poppins-BoldItalic.ttf",
             "style": "italic",
             "weight": 700
           }

@@ -36,7 +36,7 @@ TITLE_PH = {"title", "ctrTitle"}
 CHROME_PH = {"dt", "ftr", "sldNum"}  # date, footer, slide number — ignore
 
 # Divider geometry in the revealjs theme's 1600x900 px (1 px = 7620 EMU, and
-# 1 px of type = 0.6 pt), from its section-slide rules (ncar-revealjs.scss).
+# 1 px of type = 0.6 pt), from its section-slide rules (engine-revealjs.scss).
 LIVERY = livery_mod.load()
 PX = 7620
 BLOCK_TOP, BLOCK_BOTTOM = 120, 820         # padding: 120px ... 80px
@@ -47,7 +47,7 @@ LABEL_PT, LABEL_GAP = 12, 10                # 0.7em, margin-bottom 0.5em
 BODY_GAP = 22                               # .ncar-subtitle margin-top 0.7em
 LINE = 1.4                                  # ascent + descent of the heading font, in em
 TYPE = LIVERY["typography"]                 # headings face measures the title, base the subtitle
-DECOR = ("ncar-section-label", "ncar-section-tab")
+DECOR = ("engine-section-label", "engine-section-tab")
 
 
 def _resolve(base_dir, target):

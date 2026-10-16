@@ -17,7 +17,7 @@ jupyter: bash
 - **Bold**, *italic*, `inline code` and [links](https://quarto.org) as usual
 - `make pptx`: PowerPoint on the NCAR template, Poppins embedded
 - `make html`: a revealjs deck with speaker view and a whiteboard
-- `make pdf`: the NCAR beamer theme, for handouts
+- `make pdf`: the engine beamer theme, for handouts
 
 † A paragraph that starts with a dagger becomes a slide footnote.
 
@@ -151,9 +151,9 @@ flowchart LR
     F["Lua filters<br/>strip-raw-figure<br/>slide-layout<br/>notes-last<br/>single-body"]:::pptx
     PX["pandoc pptx<br/>on template.pptx"]:::pptx
     P1["post-processing<br/>section_subtitle<br/>enable_autofit<br/>embed_poppins<br/>style_footnotes<br/>link_captions<br/>slide_layout<br/>style_tables"]:::pptx
-    R["ncar-revealjs.lua<br/>dividers, waves,<br/>footnotes, layout"]:::html
+    R["engine-revealjs.lua<br/>dividers, waves,<br/>footnotes, layout"]:::html
     RJ["revealjs<br/>+ autofit script"]:::html
-    B["ncar-beamer.lua<br/>frame keys,<br/>footnotes, layout"]:::pdf
+    B["engine-beamer.lua<br/>frame keys,<br/>footnotes, layout"]:::pdf
     BT["XeLaTeX<br/>NCAR beamer theme"]:::pdf
     PPTX["deck.pptx"]:::out
     HTML["deck.html"]:::out

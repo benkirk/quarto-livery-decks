@@ -1,9 +1,9 @@
-/* ncar-revealjs.css -- the parts of the NCAR revealjs theme that need url()s.
+/* engine-revealjs.css -- the parts of the engine revealjs theme that need url()s.
  *
- * Attached by ncar-revealjs.lua as an HTML dependency: Quarto copies this file
- * and its resources side by side into <deck>_files/libs/ncar-revealjs-<ver>/
+ * Attached by engine-revealjs.lua as an HTML dependency: Quarto copies this file
+ * and its resources side by side into <deck>_files/libs/engine-revealjs-<ver>/
  * (or inlines them all under `embed-resources: true`), so the url()s below are
- * relative to this file.  Everything else is in ncar-revealjs.scss.
+ * relative to this file.  Everything else is in engine-revealjs.scss.
  */
 
 /* Poppins, bundled (SIL OFL, ncar-assets/fonts/Poppins/OFL.txt) */
@@ -19,21 +19,21 @@
              src: url("Poppins-BoldItalic.ttf") format("truetype"); }
 
 /* Logos (Brand Guide p3-5): full color on white, NSF color + white-reversed on
- * the brand field (`.ncar-field`: dark title, dividers, closing, .brand-dark).
+ * the brand field (`.engine-field`: dark title, dividers, closing, .brand-dark).
  * The NCAR logo is always the NSF lockup.  Size and position: the scss. */
 .reveal .slides section.slide::after,
-.reveal .slides section.ncar-title::after {
+.reveal .slides section.engine-title::after {
   background-image: url("NSF-NCAR_Logo_FullColor_RGB.png");
 }
-.reveal .slides section.slide.ncar-field::after,
-.reveal .slides section.ncar-title.ncar-field::after {
+.reveal .slides section.slide.engine-field::after,
+.reveal .slides section.engine-title.engine-field::after {
   background-image: url("NSF-NCAR_Logo_Color-White_RGB.png");
 }
-html.ncar-brand-ucar .reveal .slides section.slide::after,
-html.ncar-brand-ucar .reveal .slides section.ncar-title::after {
+html.engine-brand-ucar .reveal .slides section.slide::after,
+html.engine-brand-ucar .reveal .slides section.engine-title::after {
   background-image: url("UCAR-Logo_Color_RGB.svg");
 }
-html.ncar-brand-ucar .reveal .slides section.slide.ncar-field::after,
-html.ncar-brand-ucar .reveal .slides section.ncar-title.ncar-field::after {
+html.engine-brand-ucar .reveal .slides section.slide.engine-field::after,
+html.engine-brand-ucar .reveal .slides section.engine-title.engine-field::after {
   background-image: url("UCAR-Logo_White_RGB.svg");
 }

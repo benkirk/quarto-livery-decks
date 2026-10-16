@@ -1,6 +1,6 @@
-<section id="$idprefix$title-slide"$for(title-slide-attributes/pairs)$ $it.key$="$it.value$"$endfor$ class="quarto-title-block ncar-title$ncar-title-class$$if(titlegraphic)$ ncar-title-photo$endif$">
-  $ncar-title-art$
-  <div class="ncar-title-text">
+<section id="$idprefix$title-slide"$for(title-slide-attributes/pairs)$ $it.key$="$it.value$"$endfor$ class="quarto-title-block engine-title$engine-title-class$$if(titlegraphic)$ engine-title-photo$endif$">
+  $engine-title-art$
+  <div class="engine-title-text">
 $if(date)$
     <p class="date">$date$</p>
 $endif$
@@ -8,7 +8,7 @@ $endif$
 $if(subtitle)$
     <p class="subtitle">$subtitle$</p>
 $endif$
-    <div class="ncar-title-rule"></div>
+    <div class="engine-title-rule"></div>
 $if(by-author)$
 $for(by-author)$
     <p class="author">$if(it.url)$<a href="$it.url$">$endif$$it.name.literal$$if(it.url)$</a>$endif$</p>
@@ -26,6 +26,6 @@ $endfor$
 $endif$
   </div>
 $if(fineprint)$
-  <div class="ncar-fineprint">$fineprint$</div>
+  <div class="engine-fineprint">$fineprint$</div>
 $endif$
 </section>

@@ -1,8 +1,8 @@
 -- pptx only. The theme's per-slide layout controls (.hcenter, .vcenter,
--- .center, scale="S", .fill, .full, .caution; see the vendored ncar-revealjs.lua) mean nothing
+-- .center, scale="S", .fill, .full, .caution; see the vendored engine-revealjs.lua) mean nothing
 -- to pandoc's pptx writer, which drops slide classes. Carry them to
 -- utils/slide_layout.py as one speaker-notes line,
---   ncar-layout: hcenter vcenter scale=1.4
+--   engine-layout: hcenter vcenter scale=1.4
 -- which that script applies, and removes, after rendering. Pandoc merges
 -- every notes Div on a slide, so the line joins any notes the author wrote.
 
@@ -38,7 +38,7 @@ local function take_layout(blk)
     if tonumber(scale) then table.insert(words, "scale=" .. scale) end
   end
   blk.classes = kept
-  return #words > 0 and ("ncar-layout: " .. table.concat(words, " ")) or nil
+  return #words > 0 and ("engine-layout: " .. table.concat(words, " ")) or nil
 end
 
 function Pandoc(doc)

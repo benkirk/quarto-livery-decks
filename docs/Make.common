@@ -56,7 +56,7 @@ PUBLISH_PREFIX ?=
 # metadata: {{< include >}}, ![](...), filters: and _metadata.yml are invisible to
 # make, so an edit to any of them rebuilds every deck in the directory.
 FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua)
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _ncar _livery
+DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _engine _livery
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -112,16 +112,16 @@ publish: site
 _quarto.yml:
 	ln -s $(SHARED_QUARTO_YML) $@
 
-# Same for the shared Quarto extensions (the NCAR theme: ncar-beamer and
-# ncar-revealjs): each deck dir is its own project root, and quarto does not
+# Same for the shared Quarto extensions (the engine theme: engine-beamer and
+# engine-revealjs): each deck dir is its own project root, and quarto does not
 # look above it.  Every format needs it -- _quarto.yml names both, and quarto
 # resolves all listed formats even when rendering pptx.
 _extensions:
 	ln -s $(SHARED_EXTENSIONS) $@
 
-# And common/ itself, which the shared _quarto.yml reaches as _ncar/ (its
+# And common/ itself, which the shared _quarto.yml reaches as _engine/ (its
 # filters, the pptx template), so a deck works wherever its directory is.
-_ncar:
+_engine:
 	ln -s $(SHARED_COMMON) $@
 
 # The livery link follows LIVERY. A missing-only rule like the three above would
@@ -150,11 +150,11 @@ define render_pptx
 endef
 
 define render_html
-	quarto render $< --to ncar-revealjs -o $@
+	quarto render $< --to engine-revealjs -o $@
 endef
 
 define render_pdf
-	quarto render $< --to ncar-beamer -o $@
+	quarto render $< --to engine-beamer -o $@
 endef
 
 %.pptx: %.qmd $(DEPS)

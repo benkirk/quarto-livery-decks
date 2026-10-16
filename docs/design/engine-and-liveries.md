@@ -342,6 +342,19 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 2 begun: the rename (beamer-livery-theme PR #2, this repo PR #5).
+  The theme is `_extensions/engine/` with the formats `engine-beamer` and `engine-revealjs`,
+  `\usetheme{Engine}`, `engine_livery.sty`, the `engine@` namespace, `\engine*` commands and
+  `engine*` frame keys, `engine-*` classes, properties and ids, and the `engine-layout:` notes
+  line; version 3.0.0, untagged until Phase 2 is complete. Brand things keep their names
+  (palette colors, `brand=`, `ncar-assets/`, the v1 shims). The framework re-vendors it,
+  links `common/` as `_engine`, and its scripts, filters, CI greps and docs follow; both
+  parity harnesses gained a `NORMALIZE` hook that folds the nouns. Parity with the nouns
+  folded: identical except the version in the HTML dependency path, the compiled theme's
+  hash, and the decks' own sentences and diagram labels that name the theme (the README
+  screenshots were reshot for the mermaid slide). Next: `livery=` and the generated
+  `build/livery.sty` in the engine, with the reference liveries under
+  `_extensions/engine/liveries/` and `livery_build.py` moving there.
 - **2026-10-16** Phase 1 complete (PR #4): `link_captions.py` and `linked-images.lua`
   take muted from the livery (the Lua filter reads `build/livery.json` by the `livery:`
   metadata key, else `$LIVERY_DIR`, else `_livery`); `deck_qa.py`'s edge is `1 - margin`

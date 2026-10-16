@@ -1,11 +1,11 @@
-title: NCAR
+title: Engine
 author: Benjamin Kirk
-version: 2.8.0
-quarto-required: ">=1.6.0"   # \pandocbounded (used by ncar-beamer.lua) needs pandoc >= 3.2.1
+version: 3.0.0
+quarto-required: ">=1.6.0"   # \pandocbounded (used by engine-beamer.lua) needs pandoc >= 3.2.1
 contributes:
   formats:
     beamer:
-      # The theme is loaded by ncar-beamer.lua (\usetheme[<themeoptions>]{NCAR}
+      # The theme is loaded by engine-beamer.lua (\usetheme[<themeoptions>]{Engine}
       # with the extension directory on LaTeX's \input@path), so nothing is
       # copied next to the document.  Use `themeoptions:` for theme options.
       pdf-engine: xelatex
@@ -15,15 +15,15 @@ contributes:
       # figures (incl. mermaid) are sized in inches; the 16:9 text area is ~5.6in wide
       fig-width: 5.5
       fig-height: 3.5
-      highlight-style: ncar.theme
+      highlight-style: engine.theme
       filters:
         - quarto          # run after quarto's filters (mermaid images exist by then)
-        - ncar-beamer.lua
+        - engine-beamer.lua
     revealjs:
-      # Palette, type and slide furniture: ncar-revealjs.scss (compiled into the
-      # reveal theme) and ncar-revealjs.css (fonts and logos, which need url()s;
-      # attached by ncar-revealjs.lua).  The same `themeoptions:` as beamer.
-      theme: [default, ncar-revealjs.scss]
+      # Palette, type and slide furniture: engine-revealjs.scss (compiled into the
+      # reveal theme) and engine-revealjs.css (fonts and logos, which need url()s;
+      # attached by engine-revealjs.lua).  The same `themeoptions:` as beamer.
+      theme: [default, engine-revealjs.scss]
       template-partials: [title-slide.html]
       width: 1600          # 16:9 like the pptx and beamer decks; every length
       height: 900          # in the theme is in these slide pixels
@@ -36,7 +36,7 @@ contributes:
       transition-speed: fast
       background-transition: fade
       preview-links: auto
-      highlight-style: ncar.theme
+      highlight-style: engine.theme
       menu:
         side: left
         numbers: true
@@ -45,4 +45,4 @@ contributes:
       fig-width: 10
       fig-height: 5
       filters:
-        - ncar-revealjs.lua
+        - engine-revealjs.lua

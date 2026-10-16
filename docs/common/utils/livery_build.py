@@ -21,7 +21,7 @@ import yaml
 from livery import mix
 
 HEX = "#0123456789abcdefABCDEF"
-# (key, role a, role b, share of a): the theme's recipes, ncar-revealjs.scss `table` and
+# (key, role a, role b, share of a): the theme's recipes, engine-revealjs.scss `table` and
 # `.ncar-caution`, beamerinnerthemeNCAR.sty `ncarcautionfill`
 BLENDS = [
     ("table-rule", "foreground", "surface", 0.20),
