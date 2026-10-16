@@ -77,14 +77,10 @@ $mermaid-label-fg-color: $ncar-blue;
 
 /*-- scss:rules --*/
 
-// slide geometry (beamerouterthemeEngine.sty: margins 0.06 W, tab 0.018 W,
-// logo 0.06 H tall at 0.055 H from the top)
-$engine-margin: 96px;
-$engine-tab: 29px;
-$engine-logo-top: 48px;
-// the logo's box (--engine-logo-w/h, --engine-logo-aspect) and the brand roles
-// (--engine-primary, -primary-text, -primary-contrast, -secondary, -accent, ...) are
-// :root custom properties in the livery's build/livery.css (engine-revealjs.lua attaches it)
+// slide geometry: the livery's fractions as slide pixels in its build/livery.css
+// (--engine-margin, -tab, -logo-top, -logo-h/-w/-aspect, -logo-title-h/-section-h/
+// -closing-h, -divider-top/-bottom, -full-pad/-floor/-caption), beside the brand
+// roles (--engine-primary, ...); engine-revealjs.lua attaches it
 
 // ---------------------------------------------------------------------------
 // every slide: a 1600x900 box with the brand margins
@@ -96,7 +92,7 @@ $engine-logo-top: 48px;
   height: 100%;
   box-sizing: border-box;
   isolation: isolate;  // keeps the z-index:-1 waves above the slide background in print
-  padding: 150px $engine-margin 70px;
+  padding: 150px var(--engine-margin) 70px;
 }
 
 // the logo: top right on content slides (NSF NCAR full color; the images
@@ -105,8 +101,8 @@ $engine-logo-top: 48px;
 .reveal .slides section.engine-title::after {
   content: "";
   position: absolute;
-  top: $engine-logo-top;
-  right: $engine-margin;
+  top: var(--engine-logo-top);
+  right: var(--engine-margin);
   width: var(--engine-logo-w);
   height: var(--engine-logo-h);
   background-repeat: no-repeat;
@@ -123,8 +119,8 @@ $engine-logo-top: 48px;
 .reveal .slides section.slide.level2 > h2 {
   position: absolute;
   top: 44px;
-  left: $engine-margin;
-  right: calc(#{$engine-margin + 40px} + var(--engine-logo-w));
+  left: var(--engine-margin);
+  right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
   min-height: 70px;
   margin: 0;
   display: flex;
@@ -135,10 +131,10 @@ $engine-logo-top: 48px;
   &::before {
     content: "";
     position: absolute;
-    left: -$engine-margin;
+    left: calc(-1 * var(--engine-margin));
     top: 0;
     bottom: 0;
-    width: $engine-tab;
+    width: var(--engine-tab);
     background: var(--engine-accent);
   }
 }
@@ -147,8 +143,8 @@ $engine-logo-top: 48px;
   content: "";
   position: absolute;
   top: 130px;
-  left: $engine-margin;
-  right: $engine-margin;
+  left: var(--engine-margin);
+  right: var(--engine-margin);
   height: 1px;
   background: var(--engine-rule);
 }
@@ -313,7 +309,7 @@ $engine-logo-top: 48px;
 // the body shrinks above them rather than running underneath.
 .reveal .slides section .engine-footnotes {
   position: absolute;
-  left: $engine-margin;
+  left: var(--engine-margin);
   bottom: 70px;
   max-width: 60%;
   padding-top: 0.55em;
@@ -373,8 +369,8 @@ $engine-logo-top: 48px;
 }
 div.reveal div.slides section.engine-title.quarto-title-block {
   text-align: left;
-  padding: 180px $engine-margin 60px;
-  &::after { left: $engine-margin; right: auto; top: 72px; height: 70px; width: calc(70px * var(--engine-logo-aspect)); background-position: left top; }
+  padding: 180px var(--engine-margin) 60px;
+  &::after { left: var(--engine-margin); right: auto; top: 72px; height: var(--engine-logo-title-h); width: calc(var(--engine-logo-title-h) * var(--engine-logo-aspect)); background-position: left top; }
   .engine-title-text { max-width: 58%; }
   &.engine-title-photo .engine-title-text { max-width: 44%; }
   .date {
@@ -393,10 +389,10 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     &::before {
       content: "";
       position: absolute;
-      left: -$engine-margin;
+      left: calc(-1 * var(--engine-margin));
       top: 0.08em;
       bottom: 0.08em;
-      width: $engine-tab;
+      width: var(--engine-tab);
       background: var(--engine-accent);
     }
   }
@@ -416,7 +412,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   .institute { margin: 0; font-size: 0.7em; }
   .engine-fineprint {
     position: absolute;
-    left: $engine-margin;
+    left: var(--engine-margin);
     bottom: 36px;
     max-width: 50%;
     font-size: 0.4em;
@@ -437,9 +433,9 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   display: flex !important;
   flex-direction: column;
   justify-content: center;
-  padding: 120px $engine-margin 80px;
+  padding: var(--engine-divider-top) var(--engine-margin) var(--engine-divider-bottom);
   text-align: left;
-  &::after { left: $engine-margin; right: auto; top: 72px; background-position: left top; }
+  &::after { left: var(--engine-margin); right: auto; top: 72px; height: var(--engine-logo-section-h); width: calc(var(--engine-logo-section-h) * var(--engine-logo-aspect)); background-position: left top; }
   &[data-engine-section]::before {
     content: "Section " attr(data-engine-section);
     display: block;
@@ -461,10 +457,10 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     &::before {
       content: "";
       position: absolute;
-      left: -$engine-margin;
+      left: calc(-1 * var(--engine-margin));
       top: 0.08em;
       bottom: 0.08em;
-      width: $engine-tab;
+      width: var(--engine-tab);
       background: var(--engine-accent);
     }
   }
@@ -485,8 +481,8 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   display: flex !important;
   flex-direction: column;
   justify-content: center;
-  padding: 150px $engine-margin 80px;
-  &::after { left: $engine-margin; right: auto; top: 81px; background-position: left top; }
+  padding: 150px var(--engine-margin) 80px;
+  &::after { left: var(--engine-margin); right: auto; top: 81px; height: var(--engine-logo-closing-h); width: calc(var(--engine-logo-closing-h) * var(--engine-logo-aspect)); background-position: left top; }
   > h2 {
     position: relative;
     top: auto; left: auto; right: auto;
@@ -515,7 +511,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   right: 0;
   box-sizing: border-box;
   min-height: 180px;
-  padding: 0 $engine-margin;
+  padding: 0 var(--engine-margin);
   background: var(--engine-overlay);
   color: #fff;
   &::before { content: none; }
@@ -570,8 +566,6 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
 // ---------------------------------------------------------------------------
 // Absolutely placed, so reveal's inline display and the print padding cannot
 // move it; the title stays in the page (navigation, tools), clipped to nothing.
-$engine-full-pad: 40px;
-$engine-full-caption: 56px;
 .reveal .slides section.slide.level2.full {
   &::before, &::after { content: none; }  // no rule, no logo
   > h2 {
@@ -588,13 +582,13 @@ $engine-full-caption: 56px;
 }
 .reveal .slides section.slide.full .engine-full-figure {
   position: absolute;
-  inset: $engine-full-pad $engine-full-pad ($engine-full-pad + 8px);
+  inset: var(--engine-full-pad) var(--engine-full-pad) calc(var(--engine-full-pad) + 8px);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .reveal .slides section.slide.full.engine-captioned .engine-full-figure {
-  bottom: $engine-full-pad + $engine-full-caption;
+  bottom: calc(var(--engine-full-pad) + var(--engine-full-caption));
 }
 // every wrapper Quarto puts round a figure hands the box down to it; the
 // empty paragraphs it leaves beside one would take a share of the width
@@ -619,10 +613,10 @@ $engine-full-caption: 56px;
 }
 .reveal .slides section.slide.full .engine-full-caption {
   position: absolute;
-  left: $engine-full-pad;
-  right: $engine-full-pad;
-  bottom: $engine-full-pad;
-  height: $engine-full-caption;
+  left: var(--engine-full-pad);
+  right: var(--engine-full-pad);
+  bottom: var(--engine-full-pad);
+  height: var(--engine-full-caption);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -661,10 +655,10 @@ $engine-full-caption: 56px;
 // reveal's print stylesheet zeroes every section's padding (!important);
 // restate each slide type's (more specific, so these win)
 html.reveal-print .reveal .slides {
-  section.slide, section.engine-title { padding: 150px $engine-margin 70px !important; }
-  section.engine-title.quarto-title-block { padding: 180px $engine-margin 60px !important; }
-  section.slide.engine-section { padding: 120px $engine-margin 80px !important; }
-  section.slide.level2.closing { padding: 150px $engine-margin 80px !important; }
+  section.slide, section.engine-title { padding: 150px var(--engine-margin) 70px !important; }
+  section.engine-title.quarto-title-block { padding: 180px var(--engine-margin) 60px !important; }
+  section.slide.engine-section { padding: var(--engine-divider-top) var(--engine-margin) var(--engine-divider-bottom) !important; }
+  section.slide.level2.closing { padding: 150px var(--engine-margin) 80px !important; }
   section.slide.level2.feature { padding-top: 230px !important; }
   // full-height slides: no vertical centering offset
   section.slide, section.engine-title { top: 0 !important; }

@@ -42,8 +42,8 @@
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.06\paperheight
     \hbox{\def\engine@tmp{light}%
-      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=0.09\paperheight]{light}%
-      \else\enginelogo[height=0.09\paperheight]{dark}\fi}%
+      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=\engine@geom@logotitle\paperheight]{light}%
+      \else\enginelogo[height=\engine@geom@logotitle\paperheight]{dark}\fi}%
     \vskip0.055\paperheight
     \ifx\insertdate\@empty\else
       {\usebeamerfont{date}\usebeamercolor[fg]{date}\MakeUppercase{\insertdate}\par}%
@@ -82,7 +82,7 @@
   \usebeamercolor[fg]{section page}%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
-    \hbox{\enginelogo[height=0.08\paperheight]{dark}}%
+    \hbox{\enginelogo[height=\engine@geom@logosection\paperheight]{dark}}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \ifnum\thesection>0
@@ -128,8 +128,8 @@
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
     \hbox{\def\engine@tmp{light}%
-      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=0.10\paperheight]{light}%
-      \else\enginelogo[height=0.10\paperheight]{dark}\fi}%
+      \ifx\engine@titlestyle\engine@tmp\enginelogo[height=\engine@geom@logoclosing\paperheight]{light}%
+      \else\enginelogo[height=\engine@geom@logoclosing\paperheight]{dark}\fi}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \usebeamerfont{section title}#1\par}%

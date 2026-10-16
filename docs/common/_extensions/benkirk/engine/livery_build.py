@@ -197,14 +197,25 @@ def emit_css(livery: dict) -> str:
                  f'src: url("{Path(f["path"]).name}") format("truetype"); }}')
     props = [f"--engine-{k}: {v};" for k, v in livery["roles"].items()]
     props += [f"--engine-{k}: {v};" for k, v in livery["derived"].items()]
-    logo = livery.get("geometry", {}).get("logo", {})
+    geom = livery.get("geometry", {})
+    logo = geom.get("logo", {})
+    px = lambda frac, axis=H: f"{round(frac * axis, 1):g}px"
     if "height" in logo:
-        h = round(logo["height"] * H, 1)   # 0.0644 * 900 is the scss's 58px
-        props.append(f"--engine-logo-h: {h:g}px;")
+        props.append(f"--engine-logo-h: {px(logo['height'])};")   # 0.0644 * 900 is the scss's 58px
         if "aspect" in logo:
-            props.append(f"--engine-logo-w: {h * logo['aspect']:.1f}px;")
+            props.append(f"--engine-logo-w: {round(logo['height'] * H, 1) * logo['aspect']:.1f}px;")
     if "aspect" in logo:
         props.append(f"--engine-logo-aspect: {logo['aspect']};")
+    for k in ("top", "title", "section", "closing"):   # the logo's top, and its height per slide kind
+        if k in logo:
+            props.append(f"--engine-logo-{k}{'' if k == 'top' else '-h'}: {px(logo[k])};")
+    for k in ("margin", "tab"):
+        if k in geom:
+            props.append(f"--engine-{k}: {px(geom[k], W)};")
+    for k, v in geom.get("divider", {}).items():
+        props.append(f"--engine-divider-{k}: {px(v)};")
+    for k, v in geom.get("full", {}).items():
+        props.append(f"--engine-full-{k}: {px(v, W if k == 'pad' else H)};")
     if "label-color" in livery.get("divider", {}):
         props.append(f"--engine-divider-label: {livery['divider']['label-color']};")
     props.append(f'--engine-font-family: "{family}";')

@@ -342,6 +342,20 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 2, step 4 (beamer-livery-theme PR #6, this repo PR #8): geometry from
+  the livery. The `geometry` block (fractions of the slide) carries the margin, the tab, the
+  logo's height per slide kind, top and aspect, the divider block's padding and the
+  full-figure lengths; `livery_build.py` emits `engine@geom@*` and `--engine-*` pixels; the
+  beamer themes, the Sass, `section_subtitle.py` and `slide_layout.py` read them. The ncar
+  values are the themes' own, unified where HTML and PDF disagreed (content logo 0.0644, the
+  HTML's; title, section and closing logos 0.09, 0.08, 0.10, beamer's), so the PDF content
+  logo grew 7% and the HTML brand-field logos grew. Decided with Ben: the pptx template's
+  tighter geometry (3% margin, an oversized logo) is NOT the source of truth; he tuned it by
+  hand for figure room and wants it toned down. The brand's official pptx templates for all
+  four lockups (UCAR Communications, April 2026) sit in a Drive folder (see the memory
+  notes); they are the reference decks for section 6 and the yardstick for loosening the
+  ncar template. The slide paddings and title rule of the two formats remain engine
+  constants (each format's own). Next: step 5, the waves as art files, closing Phase 2.
 - **2026-10-16** Phase 2, step 3 (beamer-livery-theme PR #5, this repo PR #7): roles only.
   No palette name is read outside `build/livery.sty`: the color, inner and outer themes, the
   check marks and listings style, Quarto's callouts and the Sass all read roles, with a new
