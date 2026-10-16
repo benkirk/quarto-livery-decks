@@ -1,0 +1,55 @@
+# The University of Colorado Boulder brand in Quarto's brand.yml standard, kept strictly
+# standard; engine knobs are in livery.yml. Values: colorado.edu/imc/cu-boulder-brand/visual-identity
+# (2026). Fonts: the brand's Helvetica Neue is Monotype's and cannot be bundled; TeX Gyre Heros
+# (a free Helvetica clone, GUST Font License) stands in for HTML and PDF, see livery.yml pptx.
+meta:
+  name: University of Colorado Boulder
+  link: https://www.colorado.edu
+
+color:
+  palette:
+    cu-gold: "#CFB87C"            # primary; not accessible as text on white
+    black: "#000000"
+    dark-gray: "#565A5C"          # CU Dark Gray
+    light-gray: "#A2A4A3"         # CU Light Gray
+    accessible-gold: "#8D7334"    # small text on white only, never a background
+    sky-blue: "#096FAE"           # CUB Sky Blue: text only, calls to action
+    light-gold: "#F3F0E9"         # CUB Light Gold
+    dark-blue: "#0A3758"          # CUB Dark Blue
+    light-blue: "#EEF5F8"         # CUB Light Blue
+    white: "#FFFFFF"
+  primary: cu-gold
+  secondary: dark-gray
+  foreground: black
+  background: white
+
+typography:
+  fonts:
+    - family: TeX Gyre Heros
+      source: file
+      files:
+        - path: fonts/texgyreheros-regular.otf
+          weight: 400
+        - path: fonts/texgyreheros-italic.otf
+          weight: 400
+          style: italic
+        - path: fonts/texgyreheros-bold.otf
+          weight: 700
+        - path: fonts/texgyreheros-bolditalic.otf
+          weight: 700
+          style: italic
+  base: TeX Gyre Heros
+  headings: TeX Gyre Heros
+
+logo:
+  # placeholders from the NSI reference deck until the plain CU Boulder lockup (lockup library,
+  # CU login) replaces them: the Research & Innovation Office lockup, and a white recoloring of it
+  images:
+    rio-color:
+      path: logos/cu-rio-lockup.png
+    rio-white:
+      path: logos/cu-rio-lockup-white.png
+  medium:
+    light: rio-color      # on light backgrounds
+    dark: rio-color       # the brand field is gold, light enough for the dark lockup; the white
+                          # one waits for a black field (the deck's band title, a follow-up)

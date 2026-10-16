@@ -86,3 +86,11 @@ def wave_shapes(lines, first_id, w_emu, h_emu, shift, slot, bands=True, line_px=
         out.append(shape_xml(sid, f"Wave line {k + 1}", line_geom(lines, k, shift), "<a:noFill/>",
                              f'<a:ln w="{round(line_px * emu_px)}">{scheme_fill(slot)}</a:ln>', w_emu, h_emu)); sid += 1
     return out
+
+
+def straight_cover_shapes(first_id, w_emu, h_emu, field_slot="tx2", edge=0.52):
+    """The cover of a livery without waves: an opaque field over the left `edge` of the slide, the
+    straight edge the HTML and PDF themes draw (engine-revealjs.lua, beamer's \\engine@coverbox)."""
+    return [(f'<p:sp {XMLNS}><p:nvSpPr><p:cNvPr id="{first_id}" name="Cover field"/><p:cNvSpPr/><p:nvPr userDrawn="1"/></p:nvSpPr>'
+             f'<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="{round(edge * w_emu)}" cy="{h_emu}"/></a:xfrm>'
+             f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>{scheme_fill(field_slot)}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')]

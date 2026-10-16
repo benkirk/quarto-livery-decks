@@ -342,6 +342,30 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** The first non-NCAR livery: `cu` (University of Colorado Boulder), a real
+  directory in `docs/common/liveries/` (this repo PR #13; beamer-livery-theme PR #10). The
+  reference is the CU Center for National Security Initiatives' master deck (Ben's download, a
+  Google Slides export; not committed, `reference/notes.md` records it), the brand site the
+  stricter authority. Decided with Ben: a generic `cu` now and an `nsi` flavor later; the
+  pptx names Helvetica Neue unembedded (Monotype's font cannot be bundled) while HTML and PDF
+  bundle TeX Gyre Heros, the free Helvetica clone, in `.otf`; the generic title composition
+  first (the deck's black field with a gold band is a follow-up `title: band` style); a faint
+  picture behind content slides as `art.content` (the deck's own pre-faded space photo, since
+  the buffalo marks are Athletics'); the deck's Research & Innovation Office lockup as the
+  placeholder until the plain CU Boulder lockup arrives from the CU-only lockup library. What
+  the onboarding tools got right: inspect, build, template and the CI matrix took the new
+  directory as is. What needed code: the engine assumed `.ttf` (fontspec `Extension`, the
+  bundled-copy probe, the math ranges, the css `format()` hint); a livery's partial
+  `pptx.scheme` replaced the whole slot contract instead of overlaying it (CU needs only the
+  link slots changed, gold being inaccessible on white); `livery_build.py` exited on a
+  missing template that `livery_template.py` was about to build; the revealjs theme still fed
+  reveal's own custom properties (`--r-main-color`, `--r-link-color`, the fonts) from NCAR
+  Sass literals, so the HTML wore navy and Poppins under any livery, now restated from the
+  roles; `embed_fonts.py` exited without font blobs; the template builder had no
+  `art.content`; the pptx cover had no shape without waves (now a straight edge, as the two
+  themes draw); CI's font-embedding check assumed blobs. Also decided: the dark-field lockup
+  is the dark-text one, the gold field being light. Next: the `nsi` flavor, the band title
+  style, Heros Condensed headings (a second family in the engine), `livery_check.py`.
 - **2026-10-16** The brand cover in pptx (this repo PR #11, with the template builder). Ben
   on the sample's `.feature` slide: "this was supposed to be a image eclipsed with solid like
   my sample covers ... my original slide master just required the image be 'pushed to back'

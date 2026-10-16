@@ -89,9 +89,12 @@ jobs:
           json=../common/liveries/$LIVERY/build/livery.json
           primary=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['scheme']['dk2'].lstrip('#'))" "$json")
           typeface=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['typeface'])" "$json")
+          embeds=$(python3 -c "import json,sys; print('fonts' in json.load(open(sys.argv[1]))['pptx'])" "$json")
           unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "$primary"
-          unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
-          unzip -p quickstart.pptx ppt/presentation.xml | grep -q "typeface=\"$typeface\""
+          # a livery with font blobs (pptx.fonts) embeds them; one without names its typeface only
+          test "$embeds" = False || unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
+          test "$embeds" = True || ! unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
+          unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "typeface=\"$typeface\""
           grep -q 'livery.css' quickstart.html
 
       - name: Upload the deck

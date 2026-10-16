@@ -5,7 +5,8 @@
 
 Everything comes from build/livery.json: the theme's color slots (pptx.scheme, or the roles
 by the slot contract), the typeface, the light and dark logos, the geometry fractions and
-the wave curves (art.waves). The master carries the title with its accent tab and hairline
+the wave curves (art.waves) or a picture behind content slides (art.content; the other art
+kinds are not placed yet). The master carries the title with its accent tab and hairline
 rule, the lockup top right, the faint wave lines and the body-size ladder; the seven layouts
 pandoc looks up by name are generated (Title Slide, Title and Content, Section Header, Two
 Content, Comparison, Content with Caption, Blank), the Title Slide with its five
@@ -68,7 +69,8 @@ class Builder:
         self.scheme = livery.get("pptx", {}).get("scheme") or {
             slot: livery["roles"][role] for slot, role in SLOT_ROLES.items() if role in livery["roles"]}
         self.typeface = livery["pptx"]["typeface"]
-        self.waves = (livery.get("art") or {}).get("waves")
+        art = livery.get("art") or {}
+        self.waves, self.art_content = art.get("waves"), art.get("content")
         self.sid = 10
 
     def next_id(self):
@@ -161,8 +163,13 @@ class Builder:
                        '</p:txBody></p:sp><!--', "", "")
         body = body.split("<!--")[0]
         waves = "".join(self.wave_shapes(self.waves["shift"]["content"], "lt2", bands=False)) if self.waves else ""
+        art = ""   # art.content: a full-slide picture under everything (the layouts with a field hide the master)
+        if self.art_content:
+            art = (f'<p:pic><p:nvPicPr><p:cNvPr id="{self.next_id()}" name="Content art"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/>'
+                   f'</p:cNvPicPr><p:nvPr userDrawn="1"/></p:nvPicPr><p:blipFill><a:blip r:embed="rId3"/><a:stretch><a:fillRect/></a:stretch>'
+                   f'</p:blipFill><p:spPr>{xfrm(0, 0, 1, 1)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>')
         logo = self.logo("rId2", "light", 1 - m - logo_w, g["logo"]["top"], logo_h)
-        shapes = waves + tab_sp + rule + title + body + self.chrome() + logo
+        shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo
         return (XMLDECL + f'<p:sldMaster {NSDECL}><p:cSld><p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg>'
                 f'<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
                 f'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/>'
@@ -297,6 +304,10 @@ class Builder:
         parts["ppt/slideMasters/slideMaster1.xml"] = self.master()
         rels = [f'<Relationship Id="rId1" Type="{REL}/theme" Target="../theme/theme1.xml"/>',
                 f'<Relationship Id="rId2" Type="{REL}/image" Target="../media/{light_part}"/>']
+        if self.art_content:
+            art = Path(livery_dir) / self.art_content
+            parts["ppt/media/image3" + art.suffix] = art.read_bytes()
+            rels.append(f'<Relationship Id="rId3" Type="{REL}/image" Target="../media/image3{art.suffix}"/>')
         rels += [f'<Relationship Id="rId{10 + i}" Type="{REL}/slideLayout" Target="../slideLayouts/slideLayout{i + 1}.xml"/>' for i in range(len(LAYOUTS))]
         parts["ppt/slideMasters/_rels/slideMaster1.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(rels)}</Relationships>'
         for i, name in enumerate(LAYOUTS, 1):

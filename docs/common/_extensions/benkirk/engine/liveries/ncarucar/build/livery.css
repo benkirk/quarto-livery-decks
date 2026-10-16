@@ -49,6 +49,7 @@ html:root {
   --mermaid-edge-color: var(--engine-foreground);
   --mermaid-label-bg-color: var(--engine-background);
   --mermaid-label-fg-color: var(--engine-primary-contrast);
+  --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
 .reveal .slides section.slide::after,
 .reveal .slides section.engine-title::after { background-image: url("NSF-NCAR-UCAR_Logo_FullColor_RGB.png"); }

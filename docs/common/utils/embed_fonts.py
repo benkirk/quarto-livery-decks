@@ -201,6 +201,9 @@ def main() -> None:
     if not pptx_path.exists():
         sys.exit(f"embed_fonts: no such file: {pptx_path}")
 
+    if "fonts" not in LIVERY["pptx"]:   # a livery that names its typeface and embeds nothing
+        print(f"embed_fonts: livery {LIVERY['name']} embeds no fonts (pptx.fonts unset) → {pptx_path.name} unchanged")
+        return
     blobs = check_fonts()
     variants, replaced = rewrite_pptx(pptx_path, blobs)
     action = "replaced" if replaced else "embedded"

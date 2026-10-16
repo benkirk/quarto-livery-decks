@@ -16,11 +16,16 @@ Phase 1 (the framework reads the livery) is done and Phase 2 (the engine) is und
 way: the theme is renamed and reads a livery. The reference liveries live in the engine
 (`_extensions/benkirk/engine/liveries/`; `docs/common/liveries/ncar` is a link to its
 `ncar`), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`;
-`utils/livery.py` reads the json for the post-render scripts. NCAR decks still build
-byte-identically to upstream. Phase 3 (onboarding a brand from a reference PowerPoint,
-design section 6) is under way: `utils/livery_inspect.py` writes a livery's
-`reference/report.md` from the deck; the reference decks themselves live on Drive, not
-in git.
+`utils/livery.py` reads the json for the post-render scripts. NCAR PDF and HTML decks
+still build byte-identically to upstream; the pptx template is generated. Phase 3
+(onboarding a brand from a reference PowerPoint, design section 6) is under way:
+`utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck,
+`utils/livery_template.py` builds its `template.pptx` from the data, and the first
+non-NCAR livery, `cu` (CU Boulder), is a real directory under `docs/common/liveries/`
+with its decisions in `reference/notes.md`. The reference decks themselves live on
+Drive or a laptop, not in git. A livery without `pptx.fonts` embeds nothing
+(`embed_fonts.py` says so and leaves the deck alone); a livery without `art.waves`
+gets straight-edged title fields in every format.
 
 Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
 machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua
@@ -184,8 +189,8 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   way, so a wide chart shrinks to half width; bake a chart's footnote into the
   PNG instead.
 - **Diagnosing layout problems**: `unzip -p deck.pptx
-  ppt/slides/_rels/slideN.xml.rels` — in the NCAR template, layout4 = Title and
-  Content, 6 = Two Content, 7 = Comparison. Hunt for orphan slides by
+  ppt/slides/_rels/slideN.xml.rels` — in a generated template, layout2 = Title and
+  Content, 4 = Two Content, 5 = Comparison (the `LAYOUTS` order in `livery_template.py`). Hunt for orphan slides by
   extracting each slide's title and looking for "(no title)".
 - **"Why is my line spacing 0.8?"**: `enable_autofit.py` turns on PowerPoint's
   shrink-on-overflow; when a box overflows, PowerPoint squeezes line spacing to

@@ -116,11 +116,13 @@ def resolve(d: Path) -> tuple[dict, dict]:
         if key in data:
             out[key] = data[key]
     out.setdefault("pptx", {})
-    if "scheme" not in out["pptx"]:   # the slot contract, from the roles
-        out["pptx"]["scheme"] = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
-    tmpl = d / out.get("pptx", {}).get("template", "template.pptx")
-    if not tmpl.exists():
-        sys.exit(f"{d.name}: pptx template {tmpl} missing")
+    # the slot contract, from the roles; a livery's own pptx.scheme overrides slot by slot
+    scheme = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
+    scheme.update({k: hex_of(v) for k, v in out["pptx"].get("scheme", {}).items()})
+    out["pptx"]["scheme"] = scheme
+    tmpl = d / out["pptx"].get("template", "template.pptx")
+    if not tmpl.exists():   # livery_template.py builds it from build/livery.json, so only a warning
+        print(f"{d.name}: pptx template {tmpl} missing; run livery_template.py", file=sys.stderr)
     return out, sources
 
 
@@ -176,6 +178,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append(f"\\def\\engine@font@family{{{family}}}")
     if files:
         L.append(f"\\def\\engine@font@dir{{\\engineliverydir {Path(files[0]['path']).parent.as_posix()}/}}")
+        L.append(f"\\def\\engine@font@ext{{{Path(files[0]['path']).suffix}}}")
     faces = {(400, False): "regular", (700, False): "bold", (400, True): "italic", (700, True): "bolditalic", (600, False): "semibold"}
     for f in files:
         face = faces.get((f.get("weight", 400), f.get("style") == "italic"))
@@ -222,7 +225,7 @@ def emit_css(livery: dict) -> str:
     for f in files:
         L.append(f'@font-face {{ font-family: "{family}"; font-style: {f.get("style", "normal")}; '
                  f'font-weight: {f.get("weight", 400)}; font-display: block; '
-                 f'src: url("{Path(f["path"]).name}") format("truetype"); }}')
+                 f'src: url("{Path(f["path"]).name}") format("{"opentype" if Path(f["path"]).suffix == ".otf" else "truetype"}"); }}')
     props = [f"--engine-{k}: {v};" for k, v in livery["roles"].items()]
     props += [f"--engine-{k}: {v};" for k, v in livery["derived"].items()]
     geom = livery.get("geometry", {})
@@ -253,7 +256,8 @@ def emit_css(livery: dict) -> str:
     L.append("html:root {\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
              "\n  --mermaid-node-fg-color: var(--engine-foreground);\n  --mermaid-fg-color: var(--engine-foreground);"
              "\n  --mermaid-edge-color: var(--engine-foreground);\n  --mermaid-label-bg-color: var(--engine-background);"
-             "\n  --mermaid-label-fg-color: var(--engine-primary-contrast);\n}")
+             "\n  --mermaid-label-fg-color: var(--engine-primary-contrast);"
+             "\n  --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;\n}")
     SEL = {"title": "section.engine-title", "section": "section.slide.engine-section",
            "closing": "section.slide.level2.closing", "content": "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full)"}
     for kind, sel in SEL.items():   # a static background per slide kind (the engine draws no waves there)

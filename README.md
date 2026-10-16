@@ -113,9 +113,13 @@ quarto-docs-framework/
 └── conda-env/              # local conda prefix, gitignored
 ```
 
-Room to grow: additional liveries (`docs/common/liveries/cu/`,
-`.../nasa/`, built with `make LIVERY=<name>`) or additional shared assets (`docs/common/assets/images/`)
-drop in as sibling subdirs without disturbing existing decks.
+Liveries (`docs/common/liveries/<name>/`, chosen with `make LIVERY=<name>`): `ncar`
+links to the engine's reference livery; `cu` is the University of Colorado Boulder
+(brand palette, TeX Gyre Heros standing in for Helvetica Neue in HTML and PDF, the
+pptx naming Helvetica Neue unembedded, a placeholder unit lockup until the plain CU
+Boulder lockup arrives; its `reference/notes.md` records the decisions). A new livery
+drops in as a sibling directory and CI builds the quickstart deck under it; additional
+shared assets (`docs/common/assets/images/`) likewise.
 
 ## Build pipeline
 
