@@ -27,6 +27,17 @@
   --engine-logo-h: 46.4px;
   --engine-logo-w: 182.3px;
   --engine-logo-aspect: 3.928;
+  --engine-logo-top: 48px;
+  --engine-logo-title-h: 81px;
+  --engine-logo-section-h: 72px;
+  --engine-logo-closing-h: 90px;
+  --engine-margin: 96px;
+  --engine-tab: 28.8px;
+  --engine-divider-top: 120px;
+  --engine-divider-bottom: 80px;
+  --engine-full-pad: 40px;
+  --engine-full-floor: 67.5px;
+  --engine-full-caption: 54px;
   --engine-divider-label: #011837;
   --engine-font-family: "Poppins";
   --engine-overlay: color-mix(in srgb, var(--engine-dark) 72%, transparent);

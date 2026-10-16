@@ -35,10 +35,11 @@
 % ---------------------------------------------------------------------------
 % geometry (relative to the paper, so 16:9, 16:10 and 4:3 all work)
 % ---------------------------------------------------------------------------
-\newdimen\engine@margin      \engine@margin=0.06\paperwidth
-\newdimen\engine@tabwidth    \engine@tabwidth=0.018\paperwidth
-\newdimen\engine@logoheight  \engine@logoheight=0.06\paperheight
-\newdimen\engine@logotop     \engine@logotop=0.055\paperheight
+% (the fractions are the livery's: engine@geom@* in its build/livery.sty)
+\newdimen\engine@margin      \engine@margin=\engine@geom@margin\paperwidth
+\newdimen\engine@tabwidth    \engine@tabwidth=\engine@geom@tab\paperwidth
+\newdimen\engine@logoheight  \engine@logoheight=\engine@geom@logoheight\paperheight
+\newdimen\engine@logotop     \engine@logotop=\engine@geom@logotop\paperheight
 \setbeamersize{text margin left=\engine@margin,text margin right=\engine@margin}
 
 % brand lockup shown at the top right of content frames
@@ -255,14 +256,14 @@
 
 % full frame: the image contained (never cropped) between a thin margin and
 % the footline, with the caption line, if any, just above the footline
-\newdimen\engine@fullpad    \engine@fullpad=0.025\paperwidth
+\newdimen\engine@fullpad    \engine@fullpad=\engine@geom@fullpad\paperwidth
 \newdimen\engine@fullfloor
 \def\engine@drawfullbg{%
-  \engine@fullfloor=0.075\paperheight
+  \engine@fullfloor=\engine@geom@fullfloor\paperheight
   \ifx\engine@fullcaption\@empty\else
     \node[anchor=south,inner sep=0pt,text width=0.8\paperwidth,align=center,
       font=\scriptsize,text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
-    \advance\engine@fullfloor 0.06\paperheight
+    \advance\engine@fullfloor \engine@geom@fullcaption\paperheight
   \fi
   \node[anchor=center,inner sep=0pt]
     at (0.5\paperwidth,{0.5*(\paperheight-\engine@fullpad+\engine@fullfloor)})

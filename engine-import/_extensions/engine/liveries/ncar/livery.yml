@@ -20,13 +20,23 @@ derived:                  # blends livery_build.py computes from the roles (BLEN
 
 aspect: "16:9"
 
-geometry:
-  margin: 0.06            # 96 px of 1600; beamer 0.06\paperwidth; deck_qa.py's overflow edge is 1 - margin
-  tab: 0.018              # 29 px; the divider's orange tab
+geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
+  margin: 0.06            # 96 px of 1600; deck_qa.py's overflow edge is 1 - margin
+  tab: 0.018              # 29 px; the divider's accent tab
   logo:
-    height: 0.0644        # 58 px of 900
-    top: 0.0533           # 48 px; dividers use 0.08 (72 px)
+    height: 0.0644        # content slides: 58 px of 900 (beamer drew 0.06 before Phase 2)
+    top: 0.0533           # 48 px
     aspect: 3.934         # NSF NCAR lockup, 1200/305
+    title: 0.09           # the lockup on the title, section and closing slides (beamer's sizes;
+    section: 0.08         # HTML drew 70, 58 and 58 px before Phase 2)
+    closing: 0.10
+  divider:                # the section slide's block: padding above and below (120 / 80 px);
+    top: 0.1333           # section_subtitle.py centers the pptx block in the same band
+    bottom: 0.0889
+  full:                   # the full-figure slide: margin round the figure, footline, caption line
+    pad: 0.025
+    floor: 0.075
+    caption: 0.06
   body-sizes-pt: [20, 18, 16, 14, 12]   # the master's ladder; autofit must never fire
 
 divider:

@@ -24,8 +24,11 @@ metadata key (else `liveries/<brand>`); and roles only: no palette name is
 read outside `build/livery.sty`, the Sass sets every color as `var(--engine-*)`
 (its `$ncar-*` variables are compile-time defaults for Quarto's own rules, which
 are restated with the roles at the end of the file), and the highlight theme is
-generated per livery from `engine.theme`. Still to do: geometry from the
-livery, backgrounds from `art/`.
+generated per livery from `engine.theme`; and geometry: the margin, tab,
+logo box (height per slide kind, top, aspect), divider block and full-figure
+lengths are the livery's `geometry` fractions, `engine@geom@*` in the `.sty`
+and `--engine-*` pixels in the css (the ncar values are the HTML/PDF numbers,
+not the pptx template's tighter ones). Still to do: backgrounds from `art/`.
 
 Checking a change: `tools/parity.sh baseline` on main, then `check` (every PDF
 page's pixels, pdftotext, the HTML). HTML colors live in the compiled theme and
