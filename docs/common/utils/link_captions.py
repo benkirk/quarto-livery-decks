@@ -20,9 +20,12 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
+import livery as livery_mod
+
+LIVERY     = livery_mod.load()
 NAME       = "link-caption"
 SIZE       = Pt(10)
-COLOR      = RGBColor(0x6B, 0x7C, 0x99)     # the theme's muted gray
+COLOR      = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 BAND_WIDTH = 0.6                             # of the slide; clear of number and date
 BAND_TOP   = Inches(0.42)                    # above the slide's bottom edge
 BAND_TALL  = Inches(0.3)
