@@ -70,7 +70,7 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
-.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full) { background: url("content-faint.jpg") center / cover no-repeat; }
+.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full) { background: url("content-flatirons.jpg") center / cover no-repeat; }
 .reveal .slides section.slide::after,
 .reveal .slides section.engine-title::after { background-image: url("cu-rio-lockup.png"); }
 .reveal .slides section.slide.engine-field::after,
