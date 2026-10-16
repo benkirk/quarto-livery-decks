@@ -18,7 +18,7 @@ and the vertical placement of the title block.
 Run from anywhere; rewrites template.pptx in place, and a second run produces
 the same layout:
 
-    python3 docs/common/liveries/ncar/build_divider_layout.py
+    python3 liveries/ncar/build_divider_layout.py   # from _extensions/engine/
 """
 
 import posixpath
@@ -32,8 +32,7 @@ from lxml import etree
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.pptx"
-LOGO = (HERE.parent.parent / "_extensions/benkirk/engine/ncar-assets/web"
-        / "NSF-NCAR_Logo_Color-White_RGB.png")
+LOGO = HERE / "logos" / "NSF-NCAR_Logo_Color-White_RGB.png"   # the livery's dark (web) lockup
 # pandoc keeps only the template's media named ppt/media/image*
 LOGO_PART = "ppt/media/image-divider-logo.png"
 

@@ -1,0 +1,17 @@
+# brand=ucar as a flavor: the roles of ncar_branding.sty's ucar branch, the UCAR logo's
+# shape (381/97, drawn at 0.8 of the NSF NCAR lockup's height, as the revealjs theme does).
+name: ucar
+extends: ncar
+
+roles:
+  primary-text: space
+  primary-contrast: ucar-aqua-contrast
+  accent: yellow
+
+geometry:
+  logo:
+    height: 0.0516        # 46.4 px of 900
+    aspect: 3.928         # 381/97
+
+divider:
+  label-color: "#011837"  # Space on Aqua: Light Aqua is too light for the eyebrow (Brand Guide p22)

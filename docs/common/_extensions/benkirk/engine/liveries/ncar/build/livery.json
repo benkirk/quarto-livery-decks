@@ -1,0 +1,139 @@
+{
+  "art": {},
+  "aspect": "16:9",
+  "derived": {
+    "caution-fill": "#FFF9DA",
+    "table-band": "#F7F6F5",
+    "table-rule": "#C1CBD7"
+  },
+  "divider": {
+    "label": "Section",
+    "tab": true
+  },
+  "geometry": {
+    "body-sizes-pt": [
+      20,
+      18,
+      16,
+      14,
+      12
+    ],
+    "logo": {
+      "aspect": 3.934,
+      "height": 0.0644,
+      "top": 0.0533
+    },
+    "margin": 0.06,
+    "tab": 0.018
+  },
+  "latex": {
+    "colors": {
+      "dark-blue": "DarkBlue",
+      "light-aqua": "LightAqua",
+      "light-blue": "LightBlue",
+      "light-gray": "LightGray",
+      "ncar-blue": "NCARBlue",
+      "orange": "BrandOrange",
+      "space": "Space",
+      "ucar-aqua": "UCARAqua",
+      "ucar-aqua-contrast": "UCARAquaContrast",
+      "white": "BrandWhite",
+      "yellow": "BrandYellow"
+    }
+  },
+  "logo": {
+    "images": {
+      "ncar-color": {
+        "path": "logos/NSF-NCAR_Logo_FullColor_RGB.png"
+      },
+      "ncar-color-print": {
+        "path": "logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
+      },
+      "ncar-white": {
+        "path": "logos/NSF-NCAR_Logo_Color-White_RGB.png"
+      },
+      "ncar-white-print": {
+        "path": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
+      }
+    },
+    "medium": {
+      "dark": "ncar-white",
+      "light": "ncar-color"
+    }
+  },
+  "name": "ncar",
+  "palette": {
+    "dark-blue": "#00357A",
+    "light-aqua": "#34E1F4",
+    "light-blue": "#42C0FF",
+    "light-gray": "#F1F0EE",
+    "ncar-blue": "#0057C2",
+    "orange": "#FAA119",
+    "space": "#011837",
+    "ucar-aqua": "#00A2B4",
+    "ucar-aqua-contrast": "#00818F",
+    "white": "#FFFFFF",
+    "yellow": "#FFDD31"
+  },
+  "pptx": {
+    "fonts": "fonts/pptx",
+    "scheme": {
+      "accent1": "#42C0FF",
+      "accent4": "#FAA119",
+      "accent5": "#FDD509",
+      "dk1": "#00357A",
+      "dk2": "#0057C2",
+      "lt1": "#FFFFFF",
+      "lt2": "#F1F0EE"
+    },
+    "template": "template.pptx",
+    "typeface": "Poppins"
+  },
+  "roles": {
+    "accent": "#FAA119",
+    "background": "#FFFFFF",
+    "dark": "#011837",
+    "foreground": "#00357A",
+    "muted": "#6B7C99",
+    "primary": "#0057C2",
+    "primary-contrast": "#0057C2",
+    "primary-text": "#FFFFFF",
+    "secondary": "#42C0FF",
+    "surface": "#F1F0EE",
+    "warning": "#FFDD31"
+  },
+  "typography": {
+    "base": "Poppins",
+    "fonts": [
+      {
+        "family": "Poppins",
+        "files": [
+          {
+            "path": "fonts/Poppins-Regular.ttf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/Poppins-Italic.ttf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/Poppins-SemiBold.ttf",
+            "weight": 600
+          },
+          {
+            "path": "fonts/Poppins-Bold.ttf",
+            "weight": 700
+          },
+          {
+            "path": "fonts/Poppins-BoldItalic.ttf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
+      }
+    ],
+    "headings": "Poppins"
+  }
+}

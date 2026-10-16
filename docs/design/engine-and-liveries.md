@@ -342,6 +342,23 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Phase 2, step 2 (beamer-livery-theme PR #3, this repo PR #6): the engine
+  reads a livery. `_extensions/engine/liveries/{ncar,ucar,ncarucar}` hold the reference
+  liveries (the framework's ncar livery with its fonts and logos moved beside it; `ucar` and
+  `ncarucar` as flavors with `extends: ncar`, their inherited paths rebased), built by
+  `_extensions/engine/livery_build.py` into `build/livery.{json,sty,css}` (the `.sty`: palette
+  and roles under the LaTeX names of `livery.yml`'s `latex.colors`, logos, fonts, geometry,
+  the override files appended inside a catcode guard; the `.css`: `@font-face`, `:root
+  --engine-*` roles and blends, the logo box, the logo rules). `\usetheme[livery=<dir>]{Engine}`
+  inputs the `.sty` (`brand=` is its old spelling, `fonts=brand` of `fonts=poppins`);
+  `engine-beamer.lua` and `engine-revealjs.lua` take the directory from `livery:` else the
+  bundled `liveries/<brand>`; the HTML dependency is the livery's css with its font and logo
+  files, the Sass reads the logo box and roles as custom properties, and `ncar-assets/` is
+  gone. Parity: every PDF page pixel-identical (183 pages, the brand variants included), the
+  HTML identical except the dependency file and the dropped brand class, every HTML slide
+  pixel-identical in a Playwright comparison. The framework's `liveries/ncar` is a link to the
+  vendored copy, its `livery_build.py` the vendored one. Next: step 3, every remaining raw
+  palette read in the themes moved to a role (section 1's list), then geometry, then art.
 - **2026-10-16** Phase 2 begun: the rename (beamer-livery-theme PR #2, this repo PR #5).
   The theme is `_extensions/engine/` with the formats `engine-beamer` and `engine-revealjs`,
   `\usetheme{Engine}`, `engine_livery.sty`, the `engine@` namespace, `\engine*` commands and

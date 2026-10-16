@@ -81,25 +81,10 @@ $mermaid-label-fg-color: $ncar-blue;
 // logo 0.06 H tall at 0.055 H from the top)
 $engine-margin: 96px;
 $engine-tab: 29px;
-$engine-logo-h: 58px;
 $engine-logo-top: 48px;
-$engine-logo-w: $engine-logo-h * 1200 / 305;  // NSF NCAR lockup aspect
-
-// brand roles, switched by themeoptions brand= (the <html> class)
-:root {
-  --engine-primary: #{$ncar-blue};
-  --engine-primary-text: #fff;
-  --engine-primary-contrast: #{$ncar-blue};
-  --engine-secondary: #{$ncar-light-blue};
-  --engine-accent: #{$ncar-orange};
-}
-html.engine-brand-ucar {
-  --engine-primary: #{$ucar-aqua};
-  --engine-primary-text: #{$ncar-space};
-  --engine-primary-contrast: #{$ucar-aqua-contrast};
-  --engine-secondary: #{$ucar-light-aqua};
-  --engine-accent: #{$ncar-yellow};
-}
+// the logo's box (--engine-logo-w/h, --engine-logo-aspect) and the brand roles
+// (--engine-primary, -primary-text, -primary-contrast, -secondary, -accent, ...) are
+// :root custom properties in the livery's build/livery.css (engine-revealjs.lua attaches it)
 
 // ---------------------------------------------------------------------------
 // every slide: a 1600x900 box with the brand margins
@@ -122,17 +107,12 @@ html.engine-brand-ucar {
   position: absolute;
   top: $engine-logo-top;
   right: $engine-margin;
-  width: $engine-logo-w;
-  height: $engine-logo-h;
+  width: var(--engine-logo-w);
+  height: var(--engine-logo-h);
   background-repeat: no-repeat;
   background-position: right top;
   background-size: contain;
   pointer-events: none;
-}
-html.engine-brand-ucar .reveal .slides section.slide::after,
-html.engine-brand-ucar .reveal .slides section.engine-title::after {
-  width: $engine-logo-h * 0.8 * 381 / 97;
-  height: $engine-logo-h * 0.8;
 }
 // no logo on busy photos (Brand Guide p11)
 .reveal .slides section.slide.feature::after { content: none; }
@@ -144,7 +124,7 @@ html.engine-brand-ucar .reveal .slides section.engine-title::after {
   position: absolute;
   top: 44px;
   left: $engine-margin;
-  right: $engine-margin + $engine-logo-w + 40px;
+  right: calc(#{$engine-margin + 40px} + var(--engine-logo-w));
   min-height: 70px;
   margin: 0;
   display: flex;
@@ -394,7 +374,7 @@ html.engine-brand-ucar .reveal .slides section.engine-title::after {
 div.reveal div.slides section.engine-title.quarto-title-block {
   text-align: left;
   padding: 180px $engine-margin 60px;
-  &::after { left: $engine-margin; right: auto; top: 72px; height: 70px; width: 70px * 1200 / 305; background-position: left top; }
+  &::after { left: $engine-margin; right: auto; top: 72px; height: 70px; width: calc(70px * var(--engine-logo-aspect)); background-position: left top; }
   .engine-title-text { max-width: 58%; }
   &.engine-title-photo .engine-title-text { max-width: 44%; }
   .date {
@@ -463,7 +443,8 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   &[data-engine-section]::before {
     content: "Section " attr(data-engine-section);
     display: block;
-    color: var(--engine-secondary);
+    // the livery may set divider.label-color (UCAR: Space on Aqua; Light Aqua is too light there)
+    color: var(--engine-divider-label, var(--engine-secondary));
     font-size: 0.7em;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -495,10 +476,6 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-primary-text); }
   }
   &, h1, .engine-subtitle, a { color: var(--engine-primary-text); }
-}
-// UCAR: Space on Aqua; Light Aqua is too light there (Brand Guide p22)
-html.engine-brand-ucar .reveal .slides section.slide.engine-section[data-engine-section]::before {
-  color: $ncar-space;
 }
 
 // ---------------------------------------------------------------------------

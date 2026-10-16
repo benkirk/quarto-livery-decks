@@ -91,8 +91,9 @@ quarto-docs-framework/
 │   ├── common/
 │   │   ├── _quarto.yml    # shared Quarto config (symlinked into decks)
 │   │   ├── _extensions/benkirk/engine/  # the engine (vendored theme; symlinked into decks)
-│   │   ├── liveries/ncar/      # the brand: template.pptx, _brand.yml, livery.yml,
-│   │   │                       #   build/livery.json (generated, committed)
+│   │   ├── liveries/ncar/      # the brand (a link to the engine's reference livery):
+│   │   │                       #   template.pptx, _brand.yml, livery.yml, fonts/, logos/,
+│   │   │                       #   build/livery.{json,sty,css} (generated, committed)
 │   │   └── utils/
 │   │       ├── embed_fonts.py      # post-render font embedder (the livery's blobs)
 │   │       └── enable_autofit.py   # primes "Shrink text on overflow"

@@ -92,7 +92,7 @@ jobs:
           ls -l _quarto.yml _extensions _engine _livery
           unzip -l hello.pptx | grep -q 'ppt/media/image-divider-logo.png'
           unzip -p hello.pptx 'ppt/slides/*.xml' | grep -q 'engine-section-label'
-          grep -q 'engine-revealjs.css' hello.html
+          grep -q 'livery.css' hello.html
 
       # the static site: one shared libs/, references rewritten, an index
       - name: Build the site

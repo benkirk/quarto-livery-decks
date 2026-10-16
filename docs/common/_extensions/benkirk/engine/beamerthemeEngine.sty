@@ -3,7 +3,9 @@
 %
 % \usetheme[<options>]{Engine}
 %
-%   brand=ncar|ucar|ncarucar   palette + logo lockup                  (ncar)
+%   livery=<dir>               the livery (build/livery.sty, fonts/, logos/); default
+%                              the bundled liveries/<brand>
+%   brand=ncar|ucar|ncarucar   the old spelling of livery=liveries/<brand> (ncar)
 %   title=dark|light           title/closing slide field:
 %                              brand color w/ white-reversed logo, or
 %                              white w/ full-color logo               (dark)
@@ -22,6 +24,7 @@
 %
 \mode<presentation>
 
+\def\engine@opt@livery{}
 \def\engine@opt@brand{ncar}
 \def\engine@titlestyle{dark}
 \def\engine@opt@fonts{auto}
@@ -31,6 +34,7 @@
 \newif\ifengine@framelogo    \engine@framelogotrue
 \newif\ifengine@waves        \engine@wavestrue
 
+\DeclareOptionBeamer{livery}{\def\engine@opt@livery{#1}}
 \DeclareOptionBeamer{brand}{\def\engine@opt@brand{#1}}
 \DeclareOptionBeamer{title}{\def\engine@titlestyle{#1}}
 \DeclareOptionBeamer{fonts}{\def\engine@opt@fonts{#1}}
@@ -43,7 +47,7 @@
 
 \mode<all>
 \@ifpackageloaded{engine_livery}{}{%
-  \edef\engine@tmp{\noexpand\RequirePackage[brand=\engine@opt@brand,fonts=\engine@opt@fonts,mathfont=\engine@opt@mathfont]{engine_livery}}%
+  \edef\engine@tmp{\noexpand\RequirePackage[livery=\engine@opt@livery,brand=\engine@opt@brand,fonts=\engine@opt@fonts,mathfont=\engine@opt@mathfont]{engine_livery}}%
   \engine@tmp}
 \mode<presentation>
 

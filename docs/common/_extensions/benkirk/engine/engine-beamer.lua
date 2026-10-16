@@ -40,7 +40,7 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       options for \usetheme{Engine} (see beamerthemeEngine.sty)
 
 The filter also loads the theme: it puts this extension's directory on
-LaTeX's \input@path and defines \engineassetdir, so the .sty files, logos
+LaTeX's \input@path and passes livery=<dir>, so the .sty files, logos
 and bundled fonts are used in place -- nothing is copied next to the
 document.
 ]]
@@ -309,12 +309,23 @@ local function load_theme(doc)
     end
     if not set then table.insert(opts, "mathfont=keep") end
   end
+  -- the livery: `livery:` in the metadata (a directory, relative to the project), else
+  -- the bundled liveries/<brand> for themeoptions brand= (ncar)
+  local livery, brand = doc.meta["livery"] and pandoc.utils.stringify(doc.meta["livery"]), "ncar"
+  for _, o in ipairs(opts) do brand = o:match("^%s*brand%s*=%s*(%S+)") or brand end
+  if livery then
+    if not pandoc.path.is_absolute(livery) then
+      livery = pandoc.path.join({ pandoc.system.get_working_directory(), livery })
+    end
+  else
+    livery = extdir .. "/liveries/" .. brand
+  end
+  table.insert(opts, "livery=" .. livery)
   local tex = table.concat({
     "\\makeatletter",
     "\\providecommand\\input@path{}",
     "\\edef\\input@path{\\input@path{" .. extdir .. "/}}",
     "\\makeatother",
-    "\\def\\engineassetdir{" .. extdir .. "/ncar-assets/}",
     "\\usetheme[" .. table.concat(opts, ",") .. "]{Engine}",
     -- Quarto callouts (tcolorbox) in brand colors; Quarto defines its own
     -- after header-includes, hence \AtBeginDocument

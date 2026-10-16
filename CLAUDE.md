@@ -12,8 +12,12 @@ stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap:
 a generalized **engine** (the vendored theme, forked as
 `benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
 `docs/common/liveries/`; its section 10 logs progress and names the next step.
-Phase 1 (the framework reads the livery) is done; NCAR decks build byte-identically
-to upstream, and Phase 2 (the engine) is next.
+Phase 1 (the framework reads the livery) is done and Phase 2 (the engine) is under
+way: the theme is renamed and reads a livery. The reference liveries live in the engine
+(`_extensions/benkirk/engine/liveries/`; `docs/common/liveries/ncar` is a link to its
+`ncar`), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`;
+`utils/livery.py` reads the json for the post-render scripts. NCAR decks still build
+byte-identically to upstream.
 
 Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
 machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua
@@ -187,9 +191,9 @@ bit while building it:
 - **The slide is 1600x900 slide pixels** (`width`/`height`, `margin: 0`);
   every length in the scss is in those units and reveal scales the whole
   slide. The waves are inline SVG in slide pixels, drawn by the Lua filter.
-- **`url()`s go in `engine-revealjs.css`, never the scss.** The scss compiles
-  into `libs/revealjs/dist/theme/`, where relative URLs break; the css is an
-  HTML dependency whose resources (fonts, `ncar-assets/web/` logos) are
+- **`url()`s go in the livery's generated `build/livery.css`, never the scss.** The
+  scss compiles into `libs/revealjs/dist/theme/`, where relative URLs break; the
+  livery's css is an HTML dependency whose resources (its fonts and logos) are
   copied beside it and inlined under `embed-resources`. Web logos are
   separate RGB files: the PDF lockups are CMYK and convert off-color.
 - **`hash-type: number` strips `#title-slide`**: target `.ncar-title`.
