@@ -54,7 +54,8 @@
 %   fonts=helvetica Helvetica (pdfLaTeX) / TeX Gyre Heros (XeLaTeX, LuaLaTeX)
 %
 % The bundled copy lives in \engine@font@dir (the livery's fonts/), its files named by
-% livery.sty.  The Quarto extension passes an absolute livery directory; plain-LaTeX
+% livery.sty, with their extension in \engine@font@ext (.ttf, or .otf for a CFF family).
+% The Quarto extension passes an absolute livery directory; plain-LaTeX
 % builds find the relative one through kpathsea (TEXINPUTS=<theme>// for logos and
 % TTFONTS=<theme>// for fonts).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,6 +65,7 @@
 \def\engine@tmp{auto}\ifx\engine@fonts\engine@tmp
   \iftutex\def\engine@fonts{poppins}\else\def\engine@fonts{helvetica}\fi
 \fi
+\ifdefined\engine@font@ext\else\def\engine@font@ext{.ttf}\fi
 \def\engine@tmp{helvetica}\ifx\engine@fonts\engine@tmp\else
   \iftutex
     \RequirePackage{fontspec}
@@ -71,7 +73,7 @@
       \edef\engine@tmp{\noexpand\setsansfont{\engine@font@family}[%
         Scale          = 1.0,  % pandoc sets Scale=MatchLowercase, shrinking the face
         Path           = \engine@font@dir,
-        Extension      = .ttf,
+        Extension      = \engine@font@ext,
         UprightFont    = \engine@font@regular,
         BoldFont       = \engine@font@bold,
         ItalicFont     = \engine@font@italic,
@@ -85,7 +87,7 @@
       % system by name goes through fontconfig, which on a TeX Live whose
       % font cache is cold (Overleaf, each compile) takes longer than a
       % free-plan compile is allowed -- and then found nothing anyway.
-      \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@dir\engine@font@regular.ttf}}%
+      \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@dir\engine@font@regular\engine@font@ext}}%
       \engine@tmp{\engine@bundledpoppins}{%
         \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@family}}%
         \engine@tmp{%
@@ -194,9 +196,9 @@
   \@ifpackageloaded{unicode-math}{%
     \engine@setmath{latinmodern-math.otf}{Scale=1.0}%
     \ifengine@bundledpoppins
-      \edef\engine@tmp{\noexpand\setmathfont{\engine@font@italic.ttf}[range=it/{latin,Latin},
+      \edef\engine@tmp{\noexpand\setmathfont{\engine@font@italic\engine@font@ext}[range=it/{latin,Latin},
         Path=\engine@font@dir,\engine@mathversionopt]%
-        \noexpand\setmathfont{\engine@font@regular.ttf}[range=up/{latin,Latin,num},
+        \noexpand\setmathfont{\engine@font@regular\engine@font@ext}[range=up/{latin,Latin,num},
         Path=\engine@font@dir,\engine@mathversionopt]}%
       \engine@tmp
     \else\ifengine@poppins
