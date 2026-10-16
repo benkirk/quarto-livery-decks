@@ -367,7 +367,8 @@ Newest first. The first unchecked item of section 7 is the next step.
   rebuilds byte-identically from the data, and warns on small-text contrast (the ncar family's
   muted gray is 4.2:1 on white); CI runs it per livery, and the README gained an "Adding a
   livery" walkthrough. cu's content background is the deck's Flatirons photo, muted (Ben's
-  pick over the space photo and a faint monogram). Next: NSI.
+  pick over the space photo and a faint monogram). Next: NSI, from `docs/design/nsi-handoff.md`
+  (written for a fresh session: the repos, the contract as it stands, the deck's facts, the plan).
 - **2026-10-16** The first non-NCAR livery: `cu` (University of Colorado Boulder), a real
   directory in `docs/common/liveries/` (this repo PR #13; beamer-livery-theme PR #10). The
   reference is the CU Center for National Security Initiatives' master deck (Ben's download, a
