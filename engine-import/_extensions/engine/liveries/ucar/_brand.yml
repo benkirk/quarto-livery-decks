@@ -11,9 +11,9 @@ color:
 logo:
   images:
     ucar-color:
-      path: logos/UCAR-Logo_Color_RGB.svg
+      path: logos/UCAR-Logo_Color_RGB.png
     ucar-white:
-      path: logos/UCAR-Logo_White_RGB.svg
+      path: logos/UCAR-Logo_White_RGB.png
     ucar-color-print:
       path: logos/UCAR-Logo_Color_RGB.pdf
     ucar-white-print:

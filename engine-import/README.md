@@ -358,7 +358,6 @@ _extensions/engine/           the theme: Quarto extension *and* LaTeX sources
   liveries/<name>/              a brand: _brand.yml, livery.yml, fonts/, logos/, template.pptx,
                                 build/livery.{json,sty,css} (generated, committed)
   livery_build.py               writes build/ from _brand.yml and livery.yml (--check in CI)
-tools/web-logos.sh          regenerates the liveries' web logos from the brand kit
 tools/fit-waves.py          fits the wave curves to the brand's cover art (the art.waves block of a livery.yml)
 examples/                   feature showcase (LaTeX, Quarto, article), math font specimen
   diagrams/                   one Graphviz and one mermaid source, shared by both

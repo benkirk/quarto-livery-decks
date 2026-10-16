@@ -72,11 +72,4 @@ pptx:
   template: template.pptx
   typeface: Poppins
   fonts: fonts/pptx       # <typeface>-{regular,bold,italic,bolditalic}.fntdata, embed_fonts.py
-  scheme:                 # theme1.xml as shipped; the slot contract of design section 4
-    dk1: "#00357A"
-    lt1: "#FFFFFF"
-    dk2: "#0057C2"
-    lt2: "#F1F0EE"
-    accent1: "#42C0FF"
-    accent4: "#FAA119"
-    accent5: "#FDD509"
+  # scheme: the theme1.xml slots follow the roles (livery_build.py's SLOT_ROLES); set one here to override

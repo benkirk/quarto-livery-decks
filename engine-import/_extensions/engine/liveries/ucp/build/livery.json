@@ -131,7 +131,7 @@
       "pad": 0.025
     },
     "logo": {
-      "aspect": 2.746,
+      "aspect": 2.759,
       "closing": 0.1,
       "height": 0.0644,
       "section": 0.08,
@@ -171,25 +171,25 @@
         "path": "../ncar/logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
       },
       "ucar-color": {
-        "path": "../ucar/logos/UCAR-Logo_Color_RGB.svg"
+        "path": "../ucar/logos/UCAR-Logo_Color_RGB.png"
       },
       "ucar-color-print": {
         "path": "../ucar/logos/UCAR-Logo_Color_RGB.pdf"
       },
       "ucar-white": {
-        "path": "../ucar/logos/UCAR-Logo_White_RGB.svg"
+        "path": "../ucar/logos/UCAR-Logo_White_RGB.png"
       },
       "ucar-white-print": {
         "path": "../ucar/logos/UCAR-Logo_White_RGB.pdf"
       },
       "ucp-color": {
-        "path": "logos/UCP-Logo_Color_RGB.svg"
+        "path": "logos/UCP-Logo_Color_RGB.png"
       },
       "ucp-color-print": {
         "path": "logos/UCP-Logo_Color_RGB.pdf"
       },
       "ucp-white": {
-        "path": "logos/UCP-Logo_White_RGB.svg"
+        "path": "logos/UCP-Logo_White_RGB.png"
       },
       "ucp-white-print": {
         "path": "logos/UCP-Logo_White_RGB.pdf"
@@ -217,15 +217,20 @@
   "pptx": {
     "fonts": "../ncar/fonts/pptx",
     "scheme": {
-      "accent1": "#42C0FF",
-      "accent4": "#FAA119",
-      "accent5": "#FDD509",
+      "accent1": "#34E1F4",
+      "accent2": "#00818F",
+      "accent3": "#011837",
+      "accent4": "#FFDD31",
+      "accent5": "#FFDD31",
+      "accent6": "#00818F",
       "dk1": "#00357A",
-      "dk2": "#0057C2",
+      "dk2": "#00A2B4",
+      "folHlink": "#00818F",
+      "hlink": "#00A2B4",
       "lt1": "#FFFFFF",
       "lt2": "#F1F0EE"
     },
-    "template": "../ncar/template.pptx",
+    "template": "template.pptx",
     "typeface": "Poppins"
   },
   "roles": {

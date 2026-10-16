@@ -6,4 +6,4 @@ extends: ucar
 geometry:
   logo:
     height: 0.0644        # 58 px of 900, the NSF NCAR lockup's height
-    aspect: 2.746         # UCP-Logo_Color_RGB.pdf, 335/122
+    aspect: 2.759         # UCP-Logo_Color_RGB.png, 1396/506
