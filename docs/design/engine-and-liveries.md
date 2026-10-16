@@ -342,6 +342,19 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** The brand cover in pptx (this repo PR #11, with the template builder). Ben
+  on the sample's `.feature` slide: "this was supposed to be a image eclipsed with solid like
+  my sample covers ... my original slide master just required the image be 'pushed to back'
+  in the pptx ordering and had the waves overlaid; then we adapted this to Beamer with the
+  cutting". So no clipping in pptx: `slide_layout.py` pushes the photo (pandoc's slide
+  background for `.feature`, the `titlegraphic` pandoc records in `docProps/custom.xml` for
+  the title slide) to the back of the slide as a full-slide picture cropped to cover, then
+  draws the livery's opaque field to wave line 2, a 65% band to line 3 and the three lines
+  over it, the dark lockup, and (feature) moves title and body onto the field; the title
+  slide copies its layout's tab and rule onto the slide, since slide shapes always draw above
+  layout shapes. The custGeom builders moved into `utils/pptx_waves.py`, shared with
+  `livery_template.py`. Reviewed with LibreOffice on the sample, the quickstart and a test
+  deck with a `titlegraphic`. Next: `livery_check.py`, the Canto wave vectors, then CU.
 - **2026-10-16** Phase 3 begun, a light pass on the NCAR family first (Ben: "refreshing our
   own NCAR/ucar/ucp from the sample pptx and canto elements, then CU"). `livery_inspect.py`
   (this repo PR #10) read UCAR Communications' four official templates into each livery's

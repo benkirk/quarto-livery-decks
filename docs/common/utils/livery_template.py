@@ -20,6 +20,7 @@ import zipfile
 from pathlib import Path
 
 import livery as livery_mod
+import pptx_waves
 
 # the pptx is 12192000 x 6858000 EMU; the themes think in 1600x900 slide pixels
 W_EMU, H_EMU = 12192000, 6858000
@@ -79,37 +80,9 @@ class Builder:
         """The livery's wave lines (and the two translucent bands) as freeform shapes."""
         if not self.waves:
             return []
-        PW, PH = 16000, 9000
-        lines = self.waves["lines"]
-
-        def pt(k, i):
-            x, y = lines[k][i]
-            return round((x + shift) * PW), round(y * PH)
-
-        def cubics(k, order):
-            return "".join("<a:cubicBezTo>" + "".join('<a:pt x="%d" y="%d"/>' % pt(k, i) for i in order[j:j + 3])
-                           + "</a:cubicBezTo>" for j in range(1, len(order), 3))
-
-        def shape(name, path, fl, ln):
-            return (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="{name}"/><p:cNvSpPr/>'
-                    f'<p:nvPr userDrawn="1"/></p:nvSpPr><p:spPr><a:xfrm><a:off x="0" y="0"/>'
-                    f'<a:ext cx="{W_EMU}" cy="{H_EMU}"/></a:xfrm><a:custGeom><a:avLst/><a:gdLst/><a:ahLst/>'
-                    f'<a:cxnLst/><a:rect l="0" t="0" r="r" b="b"/><a:pathLst>{path}</a:pathLst></a:custGeom>'
-                    f'{fl}{ln}</p:spPr></p:sp>')
-
-        fwd, back = list(range(7)), list(range(6, -1, -1))
-        out = []
-        if bands:
-            for k, m, alpha in ((0, 1, 18000), (1, 2, 10000)):
-                x1, y1 = pt(k, 0); x2, y2 = pt(m, 6)
-                path = (f'<a:path w="{PW}" h="{PH}" stroke="0"><a:moveTo><a:pt x="{x1}" y="{y1}"/></a:moveTo>'
-                        f'{cubics(k, fwd)}<a:lnTo><a:pt x="{x2}" y="{y2}"/></a:lnTo>{cubics(m, back)}<a:close/></a:path>')
-                out.append(shape(f"Wave band {k + 1}", path, fill(slot, alpha), "<a:ln><a:noFill/></a:ln>"))
-        for k in range(len(lines)):
-            x1, y1 = pt(k, 0)
-            path = f'<a:path w="{PW}" h="{PH}" fill="none"><a:moveTo><a:pt x="{x1}" y="{y1}"/></a:moveTo>{cubics(k, fwd)}</a:path>'
-            out.append(shape(f"Wave line {k + 1}", path, "<a:noFill/>", f'<a:ln w="{round(width_px * PX)}">{fill(slot)}</a:ln>'))
-        return out
+        shapes = pptx_waves.wave_shapes(self.waves["lines"], self.sid + 1, W_EMU, H_EMU, shift, slot, bands, width_px)
+        self.sid += len(shapes)
+        return [s.replace(f" {pptx_waves.XMLNS}", "") for s in shapes]   # the layout root declares the namespaces
 
     # ------------------------------------------------------------- placeholders
     def ph(self, name, ptype, idx, box, body_pr, lst, text, sz=None):
