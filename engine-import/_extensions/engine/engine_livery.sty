@@ -9,7 +9,7 @@
 %   livery=<dir>             the livery directory (build/livery.sty, fonts/, logos/); absolute,
 %                             or relative to TeX's search path (default: the bundled
 %                             liveries/<brand>)
-%   brand=ncar|ucar|ncarucar  the old spelling of livery=liveries/<brand>       (ncar)
+%   brand=ncar|ucar|ucp|ncarucar  the old spelling of livery=liveries/<brand>       (ncar)
 %   fonts=brand|bundled|helvetica   the livery's font (poppins is its old spelling), its
 %                             bundled copy only, or the sanctioned substitute (default:
 %                             brand under XeTeX/LuaTeX, helvetica under pdfTeX)
@@ -42,7 +42,7 @@
 \InputIfFileExists{\engineliverydir build/livery.sty}{}{%
   \PackageError{engine_livery}{no livery at \engineliverydir: build/livery.sty is missing}
     {Pass livery=<dir> (a directory holding build/livery.sty, from livery_build.py),
-     or brand=ncar|ucar|ncarucar for a bundled one.}}
+     or brand=ncar|ucar|ucp|ncarucar for a bundled one.}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fonts: the livery's base family (Brand Guide p20: Poppins Bold headlines, Poppins

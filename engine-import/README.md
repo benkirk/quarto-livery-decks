@@ -262,7 +262,7 @@ The HTML format reads `brand`, `title`, `waves` and `autofit` and ignores the
 rest. The `ncarucar` livery has no RGB web copy of its lockup, so the HTML deck
 shows the NSF NCAR logo there.
 
-`make variants` builds `examples/template.tex` in UCAR, NCAR-UCAR, light-title,
+`make variants` builds `examples/template.tex` in UCAR, UCP, NCAR-UCAR, light-title,
 4:3, pdfLaTeX and `mathfont=poppins` flavors.
 
 ### Math fonts

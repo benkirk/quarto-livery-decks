@@ -20,7 +20,7 @@ ENGINE  ?= xelatex
 TEXENV  := TEXINPUTS=$(THEME)//:$(CURDIR)/: TTFONTS=$(THEME)//:
 LATEXMK := latexmk -interaction=nonstopmode -halt-on-error
 
-VARIANTS := template-ucar template-ncarucar template-light template-43 template-pdflatex \
+VARIANTS := template-ucar template-ucp template-ncarucar template-light template-43 template-pdflatex \
             template-mathpoppins
 
 # latexmk tracks \input files, images and the theme itself -- always ask it (FORCE)
@@ -50,6 +50,7 @@ examples/quarto-demo.pdf: examples/quarto-demo.qmd FORCE
 
 # \enginethemeoptions / \engineaspectratio are hooks in examples/template.tex
 opts_template-ucar       := brand=ucar
+opts_template-ucp        := brand=ucp
 opts_template-ncarucar   := brand=ncarucar,footer=full
 opts_template-light      := title=light,fonts=bundled
 opts_template-43         :=

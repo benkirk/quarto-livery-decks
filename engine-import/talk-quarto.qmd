@@ -13,7 +13,7 @@ fineprint: >-
   This material is based upon work supported by the NSF National Center for
   Atmospheric Research, a major facility sponsored by the U.S. National
   Science Foundation.
-themeoptions: [brand=ncar, title=dark]   # brand=ncar|ucar|ncarucar, title=dark|light, mathfont=serif|stix|sans|...
+themeoptions: [brand=ncar, title=dark]   # brand=ncar|ucar|ucp|ncarucar, title=dark|light, mathfont=serif|stix|sans|...
 format: engine-beamer
 ---
 
