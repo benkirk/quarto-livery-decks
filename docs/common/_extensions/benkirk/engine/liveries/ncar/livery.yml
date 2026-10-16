@@ -20,10 +20,19 @@ derived:                  # blends livery_build.py computes from the roles (BLEN
 
 aspect: "16:9"
 
+# signoff:                # a second mark, the brand's "sign off" lockup at the foot of every
+#   light: <image>        # slide but feature and full: logo.images names for light and dark
+#   dark: <image>         # fields, its width/height, height and bottom (of the slide height),
+#   aspect: 6.41          # and corner (bottom-left | bottom-right); ncar has none
+#   height: 0.05
+#   bottom: 0.03
+#   corner: bottom-left
+
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06            # 96 px of 1600; deck_qa.py's overflow edge is 1 - margin
   tab: 0.018              # 29 px; the divider's accent tab
   logo:
+    # corner: top-right   # the mark's corner on content slides: top-right | top-left | none (none drops it everywhere)
     height: 0.0644        # content slides: 58 px of 900 (beamer drew 0.06 before Phase 2)
     top: 0.0533           # 48 px
     aspect: 3.934         # NSF NCAR lockup, 1200/305
@@ -37,6 +46,8 @@ geometry:                 # fractions of the slide (of its width: margin, tab, f
     pad: 0.025
     floor: 0.075
     caption: 0.06
+  # pagenumber:
+  #   corner: bottom-left # bottom-left | bottom-right
   body-sizes-pt: [20, 18, 16, 14, 12]   # the master's ladder; autofit must never fire
 
 divider:

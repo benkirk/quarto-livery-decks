@@ -147,7 +147,10 @@ liveries/<name>/
   livery.yml      engine knobs the standard has no slot for: extends; roles (primary-text,
                   primary-contrast, accent, muted, surface, warning, dark); art {title,
                   content, section, closing, feature}; divider {label, eyebrow, tab};
-                  pptx {template, fonts, typeface}; aspect (16:9 default); overrides
+                  signoff {light, dark, aspect, height, bottom, corner}: a second lockup at
+                  the foot; geometry.logo.corner (top-right | top-left | none) and
+                  geometry.pagenumber.corner (bottom-left | bottom-right); pptx {template,
+                  fonts, typeface, heading-typeface}; aspect (16:9 default); overrides
   template.pptx   THE SPEC: pandoc-compliant, derived from the reference deck (section 6)
   logos/          pdf (LaTeX) and png/svg (web, RGB), same basenames, light and dark variants
   art/            background art per slide kind: svg (web) + pdf (LaTeX) + png (pptx master
@@ -342,6 +345,25 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** Cleanup sprint before the NSI flavor (beamer-livery-theme PRs #11 and #12;
+  this repo's sprint PR). With hindsight from CU, three contract gaps blocked NSI: one logo
+  per background (NSI has a unit mark and a sign-off lockup), `extends` losing the parent's
+  `art.*` paths, and pptx placing only `art.content`. Decided with Ben: the sign-off goes
+  bottom-left and the page number moves right, both as livery parameters with today's layout
+  as the defaults. The contract gains `signoff` (light and dark images, aspect, height,
+  bottom, corner), `geometry.logo.corner` (top-right | top-left | none: none drops the mark
+  everywhere, keeping its room on fields) and `geometry.pagenumber.corner`, drawn by all
+  three themes and the template builder; `typography.headings` may now be a second family
+  with files of its own (the beamer titles, reveal's heading font and the pptx major font
+  follow; cu sets TeX Gyre Heros Cn for the brand's condensed headlines); `overrides/
+  livery-extra.css` joins `livery-extra.sty`; the builder places `art.title` and
+  `art.section` on their layouts and stores a file used twice once. Found on the way: pandoc
+  never writes a slide-number box, so no pptx deck had numbers; `slide_layout.py` now copies
+  the layout's placeholder onto every slide. Tooling: `make vendor-engine` syncs an engine
+  checkout into the vendored copy (an unmerged engine branch testable in the framework),
+  `parity.sh` snapshots every deck under every livery in `PARITY_LIVERIES` (ncar as the
+  parity fixture, cu as the regression check). Next: `livery_check.py` with a CI step per
+  livery and the README's "Adding a livery" walkthrough, then NSI.
 - **2026-10-16** The first non-NCAR livery: `cu` (University of Colorado Boulder), a real
   directory in `docs/common/liveries/` (this repo PR #13; beamer-livery-theme PR #10). The
   reference is the CU Center for National Security Initiatives' master deck (Ben's download, a

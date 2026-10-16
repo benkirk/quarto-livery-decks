@@ -34,12 +34,16 @@
     "logo": {
       "aspect": 6.413,
       "closing": 0.1,
+      "corner": "none",
       "height": 0.0644,
       "section": 0.08,
       "title": 0.09,
       "top": 0.0533
     },
     "margin": 0.06,
+    "pagenumber": {
+      "corner": "bottom-right"
+    },
     "tab": 0.018
   },
   "latex": {
@@ -115,6 +119,14 @@
     "surface": "#F3F0E9",
     "warning": "#CFB87C"
   },
+  "signoff": {
+    "aspect": 6.413,
+    "bottom": 0.03,
+    "corner": "bottom-left",
+    "dark": "logos/cu-rio-lockup.png",
+    "height": 0.05,
+    "light": "logos/cu-rio-lockup.png"
+  },
   "typography": {
     "base": "TeX Gyre Heros",
     "fonts": [
@@ -141,8 +153,32 @@
           }
         ],
         "source": "file"
+      },
+      {
+        "family": "TeX Gyre Heros Cn",
+        "files": [
+          {
+            "path": "fonts/texgyreheroscn-regular.otf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/texgyreheroscn-italic.otf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/texgyreheroscn-bold.otf",
+            "weight": 700
+          },
+          {
+            "path": "fonts/texgyreheroscn-bolditalic.otf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
       }
     ],
-    "headings": "TeX Gyre Heros"
+    "headings": "TeX Gyre Heros Cn"
   }
 }

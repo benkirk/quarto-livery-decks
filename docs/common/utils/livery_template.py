@@ -5,9 +5,11 @@
 
 Everything comes from build/livery.json: the theme's color slots (pptx.scheme, or the roles
 by the slot contract), the typeface, the light and dark logos, the geometry fractions and
-the wave curves (art.waves) or a picture behind content slides (art.content; the other art
-kinds are not placed yet). The master carries the title with its accent tab and hairline
-rule, the lockup top right, the faint wave lines and the body-size ladder; the seven layouts
+the wave curves (art.waves) or pictures behind slides (art.content on the master, art.title and
+art.section on their layouts; closing slides are content slides in pptx), the sign-off lockup
+(signoff) and the marks' corners (geometry.logo.corner, geometry.pagenumber.corner). The master
+carries the title with its accent tab and hairline rule, the lockup top right, the faint wave
+lines and the body-size ladder; the seven layouts
 pandoc looks up by name are generated (Title Slide, Title and Content, Section Header, Two
 Content, Comparison, Content with Caption, Blank), the Title Slide with its five
 placeholders. Fonts are embedded later by embed_fonts.py; the title photo by title_photo.py.
@@ -69,8 +71,14 @@ class Builder:
         self.scheme = livery.get("pptx", {}).get("scheme") or {
             slot: livery["roles"][role] for slot, role in SLOT_ROLES.items() if role in livery["roles"]}
         self.typeface = livery["pptx"]["typeface"]
+        self.heading_typeface = livery["pptx"].get("heading-typeface", self.typeface)
         art = livery.get("art") or {}
-        self.waves, self.art_content = art.get("waves"), art.get("content")
+        self.waves = art.get("waves")
+        self.art = {k: art[k] for k in ("title", "section", "content") if isinstance(art.get(k), str)}
+        self.signoff = livery.get("signoff")
+        self.logo_corner = self.geom["logo"].get("corner", "top-right")
+        self.number_corner = self.geom.get("pagenumber", {}).get("corner", "bottom-left")
+        self.media = {}   # media name -> (livery-relative path); build() numbers them image1, image2, ...
         self.sid = 10
 
     def next_id(self):
@@ -101,13 +109,14 @@ class Builder:
         """Slide number, date and footer placeholders (idx 20-22: pandoc matches content by idx too,
         so these must never share a number with a content box)."""
         color = fill("tx1") if light_text else srgb(self.roles["primary-text"])
+        right = self.number_corner == "bottom-right"
         num = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Slide Number Placeholder"/><p:cNvSpPr>'
                f'<a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="sldNum" sz="quarter" idx="22"/></p:nvPr></p:nvSpPr>'
-               f'<p:spPr>{xfrm(0.001, 0.945, 0.039, 0.053)}</p:spPr><p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle>'
+               f'<p:spPr>{xfrm(0.96 if right else 0.001, 0.945, 0.039, 0.053)}</p:spPr><p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle>'
                f'<a:lvl1pPr algn="ctr"><a:defRPr sz="1200" b="1">{color}</a:defRPr></a:lvl1pPr></a:lstStyle>'
                f'<a:p><a:fld id="{{C5EF2332-01BF-834F-8236-50238282D533}}" type="slidenum"><a:rPr lang="en-US"/>'
                f'<a:t>‹#›</a:t></a:fld></a:p></p:txBody></p:sp>')
-        dt = self.ph("Date Placeholder", "dt", 20, xfrm(0.856, 0.956, 0.113, 0.027),
+        dt = self.ph("Date Placeholder", "dt", 20, xfrm(0.74 if right else 0.856, 0.956, 0.113, 0.027),
                      'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"',
                      f'<a:lvl1pPr algn="r"><a:defRPr sz="900">{color}</a:defRPr></a:lvl1pPr>', "", sz="half")
         ftr = self.ph("Footer Placeholder", "ftr", 21, xfrm(0.046, 0.956, 0.34, 0.027),
@@ -115,19 +124,37 @@ class Builder:
                       f'<a:lvl1pPr algn="l"><a:defRPr sz="900">{color}</a:defRPr></a:lvl1pPr>', "", sz="quarter")
         return num + (dt if with_date else "") + ftr
 
-    def logo(self, rid, variant, x, y, h):
-        w = h * self.geom["logo"]["aspect"] * H_EMU / W_EMU
-        return (f'<p:pic><p:nvPicPr><p:cNvPr id="{self.next_id()}" name="Logo ({variant})"/>'
+    def pic(self, rid, name, x, y, w, h):
+        return (f'<p:pic><p:nvPicPr><p:cNvPr id="{self.next_id()}" name="{name}"/>'
                 f'<p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr userDrawn="1"/></p:nvPicPr>'
                 f'<p:blipFill><a:blip r:embed="{rid}"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>'
                 f'<p:spPr>{xfrm(x, y, w, h)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>')
+
+    def logo(self, rid, variant, x, y, h):
+        w = h * self.geom["logo"]["aspect"] * H_EMU / W_EMU
+        return self.pic(rid, f"Logo ({variant})", x, y, w, h)
+
+    def signoff_pic(self, rid, variant):
+        """The sign-off lockup in its corner, or '' without one (rId3 on every part that has it)."""
+        if not self.signoff:
+            return ""
+        so, m = self.signoff, self.geom["margin"]
+        h, w = so["height"], so["height"] * so["aspect"] * H_EMU / W_EMU
+        x = m if so["corner"] == "bottom-left" else 1 - m - w
+        return self.pic(rid, f"Sign-off ({variant})", x, 1 - so["bottom"] - h, w, h)
+
+    def art_pic(self, rid, kind):
+        """A full-slide picture under everything, or '' when the livery has no art.<kind>."""
+        return self.pic(rid, f"Art ({kind})", 0, 0, 1, 1) if kind in self.art else ""
 
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab"]
         title_top, rule_y, body_top, body_bottom = 0.049, 0.1444, 0.1667, 1 - 0.0778
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
-        title_w = 1 - 2 * m - logo_w - 0.025
+        corner = self.logo_corner
+        title_x = m + logo_w + 0.025 if corner == "top-left" else m
+        title_w = 1 - 2 * m - (logo_w + 0.025 if corner != "none" else 0)
         sizes = g.get("body-sizes-pt", [20, 18, 16, 14, 12])
         bullets = [("Arial", "•"), ("Wingdings", "§"), ("Courier New", "o"), ("Arial", "–"), ("Arial", "»")]
         body_lvls = ""
@@ -151,7 +178,7 @@ class Builder:
         rule = (f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/>'
                 f'<p:nvPr userDrawn="1"/></p:nvCxnSpPr><p:spPr>{xfrm(m, rule_y, 1 - 2 * m, 0)}'
                 f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="9525">{fill("tx1", 30000)}</a:ln></p:spPr></p:cxnSp>')
-        title = self.ph("Title Placeholder", "title", None, xfrm(m, title_top, title_w, rule_y - title_top),
+        title = self.ph("Title Placeholder", "title", None, xfrm(title_x, title_top, title_w, rule_y - title_top),
                         'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/><a:x',
                         "", "Click to edit Master title style")
         # (the bodyPr trick above closes the element; restate it plainly)
@@ -163,13 +190,9 @@ class Builder:
                        '</p:txBody></p:sp><!--', "", "")
         body = body.split("<!--")[0]
         waves = "".join(self.wave_shapes(self.waves["shift"]["content"], "lt2", bands=False)) if self.waves else ""
-        art = ""   # art.content: a full-slide picture under everything (the layouts with a field hide the master)
-        if self.art_content:
-            art = (f'<p:pic><p:nvPicPr><p:cNvPr id="{self.next_id()}" name="Content art"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/>'
-                   f'</p:cNvPicPr><p:nvPr userDrawn="1"/></p:nvPicPr><p:blipFill><a:blip r:embed="rId3"/><a:stretch><a:fillRect/></a:stretch>'
-                   f'</p:blipFill><p:spPr>{xfrm(0, 0, 1, 1)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>')
-        logo = self.logo("rId2", "light", 1 - m - logo_w, g["logo"]["top"], logo_h)
-        shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo
+        art = self.art_pic("rId4", "content")   # under everything (the layouts with a field hide the master)
+        logo = "" if corner == "none" else self.logo("rId2", "light", m if corner == "top-left" else 1 - m - logo_w, g["logo"]["top"], logo_h)
+        shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo + self.signoff_pic("rId3", "light")
         return (XMLDECL + f'<p:sldMaster {NSDECL}><p:cSld><p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg>'
                 f'<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
                 f'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/>'
@@ -202,8 +225,10 @@ class Builder:
     def title_slide(self):
         g, m = self.geom, self.geom["margin"]
         no_inset = 'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>'
-        shapes = self.wave_shapes(self.waves["shift"]["title"], "accent1") if self.waves else []
-        shapes.append(self.logo("rId2", "dark", m, 0.06, g["logo"].get("title", 0.09)))
+        shapes = [self.art_pic("rId4", "title")] + (self.wave_shapes(self.waves["shift"]["title"], "accent1") if self.waves else [])
+        if self.logo_corner != "none":
+            shapes.append(self.logo("rId2", "dark", m, 0.06, g["logo"].get("title", 0.09)))
+        shapes.append(self.signoff_pic("rId3", "dark"))
         tab_top, tab_h = 0.43, 0.16
         shapes.append(f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Title tab"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
                       f'</p:nvSpPr><p:spPr>{xfrm(0, tab_top, g["tab"], tab_h)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
@@ -226,8 +251,10 @@ class Builder:
 
     def section_header(self):
         g, m = self.geom, self.geom["margin"]
-        shapes = self.wave_shapes(self.waves["shift"]["section"], "accent1") if self.waves else []
-        shapes.append(self.logo("rId2", "dark", m, 0.08, g["logo"].get("section", 0.0644)))
+        shapes = [self.art_pic("rId4", "section")] + (self.wave_shapes(self.waves["shift"]["section"], "accent1") if self.waves else [])
+        if self.logo_corner != "none":
+            shapes.append(self.logo("rId2", "dark", m, 0.08, g["logo"].get("section", 0.0644)))
+        shapes.append(self.signoff_pic("rId3", "dark"))
         title_lst = (f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="4400" b="1" cap="none" baseline="0">'
                      f'{srgb(self.roles["primary-text"])}<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr>')
         shapes.append(self.ph("Title 1", "title", None, xfrm(m, 400 / 900, 0.62, 110 / 900),
@@ -278,8 +305,8 @@ class Builder:
     # -------------------------------------------------------------------- parts
     def theme(self):
         cs = "".join(f'<a:{slot}><a:srgbClr val="{self.scheme[slot].lstrip("#")}"/></a:{slot}>' for slot in SLOT_ROLES if slot in self.scheme)
-        tf = self.typeface
-        fs = (f'<a:fontScheme name="{tf}"><a:majorFont><a:latin typeface="{tf}"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont>'
+        tf, hf = self.typeface, self.heading_typeface
+        fs = (f'<a:fontScheme name="{tf}"><a:majorFont><a:latin typeface="{hf}"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont>'
               f'<a:minorFont><a:latin typeface="{tf}"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme>')
         fmt = ('<a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill>'
                '<a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst>'
@@ -295,33 +322,40 @@ class Builder:
 
     def build(self, out: Path, livery_dir: Path):
         parts = {}
-        light = Path(livery_dir) / livery_mod.logo_path(self.L, "light")
-        dark = Path(livery_dir) / livery_mod.logo_path(self.L, "dark")
-        parts["ppt/media/image1" + light.suffix] = light.read_bytes()
-        parts["ppt/media/image2" + dark.suffix] = dark.read_bytes()
-        light_part, dark_part = "image1" + light.suffix, "image2" + dark.suffix
+        # media, numbered in this order: the two lockups, the sign-offs, the art kinds that exist
+        files = {"logo-light": livery_mod.logo_path(self.L, "light"), "logo-dark": livery_mod.logo_path(self.L, "dark")}
+        if self.signoff:
+            files.update({"signoff-light": self.signoff["light"], "signoff-dark": self.signoff["dark"]})
+        files.update({f"art-{k}": v for k, v in self.art.items()})
+        part_of, by_path = {}, {}   # one media part per file: a lockup serving two roles is stored once
+        for name, rel_path in files.items():
+            f = Path(livery_dir) / rel_path
+            if rel_path not in by_path:
+                by_path[rel_path] = f"image{len(by_path) + 1}{f.suffix}"
+                parts["ppt/media/" + by_path[rel_path]] = f.read_bytes()
+            part_of[name] = by_path[rel_path]
+        image_rel = lambda rid, name: f'<Relationship Id="{rid}" Type="{REL}/image" Target="../media/{part_of[name]}"/>'
         parts["ppt/theme/theme1.xml"] = self.theme()
         parts["ppt/slideMasters/slideMaster1.xml"] = self.master()
-        rels = [f'<Relationship Id="rId1" Type="{REL}/theme" Target="../theme/theme1.xml"/>',
-                f'<Relationship Id="rId2" Type="{REL}/image" Target="../media/{light_part}"/>']
-        if self.art_content:
-            art = Path(livery_dir) / self.art_content
-            parts["ppt/media/image3" + art.suffix] = art.read_bytes()
-            rels.append(f'<Relationship Id="rId3" Type="{REL}/image" Target="../media/image3{art.suffix}"/>')
+        rels = [f'<Relationship Id="rId1" Type="{REL}/theme" Target="../theme/theme1.xml"/>', image_rel("rId2", "logo-light")]
+        if self.signoff:
+            rels.append(image_rel("rId3", "signoff-light"))
+        if "content" in self.art:
+            rels.append(image_rel("rId4", "art-content"))
         rels += [f'<Relationship Id="rId{10 + i}" Type="{REL}/slideLayout" Target="../slideLayouts/slideLayout{i + 1}.xml"/>' for i in range(len(LAYOUTS))]
         parts["ppt/slideMasters/_rels/slideMaster1.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(rels)}</Relationships>'
         for i, name in enumerate(LAYOUTS, 1):
             self.sid = 10
-            if name == "Title Slide":
-                xml, img = self.title_slide(), dark_part
-            elif name == "Section Header":
-                xml, img = self.section_header(), dark_part
-            else:
-                xml, img = self.content_layout(name), None
+            kind = {"Title Slide": "title", "Section Header": "section"}.get(name)
+            xml = self.title_slide() if kind == "title" else self.section_header() if kind == "section" else self.content_layout(name)
             parts[f"ppt/slideLayouts/slideLayout{i}.xml"] = xml
             r = [f'<Relationship Id="rId1" Type="{REL}/slideMaster" Target="../slideMasters/slideMaster1.xml"/>']
-            if img:
-                r.append(f'<Relationship Id="rId2" Type="{REL}/image" Target="../media/{img}"/>')
+            if kind:   # a field layout: the dark lockup, the dark sign-off, its art
+                r.append(image_rel("rId2", "logo-dark"))
+                if self.signoff:
+                    r.append(image_rel("rId3", "signoff-dark"))
+                if kind in self.art:
+                    r.append(image_rel("rId4", f"art-{kind}"))
             parts[f"ppt/slideLayouts/_rels/slideLayout{i}.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(r)}</Relationships>'
         parts["ppt/presentation.xml"] = (XMLDECL + f'<p:presentation {NSDECL} saveSubsetFonts="1" autoCompressPictures="0">'
                                          f'<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst><p:sldIdLst/>'
