@@ -54,9 +54,11 @@ the deck.
 ## Art
 
 No wave curves: the title field ends in a straight edge in every format. `art.content` is the
-deck's pre-faded space photo behind content slides (`art/content-faint.jpg`, cropped to 16:9), a
-demonstration of the static-art option; the brand reserves the buffalo marks for Athletics, so
-no buffalo. Swap the file to change it.
+deck's Flatirons-and-campus photo (its `image3.png`), desaturated and blended 88% to white
+(`art/content-flatirons.jpg`), Ben's choice over the deck's space photo and over a faint CU
+monogram (a translucent lockup alters its colors, which the brand forbids; the buffalo marks are
+Athletics'). The brand's sanctioned textures live in its CU-only backgrounds library. Swap the
+file to change it.
 
 ## Follow-ups
 
