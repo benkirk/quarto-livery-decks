@@ -60,6 +60,29 @@
 \def\engine@geom@fullfloor{0.075}
 \def\engine@geom@fullcaption{0.06}
 \def\engine@divider@label{Section}
+% the wave lines (art.waves): line n top to bottom, shifted right by #1 of the width,
+% and the same path bottom to top, for filling between two lines
+\def\engine@wave@i@down#1{({(0.4862+#1)*\paperwidth},1.0000\paperheight)
+  .. controls ({(0.5087+#1)*\paperwidth},0.8024\paperheight) and ({(0.6068+#1)*\paperwidth},0.5035\paperheight) .. ({(0.6068+#1)*\paperwidth},0.3234\paperheight)
+  .. controls ({(0.6068+#1)*\paperwidth},0.1259\paperheight) and ({(0.5756+#1)*\paperwidth},0.0319\paperheight) .. ({(0.5674+#1)*\paperwidth},0.0000\paperheight)}
+\def\engine@wave@i@up#1{({(0.5674+#1)*\paperwidth},0.0000\paperheight)
+  .. controls ({(0.5756+#1)*\paperwidth},0.0319\paperheight) and ({(0.6068+#1)*\paperwidth},0.1259\paperheight) .. ({(0.6068+#1)*\paperwidth},0.3234\paperheight)
+  .. controls ({(0.6068+#1)*\paperwidth},0.5035\paperheight) and ({(0.5087+#1)*\paperwidth},0.8024\paperheight) .. ({(0.4862+#1)*\paperwidth},1.0000\paperheight)}
+\def\engine@wave@ii@down#1{({(0.5138+#1)*\paperwidth},1.0000\paperheight)
+  .. controls ({(0.5402+#1)*\paperwidth},0.8417\paperheight) and ({(0.6570+#1)*\paperwidth},0.5253\paperheight) .. ({(0.6570+#1)*\paperwidth},0.3577\paperheight)
+  .. controls ({(0.6570+#1)*\paperwidth},0.1693\paperheight) and ({(0.6286+#1)*\paperwidth},0.0834\paperheight) .. ({(0.6000+#1)*\paperwidth},0.0000\paperheight)}
+\def\engine@wave@ii@up#1{({(0.6000+#1)*\paperwidth},0.0000\paperheight)
+  .. controls ({(0.6286+#1)*\paperwidth},0.0834\paperheight) and ({(0.6570+#1)*\paperwidth},0.1693\paperheight) .. ({(0.6570+#1)*\paperwidth},0.3577\paperheight)
+  .. controls ({(0.6570+#1)*\paperwidth},0.5253\paperheight) and ({(0.5402+#1)*\paperwidth},0.8417\paperheight) .. ({(0.5138+#1)*\paperwidth},1.0000\paperheight)}
+\def\engine@wave@iii@down#1{({(0.5427+#1)*\paperwidth},1.0000\paperheight)
+  .. controls ({(0.5762+#1)*\paperwidth},0.8619\paperheight) and ({(0.7073+#1)*\paperwidth},0.5590\paperheight) .. ({(0.7073+#1)*\paperwidth},0.3818\paperheight)
+  .. controls ({(0.7073+#1)*\paperwidth},0.1758\paperheight) and ({(0.6639+#1)*\paperwidth},0.0755\paperheight) .. ({(0.6320+#1)*\paperwidth},0.0000\paperheight)}
+\def\engine@wave@iii@up#1{({(0.6320+#1)*\paperwidth},0.0000\paperheight)
+  .. controls ({(0.6639+#1)*\paperwidth},0.0755\paperheight) and ({(0.7073+#1)*\paperwidth},0.1758\paperheight) .. ({(0.7073+#1)*\paperwidth},0.3818\paperheight)
+  .. controls ({(0.7073+#1)*\paperwidth},0.5590\paperheight) and ({(0.5762+#1)*\paperwidth},0.8619\paperheight) .. ({(0.5427+#1)*\paperwidth},1.0000\paperheight)}
+\def\engine@waveshift@title{0.2}
+\def\engine@waveshift@section{0.26}
+\def\engine@waveshift@content{0.27}
 % overrides from overrides/livery-extra.sty
 % overrides/livery-extra.sty: appended to build/livery.sty by livery_build.py.
 % legacy (v1, 2020 brand) names, mapped onto the nearest 2026 color so old

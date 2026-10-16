@@ -25,3 +25,4 @@ examples/*.html
 _baseline/
 _check/
 _check.diff
+__pycache__/

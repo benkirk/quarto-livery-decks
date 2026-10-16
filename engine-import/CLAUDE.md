@@ -28,7 +28,12 @@ generated per livery from `engine.theme`; and geometry: the margin, tab,
 logo box (height per slide kind, top, aspect), divider block and full-figure
 lengths are the livery's `geometry` fractions, `engine@geom@*` in the `.sty`
 and `--engine-*` pixels in the css (the ncar values are the HTML/PDF numbers,
-not the pptx template's tighter ones). Still to do: backgrounds from `art/`.
+not the pptx template's tighter ones); and art: the brand's wave curves are
+livery data (`art.waves`: control points and per-kind shifts, drawn by the
+engine in the roles' colors, the pptx divider layout built from the same
+numbers), a livery without them draws plain fields, and a livery may name a
+static background file per slide kind (`art.title|section|closing|content`)
+instead. Phase 2 is complete; the design's section 10 log says what is next.
 
 Checking a change: `tools/parity.sh baseline` on main, then `check` (every PDF
 page's pixels, pdftotext, the HTML). HTML colors live in the compiled theme and

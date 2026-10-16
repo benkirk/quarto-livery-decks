@@ -7,11 +7,10 @@ them.  This script traces the line centres in that PNG and fits each line as
 two cubic Bézier segments joined at its rightmost point, then prints the
 control points as fractions of the slide width and height:
 
-  * a TikZ block for beamerouterthemeEngine.sty (y up), and
-  * a Lua table for engine-revealjs.lua (y down).
+the art.waves block of the livery's livery.yml (y down); livery_build.py turns
+it into the TikZ macros, the pptx divider layout reads it, the HTML draws it live.
 
-Paste both; re-run to check that they still agree with each other and with the
-art.  Usage:
+Paste it; re-run to check that it still agrees with the art.  Usage:
 
   fit-waves.py <template.pptx>   # the framework's branded template
   fit-waves.py cover.png         # ppt/media/image4.png extracted by hand
@@ -138,34 +137,13 @@ def f(v):
     return f"{v:.4f}"
 
 
-def print_lua(lines):
-    print("-- The brand's three wave lines (tools/fit-waves.py): each is two cubics")
-    print("-- from the top edge to the bottom edge, as {x, y} fractions of the slide")
-    print("-- (y down): start, ctrl, ctrl, peak, ctrl, ctrl, end.")
-    print("local WAVES = {")
+def print_yaml(lines):
+    """The art.waves block of a livery.yml (livery_build.py turns it into TikZ, SVG and the pptx layout)."""
+    print("  waves:")
+    print("    shift: {title: 0.20, section: 0.26, content: 0.27}")
+    print("    lines:")
     for pts in lines:
-        body = ", ".join("{%s, %s}" % (f(p[0]), f(p[1])) for p in pts)
-        print(f"  {{ {body} }},")
-    print("}")
-
-
-def print_tikz(lines):
-    print("% The brand's three wave lines (tools/fit-waves.py), each two cubics from")
-    print("% the top edge to the bottom edge.  \\engine@wave@<n>@down{<dx>} is line n")
-    print("% shifted right by dx (a fraction of \\paperwidth); @up is the same path")
-    print("% bottom to top, for filling between two lines.")
-    for i, pts in enumerate(lines, 1):
-        def c(p):
-            return f"({{({f(p[0])}+#1)*\\paperwidth}},{f(1 - p[1])}\\paperheight)"
-        n = "i" * i
-        print(f"\\def\\engine@wave@{n}@down#1{{%")
-        print(f"  {c(pts[0])}")
-        print(f"    .. controls {c(pts[1])} and {c(pts[2])} .. {c(pts[3])}")
-        print(f"    .. controls {c(pts[4])} and {c(pts[5])} .. {c(pts[6])}}}")
-        print(f"\\def\\engine@wave@{n}@up#1{{%")
-        print(f"  {c(pts[6])}")
-        print(f"    .. controls {c(pts[5])} and {c(pts[4])} .. {c(pts[3])}")
-        print(f"    .. controls {c(pts[2])} and {c(pts[1])} .. {c(pts[0])}}}")
+        print("      - [" + ", ".join(f"[{f(p[0])}, {f(p[1])}]" for p in pts) + "]")
 
 
 def main(argv):
@@ -182,9 +160,7 @@ def main(argv):
         fitted.append(pts)
         errs.append(err)
     print(f"% rms error {', '.join(f'{e * 100:.2f}%' for e in errs)} of the width")
-    print_tikz(fitted)
-    print()
-    print_lua(fitted)
+    print_yaml(fitted)
 
 
 if __name__ == "__main__":
