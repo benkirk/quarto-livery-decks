@@ -7,6 +7,8 @@
 Color names in livery.yml roles resolve against the brand palette; a value starting
 with '#' passes through. `extends: <name>` names a sibling livery directory whose
 resolved values the child's override key by key (dicts merge, everything else replaces).
+`derived` holds the theme's blends of two roles (BLENDS), computed here unless livery.yml
+sets the key itself.
 """
 
 import argparse
@@ -17,6 +19,19 @@ from pathlib import Path
 import yaml
 
 HEX = "#0123456789abcdefABCDEF"
+# (key, role a, role b, share of a): the theme's recipes, ncar-revealjs.scss `table` and
+# `.ncar-caution`, beamerinnerthemeNCAR.sty `ncarcautionfill`
+BLENDS = [
+    ("table-rule", "foreground", "surface", 0.20),
+    ("table-band", "surface", "background", 0.60),
+    ("caution-fill", "warning", "background", 0.18),
+]
+
+
+def mix(a: str, b: str, share: float) -> str:
+    """Sass mix(): a's share of each channel plus b's remainder, rounded."""
+    pairs = zip(bytes.fromhex(a.lstrip("#")), bytes.fromhex(b.lstrip("#")))
+    return "#" + "".join(f"{round(x * share + y * (1 - share)):02X}" for x, y in pairs)
 
 
 def merge(base, over):
@@ -52,10 +67,13 @@ def resolve(d: Path) -> dict:
     color = data["brand"].get("color", {})
     roles = {k: hex_of(color[k]) for k in ("primary", "secondary", "foreground", "background") if k in color}
     roles.update({k: hex_of(v) for k, v in data.get("roles", {}).items()})
+    derived = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
+    derived.update({k: hex_of(v) for k, v in data.get("derived", {}).items()})
     out = {
         "name": data.get("name", d.name),
         "palette": {k: str(v).upper() for k, v in palette.items()},
         "roles": roles,
+        "derived": derived,
         "typography": data["brand"].get("typography", {}),
         "logo": data["brand"].get("logo", {}),
     }

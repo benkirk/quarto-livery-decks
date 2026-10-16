@@ -1,6 +1,11 @@
 {
   "art": {},
   "aspect": "16:9",
+  "derived": {
+    "caution-fill": "#FFF9DA",
+    "table-band": "#F7F6F5",
+    "table-rule": "#C1CBD7"
+  },
   "divider": {
     "label": "Section",
     "tab": true
@@ -75,7 +80,7 @@
     "background": "#FFFFFF",
     "dark": "#011837",
     "foreground": "#00357A",
-    "muted": "#6686AF",
+    "muted": "#6B7C99",
     "primary": "#0057C2",
     "primary-contrast": "#0057C2",
     "primary-text": "#FFFFFF",

@@ -9,10 +9,12 @@ roles:
   primary-text: white           # text on primary
   primary-contrast: ncar-blue   # primary as small text on white
   accent: orange
-  muted: "#6686AF"              # dark-blue at 60% on white (CoolGray7 in ncar_branding.sty)
+  muted: "#6B7C99"              # $ncar-muted: HTML, pptx; the PDF's CoolGray7 (#6686AF) joins it in Phase 2
   surface: light-gray
   warning: yellow
   dark: space
+
+derived: {}               # blends livery_build.py computes from the roles (BLENDS); set a key to override
 
 aspect: "16:9"
 
