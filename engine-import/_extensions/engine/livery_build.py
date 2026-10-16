@@ -10,7 +10,8 @@ override key by key (dicts merge, everything else replaces); the parent's relati
 rebased onto the child. `derived` holds the theme's blends of two roles (BLENDS), computed
 here unless livery.yml sets the key. livery.json is the one truth (Lua and Python read it);
 livery.sty is what engine_livery.sty inputs (overrides/livery-extra.sty of the livery and its
-ancestors appended); livery.css what engine-revealjs.lua attaches.
+ancestors appended); livery.css what engine-revealjs.lua attaches; livery.theme is pandoc's
+highlight theme, engine.theme with the roles filled in.
 """
 
 import argparse
@@ -27,11 +28,13 @@ BLENDS = [
     ("table-rule", "foreground", "surface", 0.20),
     ("table-band", "surface", "background", 0.60),
     ("caution-fill", "warning", "background", 0.18),
+    ("alert-text", "accent", "dark", 0.72),
+    ("rule", "foreground", "surface", 0.30),
 ]
 # livery role -> the LaTeX color the themes read (engine_livery.sty's six, plus the four new)
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "primary-contrast": "BrandPrimaryContrast", "secondary": "BrandSecondary",
-            "accent": "BrandAccent", "foreground": "BrandText", "background": "BrandBackground",
+            "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
             "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
 
@@ -205,7 +208,13 @@ def emit_css(livery: dict) -> str:
     if "label-color" in livery.get("divider", {}):
         props.append(f"--engine-divider-label: {livery['divider']['label-color']};")
     props.append(f'--engine-font-family: "{family}";')
+    props.append("--engine-overlay: color-mix(in srgb, var(--engine-dark) 72%, transparent);")
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
+    # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
+    L.append("html:root {\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
+             "\n  --mermaid-node-fg-color: var(--engine-foreground);\n  --mermaid-fg-color: var(--engine-foreground);"
+             "\n  --mermaid-edge-color: var(--engine-foreground);\n  --mermaid-label-bg-color: var(--engine-background);"
+             "\n  --mermaid-label-fg-color: var(--engine-primary-contrast);\n}")
     light, dark = (Path(logo_path(livery, v, False)).name for v in ("light", "dark"))
     L.append(".reveal .slides section.slide::after,\n.reveal .slides section.engine-title::after "
              f'{{ background-image: url("{light}"); }}')
@@ -231,10 +240,22 @@ def overrides(d: Path, name: str) -> str:
     return out
 
 
+def emit_theme(livery: dict) -> str:
+    """engine.theme (pandoc's highlight theme, colors as $role or $blend) with the livery's hex."""
+    colors = {**livery["roles"], **livery["derived"]}
+    def fill(v):
+        if isinstance(v, str) and v.startswith("$"):
+            return colors[v[1:]]
+        return {k: fill(x) for k, x in v.items()} if isinstance(v, dict) else v
+    theme = fill(json.loads((Path(__file__).parent / "engine.theme").read_text()))
+    return json.dumps(theme, indent=2) + "\n"
+
+
 def outputs(d: Path) -> dict[Path, str]:
     livery, sources = resolve(d)
     build = d / "build"
     return {build / "livery.json": json.dumps(livery, indent=2, sort_keys=True) + "\n",
+            build / "livery.theme": emit_theme(livery),
             build / "livery.sty": emit_sty(livery, sources, overrides(d, "livery-extra.sty")),
             build / "livery.css": emit_css(livery)}
 

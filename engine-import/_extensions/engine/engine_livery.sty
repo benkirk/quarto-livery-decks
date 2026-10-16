@@ -33,8 +33,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The livery: palette, roles (BrandPrimary, BrandPrimaryText, BrandPrimaryContrast,
-% BrandSecondary, BrandAccent, BrandText, BrandBackground, BrandMuted, BrandSurface,
-% BrandWarning, BrandDark), blends, logos, fonts and geometry, generated into
+% BrandSecondary, BrandAccent, BrandHighlight, BrandText, BrandBackground, BrandMuted,
+% BrandSurface, BrandWarning, BrandDark), blends, logos, fonts and geometry, generated into
 % build/livery.sty by livery_build.py; its overrides/livery-extra.sty is appended there.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \ifx\engine@livery\@empty\edef\engine@livery{liveries/\engine@brand}\fi
@@ -260,9 +260,9 @@
 % Small marks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \RequirePackage{pifont}
-\newcommand{\cmark}{{\color{NCARBlue}\ding{51}}}
-\newcommand{\xmark}{{\color{DarkBlue!70}\ding{55}}}
-\newcommand{\pmark}{{\color{BrandOrange}\ding{108}}}
+\newcommand{\cmark}{{\color{BrandPrimaryContrast}\ding{51}}}
+\newcommand{\xmark}{{\color{BrandText!70}\ding{55}}}
+\newcommand{\pmark}{{\color{BrandAccent}\ding{108}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code listings
@@ -272,12 +272,12 @@
 \AddToHook{begindocument/before}{%
   \@ifpackageloaded{listings}{%
     \lstdefinestyle{engine}{
-      backgroundcolor=\color{LightGray},
-      basicstyle=\footnotesize\ttfamily\color{Space},
-      keywordstyle=\color{NCARBlue}\bfseries,
-      commentstyle=\color{DarkBlue!55}\itshape,
-      stringstyle=\color{UCARAquaContrast},
-      numberstyle=\tiny\color{DarkBlue!50},
+      backgroundcolor=\color{BrandSurface},
+      basicstyle=\footnotesize\ttfamily\color{BrandDark},
+      keywordstyle=\color{BrandPrimaryContrast}\bfseries,
+      commentstyle=\color{BrandText!55}\itshape,
+      stringstyle=\color{BrandHighlight},
+      numberstyle=\tiny\color{BrandText!50},
       frame=leftline, framerule=2pt, rulecolor=\color{BrandPrimary},
       xleftmargin=6pt, framexleftmargin=4pt, aboveskip=6pt, belowskip=6pt,
       columns=fullflexible, keepspaces=true,

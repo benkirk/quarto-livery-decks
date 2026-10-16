@@ -14,6 +14,7 @@
   --engine-primary-text: #FFFFFF;
   --engine-primary-contrast: #0057C2;
   --engine-accent: #FAA119;
+  --engine-highlight: #00818F;
   --engine-muted: #6B7C99;
   --engine-surface: #F1F0EE;
   --engine-warning: #FFDD31;
@@ -21,10 +22,22 @@
   --engine-table-rule: #C1CBD7;
   --engine-table-band: #F7F6F5;
   --engine-caution-fill: #FFF9DA;
+  --engine-alert-text: #B5540A;
+  --engine-rule: #A9B8CB;
   --engine-logo-h: 58px;
   --engine-logo-w: 228.2px;
   --engine-logo-aspect: 3.934;
   --engine-font-family: "Poppins";
+  --engine-overlay: color-mix(in srgb, var(--engine-dark) 72%, transparent);
+}
+html:root {
+  --mermaid-bg-color: var(--engine-background);
+  --mermaid-node-bg-color: var(--engine-surface);
+  --mermaid-node-fg-color: var(--engine-foreground);
+  --mermaid-fg-color: var(--engine-foreground);
+  --mermaid-edge-color: var(--engine-foreground);
+  --mermaid-label-bg-color: var(--engine-background);
+  --mermaid-label-fg-color: var(--engine-primary-contrast);
 }
 .reveal .slides section.slide::after,
 .reveal .slides section.engine-title::after { background-image: url("NSF-NCAR_Logo_FullColor_RGB.png"); }

@@ -9,12 +9,14 @@ roles:
   primary-text: white           # text on primary
   primary-contrast: ncar-blue   # primary as small text on white
   accent: orange
+  highlight: ucar-aqua-contrast   # a second small-text accent on white: examples, tips, strings (Brand Guide p18)
   muted: "#6B7C99"              # $ncar-muted: HTML, pptx; the PDF's CoolGray7 (#6686AF) joins it in Phase 2
   surface: light-gray
   warning: yellow
   dark: space
 
-derived: {}               # blends livery_build.py computes from the roles (BLENDS); set a key to override
+derived:                  # blends livery_build.py computes from the roles (BLENDS); a key here overrides
+  alert-text: "#B5540A"   # warnings and errors in code: the theme's dark orange, not a blend
 
 aspect: "16:9"
 

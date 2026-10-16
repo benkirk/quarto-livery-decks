@@ -309,10 +309,15 @@ Use the palette by name:
 - **UCAR/UCP:** `UCARAqua`, `UCARAquaContrast`, `LightAqua`
 - **Accents:** `BrandOrange`, `BrandYellow`
 
-The themes themselves read roles, which the livery sets: `BrandPrimary`,
-`BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`, `BrandText`,
-`BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and `BrandDark`. The names
-above are the ncar livery's palette (`liveries/ncar/livery.yml`, `latex.colors`).
+The themes themselves read only roles, which the livery sets: `BrandPrimary`,
+`BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`,
+`BrandHighlight` (a second small-text accent: examples, tips, strings), `BrandText`,
+`BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and `BrandDark`, plus the
+blends the builder derives (`BrandTableRule`, `BrandCautionFill`, ...). The names above are
+the ncar livery's palette (`liveries/ncar/livery.yml`, `latex.colors`). Code highlighting
+follows the same roles: `engine.theme` is the template, each livery's
+`build/livery.theme` the filled copy, and a project points `highlight-style` at
+`_livery/build/livery.theme`.
 
 ## Brand rules the theme follows
 
@@ -349,7 +354,7 @@ _extensions/engine/           the theme: Quarto extension *and* LaTeX sources
   engine-beamer.lua             Quarto: loads the theme; Markdown sugar
   engine-revealjs.{scss,js,lua}, title-slide.html
                               the HTML (revealjs) format
-  engine.theme                  syntax-highlighting colors
+  engine.theme                  highlight theme template ($role colors; filled per livery)
   liveries/<name>/              a brand: _brand.yml, livery.yml, fonts/, logos/, template.pptx,
                                 build/livery.{json,sty,css} (generated, committed)
   livery_build.py               writes build/ from _brand.yml and livery.yml (--check in CI)

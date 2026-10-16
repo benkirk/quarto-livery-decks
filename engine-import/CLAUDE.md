@@ -20,8 +20,18 @@ NCAR_beamer_template v2.8.0) to `_extensions/engine/`, `engine-beamer` /
 (`ncar`; `ucar` and `ncarucar` extend it), `livery_build.py` writes each one's
 `build/livery.{json,sty,css}` (committed, `--check` in CI), `engine_livery.sty`
 inputs the `.sty` and both Lua filters take the directory from the `livery:`
-metadata key (else `liveries/<brand>`). Still to do: every color read moved to
-a role, geometry from the livery, backgrounds from `art/`.
+metadata key (else `liveries/<brand>`); and roles only: no palette name is
+read outside `build/livery.sty`, the Sass sets every color as `var(--engine-*)`
+(its `$ncar-*` variables are compile-time defaults for Quarto's own rules, which
+are restated with the roles at the end of the file), and the highlight theme is
+generated per livery from `engine.theme`. Still to do: geometry from the
+livery, backgrounds from `art/`.
+
+Checking a change: `tools/parity.sh baseline` on main, then `check` (every PDF
+page's pixels, pdftotext, the HTML). HTML colors live in the compiled theme and
+the livery's css, so a Sass change is checked by screenshotting every slide of
+`talk-quarto.html` and `examples/quarto-demo.html` before and after (Playwright,
+serve the repo root) and diffing the pixels above the progress bar.
 
 The framework that consumes this engine is `benkirk/quarto-livery-decks`
 (vendored there under `docs/common/_extensions/`; re-vendor with
