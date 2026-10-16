@@ -5,3 +5,6 @@ _site/
 _baseline/
 _check/
 __pycache__/
+
+# Playwright MCP screenshots and page snapshots from browser sessions
+.playwright-mcp/
