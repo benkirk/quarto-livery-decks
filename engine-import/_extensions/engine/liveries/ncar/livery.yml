@@ -77,6 +77,11 @@ art:                      # backgrounds. waves: the brand's lines, drawn by the 
       - [[0.5138, 0.0000], [0.5402, 0.1583], [0.6570, 0.4747], [0.6570, 0.6423], [0.6570, 0.8307], [0.6286, 0.9166], [0.6000, 1.0000]]
       - [[0.5427, 0.0000], [0.5762, 0.1381], [0.7073, 0.4410], [0.7073, 0.6182], [0.7073, 0.8242], [0.6639, 0.9245], [0.6320, 1.0000]]
 
+compositions:             # overrides of the engine's boxes (livery_build.py compositions()); [x, y, w, h]
+  title:                  # fractions. The cover title's text sits where the brand's pptx template puts
+    column:               # it, from the date line at 0.375 to the fineprint (Ben, 2026-10-17); this
+      box: [0.06, 0.375, 0.50, 0.485]   # reaches the photo and light variants and every flavor
+
 latex:                    # build/livery.sty: the palette's LaTeX color names (default: CamelCase of the key)
   colors:
     ncar-blue: NCARBlue
