@@ -86,6 +86,12 @@
 % frame title
 % ---------------------------------------------------------------------------
 \defbeamertemplate*{frametitle}{Engine}{%
+  \engine@ifstyle{feature}{\engine@featurespace}{\engine@frametitle}}
+% a feature frame's title is drawn by the background (\engine@ctext@feature); a body not on the
+% panel (enginefeaturepanel) starts below where the panel would
+\def\engine@featurespace{\def\engine@comp{feature}\nointerlineskip
+  \vbox to \engine@ifc{panel@y}{\engine@cv{panel@y}}{0.5}\paperheight{\vfil}}
+\def\engine@frametitle{%
   \nointerlineskip
   \@tempdima=\paperwidth
   \advance\@tempdima by -2\engine@margin
@@ -284,7 +290,18 @@
 \def\engine@ctext@title{\engine@cnode{\engine@titlestack}\engine@cfineprint}
 \def\engine@ctext@section{\engine@cnode{\engine@sectionstack}}
 \def\engine@ctext@closing{\engine@cnode{\engine@closingstack}}
-\def\engine@ctext@feature{}
+% the feature: the frame title in the column (centred on the bar, or the cover's stack) and the
+% body (enginefeaturepanel, beamerinnerthemeEngine.sty) on the panel or under the title
+\def\engine@ctext@feature{%
+  \ifx\beamer@frametitle\@empty\else
+    \engine@ifc{bar@x}{\engine@cnode{\engine@featuretitle}}{\engine@cnode{\engine@featurestack}}%
+  \fi
+  \ifengine@haspanel\engine@ifc{panel@x}{\engine@box{panel}%
+    \@tempdima=\dimexpr\engine@by+\engine@bh\relax
+    \fill[\engine@ccolor{Panel},opacity=\engine@cv{panel@opacity}] (\engine@bx,\@tempdima) rectangle
+      ++(\engine@bw,-\dimexpr\ht\engine@panelbox+\dp\engine@panelbox+2\engine@panelpad\relax);
+    \node[anchor=north west,inner sep=0pt] at (\engine@bx+1.5\engine@panelpad,\@tempdima-\engine@panelpad)
+      {\copy\engine@panelbox};}{}\fi}
 \def\engine@cfineprint{\ifx\engine@fineprint\@empty\else\engine@ifc{fineprint@x}{\engine@box{fineprint}%
   \engine@ifcorner{\engine@cv{fineprint@anchor}}{bottom}%
     {\def\engine@tmpc{south west}\@tempdima=\engine@by}%
@@ -370,8 +387,8 @@ block body example,block title alerted,block body alerted}
         \csname #1\engine@s @\engine@c\endcsname}}}
 \AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}}
 \def\engine@resetframe{%
-  \def\engine@framestyle{normal}%
-  \def\engine@framehook{}\engine@translucentfalse
+  \def\engine@framestyle{normal}\global\engine@haspanelfalse
+  \def\engine@framehook{}
   \engine@copycolors{engine@saved@}{beamer@}}
 \let\engine@envkey\KV@beamerframe@environment
 \def\KV@beamerframe@environment#1{\engine@resetframe\engine@envkey{#1}}

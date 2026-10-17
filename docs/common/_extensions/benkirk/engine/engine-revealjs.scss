@@ -128,9 +128,8 @@ $mermaid-label-fg-color: $ncar-blue;
   background-size: contain;
   pointer-events: none;
 }
-// no logo on busy photos (Brand Guide p11)
-.reveal .slides section.slide.feature::after { content: none; }
-.reveal .slides section.slide.feature .engine-signoff, .reveal .slides section.slide.full .engine-signoff { display: none; }
+// no logo on busy photos (Brand Guide p11); a feature's marks are its composition's (none on the bar)
+.reveal .slides section.slide.full .engine-signoff { display: none; }
 
 // ---------------------------------------------------------------------------
 // content slides: accent tab beside the title, hairline rule, logo
@@ -382,7 +381,8 @@ $mermaid-label-fg-color: $ncar-blue;
 // the mark and the sign-off of every composition, from their boxes
 div.reveal div.slides section.engine-title.quarto-title-block,
 .reveal .slides section.slide.engine-section,
-.reveal .slides section.slide.level2.closing {
+.reveal .slides section.slide.level2.closing,
+.reveal .slides section.slide.level2.feature {
   &::after {
     display: var(--engine-cmp-mark-display);
     left: var(--engine-cmp-mark-x);
@@ -404,7 +404,8 @@ div.reveal div.slides section.engine-title.quarto-title-block,
     background-position: left top;
   }
 }
-.reveal .slides section.engine-title .engine-title-photo-img {
+.reveal .slides section.engine-title .engine-title-photo-img,
+.reveal .slides section.slide.feature .engine-title-photo-img {
   position: absolute;
   left: var(--engine-cmp-photo-x);
   top: var(--engine-cmp-photo-y);
@@ -587,7 +588,39 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     z-index: -1;
   }
 }
-// the body on its translucent panel (beamer: translucent blocks); its height is its content's
+// the cover style (feature.style: cover): the section is the column, the title and body in it
+.reveal .slides section.slide.level2.feature.engine-feature-cover {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: var(--engine-cmp-column-justify);
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
+  > h2 {
+    position: relative;
+    top: auto; left: auto; width: auto; height: auto;
+    display: block;
+    margin: 0 0 0.5em;
+    &::before { top: 0.08em; bottom: 0.08em; }
+    &::after {
+      content: "";
+      display: var(--engine-cmp-rule-display);
+      width: var(--engine-cmp-rule-w);
+      height: var(--engine-cmp-rule-h);
+      margin-top: 0.4em;
+      background: var(--engine-secondary);
+    }
+  }
+  .engine-feature-body {
+    position: static;
+    width: auto;
+    padding: 0;
+    background: none;
+    &, p, li, strong { color: var(--engine-cmp-text); }
+  }
+}
+html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-cover {
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
+}
+// the body on its translucent panel (beamer: the same panel); its height is its content's
 .reveal .slides section.slide.feature .engine-feature-body {
   position: absolute;
   left: var(--engine-cmp-panel-x);
