@@ -24,7 +24,7 @@ import livery as livery_mod
 
 LIVERY      = livery_mod.load()
 MARKERS     = ("†", "‡")               # dagger, double dagger
-FOOT_SIZE   = Pt(13)                   # body is 18–20 pt; this is a clear step down
+FOOT_SIZE   = Pt(round(livery_mod.type_pt(LIVERY, "footnote"), 1))   # the themes' footnote size (livery.json type)
 FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 MARK_COLOR  = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))   # the accent slot
 FOOT_BEFORE = Pt(10)                   # vertical gap above the footnote

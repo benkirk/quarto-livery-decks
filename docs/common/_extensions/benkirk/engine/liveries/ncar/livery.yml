@@ -59,7 +59,6 @@ geometry:                 # fractions of the slide (of its width: margin, tab, f
     caption: 0.06
   # pagenumber:
   #   corner: bottom-left # bottom-left | bottom-right
-  body-sizes-pt: [20, 18, 16, 14, 12]   # the master's ladder; autofit must never fire
 
 divider:
   label: Section          # "Section n" eyebrow over the title; each format sets it in capitals

@@ -681,13 +681,6 @@
     "tab": true
   },
   "geometry": {
-    "body-sizes-pt": [
-      20,
-      18,
-      16,
-      14,
-      12
-    ],
     "divider": {
       "bottom": 0.0889,
       "top": 0.1333
@@ -799,6 +792,83 @@
     "secondary": "#42C0FF",
     "surface": "#F1F0EE",
     "warning": "#FFDD31"
+  },
+  "type": {
+    "body": 0.0311,
+    "roles": {
+      "author": {
+        "leading": 1.3,
+        "size": 0.8
+      },
+      "body": {
+        "leading": 1.4,
+        "size": 1.0
+      },
+      "caption": {
+        "leading": 1.3,
+        "size": 0.7
+      },
+      "closing": {
+        "leading": 1.08,
+        "size": 2.6
+      },
+      "code": {
+        "leading": 1.3,
+        "size": 0.66
+      },
+      "date": {
+        "leading": 1.2,
+        "size": 0.6
+      },
+      "eyebrow": {
+        "leading": 1.2,
+        "size": 0.7
+      },
+      "fineprint": {
+        "leading": 1.4,
+        "size": 0.4
+      },
+      "footnote": {
+        "leading": 1.35,
+        "size": 0.7
+      },
+      "frametitle": {
+        "leading": 1.15,
+        "size": 1.643
+      },
+      "institute": {
+        "leading": 1.3,
+        "size": 0.7
+      },
+      "level": {
+        "leading": 1.4,
+        "size": 0.9
+      },
+      "section": {
+        "leading": 1.08,
+        "size": 2.6
+      },
+      "sectionsubtitle": {
+        "leading": 1.3,
+        "size": 1.1
+      },
+      "subhead": {
+        "leading": 1.2,
+        "size": 1.1
+      },
+      "subtitle": {
+        "leading": 1.3,
+        "size": 1.0
+      },
+      "table": {
+        "leading": 1.3,
+        "size": 0.85
+      },
+      "title": {
+        "leading": 1.12,
+        "size": 2.3
+      }
+    }
   },
   "typography": {
     "base": "Poppins",

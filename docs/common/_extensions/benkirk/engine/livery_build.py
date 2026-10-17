@@ -54,6 +54,16 @@ KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider",
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
 MARK_ROLES = ("background", "primary")
+# Type: the body's size as a fraction of the slide height (the HTML theme's 28 px of 900, the brand
+# template's 12 pt of 405) and every text role's size as a ratio to it, with its leading: the HTML
+# theme's em sizes (engine-revealjs.scss). livery.sty and livery.json carry them, so beamer and the
+# pptx template set text as large on the slide as HTML does (similar fit and overflow).
+TYPE_BODY = 0.0311
+TYPE = {"body": (1.0, 1.4), "level": (0.9, 1.4), "subhead": (1.1, 1.2), "frametitle": (1.643, 1.15),
+        "table": (0.85, 1.3), "code": (0.66, 1.3), "caption": (0.7, 1.3), "footnote": (0.7, 1.35),
+        "title": (2.3, 1.12), "subtitle": (1.0, 1.3), "date": (0.6, 1.2), "author": (0.8, 1.3),
+        "institute": (0.7, 1.3), "fineprint": (0.4, 1.4), "section": (2.6, 1.08), "sectionsubtitle": (1.1, 1.3),
+        "eyebrow": (0.7, 1.2), "closing": (2.6, 1.08)}
 # the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
@@ -157,6 +167,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         out["title"] = band(d.name, data["title"], out)
     out["marks"] = marks(d.name, data, out)
     out["compositions"] = compositions(d.name, data, out)
+    out["type"] = {"body": TYPE_BODY, "roles": {k: {"size": a, "leading": b} for k, (a, b) in TYPE.items()}}
     if "installed-fonts" in data:
         out["installed-fonts"] = installed_fonts(d.name, data["installed-fonts"])
     out.setdefault("pptx", {})
@@ -546,6 +557,10 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append(f"\\def\\engine@art@{kind}{{{stem(art[kind])}}}")
     if livery.get("title", {}).get("style") == "band":   # its boxes and colors are the compositions'
         L.append("\\def\\engine@title@style{band}")
+    L.append("% type: the body as a fraction of the paper height, each role's size and leading as ratios to it")
+    L.append(f"\\def\\engine@type@frac{{{livery['type']['body']}}}")
+    for k, v in livery["type"]["roles"].items():
+        L.append(f"\\def\\engine@type@{k}{{{{{v['size']}}}{{{v['leading']}}}}}")
     L += emit_sty_compositions(livery, stem)
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")

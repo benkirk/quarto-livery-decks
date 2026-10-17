@@ -5,11 +5,25 @@
 \mode<presentation>
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 
+% Type sizes are fractions of the paper height (livery.sty \engine@type@*, livery_build.py TYPE: the
+% HTML theme's and the brand template's), so text sits as large on the page as in HTML and pptx,
+% whatever the class's 10/11/12pt option. LaTeX's size commands are its 11pt ladder rescaled onto
+% the body; each role below takes its own ratio. \engine@fs{<role>}: that role's \fontsize.
+\newdimen\engine@typebody \engine@typebody=\engine@type@frac\paperheight
+\def\engine@fsof#1#2{\fontsize{\fpeval{#1*\strip@pt\engine@typebody}pt}{\fpeval{#1*#2*\strip@pt\engine@typebody}pt}}
+\def\engine@fs#1{\expandafter\expandafter\expandafter\engine@fsof\csname engine@type@#1\endcsname}
+\def\engine@setsize#1#2#3{\edef\engine@tmp{\noexpand\DeclareRobustCommand\noexpand#1{\noexpand\@setfontsize\noexpand#1%
+  {\the\dimexpr#2\engine@typebody\relax}{\the\dimexpr#3\engine@typebody\relax}}}\engine@tmp}
+\engine@setsize\tiny{0.545}{0.68}\engine@setsize\scriptsize{0.727}{0.91}\engine@setsize\footnotesize{0.818}{1.06}
+\engine@setsize\small{0.909}{1.22}\engine@setsize\normalsize{1}{1.4}\engine@setsize\large{1.091}{1.4}
+\engine@setsize\Large{1.309}{1.6}\engine@setsize\LARGE{1.571}{1.85}\engine@setsize\huge{1.885}{2.2}
+\engine@setsize\Huge{2.262}{2.6}
+\normalsize
 \setbeamerfont{normal text}{family=\sffamily}
 \setbeamerfont{structure}{family=\sffamily}
 \setbeamerfont{alerted text}{series=\sbseries}
 
-\setbeamerfont{title}{size=\Large,series=\bfseries}
+\setbeamerfont{title}{size=\engine@fs{title},series=\bfseries}
 % a livery with a headings family of its own (engine_livery's \engineheadingfont) sets the
 % titles in it; the base family stays for everything else
 \AtBeginDocument{\ifdefined\engineheadingfont
@@ -19,20 +33,20 @@
   \setbeamerfont{section title}{family=\engineheadingfont}
   \setbeamerfont{subsection title}{family=\engineheadingfont}
 \fi}
-\setbeamerfont{subtitle}{size=\normalsize,series=\bfseries}
-\setbeamerfont{author}{size=\normalsize,series=\bfseries}
-\setbeamerfont{institute}{size=\small,series=\mdseries}
-\setbeamerfont{date}{size=\scriptsize,series=\bfseries}
-\setbeamerfont{title fineprint}{size=\tiny,series=\mdseries}
+\setbeamerfont{subtitle}{size=\engine@fs{subtitle},series=\bfseries}
+\setbeamerfont{author}{size=\engine@fs{author},series=\bfseries}
+\setbeamerfont{institute}{size=\engine@fs{institute},series=\mdseries}
+\setbeamerfont{date}{size=\engine@fs{date},series=\bfseries}
+\setbeamerfont{title fineprint}{size=\engine@fs{fineprint},series=\mdseries}
 
-\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamerfont{frametitle}{size=\engine@fs{frametitle},series=\bfseries}
 \setbeamerfont{framesubtitle}{size=\normalsize,series=\sbseries}
-\setbeamerfont{section title}{size=\huge,series=\bfseries}
-\setbeamerfont{section subtitle}{size=\large,series=\mdseries}
-\setbeamerfont{section number}{size=\small,series=\sbseries}
+\setbeamerfont{section title}{size=\engine@fs{section},series=\bfseries}
+\setbeamerfont{section subtitle}{size=\engine@fs{sectionsubtitle},series=\mdseries}
+\setbeamerfont{section number}{size=\engine@fs{eyebrow},series=\sbseries}
 \setbeamerfont{subsection title}{size=\Large,series=\bfseries}
 
-\setbeamerfont{block title}{size=\normalsize,series=\sbseries}
+\setbeamerfont{block title}{size=\engine@fs{subhead},series=\sbseries}
 \setbeamerfont{item projected}{size=\scriptsize,series=\bfseries}
 % itemize/enumerate sizes: beamer defaults (body inherits the local size)
 
@@ -40,9 +54,13 @@
 \setbeamerfont{subsection in toc}{size=\small}
 \setbeamerfont{page number in head/foot}{size=\scriptsize,series=\bfseries}
 \setbeamerfont{footline}{size=\tiny}
-\setbeamerfont{caption}{size=\footnotesize}
+\setbeamerfont{caption}{size=\engine@fs{caption}}
 \setbeamerfont{caption name}{series=\sbseries}
-\setbeamerfont{footnote}{size=\tiny}
+\setbeamerfont{footnote}{size=\engine@fs{footnote}}
 
 % math: set by engine_livery (mathfont=; a serif math font by default)
+% code blocks at the HTML's 0.66 of the body: pandoc's Highlighting (defined in the preamble after
+% the theme), and listings (engine_livery.sty)
+\AtBeginDocument{\@ifundefined{Highlighting}{}{%
+  \RecustomVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\engine@fs{code}}}}
 \mode<all>

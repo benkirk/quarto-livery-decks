@@ -44,7 +44,6 @@ geometry:                 # fractions of the slide (of its width: margin, tab, f
     pad: 0.025
     floor: 0.075
     caption: 0.06
-  body-sizes-pt: [20, 18, 16, 14, 12]
 
 divider:
   label: Section
