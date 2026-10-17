@@ -100,8 +100,10 @@ python -m bash_kernel.install --sys-prefix
 apt-get update -qq
 python -m playwright install --with-deps --only-shell chromium
 rm -rf /var/lib/apt/lists/* /root/.cache
-shell=$(find "$PLAYWRIGHT_BROWSERS_PATH" -type f -name headless_shell | head -1)
-test -n "$shell" || { echo "no headless_shell under $PLAYWRIGHT_BROWSERS_PATH" >&2; exit 1; }
+# Playwright >= 1.49 ships Chrome for Testing's shell, `chrome-headless-shell`; older ones `headless_shell`
+shell=$(find "$PLAYWRIGHT_BROWSERS_PATH" -type f \( -name chrome-headless-shell -o -name headless_shell \) | head -1)
+test -n "$shell" || { echo "no headless shell under $PLAYWRIGHT_BROWSERS_PATH:" >&2; find "$PLAYWRIGHT_BROWSERS_PATH" -maxdepth 3 >&2; exit 1; }
+echo "headless shell: $shell"
 ln -s "$shell" "$QUARTO_CHROMIUM"
 "$QUARTO_CHROMIUM" --version
 EOS
