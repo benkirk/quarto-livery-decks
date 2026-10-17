@@ -34,12 +34,14 @@ jobs:
 
       # build/livery.{json,sty,css} are generated and committed; a stale one fails here.
       # livery_check.py then checks the files the data names and that each template.pptx is
-      # pandoc-compliant and rebuilds byte-identically (Pillow measures the title photos)
+      # pandoc-compliant and rebuilds byte-identically (Pillow measures the title photos);
+      # test_compositions.py checks the resolved compositions against the decided numbers
       - name: Check the liveries are built
         run: |
           python3 -m pip install --quiet pyyaml pillow
           python3 _extensions/engine/livery_build.py --check _extensions/engine/liveries/*/
           python3 _extensions/engine/livery_check.py _extensions/engine/liveries/*/
+          python3 tools/test_compositions.py
 
       # No system Poppins on the runner: this exercises the bundled copy.
       - name: Build the starter decks

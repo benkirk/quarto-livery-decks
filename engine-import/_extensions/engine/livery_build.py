@@ -12,7 +12,8 @@ here unless livery.yml sets the key. livery.json is the one truth (Lua and Pytho
 livery.sty is what engine_livery.sty inputs (overrides/livery-extra.sty of the livery and its
 ancestors appended); livery.css what engine-revealjs.lua attaches; livery.theme is pandoc's
 highlight theme, engine.theme with the roles filled in. `marks` names the mark and sign-off
-for each field by its role (MARK_ROLES); `installed-fonts` names installed faces to prefer.
+for each field by its role (MARK_ROLES); `installed-fonts` names installed faces to prefer;
+`compositions` the title, closing, section and feature slides as boxes (compositions()).
 """
 
 import argparse
@@ -49,10 +50,15 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 # the livery.yml keys this script reads; any other is reported, not silently dropped
 KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider", "art", "pptx", "overrides",
-         "latex", "signoff", "title", "marks", "installed-fonts"}
+         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature"}
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
 MARK_ROLES = ("background", "primary")
+# the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
+COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
+                "closing", "closing-light", "closing-band", "section", "feature")
+FEATURE_STYLES = ("bar", "cover")   # feature.style: the photo under a bar and panel, or the cover
+COMP_KEYS = ("field", "art", "photo", "band", "waves", "bar", "panel", "mark", "signoff", "column", "fineprint", "eyebrow")
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -150,6 +156,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
     if "title" in data:   # only when set, so a livery without it keeps its build/ unchanged
         out["title"] = band(d.name, data["title"], out)
     out["marks"] = marks(d.name, data, out)
+    out["compositions"] = compositions(d.name, data, out)
     if "installed-fonts" in data:
         out["installed-fonts"] = installed_fonts(d.name, data["installed-fonts"])
     out.setdefault("pptx", {})
@@ -220,6 +227,172 @@ def marks(name: str, data: dict, out: dict) -> dict:
                 sys.exit(f"{name}: marks.{role}.signoff {m.get('signoff')!r} is not a logo.images name")
             r["signoff"] = images[m["signoff"]]["path"]
         res[role] = r
+    return res
+
+
+def _box(x, y, w, h):
+    return [round(v, 4) for v in (x, y, w, h)]
+
+
+def variant(base: dict, **over) -> dict:
+    """A copy of a composition with some keys replaced; a dict value merges into the key's dict."""
+    out = json.loads(json.dumps(base))
+    for k, v in over.items():
+        out[k] = {**out[k], **v} if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
+def compositions(name: str, data: dict, out: dict) -> dict:
+    """The title, closing, section and feature slides as boxes ([x, y, w, h], slide fractions, y
+    down) and roles, one fully resolved entry per COMPOSITIONS name with every COMP_KEYS key, so
+    each format's drawer picks a name and applies no variant logic. Derived from the geometry,
+    title, signoff and art knobs; livery.yml `compositions: {<name>: {<key>: ...}}` overrides,
+    an override on title reaching its photo and light variants, one on closing its light one."""
+    g = out.get("geometry", {}); m = g.get("margin", 0.06); logo = g.get("logo", {})
+    aw, ah = (int(v) for v in str(out.get("aspect", "16:9")).split(":"))
+    hw = ah / aw   # a height as a fraction of the width
+    art = out.get("art") or {}
+    has_art = lambda k: isinstance(art.get(k), str)
+    waves = art.get("waves")
+    t = {**BAND, "logo-height": logo.get("title", 0.09), **(out.get("title") or {})}
+    so = out.get("signoff")
+    if so:
+        t.setdefault("signoff-height", so["height"])
+
+    def mark(y, h, role):   # the mark top left on a field; null where the livery draws none
+        if logo.get("corner", "top-right") == "none":
+            return None
+        return {"role": role, "box": _box(m, y, h * logo.get("aspect", 1) * hw, h)}
+
+    def signoff(role):
+        if not so:
+            return None
+        h = so["height"]; w = h * so["aspect"] * hw
+        x = m if so["corner"] == "bottom-left" else 1 - m - w
+        return {"role": role, "box": _box(x, 1 - so["bottom"] - h, w, h)}
+
+    def strip(role):   # the band's strip: the sign-off in its corner, the mark opposite, centred
+        mid, left = (1 + t["bottom"]) / 2, None
+        sig = None
+        if so:
+            h = t["signoff-height"]; w = h * so["aspect"] * hw
+            left = so["corner"] == "bottom-left"
+            sig = {"role": role, "box": _box(m if left else 1 - m - w, mid - h / 2, w, h)}
+        mk = None
+        if logo.get("corner", "top-right") != "none":
+            h = t["logo-height"]; w = h * logo.get("aspect", 1) * hw
+            mk = {"role": role, "box": _box(m if left is False else 1 - m - w, mid - h / 2, w, h)}
+        return mk, sig
+
+    def wave(style, shift, opacity, role="secondary"):
+        if not waves:
+            return None
+        return {"style": style, "shift": shift, "role": role, "opacity": opacity, "line": 0.0015}
+
+    shift = (waves or {}).get("shift", {})
+    empty = dict.fromkeys(COMP_KEYS)
+    pad_w = 1 - 2 * m   # the HTML's padded box, which its percentages are of
+    rule = [0.13, 0.0033]   # [width of W, thickness of H]
+    tm = (0.06, logo.get("title", 0.09))   # the title mark's y and height; the column starts 0.05 under it
+    ty = tm[0] + tm[1] + 0.05
+    title = {**empty,
+             "field": {"role": "primary", "box": _box(0, 0, 1, 1)},
+             "art": "title" if has_art("title") else None,
+             "waves": wave("bands", shift.get("title", 0), [0.18, 0.10]),
+             "mark": mark(*tm, "primary"),
+             "signoff": signoff("primary"),
+             "column": {"box": _box(m, ty, 0.50, 0.86 - ty), "anchor": "top",
+                        "role": "primary-text", "tab": True, "rule": rule},
+             "fineprint": {"box": _box(m, 0.86, 0.50, 0.10), "anchor": "bottom", "role": "primary-text"}}
+    over = data.get("compositions") or {}
+    for k, v in over.items():
+        if k not in COMPOSITIONS:
+            sys.exit(f"{name}: compositions.{k} is not one of {COMPOSITIONS}")
+        bad = set(v or {}) - set(COMP_KEYS)
+        if bad:
+            sys.exit(f"{name}: compositions.{k} takes {COMP_KEYS}, not {sorted(bad)}")
+    title = merge(title, over.get("title") or {})
+
+    def photo(c):
+        col, fp = c["column"]["box"], c["fineprint"]
+        return variant(c, art=None, fineprint=fp and {**fp, "box": [fp["box"][0], fp["box"][1], 0.44, fp["box"][3]]}, field={"box": _box(0, 0, 0.5, 1)}, photo={"box": _box(0.48, 0, 0.52, 1)},
+                       waves=wave("cover", 0, [0.65], "secondary"),
+                       column={"box": [col[0], col[1], 0.44, col[3]]})
+
+    def light(c):
+        w = c["waves"]
+        return variant(c, art=None, field={"role": "background"},
+                       waves=w and {**w, "style": "lines", "opacity": []} if w and w["style"] == "bands" else w,
+                       mark=c["mark"] and {**c["mark"], "role": "background"},
+                       signoff=c["signoff"] and {**c["signoff"], "role": "background"},
+                       column={"role": "foreground"},
+                       fineprint=c["fineprint"] and {**c["fineprint"], "role": "foreground"})
+
+    top, bottom, split = t["top"], t["bottom"], t["split"]
+    smark, ssign = strip(t["field"])
+    title_band = {**empty,
+                  "field": {"role": t["field"], "box": _box(0, 0, 1, 1)},
+                  "art": "title" if has_art("title") else None,
+                  "photo": {"box": _box(split, top, 1 - split, bottom - top)},
+                  "band": {"role": t["band"], "box": _box(0, top, 1, bottom - top)},
+                  "mark": smark, "signoff": ssign,
+                  "column": {"box": _box(m, top, split - m - 64 / W, bottom - top), "anchor": "middle",
+                             "role": "primary-text", "tab": True, "rule": rule},
+                  "fineprint": {"box": _box(m, bottom + 0.018, split - m - 64 / W, 0.06), "anchor": "top", "role": t["field-text"]}}
+    cm = (0.09, logo.get("closing", 0.10))   # the closing mark's y and height; the column starts 0.03 under it
+    cy = cm[0] + cm[1] + 0.03
+    closing_col = {"box": _box(m, cy, 0.62, 0.88 - cy), "anchor": "middle",
+                   "role": "primary-text", "tab": True, "rule": None}
+    closing = merge({**empty,
+                     "field": {"role": "primary", "box": _box(0, 0, 1, 1)},
+                     "art": "closing" if has_art("closing") else None,
+                     "waves": wave("bands", shift.get("title", 0), [0.18, 0.10]),
+                     "mark": mark(*cm, "primary"),
+                     "signoff": signoff("primary"),
+                     "column": closing_col}, over.get("closing") or {})
+    closing_band = {**empty,
+                    "field": {"role": t["field"], "box": _box(0, 0, 1, 1)},
+                    "art": "closing" if has_art("closing") else "title" if has_art("title") else None,
+                    "mark": smark, "signoff": ssign,
+                    "column": {**closing_col, "box": _box(m, 0.10, 0.62, bottom - 0.13), "role": t["field-text"]}}
+    div = g.get("divider", {}); dv = out.get("divider", {})
+    section = {**empty,
+               "field": {"role": "primary", "box": _box(0, 0, 1, 1)},
+               "art": "section" if has_art("section") else None,
+               "waves": wave("bands", shift.get("section", 0), [0.18, 0.10]),
+               "mark": mark(0.08, logo.get("section", 0.08), "primary"),
+               "signoff": signoff("primary"),
+               "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
+                          "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
+               "eyebrow": {"label": dv.get("label", "Section"), "color": dv.get("label-color", "secondary")}}
+    feature = {**empty,
+               "photo": {"box": _box(0, 0, 1, 1)},
+               "bar": {"role": "dark", "opacity": 0.72, "box": _box(0, 0, 1, 180 / H)},
+               "column": {"box": _box(m, 0, pad_w, 180 / H), "anchor": "middle", "role": "background", "tab": False, "rule": None},
+               "panel": {"role": "dark", "opacity": 0.72, "box": _box(m, 230 / H, 0.52 * pad_w, 1 - 230 / H - 70 / H)}}
+    style = (data.get("feature") or {}).get("style", "bar")
+    if style not in FEATURE_STYLES:
+        sys.exit(f"{name}: feature.style {style!r} is not one of {FEATURE_STYLES}")
+    if style == "cover":   # the cover with the deck's photo, the body where the subtitle would be
+        tp = photo(title)
+        feature = variant(tp, fineprint=None, column={"box": _box(m, 0.34, 0.44, 0.52), "anchor": "top"})
+    res = {"title": title,
+           "title-photo": photo(title),
+           "title-light": light(title),
+           "title-photo-light": light(photo(title)),
+           "title-band": title_band,
+           "closing": closing,
+           "closing-light": light(closing),
+           "closing-band": closing_band,
+           "section": section,
+           "feature": feature}
+    for k in COMPOSITIONS:   # every override last; a base's already reached its variants
+        if k not in ("title", "closing"):
+            res[k] = merge(res[k], over.get(k) or {})
+    for k, c in res.items():
+        for role in [c[b]["role"] for b in COMP_KEYS if isinstance(c[b], dict) and "role" in c[b]]:
+            if role not in out["roles"]:
+                sys.exit(f"{name}: compositions.{k}: role {role!r} is not a role")
     return res
 
 
@@ -384,9 +557,63 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         L.append(f"\\def\\engine@title@logoimg{{{stem(m.get('logo-print', m['logo']))}}}")
         if "signoff" in m:
             L.append(f"\\def\\engine@title@signoffimg{{{stem(m['signoff'])}}}")
+    L += emit_sty_compositions(livery, stem)
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
     return "\n".join(L) + "\n"
+
+
+# the role each composition key is drawn in -> the colorlet suffix livery.sty gives it
+COMP_COLORS = {"field": "Field", "band": "Band", "waves": "Waves", "bar": "Bar", "panel": "Panel",
+               "column": "Text", "fineprint": "Fineprint"}
+BOXED = ("field", "photo", "band", "bar", "panel", "mark", "signoff", "column", "fineprint")
+
+
+def emit_sty_compositions(livery: dict, stem) -> list[str]:
+    """compositions as \\engine@c@<comp>@<key>@x|y|w|h (comp without hyphens), scalars, the roles as
+    EngineC<comp><Key> colors and the image stems; an absent key leaves its macros undefined."""
+    tex = lambda role: ROLE_TEX.get(role, "BrandDark")
+    L = ["% compositions (livery_build.py compositions()): boxes in fractions of the slide, y down"]
+    for comp, c in livery["compositions"].items():
+        n = comp.replace("-", "")
+        d = lambda k, v: L.append(f"\\def\\engine@c@{n}@{k}{{{v}}}")
+        for k in BOXED:
+            if c[k]:
+                for axis, v in zip("xywh", c[k]["box"]):
+                    d(f"{k}@{axis}", v)
+        for k, suffix in COMP_COLORS.items():
+            if c[k]:
+                L.append(f"\\colorlet{{EngineC{n}{suffix}}}{{{tex(c[k]['role'])}}}")
+        if c["waves"]:
+            w = c["waves"]
+            d("waves@style", w["style"]); d("waves@shift", w["shift"]); d("waves@line", w["line"])
+            for i, o in enumerate(w["opacity"], 1):
+                d(f"waves@opacity@{'i' * i}", o)
+        for k in ("bar", "panel"):
+            if c[k]:
+                d(f"{k}@opacity", c[k]["opacity"])
+        col = c["column"]
+        d("column@anchor", col["anchor"]); d("column@tab", "true" if col["tab"] else "false")
+        if col["rule"]:
+            d("column@rule@w", col["rule"][0]); d("column@rule@h", col["rule"][1])
+        if c["fineprint"]:
+            d("fineprint@anchor", c["fineprint"]["anchor"])
+        if c["eyebrow"]:
+            e = c["eyebrow"]
+            d("eyebrow@label", e["label"])
+            if str(e["color"]).startswith("#"):
+                L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")
+            else:
+                L.append(f"\\colorlet{{EngineC{n}Eyebrow}}{{{tex(e['color'])}}}")
+        for k, kind in (("mark", "logo"), ("signoff", "signoff")):
+            if c[k]:
+                m = livery["marks"].get(c[k]["role"], livery["marks"]["primary"])   # as livery.mark()
+                img = m.get("logo-print", m["logo"]) if kind == "logo" else m.get("signoff")
+                if img:
+                    d(f"{k}@img", stem(img))
+        if c["art"]:
+            d("art", stem(livery["art"][c["art"]]))
+    return L
 
 
 def emit_css(livery: dict, extra: str = "") -> str:
@@ -506,8 +733,58 @@ def emit_css(livery: dict, extra: str = "") -> str:
             L.append(",\n".join(f"{s} .engine-signoff" for s in sel) + f' {{ background-image: url("{Path(m["signoff"]).name}"); }}')
         if not isinstance(art.get("closing"), str) and isinstance(art.get("title"), str):
             L.append(f'{sel[1]} {{ background: url("{Path(art["title"]).name}") center / cover no-repeat; }}')
+    L += emit_css_compositions(livery)
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
+
+
+# composition -> the selector its custom properties go on, in cascade order: base, photo, light,
+# photo-light, then the band (prefixed with html so it outranks light, as it wins over it)
+TITLE_SEL = "div.reveal div.slides section.engine-title.quarto-title-block"
+CLOSING_SEL = ".reveal .slides section.slide.level2.closing"
+CSEL = {"title": TITLE_SEL,
+        "title-photo": TITLE_SEL + ".engine-title-photo",
+        "title-light": "html.engine-title-light " + TITLE_SEL,
+        "title-photo-light": "html.engine-title-light " + TITLE_SEL + ".engine-title-photo",
+        "title-band": "html " + TITLE_SEL + ".engine-band",
+        "closing": CLOSING_SEL,
+        "closing-light": "html.engine-title-light " + CLOSING_SEL,
+        "closing-band": "html " + CLOSING_SEL + ".engine-band",
+        "section": ".reveal .slides section.slide.engine-section",
+        "feature": ".reveal .slides section.slide.level2.feature"}
+
+
+def emit_css_compositions(livery: dict) -> list[str]:
+    """Each composition's boxes and roles as one set of generic --engine-cmp-* properties on its
+    selector (CSEL), so the scss reads one name set whatever the variant; slide pixels."""
+    px = lambda v, axis: f"{round(v * axis, 1):g}px"
+    role = lambda r: r if str(r).startswith("#") else f"var(--engine-{r})"
+    L = ["/* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */"]
+    for comp, sel in CSEL.items():
+        c, props = livery["compositions"][comp], []
+        for k in BOXED:
+            box = c[k]["box"] if c[k] else [0, 0, 0, 0]
+            props.append(f"--engine-cmp-{k}-display: {'block' if c[k] else 'none'};")
+            props += [f"--engine-cmp-{k}-{a}: {px(v, W if a in 'xw' else H)};" for a, v in zip("xywh", box)]
+        props.append(f"--engine-cmp-field: {role(c['field']['role']) if c['field'] else 'transparent'};")
+        col = c["column"]
+        props.append(f"--engine-cmp-text: {role(col['role'])};")
+        props.append(f"--engine-cmp-column-justify: {'center' if col['anchor'] == 'middle' else 'flex-start'};")
+        props.append(f"--engine-cmp-column-tab: {'block' if col['tab'] else 'none'};")
+        rule = col["rule"] or [0, 0]
+        props.append(f"--engine-cmp-rule-display: {'block' if col['rule'] else 'none'};")
+        props += [f"--engine-cmp-rule-w: {px(rule[0], W)};", f"--engine-cmp-rule-h: {px(rule[1], H)};"]
+        if c["fineprint"]:
+            props.append(f"--engine-cmp-fineprint-color: {role(c['fineprint']['role'])};")
+        for k in ("band", "bar", "panel"):
+            if c[k]:
+                fill = role(c[k]["role"])
+                op = c[k].get("opacity", 1)
+                props.append(f"--engine-cmp-{k}-fill: " + (fill if op == 1 else f"color-mix(in srgb, {fill} {op * 100:g}%, transparent)") + ";")
+        if c["eyebrow"]:
+            props.append(f"--engine-cmp-eyebrow: {role(c['eyebrow']['color'])};")
+        L.append(f"{sel} {{\n  " + "\n  ".join(props) + "\n}")
+    return L
 
 
 def ancestors(d: Path) -> list[Path]:
