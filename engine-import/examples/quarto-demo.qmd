@@ -82,16 +82,10 @@ Or `{.alert}` -- keep these rare.
 
 ## Feature Slide {.feature background="../images/wallpaper/mesa_lab.jpg"}
 
-:::: {.columns}
-::: {.column width="55%"}
-### Blocks go translucent
+### The body on a panel
 
 `{.feature background="photo.jpg"}` on the heading. Photo slides carry no
 logo -- the brand guide forbids logos on busy photos.
-:::
-::: {.column width="40%"}
-:::
-::::
 
 # Content
 

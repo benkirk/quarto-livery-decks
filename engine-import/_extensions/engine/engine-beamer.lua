@@ -536,6 +536,31 @@ function Pandoc(doc)
         end
         out:insert(blk)
         i = i + 1
+        -- the body on the composition's panel (enginefeaturepanel), the notes outside it
+        local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
+        while i <= #blocks and not is_slide_break(blocks[i]) do
+          local b = blocks[i]
+          if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
+          i = i + 1
+        end
+        if #body > 0 then
+          -- a heading below the slide's becomes a block here, so it closes inside the panel
+          -- (pandoc's own block would run on past the panel's end)
+          out:insert(latex("\\begin{enginefeaturepanel}"))
+          local open = false
+          for _, b in ipairs(body) do
+            if b.t == "Header" and b.level > slide_level then
+              if open then out:insert(latex("\\end{block}")) end
+              out:insert(latex("\\begin{block}{" .. inlines_to_latex(b.content) .. "}"))
+              open = true
+            else
+              out:insert(b)
+            end
+          end
+          if open then out:insert(latex("\\end{block}")) end
+          out:insert(latex("\\end{enginefeaturepanel}"))
+        end
+        out:extend(notes)
       elseif has_class(blk, "closing") then
         -- move the heading into the frame body as the closing headline
         local headline = inlines_to_latex(blk.content)

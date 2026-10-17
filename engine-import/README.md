@@ -140,7 +140,7 @@ to XeLaTeX.
 | Blocks | `block`, `exampleblock`, `alertblock` | `### Title`, `### Title {.example}`, `### Title {.alert}` |
 | Emphasis | `\alert{...}` | `[text]{.alert}` |
 | Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first and before `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` | a paragraph that starts with `†` or `‡`, anywhere on a content slide |
-| Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]` | `## Title {.feature background="photo.jpg"}` |
+| Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` | `## Title {.feature background="photo.jpg"}` |
 | Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body | `## Title {.full}`, one figure, then an optional caption paragraph (below) |
 | Closing slide | `\engineclosingframe{Thank you!}{...}` | `## Thank you! {.closing}` |
 | Center or scale a short slide's body | `\begin{frame}[c]`, `\fontsize` | `## Title {.center scale="1.4"}` (below) |
