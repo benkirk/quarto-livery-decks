@@ -99,4 +99,27 @@ pptx:
   template: template.pptx
   typeface: Poppins
   fonts: fonts/pptx       # <typeface>-{regular,bold,italic,bolditalic}.fntdata, embed_fonts.py
+  size: [10, 5.625]       # the NSF NCAR template's canvas (inches; its family's too), so a slide pastes 1:1
   # scheme: the theme1.xml slots follow the roles (livery_build.py's SLOT_ROLES); set one here to override
+
+type:                     # points on that canvas, as the NSF NCAR template's guidance sets them
+  body: 12                # "body copy ... 12pts for one and two column layouts" (10 for three
+  levels: [12, 11, 10, 9, 8]   # and four: scale= or type-body), its master's ladder
+  frametitle: 20          # page titles
+  subhead: 15             # "SUBHEAD 1 Poppins Bold, 15pt"
+  table: 10               # its tables' cells
+  code: 8
+  caption: 8
+  footnote: 8
+  title: 22               # the cover: date 8, title 22, presenter name and title 12
+  subtitle: 15
+  date: 8
+  author: 12
+  institute: 12
+  section: 30             # "Interior Bold Statement"
+  sectionsubtitle: 15
+  eyebrow: 8
+  closing: 30
+  fineprint: 5            # the cover's material notes
+  pagenumber: 7
+  footer: 7               # "OPTIONAL PRESENTATION NAME"
