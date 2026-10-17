@@ -9,7 +9,7 @@
 # one static site and `publish` pushes it to a GitHub Pages branch (README
 # "Publishing the HTML decks").
 
-.PHONY: pptx html pdf all qa site publish overleaf clean distclean
+.PHONY: pptx html pdf all qa measure site publish overleaf clean distclean
 
 # Every deck in a directory shares one .quarto/ project cache.
 .NOTPARALLEL:
@@ -25,6 +25,7 @@ LINK_CAPTIONS      := $(PRESENTATIONS_ROOT)common/utils/link_captions.py
 SLIDE_LAYOUT       := $(PRESENTATIONS_ROOT)common/utils/slide_layout.py
 STYLE_TABLES       := $(PRESENTATIONS_ROOT)common/utils/style_tables.py
 DECK_QA            := $(PRESENTATIONS_ROOT)common/utils/deck_qa.py
+COMP_MEASURE       := $(PRESENTATIONS_ROOT)common/utils/comp_measure.py
 SITE_INDEX         := $(PRESENTATIONS_ROOT)common/utils/site_index.py
 SHARED_QUARTO_YML  := $(PRESENTATIONS_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(PRESENTATIONS_ROOT)common/_extensions
@@ -77,6 +78,13 @@ all:  pptx html pdf
 # sheets in _qa/ (deck_qa.py). `make qa DECKS=name` checks one deck of a directory.
 qa: all
 	python3 $(DECK_QA) $(DECKS)
+
+# The title, divider, closing and feature slides of every format against the livery's
+# compositions (comp_measure.py): _qa/measure.tsv and the contact sheet
+# _qa/compositions-<livery>.png. MEASURE_FAIL lists the formats whose deltas fail (empty: report).
+MEASURE_FAIL ?= html,pdf,pptx
+measure: all
+	python3 $(COMP_MEASURE) --fail-on "$(MEASURE_FAIL)" $(DECKS)
 
 # A pure-LaTeX project of the livery (the engine's overleaf_zip.py): the theme, the livery's
 # files and a starter, compiling with `latexmk -xelatex talk.tex` alone, or opened on Overleaf.

@@ -3,7 +3,8 @@ name: Check Every Livery
 # Renders the quickstart deck once per directory under docs/common/liveries/ with
 # `make LIVERY=<name>` (design section 5, CI), so a livery that cannot build, or
 # whose colors and typeface do not reach the pptx, fails here; then packs the
-# livery's Overleaf zip and compiles it in a clean directory. The list job turns
+# livery's Overleaf zip and compiles it in a clean directory, and measures the
+# fixtures' compositions in every format (make measure). The list job turns
 # the directory listing into the matrix, so a new livery joins by existing.
 
 on:
@@ -125,6 +126,16 @@ jobs:
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -q "${family// /}"
           ! pdffonts /tmp/overleaf/talk.pdf | grep -q HelveticaNeue
 
+      # the title, divider, closing and feature slides of every format against the livery's
+      # compositions (comp_measure.py; pptx through LibreOffice). Report-only (MEASURE_FAIL
+      # empty) until the formats draw from the boxes; the sheet and table are uploaded
+      - name: Measure the compositions
+        run: |
+          set -e   # the login shell has no -e: without it only the last line gates
+          sudo apt-get install -y -qq libreoffice-impress
+          python -m playwright install --with-deps --only-shell chromium
+          timeout 900 make -C docs/fixtures measure LIVERY="$LIVERY" MEASURE_FAIL=
+
       - name: Upload the deck
         uses: actions/upload-artifact@v4
         with:
@@ -134,5 +145,7 @@ jobs:
             docs/quickstart/quickstart.html
             docs/quickstart/quickstart.pdf
             docs/quickstart/${{ matrix.livery }}-overleaf.zip
+            docs/fixtures/_qa/measure.tsv
+            docs/fixtures/_qa/compositions-${{ matrix.livery }}.png
           if-no-files-found: error
           retention-days: 14

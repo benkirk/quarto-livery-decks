@@ -1,0 +1,10 @@
+---
+title: "Fixture: a photo under the light title"
+subtitle: "titlegraphic: with themeoptions title=light"
+author: "Parity fixture"
+date: 2026-10-16
+titlegraphic: images/example.jpg
+themeoptions: [fonts=bundled, title=light]
+---
+
+{{< include _body.qmd >}}

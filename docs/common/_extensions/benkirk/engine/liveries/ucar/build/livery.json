@@ -101,6 +101,574 @@
     }
   },
   "aspect": "16:9",
+  "compositions": {
+    "closing": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.22,
+          0.62,
+          0.66
+        ],
+        "role": "primary-text",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.09,
+          0.2222,
+          0.1
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [
+          0.18,
+          0.1
+        ],
+        "role": "secondary",
+        "shift": 0.2,
+        "style": "bands"
+      }
+    },
+    "closing-band": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.1,
+          0.62,
+          0.59
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.74,
+          0.815,
+          0.2,
+          0.09
+        ],
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": null
+    },
+    "closing-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.22,
+          0.62,
+          0.66
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.09,
+          0.2222,
+          0.1
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [],
+        "role": "secondary",
+        "shift": 0.2,
+        "style": "lines"
+      }
+    },
+    "feature": {
+      "art": null,
+      "band": null,
+      "bar": {
+        "box": [
+          0,
+          0,
+          1,
+          0.2
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0,
+          0.88,
+          0.2
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": null,
+      "fineprint": null,
+      "mark": null,
+      "panel": {
+        "box": [
+          0.06,
+          0.2556,
+          0.4576,
+          0.6667
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "photo": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "signoff": null,
+      "waves": null
+    },
+    "section": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.1333,
+          0.62,
+          0.7778
+        ],
+        "role": "primary-text",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": {
+        "color": "#011837",
+        "label": "Section"
+      },
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.08,
+          0.1777,
+          0.08
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [
+          0.18,
+          0.1
+        ],
+        "role": "secondary",
+        "shift": 0.26,
+        "style": "bands"
+      }
+    },
+    "title": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.5,
+          0.66
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.5,
+          0.1
+        ],
+        "role": "primary-text"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.2,
+          0.09
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [
+          0.18,
+          0.1
+        ],
+        "role": "secondary",
+        "shift": 0.2,
+        "style": "bands"
+      }
+    },
+    "title-band": {
+      "art": null,
+      "band": {
+        "box": [
+          0,
+          0.27,
+          1,
+          0.45
+        ],
+        "role": "primary"
+      },
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.27,
+          0.52,
+          0.45
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.738,
+          0.52,
+          0.06
+        ],
+        "role": "background"
+      },
+      "mark": {
+        "box": [
+          0.74,
+          0.815,
+          0.2,
+          0.09
+        ],
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.62,
+          0.27,
+          0.38,
+          0.45
+        ]
+      },
+      "signoff": null,
+      "waves": null
+    },
+    "title-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.5,
+          0.66
+        ],
+        "role": "foreground",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.5,
+          0.1
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.2,
+          0.09
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [],
+        "role": "secondary",
+        "shift": 0.2,
+        "style": "lines"
+      }
+    },
+    "title-photo": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.44,
+          0.66
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.44,
+          0.1
+        ],
+        "role": "primary-text"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.2,
+          0.09
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [
+          0.65
+        ],
+        "role": "secondary",
+        "shift": 0,
+        "style": "cover"
+      }
+    },
+    "title-photo-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.44,
+          0.66
+        ],
+        "role": "foreground",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.44,
+          0.1
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.2,
+          0.09
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": null,
+      "waves": {
+        "line": 0.0015,
+        "opacity": [
+          0.65
+        ],
+        "role": "secondary",
+        "shift": 0,
+        "style": "cover"
+      }
+    }
+  },
   "derived": {
     "alert-text": "#B5540A",
     "caution-fill": "#FFF9DA",
