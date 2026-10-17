@@ -24,7 +24,9 @@ The cheap ones: unknown livery keys are dropped silently; a livery change does n
 decks; nothing automated renders a title photo or `title=light`; beamer prefixes absolute art
 paths with the livery directory; a flavor drops its parent's `pptx.scheme` overrides.
 
-This refactor does 2, 3 and the cheap ones: one engine PR, then one framework PR.
+This refactor does 2, 3 and the cheap ones, and adds one feature Ben asked for afterwards: a
+livery may prefer an installed font (cu: Helvetica Neue) over its bundled stand-in. One engine
+PR, then one framework PR.
 
 ## Engine PR (beamer-livery-theme, version 3.3.0)
 
@@ -87,6 +89,40 @@ marks:                                          # nsi, for example
   `resolve()` recomputes every other slot from the flavor's own roles, so nothing changes for
   the reference liveries; nsi can then drop its restated `hlink`/`folHlink`.
 
+### D. Prefer an installed font, fall back to the bundled one
+
+For cu users who want the brand's real Helvetica Neue in HTML and PDF without anyone shipping
+its files (Monotype's font: the repo and a published site may carry it only under a license;
+cu bundles TeX Gyre Heros instead). A new `livery.yml` block names installed fonts to prefer;
+the bundled `typography.fonts` stay the fallback:
+
+```yaml
+installed-fonts:          # cu, for example
+  base: Helvetica Neue                        # the family, as fontconfig and CSS local() name it
+  headings:                                   # a face of a family, by its full and PostScript names
+    family: Helvetica Neue
+    faces: {bold: [Helvetica Neue Condensed Bold, HelveticaNeue-CondensedBold],
+            regular: [Helvetica Neue Condensed Bold, HelveticaNeue-CondensedBold]}
+```
+
+- **`livery_build.py`** validates it (C's known keys), passes it to `livery.json`, and emits:
+  - in the `.sty`, `\engine@font@installed` (the base family) and the headings face names;
+  - in the `.css`, each `@font-face` `src` with `local("<full name>"), local("<PostScript
+    name>")` ahead of the bundled `url()` (the CSS spec matches local() by full or PostScript
+    name, not by family), for the base family's four faces and the headings faces. A viewer
+    with the font installed (Macs, iPhones) sees it; anyone else gets Heros; nothing is copied.
+- **`engine_livery.sty`**: under `fonts=brand`, probe the installed family first
+  (`\IfFontExistsTF{\engine@font@installed}`) and load it with fontspec (the headings by face
+  name), else today's path (bundled copy, then an installed copy of the bundled family).
+  `fonts=bundled` keeps ignoring installed fonts, so the shared `_quarto.yml`
+  (`themeoptions: [fonts=bundled]`), CI and parity stay deterministic: a deck opts in with
+  `themeoptions: [fonts=brand]`. A PDF built that way on a Mac embeds Helvetica Neue for every
+  reader; built on Linux it falls back to Heros.
+- pptx needs nothing: its theme already names Helvetica Neue (`pptx.typeface`).
+- The licensing note goes in the README with the option: the engine never copies the font;
+  embedding an installed font in a PDF you build is the builder's licence to check (macOS's
+  terms do not cover redistributing the files, which this never does).
+
 Parity (`tools/parity.sh`): every PDF page identical; HTML differs only by the version path.
 
 ## Framework PR (quarto-livery-decks)
@@ -115,11 +151,17 @@ Parity (`tools/parity.sh`): every PDF page identical; HTML differs only by the v
    decks gain `docs/fixtures` (under `PARITY_LIVERIES`, nsi added there so the band is
    covered); `ci-build-sample.yaml` builds it under ncar. Small images only, from
    `docs/quickstart/images/`.
-6. Docs: README, CLAUDE.md (the utilities' list, the template builder's home, `marks`, the
-   prerequisites), cu's and nsi's notes, a log entry.
+6. cu adopts D: the `installed-fonts` block above in `cu/livery.yml` (nsi inherits it). cu's
+   committed outputs under `fonts=bundled` are unchanged; its `livery.css` gains the
+   `local()` sources.
+7. Docs: README (the option, how a deck opts in, the licensing note), CLAUDE.md (the
+   utilities' list, the template builder's home, `marks`, the prerequisites, installed
+   fonts), cu's notes (the open "pptx fonts" item gains the HTML and PDF side), nsi's notes,
+   a log entry.
 
 Parity (`docs/common/utils/parity.sh`, ncar, cu and nsi): pptx and PDF identical; templates
-rebuild byte-identically; HTML differs only by the version path.
+rebuild byte-identically; HTML differs only by the version path (and cu's and nsi's
+`livery.css` by the `local()` sources).
 
 ## Verification
 
@@ -129,6 +171,12 @@ rebuild byte-identically; HTML differs only by the version path.
   rebuilds a deck (`make -n` shows it); the fixture decks render in three formats; a consumer
   repo build (`ci-consumer.yaml`) still passes.
 - A deliberate unknown key in a scratch livery prints the warning.
+- Installed fonts, on a Mac: the quickstart under cu with `themeoptions: [fonts=brand]` gives
+  a PDF whose `pdffonts` lists HelveticaNeue faces (and Heros under `fonts=bundled`); in the
+  HTML, Playwright's CDP `CSS.getPlatformFontsForNode` on the title and a body paragraph
+  reports Helvetica Neue (Condensed Bold for the title), and with the `local()` names
+  misspelled on purpose it reports TeX Gyre Heros (the fallback works). CI (Linux) keeps
+  passing on the fallback.
 - Contact sheet: the fixture decks under ncar, cu and nsi (title, light title, photo title,
   closing, a divider) in pptx, HTML and PDF, sent before the framework PR.
 
