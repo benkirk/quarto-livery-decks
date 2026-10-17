@@ -110,8 +110,9 @@ screenshot recipe; it fits all three.
 
 ## Full-bleed photo {.feature background-image="images/example.jpg"}
 
-The `.feature` class makes a full-bleed photo slide: HTML and PDF put the text
-on a translucent panel; pptx builds the brand cover, the photo behind the wave band.
+The `.feature` class makes a full-bleed photo slide, in the livery's `feature.style`: the
+title on a dark bar and the text on a translucent panel (`bar`), or the title cover's field
+and waves with the photo beside them (`cover`).
 
 ## Full-slide image {.full}
 

@@ -9,14 +9,15 @@ table run at S times its inherited size. hcenter, fill: nothing (a text box cann
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
 art, pandoc's caption box centered under it in the muted color, the slide number kept.
-closing: the slide moves onto the template's Closing layout (the themes' closing slide), its
-placeholders dropping pandoc's copied frames to take the layout's; with themeoptions title=light
-(slide-layout.lua records `engine-title: light`) the title slide moves onto Title Slide (light).
-feature: the brand cover, as the title slide with a `titlegraphic:` (pandoc records it in
-docProps/custom.xml): the photo pushed to the back of the slide, cropped to cover, the livery's
-field, band and wave lines over it, the text and logo on the field (a deck without one gets the
-livery's art.titlegraphic). The band title (title.style: band) takes the deck's photo into the
-band's right part, over the layout's default. Footnote paragraphs
+closing: the slide moves onto the template's Closing layout (Closing (light) under themeoptions
+title=light, which slide-layout.lua records as `engine-title: light` and which also moves the
+title slide onto Title Slide (light); a band title ignores it), its placeholders dropping pandoc's
+copied frames to take the layout's. The title slide with a `titlegraphic:` (docProps/custom.xml;
+else the livery's art.titlegraphic) is drawn from its composition (livery.json compositions):
+the photo at the back, cropped to cover its box, the field and waves over it, the marks in their
+boxes; the band takes the photo into its box over the layout's default. feature: by the
+livery's feature.style, the photo under a dark bar with the title and the body on a panel, or the
+cover with the title and body in its column. Footnote paragraphs
 (style_footnotes.py) keep their size. Every slide also gets its layout's slide-number placeholder, which pandoc never writes
 (so decks had no numbers). Idempotent: the marker is gone after one pass, a slide that has a
 number keeps it."""
@@ -57,10 +58,8 @@ CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
 CAUTION_W    = Pt(6)
 GEOM         = LIVERY["geometry"]
 WAVES        = LIVERY.get("art", {}).get("waves")
-FIELD_TEXT   = RGBColor.from_string(livery_mod.color(LIVERY, "primary-text"))
-BAND         = LIVERY.get("title") if (LIVERY.get("title") or {}).get("style") == "band" else None
-# the feature cover's text on the field, of the slide: title (top, height, pt), rule, body
-COVER_TITLE, COVER_RULE, COVER_BODY = (0.34, 0.16, 32), 0.525, (0.55, 0.36, 18)
+BAND         = (LIVERY.get("title") or {}).get("style") == "band"
+COMP         = LIVERY["compositions"]   # the title, closing, section and feature slides as boxes
 
 
 def _take_marker(slide):
@@ -307,44 +306,61 @@ def _back_picture(slide, photo, x, y, w, h):
 
 
 def band_photo(slide, width, height, photo):
-    """The band title's photo in the band right of `split`; nothing else sits in that box."""
-    x, y = int(BAND["split"] * width), int(BAND["top"] * height)
-    _back_picture(slide, photo, x, y, width - x, int(BAND["bottom"] * height) - y).name = "Title photo"
+    """The band title's photo in its box (title-band.photo); nothing else sits there."""
+    x, y, w, h = COMP["title-band"]["photo"]["box"]
+    _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Title photo"
 
 
-def cover(slide, width, height, photo, light=False):
-    """The brand cover: the photo at the back, cropped to cover the slide, the field, band and
-    wave lines over it (pptx_waves; a straight-edged field without waves), the dark logo top left.
-    light: the white field and the light marks (Title Slide (light)). Returns the next free shape id."""
+def band_date(slide, width, height):
+    """The band's title stack is centred on its rule; the date goes just above the title's text
+    (an estimate of its height), not at the column's top, so a short title leaves no gap."""
+    title = next((sh for sh in slide.placeholders if sh.placeholder_format.type == PP_PLACEHOLDER.CENTER_TITLE), None)
+    date = next((sh for sh in slide.placeholders if sh.placeholder_format.type == PP_PLACEHOLDER.DATE), None)
+    if title is None or date is None:
+        return
+    x, y, w, h = COMP["title-band"]["column"]["box"]
+    text_top = int((y + h / 2 - 0.015) * height) - _text_height(title, slide)
+    dh = int(0.04 * height)
+    date.left, date.top, date.width, date.height = int(x * width), max(int(y * height), text_top - dh - int(0.01 * height)), int(w * width), dh
+
+
+def _role(role):
+    return RGBColor.from_string(livery_mod.color(LIVERY, role))
+
+
+def _box_picture(slide, path, box, width, height, name):
+    x, y, w, h = box
+    pic = slide.shapes.add_picture(str(path), int(x * width), int(y * height), int(w * width), int(h * height))
+    pic.name = name
+    return pic
+
+
+def draw_cover(slide, width, height, photo, comp):
+    """A composition with a photo (the title's, or the feature cover): the photo at the back,
+    cropped to cover its box, the field and waves over it (pptx_waves.comp_shapes), the mark and
+    sign-off in their boxes. Returns the next free shape id."""
     tree = slide.shapes._spTree
-    _back_picture(slide, photo, 0, 0, width, height)
+    x, y, w, h = comp["photo"]["box"]
+    _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Photo"
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
-    field = "bg1" if light else "tx2"
-    shapes = (pptx_waves.cover_shapes(WAVES["lines"], sid, width, height, field_slot=field) if WAVES
-              else pptx_waves.straight_cover_shapes(sid, width, height, field_slot=field))
+    slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]]
+    shapes = pptx_waves.comp_shapes(WAVES and WAVES["lines"], comp, sid, width, height, field_slot=slot,
+                                    line_slot=pptx_waves.ROLE_SLOT[comp["waves"]["role"]] if comp["waves"] else "accent1")
     for i, xml in enumerate(shapes):
         tree.insert(3 + i, etree.fromstring(xml))
         sid += 1
-    role = "background" if light else "primary"   # the field's role, whose marks it wears
-    if GEOM["logo"].get("corner", "top-right") != "none":   # none: no mark anywhere
-        logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, role)),
-                                        int(GEOM["margin"] * width), int(0.06 * height),
-                                        height=int(GEOM["logo"].get("title", 0.09) * height))
-        logo.name = "Logo (light)" if light else "Logo (dark)"
-    if LIVERY.get("signoff"):   # the sign-off lockup, dark, in its corner
-        so, m = LIVERY["signoff"], GEOM["margin"]
-        h = int(so["height"] * height); w = int(so["height"] * so["aspect"] * height)
-        x = int(m * width) if so["corner"] == "bottom-left" else width - int(m * width) - w
-        variant = "light" if light else "dark"
-        signoff = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, role, "signoff")), x, height - int(so["bottom"] * height) - h, height=h)
-        signoff.name = f"Sign-off ({variant})"
+    for key, kind, name in (("mark", "logo", "Logo"), ("signoff", "signoff", "Sign-off")):
+        if comp[key]:
+            _box_picture(slide, Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, comp[key]["role"], kind),
+                         comp[key]["box"], width, height, f"{name} ({comp[key]['role']})")
     return sid
 
 
 def title_cover(slide, width, height, photo):
-    """The title slide over its photo: the layout's tab and rule (hidden by the photo) are copied
-    onto the slide; its placeholders already sit on top."""
-    cover(slide, width, height, photo, light=slide.slide_layout.name == "Title Slide (light)")
+    """The title slide over its photo: its composition (title-photo, or -light on Title Slide
+    (light)); the layout's tab and rule (hidden by the photo) are copied onto the slide."""
+    light = slide.slide_layout.name == "Title Slide (light)"
+    draw_cover(slide, width, height, photo, COMP["title-photo-light" if light else "title-photo"])
     tree = slide.shapes._spTree
     for sp in slide.slide_layout.shapes:
         if sp.is_placeholder or sp.shape_type == MSO_SHAPE_TYPE.PICTURE or sp.name.startswith("Wave "):
@@ -352,33 +368,75 @@ def title_cover(slide, width, height, photo):
         tree.append(copy.deepcopy(sp._element))
 
 
-def _field_text(shape, pt):
+def _text(shape, color, pt=None):
     for p in shape.text_frame.paragraphs:
         for r in p.runs:
-            r.font.size, r.font.color.rgb = Pt(pt), FIELD_TEXT
+            r.font.color.rgb = color
+            if pt:
+                r.font.size = Pt(pt)
 
 
-def feature_cover(slide, width, height, photo):
-    """A {.feature} slide as a cover: title and body on the field, in the title slide's manner."""
-    cover(slide, width, height, photo)
+def _rect(slide, box, width, height, color, alpha=None, name=None):
+    """A filled rectangle at a box; alpha (0-1) written as <a:alpha>, which python-pptx lacks."""
+    x, y, w, h = box
+    r = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, int(x * width), int(y * height), int(w * width), int(h * height))
+    r.fill.solid(); r.fill.fore_color.rgb = color
+    if alpha is not None:
+        clr = r.fill._xPr.find(qn("a:solidFill"))[0]
+        etree.SubElement(clr, qn("a:alpha")).set("val", str(round(alpha * 100000)))
+    r.line.fill.background(); r.shadow.inherit = False
+    if name:
+        r.name = name
+    return r
+
+
+def draw_feature(slide, width, height, photo):
+    """A {.feature} slide by feature.style: bar (the photo full, the title in the column on the
+    dark bar, the body on the panel cut to its text) or cover (draw_cover, the title, rule and
+    body in the column). No master shapes either way."""
+    c = COMP["feature"]
     slide._element.set("showMasterSp", "0")
-    m, w = GEOM["margin"], 0.44
-    tab = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, int(COVER_TITLE[0] * height),
-                                 int(GEOM["tab"] * width), int(COVER_TITLE[1] * height))
-    tab.fill.solid(); tab.fill.fore_color.rgb = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))
-    tab.line.fill.background(); tab.shadow.inherit = False
-    rule = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, int(m * width), int(COVER_RULE * height),
-                                  int(0.065 * width), int(1.5 * width / 1600))
-    rule.fill.solid(); rule.fill.fore_color.rgb = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent1"))
-    rule.line.fill.background(); rule.shadow.inherit = False
-    title = slide.shapes.title
-    if title is not None:
-        _frame(title, m, COVER_TITLE[0], w, COVER_TITLE[1], width, height)
-        title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
-        _field_text(title, COVER_TITLE[2])
-    for shape in [sh for sh in slide.shapes if _is_body(sh)]:
-        _frame(shape, m, COVER_BODY[0], w, COVER_BODY[1], width, height)
-        _field_text(shape, COVER_BODY[2])
+    title, body = slide.shapes.title, [sh for sh in slide.shapes if _is_body(sh)]
+    x, y, w, h = c["column"]["box"]
+    text = _role(c["column"]["role"])
+    if c["bar"]:
+        _back_picture(slide, photo, 0, 0, width, height).name = "Photo"
+        bar = _rect(slide, c["bar"]["box"], width, height, _role(c["bar"]["role"]), c["bar"]["opacity"], "Feature bar")
+        tree = slide.shapes._spTree
+        tree.remove(bar._element); tree.insert(3, bar._element)   # over the photo, under the text
+        for sh in slide.placeholders:   # the number on the photo, white as HTML's
+            if sh.placeholder_format.type == PP_PLACEHOLDER.SLIDE_NUMBER:
+                for para in sh.text_frame.paragraphs:
+                    para.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        if title is not None:
+            _frame(title, x, y, w, h, width, height)
+            title.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE if c["column"]["anchor"] == "middle" else MSO_ANCHOR.TOP
+            _text(title, text)
+        px, py, pw, ph = c["panel"]["box"]
+        for shape in body:
+            _frame(shape, px, py, pw, ph, width, height)
+            tf = shape.text_frame
+            tf.margin_left = tf.margin_right = Pt(14); tf.margin_top = tf.margin_bottom = Pt(10)
+            est = min(int(_text_height(shape, slide) * 1.1), int(ph * height))
+            panel = _rect(slide, [px, py, pw, est / height], width, height, _role(c["panel"]["role"]), c["panel"]["opacity"], "Feature panel")
+            tree = slide.shapes._spTree
+            tree.remove(panel._element); tree.insert(list(tree).index(shape._element), panel._element)
+            shape.height = est
+            _text(shape, RGBColor(0xFF, 0xFF, 0xFF))
+    else:
+        draw_cover(slide, width, height, photo, c)
+        if c["column"]["tab"]:
+            _rect(slide, [0, y, GEOM["tab"], 0.16], width, height, RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4")), name="Title tab")
+        if c["column"]["rule"]:
+            _rect(slide, [x, y + 0.185, c["column"]["rule"][0], c["column"]["rule"][1]], width, height,
+                  RGBColor.from_string(livery_mod.scheme(LIVERY, "accent1")), name="Title rule")
+        if title is not None:
+            _frame(title, x, y, w, 0.16, width, height)
+            title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
+            _text(title, text, 32)
+        for shape in body:
+            _frame(shape, x, y + 0.21, w, h - 0.21, width, height)
+            _text(shape, text, 18)
 
 
 def add_slide_number(slide):
@@ -408,7 +466,11 @@ def main() -> int:
     prs = Presentation(str(pptx))
     w, h = prs.slide_width, prs.slide_height
     done = 0
-    if _custom_prop(prs, "engine-title") == "light" and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
+    light = _custom_prop(prs, "engine-title") == "light"
+    if light and BAND:
+        print("slide_layout: WARNING: themeoptions title=light is ignored under the livery's band title", file=sys.stderr)
+        light = False
+    if light and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
         if not use_layout(prs, prs.slides[0], "Title Slide (light)"):
             print("slide_layout: WARNING: title=light, but the template has no Title Slide (light)", file=sys.stderr)
     graphic = _title_graphic(prs, pptx.parent)
@@ -424,7 +486,7 @@ def main() -> int:
     markers = [_take_marker(slide) for slide in prs.slides]
     for slide, words in zip(prs.slides, markers):   # before numbering: the number is the new layout's
         if words and "closing" in words:
-            if use_layout(prs, slide, "Closing"):
+            if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
                 words.remove("closing")
             else:
                 print("slide_layout: WARNING: {.closing} slide, but the template has no Closing layout", file=sys.stderr)
@@ -441,7 +503,7 @@ def main() -> int:
                 print("slide_layout: WARNING: {.feature} slide without a background-image; left as it is",
                       file=sys.stderr)
             else:
-                feature_cover(slide, w, h, photo)
+                draw_feature(slide, w, h, photo)
         elif "full" in words:
             if not full_slide(slide, w, h):
                 title = slide.shapes.title
@@ -451,6 +513,8 @@ def main() -> int:
         else:
             lay_out(slide, words)
         done += 1
+    if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
+        band_date(prs.slides[0], w, h)
     prs.save(str(pptx))
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")
     return 0

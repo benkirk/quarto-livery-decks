@@ -11,7 +11,6 @@
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
 \providecommand\engine@titlestyle{dark}
-\newif\ifengine@translucent
 \@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
 
 % optional fine print under the title block, e.g. an NSF funding statement
@@ -157,20 +156,60 @@
 \setbeamertemplate{blocks}[default]
 \addtobeamertemplate{block begin}{}{\vskip-0.2ex}
 
-% blocks on photo ("feature") frames: translucent so the image shows through
+% blocks on photo ("feature") frames: dark titles over white bodies, on the panel
 \def\engine@featureblocks{%
   \setbeamercolor{block title}{fg=white,bg=BrandDark}%
   \setbeamercolor{block body}{fg=BrandDark,bg=white}%
   \setbeamercolor{block title example}{fg=BrandDark,bg=BrandSecondary}%
   \setbeamercolor{block body example}{fg=BrandDark,bg=white}%
   \setbeamercolor{block title alerted}{fg=BrandDark,bg=BrandAccent}%
-  \setbeamercolor{block body alerted}{fg=white,bg=BrandDark}%
-  \engine@translucenttrue
-}
-\def\engine@blockopacity{\ifengine@translucent\pgfsetfillopacity{0.88}\fi}
-\addtobeamertemplate{block begin}{\engine@blockopacity}{\pgfsetfillopacity{1}}
-\addtobeamertemplate{block example begin}{\engine@blockopacity}{\pgfsetfillopacity{1}}
-\addtobeamertemplate{block alerted begin}{\engine@blockopacity}{\pgfsetfillopacity{1}}
+  \setbeamercolor{block body alerted}{fg=white,bg=BrandDark}}
+
+% ---------------------------------------------------------------------------
+% feature frames: \begin{enginefeaturepanel} ... \end{enginefeaturepanel} (the Quarto filter
+% wraps the body) sets the body, once per overlay, into a box the background places on the
+% composition's panel (white text), or under the cover's title
+% ---------------------------------------------------------------------------
+\newsavebox\engine@panelbox
+\newif\ifengine@haspanel
+\newdimen\engine@panelpad \engine@panelpad=0.6em
+\def\enginefeaturepanel{\global\engine@haspaneltrue
+  \global\setbox\engine@panelbox=\vbox\bgroup
+    \ifcsname engine@c@feature@panel@w\endcsname
+      \hsize=\dimexpr\engine@c@feature@panel@w\paperwidth-3\engine@panelpad\relax\colorlet{EngineFeatureText}{white}%
+    \else
+      \hsize=\engine@c@feature@column@w\paperwidth\colorlet{EngineFeatureText}{EngineCfeatureText}%
+    \fi
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize   % blocks and lists are set this wide, not the frame's
+    \color{EngineFeatureText}\setbeamercolor{normal text}{fg=EngineFeatureText}%
+    % blocks on the panel or the field are a heading over text, as HTML's: no box of their own (a
+    % beamer block box takes the frame's margins, not the panel's width)
+    \engine@plainblock{block}{BrandSecondary}\engine@plainblock{block example}{BrandSecondary}%
+    \engine@plainblock{block alerted}{BrandAccent}%
+    \raggedright\usebeamerfont{normal text}}
+% \engine@plainblock{<block kind>}{<title color>}: that block kind as a heading over its body
+\def\engine@plainblock#1#2{%
+  \setbeamertemplate{#1 begin}{\par\vskip0.6ex{\usebeamerfont{block title}\color{#2}\insertblocktitle\par}\vskip0.3ex
+    \usebeamerfont{block body}}%
+  \setbeamertemplate{#1 end}{\par\vskip0.6ex}}
+\def\endenginefeaturepanel{\par\egroup}
+% the bar's title, centred on it: the frame title and subtitle
+\def\engine@featuretitle{\vbox{\hsize=\engine@bw \raggedright
+  {\usebeamerfont{frametitle}\insertframetitle\par}%
+  \ifx\insertframesubtitle\@empty\else
+    \vskip0.3ex{\usebeamerfont{framesubtitle}\color{BrandSecondary}\insertframesubtitle\par}\fi}}
+% the cover's stack: the title with its tab, the subtitle, the rule, then the body
+\def\engine@featurestack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    {\usebeamerfont{frametitle}\insertframetitle\par}%
+    \ifx\insertframesubtitle\@empty\else
+      \vskip0.5ex{\usebeamerfont{framesubtitle}\insertframesubtitle\par}\fi}%
+  \vbox{\hsize=\engine@bw \raggedright
+    \engine@ctab\@tempboxa
+    \engine@ifc{column@rule@w}{\vskip0.03\paperheight
+      {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
+        height\engine@cv{column@rule@h}\paperheight}\par}{}%
+    \ifengine@haspanel\vskip0.03\paperheight\copy\engine@panelbox\global\engine@haspanelfalse\fi}}
 
 % ---------------------------------------------------------------------------
 % slide footnotes: asides at the foot of a frame, under a short muted rule,

@@ -40,10 +40,11 @@ CHROME_PH = {"dt", "ftr", "sldNum"}  # date, footer, slide number — ignore
 LIVERY = livery_mod.load()
 GEOM = LIVERY["geometry"]
 PX = 7620
-BLOCK_TOP = round(GEOM["divider"]["top"] * 900)          # the divider block's band: padding
-BLOCK_BOTTOM = 900 - round(GEOM["divider"]["bottom"] * 900)   # above and below (120 ... 820 px)
+COLUMN = LIVERY["compositions"]["section"]["column"]   # the divider's text column (compositions)
+BLOCK_TOP = round(COLUMN["box"][1] * 900)                 # the block is centred between its top
+BLOCK_BOTTOM = round((COLUMN["box"][1] + COLUMN["box"][3]) * 900)   # and bottom (120 ... 820 px)
 TAB_W = round(GEOM["tab"] * 1600)           # the divider's tab, geometry.tab of the width
-TAB = LIVERY["divider"].get("tab", True)
+TAB = COLUMN["tab"]
 LABEL = LIVERY["divider"]["label"]          # "Section"; cap="all" sets it in capitals
 LABEL_PT, LABEL_GAP = 12, 10                # 0.7em, margin-bottom 0.5em
 BODY_GAP = 22                               # .ncar-subtitle margin-top 0.7em

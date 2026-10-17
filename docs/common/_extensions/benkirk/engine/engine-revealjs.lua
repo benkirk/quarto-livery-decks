@@ -611,8 +611,19 @@ function Pandoc(doc)
       if not blk.attributes["data-background-color"] and not blk.attributes["background-color"] then
         blk.attributes["data-background-color"] = c.dark
       end
+      -- feature.style: the bar (and the body on its panel), or the cover (the field and waves over
+      -- the photo, the title and body in the column)
+      local fimg
+      if not comps.feature.panel then   -- the cover: the photo into its box, not reveal's full-bleed background
+        blk.classes:insert("engine-feature-cover")
+        for _, k in ipairs({ "background-image", "background", "data-background-image" }) do
+          if blk.attributes[k] then fimg = fimg or blk.attributes[k]; blk.attributes[k] = nil end
+        end
+      end
       out:insert(blk)
       if comps.feature.bar then out:insert(html('<div class="engine-feature-bar"></div>')) end
+      local fart = comp_art(comps.feature, r, fimg and photo_img(fimg))
+      if fart ~= "" then out:insert(html(fart)) end
       i = i + 1
       local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do

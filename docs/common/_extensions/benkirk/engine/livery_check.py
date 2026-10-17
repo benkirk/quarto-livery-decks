@@ -71,7 +71,7 @@ def check_template(r, livery, d):
         missing = [l for l in LAYOUTS if l not in found]
         r.check(not missing, "the seven layouts pandoc looks up by name", f"missing {missing}")
         extra = [l for l in EXTRA_LAYOUTS if l not in found]
-        r.check(not extra, "Closing and Title Slide (light), for slide_layout.py", f"missing {extra}: rerun livery_template.py")
+        r.check(not extra, "Closing, Title Slide (light) and Closing (light), for slide_layout.py", f"missing {extra}: rerun livery_template.py")
         if "Title Slide" in found:
             types = set(re.findall(r'<p:ph [^>]*type="([^"]+)"', found["Title Slide"]))
             r.check(TITLE_PH <= types, "Title Slide has ctrTitle, subTitle, dt, ftr, sldNum", f"missing {sorted(TITLE_PH - types)}")
