@@ -54,7 +54,7 @@
   --engine-pagenumber-right: 50px;
   --engine-signoff-display: block;
   --engine-signoff-h: 45px;
-  --engine-signoff-w: 288.6px;
+  --engine-signoff-w: 284.3px;
   --engine-signoff-bottom: 27px;
   --engine-signoff-left: var(--engine-margin);
   --engine-signoff-right: auto;
@@ -72,7 +72,7 @@
   --engine-band-logo-left: auto;
   --engine-band-logo-right: var(--engine-margin);
   --engine-band-signoff-h: 99px;
-  --engine-band-signoff-w: 634.9px;
+  --engine-band-signoff-w: 625.4px;
 }
 html:root {
   --mermaid-bg-color: var(--engine-background);
