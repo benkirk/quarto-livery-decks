@@ -73,6 +73,12 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `SITE_NOINDEX=1` marks every page noindex) and `make publish` force-pushes it
   as the one commit on `PUBLISH_BRANCH` (gh-pages) under `PUBLISH_PREFIX`.
   README "Publishing the HTML decks".
+- **Overleaf**: `make overleaf LIVERY=<name>` (any deck directory; `LIVERY_DIR=` for a consumer's
+  own livery) writes `<name>-overleaf.zip` with the engine's `overleaf_zip.py`: the theme's `.sty`,
+  the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
+  `latexmkrc` and a starter on `livery=liveries/<name>, fonts=bundled`; it compiles with
+  `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
+  on a `v*` tag (cut by hand, asked first: the README's Overleaf links serve `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, or `‡` for a second): the
   theme (>= 2.4.0) lifts every one on a slide, columns included, to the slide's
   foot in HTML and PDF, under a short muted rule with the marker in the accent
@@ -363,8 +369,10 @@ bit while building it:
 `docs/common/liveries/` (build freshness, the files the data names, the
 template's pandoc compliance and that it rebuilds byte-identically from the
 data, contrast warnings), then renders the quickstart deck under it with
-`LIVERY=<name>` and checks the livery reached the pptx (a new livery joins the
-matrix by existing). Notes:
+`LIVERY=<name>` and checks the livery reached the pptx, then (on an apt TeX
+Live, as the engine's CI) the PDF and the livery's Overleaf zip compiled in a
+clean directory with TeX's paths unset, `pdffonts` showing its bundled family
+(a new livery joins the matrix by existing). Notes:
 login-shell default (`bash -el`) is required for conda activation, and
 because of it a `run:` script must not end with `exit N` (in a login shell
 `exit` runs `~/.bash_logout`, which returns 1 on the runner and overrides

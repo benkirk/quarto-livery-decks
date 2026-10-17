@@ -226,9 +226,7 @@ which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
 - **You need TeX with XeLaTeX.** Quarto's own TinyTeX (`quarto install
   tinytex`) works and installs missing LaTeX packages on the fly. So does a
   system TeX Live. (Plain-LaTeX decks, not Quarto ones, can also be written
-  on Overleaf: the theme README's
-  [Overleaf section](https://github.com/benkirk/beamer-livery-theme#overleaf)
-  has a one-click link.)
+  on Overleaf: see "LaTeX and Overleaf" below.)
 - **No fonts to install.** The theme bundles Poppins and the official logo
   lockups.
 - **Theme options** go in a deck's front matter:
@@ -263,6 +261,33 @@ which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
   which matches the pptx template's text density. Add `{.shrink}` to a dense
   slide's heading to scale that one slide down; pptx ignores the class.
 - **To update the theme:** `cd docs/common && quarto update benkirk/beamer-livery-theme`.
+
+### LaTeX and Overleaf
+
+Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop. Each
+release of this repo carries one project zip per livery: the theme's `.sty`, the
+livery's fonts, logos and art, a `latexmkrc`, and a starter `talk.tex` on
+`\usetheme[livery=liveries/<name>, fonts=bundled]{Engine}`. One click opens it
+as a new Overleaf project (set the compiler to XeLaTeX if it asks):
+
+| livery | | |
+|---|---|---|
+| `ncar` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip&engine=xelatex) | [ncar-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip) |
+| `cu` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip&engine=xelatex) | [cu-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip) |
+| `nsi` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip&engine=xelatex) | [nsi-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip) |
+
+The same zip, unzipped, is the local path: `latexmk -xelatex talk.tex` builds it
+with nothing but XeLaTeX. To pack one yourself (or a livery of your own, in a repo
+that uses this framework): `make overleaf LIVERY=cu` in any deck directory writes
+`cu-overleaf.zip`, with the engine's `overleaf_zip.py`. The starter always uses the
+bundled fonts: a livery that prefers an installed face (`installed-fonts`) would
+probe the system by name, which is too slow for a free Overleaf compile. The
+engine's own reference liveries (ucar, ucp, ncar-ucar) have their link in the
+[theme README](https://github.com/benkirk/beamer-livery-theme#overleaf).
+
+The zips are attached by `release.yml` when a `v*` tag is pushed, by hand after a
+livery change; CI (`ci-liveries.yaml`) compiles each livery's zip in a clean
+directory on every push.
 
 ### HTML (revealjs)
 
