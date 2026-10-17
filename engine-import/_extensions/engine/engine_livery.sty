@@ -323,7 +323,7 @@
   \@ifpackageloaded{listings}{%
     \lstdefinestyle{engine}{
       backgroundcolor=\color{BrandSurface},
-      basicstyle=\footnotesize\ttfamily\color{BrandDark},
+      basicstyle=\ifdefined\engine@fs\engine@fs{code}\else\footnotesize\fi\ttfamily\color{BrandDark},
       keywordstyle=\color{BrandPrimaryContrast}\bfseries,
       commentstyle=\color{BrandText!55}\itshape,
       stringstyle=\color{BrandHighlight},

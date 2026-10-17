@@ -48,6 +48,13 @@ def derived(livery: dict, key: str) -> str:
     return livery["derived"][key].lstrip("#").upper()
 
 
+def type_pt(livery: dict, role: str, height_pt: float = 540) -> float:
+    """A text role's size in points on a slide height_pt tall (the pptx's 7.5 in): livery.json
+    type, the body's fraction of the height times the role's ratio (livery_build.py TYPE)."""
+    t = livery["type"]
+    return t["body"] * height_pt * t["roles"][role]["size"]
+
+
 def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False) -> Path:
     """The TTF of one face of a brand.yml font family, resolved against the livery directory."""
     for font in livery["typography"]["fonts"]:
