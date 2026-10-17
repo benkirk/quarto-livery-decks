@@ -2,7 +2,8 @@ name: Check Every Livery
 
 # Renders the quickstart deck once per directory under docs/common/liveries/ with
 # `make LIVERY=<name>` (design section 5, CI), so a livery that cannot build, or
-# whose colors and typeface do not reach the pptx, fails here. The list job turns
+# whose colors and typeface do not reach the pptx, fails here; then packs the
+# livery's Overleaf zip and compiles it in a clean directory. The list job turns
 # the directory listing into the matrix, so a new livery joins by existing.
 
 on:
@@ -101,6 +102,29 @@ jobs:
           unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "typeface=\"$typeface\""
           grep -q 'livery.css' quickstart.html
 
+      # a full TeX Live (the engine's CI uses the same list): quarto's PDF, and the
+      # zip's bare latexmk, which cannot install packages the way TinyTeX does
+      - name: Install TeX Live (XeLaTeX)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq latexmk texlive-xetex texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended texlive-fonts-extra lmodern fonts-lmodern fonts-texgyre-math poppler-utils
+
+      - name: Build the PDF with LIVERY=${{ matrix.livery }}
+        run: timeout 600 make -C docs/quickstart pdf LIVERY="$LIVERY"
+
+      # the zip unpacked flat, no TEXINPUTS/TTFONTS: its latexmkrc alone must find the
+      # theme, the livery's logos and its bundled fonts (never an installed one)
+      - name: Pack and compile the Overleaf project
+        run: |
+          set -e   # the login shell has no -e: without it only the last line gates
+          make -C docs/quickstart overleaf LIVERY="$LIVERY"
+          rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q "docs/quickstart/$LIVERY-overleaf.zip" -d /tmp/overleaf
+          (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex)
+          family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "docs/common/liveries/$LIVERY/build/livery.json")
+          pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -q "${family// /}"
+          ! pdffonts /tmp/overleaf/talk.pdf | grep -q HelveticaNeue
+
       - name: Upload the deck
         uses: actions/upload-artifact@v4
         with:
@@ -108,5 +132,7 @@ jobs:
           path: |
             docs/quickstart/quickstart.pptx
             docs/quickstart/quickstart.html
+            docs/quickstart/quickstart.pdf
+            docs/quickstart/${{ matrix.livery }}-overleaf.zip
           if-no-files-found: error
           retention-days: 14

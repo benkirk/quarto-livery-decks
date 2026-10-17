@@ -1,0 +1,32 @@
+# Pushing a tag v* publishes a GitHub Release carrying one Overleaf/pure-LaTeX project zip
+# per livery under docs/common/liveries/, at the stable URLs the README links:
+#   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-overleaf.zip
+# Tags are cut by hand after a livery change (README "LaTeX and Overleaf").
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # make overleaf needs only python3 and the vendored engine (no conda, no quarto)
+      - name: Build one zip per livery
+        run: |
+          for d in docs/common/liveries/*/; do
+            make -C docs/quickstart overleaf LIVERY="$(basename "$d")"
+          done
+          ls -l docs/quickstart/*-overleaf.zip
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" docs/quickstart/*-overleaf.zip --title "$GITHUB_REF_NAME" --generate-notes

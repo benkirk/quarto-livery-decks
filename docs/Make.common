@@ -9,7 +9,7 @@
 # one static site and `publish` pushes it to a GitHub Pages branch (README
 # "Publishing the HTML decks").
 
-.PHONY: pptx html pdf all qa site publish clean distclean
+.PHONY: pptx html pdf all qa site publish overleaf clean distclean
 
 # Every deck in a directory shares one .quarto/ project cache.
 .NOTPARALLEL:
@@ -29,6 +29,7 @@ SITE_INDEX         := $(PRESENTATIONS_ROOT)common/utils/site_index.py
 SHARED_QUARTO_YML  := $(PRESENTATIONS_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(PRESENTATIONS_ROOT)common/_extensions
 SHARED_COMMON      := $(PRESENTATIONS_ROOT)common
+OVERLEAF_ZIP       := $(PRESENTATIONS_ROOT)common/_extensions/benkirk/engine/overleaf_zip.py
 
 # The brand: a directory under common/liveries/ (docs/design/engine-and-liveries.md,
 # section 4). `make LIVERY=cu` switches it; LIVERY_DIR is exported for the post-render
@@ -70,6 +71,13 @@ all:  pptx html pdf
 # sheets in _qa/ (deck_qa.py). `make qa DECKS=name` checks one deck of a directory.
 qa: all
 	python3 $(DECK_QA) $(DECKS)
+
+# A pure-LaTeX project of the livery (the engine's overleaf_zip.py): the theme, the livery's
+# files and a starter, compiling with `latexmk -xelatex talk.tex` alone, or opened on Overleaf.
+# release.yml attaches one per livery to a GitHub Release; a consumer repo's own livery too
+# (`make overleaf LIVERY_DIR=path/to/livery`).
+overleaf:
+	python3 $(OVERLEAF_ZIP) $(LIVERY_DIR) -o $(LIVERY)-overleaf.zip
 
 # One static site of the HTML decks, servable as is (`python3 -m http.server -d _site`).
 # Every deck's <deck>_files/libs/ is a subset of one union, so the site keeps a single
@@ -189,7 +197,7 @@ $(OUT).pdf: $(QFILE) $(DEPS) | _livery
 endif
 
 clean:
-	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery
+	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip
 	rm -rf $(DECKS:=_files) $(SITE)
 
 distclean:
