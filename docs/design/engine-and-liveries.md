@@ -362,6 +362,22 @@ section 5, to be done before the next new composition (`refactor-handoff.md`, la
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, the docs handoff done.** Engine 3.4.0: `overleaf_zip.py <livery> -o <zip>
+  [--starter] [--photo]` packs any livery with the theme's `.sty`, `build/livery.sty`, every
+  file LaTeX reads (fonts of any extension, the `.pdf` of a logo over its bitmap, the art, a
+  flavor's parent files beside it) and a brand-neutral starter (`talk.tex` moved into the
+  extension so a vendored engine has it) on `livery=liveries/<name>, fonts=bundled`; the
+  engine's `make overleaf` uses it for ncar, its CI compiles ucp's too, and v3.4.0 is the
+  engine's first 3.x release (its Overleaf link had served 2.3.1). Here: `make overleaf
+  LIVERY=<name>`, `release.yml` attaching one zip per livery on a `v*` tag (v1.0.0 cut; tags
+  are re-cut, not bumped, for backwards-compatible additions during the sprint),
+  `ci-liveries.yaml` building the PDF and compiling each zip on an apt TeX Live, the README's
+  per-livery Overleaf links. Both READMEs rewritten for liveries at about their length (the
+  engine's with ncar | cu previews of the starter and a Liveries section, its design copy a
+  pointer here; this one with the livery gallery, `make gallery`), the engine CLAUDE.md
+  opening a list by area. Found on the way: a sub-make kept the exported `LIVERY_DIR` over its
+  own `LIVERY=` (fixed: command-line `LIVERY` overrides). Next: the GitHub About text (Ben
+  approves it), the Overleaf smoke test through Playwright, then NASA.
 - **2026-10-17** Both READMEs still describe the single-brand world (the engine's is titled
   "NSF NCAR / UCAR Beamer Template", the framework's opens "NCAR-branded"), and a LaTeX user
   gets only the engine's reference liveries: the Overleaf zip packs `.ttf` fonts and PDF logos

@@ -133,7 +133,8 @@ def main():
     from PIL import Image
     os.makedirs(OUT, exist_ok=True)
     for old in glob.glob(os.path.join(OUT, "*.png")):
-        os.remove(old)
+        if os.path.basename(old) != "liveries.png":   # gallery.py's, built under every livery
+            os.remove(old)
     with tempfile.TemporaryDirectory() as tmp:
         shots = html_shots(tmp)
         for name, _ in SLIDES:

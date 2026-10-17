@@ -36,6 +36,12 @@ OVERLEAF_ZIP       := $(PRESENTATIONS_ROOT)common/_extensions/benkirk/engine/ove
 # scripts, which read $(LIVERY_DIR)/build/livery.json through utils/livery.py.
 LIVERY     ?= ncar
 LIVERY_DIR ?= $(SHARED_COMMON)/liveries/$(LIVERY)
+# A sub-make inherits the exported LIVERY_DIR, which `?=` would keep: an explicit
+# LIVERY= on its command line must win (gallery.py's `make html LIVERY=cu` once
+# stamped cu and linked ncar).
+ifeq ($(origin LIVERY),command line)
+override LIVERY_DIR := $(SHARED_COMMON)/liveries/$(LIVERY)
+endif
 export LIVERY_DIR
 
 OUT   ?= $(notdir $(CURDIR))

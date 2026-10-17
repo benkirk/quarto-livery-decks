@@ -45,7 +45,9 @@ layout, template constraints, and font embedding.
 - **README images** are `docs/quickstart/screenshots/*.png`, committed. After
   editing the quickstart deck run `make screenshots` there, look at them, and
   commit them. Slides are found by title (`SLIDES` in `screenshots.py`), so a
-  renamed slide needs that list updated. Where the MathJax CDN is blocked, set
+  renamed slide needs that list updated. `make gallery` (`gallery.py`) writes
+  `liveries.png`, the deck under every livery (title, divider, content, closing),
+  rebuilding the HTML per `LIVERY`; `screenshots.py` leaves that file alone. Where the MathJax CDN is blocked, set
   `MATHJAX` to a local MathJax 2.7 (the npm tarball from registry.npmjs.org),
   or the equations shoot as raw TeX.
 
@@ -188,6 +190,9 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   before rendering: that dependency is named for the engine version, and quarto keeps a
   copied file newer than its source, so a livery switch kept the old livery's css. A file included from anywhere else (e.g. `../other_deck/_x.qmd`) is invisible
   to make; `touch <deck>.qmd` after editing one.
+- **`LIVERY=` on the command line always wins**: `Make.common` exports `LIVERY_DIR`, which
+  a sub-make would otherwise keep (`?=`) over its own `LIVERY=cu` (the gallery once stamped
+  cu and linked ncar); `override LIVERY_DIR` when `LIVERY` is command-line.
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
   cache, so `Make.common` is `.NOTPARALLEL`. `docs/fixtures/` is such a directory:
