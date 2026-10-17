@@ -343,7 +343,7 @@ Quarto's [brand.yml](https://quarto.org/docs/authoring/brand.html) form),
 `livery.yml` (everything else), `fonts/`, `logos/`, optionally `art/`, a
 `template.pptx` for the framework's PowerPoint output, and `build/`, which
 `livery_build.py` generates from the two yml files and which is committed:
-`livery.json` (the resolved truth every tool reads), `livery.sty` (what
+`livery.json` (the resolved truth every tool reads, its `compositions` among it), `livery.sty` (what
 `\usetheme[livery=...]` inputs), `livery.css` (the HTML deck's colors, fonts and
 logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 
@@ -354,11 +354,22 @@ logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 | `signoff` | a second lockup at the foot of every slide (light and dark images, aspect, height, bottom, corner) |
 | `marks` | which mark and sign-off each field wears, by role: content slides `background`, covers and dividers `primary`, the band title `title.field` |
 | `title` | the title slide's composition: `style: cover` (the default: the text beside the photo or the waves) or `style: band` (a band across a field, the text left of `split`, the photo right of it, the marks in the strip below) |
+| `feature` | `style: bar` (the default: the photo under a dark bar holding the title, the body on a translucent panel) or `style: cover` (the title cover's field, waves and mark, the photo in its right part) |
+| `compositions` | overrides of the slide compositions' boxes (below), e.g. `title: {column: {box: [0.06, 0.375, 0.50, 0.485]}}` |
 | `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none |
 | `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it (below) |
 | `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`nsi` extends `cu`; `ucar` extends `ncar`) |
 | `pptx` | the framework's template: its typeface, font blobs and color scheme |
 | `latex`, `css` | named palette colors for LaTeX, and `overrides/livery-extra.{sty,css}` for anything the knobs don't cover |
+
+**Compositions.** The title (cover, with a photo, light, both, the band), closing (and light,
+band), section and feature slides are boxes in `build/livery.json`'s `compositions`: per
+composition its field, art, photo, band, waves, bar, panel, mark, sign-off, text column,
+fineprint and eyebrow, each `[x, y, w, h]` in fractions of the slide (y down) with its role,
+derived from the knobs above. beamer, the HTML theme and the template builder each draw them
+with one drawer, so the formats agree; `tools/test_compositions.py` checks the numbers and the
+framework's `make measure` the drawn slides. Type sizes are fractions of the slide height too
+(`livery.json` `type`, the HTML theme's), so a slide's text fits and overflows alike in every format.
 
 The tools, all in `_extensions/engine/`:
 

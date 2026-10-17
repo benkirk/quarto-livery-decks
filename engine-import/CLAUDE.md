@@ -43,6 +43,24 @@ engine does today, by area:
   `art.closing` or the title's art, and the strip's images; CU NSI uses it). `title=light`
   follows the brand's own light cover (UCAR Communications' template, slide 4): white
   field, text in the foreground role, the wave lines alone.
+- **Compositions** (3.5.0): `livery_build.py compositions()` writes the title (`title`,
+  `title-photo`, `title-light`, `title-photo-light`, `title-band`), closing (`closing`,
+  `closing-light`, `closing-band`), `section` and `feature` slides into `livery.json` as boxes
+  (`[x, y, w, h]` slide fractions, y down; every key present, null when absent), derived from the
+  knobs; `livery.yml` `compositions:` overrides (one on `title` reaches its variants) and
+  `feature.style` (bar | cover) picks the feature look. One drawer per format: beamer
+  `\engine@drawcomp` (`\engine@c@<comp>@<key>@*` macros), revealjs the `--engine-cmp-*`
+  properties per composition selector and `comp_art()`, the template builder `field_layout()`
+  (with `pptx_waves.comp_shapes`). `tools/test_compositions.py` (CI) restates 3.4.0's HTML numbers
+  and the decided changes (`EXPECTED_DELTAS`); a changed box is named there or fails.
+- **Type** (3.5.0): `livery_build.py` `TYPE`, the body as a fraction of the slide height (0.0311:
+  HTML's 28 px of 900, the brand template's 12 pt of 405) and each text role's size and leading
+  as a ratio to it (HTML's em sizes), in `livery.json` `type` and `\engine@type@*`. beamer
+  rescales LaTeX's size commands onto it (whatever the class's size option) and sets each font
+  role, code, tables and list spacing from it; the template builder derives the master's ladder
+  and the placeholders' sizes; `livery.type_pt()` gives a role in points. So text sits as large
+  on the slide in every format, and they fit and overflow alike. HTML is the reference: change a
+  size there and in `TYPE` together.
 - **Marks by field** (3.3.0): `marks: {<role>: {logo, signoff}}`; content slides wear
   `background`'s, dividers, the cover title, closing and feature covers `primary`'s, the band
   title and closing `title.field`'s. `livery_build.py` writes `marks` for every livery
@@ -90,7 +108,7 @@ serve the repo root) and diffing the pixels above the progress bar.
 examples, the Overleaf zip (unpacked flat, no `TEXINPUTS`) and the HTML decks,
 and checks Poppins is embedded and the math font is the serif one. Before the
 builds it runs `livery_build.py --check` and `livery_check.py` on every reference
-livery (pyyaml and Pillow). The runner's
+livery (pyyaml and Pillow), and `tools/test_compositions.py`. The runner's
 system Chrome can wedge quarto's mermaid handshake: keep the
 `chrome-headless-shell` install step.
 
