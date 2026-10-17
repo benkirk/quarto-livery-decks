@@ -713,7 +713,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
     # (an em factor, so {.smaller}, scale= and the autofit script carry it), the list levels as each
     # one's ratio to the level above it (nested lists are em-relative too)
     ty = livery["type"]
-    tpx = lambda pt: f"{round(pt / ty['canvas']['h'] * H, 2):g}px"
+    # (the deck's size step, --engine-type-scale from engine-revealjs.lua, multiplies the px ones)
+    tpx = lambda pt: f"calc({round(pt / ty['canvas']['h'] * H, 2):g}px * var(--engine-type-scale, 1))"
     props.append(f"--engine-type-body: {tpx(ty['roles']['body']['pt'])};")
     for k in ("frametitle", "pagenumber", "footer"):   # fixed px: not shrunk with the body
         props.append(f"--engine-type-{k}: {tpx(ty['roles'][k]['pt'])};")

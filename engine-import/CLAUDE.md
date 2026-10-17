@@ -68,6 +68,10 @@ engine does today, by area:
   `self.sz(role)` and the canvas (`W_EMU`/`H_EMU` set per Builder; indents and insets scale with
   it); `livery.type_pt()` a role in points, `canvas_scale()`, `half_pt()`.
   `tools/test_type.py` (CI) checks the rules and that every template size is a role's.
+  A deck's size step (3.7.0): `type-body: <pt>` (over the livery's body) or `type-scale:`
+  (`deck_type_scale()` in both Lua filters): beamer gets theme option `typescale=` (scales
+  `\engine@typebody` before the ladder is set), HTML `--engine-type-scale` on `:root`, which
+  `livery.css`'s px sizes multiply; the framework's `type_step.py` does the pptx.
 - **Marks by field** (3.3.0): `marks: {<role>: {logo, signoff}}`; content slides wear
   `background`'s, dividers, the cover title, closing and feature covers `primary`'s, the band
   title and closing `title.field`'s. `livery_build.py` writes `marks` for every livery
