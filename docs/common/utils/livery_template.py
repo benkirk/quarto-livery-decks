@@ -13,7 +13,8 @@ carries the title with its accent tab and hairline rule, the lockup top right, t
 lines and the body-size ladder; the seven layouts
 pandoc looks up by name are generated (Title Slide, Title and Content, Section Header, Two
 Content, Comparison, Content with Caption, Blank), the Title Slide with its five
-placeholders. Fonts are embedded later by embed_fonts.py; a deck's title photo by slide_layout.py.
+placeholders, then two pandoc never picks (it uses only those names) and slide_layout.py
+points slides at: Closing (the HTML/PDF closing slide) and Title Slide (light). Fonts are embedded later by embed_fonts.py; a deck's title photo by slide_layout.py.
 Rewrites in place with fixed zip timestamps, so an unchanged rebuild is byte-identical.
 """
 
@@ -45,7 +46,10 @@ LAYOUTS = ["Title Slide", "Title and Content", "Section Header", "Two Content", 
 ROLE_SLOT = {"primary": "tx2", "dark": "accent3", "background": "bg1", "foreground": "tx1", "surface": "bg2",
              "secondary": "accent1", "highlight": "accent2", "accent": "accent4", "warning": "accent5",
              "primary-contrast": "accent6"}
-LAYOUT_TYPES = {"Title Slide": "title", "Title and Content": "obj", "Section Header": "secHead",
+# carried into every deck by pandoc untouched; slide_layout.py re-points slides at them
+EXTRA_LAYOUTS = ["Closing", "Title Slide (light)"]
+ALL_LAYOUTS = LAYOUTS + EXTRA_LAYOUTS
+LAYOUT_TYPES = {"Closing": "obj", "Title Slide (light)": "title", "Title Slide": "title", "Title and Content": "obj", "Section Header": "secHead",
                 "Two Content": "twoObj", "Comparison": "twoTxTwoObj", "Content with Caption": "objTx", "Blank": "blank"}
 
 
@@ -79,7 +83,7 @@ class Builder:
         self.heading_typeface = livery["pptx"].get("heading-typeface", self.typeface)
         art = livery.get("art") or {}
         self.waves = art.get("waves")
-        self.art = {k: art[k] for k in ("title", "section", "content") if isinstance(art.get(k), str)}
+        self.art = {k: art[k] for k in ("title", "section", "content", "closing") if isinstance(art.get(k), str)}
         self.signoff = livery.get("signoff")
         title = livery.get("title") or {}
         self.band = title if title.get("style") == "band" else None
@@ -166,6 +170,10 @@ class Builder:
         crop = f'<a:srcRect l="{lr}" t="{tb}" r="{lr}" b="{tb}"/>' if lr or tb else ""
         return self.pic(rid, name, x, y, w, h).replace('<a:stretch>', crop + '<a:stretch>')
 
+    def closing_art(self):
+        """The art kind the closing slide wears: art.closing, else (band) the title's, else None."""
+        return "closing" if "closing" in self.art else "title" if self.band and "title" in self.art else None
+
     def art_pic(self, rid, kind):
         """A full-slide picture under everything, or '' when the livery has no art.<kind>."""
         return self.pic(rid, f"Art ({kind})", 0, 0, 1, 1) if kind in self.art else ""
@@ -222,7 +230,7 @@ class Builder:
                 f'</a:xfrm></p:grpSpPr>{shapes}</p:spTree></p:cSld>'
                 f'<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" '
                 f'accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>'
-                f'<p:sldLayoutIdLst>' + "".join(f'<p:sldLayoutId id="{2147483649 + i}" r:id="rId{10 + i}"/>' for i in range(len(LAYOUTS))) +
+                f'<p:sldLayoutIdLst>' + "".join(f'<p:sldLayoutId id="{2147483649 + i}" r:id="rId{10 + i}"/>' for i in range(len(ALL_LAYOUTS))) +
                 f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="l" defTabSz="457200" rtl="0" eaLnBrk="1" '
                 f'latinLnBrk="0" hangingPunct="1"><a:spcBef><a:spcPct val="0"/></a:spcBef><a:buNone/>'
                 f'<a:defRPr sz="2800" b="1" kern="1200" baseline="0">{fill("tx1")}<a:latin typeface="+mj-lt"/>'
@@ -239,11 +247,55 @@ class Builder:
                 f'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/>'
                 f'</a:xfrm></p:grpSpPr>{"".join(shapes)}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>')
 
-    def field_text(self, pt, bold=False, caps=False):
-        """A lstStyle for text on the brand field, in the primary-text role."""
+    def field_text(self, pt, bold=False, caps=False, role="primary-text"):
+        """A lstStyle for text on the brand field, in the primary-text role (or another)."""
         return (f'<a:lvl1pPr algn="l" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
                 f'<a:defRPr sz="{pt * 100}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
-                f'{srgb(self.roles["primary-text"])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
+                f'{srgb(self.roles[role])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
+
+    def band_strip(self):
+        """The band's mark and sign-off, centred in the strip under the band (rId2, rId3)."""
+        t, g, m = self.band, self.geom, self.geom["margin"]
+        mid, right, shapes = (1 + t["bottom"]) / 2, True, []
+        if self.signoff and "signoff" in t:
+            h = t["signoff-height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
+            right = self.signoff["corner"] == "bottom-left"
+            shapes.append(self.pic("rId3", "Sign-off (band)", m if right else 1 - m - w, mid - h / 2, w, h))
+        if self.logo_corner != "none":
+            h = t["logo-height"]; w = h * g["logo"]["aspect"] * H_EMU / W_EMU
+            shapes.append(self.pic("rId2", "Logo (band)", 1 - m - w if right else m, mid - h / 2, w, h))
+        return shapes
+
+    def closing(self):
+        """The closing slide as the themes draw it: the title's field (the band's field under the
+        band), its art, the field mark top left (the band's strip), the headline with its tab and
+        the body on the field; title and body match Title and Content's placeholders."""
+        g, m, band = self.geom, self.geom["margin"], self.band
+        role = band["field-text"] if band else "primary-text"
+        kind = self.closing_art()
+        shapes = [self.pic("rId4", f"Art ({kind})", 0, 0, 1, 1)] if kind else []
+        if band:
+            shapes += self.band_strip()
+        else:
+            shapes += self.wave_shapes(self.waves["shift"]["title"], "accent1") if self.waves else []
+            if self.logo_corner != "none":
+                shapes.append(self.logo("rId2", "dark", m, 0.09, g["logo"].get("closing", 0.10)))
+            shapes.append(self.signoff_pic("rId3", "dark"))
+        top, h = 0.30, 0.16
+        shapes.append(self.rect("Title tab", 0, top + h - 0.09, g["tab"], 0.075, "accent4"))
+        shapes.append(self.ph("Title 1", "title", None, xfrm(m, top, 0.62, h),
+                              'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>'
+                              f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="4400" b="1">{srgb(self.roles[role])}'
+                              '<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
+                              '<a:t>Thank you</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
+        lvls = "".join(f'<a:lvl{i}pPr><a:defRPr sz="{sz}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
+                       for i, sz in enumerate((2000, 1800, 1600), 1))
+        shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, top + h + 0.03, 0.58, 0.36),
+                              'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>'
+                              + lvls + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Contact details</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                              "", "").split("<!--")[0])
+        shapes.append(self.chrome(light_text=False, text_role=role))
+        return self.layout("Closing", shapes, bg=fill(ROLE_SLOT[band["field"]] if band else "tx2"), show_master=False)
 
     def band_title_slide(self, livery_dir):
         """The band: field and art.title, the band with the default photo in its right part, the
@@ -255,14 +307,7 @@ class Builder:
         if "titlegraphic" in self.art:
             shapes.append(self.cover_pic("rId5", "Title photo", Path(livery_dir) / self.art["titlegraphic"],
                                          split, top, 1 - split, bottom - top))
-        mid, right = (1 + bottom) / 2, True
-        if self.signoff and "signoff" in t:
-            h = t["signoff-height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
-            right = self.signoff["corner"] == "bottom-left"
-            shapes.append(self.pic("rId3", "Sign-off (band)", m if right else 1 - m - w, mid - h / 2, w, h))
-        if self.logo_corner != "none":
-            h = t["logo-height"]; w = h * g["logo"]["aspect"] * H_EMU / W_EMU
-            shapes.append(self.pic("rId2", "Logo (band)", 1 - m - w if right else m, mid - h / 2, w, h))
+        shapes += self.band_strip()
         col = split - m - 0.04
         y_title, h_title = top + 0.10, 0.14
         shapes.append(self.rect("Title tab", 0, y_title, g["tab"], h_title, "accent4"))
@@ -282,32 +327,37 @@ class Builder:
         shapes.append(self.chrome(light_text=False, with_date=False, text_role=t["field-text"]))
         return self.layout("Title Slide", shapes, bg=fill(ROLE_SLOT[t["field"]]), show_master=False)
 
-    def title_slide(self):
+    def title_slide(self, light=False):
+        """The cover title; light: Title Slide (light), the themes' title=light as the brand's own
+        template draws it (white field, the light marks, text in the foreground role, the wave
+        lines with white between them, no title art)."""
         g, m = self.geom, self.geom["margin"]
+        role, variant = ("foreground", "light") if light else ("primary-text", "dark")
         no_inset = 'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>'
-        shapes = [self.art_pic("rId4", "title")] + (self.wave_shapes(self.waves["shift"]["title"], "accent1") if self.waves else [])
+        shapes = ([] if light else [self.art_pic("rId4", "title")]) + (self.wave_shapes(self.waves["shift"]["title"], "accent1", bands=not light) if self.waves else [])
         if self.logo_corner != "none":
-            shapes.append(self.logo("rId2", "dark", m, 0.06, g["logo"].get("title", 0.09)))
-        shapes.append(self.signoff_pic("rId3", "dark"))
+            shapes.append(self.logo("rId2", variant, m, 0.06, g["logo"].get("title", 0.09)))
+        shapes.append(self.signoff_pic("rId3", variant))
         tab_top, tab_h = 0.43, 0.16
         shapes.append(f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Title tab"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
                       f'</p:nvSpPr><p:spPr>{xfrm(0, tab_top, g["tab"], tab_h)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
                       f'{fill("accent4")}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')
         shapes.append(self.ph("Date", "dt", 20, xfrm(m, 0.375, 0.45, 0.045),
-                              no_inset + self.field_text(12, bold=True, caps=True) + "</a:lstStyle><a:p><a:fld id=\"{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}\" type=\"datetime1\"><a:rPr lang=\"en-US\"/><a:t>Date</a:t></a:fld></a:p></p:txBody></p:sp><!--",
+                              no_inset + self.field_text(12, bold=True, caps=True, role=role) + "</a:lstStyle><a:p><a:fld id=\"{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}\" type=\"datetime1\"><a:rPr lang=\"en-US\"/><a:t>Date</a:t></a:fld></a:p></p:txBody></p:sp><!--",
                               "", "").split("<!--")[0])
         shapes.append(self.ph("Title", "ctrTitle", None, xfrm(m, tab_top, 0.50, tab_h),
                               f'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>'
-                              f'{self.field_text(36, bold=True)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                              f'{self.field_text(36, bold=True, role=role)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
                               "", "").split("<!--")[0])
         shapes.append(f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/><p:nvPr userDrawn="1"/>'
                       f'</p:nvCxnSpPr><p:spPr>{xfrm(m, 0.615, 0.065, 0)}<a:prstGeom prst="line"><a:avLst/></a:prstGeom>'
                       f'<a:ln w="19050">{fill("accent1")}</a:ln></p:spPr></p:cxnSp>')
         shapes.append(self.ph("Subtitle", "subTitle", 1, xfrm(m, 0.64, 0.50, 0.22),
-                              no_inset + self.field_text(18) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                              no_inset + self.field_text(18, role=role) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
                               "", "").split("<!--")[0])
-        shapes.append(self.chrome(light_text=False, with_date=False))   # the date sits above the title
-        return self.layout("Title Slide", shapes, bg=fill("tx2"), show_master=False)
+        shapes.append(self.chrome(light_text=False, with_date=False, text_role=role))   # the date sits above the title
+        return self.layout("Title Slide (light)" if light else "Title Slide", shapes,
+                           bg=fill("bg1" if light else "tx2"), show_master=False)
 
     def section_header(self):
         g, m = self.geom, self.geom["margin"]
@@ -406,16 +456,28 @@ class Builder:
             rels.append(image_rel("rId3", "signoff-light"))
         if "content" in self.art:
             rels.append(image_rel("rId4", "art-content"))
-        rels += [f'<Relationship Id="rId{10 + i}" Type="{REL}/slideLayout" Target="../slideLayouts/slideLayout{i + 1}.xml"/>' for i in range(len(LAYOUTS))]
+        rels += [f'<Relationship Id="rId{10 + i}" Type="{REL}/slideLayout" Target="../slideLayouts/slideLayout{i + 1}.xml"/>' for i in range(len(ALL_LAYOUTS))]
         parts["ppt/slideMasters/_rels/slideMaster1.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(rels)}</Relationships>'
-        for i, name in enumerate(LAYOUTS, 1):
+        for i, name in enumerate(ALL_LAYOUTS, 1):
             self.sid = 10
-            kind = {"Title Slide": "title", "Section Header": "section"}.get(name)
+            kind = {"Title Slide": "title", "Section Header": "section", "Closing": "closing",
+                    "Title Slide (light)": "light"}.get(name)
             xml = ((self.band_title_slide(livery_dir) if self.band else self.title_slide()) if kind == "title"
-                   else self.section_header() if kind == "section" else self.content_layout(name))
+                   else self.section_header() if kind == "section" else self.closing() if kind == "closing"
+                   else self.title_slide(light=True) if kind == "light" else self.content_layout(name))
             parts[f"ppt/slideLayouts/slideLayout{i}.xml"] = xml
             r = [f'<Relationship Id="rId1" Type="{REL}/slideMaster" Target="../slideMasters/slideMaster1.xml"/>']
-            if kind == "title" and self.band:   # the band's strip images, its art and default photo
+            if kind == "light":   # the light lockup and sign-off
+                r.append(image_rel("rId2", "logo-light"))
+                if self.signoff:
+                    r.append(image_rel("rId3", "signoff-light"))
+            elif kind == "closing":   # the band's strip images or the dark ones, and its art
+                r.append(image_rel("rId2", "band-logo" if self.band else "logo-dark"))
+                if "band-signoff" in part_of or (self.signoff and not self.band):
+                    r.append(image_rel("rId3", "band-signoff" if self.band else "signoff-dark"))
+                if self.closing_art():
+                    r.append(image_rel("rId4", f"art-{self.closing_art()}"))
+            elif kind == "title" and self.band:   # the band's strip images, its art and default photo
                 r.append(image_rel("rId2", "band-logo"))
                 if "band-signoff" in part_of:
                     r.append(image_rel("rId3", "band-signoff"))
@@ -458,7 +520,7 @@ class Builder:
         defaults = ''.join(f'<Default Extension="{e}" ContentType="{t}"/>' for e, t in exts.items() if any(n.endswith("." + e) for n in parts))
         overrides = (f'<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'
                      f'<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>'
-                     + "".join(f'<Override PartName="/ppt/slideLayouts/slideLayout{i}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>' for i in range(1, len(LAYOUTS) + 1))
+                     + "".join(f'<Override PartName="/ppt/slideLayouts/slideLayout{i}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>' for i in range(1, len(ALL_LAYOUTS) + 1))
                      + '<Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>'
                      '<Override PartName="/ppt/presProps.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presProps+xml"/>'
                      '<Override PartName="/ppt/viewProps.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.viewProps+xml"/>'
@@ -482,7 +544,7 @@ def main():
     livery = livery_mod.load(a.livery)
     out = a.out or a.livery / "template.pptx"   # a flavor gets its own, even if it inherited its parent's
     Builder(livery).build(out, a.livery)
-    print(f"livery_template: wrote {out} ({len(LAYOUTS)} layouts)")
+    print(f"livery_template: wrote {out} ({len(ALL_LAYOUTS)} layouts)")
 
 
 if __name__ == "__main__":

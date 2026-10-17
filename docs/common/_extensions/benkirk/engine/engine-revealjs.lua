@@ -56,7 +56,7 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "3.1.0"
+local VERSION = "3.2.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
@@ -77,7 +77,10 @@ local function load_livery(meta, brand)
       .. "to a livery directory, or themeoptions brand=ncar|ucar|ucp|ncarucar for a bundled one")
   end
   local livery = quarto.json.decode(f:read("a")); f:close()
-  livery.dir = dir
+  -- the physical directory: a flavor's inherited files are `../<parent>/...`, and joined onto a
+  -- link (a deck's `_livery`) the path is normalized as text, `_livery/..` becoming the deck
+  local ok, real = pcall(pandoc.system.with_working_directory, dir, pandoc.system.get_working_directory)
+  livery.dir = ok and real or dir
   return livery
 end
 
@@ -466,6 +469,13 @@ local function band_art(t, r, src, photo)
   return svg(rect) .. (photo and photo_img(src) or "")
 end
 
+-- the light title and closing (title=light), as the brand's own template: the lines alone, the
+-- white field showing between them
+local function light_waves(c, dx)
+  if not WAVES then return "" end
+  return svg(lines(dx, c.secondary))
+end
+
 -- content slides: the faint lines of the brand's content slides (p26), in the surface color
 local function content_waves(c)
   if not WAVES then return "" end
@@ -556,7 +566,7 @@ function Pandoc(doc)
     art, class = band_art(band, r, tg, tg or default_photo), " engine-field engine-band"
   else
     title_slide_attributes(meta, { ["data-background-color"] = titlefield })
-    art = (tg or default_photo) and photo_waves(c, titlefield, tg) or waves(c, SHIFT.title)
+    art = (tg or default_photo) and photo_waves(c, titlefield, tg) or (light and light_waves or waves)(c, SHIFT.title)
     class = (light and "" or " engine-field") .. (default_photo and " engine-title-photo" or "")
   end
   meta["engine-title-art"] = pandoc.RawInline("html", art)
@@ -591,7 +601,7 @@ function Pandoc(doc)
       if band then blk.classes:extend({ "engine-field", "engine-band" })
       elseif not light then blk.classes:insert("engine-field") end
       out:insert(blk)
-      if not band then out:insert(html(waves(c, SHIFT.title))) end
+      if not band then out:insert(html((light and light_waves or waves)(c, SHIFT.title))) end
       i = i + 1
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "feature") then
       -- the body goes on a translucent panel over the photo; Space under the

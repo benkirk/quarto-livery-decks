@@ -9,6 +9,9 @@ table run at S times its inherited size. hcenter, fill: nothing (a text box cann
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
 art, pandoc's caption box centered under it in the muted color, the slide number kept.
+closing: the slide moves onto the template's Closing layout (the themes' closing slide), its
+placeholders dropping pandoc's copied frames to take the layout's; with themeoptions title=light
+(slide-layout.lua records `engine-title: light`) the title slide moves onto Title Slide (light).
 feature: the brand cover, as the title slide with a `titlegraphic:` (pandoc records it in
 docProps/custom.xml): the photo pushed to the back of the slide, cropped to cover, the livery's
 field, band and wave lines over it, the text and logo on the field (a deck without one gets the
@@ -28,6 +31,7 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_PLACEHOLDER
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
 from pptx.util import Pt
 
@@ -235,15 +239,38 @@ def full_slide(slide, width, height):
     return True
 
 
-def _title_graphic(prs, deck_dir):
-    """The deck's `titlegraphic:` path from docProps/custom.xml, or None."""
+def _custom_prop(prs, name):
+    """A metadata string pandoc recorded in docProps/custom.xml, or None."""
     for part in prs.part.package.iter_parts():
         if str(part.partname) == "/docProps/custom.xml":
             for prop in etree.fromstring(part.blob):
-                if prop.get("name") == "titlegraphic":
-                    value = "".join(prop.itertext()).strip()
-                    return deck_dir / value if value else None
+                if prop.get("name") == name:
+                    return "".join(prop.itertext()).strip() or None
     return None
+
+
+def _title_graphic(prs, deck_dir):
+    """The deck's `titlegraphic:` path from docProps/custom.xml, or None."""
+    value = _custom_prop(prs, "titlegraphic")
+    return deck_dir / value if value else None
+
+
+def use_layout(prs, slide, name):
+    """Point the slide at the named layout; its placeholders lose the frames pandoc copied from
+    the old one and take the new layout's. False when the template has no such layout."""
+    layout = next((l for l in prs.slide_layouts if l.name == name), None)
+    if layout is None:
+        return False
+    for rel in slide.part.rels.values():
+        if rel.reltype == RT.SLIDE_LAYOUT:
+            rel._target = layout.part
+            for cached in ("target_part", "target_ref"):   # python-pptx lazyproperties: drop the old layout's
+                rel.__dict__.pop(cached, None)
+    for sh in slide.placeholders:
+        xfrm = sh._element.spPr.find(qn("a:xfrm"))
+        if xfrm is not None:
+            sh._element.spPr.remove(xfrm)
+    return True
 
 
 def _background_photo(slide):
@@ -284,36 +311,38 @@ def band_photo(slide, width, height, photo):
     _back_picture(slide, photo, x, y, width - x, int(BAND["bottom"] * height) - y).name = "Title photo"
 
 
-def cover(slide, width, height, photo):
+def cover(slide, width, height, photo, light=False):
     """The brand cover: the photo at the back, cropped to cover the slide, the field, band and
     wave lines over it (pptx_waves; a straight-edged field without waves), the dark logo top left.
-    Returns the next free shape id."""
+    light: the white field and the light marks (Title Slide (light)). Returns the next free shape id."""
     tree = slide.shapes._spTree
     _back_picture(slide, photo, 0, 0, width, height)
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
-    shapes = (pptx_waves.cover_shapes(WAVES["lines"], sid, width, height) if WAVES
-              else pptx_waves.straight_cover_shapes(sid, width, height))
+    field = "bg1" if light else "tx2"
+    shapes = (pptx_waves.cover_shapes(WAVES["lines"], sid, width, height, field_slot=field) if WAVES
+              else pptx_waves.straight_cover_shapes(sid, width, height, field_slot=field))
     for i, xml in enumerate(shapes):
         tree.insert(3 + i, etree.fromstring(xml))
         sid += 1
     if GEOM["logo"].get("corner", "top-right") != "none":   # none: no mark anywhere
-        logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "dark")),
+        logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "light" if light else "dark")),
                                         int(GEOM["margin"] * width), int(0.06 * height),
                                         height=int(GEOM["logo"].get("title", 0.09) * height))
-        logo.name = "Logo (dark)"
+        logo.name = "Logo (light)" if light else "Logo (dark)"
     if LIVERY.get("signoff"):   # the sign-off lockup, dark, in its corner
         so, m = LIVERY["signoff"], GEOM["margin"]
         h = int(so["height"] * height); w = int(so["height"] * so["aspect"] * height)
         x = int(m * width) if so["corner"] == "bottom-left" else width - int(m * width) - w
-        signoff = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / so["dark"]), x, height - int(so["bottom"] * height) - h, height=h)
-        signoff.name = "Sign-off (dark)"
+        variant = "light" if light else "dark"
+        signoff = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / so[variant]), x, height - int(so["bottom"] * height) - h, height=h)
+        signoff.name = f"Sign-off ({variant})"
     return sid
 
 
 def title_cover(slide, width, height, photo):
     """The title slide over its photo: the layout's tab and rule (hidden by the photo) are copied
     onto the slide; its placeholders already sit on top."""
-    cover(slide, width, height, photo)
+    cover(slide, width, height, photo, light=slide.slide_layout.name == "Title Slide (light)")
     tree = slide.shapes._spTree
     for sp in slide.slide_layout.shapes:
         if sp.is_placeholder or sp.shape_type == MSO_SHAPE_TYPE.PICTURE or sp.name.startswith("Wave "):
@@ -377,20 +406,32 @@ def main() -> int:
     prs = Presentation(str(pptx))
     w, h = prs.slide_width, prs.slide_height
     done = 0
+    if _custom_prop(prs, "engine-title") == "light" and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
+        if not use_layout(prs, prs.slides[0], "Title Slide (light)"):
+            print("slide_layout: WARNING: title=light, but the template has no Title Slide (light)", file=sys.stderr)
     graphic = _title_graphic(prs, pptx.parent)
     default = LIVERY.get("art", {}).get("titlegraphic")
     if graphic is None and default and not BAND:   # the band's layout carries the default itself
         graphic = Path(LIVERY["dir"]) / default
-    if graphic is not None and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
+    if graphic is not None and len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):
         if graphic.exists():
             (band_photo if BAND else title_cover)(prs.slides[0], w, h, graphic.read_bytes())
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
+    markers = [_take_marker(slide) for slide in prs.slides]
+    for slide, words in zip(prs.slides, markers):   # before numbering: the number is the new layout's
+        if words and "closing" in words:
+            if use_layout(prs, slide, "Closing"):
+                words.remove("closing")
+            else:
+                print("slide_layout: WARNING: {.closing} slide, but the template has no Closing layout", file=sys.stderr)
     numbered = sum(add_slide_number(slide) for slide in prs.slides)
-    for slide in prs.slides:
-        words = _take_marker(slide)
+    for slide, words in zip(prs.slides, markers):
         if words is None:
+            continue
+        if not words or words == ["closing"]:   # a closing slide with nothing else to do
+            done += 1
             continue
         if "feature" in words:
             photo = _background_photo(slide)

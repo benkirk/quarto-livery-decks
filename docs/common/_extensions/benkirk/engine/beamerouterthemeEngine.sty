@@ -322,7 +322,9 @@
 \def\engine@drawfieldbg{%
   \fill[\engine@titlefield] (0,0) rectangle (\paperwidth,\paperheight);
   \engine@ifstyle{title}{\engine@art{title}}{\engine@art{closing}}%
-  \engine@waves{\engine@waveshift@title}{BrandSecondary}%
+  \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp   % light: the lines alone, as the brand's template
+    \engine@lines{\engine@waveshift@title}{BrandSecondary}%
+  \else\engine@waves{\engine@waveshift@title}{BrandSecondary}\fi
   \engine@signoff{dark}}
 \def\engine@drawsectionbg{%
   \fill[BrandPrimary] (0,0) rectangle (\paperwidth,\paperheight);
@@ -412,7 +414,7 @@ block body example,block title alerted,block body alerted}
 
 % colors for text sitting on the brand field (title=dark) or white (light)
 \def\engine@darkfieldcolors{%
-  \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp\else\engine@fieldcolors{BrandPrimaryText}\fi}
+  \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp\engine@fieldcolors{BrandText}\else\engine@fieldcolors{BrandPrimaryText}\fi}
 % \engine@fieldcolors{<color>}: every text color for a field in <color>
 \def\engine@fieldcolors#1{%
     \setbeamercolor{normal text}{fg=#1}%

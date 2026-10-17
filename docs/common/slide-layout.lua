@@ -5,17 +5,19 @@
 --   engine-layout: hcenter vcenter scale=1.4
 -- which that script applies, and removes, after rendering. Pandoc merges
 -- every notes Div on a slide, so the line joins any notes the author wrote.
+-- .closing becomes `closing` (the template's Closing layout); themeoptions title=light becomes
+-- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty).
 
 if not quarto.doc.is_format("pptx") then
   return {}
 end
 
 local CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, full = true,
-                  caution = true, feature = true }
+                  caution = true, feature = true, closing = true }
 
 local function take_layout(blk)
   local words, kept = {}, pandoc.List({})
-  local h, v, fill, full, caution, feature = false, false, false, false, false, false
+  local h, v, fill, full, caution, feature, closing = false, false, false, false, false, false, false
   for _, c in ipairs(blk.classes) do
     if CLASSES[c] then
       h = h or c == "hcenter" or c == "center"
@@ -24,6 +26,7 @@ local function take_layout(blk)
       full = full or c == "full"
       caution = caution or c == "caution"
       feature = feature or c == "feature"
+      closing = closing or c == "closing"
     else
       kept:insert(c)
     end
@@ -34,6 +37,7 @@ local function take_layout(blk)
   if full then table.insert(words, "full") end
   if caution then table.insert(words, "caution") end
   if feature then table.insert(words, "feature") end
+  if closing then table.insert(words, "closing") end
   local scale = blk.attributes["scale"]
   if scale then
     blk.attributes["scale"] = nil
@@ -43,7 +47,19 @@ local function take_layout(blk)
   return #words > 0 and ("engine-layout: " .. table.concat(words, " ")) or nil
 end
 
+local function light_title(meta)
+  local to = meta["themeoptions"]
+  if not to then return false end
+  for _, it in ipairs(pandoc.utils.type(to) == "List" and to or { to }) do
+    for kv in pandoc.utils.stringify(it):gmatch("[^,%s]+") do
+      if kv == "title=light" then return true end
+    end
+  end
+  return false
+end
+
 function Pandoc(doc)
+  if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
   local out, pending = pandoc.Blocks({}), nil
   local function flush()
