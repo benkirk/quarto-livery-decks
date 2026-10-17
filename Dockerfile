@@ -105,6 +105,7 @@ shell=$(find "$PLAYWRIGHT_BROWSERS_PATH" -type f \( -name chrome-headless-shell 
 test -n "$shell" || { echo "no headless shell under $PLAYWRIGHT_BROWSERS_PATH:" >&2; find "$PLAYWRIGHT_BROWSERS_PATH" -maxdepth 3 >&2; exit 1; }
 echo "headless shell: $shell"
 ln -s "$shell" "$QUARTO_CHROMIUM"
+chmod -R a+rX "$PLAYWRIGHT_BROWSERS_PATH"   # the zip carries 600 on a few files (deb.deps); any uid runs this
 "$QUARTO_CHROMIUM" --version
 EOS
 
