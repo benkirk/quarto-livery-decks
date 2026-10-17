@@ -123,7 +123,8 @@ def shoot_pdf(pdf, titles, out, tag):
     want = {"title": 1}
     for kind in ("section", "closing", "feature"):
         t = " ".join(titles.get(kind, "\0").split())
-        want[kind] = next((n for n, p in enumerate(pages, 1) if t in p), None)
+        # after the title page: a part deck's subtitle is often its first divider's title
+        want[kind] = next((n for n, p in enumerate(pages[1:], 2) if t in p), None)
     for kind, n in want.items():
         if n:
             stem = os.path.join(out, f"{tag}-{kind}")
