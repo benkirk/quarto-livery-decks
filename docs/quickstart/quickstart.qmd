@@ -1,7 +1,7 @@
 ---
 title: "Quarto Docs Framework"
-subtitle: "One Markdown file, three NCAR-branded decks"
-author: "Your Name, NCAR/CISL"
+subtitle: "One Markdown file, three branded decks"
+author: "Your Name, Your Lab"
 date: last-modified
 engine: jupyter
 jupyter: bash
@@ -15,7 +15,7 @@ jupyter: bash
 
 - `##` starts a slide, `#` a section divider like the one before this
 - **Bold**, *italic*, `inline code` and [links](https://quarto.org) as usual
-- `make pptx`: PowerPoint on the NCAR template, Poppins embedded
+- `make pptx`: PowerPoint on the livery's template, its fonts embedded
 - `make html`: a revealjs deck with speaker view and a whiteboard
 - `make pdf`: the engine beamer theme, for handouts
 
@@ -123,7 +123,7 @@ flowchart LR
     Q --> P["pptx + post-processing"]
     Q --> H["revealjs HTML"]
     Q --> B["beamer PDF"]
-    P --> OUT["one NCAR look"]
+    P --> OUT["one branded look"]
     H --> OUT
     B --> OUT
 ```
@@ -154,7 +154,7 @@ flowchart LR
     R["engine-revealjs.lua<br/>dividers, waves,<br/>footnotes, layout"]:::html
     RJ["revealjs<br/>+ autofit script"]:::html
     B["engine-beamer.lua<br/>frame keys,<br/>footnotes, layout"]:::pdf
-    BT["XeLaTeX<br/>NCAR beamer theme"]:::pdf
+    BT["XeLaTeX<br/>the engine beamer theme"]:::pdf
     PPTX["deck.pptx"]:::out
     HTML["deck.html"]:::out
     PDF["deck.pdf"]:::out
