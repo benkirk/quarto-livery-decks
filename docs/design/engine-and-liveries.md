@@ -376,8 +376,13 @@ Newest first. The first unchecked item of section 7 is the next step.
   engine's with ncar | cu previews of the starter and a Liveries section, its design copy a
   pointer here; this one with the livery gallery, `make gallery`), the engine CLAUDE.md
   opening a list by area. Found on the way: a sub-make kept the exported `LIVERY_DIR` over its
-  own `LIVERY=` (fixed: command-line `LIVERY` overrides). Next: the GitHub About text (Ben
-  approves it), the Overleaf smoke test through Playwright, then NASA.
+  own `LIVERY=` (fixed: command-line `LIVERY` overrides). The About text is applied to both
+  repos. The Overleaf smoke test (Playwright, Ben logged in; the four links opened as new
+  projects and compiled on the free plan) found one more: under `fonts=bundled` `\sbseries`
+  asked every livery for a semibold series, which TeX Gyre Heros lacks, a "Font shape
+  undefined" warning per block title that Overleaf's panel counts as an error (engine #20:
+  semibold only when the livery bundles one; v3.4.0 and v1.0.0 moved onto the fix). All four
+  links now compile with clean logs. Next: NASA.
 - **2026-10-17** Both READMEs still describe the single-brand world (the engine's is titled
   "NSF NCAR / UCAR Beamer Template", the framework's opens "NCAR-branded"), and a LaTeX user
   gets only the engine's reference liveries: the Overleaf zip packs `.ttf` fonts and PDF logos
