@@ -362,6 +362,15 @@ section 5, to be done before the next new composition (`refactor-handoff.md`, la
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17** Both READMEs still describe the single-brand world (the engine's is titled
+  "NSF NCAR / UCAR Beamer Template", the framework's opens "NCAR-branded"), and a LaTeX user
+  gets only the engine's reference liveries: the Overleaf zip packs `.ttf` fonts and PDF logos
+  of `liveries/*` alone. Ben asked for both READMEs rewritten at about today's length with an
+  NCAR and a CU example, Overleaf for any framework livery, and GitHub About text: written up
+  for a fresh session as `docs/design/docs-handoff.md` (an engine `overleaf_zip.py`, per-livery
+  zips released here, the two READMEs, the About text, three open questions). Next: that
+  handoff, then NASA.
+
 - **2026-10-16** The post-NSI refactor (`docs/design/refactor-handoff.md`), as
   beamer-livery-theme 3.3.0 and this repo's next PR. (1) The pptx template tooling lives in
   the engine: `livery_template.py`, `pptx_waves.py`, the json reader `livery.py` and the
