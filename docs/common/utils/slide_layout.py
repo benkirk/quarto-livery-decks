@@ -315,11 +315,12 @@ def band_photo(slide, width, height, photo):
 
 
 def band_stack(slide, width, height):
-    """The band's title stack (date, title, rule, subtitle and author) centred on the column's
-    middle, as HTML and PDF centre theirs: the layout puts the rule at the middle with the title
-    above and the subtitle below, which sits a tall title (date and all) high. From estimates of
-    the title's and subtitle's text heights; the rule, a layout shape, moves onto the slide (this
-    deck's Title Slide layout serves the title slide alone)."""
+    """The band's title stack (date, title, subtitle, rule and author) centred on the column's
+    middle, as HTML and PDF centre theirs. pandoc puts the subtitle and the author in one
+    paragraph of the subtitle placeholder, a blank line between them: the rule (a layout shape,
+    moved onto the slide; this deck's Title Slide layout serves the title slide alone) goes in
+    that blank line, under a subtitle alone, or over an author alone. From estimates of the
+    title's and subtitle's text heights."""
     ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
     title, date, sub = (ph.get(t) for t in (PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE, PP_PLACEHOLDER.SUBTITLE))
     if title is None:
@@ -327,24 +328,45 @@ def band_stack(slide, width, height):
     x, y, w, h = COMP["title-band"]["column"]["box"]
     X, W = int(x * width), int(w * width)
     dh = int(0.04 * height) if date is not None else 0
-    gaps = [int(g * height) for g in (0.01 if date is not None else 0, 0.015, 0.02)]   # date|title, title|rule, rule|sub
+    gaps = [int(g * height) for g in (0.01 if date is not None else 0, 0.015, 0.02)]   # date|title, title|sub, rule
     th = _text_height(title, slide)
-    sh = _text_height(sub, slide) if sub is not None and sub.text_frame.text.strip() else 0
-    total = dh + gaps[0] + th + gaps[1] + gaps[2] + sh
+    text = sub.text_frame.text.strip() if sub is not None else ""
+    sh = _text_height(sub, slide) if text else 0
+    author = slide.part.package.core_properties.author or ""
+    head, both, tail = text.partition("\v\v")
+    if both:
+        rule = "inside"                      # subtitle, blank line, author
+    elif text and text == author.strip():
+        rule = "over"                        # an author alone
+    else:
+        rule = "under"                       # a subtitle alone, or nothing
+    extra = 2 * gaps[2] if rule != "inside" else 0
+    total = dh + gaps[0] + th + gaps[1] + sh + extra
     top = max(int(y * height), int((y + h / 2) * height - total / 2))
     if date is not None:
         date.left, date.top, date.width, date.height = X, top, W, dh
     title.left, title.top, title.width, title.height = X, top + dh + gaps[0], W, th
-    rule_y = title.top + th + gaps[1]
+    sub_top = title.top + th + gaps[1] + (extra if rule == "over" else 0)
+    if rule == "over":
+        rule_y = sub_top - gaps[2]
+    elif rule == "under":
+        rule_y = sub_top + sh + gaps[2]
+    else:
+        tf = sub.text_frame
+        p = tf.paragraphs[0]
+        sized = [r.font.size for r in p.runs if r.font.size]
+        size = sized[0] if sized else Pt(_inherited(sub, slide, 0) / 100)
+        per_line = max(1, int((W - tf.margin_left - tf.margin_right) / (size * 0.5)))
+        n = sum(max(1, -(-len(part) // per_line)) for part in head.split("\v"))   # the subtitle's lines
+        rule_y = sub_top + tf.margin_top + int((n + 0.5) * size * LINE)
     if sub is not None:
-        sub.left, sub.top, sub.width = X, rule_y + gaps[2], W
+        sub.left, sub.top, sub.width = X, sub_top, W
         sub.height = max(sh, int((y + h) * height) - sub.top)
     lay = slide.slide_layout.shapes._spTree
     for el in [e for e in lay if e.tag == qn("p:cxnSp") and e.find(".//" + qn("p:cNvPr")).get("name") == "Title rule"]:
         lay.remove(el)
         el.find(".//" + qn("a:off")).set("y", str(rule_y))
         slide.shapes._spTree.append(el)
-
 
 def _role(role):
     return RGBColor.from_string(livery_mod.color(LIVERY, role))
