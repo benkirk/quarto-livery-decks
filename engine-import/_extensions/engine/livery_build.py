@@ -37,6 +37,11 @@ ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
             "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
+# art.<kind> files: backgrounds per slide kind, and titlegraphic, the title photo a deck sets none of
+ART_KINDS = ("title", "section", "closing", "content", "titlegraphic")
+# the title slide's composition (title: in livery.yml) when it is the band: fractions of the slide,
+# roles for the colors; logo and signoff (logo.images names) default to the dark variants
+BAND = {"top": 0.27, "bottom": 0.72, "split": 0.62, "band": "primary", "field": "dark", "field-text": "background"}
 # theme1.xml slot -> role, the slot contract of design section 4 (livery_template.py writes it)
 SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2": "surface",
               "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
@@ -68,7 +73,7 @@ def rebase(data: dict, parent: Path, child: Path) -> dict:
     for img in brand.get("logo", {}).get("images", {}).values():
         img["path"] = rel(img["path"])
     art = data.get("art", {})
-    for kind in ("title", "section", "closing", "content"):   # static art files; waves are data
+    for kind in ART_KINDS:   # static art files; waves are data
         if isinstance(art.get(kind), str):
             art[kind] = rel(art[kind])
     pptx = data.get("pptx", {})
@@ -136,6 +141,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
         if "aspect" not in so:
             sys.exit(f"{d.name}: signoff.aspect (width / height of the image) is required")
         out["signoff"] = so
+    if "title" in data:   # only when set, so a livery without it keeps its build/ unchanged
+        out["title"] = band(d.name, data["title"], out)
     out.setdefault("pptx", {})
     # the slot contract, from the roles; a livery's own pptx.scheme overrides slot by slot
     scheme = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
@@ -145,6 +152,32 @@ def resolve(d: Path) -> tuple[dict, dict]:
     if not tmpl.exists():   # livery_template.py builds it from build/livery.json, so only a warning
         print(f"{d.name}: pptx template {tmpl} missing; run livery_template.py", file=sys.stderr)
     return out, sources
+
+
+def band(name: str, title: dict, out: dict) -> dict:
+    """The title: block resolved: style cover | band; a band gets its defaults and image paths."""
+    t = dict(title)
+    if t.setdefault("style", "cover") not in ("cover", "band"):
+        sys.exit(f"{name}: title.style {t['style']!r} is not cover or band")
+    if t["style"] == "cover":
+        return t
+    t = {**BAND, **t}
+    for k in ("band", "field", "field-text"):
+        if t[k] not in out["roles"]:
+            sys.exit(f"{name}: title.{k} {t[k]!r} is not a role")
+    images = out["logo"].get("images", {})
+    t.setdefault("logo", out["logo"]["medium"]["dark"])
+    if "signoff" in out:
+        t.setdefault("signoff-height", out["signoff"]["height"])
+    for k in ("logo", "signoff"):
+        if k in t:
+            if t[k] not in images:
+                sys.exit(f"{name}: title.{k} {t[k]!r} is not a logo.images name")
+            t[k] = images[t[k]]["path"]
+        elif k == "signoff" and "signoff" in out:
+            t[k] = out["signoff"]["dark"]
+    t.setdefault("logo-height", out.get("geometry", {}).get("logo", {}).get("title", 0.09))
+    return t
 
 
 def tex_name(key: str, names: dict) -> str:
@@ -258,9 +291,21 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append(f"  .. controls {fmt(pts[2])} and {fmt(pts[1])} .. {fmt(pts[0])}}}")
         for k, v in waves.get("shift", {}).items():
             L.append(f"\\def\\engine@waveshift@{k}{{{v}}}")
-    for kind in ("title", "section", "closing", "content"):
+    for kind in ART_KINDS:
         if isinstance(art.get(kind), str):
             L.append(f"\\def\\engine@art@{kind}{{\\engineliverydir {Path(art[kind]).with_suffix('').as_posix()}}}")
+    t = livery.get("title", {})
+    if t.get("style") == "band":   # the band title: fractions, colors, the strip's two images
+        L.append("% the title's band composition (title: in livery.yml)")
+        L.append("\\def\\engine@title@style{band}")
+        for k in ("top", "bottom", "split", "logo-height", "signoff-height"):
+            if k in t:
+                L.append(f"\\def\\engine@title@{k.replace('-', '')}{{{t[k]}}}")
+        for k, tex in (("band", "EngineBandFill"), ("field", "EngineBandField"), ("field-text", "EngineBandFieldText")):
+            L.append(f"\\colorlet{{{tex}}}{{{ROLE_TEX.get(t[k], 'BrandDark')}}}")
+        for k in ("logo", "signoff"):
+            if k in t:
+                L.append(f"\\def\\engine@title@{k}img{{\\engineliverydir {Path(t[k]).with_suffix('').as_posix()}}}")
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
     return "\n".join(L) + "\n"
@@ -327,6 +372,24 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-signoff-left: {margin if so['corner'] == 'bottom-left' else 'auto'};")
         props.append(f"--engine-signoff-right: {'auto' if so['corner'] == 'bottom-left' else margin};")
         props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
+    t = livery.get("title", {})
+    band = t.get("style") == "band"
+    if band:   # the band title's box, text column, strip and images (engine-revealjs.scss .engine-band)
+        top, bottom = t["top"], t["bottom"]
+        props += [f"--engine-band-top: {px(top)};", f"--engine-band-height: {px(bottom - top)};",
+                  f"--engine-band-split: {t['split'] * 100:g}%;",
+                  f"--engine-band-text-w: calc({px(t['split'], W)} - var(--engine-margin) - 64px);",
+                  f"--engine-band-strip: {px((1 - bottom) / 2)};",   # the strip's middle, from the bottom
+                  f"--engine-band-fill: var(--engine-{t['band']});", f"--engine-band-field: var(--engine-{t['field']});",
+                  f"--engine-band-field-text: var(--engine-{t['field-text']});",
+                  f"--engine-band-logo-h: {px(t['logo-height'])};",
+                  f"--engine-band-logo-w: {round(t['logo-height'] * H, 1) * logo.get('aspect', 1):.1f}px;"]
+        so_left = livery.get("signoff", {}).get("corner", "bottom-left") == "bottom-left" and "signoff" in t
+        props += [f"--engine-band-logo-left: {'auto' if so_left else margin};",
+                  f"--engine-band-logo-right: {margin if so_left else 'auto'};"]
+        if "signoff" in t:
+            props += [f"--engine-band-signoff-h: {px(t['signoff-height'])};",
+                      f"--engine-band-signoff-w: {round(t['signoff-height'] * H, 1) * livery['signoff']['aspect']:.1f}px;"]
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
     L.append("html:root {\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
@@ -350,6 +413,16 @@ def emit_css(livery: dict, extra: str = "") -> str:
         L.append(f'.reveal .slides section .engine-signoff {{ background-image: url("{light}"); }}')
         L.append(".reveal .slides section.engine-field .engine-signoff,\n.reveal .slides section.engine-title.engine-field .engine-signoff "
                  f'{{ background-image: url("{dark}"); }}')
+    art = livery.get("art", {})
+    if isinstance(art.get("titlegraphic"), str):   # the title photo when a deck sets none
+        L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')
+    if band:   # the band's strip images, on the title and the closing slide; the closing wears the title art
+        sel = ".reveal .slides section.engine-title.engine-band", ".reveal .slides section.slide.level2.closing.engine-band"
+        L.append(",\n".join(f"{s}::after" for s in sel) + f' {{ background-image: url("{Path(t["logo"]).name}"); }}')
+        if "signoff" in t:
+            L.append(",\n".join(f"{s} .engine-signoff" for s in sel) + f' {{ background-image: url("{Path(t["signoff"]).name}"); }}')
+        if not isinstance(art.get("closing"), str) and isinstance(art.get("title"), str):
+            L.append(f'{sel[1]} {{ background: url("{Path(art["title"]).name}") center / cover no-repeat; }}')
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
 
