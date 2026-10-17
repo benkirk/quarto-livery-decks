@@ -150,6 +150,7 @@ to XeLaTeX.
 | Extra logo or slide decoration | `\logo{...}`: bottom right, above the footer (space reserved) | `logo: file.png` |
 | Theme options | `\usetheme[<options>]{Engine}` | `themeoptions: [<options>]` |
 | Math font | `\usetheme[mathfont=stix]{Engine}` | `themeoptions: [mathfont=stix]` |
+| Smaller (or larger) text | `\usetheme[typescale=0.85]{Engine}` | `type-body: 10` or `type-scale: 0.85` |
 
 Everything in the Quarto column works in both `engine-beamer` and `engine-revealjs`.
 The HTML format adds a few things of its own (next section).
@@ -272,6 +273,7 @@ the better choice.
 | `sectionpages` | `true`, `false` | `true` | a branded divider slide at each section |
 | `logo` | `true`, `false` | `true` | logo on content slides (in the corner the livery names) |
 | `waves` | `true`, `false` | `true` | the livery's faint wave lines behind content slides, when it has them |
+| `typescale` | a factor | `1` | every text size times it; a Quarto deck sets it with `type-body: <pt>` (over the livery's body) or `type-scale:` |
 | `mathfont` | `serif`, `lm`, `stix`, `pagella`, `sans`, `fira`, `poppins`, `keep`, or a font name | `serif` | the math font (next section) |
 | `autofit` | `true`, `false` | `true` | HTML only: shrink overflowing content slides to fit |
 
