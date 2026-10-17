@@ -34,12 +34,15 @@ NSI brand guide: the deck and the CU rules are the guide.
   the tab beside the mark), the RIO sign-off bottom left (nsi's own `signoff`, in cu's slot)
   and the page number bottom right (cu's), the satellite photo as `art.content`.
 - **Closing** (deck slide 27): under the band style the closing slide wears the band's field and
-  the title art (no `art.closing`), with the two white lockups in the strip; in pptx the
-  template's `Closing` layout does the same.
+  the title art (no `art.closing`), with the two white lockups in the strip (`marks.dark`, the
+  band's field role); in pptx the template's `Closing` layout does the same.
 - **Dividers and feature covers**: cu's gold field, with the one-color black NSI mark
-  (`logo.medium.dark`). The deck has neither.
-- **pptx scheme**: a flavor's scheme follows its own roles, so cu's link-slot overrides
-  (`hlink` accessible gold, `folHlink` sky blue) are restated.
+  (`marks.primary`, engine 3.3.0; the band's black field wears `marks.dark`, white NSI and RIO
+  lockups). The deck has neither.
+- **pptx scheme**: inherited from cu (engine 3.3.0: a flavor keeps its parent's explicit
+  `pptx.scheme` overrides, `hlink` accessible gold and `folHlink` sky blue; earlier engines
+  dropped them and nsi restated them). Helvetica Neue where installed is cu's too
+  (`installed-fonts`).
 
 ## Decided with Ben (2026-10-16)
 
@@ -59,3 +62,7 @@ slide: the constellation field, as the deck's last slide.
 - The deck's "Helvetica Neue Extra Black Cond" headlines are not reproduced (cu's Heros Cn
   headings stand in).
 - The rights of the deck's photos are NSI's; check before any use outside NSI decks.
+- `title=light` differs by format (seen on the fixture decks' contact sheet, 2026-10-16): the
+  pptx draws the white light cover (`Title Slide (light)`), HTML and PDF keep the band. One of
+  the drifts the deferred composition work (design section 7) removes; until then a light
+  title is not an nsi look.

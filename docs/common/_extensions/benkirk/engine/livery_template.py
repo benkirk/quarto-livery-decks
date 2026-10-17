@@ -3,8 +3,8 @@
 
     livery_template.py <livery dir> [-o template.pptx]
 
-Everything comes from build/livery.json: the theme's color slots (pptx.scheme, or the roles
-by the slot contract), the typeface, the light and dark logos, the geometry fractions and
+Everything comes from build/livery.json: the theme's color slots (pptx.scheme), the typeface,
+the marks each field wears (marks: background, primary, the band's field), the geometry fractions and
 the wave curves (art.waves) or pictures behind slides (art.content on the master, art.title and
 art.section on their layouts; closing slides are content slides in pptx), the sign-off lockup
 (signoff), the marks' corners (geometry.logo.corner, geometry.pagenumber.corner) and the title's
@@ -26,6 +26,7 @@ from pathlib import Path
 
 import livery as livery_mod
 import pptx_waves
+from livery_build import SLOT_ROLES
 
 # the pptx is 12192000 x 6858000 EMU; the themes think in 1600x900 slide pixels
 W_EMU, H_EMU = 12192000, 6858000
@@ -36,10 +37,6 @@ R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 NSDECL = f'xmlns:a="{A}" xmlns:r="{R}" xmlns:p="{P}"'
 XMLDECL = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
 REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-# slot contract (design section 4) for a livery that sets no pptx.scheme of its own
-SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2": "surface",
-              "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
-              "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 LAYOUTS = ["Title Slide", "Title and Content", "Section Header", "Two Content", "Comparison",
            "Content with Caption", "Blank"]
 # role -> the color slot a layout fills with it (clrMap names, so a theme edit recolors the layout)
@@ -257,7 +254,7 @@ class Builder:
         """The band's mark and sign-off, centred in the strip under the band (rId2, rId3)."""
         t, g, m = self.band, self.geom, self.geom["margin"]
         mid, right, shapes = (1 + t["bottom"]) / 2, True, []
-        if self.signoff and "signoff" in t:
+        if self.signoff:
             h = t["signoff-height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
             right = self.signoff["corner"] == "bottom-left"
             shapes.append(self.pic("rId3", "Sign-off (band)", m if right else 1 - m - w, mid - h / 2, w, h))
@@ -432,15 +429,17 @@ class Builder:
 
     def build(self, out: Path, livery_dir: Path):
         parts = {}
-        # media, numbered in this order: the two lockups, the sign-offs, the art kinds that exist
-        files = {"logo-light": livery_mod.logo_path(self.L, "light"), "logo-dark": livery_mod.logo_path(self.L, "dark")}
+        # media, numbered in this order: the background and primary marks, their sign-offs, the art
+        # kinds that exist (light is the background field's, dark the primary's)
+        mark = lambda role, kind="logo": livery_mod.mark(self.L, role, kind)
+        files = {"logo-light": mark("background"), "logo-dark": mark("primary")}
         if self.signoff:
-            files.update({"signoff-light": self.signoff["light"], "signoff-dark": self.signoff["dark"]})
+            files.update({"signoff-light": mark("background", "signoff"), "signoff-dark": mark("primary", "signoff")})
         files.update({f"art-{k}": v for k, v in self.art.items()})
-        if self.band:   # the band strip's own images, numbered after the rest
-            files["band-logo"] = self.band["logo"]
-            if self.signoff and "signoff" in self.band:
-                files["band-signoff"] = self.band["signoff"]
+        if self.band:   # the band strip wears its field's marks, numbered after the rest
+            files["band-logo"] = mark(self.band["field"])
+            if self.signoff:
+                files["band-signoff"] = mark(self.band["field"], "signoff")
         part_of, by_path = {}, {}   # one media part per file: a lockup serving two roles is stored once
         for name, rel_path in files.items():
             f = Path(livery_dir) / rel_path

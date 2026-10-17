@@ -15,12 +15,18 @@ a generalized **engine** (the vendored theme, forked as
 Phase 1 (the framework reads the livery) is done and Phase 2 (the engine) is under
 way: the theme is renamed and reads a livery. The reference liveries live in the engine
 (`_extensions/benkirk/engine/liveries/`; `docs/common/liveries/ncar` is a link to its
-`ncar`), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`;
-`utils/livery.py` reads the json for the post-render scripts. NCAR PDF and HTML decks
+`ncar`), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`
+(an unknown `livery.yml` key is warned about). The engine also holds the json reader
+(`livery.py`), the template builder (`livery_template.py`), the wave shapes
+(`pptx_waves.py`) and the livery checks (`livery_check.py`), since engine 3.3.0:
+`utils/livery.py` is a shim that loads the vendored reader by path (both are named
+`livery`; `engine_module()` loads any engine module the same way) and adds
+`livery.py deps <dir>`, and `utils/livery_check.py` wraps the engine's checks and adds
+`--qa`. NCAR PDF and HTML decks
 still build byte-identically to upstream; the pptx template is generated. Phase 3
 (onboarding a brand from a reference PowerPoint, design section 6) is under way:
 `utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck,
-`utils/livery_template.py` builds its `template.pptx` from the data, and the first
+the engine's `livery_template.py` builds its `template.pptx` from the data, and the first
 non-NCAR livery, `cu` (CU Boulder), is a real directory under `docs/common/liveries/`
 with its decisions in `reference/notes.md`; `nsi` (the CU Center for National Security
 Initiatives) is its first flavor (`extends: cu`), on the engine's band title style
@@ -102,8 +108,8 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   parts in `slide_layout.py`: pandoc's slide background (or the `titlegraphic`
   it records in `docProps/custom.xml`) becomes a full-slide picture at the back
   of the shape order, cropped to cover, with the livery's opaque field, 65% band
-  and wave lines over it (`utils/pptx_waves.py`, shared with the template
-  builder), the dark lockup, and the title and body moved onto the field.
+  and wave lines over it (the engine's `pptx_waves.py`, shared with the template
+  builder), the primary field's mark, and the title and body moved onto the field.
   A `###` block is the body's lead line. Slide shapes always draw above layout
   shapes, so the cover must redraw the waves, logo and sign-off on the slide itself.
   A livery's `art.titlegraphic` is the title photo for decks that set none. Under
@@ -112,7 +118,12 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   sign-off), and `slide_layout.py` only drops a deck's photo into the band box.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
-  and `livery_template.py` all honor. pandoc writes no slide-number box, so
+  and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
+  its role (`marks:`, engine >= 3.3.0; `livery.json` always has `marks`, read with
+  `livery.mark(livery, role, "logo"|"signoff")`): content slides `background`,
+  dividers, covers and the cover closing `primary`, the band title and closing
+  `title.field`. Defaults: background `logo.medium.light`/`signoff.light`, primary the
+  dark ones, any other role primary's (nsi: black mark on gold, white on the band). pandoc writes no slide-number box, so
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).
 - **PDF** is `--to engine-beamer`: the engine beamer theme, vendored from
@@ -153,7 +164,7 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `engine-revealjs.lua` for HTML. Only plain
   paragraphs qualify; anything else after a divider stays a slide of its own.
   In pptx the blue field, logo and waves are the template's Section Header
-  layout, which `utils/livery_template.py` generates with the rest of the
+  layout, which the engine's `livery_template.py` generates with the rest of the
   template from the livery's data (rerun it after a livery change, never edit
   `template.pptx` by hand); `section_subtitle.py` adds "SECTION n", the tab and
   placement.
@@ -163,12 +174,25 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   modes in the editor config, not in the file.
 - **Fragments are prerequisites**: every deck in a directory depends on its
   `_*.qmd` fragments, `data/*`, `images/*` and deck-local `*.lua` filters, so editing any of
-  them rebuilds all of them. A
-  file included from anywhere else (e.g. `../other_deck/_x.qmd`) is invisible
+  them rebuilds all of them, and on the livery's files (`livery.py deps`: `build/`, the
+  template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
+  rebuilds the decks. The `_livery` link is order-only (make stats a link's target, the
+  directory, which would look stale forever after a switch); the `.livery` stamp is the
+  prerequisite. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`
+  before rendering: that dependency is named for the engine version, and quarto keeps a
+  copied file newer than its source, so a livery switch kept the old livery's css. A file included from anywhere else (e.g. `../other_deck/_x.qmd`) is invisible
   to make; `touch <deck>.qmd` after editing one.
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
-  cache, so `Make.common` is `.NOTPARALLEL`.
+  cache, so `Make.common` is `.NOTPARALLEL`. `docs/fixtures/` is such a directory:
+  `photo` (a `titlegraphic:` title) and `light` (`title=light`) on one `_body.qmd`, in
+  CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
+  ncar, cu and nsi).
+- **Installed brand fonts**: a livery may name a proprietary face (`installed-fonts`, cu:
+  Helvetica Neue) over its bundled stand-in. HTML lists it as `local()` sources in each
+  `@font-face`; PDF uses it only under `themeoptions: [fonts=brand]` when the building
+  machine has it (the shared `fonts=bundled` never does, so CI and parity are unaffected);
+  pptx already names `pptx.typeface`. README "Installed brand fonts".
 - Executable ```{bash} cells run at render time via the jupyter `bash` kernel
   (deck frontmatter: `engine: jupyter`, `jupyter: bash`). Keep them
   deterministic — CI renders the sample deck.
@@ -334,7 +358,7 @@ bit while building it:
 
 ## CI
 
-`.github/workflows/ci-build-sample.yaml` renders the sample deck;
+`.github/workflows/ci-build-sample.yaml` renders the sample, quickstart and fixture decks;
 `ci-liveries.yaml` runs `utils/livery_check.py` on each directory under
 `docs/common/liveries/` (build freshness, the files the data names, the
 template's pandoc compliance and that it rebuilds byte-identically from the

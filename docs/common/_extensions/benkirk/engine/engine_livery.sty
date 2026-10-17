@@ -48,8 +48,10 @@
 % Fonts: the livery's base family (Brand Guide p20: Poppins Bold headlines, Poppins
 % Regular body; Helvetica is the sanctioned substitute).
 %
-%   fonts=brand     the bundled copy where TeX can find it, else an installed system
-%                   copy of the family (fonts=poppins is the old spelling)
+%   fonts=brand     the livery's installed-fonts when this machine has them (by name, so
+%                   only a livery that names some probes fontconfig), else the bundled
+%                   copy where TeX can find it, else an installed system copy of the
+%                   family (fonts=poppins is the old spelling)
 %   fonts=bundled   always the bundled copy (an error if TeX cannot find it)
 %   fonts=helvetica Helvetica (pdfLaTeX) / TeX Gyre Heros (XeLaTeX, LuaLaTeX)
 %
@@ -62,6 +64,7 @@
 \def\engine@tmp{brand}\ifx\engine@fonts\engine@tmp\def\engine@fonts{poppins}\fi
 \newif\ifengine@poppins \engine@poppinsfalse
 \newif\ifengine@bundledpoppins \engine@bundledpoppinsfalse
+\newif\ifengine@installedhead \engine@installedheadfalse
 \def\engine@tmp{auto}\ifx\engine@fonts\engine@tmp
   \iftutex\def\engine@fonts{poppins}\else\def\engine@fonts{helvetica}\fi
 \fi
@@ -80,21 +83,46 @@
         BoldItalicFont = \engine@font@bolditalic,
         \ifdefined\engine@font@semibold FontFace = {sb}{n}{\engine@font@semibold},\fi]}%
       \engine@tmp\engine@poppinstrue\engine@bundledpoppinstrue}
-    \def\engine@tmp{bundled}\ifx\engine@fonts\engine@tmp
-      \engine@bundledpoppins
-    \else
-      % The bundled copy first, looked up as a file (kpathsea).  Probing the
-      % system by name goes through fontconfig, which on a TeX Live whose
-      % font cache is cold (Overleaf, each compile) takes longer than a
-      % free-plan compile is allowed -- and then found nothing anyway.
+    % installed-fonts (livery.sty's \engine@installed@base|head@<face>, full names): the
+    % base faces, and the headings faces as \engineheadingfont when this machine has them
+    \def\engine@installedfonts{%
+      \edef\engine@tmp{\noexpand\setsansfont{\engine@installed@base@regular}[%
+        Scale = 1.0,
+        \ifdefined\engine@installed@base@bold BoldFont = \engine@installed@base@bold,\fi
+        \ifdefined\engine@installed@base@italic ItalicFont = \engine@installed@base@italic,\fi
+        \ifdefined\engine@installed@base@bolditalic BoldItalicFont = \engine@installed@base@bolditalic,\fi
+        \ifdefined\engine@installed@base@semibold FontFace = {sb}{n}{\engine@installed@base@semibold},\fi]}%
+      \engine@tmp\engine@poppinstrue
+      \ifdefined\engine@installed@head@regular
+        \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@installed@head@regular}}%
+        \engine@tmp{%
+          \edef\engine@tmp{\noexpand\newfontfamily\noexpand\engineheadingfont{\engine@installed@head@regular}[%
+            Scale = 1.0,
+            \ifdefined\engine@installed@head@bold BoldFont = \engine@installed@head@bold,\fi
+            \ifdefined\engine@installed@head@italic ItalicFont = \engine@installed@head@italic,\fi
+            \ifdefined\engine@installed@head@bolditalic BoldItalicFont = \engine@installed@head@bolditalic,\fi]}%
+          \engine@tmp\engine@installedheadtrue}{}%
+      \fi}
+    % The bundled copy first, looked up as a file (kpathsea).  Probing the
+    % system by name goes through fontconfig, which on a TeX Live whose
+    % font cache is cold (Overleaf, each compile) takes longer than a
+    % free-plan compile is allowed -- and then found nothing anyway.
+    \def\engine@brandfonts{%
       \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@dir\engine@font@regular\engine@font@ext}}%
       \engine@tmp{\engine@bundledpoppins}{%
         \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@family}}%
         \engine@tmp{%
           \edef\engine@tmp{\noexpand\setsansfont{\engine@font@family}[Scale=1.0,FontFace={sb}{n}{Font=* SemiBold}]}%
           \engine@tmp\engine@poppinstrue
-        }{\engine@bundledpoppins}}%
-    \fi
+        }{\engine@bundledpoppins}}}
+    \def\engine@tmp{bundled}\ifx\engine@fonts\engine@tmp
+      \engine@bundledpoppins
+    \else\ifdefined\engine@font@installed
+      \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@installed@base@regular}}%
+      \engine@tmp{\engine@installedfonts}{\engine@brandfonts}%
+    \else
+      \engine@brandfonts
+    \fi\fi
   \else
     \PackageWarningNoLine{engine_livery}{fonts=\engine@fonts\space needs XeLaTeX or
       LuaLaTeX; falling back to Helvetica}%
@@ -102,8 +130,9 @@
 \fi
 
 % the headings family (typography.headings with files of its own, \engine@headfont@* from
-% livery.sty): \engineheadingfont, which the font theme gives the titles
-\iftutex\ifdefined\engine@headfont@family
+% livery.sty): \engineheadingfont, which the font theme gives the titles, unless the
+% installed headings faces took its place
+\ifengine@installedhead\else\iftutex\ifdefined\engine@headfont@family
   \RequirePackage{fontspec}
   \edef\engine@tmp{\noexpand\newfontfamily\noexpand\engineheadingfont{\engine@headfont@family}[%
     Scale          = 1.0,
@@ -114,7 +143,7 @@
     ItalicFont     = \engine@headfont@italic,
     BoldItalicFont = \engine@headfont@bolditalic]}%
   \engine@tmp
-\fi\fi
+\fi\fi\fi
 
 \ifengine@poppins\else
   \iftutex

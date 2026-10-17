@@ -53,7 +53,8 @@ section 10 (the log, newest first) and `docs/common/liveries/cu/reference/notes.
 - `extends: cu`: a flavor inherits everything and overrides keys; it gets its own `template.pptx`
   (run `livery_template.py` on the flavor).
 - Tools: `livery_inspect.py deck.pptx <dir>` (report + seeds), the engine's `livery_build.py <dir>`
-  (build/), `utils/livery_template.py <dir>` (template.pptx), `utils/livery_check.py <dir> [--qa]`.
+  (build/), `utils/livery_template.py <dir>` (template.pptx; the engine's own `livery_template.py`
+  since 3.3.0), `utils/livery_check.py <dir> [--qa]`.
   README "Adding a livery" is the walkthrough; CI builds and checks every directory under
   `docs/common/liveries/`.
 

@@ -11,7 +11,8 @@ rebased onto the child. `derived` holds the theme's blends of two roles (BLENDS)
 here unless livery.yml sets the key. livery.json is the one truth (Lua and Python read it);
 livery.sty is what engine_livery.sty inputs (overrides/livery-extra.sty of the livery and its
 ancestors appended); livery.css what engine-revealjs.lua attaches; livery.theme is pandoc's
-highlight theme, engine.theme with the roles filled in.
+highlight theme, engine.theme with the roles filled in. `marks` names the mark and sign-off
+for each field by its role (MARK_ROLES); `installed-fonts` names installed faces to prefer.
 """
 
 import argparse
@@ -40,12 +41,22 @@ W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
 # art.<kind> files: backgrounds per slide kind, and titlegraphic, the title photo a deck sets none of
 ART_KINDS = ("title", "section", "closing", "content", "titlegraphic")
 # the title slide's composition (title: in livery.yml) when it is the band: fractions of the slide,
-# roles for the colors; logo and signoff (logo.images names) default to the dark variants
+# roles for the colors; its strip wears marks.<field>
 BAND = {"top": 0.27, "bottom": 0.72, "split": 0.62, "band": "primary", "field": "dark", "field-text": "background"}
 # theme1.xml slot -> role, the slot contract of design section 4 (livery_template.py writes it)
 SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2": "surface",
               "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
+# the livery.yml keys this script reads; any other is reported, not silently dropped
+KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider", "art", "pptx", "overrides",
+         "latex", "signoff", "title", "marks", "installed-fonts"}
+# the fields every livery has: content slides on the background role, the colored fields (dividers,
+# the cover title and closing, feature covers) on primary; a band title adds its own field role
+MARK_ROLES = ("background", "primary")
+# installed-fonts faces, and how a bare family string names them (full name, PostScript name)
+FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
+         "bolditalic": (" Bold Italic", "-BoldItalic")}
+FACE_KEYS = ("regular", "bold", "italic", "bolditalic", "semibold")
 
 
 def mix(a: str, b: str, share: float) -> str:
@@ -86,12 +97,12 @@ def rebase(data: dict, parent: Path, child: Path) -> dict:
 def read(d: Path) -> dict:
     brand = yaml.safe_load((d / "_brand.yml").read_text()) or {}
     knobs = yaml.safe_load((d / "livery.yml").read_text()) or {}
+    for k in sorted(set(knobs) - KNOWN):
+        print(f"warning: {d.name}: unknown livery.yml key {k!r} (ignored)", file=sys.stderr)
     merged = {"brand": brand, **{k: v for k, v in knobs.items() if k != "extends"}}
     parent = knobs.get("extends")
-    if parent:
-        inherited = rebase(read(d.parent / parent), d.parent / parent, d)
-        inherited.get("pptx", {}).pop("scheme", None)   # a flavor's scheme follows its own roles
-        merged = merge(inherited, merged)
+    if parent:   # pptx.scheme holds only explicit overrides; resolve() fills the rest from the roles
+        merged = merge(rebase(read(d.parent / parent), d.parent / parent, d), merged)
     return merged
 
 
@@ -128,13 +139,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
         v = out.get("geometry", {}).get(corner, {}).get("corner")
         if v is not None and v not in legal:
             sys.exit(f"{d.name}: geometry.{corner}.corner {v!r} is not one of {legal}")
-    if "signoff" in data:   # the sign-off lockup: image names from logo.images, resolved to paths
-        so = dict(data["signoff"])
-        images = out["logo"].get("images", {})
-        for v in ("light", "dark"):
-            if so.get(v) not in images:
-                sys.exit(f"{d.name}: signoff.{v} {so.get(v)!r} is not a logo.images name")
-            so[v] = images[so[v]]["path"]
+    if "signoff" in data:   # the sign-off lockup's box; its images (light, dark) are marks defaults
+        so = {k: v for k, v in data["signoff"].items() if k not in ("light", "dark")}
         if so.get("corner", "bottom-left") not in ("bottom-left", "bottom-right"):
             sys.exit(f"{d.name}: signoff.corner {so['corner']!r} is not bottom-left or bottom-right")
         so.setdefault("height", 0.05); so.setdefault("bottom", 0.03); so.setdefault("corner", "bottom-left")
@@ -143,6 +149,9 @@ def resolve(d: Path) -> tuple[dict, dict]:
         out["signoff"] = so
     if "title" in data:   # only when set, so a livery without it keeps its build/ unchanged
         out["title"] = band(d.name, data["title"], out)
+    out["marks"] = marks(d.name, data, out)
+    if "installed-fonts" in data:
+        out["installed-fonts"] = installed_fonts(d.name, data["installed-fonts"])
     out.setdefault("pptx", {})
     # the slot contract, from the roles; a livery's own pptx.scheme overrides slot by slot
     scheme = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
@@ -165,31 +174,83 @@ def band(name: str, title: dict, out: dict) -> dict:
     for k in ("band", "field", "field-text"):
         if t[k] not in out["roles"]:
             sys.exit(f"{name}: title.{k} {t[k]!r} is not a role")
-    images = out["logo"].get("images", {})
-    t.setdefault("logo", out["logo"]["medium"]["dark"])
+    for k in ("logo", "signoff"):   # the old spelling of marks.<field>, which marks() reads
+        t.pop(k, None)
     if "signoff" in out:
         t.setdefault("signoff-height", out["signoff"]["height"])
-    for k in ("logo", "signoff"):
-        if k in t:
-            if t[k] not in images:
-                sys.exit(f"{name}: title.{k} {t[k]!r} is not a logo.images name")
-            t[k] = images[t[k]]["path"]
-        elif k == "signoff" and "signoff" in out:
-            t[k] = out["signoff"]["dark"]
     t.setdefault("logo-height", out.get("geometry", {}).get("logo", {}).get("title", 0.09))
     return t
+
+
+def marks(name: str, data: dict, out: dict) -> dict:
+    """{role: {logo, logo-print?, signoff?}} as paths, for MARK_ROLES, the band's field and every role
+    marks: names. background defaults to logo.medium.light and signoff.light, primary to the dark
+    ones, any other role to primary's; each key defaults on its own."""
+    images, medium = out["logo"].get("images", {}), out["logo"].get("medium", {})
+    so = data.get("signoff") or {}
+    given = {k: dict(v or {}) for k, v in (data.get("marks") or {}).items()}
+    t = data.get("title") or {}
+    field = {**BAND, **t}["field"] if t.get("style") == "band" else None
+    alias = {k: t[k] for k in ("logo", "signoff") if k in t}
+    if alias and field:
+        print(f"warning: {name}: title.logo and title.signoff are deprecated; write marks: {{{field}: ...}}", file=sys.stderr)
+        given[field] = {**alias, **given.get(field, {})}
+    elif alias:
+        print(f"warning: {name}: title.logo and title.signoff apply to a band title only (ignored)", file=sys.stderr)
+    defaults = {"background": {"logo": medium.get("light"), "signoff": so.get("light")},
+                "primary": {"logo": medium.get("dark"), "signoff": so.get("dark")}}
+    roles = list(MARK_ROLES) + [r for r in [field, *given] if r and r not in MARK_ROLES]
+    names = {}
+    for role in dict.fromkeys(roles):
+        if role not in out["roles"]:
+            sys.exit(f"{name}: marks.{role} is not a role")
+        bad = set(given.get(role, {})) - {"logo", "signoff"}
+        if bad:
+            sys.exit(f"{name}: marks.{role} takes logo and signoff, not {sorted(bad)}")
+        names[role] = {**(defaults[role] if role in defaults else names["primary"]), **given.get(role, {})}
+    res = {}
+    for role, m in names.items():
+        if m["logo"] not in images:
+            sys.exit(f"{name}: marks.{role}.logo {m['logo']!r} is not a logo.images name")
+        r = {"logo": images[m["logo"]]["path"]}
+        if m["logo"] + "-print" in images:   # LaTeX takes the print (CMYK) lockup when there is one
+            r["logo-print"] = images[m["logo"] + "-print"]["path"]
+        if "signoff" in out:
+            if m.get("signoff") not in images:
+                sys.exit(f"{name}: marks.{role}.signoff {m.get('signoff')!r} is not a logo.images name")
+            r["signoff"] = images[m["signoff"]]["path"]
+        res[role] = r
+    return res
+
+
+def installed_fonts(name: str, spec: dict) -> dict:
+    """installed-fonts resolved: {base, headings} each {family, faces: {face: [full, PostScript]}};
+    a bare family string names its four faces the usual way (Helvetica Neue Bold, HelveticaNeue-Bold)."""
+    out = {}
+    for k, v in (spec or {}).items():
+        if k not in ("base", "headings"):
+            sys.exit(f"{name}: installed-fonts.{k} is not base or headings")
+        if isinstance(v, str):
+            ps = v.replace(" ", "")
+            v = {"family": v, "faces": {f: [v + a, ps + b] for f, (a, b) in FACES.items()}}
+        if not isinstance(v, dict) or not isinstance(v.get("family"), str) or not isinstance(v.get("faces"), dict):
+            sys.exit(f"{name}: installed-fonts.{k} is a family name or {{family, faces}}")
+        for face, names in v["faces"].items():
+            if face not in FACE_KEYS or not isinstance(names, list) or not 1 <= len(names) <= 2:
+                sys.exit(f"{name}: installed-fonts.{k}.faces.{face}: a face of {FACE_KEYS}, "
+                         "as [full name, PostScript name]")
+        out[k] = {"family": v["family"], "faces": {f: list(n) for f, n in v["faces"].items()}}
+    return out
 
 
 def tex_name(key: str, names: dict) -> str:
     return names.get(key) or "".join(w.capitalize() for w in key.split("-"))
 
 
-def logo_path(livery: dict, variant: str, print_: bool) -> str:
-    """The light/dark logo's path: the `<name>-print` image for LaTeX when there is one."""
-    images, name = livery["logo"]["images"], livery["logo"]["medium"][variant]
-    if print_ and name + "-print" in images:
-        name += "-print"
-    return images[name]["path"]
+def texpath(p: str) -> str:
+    """A livery path for livery.sty: relative ones under \\engineliverydir, absolute ones as they are."""
+    p = Path(p).as_posix()
+    return p if os.path.isabs(p) else f"\\engineliverydir {p}"
 
 
 def base_font(livery: dict) -> tuple[str, list]:
@@ -209,6 +270,14 @@ def heading_font(livery: dict) -> tuple[str, list]:
             if font.get("family") == family and font.get("files"):
                 return family, font["files"]
     return "", []
+
+
+FACE_OF = {(400, False): "regular", (700, False): "bold", (400, True): "italic", (700, True): "bolditalic", (600, False): "semibold"}
+
+
+def face_of(f: dict) -> str | None:
+    """A font file's face name (regular, bold, italic, bolditalic, semibold) from its weight and style."""
+    return FACE_OF.get((f.get("weight", 400), f.get("style") == "italic"))
 
 
 def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
@@ -234,38 +303,46 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% derived blends")
     for key, hexv in livery["derived"].items():
         L.append(f"\\definecolor{{{tex_name('brand-' + key, {})}}}{{HTML}}{{{hexv[1:]}}}")
-    L.append("% logos (\\includegraphics finds the extension)")
-    for variant in ("light", "dark"):
-        p = Path(logo_path(livery, variant, True))
-        L.append(f"\\def\\engine@logo@{variant}{{\\engineliverydir {p.with_suffix('').as_posix()}}}")
+    marks = livery["marks"]
+    stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
+    L.append("% marks: light on the background field, dark on primary (the print lockup when there is one)")
+    for variant, role in (("light", "background"), ("dark", "primary")):
+        L.append(f"\\def\\engine@logo@{variant}{{{stem(marks[role].get('logo-print', marks[role]['logo']))}}}")
     if "signoff" in livery:   # the sign-off lockup at the foot (its corner, height and bottom are geometry)
         so = livery["signoff"]
         L.append("% the sign-off lockup (signoff), light and dark, and its box")
-        for variant in ("light", "dark"):
-            L.append(f"\\def\\engine@signoff@{variant}{{\\engineliverydir {Path(so[variant]).with_suffix('').as_posix()}}}")
+        for variant, role in (("light", "background"), ("dark", "primary")):
+            L.append(f"\\def\\engine@signoff@{variant}{{{stem(marks[role]['signoff'])}}}")
         for k in ("height", "bottom", "corner"):
             L.append(f"\\def\\engine@signoff{k}{{{so[k]}}}")
     family, files = base_font(livery)
     L.append("% fonts: the base family's files, by weight and style")
     L.append(f"\\def\\engine@font@family{{{family}}}")
     if files:
-        L.append(f"\\def\\engine@font@dir{{\\engineliverydir {Path(files[0]['path']).parent.as_posix()}/}}")
+        L.append(f"\\def\\engine@font@dir{{{texpath(Path(files[0]['path']).parent.as_posix())}/}}")
         L.append(f"\\def\\engine@font@ext{{{Path(files[0]['path']).suffix}}}")
-    faces = {(400, False): "regular", (700, False): "bold", (400, True): "italic", (700, True): "bolditalic", (600, False): "semibold"}
     for f in files:
-        face = faces.get((f.get("weight", 400), f.get("style") == "italic"))
+        face = face_of(f)
         if face:
             L.append(f"\\def\\engine@font@{face}{{{Path(f['path']).stem}}}")
     hfamily, hfiles = heading_font(livery)
     if hfamily:   # a second family for headings (typography.headings), same shape
         L.append("% the headings family's files, when it is a family of its own")
         L.append(f"\\def\\engine@headfont@family{{{hfamily}}}")
-        L.append(f"\\def\\engine@headfont@dir{{\\engineliverydir {Path(hfiles[0]['path']).parent.as_posix()}/}}")
+        L.append(f"\\def\\engine@headfont@dir{{{texpath(Path(hfiles[0]['path']).parent.as_posix())}/}}")
         L.append(f"\\def\\engine@headfont@ext{{{Path(hfiles[0]['path']).suffix}}}")
         for f in hfiles:
-            face = faces.get((f.get("weight", 400), f.get("style") == "italic"))
+            face = face_of(f)
             if face:
                 L.append(f"\\def\\engine@headfont@{face}{{{Path(f['path']).stem}}}")
+    installed = livery.get("installed-fonts", {})
+    if installed:   # installed faces fonts=brand prefers (engine_livery.sty), by full name
+        L.append("% installed fonts to prefer under fonts=brand (installed-fonts), by full name")
+        if "base" in installed:
+            L.append(f"\\def\\engine@font@installed{{{installed['base']['family']}}}")
+        for k, tex in (("base", "base"), ("headings", "head")):
+            for face, names in installed.get(k, {}).get("faces", {}).items():
+                L.append(f"\\def\\engine@installed@{tex}@{face}{{{names[0]}}}")
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
     for k, v in geom.items():
@@ -293,7 +370,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append(f"\\def\\engine@waveshift@{k}{{{v}}}")
     for kind in ART_KINDS:
         if isinstance(art.get(kind), str):
-            L.append(f"\\def\\engine@art@{kind}{{\\engineliverydir {Path(art[kind]).with_suffix('').as_posix()}}}")
+            L.append(f"\\def\\engine@art@{kind}{{{stem(art[kind])}}}")
     t = livery.get("title", {})
     if t.get("style") == "band":   # the band title: fractions, colors, the strip's two images
         L.append("% the title's band composition (title: in livery.yml)")
@@ -303,9 +380,10 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
                 L.append(f"\\def\\engine@title@{k.replace('-', '')}{{{t[k]}}}")
         for k, tex in (("band", "EngineBandFill"), ("field", "EngineBandField"), ("field-text", "EngineBandFieldText")):
             L.append(f"\\colorlet{{{tex}}}{{{ROLE_TEX.get(t[k], 'BrandDark')}}}")
-        for k in ("logo", "signoff"):
-            if k in t:
-                L.append(f"\\def\\engine@title@{k}img{{\\engineliverydir {Path(t[k]).with_suffix('').as_posix()}}}")
+        m = marks[t["field"]]   # the strip's two images
+        L.append(f"\\def\\engine@title@logoimg{{{stem(m.get('logo-print', m['logo']))}}}")
+        if "signoff" in m:
+            L.append(f"\\def\\engine@title@signoffimg{{{stem(m['signoff'])}}}")
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
     return "\n".join(L) + "\n"
@@ -317,11 +395,14 @@ def emit_css(livery: dict, extra: str = "") -> str:
          " * beside it, so the url()s are bare file names. */"]
     family, files = base_font(livery)
     hfamily, hfiles = heading_font(livery)
-    for fam, fs in ((family, files), (hfamily, hfiles)):
-        for f in fs:
+    installed = livery.get("installed-fonts", {})
+    for fam, fs, inst in ((family, files, installed.get("base")), (hfamily, hfiles, installed.get("headings"))):
+        for f in fs:   # an installed face first, by full and PostScript name (CSS local() matches no family)
+            names = (inst or {}).get("faces", {}).get(face_of(f), [])
+            local = "".join(f'local("{n}"), ' for n in names)
             L.append(f'@font-face {{ font-family: "{fam}"; font-style: {f.get("style", "normal")}; '
                      f'font-weight: {f.get("weight", 400)}; font-display: block; '
-                     f'src: url("{Path(f["path"]).name}") format("{"opentype" if Path(f["path"]).suffix == ".otf" else "truetype"}"); }}')
+                     f'src: {local}url("{Path(f["path"]).name}") format("{"opentype" if Path(f["path"]).suffix == ".otf" else "truetype"}"); }}')
     props = [f"--engine-{k}: {v};" for k, v in livery["roles"].items()]
     props += [f"--engine-{k}: {v};" for k, v in livery["derived"].items()]
     geom = livery.get("geometry", {})
@@ -384,10 +465,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
                   f"--engine-band-field-text: var(--engine-{t['field-text']});",
                   f"--engine-band-logo-h: {px(t['logo-height'])};",
                   f"--engine-band-logo-w: {round(t['logo-height'] * H, 1) * logo.get('aspect', 1):.1f}px;"]
-        so_left = livery.get("signoff", {}).get("corner", "bottom-left") == "bottom-left" and "signoff" in t
+        so_left = livery.get("signoff", {}).get("corner", "bottom-left") == "bottom-left" and "signoff" in livery
         props += [f"--engine-band-logo-left: {'auto' if so_left else margin};",
                   f"--engine-band-logo-right: {margin if so_left else 'auto'};"]
-        if "signoff" in t:
+        if "signoff" in livery:
             props += [f"--engine-band-signoff-h: {px(t['signoff-height'])};",
                       f"--engine-band-signoff-w: {round(t['signoff-height'] * H, 1) * livery['signoff']['aspect']:.1f}px;"]
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
@@ -403,13 +484,14 @@ def emit_css(livery: dict, extra: str = "") -> str:
         f = livery.get("art", {}).get(kind)
         if isinstance(f, str):
             L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
-    light, dark = (Path(logo_path(livery, v, False)).name for v in ("light", "dark"))
+    marks = livery["marks"]
+    light, dark = (Path(marks[r]["logo"]).name for r in ("background", "primary"))
     L.append(".reveal .slides section.slide::after,\n.reveal .slides section.engine-title::after "
              f'{{ background-image: url("{light}"); }}')
     L.append(".reveal .slides section.slide.engine-field::after,\n.reveal .slides section.engine-title.engine-field::after "
              f'{{ background-image: url("{dark}"); }}')
     if "signoff" in livery:
-        light, dark = (Path(livery["signoff"][v]).name for v in ("light", "dark"))
+        light, dark = (Path(marks[r]["signoff"]).name for r in ("background", "primary"))
         L.append(f'.reveal .slides section .engine-signoff {{ background-image: url("{light}"); }}')
         L.append(".reveal .slides section.engine-field .engine-signoff,\n.reveal .slides section.engine-title.engine-field .engine-signoff "
                  f'{{ background-image: url("{dark}"); }}')
@@ -418,9 +500,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
         L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')
     if band:   # the band's strip images, on the title and the closing slide; the closing wears the title art
         sel = ".reveal .slides section.engine-title.engine-band", ".reveal .slides section.slide.level2.closing.engine-band"
-        L.append(",\n".join(f"{s}::after" for s in sel) + f' {{ background-image: url("{Path(t["logo"]).name}"); }}')
-        if "signoff" in t:
-            L.append(",\n".join(f"{s} .engine-signoff" for s in sel) + f' {{ background-image: url("{Path(t["signoff"]).name}"); }}')
+        m = marks[t["field"]]
+        L.append(",\n".join(f"{s}::after" for s in sel) + f' {{ background-image: url("{Path(m["logo"]).name}"); }}')
+        if "signoff" in m:
+            L.append(",\n".join(f"{s} .engine-signoff" for s in sel) + f' {{ background-image: url("{Path(m["signoff"]).name}"); }}')
         if not isinstance(art.get("closing"), str) and isinstance(art.get("title"), str):
             L.append(f'{sel[1]} {{ background: url("{Path(art["title"]).name}") center / cover no-repeat; }}')
     L.append(extra.rstrip("\n"))

@@ -56,7 +56,10 @@ PUBLISH_PREFIX ?=
 # metadata: {{< include >}}, ![](...), filters: and _metadata.yml are invisible to
 # make, so an edit to any of them rebuilds every deck in the directory.
 FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua)
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _engine _livery
+# The livery's files (build/, template, fonts, logos, art, its parent's too): the _livery link's
+# mtime does not change when a file in the livery does.
+LIVERY_FILES := $(shell python3 $(SHARED_COMMON)/utils/livery.py deps $(LIVERY_DIR))
+DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _engine .livery $(LIVERY_FILES)
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -135,8 +138,11 @@ endif
 	@test -d $(LIVERY_DIR) || { echo "no livery '$(LIVERY)': $(LIVERY_DIR) is missing" >&2; exit 1; }
 	@echo $(LIVERY) > $@
 
+# Decks depend on the stamp and take the link order-only: make stats a link's target, the
+# livery directory, which is older than a fresh stamp, so as a prerequisite the link would
+# re-render every deck on every run after a switch. Relinked only when it points elsewhere.
 _livery: .livery
-	ln -sfn $(LIVERY_DIR) $@
+	@[ "$$(readlink $@)" = "$(LIVERY_DIR)" ] || ln -sfn $(LIVERY_DIR) $@
 
 define render_pptx
 	quarto render $< --to pptx -o $@
@@ -149,7 +155,11 @@ define render_pptx
 	python3 $(STYLE_TABLES) $@
 endef
 
+# The engine's HTML dependency (livery.css, its fonts and logos) is named for the engine's
+# version, not the livery, and quarto keeps a copied file that is newer than its source: after
+# a LIVERY switch the deck would wear the old livery's css and marks. So drop it first.
 define render_html
+	rm -rf $(@:.html=_files)/libs/quarto-contrib/engine-revealjs-*
 	quarto render $< --to engine-revealjs -o $@
 endef
 
@@ -157,24 +167,24 @@ define render_pdf
 	quarto render $< --to engine-beamer -o $@
 endef
 
-%.pptx: %.qmd $(DEPS)
+%.pptx: %.qmd $(DEPS) | _livery
 	$(render_pptx)
 
-%.html: %.qmd $(DEPS)
+%.html: %.qmd $(DEPS) | _livery
 	$(render_html)
 
-%.pdf: %.qmd $(DEPS)
+%.pdf: %.qmd $(DEPS) | _livery
 	$(render_pdf)
 
 # QFILE: a single-deck directory whose source is not named <OUT>.qmd.
 ifneq ($(QFILE),$(OUT).qmd)
-$(OUT).pptx: $(QFILE) $(DEPS)
+$(OUT).pptx: $(QFILE) $(DEPS) | _livery
 	$(render_pptx)
 
-$(OUT).html: $(QFILE) $(DEPS)
+$(OUT).html: $(QFILE) $(DEPS) | _livery
 	$(render_html)
 
-$(OUT).pdf: $(QFILE) $(DEPS)
+$(OUT).pdf: $(QFILE) $(DEPS) | _livery
 	$(render_pdf)
 endif
 

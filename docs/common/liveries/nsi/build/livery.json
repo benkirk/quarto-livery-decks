@@ -48,6 +48,42 @@
     },
     "tab": 0.018
   },
+  "installed-fonts": {
+    "base": {
+      "faces": {
+        "bold": [
+          "Helvetica Neue Bold",
+          "HelveticaNeue-Bold"
+        ],
+        "bolditalic": [
+          "Helvetica Neue Bold Italic",
+          "HelveticaNeue-BoldItalic"
+        ],
+        "italic": [
+          "Helvetica Neue Italic",
+          "HelveticaNeue-Italic"
+        ],
+        "regular": [
+          "Helvetica Neue",
+          "HelveticaNeue"
+        ]
+      },
+      "family": "Helvetica Neue"
+    },
+    "headings": {
+      "faces": {
+        "bold": [
+          "Helvetica Neue Condensed Bold",
+          "HelveticaNeue-CondensedBold"
+        ],
+        "regular": [
+          "Helvetica Neue Condensed Bold",
+          "HelveticaNeue-CondensedBold"
+        ]
+      },
+      "family": "Helvetica Neue"
+    }
+  },
   "latex": {
     "colors": {
       "accessible-gold": "CUAccessibleGold",
@@ -87,8 +123,22 @@
       }
     },
     "medium": {
-      "dark": "nsi-black",
+      "dark": "cu-color",
       "light": "nsi-color"
+    }
+  },
+  "marks": {
+    "background": {
+      "logo": "logos/nsi-lockup.png",
+      "signoff": "logos/rio-lockup.png"
+    },
+    "dark": {
+      "logo": "logos/nsi-lockup-white.png",
+      "signoff": "logos/rio-lockup-white.png"
+    },
+    "primary": {
+      "logo": "logos/nsi-lockup-black.png",
+      "signoff": "logos/rio-lockup.png"
     }
   },
   "name": "nsi",
@@ -140,18 +190,14 @@
     "aspect": 6.317,
     "bottom": 0.03,
     "corner": "bottom-left",
-    "dark": "logos/rio-lockup.png",
-    "height": 0.05,
-    "light": "logos/rio-lockup.png"
+    "height": 0.05
   },
   "title": {
     "band": "primary",
     "bottom": 0.724,
     "field": "dark",
     "field-text": "background",
-    "logo": "logos/nsi-lockup-white.png",
     "logo-height": 0.19,
-    "signoff": "logos/rio-lockup-white.png",
     "signoff-height": 0.11,
     "split": 0.62,
     "style": "band",

@@ -1,66 +1,43 @@
-"""Read a livery's resolved truth, build/livery.json, for the post-render scripts.
+#!/usr/bin/env python3
+"""The engine's livery reader (build/livery.json), for the post-render scripts.
 
-The directory comes from the argument, else $LIVERY_DIR (exported by Make.common), else a
-`_livery` link in the current directory. Generate the file with livery_build.py."""
+    import livery as livery_mod     load, color, scheme, derived, mix, font_file, mark, files
+    livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
 
-import json
+The reader lives in the vendored engine (_extensions/benkirk/engine/livery.py, beside the
+template builder); this loads it by path, since both files are named livery. `deps` prints
+build/livery.{json,sty,css,theme}, the template and every file the data names (the parent's
+too), joined to the directory as given; nothing when build/livery.json is missing."""
+
+import importlib.util
 import os
+import sys
 from pathlib import Path
 
-
-def livery_dir(path: str | os.PathLike | None = None) -> Path:
-    for candidate in (path, os.environ.get("LIVERY_DIR"), "_livery"):
-        if candidate and Path(candidate).is_dir():
-            return Path(candidate).resolve()
-    raise FileNotFoundError("no livery: pass a directory, export LIVERY_DIR, or run where _livery links")
+ENGINE = Path(__file__).resolve().parent.parent / "_extensions" / "benkirk" / "engine"
 
 
-def load(path: str | os.PathLike | None = None) -> dict:
-    d = livery_dir(path)
-    f = d / "build" / "livery.json"
-    if not f.exists():
-        raise FileNotFoundError(f"{f} missing: run livery_build.py {d}")
-    data = json.loads(f.read_text())
-    data["dir"] = str(d)
-    return data
+def engine_module(name: str):
+    """A module of the vendored engine, loaded by path (engine_<name>, so it shadows nothing here)."""
+    spec = importlib.util.spec_from_file_location(f"engine_{name}", ENGINE / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
-def mix(a: str, b: str, share: float) -> str:
-    """Sass mix(): a's share of each channel plus b's remainder, rounded; '#RRGGBB' in and out."""
-    pairs = zip(bytes.fromhex(a.lstrip("#")), bytes.fromhex(b.lstrip("#")))
-    return "#" + "".join(f"{round(x * share + y * (1 - share)):02X}" for x, y in pairs)
+_reader = engine_module("livery")
+globals().update({k: v for k, v in vars(_reader).items() if not k.startswith("__")})
 
 
-def color(livery: dict, role: str) -> str:
-    """A role's hex without '#', as the pptx scripts write it."""
-    return livery["roles"][role].lstrip("#").upper()
+def deps(d: str) -> list[str]:
+    if not (Path(d) / "build" / "livery.json").exists():
+        return []
+    lv = _reader.load(d)
+    rel = [f"build/livery.{x}" for x in ("json", "sty", "css", "theme")] + [p for p, _ in _reader.files(lv)]
+    return sorted({os.path.normpath(Path(d) / p) for p in rel if (Path(d) / p).exists()})
 
 
-def scheme(livery: dict, slot: str) -> str:
-    """The hex of a theme1.xml scheme slot (dk2, accent4, ...; design section 4)."""
-    return livery["pptx"]["scheme"][slot].lstrip("#").upper()
-
-
-def derived(livery: dict, key: str) -> str:
-    """The hex of a blend livery_build.py derived from the roles (table-rule, caution-fill, ...)."""
-    return livery["derived"][key].lstrip("#").upper()
-
-
-def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False) -> Path:
-    """The TTF of one face of a brand.yml font family, resolved against the livery directory."""
-    for font in livery["typography"]["fonts"]:
-        if font.get("family") != family:
-            continue
-        for f in font.get("files", []):
-            if f.get("weight", 400) == weight and (f.get("style") == "italic") == italic:
-                return Path(livery["dir"]) / f["path"]
-    raise FileNotFoundError(f"livery {livery['name']}: no {family} file at weight {weight}"
-                            f"{' italic' if italic else ''}")
-
-
-def logo_path(livery: dict, variant: str, print_: bool = False) -> str:
-    """The light or dark logo's path, relative to the livery dir (the `-print` image for LaTeX)."""
-    images, name = livery["logo"]["images"], livery["logo"]["medium"][variant]
-    if print_ and name + "-print" in images:
-        name += "-print"
-    return images[name]["path"]
+if __name__ == "__main__":
+    if sys.argv[1:2] != ["deps"] or len(sys.argv) != 3:
+        sys.exit("usage: livery.py deps <livery dir>")
+    print(" ".join(deps(sys.argv[2])))

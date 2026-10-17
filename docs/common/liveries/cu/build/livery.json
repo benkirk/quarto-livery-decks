@@ -46,6 +46,42 @@
     },
     "tab": 0.018
   },
+  "installed-fonts": {
+    "base": {
+      "faces": {
+        "bold": [
+          "Helvetica Neue Bold",
+          "HelveticaNeue-Bold"
+        ],
+        "bolditalic": [
+          "Helvetica Neue Bold Italic",
+          "HelveticaNeue-BoldItalic"
+        ],
+        "italic": [
+          "Helvetica Neue Italic",
+          "HelveticaNeue-Italic"
+        ],
+        "regular": [
+          "Helvetica Neue",
+          "HelveticaNeue"
+        ]
+      },
+      "family": "Helvetica Neue"
+    },
+    "headings": {
+      "faces": {
+        "bold": [
+          "Helvetica Neue Condensed Bold",
+          "HelveticaNeue-CondensedBold"
+        ],
+        "regular": [
+          "Helvetica Neue Condensed Bold",
+          "HelveticaNeue-CondensedBold"
+        ]
+      },
+      "family": "Helvetica Neue"
+    }
+  },
   "latex": {
     "colors": {
       "accessible-gold": "CUAccessibleGold",
@@ -72,6 +108,16 @@
     "medium": {
       "dark": "cu-color",
       "light": "cu-color"
+    }
+  },
+  "marks": {
+    "background": {
+      "logo": "logos/cu-boulder-lockup.png",
+      "signoff": "logos/cu-boulder-lockup.png"
+    },
+    "primary": {
+      "logo": "logos/cu-boulder-lockup.png",
+      "signoff": "logos/cu-boulder-lockup.png"
     }
   },
   "name": "cu",
@@ -123,9 +169,7 @@
     "aspect": 10.903,
     "bottom": 0.035,
     "corner": "bottom-left",
-    "dark": "logos/cu-boulder-lockup.png",
-    "height": 0.04,
-    "light": "logos/cu-boulder-lockup.png"
+    "height": 0.04
   },
   "typography": {
     "base": "TeX Gyre Heros",

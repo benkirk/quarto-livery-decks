@@ -149,8 +149,12 @@ liveries/<name>/
                   content, section, closing, feature}; divider {label, eyebrow, tab};
                   signoff {light, dark, aspect, height, bottom, corner}: a second lockup at
                   the foot; geometry.logo.corner (top-right | top-left | none) and
-                  geometry.pagenumber.corner (bottom-left | bottom-right); pptx {template,
-                  fonts, typeface, heading-typeface}; aspect (16:9 default); overrides
+                  geometry.pagenumber.corner (bottom-left | bottom-right); title {style:
+                  cover | band, ...}; marks {<role>: {logo, signoff}}: the mark and sign-off
+                  each field wears by its role (background, primary, the band's field);
+                  installed-fonts {base, headings}: installed faces preferred over the
+                  bundled ones; pptx {template, fonts, typeface, heading-typeface, scheme};
+                  aspect (16:9 default); overrides. Any other key is warned about
   template.pptx   THE SPEC: pandoc-compliant, derived from the reference deck (section 6)
   logos/          pdf (LaTeX) and png/svg (web, RGB), same basenames, light and dark variants
   art/            background art per slide kind: svg (web) + pdf (LaTeX) + png (pptx master
@@ -271,7 +275,7 @@ lxml-on-zip for the writes, fixed zip timestamps for reproducible files.
    ranked by frequency), extracts the media into `reference/media/`, and seeds
    `_brand.yml` (palette from the slots and the frequent hexes, fonts from the font
    scheme) and a `livery.yml` with a blank layout-mapping table.
-2. `livery_template.py <livery dir>` produces the compliant template from the reference's
+2. `livery_template.py <livery dir>` (in the engine since 3.3.0) produces the compliant template from the reference's
    master and the mapped layouts: renames them to pandoc's names (`Title Slide`,
    `Title and Content`, `Section Header`, `Two Content`, `Comparison`,
    `Content with Caption`, `Blank`), guarantees the five `slideLayout1` placeholders
@@ -312,7 +316,7 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 4. NASA general, then the first program flavor via `extends` (recolored template, its
    own lockups).
 
-Before step 4: the post-NSI refactor (`docs/design/refactor-handoff.md`): the pptx template
+Before step 4 (done 2026-10-16, engine 3.3.0): the post-NSI refactor (`docs/design/refactor-handoff.md`): the pptx template
 tooling moves into the engine, marks are keyed by the field's role (`marks:`), and five cheap
 fixes (unknown keys warn, livery files as make prerequisites, a fixture deck in parity and CI,
 absolute art paths in beamer, flavors inherit `pptx.scheme` overrides), and a livery may
@@ -357,6 +361,39 @@ section 5, to be done before the next new composition (`refactor-handoff.md`, la
 ## 10. Log
 
 Newest first. The first unchecked item of section 7 is the next step.
+
+- **2026-10-16** The post-NSI refactor (`docs/design/refactor-handoff.md`), as
+  beamer-livery-theme 3.3.0 and this repo's next PR. (1) The pptx template tooling lives in
+  the engine: `livery_template.py`, `pptx_waves.py`, the json reader `livery.py` and the
+  data and template checks of `livery_check.py` sit beside `livery_build.py`, and the
+  engine's CI runs the checks on its four liveries, so a template change is one engine PR.
+  Here `utils/livery.py` loads the vendored reader by path, `slide_layout.py` takes
+  `pptx_waves` the same way, and `utils/livery_check.py` wraps the engine's and keeps
+  `--qa`. (2) Marks by field: `marks: {<role>: {logo, signoff}}`, resolved for every livery
+  into `livery.json` (background from `logo.medium.light` and `signoff.light`, primary
+  from the dark ones, any other role from primary's); the themes, the css, the Lua
+  dependency list, the builder and `slide_layout.py` read it; `title.logo`/`title.signoff`
+  are deprecated aliases. nsi now says `primary: {logo: nsi-black}` and `dark: {logo:
+  nsi-white, signoff: rio-white}` and drops its band keys, its `logo.medium.dark` and its
+  restated scheme; both templates rebuilt byte-identically. (3) Cheap fixes: an unknown
+  `livery.yml` key warns; absolute paths go into `livery.sty` without `\engineliverydir`;
+  a flavor keeps its parent's `pptx.scheme` overrides; `livery.py deps` puts the livery's
+  files into `DEPS`, and the `_livery` link became order-only, because make stats a
+  link's target (the livery directory, older than a fresh `.livery` stamp) and so
+  re-rendered every deck on every run after a livery switch; `docs/fixtures/` (a photo
+  title and the light title) joins CI and `parity.sh`, which now snapshots every deck of
+  `DECKS`, renders the PDF pages and covers nsi. (4) `installed-fonts`: cu names Helvetica
+  Neue (headings: Condensed Bold); the css tries it by `local()` name before Heros and
+  `fonts=brand` loads it in the PDF when installed. Checked on a Mac: `pdffonts` lists the
+  HelveticaNeue faces under `fonts=brand` and Heros under `fonts=bundled`; Chrome's
+  `CSS.getPlatformFontsForNode` reports Helvetica Neue (Condensed Bold for the headings),
+  and TeX Gyre Heros with the `local()` names misspelled. Found by the contact sheet: the
+  engine's HTML dependency is named for the engine version, not the livery, and quarto keeps
+  a copied file newer than its source, so after a `LIVERY` switch without `make clean` a deck
+  wore the old livery's css and marks; the HTML recipe now drops that directory first.
+  Parity (quickstart, sample, fixtures under ncar, cu and nsi): pptx and PDF (text and
+  pages) identical, HTML only the version path; engine parity 202 PDF pages identical, HTML
+  only the version path; every template rebuilt byte-identically. Next: NASA.
 
 - **2026-10-16** Retrospective after cu and nsi, with Ben. The livery contract held: nsi went
   in as data, the onboarding tools and CI took it as is. Frictions: each title composition
