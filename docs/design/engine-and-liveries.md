@@ -406,8 +406,9 @@ Newest first. The first unchecked item of section 7 is the next step.
   and nsi, except nsi's sign-off right edge (the same before: the lockup's thin type on art)
   and the band's two-line pptx title stack (0.038, pptx centres it on the rule). Decided on the
   way with Ben: ncar's cover title text sits where the brand pptx template puts it (from 0.375),
-  as the sprint's final commit; the feature looks are `feature.style: bar | cover`, ncar's
-  chosen from a contact sheet; on the feature panel beamer sets blocks as a heading over text
+  as the sprint's final commit; the feature looks are `feature.style: bar | cover`; ncar keeps
+  the bar for photo slides inside a deck, the cover with waves being its title slide's (Ben,
+  from a sheet of both in every format); on the feature panel beamer sets blocks as a heading over text
   (a beamer block box took the frame's margins and spilled past the panel). Open: the body type
   sizes disagreed across formats (PDF 0.043 of the slide height, pptx 0.037, HTML 0.031), deck
   wide and older than the sprint; at Ben's request a type pass made them fractions of the slide
