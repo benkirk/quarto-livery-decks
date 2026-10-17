@@ -68,8 +68,9 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe post-processes with
   `section_subtitle.py`, `enable_autofit.py`, `embed_fonts.py`,
-  `style_footnotes.py`, `link_captions.py`, `slide_layout.py`, and
-  `style_tables.py` (tables drawn as in the HTML theme).
+  `style_footnotes.py`, `link_captions.py`, `slide_layout.py`,
+  `style_tables.py` (tables drawn as in the HTML theme), and `type_step.py` (a deck's
+  `type-body:`/`type-scale:`).
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
   `libs/`, `images/`, `SITE_EXTRA` directories, an index from `site_index.py` in
   the livery's colors with its fonts copied to `fonts/`;
@@ -137,6 +138,9 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   deck's (body 16, titles 32, cover 48, dividers 60). HTML and beamer take the same sizes as fractions of the slide height, so
   the formats fit and overflow alike; the post-processors read `livery.type_pt()` and scale their
   absolute pads by `livery.canvas_scale()`; `scale=` rounds a pptx size to the half point.
+  A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>` (engine >= 3.7.0:
+  beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
+  reads it from `docProps/custom.xml`); `docs/fixtures/small.qmd` is `type-body: 10`.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by

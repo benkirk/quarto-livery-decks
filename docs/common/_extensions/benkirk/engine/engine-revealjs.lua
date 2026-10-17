@@ -56,7 +56,7 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "3.6.0"
+local VERSION = "3.7.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
@@ -64,6 +64,23 @@ local W, H = 1600, 900
 -- build/livery.json carries the roles the waves and fields are drawn in; build/livery.css,
 -- attached with the font and logo files, the rest.
 local EXTDIR = pandoc.path.directory(quarto.utils.resolve_path("engine-revealjs.lua"))
+
+-- The deck's size step: `type-body: <pt>` (the body in points; every size scales by it over the
+-- livery's body, type.roles.body.pt) or `type-scale: <factor>`; type-body wins. 1 without either.
+local function deck_type_scale(meta, body_pt, who)
+  local function num(k)
+    if meta[k] == nil then return nil end
+    local v = tonumber(pandoc.utils.stringify(meta[k]))
+    if not v or v <= 0 then
+      quarto.log.warning(who .. ": " .. k .. " is not a positive number; ignored")
+      return nil
+    end
+    return v
+  end
+  local tb, ts = num("type-body"), num("type-scale")
+  if tb then return tb / body_pt end
+  return ts or 1
+end
 
 local function load_livery(meta, brand)
   local dir = meta["livery"] and pandoc.utils.stringify(meta["livery"])
@@ -554,6 +571,10 @@ function Pandoc(doc)
   if content_art == "" then content_art = nil end
 
   add_dependency(livery)
+  local tscale = deck_type_scale(meta, livery.type.roles.body.pt, "engine-revealjs")
+  if tscale ~= 1 then   -- livery.css multiplies its base sizes by it (every other size is em-relative)
+    quarto.doc.include_text("in-header", string.format("<style>:root { --engine-type-scale: %.4f; }</style>", tscale))
+  end
   quarto.doc.include_text("in-header", string.format(
     "<script>document.documentElement.classList.add('engine-title-%s'%s)</script>",
     light and "light" or "dark",

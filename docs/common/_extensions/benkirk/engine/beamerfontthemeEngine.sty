@@ -10,6 +10,8 @@
 % whatever the class's 10/11/12pt option. LaTeX's size commands are its 11pt ladder rescaled onto
 % the body; each role below takes its own ratio. \engine@fs{<role>}: that role's \fontsize.
 \newdimen\engine@typebody \engine@typebody=\engine@type@frac\paperheight
+% typescale=<factor> (a deck's type-body:/type-scale:, engine-beamer.lua): every size times it
+\ifdefined\engine@opt@typescale \engine@typebody=\engine@opt@typescale\engine@typebody \fi
 \def\engine@fsof#1#2{\fontsize{\fpeval{#1*\strip@pt\engine@typebody}pt}{\fpeval{#1*#2*\strip@pt\engine@typebody}pt}}
 \def\engine@fs#1{\expandafter\expandafter\expandafter\engine@fsof\csname engine@type@#1\endcsname}
 \def\engine@setsize#1#2#3{\edef\engine@tmp{\noexpand\DeclareRobustCommand\noexpand#1{\noexpand\@setfontsize\noexpand#1%

@@ -284,6 +284,23 @@ local function header_includes(doc)
   return hi
 end
 
+-- The deck's size step: `type-body: <pt>` (the body in points; every size scales by it over the
+-- livery's body, type.roles.body.pt) or `type-scale: <factor>`; type-body wins. 1 without either.
+local function deck_type_scale(meta, body_pt, who)
+  local function num(k)
+    if meta[k] == nil then return nil end
+    local v = tonumber(pandoc.utils.stringify(meta[k]))
+    if not v or v <= 0 then
+      quarto.log.warning(who .. ": " .. k .. " is not a positive number; ignored")
+      return nil
+    end
+    return v
+  end
+  local tb, ts = num("type-body"), num("type-scale")
+  if tb then return tb / body_pt end
+  return ts or 1
+end
+
 local function load_theme(doc)
   local extdir = pandoc.path.directory(quarto.utils.resolve_path("engine_livery.sty"))
   if not pandoc.path.is_absolute(extdir) then
@@ -324,6 +341,16 @@ local function load_theme(doc)
     livery = extdir .. "/liveries/" .. brand
   end
   table.insert(opts, "livery=" .. livery)
+  -- the deck's size step as typescale= (a deck's own typescale= in themeoptions wins)
+  local has_scale = false
+  for _, o in ipairs(opts) do if o:match("^%s*typescale%s*=") then has_scale = true end end
+  local jf = io.open(pandoc.path.join({ livery, "build", "livery.json" }))
+  if jf and not has_scale then
+    local lj = quarto.json.decode(jf:read("a"))
+    local f = deck_type_scale(doc.meta, lj.type.roles.body.pt, "engine-beamer")
+    if f ~= 1 then table.insert(opts, "typescale=" .. string.format("%.4f", f)) end
+  end
+  if jf then jf:close() end
   local tex = table.concat({
     "\\makeatletter",
     "\\providecommand\\input@path{}",

@@ -411,8 +411,11 @@ Newest first. The first unchecked item of section 7 is the next step.
   numbers only bottom left. Checked against the references: five slides of each brand's own
   deck rebuilt with the same content, side by side, similar in size and wrapping. Still open:
   the sample deck's "Project config" slide (PDF: the code runs off the page and the right
-  column doesn't paint, on main too). Next: the deck-wide size step (`type-body:` /
-  `type-scale:`), then NASA.
+  column doesn't paint, on main too). Then the deck-wide size step (beamer-livery-theme #34,
+  3.7.0; this repo #42): front matter `type-body: <pt>` or `type-scale: <factor>` scales every
+  size in all three formats (beamer `typescale=`, HTML `--engine-type-scale`, pptx
+  `type_step.py` to the half point); `docs/fixtures/small.qmd` is `type-body: 10`. Next: nsi's
+  two measure misses, then NASA.
 - **2026-10-17, compositions as boxes** (beamer-livery-theme #21-#30, 3.5.0; this repo #34-#38).
   The title (cover, photo, light, photo-light, band), closing (and light, band), section and
   feature slides are one `compositions` block of boxes in `build/livery.json`
