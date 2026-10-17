@@ -438,7 +438,8 @@ examples/                   feature showcase (LaTeX, Quarto, article), math font
 push origin v3.4.0`. The `release` workflow runs `make overleaf`
 (`overleaf_zip.py` on the `ncar` livery) and publishes a GitHub Release with the
 zip, which is what the Overleaf link above opens; it refuses a tag that does
-not match the extension version. Quarto users can pin one:
+not match the extension version, and a moved tag (`git tag -f`, while a change
+stays backwards compatible) replaces the release's zip. Quarto users can pin one:
 `quarto add benkirk/beamer-livery-theme@v3.4.0`.
 
 ## Migrating a 2020-brand (v1) deck
