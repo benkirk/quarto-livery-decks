@@ -188,6 +188,16 @@
       "light": "ucar-color"
     }
   },
+  "marks": {
+    "background": {
+      "logo": "logos/UCAR-Logo_Color_RGB.png",
+      "logo-print": "logos/UCAR-Logo_Color_RGB.pdf"
+    },
+    "primary": {
+      "logo": "logos/UCAR-Logo_White_RGB.png",
+      "logo-print": "logos/UCAR-Logo_White_RGB.pdf"
+    }
+  },
   "name": "ucar",
   "palette": {
     "dark-blue": "#00357A",

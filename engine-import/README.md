@@ -250,7 +250,7 @@ the better choice.
 | `livery` | a directory holding `build/livery.sty` | the bundled `liveries/<brand>` | the brand: colors, fonts, logos, geometry ([design](docs/design/engine-and-liveries.md), section 4) |
 | `brand` | `ncar`, `ucar`, `ncarucar` | `ncar` | palette and logo lockup: NSF NCAR, UCAR, or NSF NCAR-UCAR |
 | `title` | `dark`, `light` | `dark` | title/closing slide field: brand color with the white-reversed logo, or white with the full-color logo |
-| `fonts` | `poppins`, `bundled`, `helvetica` | `poppins` | `poppins` uses the bundled copy where TeX can find it, else an installed Poppins (probing the system by name is slow on a cold font cache, so the bundled copy comes first); `bundled` always uses the bundled copy; `helvetica` is the brand's sanctioned substitute (and the only choice under pdfLaTeX) |
+| `fonts` | `brand` (`poppins`), `bundled`, `helvetica` | `brand` | `brand` uses the livery's `installed-fonts` when this machine has them (below), else the bundled copy where TeX can find it, else an installed copy of the bundled family (probing the system by name is slow on a cold font cache, so the bundled copy comes before that); `bundled` always uses the bundled copy; `helvetica` is the brand's sanctioned substitute (and the only choice under pdfLaTeX) |
 | `footer` | `minimal`, `full` | `minimal` | page number only, or also the section, short title and date |
 | `sectionpages` | `true`, `false` | `true` | a branded divider slide at each section |
 | `logo` | `true`, `false` | `true` | logo at the top right of content slides |
@@ -259,7 +259,26 @@ the better choice.
 | `autofit` | `true`, `false` | `true` | HTML only: shrink overflowing content slides to fit |
 
 The HTML format reads `brand`, `title`, `waves` and `autofit` and ignores the
-rest. The `ncarucar` livery has no RGB web copy of its lockup, so the HTML deck
+rest.
+
+**Installed fonts.** A livery whose brand font cannot be bundled (a commercial face) bundles a
+free stand-in and may name the real one in `livery.yml`:
+
+```yaml
+installed-fonts:
+  base: Helvetica Neue                  # a family: its four faces by the usual names
+  headings:                             # or faces by full and PostScript name
+    family: Helvetica Neue
+    faces: {bold: [Helvetica Neue Condensed Bold, HelveticaNeue-CondensedBold]}
+```
+
+The HTML deck's `@font-face` rules list those faces as `local()` sources ahead of the bundled
+file, so a viewer who has the font sees it and anyone else the stand-in. The PDF uses them
+under `fonts=brand` when the machine that builds it has them, and embeds them for every
+reader; `fonts=bundled` ignores them, which keeps a build reproducible. The engine never copies
+the font: whether you may embed an installed font in a PDF you distribute is a question for
+its licence (macOS's covers using its fonts, not redistributing the files, which this never
+does). The `ncarucar` livery has no RGB web copy of its lockup, so the HTML deck
 shows the NSF NCAR logo there.
 
 `make variants` builds `examples/template.tex` in UCAR, UCP, NCAR-UCAR, light-title,
@@ -358,6 +377,9 @@ _extensions/engine/           the theme: Quarto extension *and* LaTeX sources
   liveries/<name>/              a brand: _brand.yml, livery.yml, fonts/, logos/, template.pptx,
                                 build/livery.{json,sty,css} (generated, committed)
   livery_build.py               writes build/ from _brand.yml and livery.yml (--check in CI)
+  livery_template.py            builds a livery's template.pptx from build/livery.json
+  livery_check.py               checks a livery: build/ fresh, its files, the template (CI)
+  livery.py, pptx_waves.py      the json reader and the wave shapes, shared with the framework
 tools/fit-waves.py          fits the wave curves to the brand's cover art (the art.waves block of a livery.yml)
 examples/                   feature showcase (LaTeX, Quarto, article), math font specimen
   diagrams/                   one Graphviz and one mermaid source, shared by both

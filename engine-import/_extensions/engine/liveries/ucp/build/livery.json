@@ -200,6 +200,16 @@
       "light": "ucp-color"
     }
   },
+  "marks": {
+    "background": {
+      "logo": "logos/UCP-Logo_Color_RGB.png",
+      "logo-print": "logos/UCP-Logo_Color_RGB.pdf"
+    },
+    "primary": {
+      "logo": "logos/UCP-Logo_White_RGB.png",
+      "logo-print": "logos/UCP-Logo_White_RGB.pdf"
+    }
+  },
   "name": "ucp",
   "palette": {
     "dark-blue": "#00357A",
