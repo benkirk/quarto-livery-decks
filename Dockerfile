@@ -109,7 +109,15 @@ chmod -R a+rX "$PLAYWRIGHT_BROWSERS_PATH"   # the zip carries 600 on a few files
 "$QUARTO_CHROMIUM" --version
 EOS
 
-# 6. The framework itself, last: it changes most often (.dockerignore keeps outputs and the
+# 6. A mount point for the host's own fonts (a brand's licensed faces: a livery's
+#    installed-fonts, the PDF's fonts=brand), registered with fontconfig, which XeLaTeX,
+#    Chromium and LibreOffice all read: `-v "$PWD/fonts:/opt/fonts:ro"`. Empty in the image.
+RUN mkdir -p /opt/fonts \
+    && printf '%s\n' '<?xml version="1.0"?>' '<!DOCTYPE fontconfig SYSTEM "fonts.dtd">' \
+         '<fontconfig><dir>/opt/fonts</dir></fontconfig>' > /etc/fonts/conf.d/60-opt-fonts.conf \
+    && fc-cache -f >/dev/null
+
+# 7. The framework itself, last: it changes most often (.dockerignore keeps outputs and the
 #    host's conda-env/ out). A mounted tree belongs to whoever mounted it: let git act in it.
 COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh

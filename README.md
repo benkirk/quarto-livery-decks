@@ -561,7 +561,8 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   emoji) and the common web families (Roboto, Open Sans, Lato, Inter, IBM Plex, ...):
   `docker run --rm ghcr.io/benkirk/quarto-livery-decks fc-list : family | sort -u`. CJK
   is left out. Your own licensed faces (a livery's `installed-fonts`, PDF `fonts=brand`)
-  mount read-only where fontconfig looks: `-v "$PWD/fonts:/usr/local/share/fonts/brand:ro"`.
+  mount read-only on `/opt/fonts`, which fontconfig is told about, so XeLaTeX, Chromium
+  and LibreOffice all see them: `-v "$PWD/fonts:/opt/fonts:ro"`.
 - **Tags**: `latest` and `main` (the main branch), `sha-<short>` (every commit), `1.2.3`,
   `1.2` and `1` (a release), `pr-N` (a pull request). The mount path may not contain
   spaces, `%` or `#` (LaTeX's `\input@path`).
