@@ -1,6 +1,6 @@
 title: Engine
 author: Benjamin Kirk
-version: 3.5.0
+version: 3.6.0
 quarto-required: ">=1.6.0"   # \pandocbounded (used by engine-beamer.lua) needs pandoc >= 3.2.1
 contributes:
   formats:

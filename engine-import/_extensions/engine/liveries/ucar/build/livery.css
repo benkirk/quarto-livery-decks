@@ -33,6 +33,29 @@
   --engine-full-pad: 40px;
   --engine-full-floor: 67.5px;
   --engine-full-caption: 54px;
+  --engine-type-body: 26.67px;
+  --engine-type-frametitle: 45px;
+  --engine-type-pagenumber: 15px;
+  --engine-type-footer: 15px;
+  --engine-type-subhead: 1.25;
+  --engine-type-table: 0.8125;
+  --engine-type-code: 0.6875;
+  --engine-type-caption: 0.6875;
+  --engine-type-footnote: 0.6875;
+  --engine-type-title: 1.8125;
+  --engine-type-subtitle: 1.25;
+  --engine-type-date: 0.6875;
+  --engine-type-author: 1.0;
+  --engine-type-institute: 1.0;
+  --engine-type-fineprint: 0.4375;
+  --engine-type-section: 2.5;
+  --engine-type-sectionsubtitle: 1.25;
+  --engine-type-eyebrow: 0.6875;
+  --engine-type-closing: 2.5;
+  --engine-type-level2: 0.9375;
+  --engine-type-level3: 0.8667;
+  --engine-type-level4: 0.9231;
+  --engine-type-level5: 0.9167;
   --engine-font-family: "Poppins";
   --engine-logo-left: auto;
   --engine-logo-right: var(--engine-margin);
@@ -44,6 +67,7 @@
   --engine-pagenumber-right: auto;
 }
 html:root {
+  --r-main-font-size: var(--engine-type-body);
   --mermaid-bg-color: var(--engine-background);
   --mermaid-node-bg-color: var(--engine-surface);
   --mermaid-node-fg-color: var(--engine-foreground);

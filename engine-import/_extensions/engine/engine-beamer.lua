@@ -255,17 +255,20 @@ local function unwrap_layout(blocks)
   return out
 end
 
--- \enginescalebegin{S}: the body at S times the current size; beamer's sub-item
--- sizes are absolute (\small, \footnotesize), so they are scaled too, all
--- expanded when the group opens (inside it, \f@size is already scaled)
+-- \enginescalebegin{S}: the body at S times the current size. Under the engine's font theme
+-- every role (tables, code, captions, the sub-item levels, list spacing) is a share of
+-- \engine@typebody, read when it is used, so scaling that scales them all; without it, the
+-- sub-item sizes (absolute \small, \footnotesize) are scaled by hand, expanded when the group
+-- opens (inside it, \f@size is already scaled)
 local SCALE_TEX = table.concat({
   "\\makeatletter",
   "\\newcommand\\engine@size[2]{\\noexpand\\fontsize{\\fpeval{#1*#2*\\f@size}pt}"
     .. "{\\fpeval{#1*#2*\\strip@pt\\dimexpr\\f@baselineskip\\relax}pt}}",
   "\\newcommand\\enginescalebegin[1]{\\begingroup",
+  "  \\ifdefined\\engine@typebody \\engine@typebody=#1\\engine@typebody \\else",
   "  \\edef\\engine@sub{\\engine@size{#1}{0.9}}\\edef\\engine@subsub{\\engine@size{#1}{0.8}}%",
   "  \\setbeamerfont{itemize/enumerate subbody}{size=\\engine@sub}%",
-  "  \\setbeamerfont{itemize/enumerate subsubbody}{size=\\engine@subsub}%",
+  "  \\setbeamerfont{itemize/enumerate subsubbody}{size=\\engine@subsub}\\fi",
   "  \\edef\\engine@body{\\engine@size{#1}{1}}\\engine@body\\selectfont}",
   "\\newcommand\\enginescaleend{\\endgroup}",
   "\\makeatother",

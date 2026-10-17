@@ -359,7 +359,8 @@ logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 | `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none |
 | `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it (below) |
 | `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`nsi` extends `cu`; `ucar` extends `ncar`) |
-| `pptx` | the framework's template: its typeface, font blobs and color scheme |
+| `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |
+| `type` | text sizes in points on that canvas, by role (`body`, `frametitle`, `title`, `section`, `table`, `footnote`, ...) and `levels` (the five list levels); a role left out is the engine's default scaled to the canvas |
 | `latex`, `css` | named palette colors for LaTeX, and `overrides/livery-extra.{sty,css}` for anything the knobs don't cover |
 
 **Compositions.** The title (cover, with a photo, light, both, the band), closing (and light,
@@ -368,8 +369,10 @@ composition its field, art, photo, band, waves, bar, panel, mark, sign-off, text
 fineprint and eyebrow, each `[x, y, w, h]` in fractions of the slide (y down) with its role,
 derived from the knobs above. beamer, the HTML theme and the template builder each draw them
 with one drawer, so the formats agree; `tools/test_compositions.py` checks the numbers and the
-framework's `make measure` the drawn slides. Type sizes are fractions of the slide height too
-(`livery.json` `type`, the HTML theme's), so a slide's text fits and overflows alike in every format.
+framework's `make measure` the drawn slides. Type sizes are points on the
+livery's PowerPoint canvas (`type:` and `pptx.size` below), the same share of the slide height in
+every format, so a slide's text fits and overflows alike, and a pptx slide pasted into a hand-made
+deck carries whole or half points.
 
 The tools, all in `_extensions/engine/`:
 

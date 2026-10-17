@@ -53,14 +53,21 @@ engine does today, by area:
   properties per composition selector and `comp_art()`, the template builder `field_layout()`
   (with `pptx_waves.comp_shapes`). `tools/test_compositions.py` (CI) restates 3.4.0's HTML numbers
   and the decided changes (`EXPECTED_DELTAS`); a changed box is named there or fails.
-- **Type** (3.5.0): `livery_build.py` `TYPE`, the body as a fraction of the slide height (0.0311:
-  HTML's 28 px of 900, the brand template's 12 pt of 405) and each text role's size and leading
-  as a ratio to it (HTML's em sizes), in `livery.json` `type` and `\engine@type@*`. beamer
-  rescales LaTeX's size commands onto it (whatever the class's size option) and sets each font
-  role, code, tables and list spacing from it; the template builder derives the master's ladder
-  and the placeholders' sizes; `livery.type_pt()` gives a role in points. So text sits as large
-  on the slide in every format, and they fit and overflow alike. HTML is the reference: change a
-  size there and in `TYPE` together.
+- **Type** (3.6.0; 3.5.0 had fractions): every text role's size in **points on the livery's pptx
+  canvas** (`pptx.size`, inches, default 13.333 x 7.5; `livery.yml` `type:` role -> pt and
+  `levels: [5]`), whole or half points so a pasted slide carries round numbers. `livery_build.py`
+  `TYPE`/`LEVELS` are the default: the NSF NCAR template's guidance carried onto 540 pt and
+  rounded; a role a livery leaves out is the default scaled by its canvas (or, for the body
+  roles, its body), to the half point, halves up. `livery.json` `type` has the canvas, each role's
+  `pt`, `size` (ratio to the body) and `leading`, the levels, and the body as a fraction of the
+  height. HTML reads `--engine-type-*` from `livery.css` (the scss keeps the old literals as
+  fallbacks), beamer `\engine@type@*` (`\engine@fs{role}`; LaTeX's size commands rescaled onto the
+  body; level macros are `levelii`..`levelv`, TeX names take no digits; `scale=`'s
+  `\enginescalebegin` scales `\engine@typebody` itself, so tables, code and levels follow); the PDF's code face, LM Mono, is set at 1.15 (`engine_livery.sty`), as wide as
+  HTML's monospace, and plain verbatim at the code size, the template builder
+  `self.sz(role)` and the canvas (`W_EMU`/`H_EMU` set per Builder; indents and insets scale with
+  it); `livery.type_pt()` a role in points, `canvas_scale()`, `half_pt()`.
+  `tools/test_type.py` (CI) checks the rules and that every template size is a role's.
 - **Marks by field** (3.3.0): `marks: {<role>: {logo, signoff}}`; content slides wear
   `background`'s, dividers, the cover title, closing and feature covers `primary`'s, the band
   title and closing `title.field`'s. `livery_build.py` writes `marks` for every livery

@@ -26,9 +26,9 @@ import livery as livery_mod
 import pptx_waves
 from livery_build import SLOT_ROLES
 
-# the pptx is 12192000 x 6858000 EMU; the themes think in 1600x900 slide pixels
+# the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
+# by default. The themes think in 1600x900 slide pixels.
 W_EMU, H_EMU = 12192000, 6858000
-PX = 7620
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -72,6 +72,8 @@ def srgb(hexv):
 
 class Builder:
     def __init__(self, livery: dict):
+        global W_EMU, H_EMU   # emu() and xfrm() read them
+        W_EMU, H_EMU = (livery["type"]["canvas"][k] * 12700 for k in ("w", "h"))
         self.L = livery
         self.geom = livery["geometry"]
         self.roles = livery["roles"]
@@ -85,8 +87,11 @@ class Builder:
         self.signoff = livery.get("signoff")
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]
-        t = livery["type"]   # type sizes: the body a fraction of the slide height, roles ratios to it
-        self.sz = lambda role, scale=1: round(t["body"] * H_EMU / 12700 * t["roles"][role]["size"] * scale * 100)
+        t = livery["type"]   # type sizes in points on the livery's canvas (hundredths in the xml)
+        self.sz = lambda role, scale=1: round(t["roles"][role]["pt"] * scale * 2) * 50
+        self.levels = [round(p * 100) for p in t["levels"]]
+        # absolute lengths drawn for the 540 pt canvas (indents, insets), scaled onto this one
+        self.k = H_EMU / 6858000
         self.logo_corner = self.geom["logo"].get("corner", "top-right")
         self.number_corner = self.geom.get("pagenumber", {}).get("corner", "bottom-left")
         self.sid = 10
@@ -120,15 +125,15 @@ class Builder:
         num = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Slide Number Placeholder"/><p:cNvSpPr>'
                f'<a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="sldNum" sz="quarter" idx="22"/></p:nvPr></p:nvSpPr>'
                f'<p:spPr>{xfrm(0.96 if right else 0.001, 0.945, 0.039, 0.053)}</p:spPr><p:txBody><a:bodyPr anchor="ctr"/><a:lstStyle>'
-               f'<a:lvl1pPr algn="ctr"><a:defRPr sz="1200" b="1">{color}</a:defRPr></a:lvl1pPr></a:lstStyle>'
+               f'<a:lvl1pPr algn="ctr"><a:defRPr sz="{self.sz("pagenumber")}" b="1">{color}</a:defRPr></a:lvl1pPr></a:lstStyle>'
                f'<a:p><a:fld id="{{C5EF2332-01BF-834F-8236-50238282D533}}" type="slidenum"><a:rPr lang="en-US"/>'
                f'<a:t>‹#›</a:t></a:fld></a:p></p:txBody></p:sp>')
         dt = self.ph("Date Placeholder", "dt", 20, xfrm(0.74 if right else 0.856, 0.956, 0.113, 0.027),
                      'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"',
-                     f'<a:lvl1pPr algn="r"><a:defRPr sz="900">{color}</a:defRPr></a:lvl1pPr>', "", sz="half")
+                     f'<a:lvl1pPr algn="r"><a:defRPr sz="{self.sz("footer")}">{color}</a:defRPr></a:lvl1pPr>', "", sz="half")
         ftr = self.ph("Footer Placeholder", "ftr", 21, xfrm(0.046, 0.956, 0.34, 0.027),
                       'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"',
-                      f'<a:lvl1pPr algn="l"><a:defRPr sz="900">{color}</a:defRPr></a:lvl1pPr>', "", sz="quarter")
+                      f'<a:lvl1pPr algn="l"><a:defRPr sz="{self.sz("footer")}">{color}</a:defRPr></a:lvl1pPr>', "", sz="quarter")
         return num + (dt if with_date else "") + ftr
 
     def pic(self, rid, name, x, y, w, h):
@@ -166,24 +171,24 @@ class Builder:
         corner = self.logo_corner
         title_x = m + logo_w + 0.025 if corner == "top-left" else m
         title_w = 1 - 2 * m - (logo_w + 0.025 if corner != "none" else 0)
-        # the ladder: the body, each level 0.9 of the one above (HTML's nested lists); body-sizes-pt overrides
-        sizes = [round(p * 100) for p in g["body-sizes-pt"]] if "body-sizes-pt" in g else \
-            [self.sz("body", self.L["type"]["roles"]["level"]["size"] ** i) for i in range(5)]
+        # the ladder: the livery's five list levels (type.levels), the first the body
+        sizes = self.levels
+        ind, tabsz, ins = (round(v * self.k) for v in (228600, 457200, 45720))   # 0.25, 0.5, 0.05 in on 7.5 in
         bullets = [("Arial", "•"), ("Wingdings", "§"), ("Courier New", "o"), ("Arial", "–"), ("Arial", "»")]
         body_lvls = ""
         for i, (sz, (bfont, bchar)) in enumerate(zip(sizes, bullets), 1):
-            mar = 228600 * i
+            mar = ind * i
             # the space before an item, as HTML's list-item margins: a share of the body
             spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * (0.5 if i == 1 else 0.3))}"/></a:spcBef>'
-            body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-228600" algn="l" defTabSz="457200" rtl="0" eaLnBrk="1" '
+            body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-{ind}" algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
                           f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}'
                           f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz}" kern="1200">'
                           f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                           f'</a:defRPr></a:lvl{i}pPr>')
         for i in range(len(sizes) + 1, 10):
-            body_lvls += (f'<a:lvl{i}pPr marL="{228600 * i}" indent="-228600" algn="l"><a:defRPr sz="{sizes[-1]}" kern="1200">'
+            body_lvls += (f'<a:lvl{i}pPr marL="{ind * i}" indent="-{ind}" algn="l"><a:defRPr sz="{sizes[-1]}" kern="1200">'
                           f'{fill("tx1")}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl{i}pPr>')
-        other = "".join(f'<a:lvl{i}pPr marL="{457200 * (i - 1)}" algn="l" defTabSz="457200"><a:defRPr sz="{self.sz("table")}" kern="1200">'
+        other = "".join(f'<a:lvl{i}pPr marL="{tabsz * (i - 1)}" algn="l" defTabSz="{tabsz}"><a:defRPr sz="{self.sz("table")}" kern="1200">'
                         f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                         f'</a:defRPr></a:lvl{i}pPr>' for i in range(1, 10))
         tab_sp = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Title tab"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
@@ -199,7 +204,7 @@ class Builder:
         title = title.replace('<a:bodyPr vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/><a:x/>',
                               '<a:bodyPr vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/></a:bodyPr>')
         body = self.ph("Text Placeholder", "body", 1, xfrm(m, body_top, 1 - 2 * m, body_bottom - body_top),
-                       'vert="horz" lIns="0" tIns="45720" rIns="0" bIns="45720"><a:normAutofit/></a:bodyPr><a:lstStyle/>'
+                       f'vert="horz" lIns="0" tIns="{ins}" rIns="0" bIns="{ins}"><a:normAutofit/></a:bodyPr><a:lstStyle/>'
                        '<a:p><a:pPr lvl="0"/><a:r><a:rPr lang="en-US"/><a:t>Click to edit Master text styles</a:t></a:r></a:p>'
                        '</p:txBody></p:sp><!--', "", "")
         body = body.split("<!--")[0]
@@ -221,7 +226,7 @@ class Builder:
                 f'<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" '
                 f'accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>'
                 f'<p:sldLayoutIdLst>' + "".join(f'<p:sldLayoutId id="{2147483649 + i}" r:id="rId{10 + i}"/>' for i in range(len(ALL_LAYOUTS))) +
-                f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="l" defTabSz="457200" rtl="0" eaLnBrk="1" '
+                f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
                 f'latinLnBrk="0" hangingPunct="1"><a:spcBef><a:spcPct val="0"/></a:spcBef><a:buNone/>'
                 f'<a:defRPr sz="{self.sz("frametitle")}" b="1" kern="1200" baseline="0">{fill("tx1")}<a:latin typeface="+mj-lt"/>'
                 f'<a:ea typeface="+mj-ea"/><a:cs typeface="+mj-cs"/></a:defRPr></a:lvl1pPr></p:titleStyle>'
@@ -280,7 +285,7 @@ class Builder:
                                no_inset.format("b") + f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("closing")}" b="1">{srgb(self.roles[role])}'
                                '<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
                                '<a:t>Thank you</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
-            lvls = "".join(f'<a:lvl{i}pPr><a:defRPr sz="{self.sz("body", self.L["type"]["roles"]["level"]["size"] ** (i - 1))}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
+            lvls = "".join(f'<a:lvl{i}pPr><a:defRPr sz="{self.levels[i - 1]}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
                            for i in (1, 2, 3))
             out.append(self.ph("Content Placeholder 2", None, 1, xfrm(x, y + hh + 0.03, w, h - hh - 0.03),
                                no_inset.format("t") + lvls + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Contact details</a:t></a:r></a:p></p:txBody></p:sp><!--',
@@ -426,7 +431,7 @@ class Builder:
             parts[f"ppt/slideLayouts/_rels/slideLayout{i}.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(r)}</Relationships>'
         parts["ppt/presentation.xml"] = (XMLDECL + f'<p:presentation {NSDECL} saveSubsetFonts="1" autoCompressPictures="0">'
                                          f'<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst><p:sldIdLst/>'
-                                         f'<p:sldSz cx="{W_EMU}" cy="{H_EMU}"/><p:notesSz cx="6858000" cy="9144000"/>'
+                                         f'<p:sldSz cx="{W_EMU}" cy="{H_EMU}"{' type="screen16x9"' if (W_EMU, H_EMU) == (9144000, 5143500) else ""}/><p:notesSz cx="6858000" cy="9144000"/>'
                                          f'<p:defaultTextStyle><a:defPPr><a:defRPr lang="en-US"/></a:defPPr></p:defaultTextStyle></p:presentation>')
         parts["ppt/_rels/presentation.xml.rels"] = (XMLDECL + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
                                                     f'<Relationship Id="rId1" Type="{REL}/slideMaster" Target="slideMasters/slideMaster1.xml"/>'
