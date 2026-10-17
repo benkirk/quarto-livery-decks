@@ -27,6 +27,7 @@ ROW_RULE    = (1 * PX, livery_mod.derived(LIVERY, "table-rule"))  # mix(foregrou
 BAND_FILL   = livery_mod.derived(LIVERY, "table-band")            # surface at 60% on white
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = 0.04                     # letter-spacing: 0.04em
+CELL_MAR    = round(0.4 * livery_mod.type_pt(LIVERY, "table") * 12700)   # EMU: HTML's 0.3em padding, its line height
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
 
 
@@ -111,6 +112,8 @@ def style_table(tbl, base):
         band = not is_head and body_index % 2 == 1
         for tc in tr.findall(qn("a:tc")):
             _style_cell(tc, HEAD_RULE if is_head else ROW_RULE, BAND_FILL if band else None)
+            tc_pr = tc.find(qn("a:tcPr"))   # the cell's top and bottom margin, as HTML's padded rows
+            tc_pr.set("marT", str(CELL_MAR)); tc_pr.set("marB", str(CELL_MAR))
             if is_head:
                 _header_runs(tc, base)
     _rebalance(tbl)

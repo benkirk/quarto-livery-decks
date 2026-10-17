@@ -243,9 +243,10 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   extracting each slide's title and looking for "(no title)".
 - **"Why is my line spacing 0.8?"**: `enable_autofit.py` turns on PowerPoint's
   shrink-on-overflow; when a box overflows, PowerPoint squeezes line spacing to
-  its 0.8 floor on recompute. The master's body sizes (20/18/16/14/12 pt) are
-  chosen so typical content *fits* and autofit never fires — don't bump them
-  back up.
+  its 0.8 floor on recompute. The master's body sizes (16.8/15.1/13.6/12.2/11 pt)
+  are the engine's type scale (`livery.json` `type`: HTML's sizes as fractions of
+  the slide height, which beamer follows too), chosen so the three formats fit
+  alike and autofit rarely fires — don't bump them back up.
 - Template edits must stay pandoc-compliant (layout names, the five
   `slideLayout1` placeholders) — see README "Template constraints" and its
   verification one-liner.

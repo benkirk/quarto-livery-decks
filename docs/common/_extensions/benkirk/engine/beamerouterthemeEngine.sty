@@ -348,7 +348,7 @@
   \engine@fullfloor=\engine@geom@fullfloor\paperheight
   \ifx\engine@fullcaption\@empty\else
     \node[anchor=south,inner sep=0pt,text width=0.8\paperwidth,align=center,
-      font=\scriptsize,text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
+      font=\engine@fs{caption},text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
     \advance\engine@fullfloor \engine@geom@fullcaption\paperheight
   \fi
   \node[anchor=center,inner sep=0pt]

@@ -85,6 +85,8 @@ class Builder:
         self.signoff = livery.get("signoff")
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]
+        t = livery["type"]   # type sizes: the body a fraction of the slide height, roles ratios to it
+        self.sz = lambda role, scale=1: round(t["body"] * H_EMU / 12700 * t["roles"][role]["size"] * scale * 100)
         self.logo_corner = self.geom["logo"].get("corner", "top-right")
         self.number_corner = self.geom.get("pagenumber", {}).get("corner", "bottom-left")
         self.sid = 10
@@ -164,21 +166,24 @@ class Builder:
         corner = self.logo_corner
         title_x = m + logo_w + 0.025 if corner == "top-left" else m
         title_w = 1 - 2 * m - (logo_w + 0.025 if corner != "none" else 0)
-        sizes = g.get("body-sizes-pt", [20, 18, 16, 14, 12])
+        # the ladder: the body, each level 0.9 of the one above (HTML's nested lists); body-sizes-pt overrides
+        sizes = [round(p * 100) for p in g["body-sizes-pt"]] if "body-sizes-pt" in g else \
+            [self.sz("body", self.L["type"]["roles"]["level"]["size"] ** i) for i in range(5)]
         bullets = [("Arial", "•"), ("Wingdings", "§"), ("Courier New", "o"), ("Arial", "–"), ("Arial", "»")]
         body_lvls = ""
         for i, (sz, (bfont, bchar)) in enumerate(zip(sizes, bullets), 1):
             mar = 228600 * i
-            spc = '<a:spcBef><a:spcPts val="1000"/></a:spcBef>' if i == 1 else '<a:spcBef><a:spcPts val="500"/></a:spcBef>'
+            # the space before an item, as HTML's list-item margins: a share of the body
+            spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * (0.5 if i == 1 else 0.3))}"/></a:spcBef>'
             body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-228600" algn="l" defTabSz="457200" rtl="0" eaLnBrk="1" '
                           f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}'
-                          f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz * 100}" kern="1200">'
+                          f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz}" kern="1200">'
                           f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                           f'</a:defRPr></a:lvl{i}pPr>')
         for i in range(len(sizes) + 1, 10):
-            body_lvls += (f'<a:lvl{i}pPr marL="{228600 * i}" indent="-228600" algn="l"><a:defRPr sz="{sizes[-1] * 100}" kern="1200">'
+            body_lvls += (f'<a:lvl{i}pPr marL="{228600 * i}" indent="-228600" algn="l"><a:defRPr sz="{sizes[-1]}" kern="1200">'
                           f'{fill("tx1")}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl{i}pPr>')
-        other = "".join(f'<a:lvl{i}pPr marL="{457200 * (i - 1)}" algn="l" defTabSz="457200"><a:defRPr sz="1800" kern="1200">'
+        other = "".join(f'<a:lvl{i}pPr marL="{457200 * (i - 1)}" algn="l" defTabSz="457200"><a:defRPr sz="{self.sz("table")}" kern="1200">'
                         f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                         f'</a:defRPr></a:lvl{i}pPr>' for i in range(1, 10))
         tab_sp = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Title tab"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
@@ -218,7 +223,7 @@ class Builder:
                 f'<p:sldLayoutIdLst>' + "".join(f'<p:sldLayoutId id="{2147483649 + i}" r:id="rId{10 + i}"/>' for i in range(len(ALL_LAYOUTS))) +
                 f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="l" defTabSz="457200" rtl="0" eaLnBrk="1" '
                 f'latinLnBrk="0" hangingPunct="1"><a:spcBef><a:spcPct val="0"/></a:spcBef><a:buNone/>'
-                f'<a:defRPr sz="2800" b="1" kern="1200" baseline="0">{fill("tx1")}<a:latin typeface="+mj-lt"/>'
+                f'<a:defRPr sz="{self.sz("frametitle")}" b="1" kern="1200" baseline="0">{fill("tx1")}<a:latin typeface="+mj-lt"/>'
                 f'<a:ea typeface="+mj-ea"/><a:cs typeface="+mj-cs"/></a:defRPr></a:lvl1pPr></p:titleStyle>'
                 f'<p:bodyStyle>{body_lvls}</p:bodyStyle><p:otherStyle><a:defPPr><a:defRPr lang="en-US"/></a:defPPr>{other}'
                 f'</p:otherStyle></p:txStyles></p:sldMaster>')
@@ -232,10 +237,10 @@ class Builder:
                 f'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/>'
                 f'</a:xfrm></p:grpSpPr>{"".join(shapes)}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>')
 
-    def field_text(self, pt, bold=False, caps=False, role="primary-text"):
+    def field_text(self, size, bold=False, caps=False, role="primary-text"):
         """A lstStyle for text on the brand field, in the primary-text role (or another)."""
         return (f'<a:lvl1pPr algn="l" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
-                f'<a:defRPr sz="{pt * 100}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
+                f'<a:defRPr sz="{self.sz(size)}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
                 f'{srgb(self.roles[role])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
 
     def column(self, c, kind):
@@ -255,40 +260,40 @@ class Builder:
                 t_y, t_h, rule_y, sub_y, t_anchor = y + 0.055, 0.16, y + 0.24, y + 0.265, "t"
                 dt = (x, y, w, 0.045); sub_h = y + h - sub_y
             out += tab(t_y, t_h)
-            out.append(self.ph("Date", "dt", 20, xfrm(*dt), no_inset.format("t") + self.field_text(12, bold=True, caps=True, role=role)
+            out.append(self.ph("Date", "dt", 20, xfrm(*dt), no_inset.format("t") + self.field_text("date", bold=True, caps=True, role=role)
                                + "</a:lstStyle><a:p><a:fld id=\"{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}\" type=\"datetime1\"><a:rPr lang=\"en-US\"/><a:t>Date</a:t></a:fld></a:p></p:txBody></p:sp><!--",
                                "", "").split("<!--")[0])
             out.append(self.ph("Title", "ctrTitle", None, xfrm(x, t_y, w, t_h),
-                               f'{no_inset.format(t_anchor)}{self.field_text(36, bold=True, role=role)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                               f'{no_inset.format(t_anchor)}{self.field_text("title", bold=True, role=role)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
             if col["rule"]:
                 out.append(f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/><p:nvPr userDrawn="1"/>'
                            f'</p:nvCxnSpPr><p:spPr>{xfrm(x, rule_y, col["rule"][0], 0)}<a:prstGeom prst="line"><a:avLst/></a:prstGeom>'
                            f'<a:ln w="{round(col["rule"][1] * H_EMU)}">{fill("accent1")}</a:ln></p:spPr></p:cxnSp>')
             out.append(self.ph("Subtitle", "subTitle", 1, xfrm(x, sub_y, w, sub_h),
-                               no_inset.format("t") + self.field_text(18, role=role) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                               no_inset.format("t") + self.field_text("subtitle", role=role) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
         elif kind == "closing":   # split at the middle: a short headline and body sit on the column's centre
             hh = 0.5 * h
             out += tab(y + hh - 0.09, 0.075)
             out.append(self.ph("Title 1", "title", None, xfrm(x, y, w, hh),
-                               no_inset.format("b") + f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="4400" b="1">{srgb(self.roles[role])}'
+                               no_inset.format("b") + f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("closing")}" b="1">{srgb(self.roles[role])}'
                                '<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
                                '<a:t>Thank you</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
-            lvls = "".join(f'<a:lvl{i}pPr><a:defRPr sz="{sz}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
-                           for i, sz in enumerate((2000, 1800, 1600), 1))
+            lvls = "".join(f'<a:lvl{i}pPr><a:defRPr sz="{self.sz("body", self.L["type"]["roles"]["level"]["size"] ** (i - 1))}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
+                           for i in (1, 2, 3))
             out.append(self.ph("Content Placeholder 2", None, 1, xfrm(x, y + hh + 0.03, w, h - hh - 0.03),
                                no_inset.format("t") + lvls + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Contact details</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
         else:   # section
             mid = y + h / 2
-            title_lst = (f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="4400" b="1" cap="none" baseline="0">'
+            title_lst = (f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("section")}" b="1" cap="none" baseline="0">'
                          f'{srgb(self.roles[role])}<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr>')
             out.append(self.ph("Title 1", "title", None, xfrm(x, mid - 0.12, w, 0.12),
                                'lIns="0" tIns="0" rIns="0" bIns="0" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>' + title_lst +
                                '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Section title</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
             out.append(self.ph("Text Placeholder 2", "body", 1, xfrm(x, mid + 0.01, w, 0.133),
-                               'lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>' + self.field_text(18, role=role) +
+                               'lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>' + self.field_text("sectionsubtitle", role=role) +
                                '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
         return out
 
@@ -343,7 +348,7 @@ class Builder:
             shapes.append(self.ph("Content Placeholder 3", None, 2, xfrm(m + half + 0.03, body_top, half, h), 'vert="horz"', "", "Right", sz="half"))
         elif name == "Comparison":
             head_h = 0.09
-            head_lst = f'<a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="1800" b="1">{fill("tx2")}</a:defRPr></a:lvl1pPr>'
+            head_lst = f'<a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="{self.sz("subhead")}" b="1">{fill("tx2")}</a:defRPr></a:lvl1pPr>'
             for i, (idx_head, idx_body, x) in enumerate(((1, 11, m), (3, 2, m + half + 0.03))):
                 shapes.append(self.ph(f"Text Placeholder {i + 2}", "body", idx_head, xfrm(x, body_top, half, head_h),
                                       'vert="horz" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>' + head_lst +
@@ -353,12 +358,12 @@ class Builder:
             cap_w = 0.33
             shapes[0] = self.ph("Title 1", "title", None, xfrm(m, body_top, cap_w, 0.13),
                                 'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>'
-                                '<a:lvl1pPr algn="l"><a:defRPr sz="2000" b="1"/></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
+                                f'<a:lvl1pPr algn="l"><a:defRPr sz="{self.sz("subhead")}" b="1"/></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
                                 '<a:t>Caption title</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0]
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m + cap_w + 0.03, body_top, 1 - 2 * m - cap_w - 0.03, h), 'vert="horz"', "", "Content"))
             shapes.append(self.ph("Text Placeholder 3", "body", 2, xfrm(m, body_top + 0.14, cap_w, h - 0.14),
                                   'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0"><a:normAutofit/></a:bodyPr><a:lstStyle>'
-                                  '<a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="1400"/></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
+                                  f'<a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="{self.sz("table")}"/></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
                                   '<a:t>Caption</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "", sz="half").split("<!--")[0])
         elif name == "Blank":
             shapes = []

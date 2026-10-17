@@ -50,7 +50,7 @@ CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
 FULL_FLOOR = LIVERY["geometry"]["full"]["floor"]     # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
-CAP_SIZE   = Pt(13)       # style_footnotes.py's size and color: the livery's muted text
+CAP_SIZE   = Pt(round(livery_mod.type_pt(LIVERY, "caption"), 1))   # the themes' caption size, the muted color
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
@@ -433,10 +433,10 @@ def draw_feature(slide, width, height, photo):
         if title is not None:
             _frame(title, x, y, w, 0.16, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
-            _text(title, text, 32)
+            _text(title, text, round(livery_mod.type_pt(LIVERY, "frametitle"), 1))
         for shape in body:
             _frame(shape, x, y + 0.21, w, h - 0.21, width, height)
-            _text(shape, text, 18)
+            _text(shape, text, round(livery_mod.type_pt(LIVERY, "body"), 1))
 
 
 def add_slide_number(slide):
