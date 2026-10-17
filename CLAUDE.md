@@ -8,8 +8,8 @@ structure or conventions below change.
 A [Quarto](https://quarto.org) framework for documentation decks (`.pptx`
 primary; `.html`/revealjs and `.pdf`/beamer secondary), and the **multi-brand
 successor** of `benkirk/quarto-docs-framework` (the `upstream` remote), which
-stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (next: `docs/design/composition-handoff.md`,
-the title/closing/section/feature compositions as boxes in the livery data, then NASA):
+stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (next: NASA; the compositions and the
+type scale are done, 2026-10-17):
 a generalized **engine** (the vendored theme, forked as
 `benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
 `docs/common/liveries/`; its section 10 logs progress and names the next step.
@@ -112,19 +112,27 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
   one picture to the slide and centers pandoc's caption box under it. Any other
   body is left alone with a warning. `make qa` fails a caption that wraps.
-- **Photo slides** (`{.feature background-image=...}`, and `titlegraphic:` for the
-  title slide): HTML and PDF are the theme's. pptx builds the brand cover from
-  parts in `slide_layout.py`: pandoc's slide background (or the `titlegraphic`
-  it records in `docProps/custom.xml`) becomes a full-slide picture at the back
-  of the shape order, cropped to cover, with the livery's opaque field, 65% band
-  and wave lines over it (the engine's `pptx_waves.py`, shared with the template
-  builder), the primary field's mark, and the title and body moved onto the field.
-  A `###` block is the body's lead line. Slide shapes always draw above layout
-  shapes, so the cover must redraw the waves, logo and sign-off on the slide itself.
-  A livery's `art.titlegraphic` is the title photo for decks that set none. Under
-  `title: {style: band}` (engine >= 3.1.0) the Title Slide layout is the band itself
-  (`livery_template.py`: field, `art.title`, band, default photo, the strip's mark and
-  sign-off), and `slide_layout.py` only drops a deck's photo into the band box.
+- **Compositions** (engine >= 3.5.0): the title (`title`, `title-photo`, `title-light`,
+  `title-photo-light`, `title-band`), closing (`closing`, `closing-light`, `closing-band`),
+  `section` and `feature` slides are boxes in `build/livery.json` `compositions` (`[x, y, w, h]`
+  slide fractions, y down; every key, null when absent), derived by the engine's
+  `livery_build.py` from the livery's knobs; `livery.yml` `compositions:` overrides a box (one on
+  `title` reaches its variants; ncar's lowers the cover title to the brand template's 0.375) and
+  `feature.style: bar | cover` picks the photo slide's look. One drawer per format reads them:
+  beamer `\engine@drawcomp`, the revealjs `--engine-cmp-*` properties and `comp_art()`, the
+  template builder's `field_layout()` (Title Slide, Title Slide (light), Section Header, Closing,
+  Closing (light)), and `slide_layout.py`'s `draw_cover()` (the title photo, cropped into its
+  box under the field and waves) and `draw_feature()`. Slide shapes always draw above layout
+  shapes, so a pptx cover redraws its field, waves and marks on the slide. **`make measure`**
+  (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
+  four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
+  contact sheet `_qa/compositions-<livery>.png`; `docs/design/compositions-baseline.md` is the
+  before-picture. The pptx can't flow a stack: a band's date is placed above the title's
+  estimated text, a closing splits its column at the middle.
+- **Type** (engine >= 3.5.0): text sizes are fractions of the slide height (`livery.json`
+  `type`, the HTML theme's scale, which is the brand template's), so beamer, the pptx templates
+  and the post-processors (`livery.type_pt`) set text as large as HTML does and the formats fit
+  and overflow alike. A size changes in the engine's `TYPE` and the scss together.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
