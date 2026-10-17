@@ -239,7 +239,7 @@ which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
   (cu: Helvetica Neue); `fonts=brand` then uses it where it is installed,
   see "Installed brand fonts" below.
   - `titlegraphic: images/photo.jpg` puts a photo on the title slide, behind
-    the wave band, in every format (pptx: `slide_layout.py` builds the cover).
+    the wave band, in every format (the livery's `title-photo` composition).
     A livery may set a default (`art.titlegraphic`; nsi's campus photo).
   - `fineprint: "..."` adds small print under the title block.
   - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
@@ -251,8 +251,9 @@ which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
 - **Markdown extras:**
   - `## Title {.feature background-image="images/photo.jpg"}` makes a
     full-bleed photo slide (`background=` also works; `background-image=`
-    doubles as the revealjs background). In pptx it is the title slide's
-    cover: the photo behind the wave band, the text on the brand field.
+    doubles as the revealjs background). Its look is the livery's `feature.style`:
+    `bar` (the title on a dark bar, the text on a translucent panel; the default) or
+    `cover` (the title cover's field and waves, the photo beside them), in every format.
   - `## Title {.full}` gives one diagram or image the whole slide: no title,
     logo or rule, and the paragraph after it becomes a one-line caption. The
     title stays in the source for navigation and `make qa`. pptx gets it

@@ -62,7 +62,6 @@ slide: the constellation field, as the deck's last slide.
 - The deck's "Helvetica Neue Extra Black Cond" headlines are not reproduced (cu's Heros Cn
   headings stand in).
 - The rights of the deck's photos are NSI's; check before any use outside NSI decks.
-- `title=light` differs by format (seen on the fixture decks' contact sheet, 2026-10-16): the
-  pptx draws the white light cover (`Title Slide (light)`), HTML and PDF keep the band. One of
-  the drifts the deferred composition work (design section 7) removes; until then a light
-  title is not an nsi look.
+- `title=light` is ignored under the band, with a warning, in every format (since the
+  compositions, 2026-10-17; before, the pptx drew the white light cover while HTML and PDF kept
+  the band). A light title is not an nsi look.

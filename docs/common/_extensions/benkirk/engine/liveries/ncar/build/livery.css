@@ -110,9 +110,9 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-signoff-b: 900px;
   --engine-cmp-column-display: block;
   --engine-cmp-column-x: 96px;
-  --engine-cmp-column-y: 180px;
+  --engine-cmp-column-y: 337.5px;
   --engine-cmp-column-w: 800px;
-  --engine-cmp-column-h: 594px;
+  --engine-cmp-column-h: 436.5px;
   --engine-cmp-column-r: 704px;
   --engine-cmp-column-b: 126px;
   --engine-cmp-fineprint-display: block;
@@ -186,9 +186,9 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo
   --engine-cmp-signoff-b: 900px;
   --engine-cmp-column-display: block;
   --engine-cmp-column-x: 96px;
-  --engine-cmp-column-y: 180px;
+  --engine-cmp-column-y: 337.5px;
   --engine-cmp-column-w: 704px;
-  --engine-cmp-column-h: 594px;
+  --engine-cmp-column-h: 436.5px;
   --engine-cmp-column-r: 800px;
   --engine-cmp-column-b: 126px;
   --engine-cmp-fineprint-display: block;
@@ -262,9 +262,9 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-signoff-b: 900px;
   --engine-cmp-column-display: block;
   --engine-cmp-column-x: 96px;
-  --engine-cmp-column-y: 180px;
+  --engine-cmp-column-y: 337.5px;
   --engine-cmp-column-w: 800px;
-  --engine-cmp-column-h: 594px;
+  --engine-cmp-column-h: 436.5px;
   --engine-cmp-column-r: 704px;
   --engine-cmp-column-b: 126px;
   --engine-cmp-fineprint-display: block;
@@ -338,9 +338,9 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-signoff-b: 900px;
   --engine-cmp-column-display: block;
   --engine-cmp-column-x: 96px;
-  --engine-cmp-column-y: 180px;
+  --engine-cmp-column-y: 337.5px;
   --engine-cmp-column-w: 704px;
-  --engine-cmp-column-h: 594px;
+  --engine-cmp-column-h: 436.5px;
   --engine-cmp-column-r: 800px;
   --engine-cmp-column-b: 126px;
   --engine-cmp-fineprint-display: block;
