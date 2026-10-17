@@ -48,7 +48,9 @@
 
 \setbeamerfont{block title}{size=\engine@fs{subhead},series=\sbseries}
 \setbeamerfont{item projected}{size=\scriptsize,series=\bfseries}
-% itemize/enumerate sizes: beamer defaults (body inherits the local size)
+% nested items at the livery's list levels (type.levels, as the pptx ladder and HTML's nested lists)
+\setbeamerfont{itemize/enumerate subbody}{size=\engine@fs{levelii}}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\engine@fs{leveliii}}
 
 \setbeamerfont{section in toc}{series=\sbseries}
 \setbeamerfont{subsection in toc}{size=\small}
@@ -61,6 +63,8 @@
 % math: set by engine_livery (mathfont=; a serif math font by default)
 % code blocks at the HTML's 0.66 of the body: pandoc's Highlighting (defined in the preamble after
 % the theme), and listings (engine_livery.sty)
+% plain code blocks (a cell's output, unhighlighted code) at the same size, as HTML's pre
+\def\verbatim@font{\normalfont\ttfamily\engine@fs{code}\selectfont}
 \AtBeginDocument{\@ifundefined{Highlighting}{}{%
   \RecustomVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\engine@fs{code}}}}
 \mode<all>

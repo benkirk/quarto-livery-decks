@@ -24,14 +24,15 @@ $ncar-muted: #6B7C99;
 // type: the ncar family as the Sass literal; the livery's --engine-font-family wins below
 $font-family-sans-serif: "Poppins", Helvetica, Arial, sans-serif;
 $font-family-monospace: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-$presentation-font-size-root: 28px;  // ~ the pptx body size once autofit has had its say
+$presentation-font-size-root: 28px;  // the fallback: livery.css sets --r-main-font-size from the livery's type
+// every other size reads the livery's --engine-type-* (livery_build.py TYPE), today's literal the fallback
 $presentation-line-height: 1.4;
 $presentation-heading-font: $font-family-sans-serif;
 $presentation-heading-font-weight: 700;
 $presentation-heading-line-height: 1.15;
 $presentation-h1-font-size: 2.6em;
 $presentation-h2-font-size: 1.65em;
-$presentation-h3-font-size: 1.1em;
+$presentation-h3-font-size: calc(var(--engine-type-subhead, 1.1) * 1em);
 $presentation-h4-font-size: 1em;
 
 // colors
@@ -55,7 +56,7 @@ $dark-bg-code-color: $ncar-yellow;
 // code: surface-colored blocks (as the listings style); token colors from the livery's theme
 $code-block-bg: $ncar-light-gray;
 $code-block-border-color: $ncar-light-gray;
-$code-block-font-size: 0.66em;
+$code-block-font-size: calc(var(--engine-type-code, 0.66) * 1em);
 $code-color: $ncar-space;
 
 // callouts, as engine-beamer.lua maps them
@@ -143,7 +144,7 @@ $mermaid-label-fg-color: $ncar-blue;
   margin: 0;
   display: flex;
   align-items: center;
-  font-size: 46px;  // fixed: {.smaller} and the autofit script shrink only the body
+  font-size: var(--engine-type-frametitle, 46px);  // fixed: {.smaller} and the autofit script shrink only the body
   line-height: 1.15;
   // the tab: flush with the paper's left edge, as tall as the title
   &::before {
@@ -181,7 +182,11 @@ $mermaid-label-fg-color: $ncar-blue;
   a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.12em; }
   p, li { margin-top: 0; }
   li + li { margin-top: 0.25em; }
-  ul ul, ol ol, ul ol, ol ul { font-size: 0.9em; margin-top: 0.2em; }
+  // nested lists: each level its ratio to the one above (livery type.levels)
+  :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level2, 0.9) * 1em); margin-top: 0.2em; }
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level3, 0.9) * 1em); }
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level4, 0.9) * 1em); }
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level5, 0.9) * 1em); }
 }
 
 // bullets: filled circle, open circle, dash (beamerinnerthemeEngine.sty)
@@ -216,7 +221,7 @@ $mermaid-label-fg-color: $ncar-blue;
 // tables: bold uppercase header over a primary-color rule, hairline rows
 .reveal .slides section table {
   border-collapse: collapse;
-  font-size: 0.85em;
+  font-size: calc(var(--engine-type-table, 0.85) * 1em);
   margin: 0.4em 0;
   th {
     color: var(--engine-foreground);
@@ -278,7 +283,7 @@ $mermaid-label-fg-color: $ncar-blue;
 .reveal .slides section figcaption,
 .reveal .slides section .caption {
   color: var(--engine-muted);
-  font-size: 0.7em;
+  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
 }
 .reveal .slides section .quarto-figure-center figcaption { text-align: center; }
 
@@ -332,7 +337,7 @@ $mermaid-label-fg-color: $ncar-blue;
   max-width: 60%;
   padding-top: 0.55em;
   color: var(--engine-muted);
-  font-size: 0.7em;
+  font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
   line-height: 1.35;
   text-align: left;
   &::before {
@@ -432,7 +437,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     justify-content: var(--engine-cmp-column-justify);
   }
   .date {
-    font-size: 0.6em;
+    font-size: calc(var(--engine-type-date, 0.6) * 1em);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -440,7 +445,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   }
   h1.title {
     position: relative;
-    font-size: 2.3em;
+    font-size: calc(var(--engine-type-title, 2.3) * 1em);
     line-height: 1.12;
     margin: 0 0 0.35em;
     // the accent bar at the paper edge, beside the title
@@ -456,7 +461,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     }
   }
   .subtitle {
-    font-size: 1em;
+    font-size: calc(var(--engine-type-subtitle, 1) * 1em);
     font-weight: 700;
     line-height: 1.3;
     margin: 0 0 0.6em;
@@ -469,8 +474,8 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     margin: 0.9em 0;
   }
   &.engine-band .engine-title-rule { margin: 0.6em 0; }
-  .author { font-weight: 700; margin: 0; font-size: 0.8em; }
-  .institute { margin: 0; font-size: 0.7em; }
+  .author { font-weight: 700; margin: 0; font-size: calc(var(--engine-type-author, 0.8) * 1em); }
+  .institute { margin: 0; font-size: calc(var(--engine-type-institute, 0.7) * 1em); }
   .engine-fineprint {
     position: absolute;
     left: var(--engine-cmp-fineprint-x);
@@ -480,7 +485,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     display: flex;
     flex-direction: column;
     justify-content: var(--engine-cmp-fineprint-justify);
-    font-size: 0.4em;
+    font-size: calc(var(--engine-type-fineprint, 0.4) * 1em);
     line-height: 1.4;
     opacity: 0.85;
     color: var(--engine-cmp-fineprint-color);
@@ -502,7 +507,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     content: var(--engine-cmp-eyebrow-label) attr(data-engine-section);
     display: block;
     color: var(--engine-cmp-eyebrow);
-    font-size: 0.7em;
+    font-size: calc(var(--engine-type-eyebrow, 0.7) * 1em);
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -510,7 +515,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   }
   h1 {
     position: relative;
-    font-size: 2.6em;
+    font-size: calc(var(--engine-type-section, 2.6) * 1em);
     line-height: 1.08;
     margin: 0;
     text-align: left;
@@ -527,7 +532,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   }
   .engine-subtitle {
     margin-top: 0.7em;
-    font-size: 1.1em;
+    font-size: calc(var(--engine-type-sectionsubtitle, 1.1) * 1em);
     p { margin: 0 0 0.4em; }
     :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
   }
@@ -547,7 +552,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     top: auto; left: auto; right: auto;
     min-height: 0;
     display: block;
-    font-size: 2.6em;
+    font-size: calc(var(--engine-type-closing, 2.6) * 1em);
     line-height: 1.08;
     margin: 0 0 0.4em;
     color: var(--engine-cmp-text);
@@ -719,7 +724,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   flex-direction: column;
   justify-content: center;
   color: var(--engine-muted);
-  font-size: 0.7em;
+  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
   line-height: 1.3;
   text-align: center;
   p { margin: 0; }
@@ -738,13 +743,13 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   color: var(--engine-foreground);
   font-family: var(--engine-font-family, $font-family-sans-serif), Helvetica, Arial, sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--engine-type-pagenumber, 14px);
   a { color: inherit; }
 }
 .reveal.has-dark-background .slide-number { color: #fff; }
 .reveal .footer {
   color: var(--engine-muted);
-  font-size: 14px;
+  font-size: var(--engine-type-footer, 14px);
 }
 
 // ---------------------------------------------------------------------------

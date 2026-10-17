@@ -18,17 +18,17 @@ from pathlib import Path
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
+from pptx.util import Pt
 
 import livery as livery_mod
 
 LIVERY     = livery_mod.load()
 NAME       = "link-caption"
-SIZE       = Pt(10)
+SIZE       = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the caption role
 COLOR      = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 BAND_WIDTH = 0.6                             # of the slide; clear of number and date
-BAND_TOP   = Inches(0.42)                    # above the slide's bottom edge
-BAND_TALL  = Inches(0.3)
+BAND_TOP   = 0.056                           # of the height, above the slide's bottom edge
+BAND_TALL  = 0.04
 
 
 def _picture_link(shape):
@@ -57,7 +57,7 @@ def main() -> int:
     prs = Presentation(str(pptx))
     width = int(prs.slide_width * BAND_WIDTH)
     left = (prs.slide_width - width) // 2
-    top = prs.slide_height - BAND_TOP
+    top = round(prs.slide_height * (1 - BAND_TOP))
     added = 0
     for slide in prs.slides:
         if any(shape.name == NAME for shape in slide.shapes):
@@ -70,7 +70,7 @@ def main() -> int:
                 url = url or link
         if not url:
             continue
-        box = slide.shapes.add_textbox(left, top, width, BAND_TALL)
+        box = slide.shapes.add_textbox(left, top, width, round(prs.slide_height * BAND_TALL))
         box.name = NAME
         box.click_action.hyperlink.address = url
         para = box.text_frame.paragraphs[0]

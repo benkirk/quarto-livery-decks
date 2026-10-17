@@ -35,18 +35,22 @@ SECTION_LAYOUT = "Section Header"
 TITLE_PH = {"title", "ctrTitle"}
 CHROME_PH = {"dt", "ftr", "sldNum"}  # date, footer, slide number — ignore
 
-# Divider geometry in the revealjs theme's 1600x900 px (1 px = 7620 EMU, and
-# 1 px of type = 0.6 pt), from its section-slide rules (engine-revealjs.scss).
+# Divider geometry in the revealjs theme's 1600x900 px, from its section-slide rules
+# (engine-revealjs.scss), on the livery's canvas (livery.json type.canvas, pt): 1 px is
+# 7620 EMU and 1 px of type 0.6 pt on 13.333 x 7.5 in, 5715 EMU and 0.45 pt on 10 x 5.625.
 LIVERY = livery_mod.load()
 GEOM = LIVERY["geometry"]
-PX = 7620
+CANVAS = LIVERY["type"]["canvas"]
+PX = CANVAS["w"] * 12700 / 1600
+PT_PX = CANVAS["h"] / 900                   # points of type per slide pixel
 COLUMN = LIVERY["compositions"]["section"]["column"]   # the divider's text column (compositions)
 BLOCK_TOP = round(COLUMN["box"][1] * 900)                 # the block is centred between its top
 BLOCK_BOTTOM = round((COLUMN["box"][1] + COLUMN["box"][3]) * 900)   # and bottom (120 ... 820 px)
 TAB_W = round(GEOM["tab"] * 1600)           # the divider's tab, geometry.tab of the width
 TAB = COLUMN["tab"]
 LABEL = LIVERY["divider"]["label"]          # "Section"; cap="all" sets it in capitals
-LABEL_PT, LABEL_GAP = 12, 10                # 0.7em, margin-bottom 0.5em
+LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
+LABEL_GAP = 10                              # margin-bottom 0.5em
 BODY_GAP = 22                               # .ncar-subtitle margin-top 0.7em
 LINE = 1.4                                  # ascent + descent of the heading font, in em
 TYPE = LIVERY["typography"]                 # headings face measures the title, base the subtitle
@@ -152,7 +156,7 @@ def _ph_style(layout_root, ph_type):
 
 @functools.lru_cache
 def _font(family, weight, pt):
-    return ImageFont.truetype(str(livery_mod.font_file(LIVERY, family, weight)), round(pt / 0.6))
+    return ImageFont.truetype(str(livery_mod.font_file(LIVERY, family, weight)), round(pt / PT_PX))
 
 
 def _lines(paragraphs, font, width):
@@ -214,9 +218,9 @@ def _dress(root, layout_root, number):
 
     def height(style, sp, family, weight):
         _x, w, pt, spacing = style
-        return _lines(_paragraphs(sp), _font(family, weight, pt), w) * LINE * spacing * pt / 0.6
+        return _lines(_paragraphs(sp), _font(family, weight, pt), w) * LINE * spacing * pt / PT_PX
 
-    label_h = LINE * LABEL_PT / 0.6
+    label_h = LINE * LABEL_PT / PT_PX
     title_h = height(t_style, title, TYPE["headings"], 700) + 4
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
     body_h = height(b_style, body, TYPE["base"], 400) + 4 if body_text else 0
@@ -229,12 +233,12 @@ def _dress(root, layout_root, number):
                    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>'
                    '<p:txBody><a:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t">'
                    '<a:noAutofit/></a:bodyPr><a:lstStyle/><a:p>'
-                   f'<a:r><a:rPr lang="en-US" sz="{LABEL_PT * 100}" b="1" cap="all" spc="{LABEL_PT * 10}">'
+                   f'<a:r><a:rPr lang="en-US" sz="{round(LABEL_PT * 100)}" b="1" cap="all" spc="{round(LABEL_PT * 10)}">'
                    '<a:solidFill><a:schemeClr val="accent1"/></a:solidFill>'
                    f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>{LABEL} {number}</a:t></a:r></a:p></p:txBody>')
     y += label_h + LABEL_GAP
     _set_xfrm(title, t_style[0], y, t_style[1], title_h)
-    inset = 0.08 * t_style[2] / 0.6
+    inset = 0.08 * t_style[2] / PT_PX
     tab = _decor(DECOR[1], sid + 1, 0, y + inset, TAB_W, title_h - 2 * inset,
                  '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill>'
                  '<a:schemeClr val="accent4"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>')

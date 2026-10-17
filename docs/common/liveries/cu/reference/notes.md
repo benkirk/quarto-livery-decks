@@ -28,6 +28,14 @@ white; `highlight` is sky blue, which the brand allows for text only; `muted` is
 `surface` the light gold; `secondary` (rules) the dark gray; the pptx `hlink`/`folHlink` slots
 are overridden to the accessible gold and sky blue for the same reason.
 
+## Type sizes
+
+`livery.yml` `type:` takes the NSI master deck's sizes, in points on its 13.33 x 7.5 in canvas
+(engine >= 3.6.0): body 16 (its dense slides 12-14, which a deck reaches with `scale=`), slide
+titles 32 (it runs 32-36, bold), in-body heads 20, footnotes 9, the cover title 48 with the date
+28, dividers 60, the closing 48. Its master's own ladder (40/28/24/20/18) is Office's untouched
+default, which none of its slides use; the list levels 16/14/13/12/11 follow its text boxes.
+
 ## Fonts
 
 The brand's Helvetica Neue (Condensed for headlines, Regular for body) is Monotype's and cannot be

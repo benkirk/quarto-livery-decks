@@ -6,6 +6,7 @@ Make.common), else a `_livery` link in the current directory. Generate the file 
 livery_build.py."""
 
 import json
+import math
 import os
 from pathlib import Path
 
@@ -48,11 +49,23 @@ def derived(livery: dict, key: str) -> str:
     return livery["derived"][key].lstrip("#").upper()
 
 
-def type_pt(livery: dict, role: str, height_pt: float = 540) -> float:
-    """A text role's size in points on a slide height_pt tall (the pptx's 7.5 in): livery.json
-    type, the body's fraction of the height times the role's ratio (livery_build.py TYPE)."""
+def type_pt(livery: dict, role: str, height_pt: float | None = None) -> float:
+    """A text role's size in points on the livery's pptx canvas (livery.json type: whole or half
+    points, livery_build.py TYPE and livery.yml type:); on a slide height_pt tall, scaled to it."""
     t = livery["type"]
-    return t["body"] * height_pt * t["roles"][role]["size"]
+    pt = t["roles"][role]["pt"]
+    return pt if height_pt is None else pt * height_pt / t["canvas"]["h"]
+
+
+def canvas_scale(livery: dict) -> float:
+    """The livery's canvas height over the 540 pt (7.5 in) one the absolute lengths in the
+    post-processors were drawn for (indents, pads, gaps): multiply them by it."""
+    return livery["type"]["canvas"]["h"] / 540
+
+
+def half_pt(pt: float) -> float:
+    """A size to the nearest half point, as every computed pptx size is (scale=, the deck's step)."""
+    return math.floor(pt * 2 + 0.5) / 2   # halves up, not to even
 
 
 def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False) -> Path:

@@ -819,79 +819,113 @@
     "warning": "#FFDD31"
   },
   "type": {
-    "body": 0.0311,
+    "body": 0.02963,
+    "canvas": {
+      "h": 540,
+      "w": 960
+    },
+    "levels": [
+      16,
+      15,
+      13,
+      12,
+      11
+    ],
     "roles": {
       "author": {
         "leading": 1.3,
-        "size": 0.8
+        "pt": 16,
+        "size": 1.0
       },
       "body": {
         "leading": 1.4,
+        "pt": 16,
         "size": 1.0
       },
       "caption": {
         "leading": 1.3,
-        "size": 0.7
+        "pt": 11,
+        "size": 0.6875
       },
       "closing": {
         "leading": 1.08,
-        "size": 2.6
+        "pt": 40,
+        "size": 2.5
       },
       "code": {
         "leading": 1.3,
-        "size": 0.66
+        "pt": 11,
+        "size": 0.6875
       },
       "date": {
         "leading": 1.2,
-        "size": 0.6
+        "pt": 11,
+        "size": 0.6875
       },
       "eyebrow": {
         "leading": 1.2,
-        "size": 0.7
+        "pt": 11,
+        "size": 0.6875
       },
       "fineprint": {
         "leading": 1.4,
-        "size": 0.4
+        "pt": 7,
+        "size": 0.4375
+      },
+      "footer": {
+        "leading": 1.2,
+        "pt": 9,
+        "size": 0.5625
       },
       "footnote": {
         "leading": 1.35,
-        "size": 0.7
+        "pt": 11,
+        "size": 0.6875
       },
       "frametitle": {
         "leading": 1.15,
-        "size": 1.643
+        "pt": 27,
+        "size": 1.6875
       },
       "institute": {
         "leading": 1.3,
-        "size": 0.7
+        "pt": 16,
+        "size": 1.0
       },
-      "level": {
-        "leading": 1.4,
-        "size": 0.9
+      "pagenumber": {
+        "leading": 1.2,
+        "pt": 9,
+        "size": 0.5625
       },
       "section": {
         "leading": 1.08,
-        "size": 2.6
+        "pt": 40,
+        "size": 2.5
       },
       "sectionsubtitle": {
         "leading": 1.3,
-        "size": 1.1
+        "pt": 20,
+        "size": 1.25
       },
       "subhead": {
         "leading": 1.2,
-        "size": 1.1
+        "pt": 20,
+        "size": 1.25
       },
       "subtitle": {
         "leading": 1.3,
-        "size": 1.0
+        "pt": 20,
+        "size": 1.25
       },
       "table": {
         "leading": 1.3,
-        "size": 0.85
+        "pt": 13,
+        "size": 0.8125
       },
       "title": {
         "leading": 1.12,
-        "size": 2.3
+        "pt": 29,
+        "size": 1.8125
       }
     }
   },
