@@ -5,6 +5,11 @@ down): start, ctrl, ctrl, peak, ctrl, ctrl, end, from the top edge to the bottom
 a 16000 x 9000 unit box over the whole slide (0.1 slide px), shifted right by `shift`."""
 
 PW, PH = 16000, 9000
+# role -> the color slot a shape fills with it (clrMap names, so a theme edit recolors it); the
+# template builder's layouts and slide_layout.py's covers
+ROLE_SLOT = {"primary": "tx2", "dark": "accent3", "background": "bg1", "foreground": "tx1", "surface": "bg2",
+             "secondary": "accent1", "highlight": "accent2", "accent": "accent4", "warning": "accent5",
+             "primary-contrast": "accent6"}
 XMLNS = 'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
 
 
@@ -63,34 +68,35 @@ def scheme_fill(slot, alpha=None):
     return f'<a:solidFill><a:schemeClr val="{slot}">{a}</a:schemeClr></a:solidFill>'
 
 
-def cover_shapes(lines, first_id, w_emu, h_emu, field_slot="tx2", line_slot="accent1", shift=0.0, line_px=2.4):
-    """The brand cover over a full-slide photo: the opaque field to line 2, a 65% band to line 3,
-    the three lines; the photo, pushed to the back, shows between lines 2 and 3 and to their right."""
-    emu_px = w_emu / 1600
-    out = [shape_xml(first_id, "Cover field", field_geom(lines, 1, shift), scheme_fill(field_slot), "<a:ln><a:noFill/></a:ln>", w_emu, h_emu),
-           shape_xml(first_id + 1, "Cover band", band_geom(lines, 1, 2, shift), scheme_fill(field_slot, 65000), "<a:ln><a:noFill/></a:ln>", w_emu, h_emu)]
+def comp_shapes(lines, comp, first_id, w_emu, h_emu, field_slot="tx2", line_slot="accent1"):
+    """A composition's waves (livery.json compositions) as shapes, by its waves.style: bands (the
+    lines with translucent bands between lines 1-2 and 2-3), lines, or cover (the opaque field to
+    line 2, the field's translucent band to line 3, the lines); without waves, a field narrower
+    than the slide as a straight-edged rect. Alphas and the line width are the composition's."""
+    w, f, out = comp["waves"], comp["field"], []
+    if not (w and lines):
+        if f and f["box"][2] < 1:
+            x, y, bw, bh = f["box"]
+            out.append(f'<p:sp {XMLNS}><p:nvSpPr><p:cNvPr id="{first_id}" name="Cover field"/><p:cNvSpPr/><p:nvPr userDrawn="1"/></p:nvSpPr>'
+                       f'<p:spPr><a:xfrm><a:off x="{round(x * w_emu)}" y="{round(y * h_emu)}"/><a:ext cx="{round(bw * w_emu)}" cy="{round(bh * h_emu)}"/></a:xfrm>'
+                       f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>{scheme_fill(field_slot)}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')
+        return out
+    sid, shift, alpha = first_id, w["shift"], lambda o: round(o * 100000)
+    none = "<a:ln><a:noFill/></a:ln>"
+    if w["style"] == "cover":
+        out.append(shape_xml(sid, "Cover field", field_geom(lines, 1, shift), scheme_fill(field_slot), none, w_emu, h_emu)); sid += 1
+        out.append(shape_xml(sid, "Cover band", band_geom(lines, 1, 2, shift), scheme_fill(field_slot, alpha(w["opacity"][0])), none, w_emu, h_emu)); sid += 1
+    elif w["style"] == "bands":
+        for k, o in zip((0, 1), w["opacity"]):
+            out.append(shape_xml(sid, f"Wave band {k + 1}", band_geom(lines, k, k + 1, shift), scheme_fill(line_slot, alpha(o)), none, w_emu, h_emu)); sid += 1
     for k in range(len(lines)):
-        out.append(shape_xml(first_id + 2 + k, f"Wave line {k + 1}", line_geom(lines, k, shift), "<a:noFill/>",
-                             f'<a:ln w="{round(line_px * emu_px)}">{scheme_fill(line_slot)}</a:ln>', w_emu, h_emu))
+        out.append(shape_xml(sid, f"Wave line {k + 1}", line_geom(lines, k, shift), "<a:noFill/>",
+                             f'<a:ln w="{round(w["line"] * w_emu)}">{scheme_fill(line_slot)}</a:ln>', w_emu, h_emu)); sid += 1
     return out
 
 
 def wave_shapes(lines, first_id, w_emu, h_emu, shift, slot, bands=True, line_px=2.4):
-    """The lines, with the two translucent bands between them when `bands` (dividers, title)."""
+    """The lines alone, the content slides' (the master's): not a composition."""
     emu_px = w_emu / 1600
-    out, sid = [], first_id
-    if bands:
-        for k, m, alpha in ((0, 1, 18000), (1, 2, 10000)):
-            out.append(shape_xml(sid, f"Wave band {k + 1}", band_geom(lines, k, m, shift), scheme_fill(slot, alpha), "<a:ln><a:noFill/></a:ln>", w_emu, h_emu)); sid += 1
-    for k in range(len(lines)):
-        out.append(shape_xml(sid, f"Wave line {k + 1}", line_geom(lines, k, shift), "<a:noFill/>",
-                             f'<a:ln w="{round(line_px * emu_px)}">{scheme_fill(slot)}</a:ln>', w_emu, h_emu)); sid += 1
-    return out
-
-
-def straight_cover_shapes(first_id, w_emu, h_emu, field_slot="tx2", edge=0.52):
-    """The cover of a livery without waves: an opaque field over the left `edge` of the slide, the
-    straight edge the HTML and PDF themes draw (engine-revealjs.lua, beamer's \\engine@coverbox)."""
-    return [(f'<p:sp {XMLNS}><p:nvSpPr><p:cNvPr id="{first_id}" name="Cover field"/><p:cNvSpPr/><p:nvPr userDrawn="1"/></p:nvSpPr>'
-             f'<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="{round(edge * w_emu)}" cy="{h_emu}"/></a:xfrm>'
-             f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>{scheme_fill(field_slot)}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')]
+    return [shape_xml(first_id + k, f"Wave line {k + 1}", line_geom(lines, k, shift), "<a:noFill/>",
+                      f'<a:ln w="{round(line_px * emu_px)}">{scheme_fill(slot)}</a:ln>', w_emu, h_emu) for k in range(len(lines))]
