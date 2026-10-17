@@ -67,7 +67,15 @@ want=$(env -i CONDA_PREFIX="$CONDA_PREFIX" PATH=/usr/bin:/bin bash -c \
   'for f in "$CONDA_PREFIX"/etc/conda/activate.d/*.sh; do . "$f"; done; env | grep ^QUARTO_')
 echo "$want"
 dom=$(sed -n 's/^QUARTO_DENO_DOM=//p' <<<"$want")
-test -f "$dom" || { echo "deno-dom plugin not found: '$dom'" >&2; exit 1; }
+# conda-forge's linux-aarch64 quarto bakes its BUILD machine's path into QUARTO_DENO_DOM
+# (/home/conda/feedstock_root/.../_build_env/lib/deno_dom.so): find the plugin the deno-dom
+# package really installed when the activation's path is not there.
+if [ ! -f "$dom" ]; then
+  echo "activation's QUARTO_DENO_DOM does not exist ('$dom'); searching $CONDA_PREFIX/lib" >&2
+  dom=$(find "$CONDA_PREFIX/lib" -maxdepth 2 \( -name 'deno_dom*.so' -o -name 'libplugin*.so' -o -name '*deno*dom*' \) -type f | head -1)
+fi
+test -n "$dom" && test -f "$dom" || { echo "deno-dom plugin not found" >&2; ls "$CONDA_PREFIX/lib" | grep -i deno >&2 || true; exit 1; }
+echo "deno-dom plugin: $dom"
 ln -s "$dom" "$QUARTO_DENO_DOM"
 bad=0
 while IFS== read -r k v; do
