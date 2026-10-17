@@ -104,6 +104,10 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   builder), the dark lockup, and the title and body moved onto the field.
   A `###` block is the body's lead line. Slide shapes always draw above layout
   shapes, so the cover must redraw the waves, logo and sign-off on the slide itself.
+  A livery's `art.titlegraphic` is the title photo for decks that set none. Under
+  `title: {style: band}` (engine >= 3.1.0) the Title Slide layout is the band itself
+  (`livery_template.py`: field, `art.title`, band, default photo, the strip's mark and
+  sign-off), and `slide_layout.py` only drops a deck's photo into the band box.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. pandoc writes no slide-number box, so

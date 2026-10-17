@@ -7,12 +7,13 @@ Everything comes from build/livery.json: the theme's color slots (pptx.scheme, o
 by the slot contract), the typeface, the light and dark logos, the geometry fractions and
 the wave curves (art.waves) or pictures behind slides (art.content on the master, art.title and
 art.section on their layouts; closing slides are content slides in pptx), the sign-off lockup
-(signoff) and the marks' corners (geometry.logo.corner, geometry.pagenumber.corner). The master
+(signoff), the marks' corners (geometry.logo.corner, geometry.pagenumber.corner) and the title's
+composition (title.style: the cover, or the band with art.titlegraphic in it). The master
 carries the title with its accent tab and hairline rule, the lockup top right, the faint wave
 lines and the body-size ladder; the seven layouts
 pandoc looks up by name are generated (Title Slide, Title and Content, Section Header, Two
 Content, Comparison, Content with Caption, Blank), the Title Slide with its five
-placeholders. Fonts are embedded later by embed_fonts.py; the title photo by title_photo.py.
+placeholders. Fonts are embedded later by embed_fonts.py; a deck's title photo by slide_layout.py.
 Rewrites in place with fixed zip timestamps, so an unchanged rebuild is byte-identical.
 """
 
@@ -40,6 +41,10 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 LAYOUTS = ["Title Slide", "Title and Content", "Section Header", "Two Content", "Comparison",
            "Content with Caption", "Blank"]
+# role -> the color slot a layout fills with it (clrMap names, so a theme edit recolors the layout)
+ROLE_SLOT = {"primary": "tx2", "dark": "accent3", "background": "bg1", "foreground": "tx1", "surface": "bg2",
+             "secondary": "accent1", "highlight": "accent2", "accent": "accent4", "warning": "accent5",
+             "primary-contrast": "accent6"}
 LAYOUT_TYPES = {"Title Slide": "title", "Title and Content": "obj", "Section Header": "secHead",
                 "Two Content": "twoObj", "Comparison": "twoTxTwoObj", "Content with Caption": "objTx", "Blank": "blank"}
 
@@ -76,6 +81,10 @@ class Builder:
         self.waves = art.get("waves")
         self.art = {k: art[k] for k in ("title", "section", "content") if isinstance(art.get(k), str)}
         self.signoff = livery.get("signoff")
+        title = livery.get("title") or {}
+        self.band = title if title.get("style") == "band" else None
+        if self.band and isinstance(art.get("titlegraphic"), str):   # the band's default photo
+            self.art["titlegraphic"] = art["titlegraphic"]
         self.logo_corner = self.geom["logo"].get("corner", "top-right")
         self.number_corner = self.geom.get("pagenumber", {}).get("corner", "bottom-left")
         self.media = {}   # media name -> (livery-relative path); build() numbers them image1, image2, ...
@@ -105,10 +114,10 @@ class Builder:
                 f'<p:txBody><a:bodyPr {body_pr}/><a:lstStyle>{lst}</a:lstStyle>'
                 f'<a:p><a:r><a:rPr lang="en-US"/><a:t>{text}</a:t></a:r></a:p></p:txBody></p:sp>')
 
-    def chrome(self, light_text=True, with_date=True):
+    def chrome(self, light_text=True, with_date=True, text_role="primary-text"):
         """Slide number, date and footer placeholders (idx 20-22: pandoc matches content by idx too,
         so these must never share a number with a content box)."""
-        color = fill("tx1") if light_text else srgb(self.roles["primary-text"])
+        color = fill("tx1") if light_text else srgb(self.roles[text_role])
         right = self.number_corner == "bottom-right"
         num = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Slide Number Placeholder"/><p:cNvSpPr>'
                f'<a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="sldNum" sz="quarter" idx="22"/></p:nvPr></p:nvSpPr>'
@@ -142,6 +151,20 @@ class Builder:
         h, w = so["height"], so["height"] * so["aspect"] * H_EMU / W_EMU
         x = m if so["corner"] == "bottom-left" else 1 - m - w
         return self.pic(rid, f"Sign-off ({variant})", x, 1 - so["bottom"] - h, w, h)
+
+    def rect(self, name, x, y, w, h, slot):
+        return (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="{name}"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
+                f'</p:nvSpPr><p:spPr>{xfrm(x, y, w, h)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+                f'{fill(slot)}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')
+
+    def cover_pic(self, rid, name, path, x, y, w, h):
+        """A picture cropped (srcRect) to cover the box, as the themes' object-fit: cover."""
+        from PIL import Image
+        iw, ih = Image.open(path).size
+        box = w * W_EMU / (h * H_EMU)
+        lr, tb = (round((1 - box / (iw / ih)) / 2 * 100000), 0) if iw / ih > box else (0, round((1 - (iw / ih) / box) / 2 * 100000))
+        crop = f'<a:srcRect l="{lr}" t="{tb}" r="{lr}" b="{tb}"/>' if lr or tb else ""
+        return self.pic(rid, name, x, y, w, h).replace('<a:stretch>', crop + '<a:stretch>')
 
     def art_pic(self, rid, kind):
         """A full-slide picture under everything, or '' when the livery has no art.<kind>."""
@@ -221,6 +244,43 @@ class Builder:
         return (f'<a:lvl1pPr algn="l" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
                 f'<a:defRPr sz="{pt * 100}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
                 f'{srgb(self.roles["primary-text"])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
+
+    def band_title_slide(self, livery_dir):
+        """The band: field and art.title, the band with the default photo in its right part, the
+        text column on it, the mark and the sign-off centred in the strip (rId2 and rId3)."""
+        t, g, m = self.band, self.geom, self.geom["margin"]
+        top, bottom, split = t["top"], t["bottom"], t["split"]
+        no_inset = 'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>'
+        shapes = [self.art_pic("rId4", "title"), self.rect("Title band", 0, top, 1, bottom - top, ROLE_SLOT[t["band"]])]
+        if "titlegraphic" in self.art:
+            shapes.append(self.cover_pic("rId5", "Title photo", Path(livery_dir) / self.art["titlegraphic"],
+                                         split, top, 1 - split, bottom - top))
+        mid, right = (1 + bottom) / 2, True
+        if self.signoff and "signoff" in t:
+            h = t["signoff-height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
+            right = self.signoff["corner"] == "bottom-left"
+            shapes.append(self.pic("rId3", "Sign-off (band)", m if right else 1 - m - w, mid - h / 2, w, h))
+        if self.logo_corner != "none":
+            h = t["logo-height"]; w = h * g["logo"]["aspect"] * H_EMU / W_EMU
+            shapes.append(self.pic("rId2", "Logo (band)", 1 - m - w if right else m, mid - h / 2, w, h))
+        col = split - m - 0.04
+        y_title, h_title = top + 0.10, 0.14
+        shapes.append(self.rect("Title tab", 0, y_title, g["tab"], h_title, "accent4"))
+        shapes.append(self.ph("Date", "dt", 20, xfrm(m, top + 0.055, col, 0.04),
+                              no_inset + self.field_text(12, bold=True, caps=True) + "</a:lstStyle><a:p><a:fld id=\"{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}\" type=\"datetime1\"><a:rPr lang=\"en-US\"/><a:t>Date</a:t></a:fld></a:p></p:txBody></p:sp><!--",
+                              "", "").split("<!--")[0])
+        shapes.append(self.ph("Title", "ctrTitle", None, xfrm(m, y_title, col, h_title),
+                              f'{no_inset}{self.field_text(36, bold=True)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                              "", "").split("<!--")[0])
+        shapes.append(f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/><p:nvPr userDrawn="1"/>'
+                      f'</p:nvCxnSpPr><p:spPr>{xfrm(m, y_title + h_title + 0.015, 0.065, 0)}<a:prstGeom prst="line"><a:avLst/></a:prstGeom>'
+                      f'<a:ln w="19050">{fill("accent1")}</a:ln></p:spPr></p:cxnSp>')
+        y_sub = y_title + h_title + 0.035
+        shapes.append(self.ph("Subtitle", "subTitle", 1, xfrm(m, y_sub, col, bottom - 0.02 - y_sub),
+                              no_inset + self.field_text(18) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                              "", "").split("<!--")[0])
+        shapes.append(self.chrome(light_text=False, with_date=False, text_role=t["field-text"]))
+        return self.layout("Title Slide", shapes, bg=fill(ROLE_SLOT[t["field"]]), show_master=False)
 
     def title_slide(self):
         g, m = self.geom, self.geom["margin"]
@@ -327,6 +387,10 @@ class Builder:
         if self.signoff:
             files.update({"signoff-light": self.signoff["light"], "signoff-dark": self.signoff["dark"]})
         files.update({f"art-{k}": v for k, v in self.art.items()})
+        if self.band:   # the band strip's own images, numbered after the rest
+            files["band-logo"] = self.band["logo"]
+            if self.signoff and "signoff" in self.band:
+                files["band-signoff"] = self.band["signoff"]
         part_of, by_path = {}, {}   # one media part per file: a lockup serving two roles is stored once
         for name, rel_path in files.items():
             f = Path(livery_dir) / rel_path
@@ -347,10 +411,19 @@ class Builder:
         for i, name in enumerate(LAYOUTS, 1):
             self.sid = 10
             kind = {"Title Slide": "title", "Section Header": "section"}.get(name)
-            xml = self.title_slide() if kind == "title" else self.section_header() if kind == "section" else self.content_layout(name)
+            xml = ((self.band_title_slide(livery_dir) if self.band else self.title_slide()) if kind == "title"
+                   else self.section_header() if kind == "section" else self.content_layout(name))
             parts[f"ppt/slideLayouts/slideLayout{i}.xml"] = xml
             r = [f'<Relationship Id="rId1" Type="{REL}/slideMaster" Target="../slideMasters/slideMaster1.xml"/>']
-            if kind:   # a field layout: the dark lockup, the dark sign-off, its art
+            if kind == "title" and self.band:   # the band's strip images, its art and default photo
+                r.append(image_rel("rId2", "band-logo"))
+                if "band-signoff" in part_of:
+                    r.append(image_rel("rId3", "band-signoff"))
+                if "title" in self.art:
+                    r.append(image_rel("rId4", "art-title"))
+                if "titlegraphic" in self.art:
+                    r.append(image_rel("rId5", "art-titlegraphic"))
+            elif kind:   # a field layout: the dark lockup, the dark sign-off, its art
                 r.append(image_rel("rId2", "logo-dark"))
                 if self.signoff:
                     r.append(image_rel("rId3", "signoff-dark"))

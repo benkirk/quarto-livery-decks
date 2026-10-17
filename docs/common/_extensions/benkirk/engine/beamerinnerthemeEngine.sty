@@ -38,6 +38,26 @@
 % ---------------------------------------------------------------------------
 \defbeamertemplate*{title page}{Engine}{%
   \gdef\engine@bodystyle{title}%
+  \engine@ifband{\vbox to \dimexpr\textheight-2pt\relax{\vfil}}{\engine@coverpage}}
+% the band title's text column, drawn by the background on the band (beamerouterthemeEngine.sty)
+\def\engine@bandtext{%
+  \@tempdima=\dimexpr\engine@title@split\paperwidth-\engine@margin-0.04\paperwidth\relax
+  \setbox\@tempboxa=\vbox{\hsize=\@tempdima \raggedright \color{BrandPrimaryText}%
+    {\usebeamerfont{title}\inserttitle\par}%
+    \ifx\insertsubtitle\@empty\else
+      \vskip0.5em{\usebeamerfont{subtitle}\insertsubtitle\par}%
+    \fi}%
+  \vbox{\hsize=\@tempdima \raggedright \color{BrandPrimaryText}%
+    \ifx\insertdate\@empty\else
+      {\usebeamerfont{date}\MakeUppercase{\insertdate}\par}\vskip0.02\paperheight
+    \fi
+    \engine@accentbar\@tempboxa
+    \vskip0.03\paperheight
+    {\usebeamercolor[fg]{title rule}\vrule width0.13\paperwidth height1.2pt}\par
+    \vskip0.03\paperheight
+    \ifx\insertauthor\@empty\else{\usebeamerfont{author}\insertauthor\par}\fi
+    \ifx\insertinstitute\@empty\else{\usebeamerfont{institute}\insertinstitute\par}\fi}}
+\def\engine@coverpage{%
   \engine@darkfieldcolors
   \@tempdima=\ifx\inserttitlegraphic\@empty 0.62\paperwidth\else 0.47\paperwidth\fi
   \setbox\@tempboxa=\vbox{\hsize=\@tempdima \raggedright
@@ -68,8 +88,7 @@
       \vbox{\hsize=\@tempdima \raggedright
         \usebeamerfont{title fineprint}\engine@fineprint\par}%
     \fi
-    \vskip0.02\paperheight}%
-}
+    \vskip0.02\paperheight}}
 % keep the title frame free of frame numbering by default
 \def\engine@titlepageframe{%
   {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}
@@ -132,7 +151,8 @@
 \newcommand\engineclosingcontent[2]{%
   \vbox to \dimexpr\textheight-2pt\relax{%
     \vskip0.075\paperheight
-    \hbox{\engine@fieldlogo{\engine@geom@logoclosing}}%
+    \hbox{\engine@ifband{\vrule width0pt height\engine@geom@logoclosing\paperheight}% the band's mark is in the strip
+      {\engine@fieldlogo{\engine@geom@logoclosing}}}%
     \vfill
     \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
       \usebeamerfont{section title}#1\par}%
