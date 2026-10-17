@@ -312,17 +312,36 @@ def band_photo(slide, width, height, photo):
     _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Title photo"
 
 
-def band_date(slide, width, height):
-    """The band's title stack is centred on its rule; the date goes just above the title's text
-    (an estimate of its height), not at the column's top, so a short title leaves no gap."""
-    title = next((sh for sh in slide.placeholders if sh.placeholder_format.type == PP_PLACEHOLDER.CENTER_TITLE), None)
-    date = next((sh for sh in slide.placeholders if sh.placeholder_format.type == PP_PLACEHOLDER.DATE), None)
-    if title is None or date is None:
+def band_stack(slide, width, height):
+    """The band's title stack (date, title, rule, subtitle and author) centred on the column's
+    middle, as HTML and PDF centre theirs: the layout puts the rule at the middle with the title
+    above and the subtitle below, which sits a tall title (date and all) high. From estimates of
+    the title's and subtitle's text heights; the rule, a layout shape, moves onto the slide (this
+    deck's Title Slide layout serves the title slide alone)."""
+    ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
+    title, date, sub = (ph.get(t) for t in (PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE, PP_PLACEHOLDER.SUBTITLE))
+    if title is None:
         return
     x, y, w, h = COMP["title-band"]["column"]["box"]
-    text_top = int((y + h / 2 - 0.015) * height) - _text_height(title, slide)
-    dh = int(0.04 * height)
-    date.left, date.top, date.width, date.height = int(x * width), max(int(y * height), text_top - dh - int(0.01 * height)), int(w * width), dh
+    X, W = int(x * width), int(w * width)
+    dh = int(0.04 * height) if date is not None else 0
+    gaps = [int(g * height) for g in (0.01 if date is not None else 0, 0.015, 0.02)]   # date|title, title|rule, rule|sub
+    th = _text_height(title, slide)
+    sh = _text_height(sub, slide) if sub is not None and sub.text_frame.text.strip() else 0
+    total = dh + gaps[0] + th + gaps[1] + gaps[2] + sh
+    top = max(int(y * height), int((y + h / 2) * height - total / 2))
+    if date is not None:
+        date.left, date.top, date.width, date.height = X, top, W, dh
+    title.left, title.top, title.width, title.height = X, top + dh + gaps[0], W, th
+    rule_y = title.top + th + gaps[1]
+    if sub is not None:
+        sub.left, sub.top, sub.width = X, rule_y + gaps[2], W
+        sub.height = max(sh, int((y + h) * height) - sub.top)
+    lay = slide.slide_layout.shapes._spTree
+    for el in [e for e in lay if e.tag == qn("p:cxnSp") and e.find(".//" + qn("p:cNvPr")).get("name") == "Title rule"]:
+        lay.remove(el)
+        el.find(".//" + qn("a:off")).set("y", str(rule_y))
+        slide.shapes._spTree.append(el)
 
 
 def _role(role):
@@ -515,7 +534,7 @@ def main() -> int:
             lay_out(slide, words)
         done += 1
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
-        band_date(prs.slides[0], w, h)
+        band_stack(prs.slides[0], w, h)
     prs.save(str(pptx))
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")
     return 0
