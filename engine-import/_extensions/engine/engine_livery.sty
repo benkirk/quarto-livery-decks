@@ -284,10 +284,14 @@
   \fi\fi\fi
 \fi
 
-% semibold where available (Poppins SemiBold), else bold
-\ifengine@poppins
+% semibold where the livery's bundled family has one (Poppins SemiBold), else bold: asking
+% for sb without one is a "Font shape undefined" warning per use (Overleaf counts it as an
+% error; TeX Gyre Heros has no semibold)
+\ifengine@poppins\ifdefined\engine@font@semibold
   \DeclareRobustCommand{\sbseries}{\fontseries{sb}\selectfont}
 \else
+  \DeclareRobustCommand{\sbseries}{\bfseries}
+\fi\else
   \DeclareRobustCommand{\sbseries}{\bfseries}
 \fi
 \DeclareTextFontCommand{\textsb}{\sbseries}
