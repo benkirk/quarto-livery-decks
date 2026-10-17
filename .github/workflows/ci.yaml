@@ -10,7 +10,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, container-image]   # TEMPORARY: the branch builds itself until it is merged
     tags: ['v*']
   pull_request:
     branches: [main, staging]
