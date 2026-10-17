@@ -542,7 +542,19 @@ deck's 13.33 x 7.5 in slide, with a 16 pt body, 32 pt titles and 60 pt dividers.
 copied from a built pptx into a hand-made deck on that template keeps its geometry and its
 round sizes. HTML and PDF set the same sizes as the same share of the slide, so a slide fits,
 or overflows, alike in all three. `scale="S"` on a slide still sizes it in every format, and
-PowerPoint's sizes round to the half point. A livery's sizes live in its `livery.yml`
+PowerPoint's sizes round to the half point.
+
+A whole deck can step its sizes down (or up) from the livery's, in all three formats:
+
+```yaml
+type-body: 10      # the body in points; every size scales by 10/12 under ncar
+# type-scale: 0.85 # or a plain factor (type-body wins if both are set)
+```
+
+The NSF NCAR guide's "10 pts for three and four column layouts" is `type-body: 10`. PowerPoint
+gets every size rounded to the half point (`type_step.py`, the recipe's last step), and a
+slide's `scale=` still multiplies on top. In plain LaTeX or Overleaf, the theme option
+`typescale=0.85` does the same. A livery's sizes live in its `livery.yml`
 (`type:`, `pptx.size`; [beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)'s
 README lists the roles).
 

@@ -36,10 +36,10 @@
   --engine-full-pad: 40px;
   --engine-full-floor: 67.5px;
   --engine-full-caption: 54px;
-  --engine-type-body: 26.67px;
-  --engine-type-frametitle: 53.33px;
-  --engine-type-pagenumber: 15px;
-  --engine-type-footer: 15px;
+  --engine-type-body: calc(26.67px * var(--engine-type-scale, 1));
+  --engine-type-frametitle: calc(53.33px * var(--engine-type-scale, 1));
+  --engine-type-pagenumber: calc(15px * var(--engine-type-scale, 1));
+  --engine-type-footer: calc(15px * var(--engine-type-scale, 1));
   --engine-type-subhead: 1.25;
   --engine-type-table: 0.8125;
   --engine-type-code: 0.6875;

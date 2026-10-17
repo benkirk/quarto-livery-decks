@@ -1,0 +1,9 @@
+---
+title: "Fixture: the deck-wide size step"
+subtitle: "type-body: 10, every size times 10/12"
+author: "Parity fixture"
+date: 2026-10-17
+type-body: 10
+---
+
+{{< include _body.qmd >}}

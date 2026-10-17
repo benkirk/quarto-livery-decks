@@ -16,6 +16,8 @@
 %   sectionpages=true|false    automatic divider frame per \section   (true)
 %   logo=true|false            logo in the top-right of content frames (true)
 %   waves=true|false           faint brand waves behind content frames  (true)
+%   typescale=<factor>         every text size times it (a Quarto deck's type-body: or
+%                              type-scale: sets it)                       (1)
 %
 % Frame extensions (see README):
 %   \begin{frame}[enginebg=<image>]   photo "feature" frame (feature.style: bar | cover); its
@@ -44,6 +46,7 @@
 \DeclareOptionBeamer{sectionpages}[true]{\csname engine@sectionpages#1\endcsname}
 \DeclareOptionBeamer{logo}[true]{\csname engine@framelogo#1\endcsname}
 \DeclareOptionBeamer{waves}[true]{\csname engine@waves#1\endcsname}
+\DeclareOptionBeamer{typescale}{\def\engine@opt@typescale{#1}}
 \ProcessOptionsBeamer
 
 \mode<all>

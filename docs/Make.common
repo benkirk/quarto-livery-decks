@@ -24,6 +24,7 @@ STYLE_FOOTNOTES    := $(PRESENTATIONS_ROOT)common/utils/style_footnotes.py
 LINK_CAPTIONS      := $(PRESENTATIONS_ROOT)common/utils/link_captions.py
 SLIDE_LAYOUT       := $(PRESENTATIONS_ROOT)common/utils/slide_layout.py
 STYLE_TABLES       := $(PRESENTATIONS_ROOT)common/utils/style_tables.py
+TYPE_STEP          := $(PRESENTATIONS_ROOT)common/utils/type_step.py
 DECK_QA            := $(PRESENTATIONS_ROOT)common/utils/deck_qa.py
 COMP_MEASURE       := $(PRESENTATIONS_ROOT)common/utils/comp_measure.py
 SITE_INDEX         := $(PRESENTATIONS_ROOT)common/utils/site_index.py
@@ -175,6 +176,7 @@ define render_pptx
 	python3 $(LINK_CAPTIONS) $@
 	python3 $(SLIDE_LAYOUT) $@
 	python3 $(STYLE_TABLES) $@
+	python3 $(TYPE_STEP) $@
 endef
 
 # The engine's HTML dependency (livery.css, its fonts and logos) is named for the engine's
