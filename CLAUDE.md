@@ -132,8 +132,9 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - **Type** (engine >= 3.6.0): text sizes are **points on the livery's pptx canvas**, whole or
   half points (a pasted slide carries round numbers): `livery.yml` `type:` (role -> pt, `levels`)
   and `pptx.size` (inches, default 13.333 x 7.5), defaulting to the engine's `TYPE` (the NSF NCAR
-  template's guidance carried onto 540 pt). cu's are the NSI master deck's (body 16, titles 32,
-  cover 48, dividers 60). HTML and beamer take the same sizes as fractions of the slide height, so
+  template's guidance carried onto 540 pt). ncar is on the brand template's own canvas, 10 x
+  5.625 in, at its guidance (body 12, titles 20; its family inherits); cu's are the NSI master
+  deck's (body 16, titles 32, cover 48, dividers 60). HTML and beamer take the same sizes as fractions of the slide height, so
   the formats fit and overflow alike; the post-processors read `livery.type_pt()` and scale their
   absolute pads by `livery.canvas_scale()`; `scale=` rounds a pptx size to the half point.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
@@ -254,8 +255,8 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   extracting each slide's title and looking for "(no title)".
 - **"Why is my line spacing 0.8?"**: `enable_autofit.py` turns on PowerPoint's
   shrink-on-overflow; when a box overflows, PowerPoint squeezes line spacing to
-  its 0.8 floor on recompute. The master's body sizes (ncar 16/15/13/12/11 pt, cu
-  16/14/13/12/11) are the livery's type (`livery.json` `type`, which HTML and beamer follow as
+  its 0.8 floor on recompute. The master's body sizes (ncar 12/11/10/9/8 pt on its
+  10 x 5.625 in, cu 16/14/13/12/11 on 13.33 x 7.5) are the livery's type (`livery.json` `type`, which HTML and beamer follow as
   fractions of the slide height), chosen so the three formats fit
   alike and autofit rarely fires — don't bump them back up.
 - Template edits must stay pandoc-compliant (layout names, the five

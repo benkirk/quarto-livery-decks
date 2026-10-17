@@ -87,8 +87,8 @@ type:                      # points on the 13.333 x 7.5 in canvas, as the NSI ma
   frametitle: 32           # its slide titles, 32 (to 36) bold
   subhead: 20              # its in-body heads ("Vision", "Approach")
   footnote: 9              # "*To date"
-  title: 48                # the cover: title 48, date 28
-  subtitle: 28
+  title: 48                # the cover: title 48, date 28 (it has no subtitle: the in-body
+  subtitle: 20             # heads' size, so a long one fits the band on one line)
   date: 28
   section: 60              # its dividers ("Backup", "External to CU")
   closing: 48

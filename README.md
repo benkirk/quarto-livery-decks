@@ -533,6 +533,19 @@ jupyter: bash
 Code runs on the build host, not the viewer's machine — output is baked
 into the .pptx.
 
+## Text sizes and the slide size
+
+Each livery states its text sizes in whole or half points on its PowerPoint canvas, from the
+brand's own template or deck. ncar uses the NSF NCAR template's 10 x 5.625 in slide, with a 12 pt
+body, 12/11/10/9/8 pt list levels, 20 pt slide titles and a 22 pt cover title. cu uses the NSI
+deck's 13.33 x 7.5 in slide, with a 16 pt body, 32 pt titles and 60 pt dividers. So a slide
+copied from a built pptx into a hand-made deck on that template keeps its geometry and its
+round sizes. HTML and PDF set the same sizes as the same share of the slide, so a slide fits,
+or overflows, alike in all three. `scale="S"` on a slide still sizes it in every format, and
+PowerPoint's sizes round to the half point. A livery's sizes live in its `livery.yml`
+(`type:`, `pptx.size`; [beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)'s
+README lists the roles).
+
 ## About text autofit
 
 Pandoc's PPTX writer emits empty `<a:bodyPr/>` on every placeholder,
