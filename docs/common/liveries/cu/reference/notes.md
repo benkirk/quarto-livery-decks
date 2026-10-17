@@ -80,6 +80,11 @@ Open (deferred 2026-10-16, none blocking):
 - **pptx fonts are not embedded.** The pptx names Helvetica Neue unembedded (Macs have it,
   Windows substitutes Arial). Embedding TeX Gyre Heros needs its CFF outlines converted and
   PowerPoint's fntdata blobs made (`pptx.fonts`; `embed_fonts.py` does nothing without them).
+  A possibility Ben raised, if portability turns out to matter: name a substitute font in the
+  pptx instead (`pptx.typeface`, and `heading-typeface` for titles), most simply Arial, which
+  every PowerPoint has and the NSI deck itself uses as its second font, at the cost of the
+  brand's Helvetica look on Macs. Either route is a livery change only; rerun
+  `livery_template.py` after it.
 - **The accent tab vanishes on the gold fields.** `accent` and `primary` are both CU Gold, so
   the tab beside the title, divider and closing headlines is gold on gold in every format (it
   shows on white content slides). A darker accent (black, dark gray) would bring it back;
