@@ -8,7 +8,8 @@ structure or conventions below change.
 A [Quarto](https://quarto.org) framework for documentation decks (`.pptx`
 primary; `.html`/revealjs and `.pdf`/beamer secondary), and the **multi-brand
 successor** of `benkirk/quarto-docs-framework` (the `upstream` remote), which
-stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap:
+stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (next: `docs/design/composition-handoff.md`,
+the title/closing/section/feature compositions as boxes in the livery data, then NASA):
 a generalized **engine** (the vendored theme, forked as
 `benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
 `docs/common/liveries/`; its section 10 logs progress and names the next step.
