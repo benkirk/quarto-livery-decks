@@ -8,6 +8,7 @@ set -euo pipefail
 img=$1
 u="$(id -u):$(id -g)"
 run() { docker run --rm --user "$u" "$@"; }
+build() { timeout 900 docker run --rm --user "$u" "$@"; }   # timeout cannot wrap a shell function
 tmp=${RUNNER_TEMP:-${TMPDIR:-/tmp}}
 
 echo "== $img runs natively, as uid $u, with its environment"
@@ -49,7 +50,7 @@ flowchart LR
   A --> D[hello.pdf]
 ```
 QMD
-timeout 900 run -v "$work:/work" "$img" make pptx html pdf LIVERY=cu
+build -v "$work:/work" "$img" make pptx html pdf LIVERY=cu
 ls -la "$work"
 for f in hello.pptx hello.html hello.pdf; do
   test -s "$work/$f"
@@ -65,7 +66,7 @@ grep -q 'livery.css' "$work/hello.html"
 echo "== 2. a tree with Makefiles (a submodule consumer's layout): the quickstart deck"
 # its Makefile includes ../Make.common, so the mounted framework's recipes drive the image's
 # toolchain; the deck has a {bash} cell (the kernel), mermaid and the committed relative links
-timeout 900 run -v "$PWD/docs:/work" -w /work/quickstart "$img" make pptx html pdf
+build -v "$PWD/docs:/work" -w /work/quickstart "$img" make pptx html pdf
 for f in quickstart.pptx quickstart.html quickstart.pdf; do
   test -s "docs/quickstart/$f"
   test "$(stat -c %u "docs/quickstart/$f")" = "$(id -u)"
