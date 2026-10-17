@@ -1,0 +1,17 @@
+# The CU Center for National Security Initiatives, a flavor of cu (livery.yml `extends`): only
+# what differs from the University of Colorado Boulder brand. The marks are the center's
+# master deck's (reference/notes.md); everything else is cu's.
+meta:
+  name: Center for National Security Initiatives
+
+logo:
+  images:
+    nsi-color:              # the NSI lockup, gold mark and dark text: light backgrounds and gold fields
+      path: logos/nsi-lockup.png
+    nsi-white:              # gold mark and white text: the black title and closing field
+      path: logos/nsi-lockup-white.png
+    nsi-black:              # one color, black: the gold fields, where the gold mark vanishes; a
+      path: logos/nsi-lockup-black.png   # recoloring of nsi-color until NSI supplies its own
+  medium:
+    light: nsi-color
+    dark: nsi-black         # the gold fields (dividers, feature covers)
