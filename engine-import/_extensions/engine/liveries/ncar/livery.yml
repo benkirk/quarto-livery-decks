@@ -108,7 +108,7 @@ type:                     # points on that canvas, as the NSF NCAR template's gu
   frametitle: 20          # page titles
   subhead: 15             # "SUBHEAD 1 Poppins Bold, 15pt"
   table: 10               # its tables' cells
-  code: 8
+  code: 10               # code blocks: 8 read small beside 12 pt text; pptx sets them near the body
   caption: 8
   footnote: 8
   title: 22               # the cover: date 8, title 22, presenter name and title 12
