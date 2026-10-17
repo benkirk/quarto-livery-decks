@@ -361,7 +361,12 @@ $mermaid-label-fg-color: $ncar-blue;
 }
 
 // ---------------------------------------------------------------------------
-// title slide: brand field, waves (or the photo), logo top left
+// title, divider, closing and feature slides: drawn from the livery's compositions
+// (livery_build.py compositions()). livery.css sets one generic set of --engine-cmp-*
+// properties per composition on its selector (title, its photo, light and band variants;
+// closing and its light and band ones; section; feature): each box's -x -y -w -h (and -r -b,
+// its right and bottom edges' distance from the slide's), -display, and the roles as
+// --engine-cmp-field / -text / -eyebrow / -bar-fill / -panel-fill. No lengths here but type.
 // ---------------------------------------------------------------------------
 // the waves run past the slide edge (overflow), so a letterboxed screen
 // shows them continuing instead of cut off
@@ -374,12 +379,37 @@ $mermaid-label-fg-color: $ncar-blue;
   z-index: -1;
   pointer-events: none;
 }
+// the mark and the sign-off of every composition, from their boxes
+div.reveal div.slides section.engine-title.quarto-title-block,
+.reveal .slides section.slide.engine-section,
+.reveal .slides section.slide.level2.closing {
+  &::after {
+    display: var(--engine-cmp-mark-display);
+    left: var(--engine-cmp-mark-x);
+    top: var(--engine-cmp-mark-y);
+    right: auto;
+    bottom: auto;
+    width: var(--engine-cmp-mark-w);
+    height: var(--engine-cmp-mark-h);
+    background-position: left top;
+  }
+  .engine-signoff {
+    display: var(--engine-cmp-signoff-display);
+    left: var(--engine-cmp-signoff-x);
+    top: var(--engine-cmp-signoff-y);
+    right: auto;
+    bottom: auto;
+    width: var(--engine-cmp-signoff-w);
+    height: var(--engine-cmp-signoff-h);
+    background-position: left top;
+  }
+}
 .reveal .slides section.engine-title .engine-title-photo-img {
   position: absolute;
-  top: 0;
-  left: 48%;
-  width: 52%;
-  height: 100%;
+  left: var(--engine-cmp-photo-x);
+  top: var(--engine-cmp-photo-y);
+  width: var(--engine-cmp-photo-w);
+  height: var(--engine-cmp-photo-h);
   max-width: none;
   max-height: none;
   margin: 0;
@@ -388,10 +418,18 @@ $mermaid-label-fg-color: $ncar-blue;
 }
 div.reveal div.slides section.engine-title.quarto-title-block {
   text-align: left;
-  padding: 180px var(--engine-margin) 60px;
-  &::after { left: var(--engine-margin); right: auto; top: 72px; height: var(--engine-logo-title-h); width: calc(var(--engine-logo-title-h) * var(--engine-logo-aspect)); background-position: left top; }
-  .engine-title-text { max-width: 58%; }
-  &.engine-title-photo .engine-title-text { max-width: 44%; }
+  padding: 0;
+  // the text column: its stack from the top or centred, by the column's anchor
+  .engine-title-text {
+    position: absolute;
+    left: var(--engine-cmp-column-x);
+    top: var(--engine-cmp-column-y);
+    width: var(--engine-cmp-column-w);
+    height: var(--engine-cmp-column-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--engine-cmp-column-justify);
+  }
   .date {
     font-size: 0.6em;
     font-weight: 700;
@@ -407,8 +445,9 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     // the accent bar at the paper edge, beside the title
     &::before {
       content: "";
+      display: var(--engine-cmp-column-tab);
       position: absolute;
-      left: calc(-1 * var(--engine-margin));
+      left: calc(-1 * var(--engine-cmp-column-x));
       top: 0.08em;
       bottom: 0.08em;
       width: var(--engine-tab);
@@ -422,94 +461,46 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     margin: 0 0 0.6em;
   }
   .engine-title-rule {
-    width: 208px;
-    height: 3px;
+    display: var(--engine-cmp-rule-display);
+    width: var(--engine-cmp-rule-w);
+    height: var(--engine-cmp-rule-h);
     background: var(--engine-secondary);
     margin: 0.9em 0;
   }
+  &.engine-band .engine-title-rule { margin: 0.6em 0; }
   .author { font-weight: 700; margin: 0; font-size: 0.8em; }
   .institute { margin: 0; font-size: 0.7em; }
   .engine-fineprint {
     position: absolute;
-    left: var(--engine-margin);
-    bottom: 36px;
-    max-width: 50%;
+    left: var(--engine-cmp-fineprint-x);
+    top: var(--engine-cmp-fineprint-y);
+    width: var(--engine-cmp-fineprint-w);
+    height: var(--engine-cmp-fineprint-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--engine-cmp-fineprint-justify);
     font-size: 0.4em;
     line-height: 1.4;
     opacity: 0.85;
+    color: var(--engine-cmp-fineprint-color);
     p { margin: 0; line-height: 1.4; }
   }
-  // text on the dark field
-  &.engine-field {
-    &, h1, .subtitle, .date, .author, .institute, .engine-fineprint, a { color: var(--engine-primary-text); }
-  }
-}
-
-// the band (title: {style: band} in livery.yml): the field, the band across it with the text
-// column and the photo in its right part, the mark and the sign-off centred in the strip below;
-// the --engine-band-* vars and the strip images are livery.css's
-div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
-  .engine-title-photo-img {
-    top: var(--engine-band-top);
-    height: var(--engine-band-height);
-    left: var(--engine-band-split);
-    width: calc(100% - var(--engine-band-split));
-  }
-  .engine-title-text {
-    position: absolute;
-    left: var(--engine-margin);
-    top: var(--engine-band-top);
-    height: var(--engine-band-height);
-    width: var(--engine-band-text-w);
-    max-width: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .engine-title-rule { margin: 0.6em 0; }
-  .engine-fineprint {
-    top: calc(var(--engine-band-top) + var(--engine-band-height) + 16px);
-    bottom: auto;
-    color: var(--engine-band-field-text);
-  }
-}
-div.reveal div.slides section.engine-title.quarto-title-block.engine-band,
-.reveal .slides section.slide.level2.closing.engine-band {
-  &::after {
-    top: auto;
-    bottom: calc(var(--engine-band-strip) - var(--engine-band-logo-h) / 2);
-    left: var(--engine-band-logo-left);
-    right: var(--engine-band-logo-right);
-    height: var(--engine-band-logo-h);
-    width: var(--engine-band-logo-w);
-    background-position: center;
-  }
-  .engine-signoff {
-    bottom: calc(var(--engine-band-strip) - var(--engine-band-signoff-h, 0px) / 2);
-    height: var(--engine-band-signoff-h, 0);
-    width: var(--engine-band-signoff-w, 0);
-  }
-}
-.reveal .slides section.slide.level2.closing.engine-band.engine-field {
-  &, h2, p, li, a, strong { color: var(--engine-band-field-text); }
-  ul > li::before { background: var(--engine-band-field-text); }
+  &, h1, .subtitle, .date, .author, .institute, a { color: var(--engine-cmp-text); }
 }
 
 // ---------------------------------------------------------------------------
-// section dividers: brand field, waves, "SECTION n", heading, subtitle
+// section dividers: "SECTION n", heading, subtitle, in the column
 // ---------------------------------------------------------------------------
 .reveal .slides section.slide.engine-section {
   display: flex !important;
   flex-direction: column;
-  justify-content: center;
-  padding: var(--engine-divider-top) var(--engine-margin) var(--engine-divider-bottom);
+  justify-content: var(--engine-cmp-column-justify);
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
   text-align: left;
-  &::after { left: var(--engine-margin); right: auto; top: 72px; height: var(--engine-logo-section-h); width: calc(var(--engine-logo-section-h) * var(--engine-logo-aspect)); background-position: left top; }
   &[data-engine-section]::before {
-    content: "Section " attr(data-engine-section);
+    content: var(--engine-cmp-eyebrow-label) attr(data-engine-section);
     display: block;
-    // the livery may set divider.label-color (UCAR: Space on Aqua; Light Aqua is too light there)
-    color: var(--engine-divider-label, var(--engine-secondary));
+    color: var(--engine-cmp-eyebrow);
     font-size: 0.7em;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -518,15 +509,15 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-band,
   }
   h1 {
     position: relative;
-    max-width: 62%;
     font-size: 2.6em;
     line-height: 1.08;
     margin: 0;
     text-align: left;
     &::before {
       content: "";
+      display: var(--engine-cmp-column-tab);
       position: absolute;
-      left: calc(-1 * var(--engine-margin));
+      left: calc(-1 * var(--engine-cmp-column-x));
       top: 0.08em;
       bottom: 0.08em;
       width: var(--engine-tab);
@@ -534,66 +525,78 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-band,
     }
   }
   .engine-subtitle {
-    max-width: 60%;
     margin-top: 0.7em;
     font-size: 1.1em;
     p { margin: 0 0 0.4em; }
-    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-primary-text); }
+    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
   }
-  &, h1, .engine-subtitle, a { color: var(--engine-primary-text); }
+  &, h1, .engine-subtitle, a { color: var(--engine-cmp-text); }
 }
 
 // ---------------------------------------------------------------------------
-// closing slide: title field and waves, headline, content beneath
+// closing slide: the headline and the content beneath, in the column
 // ---------------------------------------------------------------------------
 .reveal .slides section.slide.level2.closing {
   display: flex !important;
   flex-direction: column;
-  justify-content: center;
-  padding: 150px var(--engine-margin) 80px;
-  &::after { left: var(--engine-margin); right: auto; top: 81px; height: var(--engine-logo-closing-h); width: calc(var(--engine-logo-closing-h) * var(--engine-logo-aspect)); background-position: left top; }
+  justify-content: var(--engine-cmp-column-justify);
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
   > h2 {
     position: relative;
     top: auto; left: auto; right: auto;
     min-height: 0;
     display: block;
-    max-width: 60%;
     font-size: 2.6em;
     line-height: 1.08;
     margin: 0 0 0.4em;
-    &::before { top: 0.08em; bottom: 0.08em; }
+    color: var(--engine-cmp-text);
+    &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); top: 0.08em; bottom: 0.08em; }
   }
-  > :not(h2):not(svg) { max-width: 58%; }
+  &, p, li, strong { color: var(--engine-cmp-text); }   // the light closing's too: its column's role
   &.engine-field {
-    &, h2, p, li, a, strong { color: var(--engine-primary-text); }
-    ul > li::before { background: var(--engine-primary-text); }
-    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-primary-text); }
+    a { color: var(--engine-cmp-text); }
+    ul > li::before { background: var(--engine-cmp-text); }
+    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
   }
 }
 
 // ---------------------------------------------------------------------------
-// .feature: full-bleed photo, translucent Space band behind the title
+// .feature: full-bleed photo, the title in the column on the bar, the body on the panel
 // ---------------------------------------------------------------------------
-.reveal .slides section.slide.level2.feature > h2 {
-  top: 0;
-  left: 0;
-  right: 0;
-  box-sizing: border-box;
-  min-height: 180px;
-  padding: 0 var(--engine-margin);
-  background: var(--engine-overlay);
-  color: #fff;
-  &::before { content: none; }
-}
 .reveal .slides section.slide.level2.feature {
-  padding-top: 230px;
+  > h2 {
+    top: var(--engine-cmp-column-y);
+    left: var(--engine-cmp-column-x);
+    right: auto;
+    width: var(--engine-cmp-column-w);
+    height: var(--engine-cmp-column-h);
+    min-height: 0;
+    box-sizing: border-box;
+    align-items: var(--engine-cmp-column-justify);
+    color: var(--engine-cmp-text);
+    &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); }
+  }
+  // the bar behind the title (engine-revealjs.lua adds the box when the composition has one)
+  .engine-feature-bar {
+    position: absolute;
+    left: var(--engine-cmp-bar-x);
+    top: var(--engine-cmp-bar-y);
+    width: var(--engine-cmp-bar-w);
+    height: var(--engine-cmp-bar-h);
+    background: var(--engine-cmp-bar-fill);
+    z-index: -1;
+  }
 }
-// the body on a translucent Space panel (beamer: translucent blocks)
+// the body on its translucent panel (beamer: translucent blocks); its height is its content's
 .reveal .slides section.slide.feature .engine-feature-body {
+  position: absolute;
+  left: var(--engine-cmp-panel-x);
+  top: var(--engine-cmp-panel-y);
+  width: var(--engine-cmp-panel-w);
+  max-height: var(--engine-cmp-panel-h);
   box-sizing: border-box;
-  width: 52%;
   padding: 0.6em 0.9em;
-  background: var(--engine-overlay);
+  background: var(--engine-cmp-panel-fill);
   &, p, li, strong { color: #fff; }
   h3, .alert, a { color: var(--engine-secondary); }
   > :last-child { margin-bottom: 0; }
@@ -621,17 +624,6 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-band,
     content: "" !important;
     background: rgba(#fff, 0.25) !important;
   }
-}
-
-// ---------------------------------------------------------------------------
-// light title (themeoptions title=light): white field, the text in the foreground role (the
-// brand template's Dark Blue), the wave lines alone
-// ---------------------------------------------------------------------------
-html.engine-title-light .reveal .slides section.slide.level2.closing {
-  > h2 { color: var(--engine-foreground); }
-}
-html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block {
-  &, h1, .subtitle, .date, .author, .institute, .engine-fineprint, a { color: var(--engine-foreground); }
 }
 
 // ---------------------------------------------------------------------------
@@ -729,10 +721,10 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
 // restate each slide type's (more specific, so these win)
 html.reveal-print .reveal .slides {
   section.slide, section.engine-title { padding: 150px var(--engine-margin) 70px !important; }
-  section.engine-title.quarto-title-block { padding: 180px var(--engine-margin) 60px !important; }
-  section.slide.engine-section { padding: var(--engine-divider-top) var(--engine-margin) var(--engine-divider-bottom) !important; }
-  section.slide.level2.closing { padding: 150px var(--engine-margin) 80px !important; }
-  section.slide.level2.feature { padding-top: 230px !important; }
+  section.engine-title.quarto-title-block { padding: 0 !important; }
+  section.slide.engine-section, section.slide.level2.closing {
+    padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
+  }
   // full-height slides: no vertical centering offset
   section.slide, section.engine-title { top: 0 !important; }
 }

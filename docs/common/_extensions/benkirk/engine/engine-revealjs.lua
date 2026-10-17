@@ -56,7 +56,7 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "3.4.0"
+local VERSION = "3.5.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
@@ -368,12 +368,6 @@ local function P(k, i, dx)
   local p = WAVES[k][i]
   return (p[1] + dx) * W, p[2] * H
 end
--- x where the tangent at endpoint i (towards control point j) reaches y
-local function along(k, i, j, dx, y)
-  local xe, ye = P(k, i, dx)
-  local xc, yc = P(k, j, dx)
-  return xe + (xc - xe) * (y - ye) / (yc - ye)
-end
 local function pt(x, y) return n(x) .. " " .. n(y) end
 local function seg(k, dx, a, b, c)  -- cubic to point c through controls a, b
   return string.format("C %s %s %s", pt(P(k, a, dx)), pt(P(k, b, dx)), pt(P(k, c, dx)))
@@ -421,11 +415,11 @@ local function band(k, m, dx, fill, opacity)
   return string.format('<path d="M %s %s %s Z" fill="%s" fill-opacity="%s"/>',
     top(k, dx), down(k, dx), up(m, dx), fill, opacity)
 end
-local function lines(dx, stroke)
+local function lines(dx, stroke, width)
   local out = {}
   for k = 1, 3 do
-    out[k] = string.format('<path d="M %s %s" fill="none" stroke="%s" stroke-width="2.4"/>',
-      top(k, dx), down(k, dx), stroke)
+    out[k] = string.format('<path d="M %s %s" fill="none" stroke="%s" stroke-width="%s"/>',
+      top(k, dx), down(k, dx), stroke, width or 2.4)
   end
   return table.concat(out)
 end
@@ -435,45 +429,43 @@ local function svg(body)
     .. 'preserveAspectRatio="none" aria-hidden="true" focusable="false">%s</svg>', W, H, body)
 end
 
--- title and closing slides without a photo, and section dividers: the lines
--- with the brand's translucent bands between them (Brand Guide p24)
-local function waves(c, dx)
-  if not WAVES then return "" end
-  return svg(band(1, 2, dx, c.secondary, 0.18) .. band(2, 3, dx, c.secondary, 0.10)
-    .. lines(dx, c.secondary))
-end
-
--- title slide with `titlegraphic:`, as the brand's cover: the photo fills the
--- right 52%; the opaque field runs to line 2 and a translucent band to line 3.
--- A plain <img> behind the svg, not an svg <image>: pandoc's embed-resources
--- inlines the former only.
+-- the title photo as a plain <img>, not an svg <image>: pandoc's embed-resources inlines the
+-- former only. Its box is the composition's, from livery.css.
 local function photo_img(src)
   if src then return string.format('<img class="engine-title-photo-img" src="%s" alt="">', src) end
   -- the livery's art.titlegraphic: a box livery.css paints (its url() is beside the css)
   return '<div class="engine-title-photo-img engine-title-photo-default"></div>'
 end
 
-local function photo_waves(c, fieldcolor, src)
-  local img = photo_img(src)
-  if not WAVES then   -- no waves: the field over the left half, a straight edge
-    return img .. svg(string.format('<path d="M 0 0 H %d V %d H 0 Z" fill="%s"/>', W / 2, H, fieldcolor))
+-- A composition's drawing (livery.json compositions): its band, then the waves by style --
+-- bands: the lines with the brand's translucent bands between them (Brand Guide p24); lines:
+-- the lines alone; cover: the field to line 2, a translucent band to line 3, the lines -- or,
+-- without waves, a field narrower than the slide as a straight-edged rect. `img` (the title
+-- photo) goes under the waves, over the band.
+local function comp_art(comp, r, img)
+  local body, w = {}, comp.waves
+  if comp.band then
+    local b = comp.band.box
+    table.insert(body, string.format('<rect x="%g" y="%g" width="%g" height="%g" fill="%s"/>',
+      b[1] * W, b[2] * H, b[3] * W, b[4] * H, r[comp.band.role]))
   end
-  return img .. svg(field(2, 0, fieldcolor) .. band(2, 3, 0, fieldcolor, 0.65) .. lines(0, c.secondary))
-end
-
--- the band title (title: {style: band}): the band across the slide in its role's color, the
--- photo in its right part (positioned by the scss from livery.css's --engine-band-* vars)
-local function band_art(t, r, src, photo)
-  local rect = string.format('<rect x="0" y="%g" width="%d" height="%g" fill="%s"/>',
-    t.top * H, W, (t.bottom - t.top) * H, r[t.band])
-  return svg(rect) .. (photo and photo_img(src) or "")
-end
-
--- the light title and closing (title=light), as the brand's own template: the lines alone, the
--- white field showing between them
-local function light_waves(c, dx)
-  if not WAVES then return "" end
-  return svg(lines(dx, c.secondary))
+  if w and WAVES then
+    local c, sw = r[w.role], w.line * W
+    if w.style == "bands" then
+      table.insert(body, band(1, 2, w.shift, c, w.opacity[1]) .. band(2, 3, w.shift, c, w.opacity[2]))
+    elseif w.style == "cover" then
+      local f = r[comp.field.role]
+      table.insert(body, field(2, w.shift, f) .. band(2, 3, w.shift, f, w.opacity[1]))
+    end
+    table.insert(body, lines(w.shift, c, sw))
+  elseif comp.field and comp.field.box[3] < 1 then
+    local b = comp.field.box
+    table.insert(body, string.format('<path d="M %g %g H %g V %g H %g Z" fill="%s"/>',
+      b[1] * W, b[2] * H, (b[1] + b[3]) * W, (b[2] + b[4]) * H, b[1] * W, r[comp.field.role]))
+  end
+  local art = #body > 0 and svg(table.concat(body)) or ""
+  img = img or ""
+  return comp.band and art .. img or img .. art
 end
 
 -- content slides: the faint lines of the brand's content slides (p26), in the surface color
@@ -547,8 +539,17 @@ function Pandoc(doc)
   local r = livery.roles
   local c = { primary = r.primary, primary_text = r["primary-text"], secondary = r.secondary,
               surface = r.surface, dark = r.dark }
+  local comps = livery.compositions
+  local band = livery.title and livery.title.style == "band"
   local light = (opts.title == "light")
-  local titlefield = light and r.background or c.primary
+  if band and light then
+    quarto.log.warning("engine-revealjs: themeoptions title=light is ignored under the livery's band title")
+    light = false
+  end
+  -- a composition's field: the slide's background color, and .engine-field unless it is the page
+  local function field_of(comp)
+    return r[comp.field.role], comp.field.role ~= "background" and " engine-field" or ""
+  end
   local content_art = opts.waves ~= "false" and content_waves(c) or nil
   if content_art == "" then content_art = nil end
 
@@ -558,35 +559,31 @@ function Pandoc(doc)
     light and "light" or "dark",
     opts.autofit == "false" and ",'engine-no-autofit'" or ""))
 
-  -- title slide: brand field (or white), waves or the photo; or the band
-  local band = livery.title and livery.title.style == "band" and livery.title or nil
+  -- title slide: the composition by the band, a photo (the deck's or the livery's) and light
   local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
   local default_photo = not tg and livery.art and type(livery.art.titlegraphic) == "string"
-  local art, class
-  if band then
-    title_slide_attributes(meta, { ["data-background-color"] = r[band.field] })
-    art, class = band_art(band, r, tg, tg or default_photo), " engine-field engine-band"
-  else
-    title_slide_attributes(meta, { ["data-background-color"] = titlefield })
-    art = (tg or default_photo) and photo_waves(c, titlefield, tg) or (light and light_waves or waves)(c, SHIFT.title)
-    class = (light and "" or " engine-field") .. (default_photo and " engine-title-photo" or "")
-  end
-  meta["engine-title-art"] = pandoc.RawInline("html", art)
-  meta["engine-title-class"] = class
+  local tcomp = comps[band and "title-band" or ((tg or default_photo) and "title-photo" or "title") .. (light and "-light" or "")]
+  local bg, fieldclass = field_of(tcomp)
+  title_slide_attributes(meta, { ["data-background-color"] = bg })
+  meta["engine-title-art"] = pandoc.RawInline("html", comp_art(tcomp, r, (tg or default_photo) and photo_img(tg) or nil))
+  meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
+  local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(doc.blocks), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then
-      blk.classes:extend({ "engine-section", "engine-field" })
-      blk.attributes["data-background-color"] = c.primary
+      local sbg, sclass = field_of(comps.section)
+      blk.classes:insert("engine-section")
+      if sclass ~= "" then blk.classes:insert("engine-field") end
+      blk.attributes["data-background-color"] = sbg
       if not has_class(blk, "unnumbered") then
         section = section + 1
         blk.attributes["data-engine-section"] = tostring(section)
       end
       out:insert(blk)
-      out:insert(html(waves(c, SHIFT.section)))
+      out:insert(html(comp_art(comps.section, r)))
       i = i + 1
       -- paragraphs alone between the divider and the next slide: the subtitle
       local j, paras = i, pandoc.List({})
@@ -599,11 +596,13 @@ function Pandoc(doc)
         i = j
       end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "closing") then
-      blk.attributes["data-background-color"] = band and r[band.field] or titlefield
-      if band then blk.classes:extend({ "engine-field", "engine-band" })
-      elseif not light then blk.classes:insert("engine-field") end
+      local cbg, cclass = field_of(ccomp)
+      blk.attributes["data-background-color"] = cbg
+      if cclass ~= "" then blk.classes:insert("engine-field") end
+      if band then blk.classes:insert("engine-band") end
       out:insert(blk)
-      if not band then out:insert(html((light and light_waves or waves)(c, SHIFT.title))) end
+      local art = comp_art(ccomp, r)
+      if art ~= "" then out:insert(html(art)) end
       i = i + 1
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "feature") then
       -- the body goes on a translucent panel over the photo; Space under the
@@ -613,6 +612,7 @@ function Pandoc(doc)
         blk.attributes["data-background-color"] = c.dark
       end
       out:insert(blk)
+      if comps.feature.bar then out:insert(html('<div class="engine-feature-bar"></div>')) end
       i = i + 1
       local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do
