@@ -135,7 +135,8 @@ def _text_height(shape, slide):
         sized = [r.font.size for r in p.runs if r.font.size]
         size = sized[0] if sized else Pt(_inherited(shape, slide, p.level) / 100)
         per_line = max(1, int(width / (size * 0.5)))
-        lines = max(1, -(-len(p.text) // per_line))
+        # a line break (pandoc's subtitle and author share a paragraph) starts a new line
+        lines = sum(max(1, -(-len(part) // per_line)) for part in p.text.split("\v"))
         total += int(lines * size * LINE) + Pt(6 * K)
     return total
 
@@ -172,9 +173,6 @@ def lay_out(slide, words):
             except ValueError:
                 pass
     vcenter = "vcenter" in words
-    if "caution" in words:
-        for shape in [sh for sh in slide.shapes if _is_body(sh)]:
-            caution_box(slide, shape, vcenter)
     for shape in slide.shapes:
         if _is_body(shape):
             if scale != 1.0:
@@ -206,6 +204,10 @@ def lay_out(slide, words):
                 if est < shape.height:
                     shape.top = shape.top + (shape.height - est) // 2
                     shape.height = est
+    # after scale=: the box is cut to an estimate of the text at the size it is set in
+    if "caution" in words:
+        for shape in [sh for sh in slide.shapes if _is_body(sh)]:
+            caution_box(slide, shape, vcenter)
 
 
 def full_slide(slide, width, height):
