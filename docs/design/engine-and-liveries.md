@@ -233,6 +233,19 @@ For `beamer-livery-theme`:
   them along under the extension directory, and the framework's `liveries/ncar` becomes a
   link to the vendored copy.
 
+**Compositions** (2026-10-17, `composition-handoff.md`): the title (cover, photo, light,
+photo-light, band), closing (cover, light, band), section and feature slides are each one
+composition, described once in `build/livery.json` as `compositions.<name>`: named boxes in
+slide fractions (`field`, `photo`, `band`, `bar`, `panel`, `mark`, `signoff`, `column`,
+`fineprint`; `[x, y, w, h]`, y down) plus the non-box parameters (`art` kind, `waves {style,
+shift, opacity, line}`, roles, the column's `anchor`, `rule`, `tab`, the section `eyebrow`).
+`livery_build.py` derives them from the knobs a livery already sets (geometry, title, signoff,
+marks, art, divider) and merges an optional `compositions:` override; `feature.style: bar |
+cover` picks the photo slide's look per livery. Every format has one drawer that places its
+parts in those boxes (beamer `\engine@drawcomp`, the scss on `--engine-cmp-*` variables, the
+template builder's `field_layout`, the framework's `slide_layout.py`), so no composition
+number lives in theme code, and `comp_measure.py` checks every format against the boxes.
+
 For `quarto-livery-decks`:
 
 - The post-processors keep their jobs and lose their constants, parameterized by
@@ -323,11 +336,13 @@ absolute art paths in beamer, flavors inherit `pptx.scheme` overrides), and a li
 prefer an installed font over its bundled stand-in (`installed-fonts:`; cu: Helvetica Neue,
 used where installed, never shipped).
 
-**Deferred on purpose: one description of each title composition.** The title, closing and
-feature compositions are drawn four times (beamer, revealjs, the template builder,
-`slide_layout.py`) in two repos, and the copies drift. The fix, compositions described once as
-boxes in slide fractions in `livery.json` and drawn by every format, is a design change for
-section 5, to be done before the next new composition (`refactor-handoff.md`, last section).
+**Before NASA (2026-10-17): one description of each composition.** The title, closing,
+section and feature compositions are drawn four times (beamer, revealjs, the template builder,
+`slide_layout.py`) in two repos, and the copies drift (about twenty quantities in three to
+five places, several already disagreeing). Deferred after NSI "until the next new
+composition"; NASA is that, so it goes first: compositions described once as boxes in slide
+fractions in `livery.json` and drawn by every format (section 5, "Compositions"), in ten PRs
+written up for a fresh session in `docs/design/composition-handoff.md`.
 
 ## 8. Verification
 
@@ -362,6 +377,22 @@ section 5, to be done before the next new composition (`refactor-handoff.md`, la
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, the composition handoff.** Ben asked whether the deferred title-slide
+  refactor should go before NASA. A code survey put numbers on the retrospective's friction:
+  about twenty quantities (wave opacities, the cover band, the photo split, the mark offsets
+  per kind, the sign-off box, the band's top/bottom/split, text column widths, the rule, the
+  tab) hand-copied into three to five places across beamer, revealjs, the template builder
+  and `slide_layout.py`, with real disagreements (pptx's feature is the cover with a mark on
+  the photo; no light closing in pptx; beamer keeps the dark sign-off under `title=light`;
+  HTML's percentages are of the padded box; beamer `\vfill`-parks section and closing text).
+  Agreed: do it now, before NASA. Decided: scope title, closing, section, feature;
+  disagreements settled per quantity (two formats agreeing win, else the HTML look unless the
+  brand template gives a number); the title text anchors at the top under the mark; the
+  feature look is per-livery data (`feature.style: bar | cover`), not one choice. Written up
+  for a fresh session as `docs/design/composition-handoff.md`: the schema (ten resolved
+  compositions, nine box kinds), each format's drawer and what it deletes, ten PRs with a
+  measurement tool (`comp_measure.py`) and a committed before-picture. Next: that handoff,
+  then NASA.
 - **2026-10-17, the docs handoff done.** Engine 3.4.0: `overleaf_zip.py <livery> -o <zip>
   [--starter] [--photo]` packs any livery with the theme's `.sty`, `build/livery.sty`, every
   file LaTeX reads (fonts of any extension, the `.pdf` of a logo over its bitmap, the art, a
