@@ -45,8 +45,9 @@ blobs come from PowerPoint).
 The deck carries unit lockups only (NSI; the Research & Innovation Office). The plain CU Boulder
 lockup lives in the lockup library (ucomm-exten2.colorado.edu, CU login). Until Ben supplies it,
 the RIO lockup from the deck is the placeholder (`logos/cu-rio-lockup.png`, dark text for light
-backgrounds; `cu-rio-lockup-white.png` is the same PNG recolored white by alpha; the deck's own
-white version is an EMF). The brand wants the lockup as a "sign off" at the bottom, so it is the
+backgrounds; `cu-rio-lockup-white.png` is the same PNG with the text right of the CU monogram
+recolored white and the monogram kept, as the deck's own white version, an EMF, shows it; redone
+for the nsi flavor, whose black title uses it). The brand wants the lockup as a "sign off" at the bottom, so it is the
 livery's `signoff` (bottom-left, the deck's placement), `geometry.logo.corner` is `none` (no mark
 top right; the NSI flavor puts its own mark top-left) and the page number sits bottom-right as in
 the deck.
@@ -64,5 +65,7 @@ backgrounds library or one CU owns. Swap the file to change it.
 
 ## Follow-ups
 
-The `nsi` flavor (`extends: cu`: the NSI marks, `image4/7/8.png` in the deck), the band title
-style, Heros Condensed headings, pptx font embedding, the plain CU lockup, `livery_check.py`.
+Done: the `nsi` flavor (`../../nsi/`, on the engine's band title style), Heros Condensed
+headings, `livery_check.py`. Open: pptx font embedding; the plain CU Boulder lockup (the CU
+CDN serves `cdn.colorado.edu/static/brand-assets/live/images/cu-boulder-logo-text-{black,white}.svg`,
+found on the NSI website; check it against the lockup library before use).

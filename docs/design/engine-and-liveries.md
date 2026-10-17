@@ -345,6 +345,31 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** The `nsi` flavor (CU Center for National Security Initiatives), from
+  `docs/design/nsi-handoff.md`, in four steps. (1) beamer-livery-theme #14 (3.1.0): the title
+  slide's composition becomes a livery knob, `title.style: cover | band`; the band is a field
+  in a role with `art.title` over it, a band holding the text left of `split` and the photo
+  right of it, the mark and the sign-off centred in the strip below, and under it the closing
+  slide wears the field, the art and the strip; `art.titlegraphic` is the photo for decks that
+  set none. Beamer draws the band text in the background at the fractions, so PDF and HTML
+  agree. (2) This repo #18: the same in pptx (the Title Slide layout is the band; a deck's
+  photo goes into the band box). (3) beamer-livery-theme #15 (3.2.0) and this repo #19: Ben
+  asked whether pandoc's choice among several title layouts could carry a closing style and
+  NCAR's white title. Tested: pandoc picks by name only, takes the later of two same-named
+  layouts (undocumented) and carries any other layout untouched; so every template gains
+  `Closing` and `Title Slide (light)` and `slide_layout.py` re-points slides at them. The light
+  title now follows the brand's own light cover (UCAR Communications' template, slide 4):
+  foreground text and the wave lines alone, white between them, in all three formats. Found on
+  the way: the revealjs filter normalized a flavor's `../cu/` paths through the deck's
+  `_livery` link into the deck itself; it now resolves the livery physically. (4) This repo:
+  `docs/common/liveries/nsi/` (marks, art and measurements from the deck, cu's palette, fonts
+  and sign-off; a one-color black NSI mark for the gold fields, where the gold mark vanishes,
+  until NSI supplies one; cu's white RIO lockup redone with the monogram kept). Decided with
+  Ben: the deck's satellite photo behind content slides, the campus photo as the band's
+  default, the constellation closing. Ben checked the NSI website's logo: it is a 375 px
+  raster without "Center for", so the deck's 1316 px lockup stays. Next: the plain CU Boulder
+  lockup for cu (the CU CDN serves `cu-boulder-logo-text-{black,white}.svg`), then NASA.
+
 - **2026-10-16** Cleanup sprint before the NSI flavor (beamer-livery-theme PRs #11 and #12;
   this repo's sprint PR). With hindsight from CU, three contract gaps blocked NSI: one logo
   per background (NSI has a unit mark and a sign-off lockup), `extends` losing the parent's

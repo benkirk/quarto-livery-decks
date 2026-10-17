@@ -22,7 +22,9 @@ still build byte-identically to upstream; the pptx template is generated. Phase 
 `utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck,
 `utils/livery_template.py` builds its `template.pptx` from the data, and the first
 non-NCAR livery, `cu` (CU Boulder), is a real directory under `docs/common/liveries/`
-with its decisions in `reference/notes.md`. The reference decks themselves live on
+with its decisions in `reference/notes.md`; `nsi` (the CU Center for National Security
+Initiatives) is its first flavor (`extends: cu`), on the engine's band title style
+(`title: {style: band}`, engine >= 3.1.0). The reference decks themselves live on
 Drive or a laptop, not in git. A livery without `pptx.fonts` embeds nothing
 (`embed_fonts.py` says so and leaves the deck alone); a livery without `art.waves`
 gets straight-edged title fields in every format.
