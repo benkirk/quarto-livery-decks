@@ -315,7 +315,9 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 Before step 4: the post-NSI refactor (`docs/design/refactor-handoff.md`): the pptx template
 tooling moves into the engine, marks are keyed by the field's role (`marks:`), and five cheap
 fixes (unknown keys warn, livery files as make prerequisites, a fixture deck in parity and CI,
-absolute art paths in beamer, flavors inherit `pptx.scheme` overrides).
+absolute art paths in beamer, flavors inherit `pptx.scheme` overrides), and a livery may
+prefer an installed font over its bundled stand-in (`installed-fonts:`; cu: Helvetica Neue,
+used where installed, never shipped).
 
 **Deferred on purpose: one description of each title composition.** The title, closing and
 feature compositions are drawn four times (beamer, revealjs, the template builder,
