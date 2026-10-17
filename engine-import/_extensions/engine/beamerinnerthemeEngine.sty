@@ -8,13 +8,6 @@
 % \titlegraphic) masked by the brand waves on the right.
 %
 \mode<presentation>
-% the mark on a field slide (title, section, closing): the light lockup on a light title
-% field, else the dark one; geometry.logo.corner `none' drops it everywhere, keeping its room
-\def\engine@fieldlogo#1{%
-  \engine@ifcorner{\engine@geom@logocorner}{none}{\vrule width0pt height#1\paperheight}{%
-    \def\engine@tmp{light}%
-    \ifx\engine@titlestyle\engine@tmp\enginelogo[height=#1\paperheight]{light}%
-    \else\enginelogo[height=#1\paperheight]{dark}\fi}}
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
 \providecommand\engine@titlestyle{dark}
@@ -32,63 +25,41 @@
      \vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
     \hskip\dimexpr\beamer@leftmargin-\engine@tabwidth\relax
     \box#1}}
+% \engine@ctab{<box>}: the same beside a composition's column (\engine@bx from the paper's
+% edge), when the column has a tab
+\def\engine@ctab#1{\engine@ifcorner{\engine@cv{column@tab}}{true}{%
+  \hbox{\hskip-\engine@bx
+    {\usebeamercolor[fg]{frametitle tab}\vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
+    \hskip\dimexpr\engine@bx-\engine@tabwidth\relax
+    \box#1}}{\box#1}}
 
 % ---------------------------------------------------------------------------
 % title page
 % ---------------------------------------------------------------------------
+% the text sits in the composition's column, drawn by the background (beamerouterthemeEngine.sty
+% \engine@drawcomp); the frame body only fills the page
 \defbeamertemplate*{title page}{Engine}{%
   \gdef\engine@bodystyle{title}%
-  \engine@ifband{\vbox to \dimexpr\textheight-2pt\relax{\vfil}}{\engine@coverpage}}
-% the band title's text column, drawn by the background on the band (beamerouterthemeEngine.sty)
-\def\engine@bandtext{%
-  \@tempdima=\dimexpr\engine@title@split\paperwidth-\engine@margin-0.04\paperwidth\relax
-  \setbox\@tempboxa=\vbox{\hsize=\@tempdima \raggedright \color{BrandPrimaryText}%
+  \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
+% the title's stack, \engine@bw wide: date, title and subtitle with the tab, the rule, author, institute
+\def\engine@titlestack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
     {\usebeamerfont{title}\inserttitle\par}%
     \ifx\insertsubtitle\@empty\else
       \vskip0.5em{\usebeamerfont{subtitle}\insertsubtitle\par}%
     \fi}%
-  \vbox{\hsize=\@tempdima \raggedright \color{BrandPrimaryText}%
+  \vbox{\hsize=\engine@bw \raggedright
     \ifx\insertdate\@empty\else
       {\usebeamerfont{date}\MakeUppercase{\insertdate}\par}\vskip0.02\paperheight
     \fi
-    \engine@accentbar\@tempboxa
+    \engine@ctab\@tempboxa
     \vskip0.03\paperheight
-    {\usebeamercolor[fg]{title rule}\vrule width0.13\paperwidth height1.2pt}\par
-    \vskip0.03\paperheight
+    \engine@ifc{column@rule@w}{%
+      {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
+        height\engine@cv{column@rule@h}\paperheight}\par
+      \vskip0.03\paperheight}{}%
     \ifx\insertauthor\@empty\else{\usebeamerfont{author}\insertauthor\par}\fi
     \ifx\insertinstitute\@empty\else{\usebeamerfont{institute}\insertinstitute\par}\fi}}
-\def\engine@coverpage{%
-  \engine@darkfieldcolors
-  \@tempdima=\ifx\inserttitlegraphic\@empty 0.62\paperwidth\else 0.47\paperwidth\fi
-  \setbox\@tempboxa=\vbox{\hsize=\@tempdima \raggedright
-    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}%
-    \ifx\insertsubtitle\@empty\else
-      \vskip0.5em
-      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
-    \fi}%
-  \vbox to \dimexpr\textheight-2pt\relax{%
-    \vskip0.06\paperheight
-    \hbox{\engine@fieldlogo{\engine@geom@logotitle}}%
-    \vskip0.055\paperheight
-    \ifx\insertdate\@empty\else
-      {\usebeamerfont{date}\usebeamercolor[fg]{date}\MakeUppercase{\insertdate}\par}%
-      \vskip0.02\paperheight
-    \fi
-    \engine@accentbar\@tempboxa
-    \vskip0.035\paperheight
-    {\usebeamercolor[fg]{title rule}\vrule width0.13\paperwidth height1.2pt}\par
-    \vskip0.035\paperheight
-    \vbox{\hsize=\@tempdima \raggedright
-      \ifx\insertauthor\@empty\else
-        {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}\fi
-      \ifx\insertinstitute\@empty\else
-        {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}\fi}%
-    \vfill
-    \ifx\engine@fineprint\@empty\else
-      \vbox{\hsize=\@tempdima \raggedright
-        \usebeamerfont{title fineprint}\engine@fineprint\par}%
-    \fi
-    \vskip0.02\paperheight}}
 % keep the title frame free of frame numbering by default
 \def\engine@titlepageframe{%
   {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}
@@ -103,24 +74,20 @@
 \newcommand\enginesectionsubtitle[2]{\expandafter\gdef\csname engine@secsub@#1\endcsname{#2}}
 \defbeamertemplate*{section page}{Engine}{%
   \gdef\engine@bodystyle{section}%
-  \usebeamercolor[fg]{section page}%
-  \vbox to \dimexpr\textheight-2pt\relax{%
-    \vskip0.075\paperheight
-    \hbox{\engine@fieldlogo{\engine@geom@logosection}}%
-    \vfill
-    \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
-      \ifnum\thesection>0
-        {\usebeamerfont{section number}\color{BrandSecondary}%
-          \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
-      \fi
-      {\usebeamerfont{section title}\insertsectionhead\par}%
-      \ifx\engine@sectionsubtitle\@empty\else
-        \vskip1.2ex
-        {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
-      \fi}%
-    \engine@accentbar\@tempboxa
-    \vfill\vfill}%
-}
+  \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
+% the divider's stack, in its column: the eyebrow, the heading and its subtitle, with the tab
+\def\engine@sectionstack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    \ifnum\thesection>0
+      {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
+        \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
+    \fi
+    {\usebeamerfont{section title}\insertsectionhead\par}%
+    \ifx\engine@sectionsubtitle\@empty\else
+      \vskip1.2ex
+      {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
+    \fi}%
+  \engine@ctab\@tempboxa}
 \def\insertsectionnumberlabel{\sectionname~\insertsectionnumber}
 \providecommand\sectionname{Section}
 \defbeamertemplate*{subsection page}{Engine}{%
@@ -148,18 +115,22 @@
   \begin{frame}[engineclosing,plain,noframenumbering]
     \engineclosingcontent{#1}{#2}
   \end{frame}}
+% The body is user content, which may hold overlays (\pause): it is set in the frame body, once
+% per overlay, into a box the background places in the column under the headline.
+\newsavebox\engine@closingbody
 \newcommand\engineclosingcontent[2]{%
-  \vbox to \dimexpr\textheight-2pt\relax{%
-    \vskip0.075\paperheight
-    \hbox{\engine@ifband{\vrule width0pt height\engine@geom@logoclosing\paperheight}% the band's mark is in the strip
-      {\engine@fieldlogo{\engine@geom@logoclosing}}}%
-    \vfill
-    \setbox\@tempboxa=\vbox{\hsize=0.62\paperwidth \raggedright
-      \usebeamerfont{section title}#1\par}%
-    \engine@accentbar\@tempboxa
+  \gdef\engine@closinghead{#1}%
+  \global\setbox\engine@closingbody=\vbox{%
+    \hsize=\csname engine@c@\engine@closingcomp @column@w\endcsname\paperwidth
+    \raggedright\usebeamerfont{normal text}#2\par}%
+  \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
+\def\engine@closingstack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    \usebeamerfont{section title}\engine@closinghead\par}%
+  \vbox{\hsize=\engine@bw
+    \engine@ctab\@tempboxa
     \vskip0.05\paperheight
-    \vbox{\hsize=0.62\paperwidth \raggedright \usebeamerfont{normal text}#2\par}%
-    \vfill\vfill}}
+    \copy\engine@closingbody}}
 
 % ---------------------------------------------------------------------------
 % lists

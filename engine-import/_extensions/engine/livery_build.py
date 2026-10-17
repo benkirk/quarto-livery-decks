@@ -544,19 +544,8 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for kind in ART_KINDS:
         if isinstance(art.get(kind), str):
             L.append(f"\\def\\engine@art@{kind}{{{stem(art[kind])}}}")
-    t = livery.get("title", {})
-    if t.get("style") == "band":   # the band title: fractions, colors, the strip's two images
-        L.append("% the title's band composition (title: in livery.yml)")
+    if livery.get("title", {}).get("style") == "band":   # its boxes and colors are the compositions'
         L.append("\\def\\engine@title@style{band}")
-        for k in ("top", "bottom", "split", "logo-height", "signoff-height"):
-            if k in t:
-                L.append(f"\\def\\engine@title@{k.replace('-', '')}{{{t[k]}}}")
-        for k, tex in (("band", "EngineBandFill"), ("field", "EngineBandField"), ("field-text", "EngineBandFieldText")):
-            L.append(f"\\colorlet{{{tex}}}{{{ROLE_TEX.get(t[k], 'BrandDark')}}}")
-        m = marks[t["field"]]   # the strip's two images
-        L.append(f"\\def\\engine@title@logoimg{{{stem(m.get('logo-print', m['logo']))}}}")
-        if "signoff" in m:
-            L.append(f"\\def\\engine@title@signoffimg{{{stem(m['signoff'])}}}")
     L += emit_sty_compositions(livery, stem)
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
