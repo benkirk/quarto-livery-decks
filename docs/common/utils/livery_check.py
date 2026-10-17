@@ -5,7 +5,7 @@
 
 Per livery: build/ is fresh (the engine's livery_build.py --check); every file the data names
 exists (fonts, logos, the sign-off, art, the template, the font blobs when pptx.fonts is set);
-template.pptx is pandoc-compliant (the seven layout names, slideLayout1's five placeholders,
+template.pptx is pandoc-compliant (the seven layout names and our two extra ones, slideLayout1's five placeholders,
 the chrome placeholders at idx 20-22 and no content box there, the color and font schemes
 matching the json, media numbered without gaps) and rebuilds byte-identically from the data (a
 hand-edited template fails); WCAG 4.5:1 warnings for the small-text roles, which never fail.
@@ -20,7 +20,7 @@ import zipfile
 from pathlib import Path
 
 import livery as livery_mod
-from livery_template import LAYOUTS, SLOT_ROLES, Builder
+from livery_template import EXTRA_LAYOUTS, LAYOUTS, SLOT_ROLES, Builder
 
 UTILS = Path(__file__).resolve().parent
 ENGINE_BUILD = UTILS.parent / "_extensions" / "benkirk" / "engine" / "livery_build.py"
@@ -90,6 +90,8 @@ def check_template(r, livery, d):
         found = {re.search(r'<p:cSld name="([^"]*)"', x).group(1): x for x in layouts.values()}
         missing = [l for l in LAYOUTS if l not in found]
         r.check(not missing, "the seven layouts pandoc looks up by name", f"missing {missing}")
+        extra = [l for l in EXTRA_LAYOUTS if l not in found]
+        r.check(not extra, "Closing and Title Slide (light), for slide_layout.py", f"missing {extra}: rerun livery_template.py")
         if "Title Slide" in found:
             types = set(re.findall(r'<p:ph [^>]*type="([^"]+)"', found["Title Slide"]))
             r.check(TITLE_PH <= types, "Title Slide has ctrTitle, subTitle, dt, ftr, sldNum", f"missing {sorted(TITLE_PH - types)}")

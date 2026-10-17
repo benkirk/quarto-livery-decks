@@ -211,6 +211,15 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
 - Template edits must stay pandoc-compliant (layout names, the five
   `slideLayout1` placeholders) — see README "Template constraints" and its
   verification one-liner.
+- **Extra layouts ride along**: pandoc copies every layout of the reference doc into
+  the deck but picks only by its seven names (two layouts of one name: pandoc 3.8.3
+  took the later, undocumented). So the template's `Closing` and `Title Slide (light)`
+  are reached by `slide_layout.py`, which re-points the slide's layout relationship
+  and deletes the placeholders' `a:xfrm` (pandoc copies the old layout's frames onto
+  the slide). python-pptx caches `target_part` on the relationship: drop it too, or
+  `slide.slide_layout` still answers with the old layout. `title=light` reaches the
+  pptx as `engine-title: light` (slide-layout.lua): pandoc writes list metadata into
+  `docProps/custom.xml` as empty strings.
 
 ## revealjs (HTML) theme
 

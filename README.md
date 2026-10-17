@@ -529,6 +529,13 @@ the two things pandoc is strict about:
 - **Placeholder indices**: pandoc matches content boxes by `idx` as well as
   type, so the date, footer and slide-number placeholders carry indices (20-22)
   no content box uses; a collision drops a column into the footer's box.
+- **Two more layouts pandoc never picks**: `Closing` and `Title Slide (light)`.
+  Pandoc copies every layout of the reference doc into the deck but chooses only
+  by the names above (with two layouts of one name, pandoc 3.8 took the later
+  one, undocumented, so we never rely on it). `slide_layout.py` points a
+  `{.closing}` slide at `Closing`, and the title slide at `Title Slide (light)`
+  when the deck's front matter sets `themeoptions: [..., title=light]`; in
+  PowerPoint both are in the layout menu for slides added by hand.
 
 Verify after any template edit:
 
