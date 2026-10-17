@@ -13,7 +13,7 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 
-# 1. The toolchain the recipes call, TeX Live (the list ci-liveries proved, which is the
+# 1. The toolchain the recipes call, TeX Live (the list the former ci-liveries workflow proved, the
 #    engine's own CI list: quarto's XeLaTeX render AND the Overleaf zip's bare latexmk, which
 #    cannot install packages the way TinyTeX does), LibreOffice Impress for `make measure`'s
 #    pptx leg. TinyTeX is per-user ($HOME) and needs the network at render time: not here.

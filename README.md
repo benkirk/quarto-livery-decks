@@ -59,6 +59,12 @@ texlive-xetex texlive-latex-extra texlive-fonts-extra`). If `quarto install
 chrome-headless-shell` cannot download, point Quarto at any Chromium with
 `export QUARTO_CHROMIUM=/path/to/chrome`, and `make qa` at it with `CHROME`.
 
+**No conda at hand?** The published image carries the whole environment:
+`docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs:/work" -w /work/quickstart
+ghcr.io/benkirk/quarto-livery-decks make pptx` builds the quickstart deck, and any
+directory of `.qmd` files mounted on `/work` builds the same way ("Building in the
+container" below).
+
 ## What you get
 
 Every slide of `docs/quickstart/quickstart.qmd`, in the HTML deck:
@@ -290,7 +296,7 @@ Overleaf compile. The engine's own reference liveries (ucar, ucp, ncar-ucar) hav
 their link in the [theme README](https://github.com/benkirk/beamer-livery-theme#overleaf).
 
 The zips are attached by `release.yml` when a `v*` tag is pushed, by hand after a
-livery change; CI (`ci-liveries.yaml`) compiles each livery's zip in a clean
+livery change; CI (`ci.yaml`, the livery matrix) compiles each livery's zip in a clean
 directory on every push.
 
 ### HTML (revealjs)
@@ -504,10 +510,68 @@ make pptx                         # or: make pptx LIVERY=cu
 - **The deck-polish skill:** a consumer can link
   `.claude/skills/deck-polish` to `docs/presentations/framework/.claude/skills/deck-polish`.
 
-CI checks this layout on every pull request
-(`.github/workflows/ci-consumer.yaml`). It checks the framework out at
+CI checks this layout on every pull request (the `consumer` job of
+`.github/workflows/ci.yaml`). It checks the framework out at
 `consumer/docs/presentations/framework`, writes a hello-world deck beside it,
-and builds all three formats from there.
+and builds all three formats from there. The image's smoke test (next section)
+builds a bare directory with no Makefile at all.
+
+## Building in the container
+
+The published image `ghcr.io/benkirk/quarto-livery-decks` is the whole build
+environment (the conda env, Quarto, XeLaTeX from TeX Live, LibreOffice, a headless
+Chromium, a broad set of fonts) with this framework at `/opt/quarto-livery-decks`, for
+linux/amd64 and linux/arm64. Nothing to install but Docker (or Podman, or Apptainer):
+bind-mount a directory of decks on `/work` and run make.
+
+```bash
+cd my-decks            # roadmap.qmd, status.qmd, images/ ...
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/benkirk/quarto-livery-decks make pptx             # or html, pdf, all, qa
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/benkirk/quarto-livery-decks make pptx LIVERY=cu
+```
+
+- **A directory of `.qmd` files needs no Makefile**: every `<name>.qmd` not starting
+  with `_` builds `<name>.{pptx,html,pdf}` (the entrypoint supplies the framework's
+  `Make.common` and `DECKS`). A directory with a Makefile runs plain make, so a repo that
+  has the framework as a submodule mounts its tree and points `-w` at the deck
+  directory; the deck's `include ../framework/docs/Make.common` then drives the image's
+  toolchain with the *mounted* framework's recipes:
+  `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" -w /work/docs/presentations/roadmap ghcr.io/benkirk/quarto-livery-decks make pptx`.
+- **Make variables pass through**: `LIVERY=cu`, `DECKS="a b"`, and a livery of your own
+  inside the mount, `LIVERY_DIR=/work/mylivery` (build it once with `docker run ...
+  python3 /opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/livery_build.py
+  /work/mylivery`). `make qa`, `make measure`, `make overleaf` and `make site` work;
+  `make publish` wants your git credentials, so run it on the host.
+- **Any user.** The image runs as root unless told otherwise; `--user "$(id -u):$(id -g)"`
+  makes the outputs yours, and the entrypoint gives that uid a HOME under `/tmp`.
+  Rootless Podman needs no flag (`podman run --rm -v "$PWD:/work:Z" ...`; add
+  `--userns=keep-id` if the files come out owned by a subuid). Apptainer:
+  `apptainer run --bind "$PWD:/work" --pwd /work docker://ghcr.io/benkirk/quarto-livery-decks make pptx`
+  (`apptainer exec` skips the entrypoint: pass
+  `make -f /opt/quarto-livery-decks/docs/Make.common DECKS=roadmap pptx` yourself).
+- **What the build writes** into the directory: the `_quarto.yml`, `_extensions`,
+  `_engine` and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
+  outputs (gitignore them, as the section above says). The links point into
+  `/opt/quarto-livery-decks`, which the host cannot see; a host build re-points them and
+  the container re-points the host's, so the two can alternate in one directory.
+- **Fonts.** The image ships metric-compatible stand-ins for the Office and PostScript
+  families (Liberation, Carlito and Caladea, URW), TeX Gyre, DejaVu, Noto (core, mono,
+  emoji) and the common web families (Roboto, Open Sans, Lato, Inter, IBM Plex, ...):
+  `docker run --rm ghcr.io/benkirk/quarto-livery-decks fc-list : family | sort -u`. CJK
+  is left out. Your own licensed faces (a livery's `installed-fonts`, PDF `fonts=brand`)
+  mount read-only where fontconfig looks: `-v "$PWD/fonts:/usr/local/share/fonts/brand:ro"`.
+- **Tags**: `latest` and `main` (the main branch), `sha-<short>` (every commit), `1.2.3`,
+  `1.2` and `1` (a release), `pr-N` (a pull request). The mount path may not contain
+  spaces, `%` or `#` (LaTeX's `\input@path`).
+- **The image itself**: `Dockerfile` at the repo root; `make image` builds it locally and
+  `.github/scripts/smoke-test.sh <image>` runs what CI runs on it. `.github/workflows/image.yaml`
+  builds it natively on an amd64 and an arm64 runner, smoke-tests each as the runner's
+  own unprivileged user, and merges one manifest list. Quarto's conda activation is baked
+  as `ENV` (asserted against conda-forge's `activate.d` at build time), so the image also
+  works as a GitHub Actions `container:`, which is how this repo's own CI (`ci.yaml`)
+  builds its decks.
 
 ## Executable shell chunks
 
