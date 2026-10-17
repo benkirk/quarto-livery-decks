@@ -33,7 +33,7 @@
 \definecolor{BrandCautionFill}{HTML}{F6F2E7}
 \definecolor{BrandAlertText}{HTML}{958459}
 \definecolor{BrandRule}{HTML}{AAA8A3}
-% logos (\includegraphics finds the extension)
+% marks: light on the background field, dark on primary (the print lockup when there is one)
 \def\engine@logo@light{\engineliverydir logos/cu-boulder-lockup}
 \def\engine@logo@dark{\engineliverydir logos/cu-boulder-lockup}
 % the sign-off lockup (signoff), light and dark, and its box
@@ -58,6 +58,14 @@
 \def\engine@headfont@italic{texgyreheroscn-italic}
 \def\engine@headfont@bold{texgyreheroscn-bold}
 \def\engine@headfont@bolditalic{texgyreheroscn-bolditalic}
+% installed fonts to prefer under fonts=brand (installed-fonts), by full name
+\def\engine@font@installed{Helvetica Neue}
+\def\engine@installed@base@regular{Helvetica Neue}
+\def\engine@installed@base@bold{Helvetica Neue Bold}
+\def\engine@installed@base@italic{Helvetica Neue Italic}
+\def\engine@installed@base@bolditalic{Helvetica Neue Bold Italic}
+\def\engine@installed@head@bold{Helvetica Neue Condensed Bold}
+\def\engine@installed@head@regular{Helvetica Neue Condensed Bold}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tab{0.018}

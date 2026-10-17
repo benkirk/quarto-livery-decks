@@ -38,7 +38,11 @@ headings family for the brand's condensed headlines (`typography.headings`; the 
 Helvetica Neue for titles too: "Helvetica Neue Condensed Bold" is a face of that family on macOS,
 not a family name PowerPoint resolves everywhere, so `pptx.heading-typeface` stays unset).
 Follow-up: embedding Heros into the pptx (CFF outlines need converting, and PowerPoint's fntdata
-blobs come from PowerPoint).
+blobs come from PowerPoint). Since engine 3.3.0 the livery names the real face as
+`installed-fonts` (Helvetica Neue, the headings as Helvetica Neue Condensed Bold): the HTML deck's
+`@font-face` rules try it by `local()` name before Heros, and a PDF built with
+`themeoptions: [fonts=brand]` on a machine that has it embeds it (checked on a Mac: `pdffonts`
+lists the HelveticaNeue faces; under `fonts=bundled` Heros). Nothing copies the font files.
 
 ## Lockups
 
@@ -84,7 +88,9 @@ Open (deferred 2026-10-16, none blocking):
   pptx instead (`pptx.typeface`, and `heading-typeface` for titles), most simply Arial, which
   every PowerPoint has and the NSI deck itself uses as its second font, at the cost of the
   brand's Helvetica look on Macs. Either route is a livery change only; rerun
-  `livery_template.py` after it.
+  `livery_template.py` after it. HTML and PDF already prefer an installed Helvetica Neue
+  (`installed-fonts`, see Fonts); a PDF built that way carries the face to every reader, which
+  is the builder's licence question, not the repo's.
 - **The accent tab vanishes on the gold fields.** `accent` and `primary` are both CU Gold, so
   the tab beside the title, divider and closing headlines is gold on gold in every format (it
   shows on white content slides). A darker accent (black, dark gray) would bring it back;

@@ -54,6 +54,13 @@ art:                      # no wave curves: the title field ends in a straight e
   content: art/content-flatirons.jpg   # the Flatirons, desaturated, 78% white, contrast 0.8 (Ben's pick;
                                        # reference/notes.md on its source and rights)
 
+installed-fonts:          # the brand's Helvetica Neue where it is installed (Macs, iPhones): the HTML
+  base: Helvetica Neue    # deck's local() sources, the PDF under fonts=brand; TeX Gyre Heros otherwise
+  headings:               # the condensed headlines, by full and PostScript name
+    family: Helvetica Neue
+    faces: {bold: [Helvetica Neue Condensed Bold, HelveticaNeue-CondensedBold],
+            regular: [Helvetica Neue Condensed Bold, HelveticaNeue-CondensedBold]}
+
 latex:                    # build/livery.sty: the palette's LaTeX color names (black and white
   colors:                 # must not shadow xcolor's)
     cu-gold: CUGold

@@ -36,7 +36,8 @@ from pptx.oxml.ns import qn
 from pptx.util import Pt
 
 import livery as livery_mod
-import pptx_waves
+
+pptx_waves = livery_mod.engine_module("pptx_waves")   # shared with the engine's template builder
 
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
@@ -324,8 +325,9 @@ def cover(slide, width, height, photo, light=False):
     for i, xml in enumerate(shapes):
         tree.insert(3 + i, etree.fromstring(xml))
         sid += 1
+    role = "background" if light else "primary"   # the field's role, whose marks it wears
     if GEOM["logo"].get("corner", "top-right") != "none":   # none: no mark anywhere
-        logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.logo_path(LIVERY, "light" if light else "dark")),
+        logo = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, role)),
                                         int(GEOM["margin"] * width), int(0.06 * height),
                                         height=int(GEOM["logo"].get("title", 0.09) * height))
         logo.name = "Logo (light)" if light else "Logo (dark)"
@@ -334,7 +336,7 @@ def cover(slide, width, height, photo, light=False):
         h = int(so["height"] * height); w = int(so["height"] * so["aspect"] * height)
         x = int(m * width) if so["corner"] == "bottom-left" else width - int(m * width) - w
         variant = "light" if light else "dark"
-        signoff = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / so[variant]), x, height - int(so["bottom"] * height) - h, height=h)
+        signoff = slide.shapes.add_picture(str(Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, role, "signoff")), x, height - int(so["bottom"] * height) - h, height=h)
         signoff.name = f"Sign-off ({variant})"
     return sid
 

@@ -187,6 +187,16 @@
       "light": "ncarucar-color"
     }
   },
+  "marks": {
+    "background": {
+      "logo": "logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.png",
+      "logo-print": "logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.pdf"
+    },
+    "primary": {
+      "logo": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.png",
+      "logo-print": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.pdf"
+    }
+  },
   "name": "ncarucar",
   "palette": {
     "dark-blue": "#00357A",

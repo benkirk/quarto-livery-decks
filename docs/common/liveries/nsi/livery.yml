@@ -23,8 +23,6 @@ title:                    # the deck's title slide (slide 1)
   top: 0.276
   bottom: 0.724
   split: 0.62
-  logo: nsi-white
-  signoff: rio-white
   logo-height: 0.19       # the deck's 0.198 (its NSI lockup, bottom right)
   signoff-height: 0.11    # the deck's 0.115 (its white RIO lockup, bottom left)
 
@@ -34,7 +32,8 @@ art:
   content: art/content-satellite.jpg    # the deck's pre-faded ISS photo, cropped 16:9
 
 pptx:
-  template: template.pptx
-  scheme:                 # a flavor's scheme follows its own roles, so cu's link slots are restated
-    hlink: accessible-gold
-    folHlink: sky-blue
+  template: template.pptx   # cu's typeface and link slots (pptx.scheme) carry over
+
+marks:                    # the mark and sign-off each field wears, by the field's role
+  primary: {logo: nsi-black}                   # the gold fields: the one-color black mark
+  dark: {logo: nsi-white, signoff: rio-white}  # the band title's black field and the closing

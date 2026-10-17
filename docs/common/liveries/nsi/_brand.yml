@@ -17,5 +17,5 @@ logo:
     rio-white:              # from RIO's overview PDF (reference/notes.md), the SVG kept beside a
       path: logos/rio-lockup-white.png   # PNG (HTML, pptx) and a PDF (LaTeX); white: text white
   medium:
-    light: nsi-color
-    dark: nsi-black         # the gold fields (dividers, feature covers)
+    light: nsi-color        # the gold fields wear nsi-black and the band's black field nsi-white
+                            # (livery.yml marks); dark stays cu's

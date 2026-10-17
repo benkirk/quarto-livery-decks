@@ -175,6 +175,16 @@
       "light": "ncar-color"
     }
   },
+  "marks": {
+    "background": {
+      "logo": "logos/NSF-NCAR_Logo_FullColor_RGB.png",
+      "logo-print": "logos/NSF-NCAR_Logo_FullColor_RGB.pdf"
+    },
+    "primary": {
+      "logo": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+      "logo-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf"
+    }
+  },
   "name": "ncar",
   "palette": {
     "dark-blue": "#00357A",

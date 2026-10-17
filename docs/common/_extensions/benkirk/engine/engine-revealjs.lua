@@ -56,7 +56,7 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "3.2.0"
+local VERSION = "3.3.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
@@ -502,13 +502,15 @@ local function add_dependency(livery)
       for _, f in ipairs(font.files or {}) do add(f.path) end
     end
   end
-  for _, v in ipairs({ "light", "dark" }) do
-    add(livery.logo.images[livery.logo.medium[v]].path)
-    if livery.signoff then add(livery.signoff[v]) end
+  local roles = {}   -- every field's mark and sign-off (marks): background, primary, the rest sorted
+  for role in pairs(livery.marks) do
+    if role ~= "background" and role ~= "primary" then table.insert(roles, role) end
   end
-  if livery.title and livery.title.style == "band" then   -- the band's strip images
-    add(livery.title.logo)
-    if livery.title.signoff then add(livery.title.signoff) end
+  table.sort(roles)
+  table.insert(roles, 1, "primary"); table.insert(roles, 1, "background")
+  for _, role in ipairs(roles) do
+    add(livery.marks[role].logo)
+    if livery.marks[role].signoff then add(livery.marks[role].signoff) end
   end
   for _, kind in ipairs({ "title", "section", "closing", "content", "titlegraphic" }) do   -- static art files
     if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
