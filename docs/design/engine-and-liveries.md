@@ -414,8 +414,14 @@ Newest first. The first unchecked item of section 7 is the next step.
   column doesn't paint, on main too). Then the deck-wide size step (beamer-livery-theme #34,
   3.7.0; this repo #42): front matter `type-body: <pt>` or `type-scale: <factor>` scales every
   size in all three formats (beamer `typescale=`, HTML `--engine-type-scale`, pptx
-  `type_step.py` to the half point); `docs/fixtures/small.qmd` is `type-body: 10`. Next: nsi's
-  two measure misses, then NASA.
+  `type_step.py` to the half point); `docs/fixtures/small.qmd` is `type-body: 10`. Then nsi's two measure misses (this repo
+  #43), both older than the sprint: the sign-off's right edge read 0.028 short because the
+  erosion that drops the band art's thin lines also took the lockup's thin "Office" (the
+  lockup was drawn right in every format; `comp_measure.py` now widens the eroded core along
+  its rows), and the pptx band stack sat 0.034 high, centred on its rule rather than as a
+  whole (`slide_layout.py` `band_stack()` now centres date, title, rule and subtitle from
+  their estimated heights). Every edge of the fixtures and the quickstart is now within
+  tolerance under ncar, cu and nsi. Next: NASA.
 - **2026-10-17, compositions as boxes** (beamer-livery-theme #21-#30, 3.5.0; this repo #34-#38).
   The title (cover, photo, light, photo-light, band), closing (and light, band), section and
   feature slides are one `compositions` block of boxes in `build/livery.json`

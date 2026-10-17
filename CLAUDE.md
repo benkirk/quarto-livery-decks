@@ -128,8 +128,10 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `docs/design/compositions-baseline.md` is the
-  before-picture. The pptx can't flow a stack: a band's date is placed above the title's
-  estimated text, a closing splits its column at the middle.
+  before-picture. The pptx can't flow a stack: `band_stack()` centres a band's date, title,
+  rule and subtitle on the column from estimates of their text (the rule moves onto the slide),
+  a closing splits its column at the middle. Over art, a mark's box is the eroded mask's core
+  widened along its rows (`widened()`), so thin type ("Office") is not lost.
 - **Type** (engine >= 3.6.0): text sizes are **points on the livery's pptx canvas**, whole or
   half points (a pasted slide carries round numbers): `livery.yml` `type:` (role -> pt, `levels`)
   and `pptx.size` (inches, default 13.333 x 7.5), defaulting to the engine's `TYPE` (the NSF NCAR

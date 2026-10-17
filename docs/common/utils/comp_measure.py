@@ -210,6 +210,29 @@ def bbox(mask, box, minimum):
     return [(x0 + xs[0]) / W, (y0 + ys[0]) / H, (x0 + xs[-1] + 1) / W, (y0 + ys[-1] + 1) / H]
 
 
+def widened(mask, box, core, minimum, gap=0.006):
+    """core (a bbox() of an eroded mask) widened left and right through the un-eroded mask's
+    columns, within the core's rows, holding at least `minimum` pixels, across gaps of up to
+    `gap` of the width (the space between words): a stray art line crossing those rows puts one
+    or two pixels in a column, a stroke of type its height."""
+    from PIL import Image
+    x0, y0 = px(box)[:2]
+    rows = mask.crop((0, round(core[1] * H) - y0, mask.width, round(core[3] * H) - y0))
+    cols = flat(rows.resize((rows.width, 1), Image.BOX))
+    ink = [v * rows.height / 255 >= minimum for v in cols]
+    lo, hi = round(core[0] * W) - x0, round(core[2] * W) - x0 - 1
+    step = max(1, round(gap * W))
+    for d in (-1, 1):
+        i = lo if d < 0 else hi
+        while True:
+            nxt = next((j for j in range(i + d, i + d * (step + 1), d) if 0 <= j < len(ink) and ink[j]), None)
+            if nxt is None:
+                break
+            i = nxt
+        lo, hi = (i, hi) if d < 0 else (lo, i)
+    return [(x0 + lo) / W, core[1], (x0 + hi + 1) / W, core[3]]
+
+
 def ring_colour(im, box):
     """The median colour of the box's 4 px border: what an image in it sits on."""
     x0, y0, x1, y1 = px(box)
@@ -254,9 +277,14 @@ def measure(im, comp, L, fmt):
             continue
         g = grown(c["box"])   # a mark contrasts with its field more than art's lines and stars do
         mask = mask_of(im, g, ring_colour(im, g), near=False, dist=110)
+        least = max(3, 0.03 * c["box"][3] * H)
         if comp["art"]:   # a picture under the field: drop its 1-2 px lines (a lockup's strokes are wider)
-            mask = mask.filter(ImageFilter.MinFilter(3))
-        b = bbox(mask, g, max(3, 0.03 * c["box"][3] * H))
+            raw, mask = mask, mask.filter(ImageFilter.MinFilter(3))
+            b = bbox(mask, g, least)
+            if b:   # the erosion took thin type too ("Office"): widen the core along its own rows
+                b = widened(raw, g, b, least)
+        else:
+            b = bbox(mask, g, least)
         x, y, w, h = c["box"]
         for i, (name, want) in enumerate((("left", x), ("top", y), ("right", x + w), ("bottom", y + h))):
             add(key, name, want, b and b[i], TOL)
