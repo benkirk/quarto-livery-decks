@@ -8,7 +8,7 @@ extends: cu
 signoff:                  # the deck's RIO lockup at the foot, as cu's slot (corner, bottom) has it
   light: rio-color
   dark: rio-color
-  aspect: 6.413           # 1911/298
+  aspect: 6.317           # the vector lockup's box, 213.69 x 33.83 pt
   height: 0.05
   bottom: 0.03
 

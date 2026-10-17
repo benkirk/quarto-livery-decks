@@ -17,8 +17,8 @@ NSI brand guide: the deck and the CU rules are the guide.
 | `art/constellation.jpg` | `image1.jpeg` (4400x2475, the title layout's background) | scaled to 1920x1080 |
 | `art/campus.jpg` | `image3.png` (1216x806, the band's campus photo) | as JPEG |
 | `art/content-satellite.jpg` | `image71.jpg` (2002x1014, pre-faded ISS photo behind slides 12-23) | centre-cropped to 16:9, 1600x900, no further fading (the deck shows it as is) |
-| `logos/rio-lockup.png` | `image6.png` (the Research & Innovation Office lockup, dark text; 1911x298, aspect 6.413) | as is; it was cu's placeholder sign-off until cu took the CU Boulder lockup, and is nsi's own sign-off (NSI is an RIO center) |
-| `logos/rio-lockup-white.png` | `image6.png` | the text right of the CU monogram recolored white, the monogram kept (gold with its outline), as the deck's white RIO (`image2.emf`, a vector LibreOffice cannot convert with transparency) shows it on the black title |
+| `logos/rio-lockup.{svg,png,pdf}` | not the deck: RIO's own two-page overview, `colorado.edu/researchinnovation/sites/default/files/attached-files/rio_overview_071620.pdf` (InDesign), whose footer carries the Research & Innovation Office lockup as vector art | cut out with `pdftocairo -svg -x 375 -y 738` (page 1; the lettering is glyph outlines, the monogram four paths), boxed tightly (213.69 x 33.83 pt, aspect 6.317), the PDF's print gold `#CCB567` set to CU Gold `#CFB87C` and its dark to `#231F20`; PNG `rsvg-convert -h 240` for HTML and pptx, PDF `rsvg-convert -f pdf` for LaTeX. It replaced the deck's 1911x298 PNG (`image6.png`). nsi's own sign-off (NSI is an RIO center); cu's placeholder until cu took the CU Boulder lockup |
+| `logos/rio-lockup-white.{svg,png,pdf}` | the same | the lettering's groups filled white, the monogram's paths untouched (gold with its dark outline), as the deck's white RIO (`image2.emf`) shows it on the black title |
 
 ## Mapping
 
