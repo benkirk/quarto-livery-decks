@@ -251,13 +251,20 @@ number lives in theme code, and `comp_measure.py` (`make measure`) checks every 
 the boxes; `docs/design/compositions-baseline.md` is the before-picture. A new composition, or
 a livery's own look for one, is data: a box override in `livery.yml`, not a fifth drawer.
 
-**Type** (2026-10-17): text sizes are fractions of the slide height, `livery.json` `type`: the
-body (0.0311, the HTML theme's 28 px of 900, which is the brand template's 12 pt of 405) and
-each role's size and leading as a ratio to it (lists 0.9 a level, subheads 1.1, slide titles
-1.643, tables 0.85, code 0.66, captions and footnotes 0.7, the title, divider and closing
-roles). beamer rescales LaTeX's size commands onto it, the template builder derives the
-master's ladder and the placeholders, the framework's post-processors take their roles
-(`livery.type_pt`), so a slide fits and overflows alike in every format.
+**Type** (2026-10-17; points since engine 3.6.0): a livery states its text sizes in **points on
+its pptx canvas**, whole or half points, so a slide pasted into a hand-made deck carries round
+numbers: `livery.yml` `pptx.size` (inches) and `type:` (role -> pt, the five list `levels`). The
+engine's default (`livery_build.py` `TYPE`, `LEVELS`) is the NSF NCAR template's guidance carried
+onto 13.333 x 7.5 in and rounded (body 16, levels 16/15/13/12/11, slide titles 27, cover 29,
+dividers 40); a role a livery leaves out is that default scaled by its canvas (the body roles
+by its body), to the half point. ncar takes the guidance itself on the brand's 10 x 5.625 in
+(body 12, levels 12/11/10/9/8, titles 20, subhead 15, tables 10, cover 22, bold statement 30);
+cu the NSI master deck's on 13.333 x 7.5 in (body 16, titles 32, cover 48 with the date 28,
+dividers 60). `livery.json` `type` has the canvas, each role's points, its ratio to the body
+and its leading, and the body's share of the height: HTML (`--engine-type-*`) and beamer
+(`\engine@type@*`) set the same share of the slide, the template builder the points, the
+post-processors `livery.type_pt()` and `canvas_scale()`, so a slide fits and overflows alike in
+every format. `scale=` keeps working everywhere, a pptx size rounded to the half point.
 
 For `quarto-livery-decks`:
 
@@ -391,6 +398,21 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, type in points** (beamer-livery-theme #32, #33, 3.6.0; this repo #40, #41). Ben
+  asked whether the sizes were "nice" numbers: pptx slides get pasted into decks people keep by
+  hand, and ours carried 16.79/15.11/13.6/12.24 pt, on a canvas a third larger than the brand
+  template's. Now sizes are points on the livery's canvas (section 5, "Type"), defaulting to
+  the brand's style guide: ncar on the NSF NCAR template's 10 x 5.625 in and its guidance (body
+  12, titles 20), which its UCAR, UCP and NCAR-UCAR templates share; cu on the NSI master deck's
+  (body 16, titles 32, cover 48, dividers 60). The post-processors lost their 13.33 in constants
+  (slide pixels, points per pixel, pads). Found on the way and fixed: beamer's `scale=` left
+  tables and code at their size (since 3.5.0); plain verbatim was set at body size; LM Mono ran
+  13% narrower than HTML's monospace (now 1.15, the same line width); `deck_qa.py` read page
+  numbers only bottom left. Checked against the references: five slides of each brand's own
+  deck rebuilt with the same content, side by side, similar in size and wrapping. Still open:
+  the sample deck's "Project config" slide (PDF: the code runs off the page and the right
+  column doesn't paint, on main too). Next: the deck-wide size step (`type-body:` /
+  `type-scale:`), then NASA.
 - **2026-10-17, compositions as boxes** (beamer-livery-theme #21-#30, 3.5.0; this repo #34-#38).
   The title (cover, photo, light, photo-light, band), closing (and light, band), section and
   feature slides are one `compositions` block of boxes in `build/livery.json`
@@ -604,7 +626,7 @@ Newest first. The first unchecked item of section 7 is the next step.
   `reference/report.md` (beamer-livery-theme PR #8): a 10 x 5.625 in canvas, 5% margins with
   the body from 27% down, PowerPoint-named layouts with few placeholders (the covers are flat
   pictures), a theme two digits off the guide, Aptos as scheme font. Decided with Ben: keep
-  the 13.33 x 7.5 in canvas, a full-width body with small margins, the title slide rebuilt
+  the 13.33 x 7.5 in canvas (reversed 2026-10-17: ncar is on 10 x 5.625 in, `pptx.size`), a full-width body with small margins, the title slide rebuilt
   from parts. `livery_template.py` (this repo PR #11) generates a livery's `template.pptx`
   from its data: theme slots by the slot contract (`livery_build.py` now derives
   `pptx.scheme` from the roles, `SLOT_ROLES`; a flavor no longer inherits its parent's), the
