@@ -5,6 +5,591 @@
     "titlegraphic": "art/campus.jpg"
   },
   "aspect": "16:9",
+  "compositions": {
+    "closing": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.22,
+          0.62,
+          0.66
+        ],
+        "role": "primary-text",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.09,
+          0.1029,
+          0.1
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "closing-band": {
+      "art": "title",
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.1,
+          0.62,
+          0.594
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.7444,
+          0.767,
+          0.1956,
+          0.19
+        ],
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.807,
+          0.3909,
+          0.11
+        ],
+        "role": "dark"
+      },
+      "waves": null
+    },
+    "closing-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.22,
+          0.62,
+          0.66
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.09,
+          0.1029,
+          0.1
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "background"
+      },
+      "waves": null
+    },
+    "feature": {
+      "art": null,
+      "band": null,
+      "bar": {
+        "box": [
+          0,
+          0,
+          1,
+          0.2
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0,
+          0.88,
+          0.2
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": null,
+      "fineprint": null,
+      "mark": null,
+      "panel": {
+        "box": [
+          0.06,
+          0.2556,
+          0.4576,
+          0.6667
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "photo": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "signoff": null,
+      "waves": null
+    },
+    "section": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.1333,
+          0.62,
+          0.7778
+        ],
+        "role": "primary-text",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": {
+        "color": "secondary",
+        "label": "Section"
+      },
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.08,
+          0.0824,
+          0.08
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "title": {
+      "art": "title",
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.5,
+          0.66
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.5,
+          0.1
+        ],
+        "role": "primary-text"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.0926,
+          0.09
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "title-band": {
+      "art": "title",
+      "band": {
+        "box": [
+          0,
+          0.276,
+          1,
+          0.448
+        ],
+        "role": "primary"
+      },
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.276,
+          0.52,
+          0.448
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.742,
+          0.52,
+          0.06
+        ],
+        "role": "background"
+      },
+      "mark": {
+        "box": [
+          0.7444,
+          0.767,
+          0.1956,
+          0.19
+        ],
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.62,
+          0.276,
+          0.38,
+          0.448
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.06,
+          0.807,
+          0.3909,
+          0.11
+        ],
+        "role": "dark"
+      },
+      "waves": null
+    },
+    "title-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.5,
+          0.66
+        ],
+        "role": "foreground",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.5,
+          0.1
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.0926,
+          0.09
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "background"
+      },
+      "waves": null
+    },
+    "title-photo": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.44,
+          0.66
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.44,
+          0.1
+        ],
+        "role": "primary-text"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.0926,
+          0.09
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "title-photo-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.2,
+          0.44,
+          0.66
+        ],
+        "role": "foreground",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.44,
+          0.1
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.0926,
+          0.09
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.06,
+          0.92,
+          0.1777,
+          0.05
+        ],
+        "role": "background"
+      },
+      "waves": null
+    }
+  },
   "derived": {
     "alert-text": "#958459",
     "caution-fill": "#F6F2E7",
