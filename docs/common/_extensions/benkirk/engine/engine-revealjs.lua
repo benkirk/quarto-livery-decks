@@ -56,7 +56,7 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "3.0.0"
+local VERSION = "3.1.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
@@ -444,12 +444,26 @@ end
 -- right 52%; the opaque field runs to line 2 and a translucent band to line 3.
 -- A plain <img> behind the svg, not an svg <image>: pandoc's embed-resources
 -- inlines the former only.
+local function photo_img(src)
+  if src then return string.format('<img class="engine-title-photo-img" src="%s" alt="">', src) end
+  -- the livery's art.titlegraphic: a box livery.css paints (its url() is beside the css)
+  return '<div class="engine-title-photo-img engine-title-photo-default"></div>'
+end
+
 local function photo_waves(c, fieldcolor, src)
-  local img = string.format('<img class="engine-title-photo-img" src="%s" alt="">', src)
+  local img = photo_img(src)
   if not WAVES then   -- no waves: the field over the left half, a straight edge
     return img .. svg(string.format('<path d="M 0 0 H %d V %d H 0 Z" fill="%s"/>', W / 2, H, fieldcolor))
   end
   return img .. svg(field(2, 0, fieldcolor) .. band(2, 3, 0, fieldcolor, 0.65) .. lines(0, c.secondary))
+end
+
+-- the band title (title: {style: band}): the band across the slide in its role's color, the
+-- photo in its right part (positioned by the scss from livery.css's --engine-band-* vars)
+local function band_art(t, r, src, photo)
+  local rect = string.format('<rect x="0" y="%g" width="%d" height="%g" fill="%s"/>',
+    t.top * H, W, (t.bottom - t.top) * H, r[t.band])
+  return svg(rect) .. (photo and photo_img(src) or "")
 end
 
 -- content slides: the faint lines of the brand's content slides (p26), in the surface color
@@ -482,7 +496,11 @@ local function add_dependency(livery)
     add(livery.logo.images[livery.logo.medium[v]].path)
     if livery.signoff then add(livery.signoff[v]) end
   end
-  for _, kind in ipairs({ "title", "section", "closing", "content" }) do   -- static art files
+  if livery.title and livery.title.style == "band" then   -- the band's strip images
+    add(livery.title.logo)
+    if livery.title.signoff then add(livery.title.signoff) end
+  end
+  for _, kind in ipairs({ "title", "section", "closing", "content", "titlegraphic" }) do   -- static art files
     if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
   end
   quarto.doc.add_html_dependency({
@@ -528,12 +546,21 @@ function Pandoc(doc)
     light and "light" or "dark",
     opts.autofit == "false" and ",'engine-no-autofit'" or ""))
 
-  -- title slide: brand field (or white), waves or the photo
-  title_slide_attributes(meta, { ["data-background-color"] = titlefield })
-  local tg = meta["titlegraphic"]
-  local art = tg and photo_waves(c, titlefield, pandoc.utils.stringify(tg)) or waves(c, SHIFT.title)
+  -- title slide: brand field (or white), waves or the photo; or the band
+  local band = livery.title and livery.title.style == "band" and livery.title or nil
+  local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
+  local default_photo = not tg and livery.art and type(livery.art.titlegraphic) == "string"
+  local art, class
+  if band then
+    title_slide_attributes(meta, { ["data-background-color"] = r[band.field] })
+    art, class = band_art(band, r, tg, tg or default_photo), " engine-field engine-band"
+  else
+    title_slide_attributes(meta, { ["data-background-color"] = titlefield })
+    art = (tg or default_photo) and photo_waves(c, titlefield, tg) or waves(c, SHIFT.title)
+    class = (light and "" or " engine-field") .. (default_photo and " engine-title-photo" or "")
+  end
   meta["engine-title-art"] = pandoc.RawInline("html", art)
-  meta["engine-title-class"] = light and "" or " engine-field"
+  meta["engine-title-class"] = class
 
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(doc.blocks), 0
@@ -560,10 +587,11 @@ function Pandoc(doc)
         i = j
       end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "closing") then
-      blk.attributes["data-background-color"] = titlefield
-      if not light then blk.classes:insert("engine-field") end
+      blk.attributes["data-background-color"] = band and r[band.field] or titlefield
+      if band then blk.classes:extend({ "engine-field", "engine-band" })
+      elseif not light then blk.classes:insert("engine-field") end
       out:insert(blk)
-      out:insert(html(waves(c, SHIFT.title)))
+      if not band then out:insert(html(waves(c, SHIFT.title))) end
       i = i + 1
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "feature") then
       -- the body goes on a translucent panel over the photo; Space under the

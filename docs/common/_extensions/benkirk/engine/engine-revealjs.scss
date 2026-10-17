@@ -445,6 +445,56 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   }
 }
 
+// the band (title: {style: band} in livery.yml): the field, the band across it with the text
+// column and the photo in its right part, the mark and the sign-off centred in the strip below;
+// the --engine-band-* vars and the strip images are livery.css's
+div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
+  .engine-title-photo-img {
+    top: var(--engine-band-top);
+    height: var(--engine-band-height);
+    left: var(--engine-band-split);
+    width: calc(100% - var(--engine-band-split));
+  }
+  .engine-title-text {
+    position: absolute;
+    left: var(--engine-margin);
+    top: var(--engine-band-top);
+    height: var(--engine-band-height);
+    width: var(--engine-band-text-w);
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .engine-title-rule { margin: 0.6em 0; }
+  .engine-fineprint {
+    top: calc(var(--engine-band-top) + var(--engine-band-height) + 16px);
+    bottom: auto;
+    color: var(--engine-band-field-text);
+  }
+}
+div.reveal div.slides section.engine-title.quarto-title-block.engine-band,
+.reveal .slides section.slide.level2.closing.engine-band {
+  &::after {
+    top: auto;
+    bottom: calc(var(--engine-band-strip) - var(--engine-band-logo-h) / 2);
+    left: var(--engine-band-logo-left);
+    right: var(--engine-band-logo-right);
+    height: var(--engine-band-logo-h);
+    width: var(--engine-band-logo-w);
+    background-position: center;
+  }
+  .engine-signoff {
+    bottom: calc(var(--engine-band-strip) - var(--engine-band-signoff-h, 0px) / 2);
+    height: var(--engine-band-signoff-h, 0);
+    width: var(--engine-band-signoff-w, 0);
+  }
+}
+.reveal .slides section.slide.level2.closing.engine-band.engine-field {
+  &, h2, p, li, a, strong { color: var(--engine-band-field-text); }
+  ul > li::before { background: var(--engine-band-field-text); }
+}
+
 // ---------------------------------------------------------------------------
 // section dividers: brand field, waves, "SECTION n", heading, subtitle
 // ---------------------------------------------------------------------------

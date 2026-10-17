@@ -213,6 +213,34 @@
     \resizebox{!}{#2}{\usebox\engine@imgbox}%
   \fi}
 
+% the title's composition (title: in livery.yml): the cover (default) or the band; the band's
+% numbers, colors (EngineBand*) and strip images come from build/livery.sty
+\providecommand\engine@title@style{cover}
+\def\engine@ifband{\engine@ifcorner{\engine@title@style}{band}}
+% a deck without \titlegraphic gets the livery's default photo (art.titlegraphic)
+\AtBeginDocument{\ifx\inserttitlegraphic\@empty\ifcsname engine@art@titlegraphic\endcsname
+  \titlegraphic{\includegraphics{\engine@art@titlegraphic}}\fi\fi}
+\newdimen\engine@bandlo \newdimen\engine@bandhi \newdimen\engine@bandx
+% \engine@bandbox: the band's edges in TikZ coordinates (y up), from the fractions (y down)
+\def\engine@bandbox{%
+  \engine@bandlo=\dimexpr\paperheight-\engine@title@bottom\paperheight\relax
+  \engine@bandhi=\dimexpr\paperheight-\engine@title@top\paperheight\relax
+  \engine@bandx=\engine@title@split\paperwidth}
+% the strip under the band: the sign-off in its corner, the mark in the other, both centred
+\def\engine@bandmarks{%
+  \def\engine@tmpc{west}\@tempdima=\engine@margin
+  \ifcsname engine@title@signoffimg\endcsname
+    \engine@ifcorner{\engine@signoffcorner}{bottom-right}{%
+      \def\engine@tmpc{east}\@tempdima=\dimexpr\paperwidth-\engine@margin\relax}{}%
+    \node[anchor=\engine@tmpc,inner sep=0pt] at (\@tempdima,0.5\engine@bandlo)
+      {\includegraphics[height=\engine@title@signoffheight\paperheight]{\engine@title@signoffimg}};
+    \engine@ifcorner{\engine@tmpc}{west}{\def\engine@tmpc{east}\@tempdima=\dimexpr\paperwidth-\engine@margin\relax}%
+      {\def\engine@tmpc{west}\@tempdima=\engine@margin}%
+  \else\def\engine@tmpc{east}\@tempdima=\dimexpr\paperwidth-\engine@margin\relax\fi
+  \engine@ifcorner{\engine@geom@logocorner}{none}{}{%
+    \node[anchor=\engine@tmpc,inner sep=0pt] at (\@tempdima,0.5\engine@bandlo)
+      {\includegraphics[height=\engine@title@logoheight\paperheight]{\engine@title@logoimg}};}}
+
 % field behind the title/closing slides (title=dark|light)
 \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp
   \colorlet{EngineTitleField}{BrandBackground}\else\colorlet{EngineTitleField}{BrandPrimary}\fi
@@ -252,7 +280,29 @@
 % title page: field + (photo | waves).  With a photo, the brand's cover: the
 % field runs to line 2, is translucent between lines 2 and 3, and the photo
 % shows right of that.
-\def\engine@drawtitlebg{%
+\def\engine@drawtitlebg{\engine@ifband{\engine@drawbandbg}{\engine@drawcoverbg}}
+% the band: field and art, the band with the photo cropped into its right part, the text
+% column on it, the strip's images
+\def\engine@drawbandbg{%
+  \engine@bandbox
+  \fill[EngineBandField] (0,0) rectangle (\paperwidth,\paperheight);
+  \engine@art{title}%
+  \fill[EngineBandFill] (0,\engine@bandlo) rectangle (\paperwidth,\engine@bandhi);
+  \ifx\inserttitlegraphic\@empty\else
+    \begin{scope}
+      \clip (\engine@bandx,\engine@bandlo) rectangle (\paperwidth,\engine@bandhi);
+      \node[anchor=center,inner sep=0pt] at ({0.5*(\engine@bandx+\paperwidth)},{0.5*(\engine@bandlo+\engine@bandhi)})
+        {\engine@coverbox{\dimexpr\paperwidth-\engine@bandx\relax}{\dimexpr\engine@bandhi-\engine@bandlo\relax}{\inserttitlegraphic}};
+    \end{scope}
+  \fi
+  \node[anchor=west,inner sep=0pt] at (\engine@margin,{0.5*(\engine@bandlo+\engine@bandhi)}) {\engine@bandtext};
+  \ifx\engine@fineprint\@empty\else
+    \node[anchor=north west,inner sep=0pt,text width=\dimexpr\engine@bandx-\engine@margin\relax,
+      font=\usebeamerfont{title fineprint},text=EngineBandFieldText]
+      at (\engine@margin,\engine@bandlo-0.02\paperheight) {\engine@fineprint};
+  \fi
+  \engine@bandmarks}
+\def\engine@drawcoverbg{%
   \ifx\inserttitlegraphic\@empty
     \engine@drawclosingbg
   \else
@@ -262,7 +312,14 @@
     \engine@lines{0}{BrandSecondary}%
     \engine@signoff{dark}%
   \fi}
-\def\engine@drawclosingbg{%
+\def\engine@drawclosingbg{\engine@ifstyle{closing}{\engine@ifband{\engine@drawbandclosingbg}{\engine@drawfieldbg}}{\engine@drawfieldbg}}
+% the band's closing: the title's field and art (art.closing first), the strip's images
+\def\engine@drawbandclosingbg{%
+  \engine@bandbox
+  \fill[EngineBandField] (0,0) rectangle (\paperwidth,\paperheight);
+  \ifcsname engine@art@closing\endcsname\engine@art{closing}\else\engine@art{title}\fi
+  \engine@bandmarks}
+\def\engine@drawfieldbg{%
   \fill[\engine@titlefield] (0,0) rectangle (\paperwidth,\paperheight);
   \engine@ifstyle{title}{\engine@art{title}}{\engine@art{closing}}%
   \engine@waves{\engine@waveshift@title}{BrandSecondary}%
@@ -351,24 +408,25 @@ block body example,block title alerted,block body alerted}
 % [engineclosing]: brand field, like the title slide
 \define@key{beamerframe}{engineclosing}[true]{%
   \def\engine@framestyle{closing}%
-  \engine@atframe{\engine@darkfieldcolors}}
+  \engine@atframe{\engine@ifband{\engine@fieldcolors{EngineBandFieldText}}{\engine@darkfieldcolors}}}
 
 % colors for text sitting on the brand field (title=dark) or white (light)
 \def\engine@darkfieldcolors{%
-  \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp\else
-    \setbeamercolor{normal text}{fg=BrandPrimaryText}%
+  \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp\else\engine@fieldcolors{BrandPrimaryText}\fi}
+% \engine@fieldcolors{<color>}: every text color for a field in <color>
+\def\engine@fieldcolors#1{%
+    \setbeamercolor{normal text}{fg=#1}%
     \usebeamercolor[fg]{normal text}%
-    \setbeamercolor{title}{fg=BrandPrimaryText}%
-    \setbeamercolor{subtitle}{fg=BrandPrimaryText}%
-    \setbeamercolor{author}{fg=BrandPrimaryText}%
-    \setbeamercolor{institute}{fg=BrandPrimaryText}%
-    \setbeamercolor{date}{fg=BrandPrimaryText}%
-    \setbeamercolor{frametitle}{fg=BrandPrimaryText}%
-    \setbeamercolor{structure}{fg=BrandPrimaryText}%
-    \setbeamercolor{item}{fg=BrandPrimaryText}%
-    \setbeamercolor{subitem}{fg=BrandPrimaryText}%
-    \setbeamercolor{local structure}{fg=BrandPrimaryText}%
-    \setbeamercolor{alerted text}{fg=BrandAccent}%
-  \fi}
+    \setbeamercolor{title}{fg=#1}%
+    \setbeamercolor{subtitle}{fg=#1}%
+    \setbeamercolor{author}{fg=#1}%
+    \setbeamercolor{institute}{fg=#1}%
+    \setbeamercolor{date}{fg=#1}%
+    \setbeamercolor{frametitle}{fg=#1}%
+    \setbeamercolor{structure}{fg=#1}%
+    \setbeamercolor{item}{fg=#1}%
+    \setbeamercolor{subitem}{fg=#1}%
+    \setbeamercolor{local structure}{fg=#1}%
+    \setbeamercolor{alerted text}{fg=BrandAccent}}
 
 \mode<all>

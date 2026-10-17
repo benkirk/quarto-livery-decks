@@ -11,7 +11,9 @@ stay inside; pptx cannot move them). full: the one picture fills the slide, no t
 art, pandoc's caption box centered under it in the muted color, the slide number kept.
 feature: the brand cover, as the title slide with a `titlegraphic:` (pandoc records it in
 docProps/custom.xml): the photo pushed to the back of the slide, cropped to cover, the livery's
-field, band and wave lines over it, the text and logo on the field. Footnote paragraphs
+field, band and wave lines over it, the text and logo on the field (a deck without one gets the
+livery's art.titlegraphic). The band title (title.style: band) takes the deck's photo into the
+band's right part, over the layout's default. Footnote paragraphs
 (style_footnotes.py) keep their size. Every slide also gets its layout's slide-number placeholder, which pandoc never writes
 (so decks had no numbers). Idempotent: the marker is gone after one pass, a slide that has a
 number keeps it."""
@@ -51,6 +53,7 @@ CAUTION_W    = Pt(6)
 GEOM         = LIVERY["geometry"]
 WAVES        = LIVERY.get("art", {}).get("waves")
 FIELD_TEXT   = RGBColor.from_string(livery_mod.color(LIVERY, "primary-text"))
+BAND         = LIVERY.get("title") if (LIVERY.get("title") or {}).get("style") == "band" else None
 # the feature cover's text on the field, of the slide: title (top, height, pt), rule, body
 COVER_TITLE, COVER_RULE, COVER_BODY = (0.34, 0.16, 32), 0.525, (0.55, 0.36, 18)
 
@@ -261,19 +264,32 @@ def _frame(shape, x, y, w, h, width, height):
     shape.width, shape.height = int(w * width), int(h * height)
 
 
+def _back_picture(slide, photo, x, y, w, h):
+    """The photo cropped to cover the box, at the back of the slide (above the layout's shapes)."""
+    tree = slide.shapes._spTree
+    pic = slide.shapes.add_picture(io.BytesIO(photo), x, y, w, h)
+    iw, ih = pic.image.size
+    if iw * h > ih * w:
+        pic.crop_left = pic.crop_right = (1 - (w / h) / (iw / ih)) / 2
+    else:
+        pic.crop_top = pic.crop_bottom = (1 - (iw / ih) / (w / h)) / 2
+    tree.remove(pic._element)
+    tree.insert(2, pic._element)   # after nvGrpSpPr and grpSpPr: the back of the slide
+    return pic
+
+
+def band_photo(slide, width, height, photo):
+    """The band title's photo in the band right of `split`; nothing else sits in that box."""
+    x, y = int(BAND["split"] * width), int(BAND["top"] * height)
+    _back_picture(slide, photo, x, y, width - x, int(BAND["bottom"] * height) - y).name = "Title photo"
+
+
 def cover(slide, width, height, photo):
     """The brand cover: the photo at the back, cropped to cover the slide, the field, band and
     wave lines over it (pptx_waves; a straight-edged field without waves), the dark logo top left.
     Returns the next free shape id."""
     tree = slide.shapes._spTree
-    pic = slide.shapes.add_picture(io.BytesIO(photo), 0, 0, width, height)
-    iw, ih = pic.image.size
-    if iw * height > ih * width:
-        pic.crop_left = pic.crop_right = (1 - (width / height) / (iw / ih)) / 2
-    else:
-        pic.crop_top = pic.crop_bottom = (1 - (iw / ih) / (width / height)) / 2
-    tree.remove(pic._element)
-    tree.insert(2, pic._element)   # after nvGrpSpPr and grpSpPr: the back of the slide
+    _back_picture(slide, photo, 0, 0, width, height)
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
     shapes = (pptx_waves.cover_shapes(WAVES["lines"], sid, width, height) if WAVES
               else pptx_waves.straight_cover_shapes(sid, width, height))
@@ -362,9 +378,12 @@ def main() -> int:
     w, h = prs.slide_width, prs.slide_height
     done = 0
     graphic = _title_graphic(prs, pptx.parent)
+    default = LIVERY.get("art", {}).get("titlegraphic")
+    if graphic is None and default and not BAND:   # the band's layout carries the default itself
+        graphic = Path(LIVERY["dir"]) / default
     if graphic is not None and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
         if graphic.exists():
-            title_cover(prs.slides[0], w, h, graphic.read_bytes())
+            (band_photo if BAND else title_cover)(prs.slides[0], w, h, graphic.read_bytes())
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)

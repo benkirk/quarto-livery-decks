@@ -28,6 +28,17 @@ aspect: "16:9"
 #   bottom: 0.03
 #   corner: bottom-left
 
+# title:                  # the title slide's composition: cover (default, ncar's) or band
+#   style: band           # a field in a role, art.title over it, a band across it holding the
+#   top: 0.27             # text left of split and the photo (titlegraphic, else art.titlegraphic)
+#   bottom: 0.72          # right of it; the mark and the sign-off centred in the strip below; the
+#   split: 0.62           # closing slide wears the field, art.closing (else art.title) and the
+#   band: primary         # strip's images. Colors are roles; logo and signoff are logo.images
+#   field: dark           # names (default: the dark variants), heights fractions of the slide
+#   field-text: background  # (default: geometry.logo.title and signoff.height)
+#   logo: <image>
+#   signoff: <image>
+
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06            # 96 px of 1600; deck_qa.py's overflow edge is 1 - margin
   tab: 0.018              # 29 px; the divider's accent tab
@@ -56,7 +67,8 @@ divider:
 
 art:                      # backgrounds. waves: the brand's lines, drawn by the engine in the roles'
   waves:                  # colors (tools/fit-waves.py fits them); or a file per slide kind (title,
-    shift:                # section, closing, content) placed as the background instead
+    shift:                # section, closing, content) placed as the background instead;
+                          # titlegraphic: the title photo for decks that set none
       title: 0.20         # how far right of the cover art's position each slide kind draws them
       section: 0.26
       content: 0.27
