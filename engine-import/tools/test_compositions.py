@@ -113,7 +113,6 @@ def today(L: dict) -> dict:
 # (None when HTML already drew the decided value and only beamer or pptx move).
 COVERS = ("title", "title-photo", "title-light", "title-photo-light")
 PHOTOS = ("title-photo", "title-photo-light")
-NCAR_FAMILY = {"ncar", "ucar", "ucp", "ncarucar", "over", "banded", "covered"}   # ncar and what extends it here
 
 
 def each(comps, fn):
@@ -176,10 +175,6 @@ EXPECTED_DELTAS = {
     "band mark without a sign-off": ({"pdf": "right", "html": "left", "pptx": "right", "decided": "right"},
                                      each(("title-band", "closing-band"), lambda x, L: L.get("signoff") or setbox("mark", 0, lambda L:
                                          1 - L["geometry"]["margin"] - x["mark"]["box"][2])(x, L))),
-    "title column top, ncar": ({"pdf": 0.205, "html": 0.20, "pptx": 0.375,
-                                "decided": "ncar and its flavors: pptx's 0.375 (Ben, 2026-10-17); others under the mark"},
-                               lambda c, L: L["name"] in NCAR_FAMILY and each(COVERS, lambda x, L: x["column"].update(
-                                   box=[0.06, 0.375, 0.44 if x["photo"] else 0.50, 0.485]))(c, L)),
 }
 
 
