@@ -43,11 +43,15 @@ blobs come from PowerPoint).
 ## Lockups
 
 The deck carries unit lockups only (NSI; the Research & Innovation Office). The plain CU Boulder
-lockup lives in the lockup library (ucomm-exten2.colorado.edu, CU login). Until Ben supplies it,
-the RIO lockup from the deck is the placeholder (`logos/cu-rio-lockup.png`, dark text for light
-backgrounds; `cu-rio-lockup-white.png` is the same PNG with the text right of the CU monogram
-recolored white and the monogram kept, as the deck's own white version, an EMF, shows it; redone
-for the nsi flavor, whose black title uses it). The brand wants the lockup as a "sign off" at the bottom, so it is the
+lockup is CU's own web brand asset, the one-line version (CU monogram and "University of Colorado
+Boulder"): `cdn.colorado.edu/static/brand-assets/live/images/cu-boulder-logo-text-black.svg` and
+`-white.svg` (black or white text, the monogram gold either way), kept as `logos/cu-boulder-
+lockup{,-white}.svg` with a PNG (`rsvg-convert -h 240`, for HTML and pptx) and a PDF (`rsvg-convert
+-f pdf`, which LaTeX picks over the PNG of the same name, so the PDF deck's lockup is vector) of
+each. The lockup library (ucomm-exten2.colorado.edu, CU login) has the stacked versions too.
+Until 2026-10-16 the deck's RIO lockup stood in; it now belongs to the nsi flavor, which uses it.
+The black-text lockup serves the gold field too (`logo.medium.dark`), the gold being light. The
+brand wants the lockup as a "sign off" at the bottom, so it is the
 livery's `signoff` (bottom-left, the deck's placement), `geometry.logo.corner` is `none` (no mark
 top right; the NSI flavor puts its own mark top-left) and the page number sits bottom-right as in
 the deck.
@@ -66,6 +70,4 @@ backgrounds library or one CU owns. Swap the file to change it.
 ## Follow-ups
 
 Done: the `nsi` flavor (`../../nsi/`, on the engine's band title style), Heros Condensed
-headings, `livery_check.py`. Open: pptx font embedding; the plain CU Boulder lockup (the CU
-CDN serves `cdn.colorado.edu/static/brand-assets/live/images/cu-boulder-logo-text-{black,white}.svg`,
-found on the NSI website; check it against the lockup library before use).
+headings, `livery_check.py`, the plain CU Boulder lockup (2026-10-16). Open: pptx font embedding.

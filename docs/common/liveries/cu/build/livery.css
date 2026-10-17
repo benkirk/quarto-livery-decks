@@ -28,8 +28,8 @@
   --engine-alert-text: #958459;
   --engine-rule: #AAA8A3;
   --engine-logo-h: 58px;
-  --engine-logo-w: 372.0px;
-  --engine-logo-aspect: 6.413;
+  --engine-logo-w: 632.4px;
+  --engine-logo-aspect: 10.903;
   --engine-logo-top: 48px;
   --engine-logo-title-h: 81px;
   --engine-logo-section-h: 72px;
@@ -53,9 +53,9 @@
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
   --engine-signoff-display: block;
-  --engine-signoff-h: 45px;
-  --engine-signoff-w: 288.6px;
-  --engine-signoff-bottom: 27px;
+  --engine-signoff-h: 36px;
+  --engine-signoff-w: 392.5px;
+  --engine-signoff-bottom: 31.5px;
   --engine-signoff-left: var(--engine-margin);
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
@@ -72,9 +72,9 @@ html:root {
 }
 .reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full) { background: url("content-flatirons.jpg") center / cover no-repeat; }
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("cu-rio-lockup.png"); }
+.reveal .slides section.engine-title::after { background-image: url("cu-boulder-lockup.png"); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("cu-rio-lockup.png"); }
-.reveal .slides section .engine-signoff { background-image: url("cu-rio-lockup.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: url("cu-boulder-lockup.png"); }
+.reveal .slides section .engine-signoff { background-image: url("cu-boulder-lockup.png"); }
 .reveal .slides section.engine-field .engine-signoff,
-.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("cu-rio-lockup.png"); }
+.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("cu-boulder-lockup.png"); }

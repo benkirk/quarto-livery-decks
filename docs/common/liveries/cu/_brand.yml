@@ -55,14 +55,15 @@ typography:
   headings: TeX Gyre Heros Cn
 
 logo:
-  # placeholders from the NSI reference deck until the plain CU Boulder lockup (lockup library,
-  # CU login) replaces them: the Research & Innovation Office lockup, and a white recoloring of it
+  # the CU Boulder lockup, one line (monogram + "University of Colorado Boulder"), from CU's own
+  # web brand assets (cdn.colorado.edu/static/brand-assets/live/images/cu-boulder-logo-text-
+  # {black,white}.svg); each SVG is kept beside a PNG (HTML, pptx) and a PDF of the same name
+  # (LaTeX finds the vector one), rsvg-convert -h 240 and -f pdf (reference/notes.md)
   images:
-    rio-color:
-      path: logos/cu-rio-lockup.png
-    rio-white:
-      path: logos/cu-rio-lockup-white.png
+    cu-color:
+      path: logos/cu-boulder-lockup.png         # gold monogram, black text: light backgrounds
+    cu-white:
+      path: logos/cu-boulder-lockup-white.png   # gold monogram, white text: black fields
   medium:
-    light: rio-color      # on light backgrounds
-    dark: rio-color       # the brand field is gold, light enough for the dark lockup; the white
-                          # one waits for a black field (the deck's band title, a follow-up)
+    light: cu-color       # on light backgrounds
+    dark: cu-color        # the brand field is gold, light enough for the black-text lockup

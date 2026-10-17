@@ -12,6 +12,10 @@ logo:
       path: logos/nsi-lockup-white.png
     nsi-black:              # one color, black: the gold fields, where the gold mark vanishes; a
       path: logos/nsi-lockup-black.png   # recoloring of nsi-color until NSI supplies its own
+    rio-color:              # the deck's Research & Innovation Office lockup (NSI is an RIO
+      path: logos/rio-lockup.png         # center): its sign-off, in place of cu's CU Boulder lockup
+    rio-white:              # the same, text white and the CU monogram kept: the black title
+      path: logos/rio-lockup-white.png
   medium:
     light: nsi-color
     dark: nsi-black         # the gold fields (dividers, feature covers)

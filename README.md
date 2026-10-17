@@ -117,10 +117,10 @@ Liveries (`docs/common/liveries/<name>/`, chosen with `make LIVERY=<name>`): `nc
 links to the engine's reference livery; `cu` is the University of Colorado Boulder
 (brand palette, TeX Gyre Heros and Heros Condensed standing in for Helvetica Neue in
 HTML and PDF, the pptx naming Helvetica Neue unembedded, the lockup as a sign-off
-bottom-left with the page number bottom-right, a placeholder unit lockup until the
-plain CU Boulder lockup arrives; its `reference/notes.md` records the decisions); `nsi`, the CU
+bottom-left with the page number bottom-right, CU's own vector lockup; its `reference/notes.md`
+records the decisions); `nsi`, the CU
 Center for National Security Initiatives, is a flavor of `cu` (`extends: cu`) with the
-center's mark top left, its master deck's band title (black field, constellation picture, gold
+center's mark top left, the Research & Innovation Office lockup as its sign-off, its master deck's band title (black field, constellation picture, gold
 band with the campus photo, the two lockups beneath) and its satellite photo behind content
 slides. A new livery
 drops in as a sibling directory and CI builds the quickstart deck under it; additional

@@ -64,6 +64,12 @@
   },
   "logo": {
     "images": {
+      "cu-color": {
+        "path": "../cu/logos/cu-boulder-lockup.png"
+      },
+      "cu-white": {
+        "path": "../cu/logos/cu-boulder-lockup-white.png"
+      },
       "nsi-black": {
         "path": "logos/nsi-lockup-black.png"
       },
@@ -74,10 +80,10 @@
         "path": "logos/nsi-lockup-white.png"
       },
       "rio-color": {
-        "path": "../cu/logos/cu-rio-lockup.png"
+        "path": "logos/rio-lockup.png"
       },
       "rio-white": {
-        "path": "../cu/logos/cu-rio-lockup-white.png"
+        "path": "logos/rio-lockup-white.png"
       }
     },
     "medium": {
@@ -134,9 +140,9 @@
     "aspect": 6.413,
     "bottom": 0.03,
     "corner": "bottom-left",
-    "dark": "../cu/logos/cu-rio-lockup.png",
+    "dark": "logos/rio-lockup.png",
     "height": 0.05,
-    "light": "../cu/logos/cu-rio-lockup.png"
+    "light": "logos/rio-lockup.png"
   },
   "title": {
     "band": "primary",
@@ -145,7 +151,7 @@
     "field-text": "background",
     "logo": "logos/nsi-lockup-white.png",
     "logo-height": 0.19,
-    "signoff": "../cu/logos/cu-rio-lockup-white.png",
+    "signoff": "logos/rio-lockup-white.png",
     "signoff-height": 0.11,
     "split": 0.62,
     "style": "band",

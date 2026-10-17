@@ -4,7 +4,7 @@ The CU Center for National Security Initiatives, a flavor of `cu` (`extends: cu`
 is the same deck as cu's: NSI's `NSI MASTER SLIDE DECK JULY2026 EXTERNAL.pptx` (a Google Slides
 export, July 2026, from NSI via Ben; not committed). `../../cu/reference/report.md` is the inspect
 tool's reading of it; `../../cu/reference/notes.md` holds the CU decisions this flavor inherits
-(palette, roles, fonts, the RIO sign-off, the brand site as the stricter authority). There is no
+(palette, roles, fonts, the brand site as the stricter authority). There is no
 NSI brand guide: the deck and the CU rules are the guide.
 
 ## Files, from the deck's `ppt/media/`
@@ -17,7 +17,8 @@ NSI brand guide: the deck and the CU rules are the guide.
 | `art/constellation.jpg` | `image1.jpeg` (4400x2475, the title layout's background) | scaled to 1920x1080 |
 | `art/campus.jpg` | `image3.png` (1216x806, the band's campus photo) | as JPEG |
 | `art/content-satellite.jpg` | `image71.jpg` (2002x1014, pre-faded ISS photo behind slides 12-23) | centre-cropped to 16:9, 1600x900, no further fading (the deck shows it as is) |
-| `../cu/logos/cu-rio-lockup-white.png` | `image6.png` (the dark RIO lockup) | replaced in this flavor's PR: the text right of the CU monogram recolored white, the monogram kept (gold with its outline), as the deck's white RIO (`image2.emf`, a vector LibreOffice cannot convert with transparency) shows it on the black title |
+| `logos/rio-lockup.png` | `image6.png` (the Research & Innovation Office lockup, dark text; 1911x298, aspect 6.413) | as is; it was cu's placeholder sign-off until cu took the CU Boulder lockup, and is nsi's own sign-off (NSI is an RIO center) |
+| `logos/rio-lockup-white.png` | `image6.png` | the text right of the CU monogram recolored white, the monogram kept (gold with its outline), as the deck's white RIO (`image2.emf`, a vector LibreOffice cannot convert with transparency) shows it on the black title |
 
 ## Mapping
 
@@ -30,8 +31,8 @@ NSI brand guide: the deck and the CU rules are the guide.
   engine's date / title / subtitle / rule / author column, left-aligned with the tab.
 - **Content slides**: the NSI mark top left (`geometry.logo.corner: top-left`), 0.085 of the
   height (the deck's 0.135 would cross the title rule; it centres its title, ours stays left of
-  the tab beside the mark), the RIO sign-off bottom left and the page number bottom right
-  (both cu's), the satellite photo as `art.content`.
+  the tab beside the mark), the RIO sign-off bottom left (nsi's own `signoff`, in cu's slot)
+  and the page number bottom right (cu's), the satellite photo as `art.content`.
 - **Closing** (deck slide 27): under the band style the closing slide wears the band's field and
   the title art (no `art.closing`), with the two white lockups in the strip; in pptx the
   template's `Closing` layout does the same.

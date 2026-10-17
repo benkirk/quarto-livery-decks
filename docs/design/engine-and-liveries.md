@@ -345,6 +345,14 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-16** cu's placeholder lockup replaced: the plain CU Boulder lockup (one line, monogram
+  and "University of Colorado Boulder") from CU's own web brand assets
+  (`cdn.colorado.edu/static/brand-assets/live/images/cu-boulder-logo-text-{black,white}.svg`, which
+  Ben found linked from the NSI website), kept as SVG with a PNG for HTML and pptx and a PDF of the
+  same name, which LaTeX picks, so the PDF's sign-off is vector. Sign-off height 0.04 (one line;
+  0.27 of the width). The deck's RIO lockup moved to the nsi flavor, whose deck uses it, as its own
+  `signoff`. Next: NASA.
+
 - **2026-10-16** The `nsi` flavor (CU Center for National Security Initiatives), from
   `docs/design/nsi-handoff.md`, in four steps. (1) beamer-livery-theme #14 (3.1.0): the title
   slide's composition becomes a livery knob, `title.style: cover | band`; the band is a field
