@@ -57,6 +57,15 @@ jobs:
           cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -q Poppins-Bold
 
+      # the same for a flavor (ucp extends ucar extends ncar): its ../ncar/fonts/
+      # must land beside it in the zip, and the theme's default title photo path
+      - name: Build an Overleaf project for a flavor
+        run: |
+          python3 _extensions/engine/overleaf_zip.py _extensions/engine/liveries/ucp -o /tmp/ucp-overleaf.zip
+          rm -rf /tmp/overleaf-ucp && mkdir /tmp/overleaf-ucp && unzip -q /tmp/ucp-overleaf.zip -d /tmp/overleaf-ucp
+          cd /tmp/overleaf-ucp && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex
+          pdffonts /tmp/overleaf-ucp/talk.pdf | tee /dev/stderr | grep -q Poppins-Bold
+
       - name: Check fonts are embedded
         run: |
           for f in talk.pdf talk-quarto.pdf examples/template.pdf examples/quarto-demo.pdf; do

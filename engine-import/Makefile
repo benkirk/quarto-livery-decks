@@ -7,7 +7,7 @@
 #   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex
 #   make previews   docs/math-fonts.png from the specimen (needs poppler's pdftoppm)
 #   make diagrams   examples/diagrams/*.pdf from their .dot/.mmd (needs Graphviz, npx)
-#   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme, ready to upload
+#   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (overleaf_zip.py)
 #   make clean
 #
 # The theme lives in _extensions/engine/ -- the same files that
@@ -84,14 +84,12 @@ $(DIAGRAMS)/%.pdf: $(DIAGRAMS)/%.dot
 $(DIAGRAMS)/%.pdf: $(DIAGRAMS)/%.mmd
 	$(MMDC) -i $< -o $@
 
-# An Overleaf project: the starter deck, its photos, latexmkrc (which finds the
-# theme) and the LaTeX half of the theme -- no Quarto or revealjs files.
-# Uploaded as a new project, or opened through the README's Overleaf link.
+# An Overleaf project: the starter deck on the ncar livery, one photo, latexmkrc
+# (which finds the theme) and the LaTeX half of the theme -- no Quarto or revealjs
+# files.  overleaf_zip.py packs any livery the same way (the framework's too).
 overleaf: engine-beamer-overleaf.zip
-engine-beamer-overleaf.zip: talk.tex latexmkrc FORCE
-	rm -f $@
-	zip -q $@ talk.tex latexmkrc images/wallpaper/mesa_lab_sunset.jpg images/wallpaper/mesa_lab.jpg
-	zip -qr $@ _extensions/engine -i '*.sty' '*/liveries/*/fonts/*.ttf' '*/liveries/*/logos/*.pdf'
+engine-beamer-overleaf.zip: talk.tex FORCE
+	python3 $(THEME)/overleaf_zip.py $(THEME)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
 
 clean:
 	latexmk -C -quiet talk.tex 2>/dev/null; rm -f talk-quarto.pdf talk-quarto.tex talk-quarto.html

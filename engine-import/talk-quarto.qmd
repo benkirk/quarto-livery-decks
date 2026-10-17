@@ -5,15 +5,11 @@
 title: "Talk Title Goes Here"
 subtitle: "An optional subtitle"
 author: "Your Name"
-institute: "Your Title, Your Lab, NSF NCAR"
+institute: "Your Title, Your Lab, Your Institution"
 date: today
 date-format: long
 titlegraphic: images/wallpaper/mesa_lab_sunset.jpg   # optional
-fineprint: >-
-  This material is based upon work supported by the NSF National Center for
-  Atmospheric Research, a major facility sponsored by the U.S. National
-  Science Foundation.
-themeoptions: [brand=ncar, title=dark]   # brand=ncar|ucar|ucp|ncarucar, title=dark|light, mathfont=serif|stix|sans|...
+themeoptions: [brand=ncar, title=dark]   # brand=ncar|ucar|ucp|ncarucar (or livery: <dir>), title=dark|light, mathfont=serif|stix|sans|...
 format: engine-beamer
 ---
 
@@ -41,9 +37,8 @@ Level-3 headings become blocks; add `{.example}` or `{.alert}` for the variants.
 
 ```bash
 #!/bin/bash
-#PBS -A <project>
-#PBS -l select=1:ncpus=128
-mpiexec ./my_model
+# the whole deck is one file; edit, then `make quarto`
+quarto render talk-quarto.qmd
 ```
 
 ## Thank you! {.closing}
@@ -51,4 +46,4 @@ mpiexec ./my_model
 Questions?
 
 **Your Name** \
-`you@ucar.edu`
+`you@example.org`

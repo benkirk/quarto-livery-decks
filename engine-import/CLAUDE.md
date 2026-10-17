@@ -84,7 +84,11 @@ The framework that consumes this engine is `benkirk/quarto-livery-decks`
 - LaTeX finds the theme through `TEXINPUTS=$THEME//:` and the bundled Poppins
   through `TTFONTS=$THEME//:` (`Makefile`; `latexmkrc` does the same for
   Overleaf). Quarto needs >= 1.6 (`\pandocbounded`).
-- `make overleaf` builds `engine-beamer-overleaf.zip`. **Releases**: pushing a
+- `make overleaf` builds `engine-beamer-overleaf.zip` with `overleaf_zip.py <livery> -o <zip>
+  [--starter] [--photo]` (the theme's `.sty`, the livery's `build/livery.sty`, fonts, logos and
+  art under `liveries/<name>/`, a flavor's parent files beside it, a `latexmkrc`, and `talk.tex`
+  on `livery=liveries/<name>, fonts=bundled`); the framework packs cu and nsi the same way.
+  **Releases**: pushing a
   tag `v<version>` runs `release.yml`, which requires the tag to equal
   `version:` in `_extensions/engine/_extension.yml`. No tags were carried over
   from upstream; do not push upstream's tags here.
