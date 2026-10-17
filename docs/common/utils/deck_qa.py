@@ -135,8 +135,9 @@ def pdf_pages(pdf):
 
 
 def frame_number(w, h, words):
-    """The frame-number word at the bottom left, or None (title, section, closing pages)."""
-    num = [wd for wd in words if wd[4].isdigit() and wd[0] < w * 0.1 and wd[1] > h * 0.85]
+    """The frame-number word in a bottom corner (geometry.pagenumber.corner), or None (title,
+    section, closing pages)."""
+    num = [wd for wd in words if wd[4].isdigit() and (wd[0] < w * 0.1 or wd[2] > w * 0.9) and wd[1] > h * 0.85]
     return num[0] if num else None
 
 

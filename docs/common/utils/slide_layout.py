@@ -47,15 +47,16 @@ NOT_BODY  = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.D
              PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
 LINE      = 1.2           # line height / font size, for the table estimate
 CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
+K         = livery_mod.canvas_scale(LIVERY)   # the lengths below were drawn for 7.5 in: scale to the canvas
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
 FULL_FLOOR = LIVERY["geometry"]["full"]["floor"]     # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
-CAP_SIZE   = Pt(round(livery_mod.type_pt(LIVERY, "caption"), 1))   # the themes' caption size, the muted color
+CAP_SIZE   = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the themes' caption size, the muted color
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
-CAUTION_W    = Pt(6)
+CAUTION_W    = Pt(6 * K)
 GEOM         = LIVERY["geometry"]
 WAVES        = LIVERY.get("art", {}).get("waves")
 BAND         = (LIVERY.get("title") or {}).get("style") == "band"
@@ -116,7 +117,7 @@ def _scale_paragraphs(paragraphs, scale, size_at):
         base = size_at(p.level)
         for r in p._p.iter(qn("a:rPr"), qn("a:endParaRPr")):
             sz = int(r.get("sz")) if r.get("sz") else base
-            r.set("sz", str(round(sz * scale)))
+            r.set("sz", str(round(livery_mod.half_pt(sz * scale / 100) * 100)))   # to the half point
 
 
 def _is_body(shape):
@@ -128,14 +129,14 @@ def _text_height(shape, slide):
     """An estimate of the text's height: characters per line from the font size (half an em
     each), one LINE per line plus a little paragraph spacing."""
     tf = shape.text_frame
-    width = shape.width - tf.margin_left - tf.margin_right - Pt(18)   # less the bullet indent
+    width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
         sized = [r.font.size for r in p.runs if r.font.size]
         size = sized[0] if sized else Pt(_inherited(shape, slide, p.level) / 100)
         per_line = max(1, int(width / (size * 0.5)))
         lines = max(1, -(-len(p.text) // per_line))
-        total += int(lines * size * LINE) + Pt(6)
+        total += int(lines * size * LINE) + Pt(6 * K)
     return total
 
 
@@ -143,8 +144,8 @@ def caution_box(slide, shape, vcenter):
     """The body text box on the soft yellow field, a brand-yellow bar at its left, cut down to
     about its text (pandoc gives it the whole content area); 10% slack keeps autofit idle."""
     tf = shape.text_frame
-    tf.margin_left = tf.margin_right = Pt(14)
-    tf.margin_top = tf.margin_bottom = Pt(8)
+    tf.margin_left = tf.margin_right = Pt(14 * K)
+    tf.margin_top = tf.margin_bottom = Pt(8 * K)
     left, top, width, height = shape.left, shape.top, shape.width, shape.height
     est = int(_text_height(shape, slide) * 1.1)
     if est < height:
@@ -416,7 +417,7 @@ def draw_feature(slide, width, height, photo):
         for shape in body:
             _frame(shape, px, py, pw, ph, width, height)
             tf = shape.text_frame
-            tf.margin_left = tf.margin_right = Pt(14); tf.margin_top = tf.margin_bottom = Pt(10)
+            tf.margin_left = tf.margin_right = Pt(14 * K); tf.margin_top = tf.margin_bottom = Pt(10 * K)
             est = min(int(_text_height(shape, slide) * 1.1), int(ph * height))
             panel = _rect(slide, [px, py, pw, est / height], width, height, _role(c["panel"]["role"]), c["panel"]["opacity"], "Feature panel")
             tree = slide.shapes._spTree
@@ -433,10 +434,10 @@ def draw_feature(slide, width, height, photo):
         if title is not None:
             _frame(title, x, y, w, 0.16, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
-            _text(title, text, round(livery_mod.type_pt(LIVERY, "frametitle"), 1))
+            _text(title, text, livery_mod.type_pt(LIVERY, "frametitle"))
         for shape in body:
             _frame(shape, x, y + 0.21, w, h - 0.21, width, height)
-            _text(shape, text, round(livery_mod.type_pt(LIVERY, "body"), 1))
+            _text(shape, text, livery_mod.type_pt(LIVERY, "body"))
 
 
 def add_slide_number(slide):

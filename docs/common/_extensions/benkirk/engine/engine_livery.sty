@@ -156,6 +156,14 @@
   \fi
 \fi
 
+% the code face: TeX's default Latin Modern Mono at 1.15, so a code line is as wide as in HTML
+% (its monospace, SF Mono or Menlo, advances 0.6 em; LM Mono 0.525) and fits or overflows alike;
+% it read a size smaller before. By file name (kpathsea, not fontconfig: see above); a deck's own
+% monofont is left alone.
+\iftutex\AtBeginDocument{\def\engine@tmp{lmtt}\ifx\ttdefault\engine@tmp
+  \setmonofont{lmmono10-regular}[Extension=.otf, Scale=1.15, ItalicFont=lmmono10-italic,
+    BoldFont=lmmonolt10-bold, BoldItalicFont=lmmonolt10-boldoblique]\fi}\fi
+
 % Poppins has no warning sign or arrows: borrow them from DejaVu Sans (TeX
 % Live's copy, by file name), so `## ⚠︎ Title' and `A → B' need no raw LaTeX.
 % U+FE0E (text presentation, which keeps browsers off the emoji) prints nothing.

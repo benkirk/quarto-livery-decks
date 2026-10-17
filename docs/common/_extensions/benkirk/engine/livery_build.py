@@ -18,6 +18,7 @@ for each field by its role (MARK_ROLES); `installed-fonts` names installed faces
 
 import argparse
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -50,20 +51,26 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 # the livery.yml keys this script reads; any other is reported, not silently dropped
 KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider", "art", "pptx", "overrides",
-         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature"}
+         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature", "type"}
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
 MARK_ROLES = ("background", "primary")
-# Type: the body's size as a fraction of the slide height (the HTML theme's 28 px of 900, the brand
-# template's 12 pt of 405) and every text role's size as a ratio to it, with its leading: the HTML
-# theme's em sizes (engine-revealjs.scss). livery.sty and livery.json carry them, so beamer and the
-# pptx template set text as large on the slide as HTML does (similar fit and overflow).
-TYPE_BODY = 0.0311
-TYPE = {"body": (1.0, 1.4), "level": (0.9, 1.4), "subhead": (1.1, 1.2), "frametitle": (1.643, 1.15),
-        "table": (0.85, 1.3), "code": (0.66, 1.3), "caption": (0.7, 1.3), "footnote": (0.7, 1.35),
-        "title": (2.3, 1.12), "subtitle": (1.0, 1.3), "date": (0.6, 1.2), "author": (0.8, 1.3),
-        "institute": (0.7, 1.3), "fineprint": (0.4, 1.4), "section": (2.6, 1.08), "sectionsubtitle": (1.1, 1.3),
-        "eyebrow": (0.7, 1.2), "closing": (2.6, 1.08)}
+# Type: every text role's size in points on the pptx canvas, with its leading. The default canvas is
+# 13.333 x 7.5 in (960 x 540 pt); the default sizes are the NSF NCAR template's guidance (body 12 pt
+# on its 405 pt slide, levels 12/11/10/9/8, page title 20, cover title 22, ...) carried onto that
+# canvas and rounded to whole points. A livery states its own in livery.yml type: (points on its
+# pptx.size canvas); a role it leaves out is the default, scaled by the canvas and the body and
+# rounded to the half point. HTML and beamer take the same sizes as fractions of the slide height
+# (livery.css --engine-type-*, livery.sty \engine@type@*), so the formats fit and overflow alike.
+CANVAS = (960, 540)   # pt
+TYPE = {"body": (16, 1.4), "subhead": (20, 1.2), "frametitle": (27, 1.15), "table": (13, 1.3),
+        "code": (11, 1.3), "caption": (11, 1.3), "footnote": (11, 1.35), "title": (29, 1.12),
+        "subtitle": (20, 1.3), "date": (11, 1.2), "author": (16, 1.3), "institute": (16, 1.3),
+        "fineprint": (7, 1.4), "section": (40, 1.08), "sectionsubtitle": (20, 1.3), "eyebrow": (11, 1.2),
+        "closing": (40, 1.08), "pagenumber": (9, 1.2), "footer": (9, 1.2)}
+LEVELS = (16, 15, 13, 12, 11)   # the body's five list levels, the first the body itself
+# the roles that scale with the body when a livery leaves them out (the rest scale with the canvas)
+BODY_ROLES = ("subhead", "table", "code", "caption", "footnote")
 # the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
@@ -167,7 +174,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         out["title"] = band(d.name, data["title"], out)
     out["marks"] = marks(d.name, data, out)
     out["compositions"] = compositions(d.name, data, out)
-    out["type"] = {"body": TYPE_BODY, "roles": {k: {"size": a, "leading": b} for k, (a, b) in TYPE.items()}}
+    out["type"] = type_scale(d.name, data)
     if "installed-fonts" in data:
         out["installed-fonts"] = installed_fonts(d.name, data["installed-fonts"])
     out.setdefault("pptx", {})
@@ -179,6 +186,51 @@ def resolve(d: Path) -> tuple[dict, dict]:
     if not tmpl.exists():   # livery_template.py builds it from build/livery.json, so only a warning
         print(f"{d.name}: pptx template {tmpl} missing; run livery_template.py", file=sys.stderr)
     return out, sources
+
+
+def half(v: float) -> float:
+    """v to the nearest half point (an int when it is a whole one, so the json reads 12, not 12.0)."""
+    v = math.floor(v * 2 + 0.5) / 2   # halves up, not to even (16.25 is 16.5)
+    return int(v) if v == int(v) else v
+
+
+def type_scale(name: str, data: dict) -> dict:
+    """The type: block resolved: the canvas (pt, from pptx.size in inches), every role's size in
+    points with its ratio to the body and its leading, the five list levels, and the body as a
+    fraction of the canvas height (beamer's \\engine@type@frac)."""
+    size = (data.get("pptx") or {}).get("size")
+    if size is None:
+        cw, ch = CANVAS
+    else:
+        if not (isinstance(size, list) and len(size) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in size)):
+            sys.exit(f"{name}: pptx.size {size!r} is not [width, height] in inches")
+        cw, ch = round(size[0] * 72), round(size[1] * 72)   # whole points: 13.333 in is 960 pt
+    t = data.get("type") or {}
+    for k in sorted(set(t) - set(TYPE) - {"levels"}):
+        print(f"warning: {name}: unknown type: role {k!r} (ignored)", file=sys.stderr)
+    canvas = ch / CANVAS[1]
+    body = float(t.get("body", TYPE["body"][0] * canvas))
+    by_body = body / TYPE["body"][0]
+    pts = {}
+    for role, (pt, _) in TYPE.items():
+        v = t.get(role)
+        if v is not None and not (isinstance(v, (int, float)) and v > 0):
+            sys.exit(f"{name}: type.{role} {v!r} is not a size in points")
+        pts[role] = half(v if v is not None else pt * (by_body if role in BODY_ROLES else canvas))
+    pts["body"] = half(body)
+    levels = t.get("levels")
+    if levels is None:
+        levels = [pts["body"]] + [half(p * by_body) for p in LEVELS[1:]]
+    elif not (isinstance(levels, list) and len(levels) == len(LEVELS) and all(isinstance(v, (int, float)) and v > 0 for v in levels)):
+        sys.exit(f"{name}: type.levels {levels!r} is not {len(LEVELS)} sizes in points")
+    given = [(r, t[r]) for r in TYPE if r in t] + [(f"levels[{i}]", v) for i, v in enumerate(t.get("levels") or [])]
+    for role, v in given:   # sizes are whole or half points, so a pasted slide carries round numbers
+        if half(v) != v:
+            print(f"warning: {name}: type.{role} {v} rounded to {half(v)} pt", file=sys.stderr)
+    levels = [half(v) for v in levels]
+    b = pts["body"]
+    return {"canvas": {"w": cw, "h": ch}, "body": round(b / ch, 6), "levels": levels,
+            "roles": {k: {"pt": pts[k], "size": round(pts[k] / b, 4), "leading": TYPE[k][1]} for k in TYPE}}
 
 
 def band(name: str, title: dict, out: dict) -> dict:
@@ -557,10 +609,15 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append(f"\\def\\engine@art@{kind}{{{stem(art[kind])}}}")
     if livery.get("title", {}).get("style") == "band":   # its boxes and colors are the compositions'
         L.append("\\def\\engine@title@style{band}")
-    L.append("% type: the body as a fraction of the paper height, each role's size and leading as ratios to it")
-    L.append(f"\\def\\engine@type@frac{{{livery['type']['body']}}}")
-    for k, v in livery["type"]["roles"].items():
+    L.append("% type: the body as a fraction of the paper height, each role's size and leading as ratios to it,")
+    L.append("% the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)")
+    ty = livery["type"]
+    L.append(f"\\def\\engine@type@frac{{{ty['body']}}}")
+    for k, v in ty["roles"].items():
         L.append(f"\\def\\engine@type@{k}{{{{{v['size']}}}{{{v['leading']}}}}}")
+    b, lead = ty["roles"]["body"]["pt"], ty["roles"]["body"]["leading"]
+    for n, v in zip(("ii", "iii", "iv", "v"), ty["levels"][1:]):   # letters: TeX names take no digits
+        L.append(f"\\def\\engine@type@level{n}{{{{{round(v / b, 4)}}}{{{lead}}}}}")
     L += emit_sty_compositions(livery, stem)
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
@@ -652,6 +709,20 @@ def emit_css(livery: dict, extra: str = "") -> str:
             props.append(f"--engine-{k}: {px(geom[k], W)};")
     for k, v in geom.get("full", {}).items():
         props.append(f"--engine-full-{k}: {px(v, W if k == 'pad' else H)};")
+    # type: the body and the frame title in slide pixels, every other role as its ratio to the body
+    # (an em factor, so {.smaller}, scale= and the autofit script carry it), the list levels as each
+    # one's ratio to the level above it (nested lists are em-relative too)
+    ty = livery["type"]
+    tpx = lambda pt: f"{round(pt / ty['canvas']['h'] * H, 2):g}px"
+    props.append(f"--engine-type-body: {tpx(ty['roles']['body']['pt'])};")
+    for k in ("frametitle", "pagenumber", "footer"):   # fixed px: not shrunk with the body
+        props.append(f"--engine-type-{k}: {tpx(ty['roles'][k]['pt'])};")
+    for k, v in ty["roles"].items():
+        if k not in ("body", "frametitle", "pagenumber", "footer"):
+            props.append(f"--engine-type-{k}: {v['size']};")
+    lv = ty["levels"]
+    for i in range(1, len(lv)):
+        props.append(f"--engine-type-level{i + 1}: {round(lv[i] / lv[i - 1], 4)};")
     props.append(f'--engine-font-family: "{family}";')
     if hfamily:
         props.append(f'--engine-heading-font-family: "{hfamily}";')
@@ -680,7 +751,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
-    L.append("html:root {\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
+    L.append("html:root {\n  --r-main-font-size: var(--engine-type-body);\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
              "\n  --mermaid-node-fg-color: var(--engine-foreground);\n  --mermaid-fg-color: var(--engine-foreground);"
              "\n  --mermaid-edge-color: var(--engine-foreground);\n  --mermaid-label-bg-color: var(--engine-background);"
              "\n  --mermaid-label-fg-color: var(--engine-primary-contrast);"
