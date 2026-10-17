@@ -80,5 +80,6 @@ test ! -e "$work/hello.pptx"
 
 echo "== size"
 docker image inspect --format 'uncompressed: {{.Size}} bytes' "$img"
-docker history --no-trunc --format 'table {{.Size}}\t{{.CreatedBy}}' "$img" | cut -c1-200 | head -40
+docker history --no-trunc --format 'table {{.Size}}\t{{.CreatedBy}}' "$img" > "$tmp/history.txt"   # no pipe: pipefail + head
+cut -c1-160 "$tmp/history.txt" | grep -v '^0B' | head -40
 echo "smoke test passed"
