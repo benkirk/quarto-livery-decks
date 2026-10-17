@@ -224,7 +224,7 @@ def rgb(hexv):
 
 def measure(im, comp, L, fmt):
     """[(box, edge, expected, measured, tolerance)] for one shot."""
-    from PIL import ImageFilter
+    from PIL import ImageChops, ImageFilter
     out, roles = [], L["roles"]
 
     def add(key, name, want, got, tol):
@@ -268,8 +268,17 @@ def measure(im, comp, L, fmt):
         if comp[k]:
             by, bh = comp[k]["box"][1], comp[k]["box"][3]
             g = [g[0], by, g[2], bh]
-    cut = [comp[k]["box"] for k in ("mark", "signoff", "fineprint", "panel") if comp[k]]   # not the column's pixels
-    b = bbox(mask_of(im, g, rgb(roles[col["role"]]), near=True, cut=cut), g, 2)
+    # not the column's pixels: the marks grown (a format may draw them off their box), the rest as they are
+    cut = [grown(comp[k]["box"]) for k in ("mark", "signoff") if comp[k]]
+    cut += [comp[k]["box"] for k in ("fineprint", "panel") if comp[k]]
+    f = comp["field"]
+    if f and f["box"][2] < 1:   # beyond a field narrower than the slide: the photo, whose darks may be the text's colour
+        cut.append([f["box"][0] + f["box"][2], 0, 1 - f["box"][0] - f["box"][2], 1])
+    mask = mask_of(im, g, rgb(roles[col["role"]]), near=True, cut=cut)
+    if comp["eyebrow"]:   # the divider's stack starts with its eyebrow, in a colour of its own
+        e = comp["eyebrow"]["color"]
+        mask = ImageChops.lighter(mask, mask_of(im, g, rgb(e if e.startswith("#") else roles[e]), near=True, cut=cut))
+    b = bbox(mask, g, 2)
     add("column", "left", x, b and b[0], TOL)
     middle = col["anchor"] == "middle"
     tol = TOL_MIDDLE if middle and fmt == "pptx" else TOL
