@@ -1,0 +1,238 @@
+# The build-environment image, ghcr.io/benkirk/quarto-livery-decks (Dockerfile; README
+# "Building in the container"), built natively on an amd64 and an arm64 runner (no QEMU),
+# smoke-tested on each as the runner's own unprivileged user, pushed by digest, and merged
+# into one tagged multi-arch manifest list. Reusable: ci.yaml calls it and runs the deck
+# jobs inside the result. Structure after benkirk/sam-queries' build-images workflow.
+name: Build the Image
+
+on:
+  workflow_call:
+    outputs:
+      digest:
+        description: the multi-arch index digest (sha256:...); empty when nothing was pushed (a fork's PR)
+        value: ${{ jobs.merge.outputs.digest }}
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  # a fork's PR has no packages:write token: it builds and smoke-tests, pushes nothing
+  CAN_PUSH: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+
+jobs:
+  # -----------------------------------------------------------------------
+  # build: one job per platform, each on a native runner. Build and load for the
+  # smoke test, then push the same build by digest (a cache hit); `merge` tags.
+  # -----------------------------------------------------------------------
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # ~4 GB of layers, built, loaded into docker for the smoke test and exported again:
+      # the runner's free disk is tight. Drop the toolchains nothing here uses.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup || true
+          docker image prune -af >/dev/null 2>&1 || true
+          df -h /
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        if: env.CAN_PUSH == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image labels
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+
+      # The registry cache, not GHA's: two ~4 GB platforms at mode=max would thrash its 10 GB
+      # cap, and a fork's PR can still read this one (it writes nothing).
+      - name: Build for the smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/${{ matrix.arch }}
+          load: true
+          tags: quarto-livery-decks:ci
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at || '' }}
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache-${{ matrix.arch }}
+          cache-to: ${{ env.CAN_PUSH == 'true' && format('type=registry,ref={0}:buildcache-{1},mode=max,image-manifest=true,oci-mediatypes=true', env.IMAGE, matrix.arch) || '' }}
+
+      # The README's use case, as this runner's unprivileged user: a bare directory of .qmd
+      # files, then this repo's docs/ tree, bind-mounted; outputs owned by that user.
+      - name: Smoke test as a plain user
+        run: .github/scripts/smoke-test.sh quarto-livery-decks:ci
+
+      - name: Push by digest
+        id: build
+        if: env.CAN_PUSH == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/${{ matrix.arch }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at || '' }}
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache-${{ matrix.arch }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        if: env.CAN_PUSH == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        if: env.CAN_PUSH == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # -----------------------------------------------------------------------
+  # merge: one tagged multi-arch index from the two platform digests
+  # -----------------------------------------------------------------------
+  merge:
+    name: Merge the manifest list
+    needs: build
+    # job-level if: no env context here, so the CAN_PUSH expression is inlined
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.create.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: digests-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            # branch name (main), PR number (pr-12), tag name (v1.2.3)
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            # semver components from the tag (v1.2.3 -> 1.2.3, 1.2, 1)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # short commit SHA always
+            type=sha,prefix=sha-
+            # 'latest' only on main
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Create the manifest list and push
+        id: create
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          REPO: ${{ env.IMAGE }}
+        run: |
+          refs=(); for d in *; do refs+=("${REPO}@sha256:${d}"); done
+          [ "${#refs[@]}" -eq 2 ] || { echo "::error::expected 2 platform digests, found ${#refs[@]}"; exit 1; }
+          tags=(); while read -r t; do tags+=(-t "$t"); done < <(jq -r '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          docker buildx imagetools create "${tags[@]}" "${refs[@]}"
+          PRIMARY_TAG=$(jq -r '.tags[0]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          echo "digest=$(docker buildx imagetools inspect "$PRIMARY_TAG" --format '{{json .Manifest}}' | jq -r .digest)" >> "$GITHUB_OUTPUT"
+
+      # tags, digest and the per-platform (compressed) sizes: the size is tracked here
+      - name: Collect image facts
+        env:
+          ALL_TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.create.outputs.digest }}
+        run: |
+          PRIMARY_TAG=$(printf '%s\n' "$ALL_TAGS" | head -n1)
+          REPO="${PRIMARY_TAG%:*}"
+          INDEX=$(docker buildx imagetools inspect --raw "${PRIMARY_TAG}")
+          SIZES_JSON='{}'
+          while IFS=$'\t' read -r child_digest os arch variant; do
+            [ -z "$child_digest" ] && continue
+            [ "$os" = "unknown" ] && continue   # the attestation manifest
+            child_manifest=$(docker buildx imagetools inspect --raw "${REPO}@${child_digest}")
+            size=$(printf '%s' "$child_manifest" | jq '(.config.size // 0) + ([.layers[]?.size] | add // 0)')
+            platform="${os}/${arch}"; [ -n "$variant" ] && platform="${platform}/${variant}"
+            SIZES_JSON=$(printf '%s' "$SIZES_JSON" | jq --arg p "$platform" --argjson s "$size" '. + {($p): $s}')
+          done < <(printf '%s' "$INDEX" | jq -r '.manifests[] | [.digest, .platform.os // "", .platform.architecture // "", .platform.variant // ""] | @tsv')
+          jq -n --arg name quarto-livery-decks --arg primary_tag "$PRIMARY_TAG" \
+            --argjson all_tags "$(printf '%s\n' "$ALL_TAGS" | jq -R . | jq -s .)" \
+            --arg digest "$DIGEST" --argjson sizes "$SIZES_JSON" \
+            --arg build_date "$(date -u +%Y-%m-%dT%H:%MZ)" \
+            '{name: $name, primary_tag: $primary_tag, all_tags: $all_tags, digest: $digest, sizes: $sizes, build_date: $build_date}' \
+            | tee image-info.json
+          python3 .github/scripts/render_build_summary.py . >> "$GITHUB_STEP_SUMMARY"
+
+  # -----------------------------------------------------------------------
+  # verify: the merged index resolves to a working native image on each platform
+  # -----------------------------------------------------------------------
+  verify:
+    name: Pull on ${{ matrix.arch }}
+    needs: merge
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    steps:
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull the index by digest and run it
+        env:
+          REF: ${{ env.IMAGE }}@${{ needs.merge.outputs.digest }}
+        run: |
+          test "$(docker run --rm "$REF" uname -m)" = "$(uname -m)"
+          docker run --rm --user "$(id -u):$(id -g)" "$REF" quarto --version
+          docker run --rm "$REF" --help

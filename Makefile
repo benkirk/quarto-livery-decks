@@ -5,7 +5,7 @@ CONDA_ROOT := $(shell conda info --base)
 # Common way to initialize environment across various types of systems
 config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/profile.d/conda.sh
 
-.PHONY: help vendor-engine clean clobber distclean fixperms check perf check-db-vs-orms docker-build docker-up docker-down docker-restart
+.PHONY: help vendor-engine image clean clobber distclean
 
 # -------------------------------------------------------------------
 # Default target: help
@@ -37,6 +37,12 @@ vendor-engine: ## Sync $(ENGINE)/_extensions/engine/ into the vendored copy (an 
 	rsync -a --delete --exclude __pycache__ --exclude 'reference/media' --exclude 'reference/*.pptx' \
 	  $(ENGINE)/_extensions/engine/ docs/common/_extensions/benkirk/engine/
 	git status --short docs/common/_extensions
+
+# The build-environment image (README "Building in the container"); CI publishes it
+# multi-platform as ghcr.io/benkirk/quarto-livery-decks (.github/workflows/image.yaml).
+IMAGE ?= ghcr.io/benkirk/quarto-livery-decks:dev
+image: ## Build the container image locally as $(IMAGE), then .github/scripts/smoke-test.sh $(IMAGE)
+	docker build -t $(IMAGE) --build-arg GIT_SHA=$$(git rev-parse --short HEAD) --build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%MZ) .
 
 clean: ## Remove temporary files (*~)
 	rm *~

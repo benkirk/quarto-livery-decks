@@ -1,0 +1,25 @@
+# What stays out of the image's copy of the framework (/opt/quarto-livery-decks).
+.git
+.github
+conda-env/
+# The host's rendered decks and caches: outputs anchored one level under docs/, so the
+# tracked assets under docs/common/ (every livery's template.pptx) are never matched.
+docs/*/*.pptx
+docs/*/*.pdf
+docs/*/*.html
+docs/*/*-overleaf.zip
+**/*_files/
+**/.quarto/
+**/*.quarto_ipynb
+**/__pycache__/
+**/_qa/
+**/_site/
+**/_baseline/
+**/_check/
+# The README's screenshots (3 MB nothing in the image reads)
+docs/quickstart/screenshots/
+# A livery's reference deck and its extracted media (gitignored too)
+docs/common/liveries/*/reference/media/
+docs/common/liveries/*/reference/*.pptx
+.playwright-mcp/
+*~
