@@ -70,4 +70,27 @@ backgrounds library or one CU owns. Swap the file to change it.
 ## Follow-ups
 
 Done: the `nsi` flavor (`../../nsi/`, on the engine's band title style), Heros Condensed
-headings, `livery_check.py`, the plain CU Boulder lockup (2026-10-16). Open: pptx font embedding.
+headings, `livery_check.py`, the plain CU Boulder lockup (2026-10-16).
+
+Open (deferred 2026-10-16, none blocking):
+
+- **The content photo's rights.** `art/content-flatirons.jpg` is a Reddit wallpaper with
+  unverified rights (see Art): swap it for a CU-owned photo (the CU-only textured backgrounds
+  library, or CU's photo library) before any public use. nsi is not affected (its own photos).
+- **pptx fonts are not embedded.** The pptx names Helvetica Neue unembedded (Macs have it,
+  Windows substitutes Arial). Embedding TeX Gyre Heros needs its CFF outlines converted and
+  PowerPoint's fntdata blobs made (`pptx.fonts`; `embed_fonts.py` does nothing without them).
+- **The accent tab vanishes on the gold fields.** `accent` and `primary` are both CU Gold, so
+  the tab beside the title, divider and closing headlines is gold on gold in every format (it
+  shows on white content slides). A darker accent (black, dark gray) would bring it back;
+  undecided, since the brand gives gold that role.
+- **The pptx title text sits at fixed positions.** The pptx Title Slide's date, title, rule and
+  subtitle placeholders are placed for a one-line title; HTML and PDF set the block in the
+  flow (the band style centres it in the band), so a two-line title lands differently in pptx.
+  Framework-wide (every livery, cover and band), not cu's alone.
+- **Two older quirks, framework-wide.** In reveal's print view (`?print-pdf`) the closing
+  slide's block sits high instead of centred (the engine's print padding); in pptx a slide
+  with a layout marker (`.closing`, `.vcenter`, ...) keeps the empty notes page the marker
+  leaves when `slide_layout.py` removes it.
+- **Other CU lockups.** The one-line CU Boulder lockup is in; the lockup library (CU login)
+  also has the stacked versions, should a layout want one.

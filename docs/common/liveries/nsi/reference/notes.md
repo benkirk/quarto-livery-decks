@@ -49,7 +49,13 @@ slide: the constellation field, as the deck's last slide.
 
 ## Follow-ups
 
-- NSI's own one-color (black) lockup, to replace the recoloring.
+- NSI's own one-color (black) lockup, to replace the recoloring; ideally vector files of the
+  full-color stacked lockup too (NSI or RIO). No public vector exists: the website's is a
+  375 px raster, and RIO's CNSI fact sheet (colorado.edu/researchinnovation/media/6004, March
+  2025) carries only a raster one-color white horizontal lockup (1673x161), evidence that
+  NSI uses one-color treatments. Re-typesetting the lockup is not an option: its Helvetica
+  Neue Condensed light weight is not on macOS, and the brand forbids recreated lockups.
+  Tracing the deck's 1316x719 PNG (shape for shape) would be the faithful fallback.
 - The deck's "Helvetica Neue Extra Black Cond" headlines are not reproduced (cu's Heros Cn
   headings stand in).
 - The rights of the deck's photos are NSI's; check before any use outside NSI decks.
