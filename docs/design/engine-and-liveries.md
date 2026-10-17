@@ -312,6 +312,17 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 4. NASA general, then the first program flavor via `extends` (recolored template, its
    own lockups).
 
+Before step 4: the post-NSI refactor (`docs/design/refactor-handoff.md`): the pptx template
+tooling moves into the engine, marks are keyed by the field's role (`marks:`), and five cheap
+fixes (unknown keys warn, livery files as make prerequisites, a fixture deck in parity and CI,
+absolute art paths in beamer, flavors inherit `pptx.scheme` overrides).
+
+**Deferred on purpose: one description of each title composition.** The title, closing and
+feature compositions are drawn four times (beamer, revealjs, the template builder,
+`slide_layout.py`) in two repos, and the copies drift. The fix, compositions described once as
+boxes in slide fractions in `livery.json` and drawn by every format, is a design change for
+section 5, to be done before the next new composition (`refactor-handoff.md`, last section).
+
 ## 8. Verification
 
 - Phase 1 holds a baseline built on `main` (`make all`, `make qa`, `make screenshots`
@@ -344,6 +355,14 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
 ## 10. Log
 
 Newest first. The first unchecked item of section 7 is the next step.
+
+- **2026-10-16** Retrospective after cu and nsi, with Ben. The livery contract held: nsi went
+  in as data, the onboarding tools and CI took it as is. Frictions: each title composition
+  written four times in two repos (and drifting); the template builder in the framework
+  writing the engine's templates; one mark per field kind; and five cheap ones. Decided: one
+  follow-up refactor for the builder's home, marks by field and the cheap fixes
+  (`docs/design/refactor-handoff.md`, written for a fresh session); the composition rework
+  deferred on purpose, recorded in section 7. Next: that refactor, then NASA.
 
 - **2026-10-16** cu's placeholder lockup replaced: the plain CU Boulder lockup (one line, monogram
   and "University of Colorado Boulder") from CU's own web brand assets
