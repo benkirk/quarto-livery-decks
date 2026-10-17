@@ -1,0 +1,41 @@
+# A divider
+
+Its subtitle, the paragraph right after it.
+
+## A list with a footnote
+
+- `##` starts a slide, `#` a section divider
+- **Bold**, *italic* and `inline code`
+- A third item, to give the body some height
+
+† A paragraph that starts with a dagger becomes a slide footnote.
+
+## Columns: a list beside a table
+
+:::: {.columns}
+::: {.column width="45%"}
+- `.columns` splits a slide
+- Each `.column` sets its width
+:::
+::: {.column width="55%"}
+| System  | Role |  Cores/node |
+|:--------|:----:|------------:|
+| Derecho | HPC  |         128 |
+| Casper  | DAV  |          36 |
+:::
+::::
+
+## ⚠︎ A warning slide {.caution .vcenter scale="1.15"}
+
+- `{.caution}` sets the body on a soft field with a bar.
+- Keep it for the slides that warn.
+
+## A full-bleed photo slide {.feature background-image="images/example.jpg"}
+
+### Photo slides
+
+A `###` block puts the text on the field.
+
+## Thank you! {.closing}
+
+The closing slide.

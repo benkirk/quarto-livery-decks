@@ -140,6 +140,11 @@ jobs:
         run: |
           timeout 600 make -C docs/quickstart pptx html
 
+      # the fixture decks: a photo title (titlegraphic:) and the light title
+      - name: Build the fixture decks' PPTX and HTML
+        run: |
+          timeout 600 make -C docs/fixtures pptx html
+
       - name: Upload sample.html artifact
         uses: actions/upload-artifact@v4
         with:
@@ -159,6 +164,7 @@ jobs:
         run: |
           timeout 600 make -C docs/sample sample.pdf
           timeout 600 make -C docs/quickstart pdf
+          timeout 600 make -C docs/fixtures pdf
 
       - name: Upload sample.pdf artifact
         uses: actions/upload-artifact@v4

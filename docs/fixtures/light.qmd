@@ -1,0 +1,9 @@
+---
+title: "Fixture: the light title"
+subtitle: "themeoptions: title=light"
+author: "Parity fixture"
+date: 2026-10-16
+themeoptions: [fonts=bundled, title=light]
+---
+
+{{< include _body.qmd >}}

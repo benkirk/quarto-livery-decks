@@ -1,0 +1,9 @@
+---
+title: "Fixture: a photo title"
+subtitle: "titlegraphic: on the title slide"
+author: "Parity fixture"
+date: 2026-10-16
+titlegraphic: images/example.jpg
+---
+
+{{< include _body.qmd >}}
