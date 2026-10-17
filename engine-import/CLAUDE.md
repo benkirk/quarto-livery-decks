@@ -4,77 +4,67 @@ Guidance for working in this repository. Keep it accurate.
 
 ## What this is
 
-The **engine** of a multi-brand beamer + revealjs theme: the layout machinery
-that is the same whoever's logo is on the slide, plus reference **liveries**
-(brand data and assets per directory). It forks `benkirk/NCAR_beamer_template`,
-which stays the NCAR theme for `\usetheme{NCAR}` users; fixes to the NCAR theme
-land there first and are cherry-picked here (`upstream` remote), renaming the
-nouns on the way.
+The **engine** of a multi-brand beamer + revealjs theme: the layout machinery that is
+the same whoever's logo is on the slide, plus reference **liveries** (brand data and
+assets per directory). It forks `benkirk/NCAR_beamer_template`, which stays the NCAR
+theme for `\usetheme{NCAR}` users; fixes to the NCAR theme land there first and are
+cherry-picked here (`upstream` remote), renaming the nouns on the way. The design is
+`docs/design/engine-and-liveries.md` in `benkirk/quarto-livery-decks` (the framework
+that consumes this engine, vendored there under `docs/common/_extensions/`; the copy
+here is a pointer); its section 5 is the engine contract, section 10 the progress log.
+Phases 1 and 2 are complete, Phase 3 (templates and new brands) is under way. What the
+engine does today, by area:
 
-The founding design is `docs/design/engine-and-liveries.md` (the engine
-contract is its section 5; the progress log lives in the `quarto-livery-decks`
-copy). Phase 2 of that design is under way. Done: the rename (from
-NCAR_beamer_template v2.8.0) to `_extensions/engine/`, `engine-beamer` /
-`engine-revealjs`, `\usetheme{Engine}` and the `engine@` namespace; and
-`livery=`: the reference liveries live in `_extensions/engine/liveries/`
-(`ncar`; `ucar` and `ncarucar` extend it), `livery_build.py` writes each one's
-`build/livery.{json,sty,css}` (committed, `--check` in CI), `engine_livery.sty`
-inputs the `.sty` and both Lua filters take the directory from the `livery:`
-metadata key (else `liveries/<brand>`); and roles only: no palette name is
-read outside `build/livery.sty`, the Sass sets every color as `var(--engine-*)`
-(its `$ncar-*` variables are compile-time defaults for Quarto's own rules, which
-are restated with the roles at the end of the file), and the highlight theme is
-generated per livery from `engine.theme`; and geometry: the margin, tab,
-logo box (height per slide kind, top, aspect, and its corner on content
-slides: top-right, top-left or none), the page number's corner, divider
-block and full-figure lengths are the livery's `geometry` fractions,
-`engine@geom@*` in the `.sty` and `--engine-*` pixels in the css (the ncar
-values are the HTML/PDF numbers, not the pptx template's tighter ones); a
-livery may add a sign-off lockup at the foot (`signoff`: light and dark
-images, aspect, height, bottom, corner), drawn on every slide but feature
-and full, in the dark variant on fields; and art: the brand's wave curves are
-livery data (`art.waves`: control points and per-kind shifts, drawn by the
-engine in the roles' colors, the pptx divider layout built from the same
-numbers), a livery without them draws plain fields, and a livery may name a
-static background file per slide kind (`art.title|section|closing|content`)
-instead, and a default title photo (`art.titlegraphic`) for decks that set
-none. The title slide's composition is `title.style`: `cover` (the default,
-above) or `band` (`title: {style: band, top, bottom, split, band, field,
-field-text, logo-height, signoff-height}`: a field in a role
-with `art.title` over it, a band across it holding the text left of `split`
-and the photo right of it, the mark and the sign-off centred in the strip
-below; the closing slide then wears the field, `art.closing` or the title's
-art, and the strip's images; the CU NSI flavor uses it). Each field wears the
-marks of its role (`marks: {<role>: {logo, signoff}}`, 3.3.0): content slides
-`background`, dividers, the cover title and closing and feature covers
-`primary`, the band title and closing `title.field`; `livery_build.py` writes
-`marks` for every livery, defaulting `background` to `logo.medium.light` and
-`signoff.light`, `primary` to the dark ones and any other role to primary's
-(`title.logo`/`title.signoff` are deprecated aliases). An unknown `livery.yml`
-key is warned about (`KNOWN`). `installed-fonts` names installed faces that
-`fonts=brand` and the css `local()` sources prefer over the bundled files. `livery_build.py`
-writes `title` only when the livery sets it, so other builds stay unchanged. The `title=light` theme
-option follows the brand's own light cover (UCAR Communications' template, slide 4):
-white field, text in the foreground role, the wave lines alone (white between them).
-Each `template.pptx` also carries `Closing` and `Title Slide (light)` layouts, which
-pandoc never picks and the framework's `slide_layout.py` points slides at. Phase 2 is complete. Phase 3: each livery's `template.pptx` is
-generated by `_extensions/engine/livery_template.py` from the livery's data
-(never edit it by hand; `livery_check.py` fails a template that does not rebuild
-byte-identically, in CI too), so a template change is one PR here plus the four
-regenerated templates; the framework loads `livery.py` and `pptx_waves.py` from the
-vendored copy; the theme1.xml slots follow the roles
-(`livery_build.py`'s `SLOT_ROLES`); the web logos are the brand kit's RGB PNGs
-(Canto, public: see each livery's `reference/notes.md`).
+- **Names**: `_extensions/engine/`, the formats `engine-beamer` / `engine-revealjs`,
+  `\usetheme{Engine}`, the `engine@` namespace (renamed from NCAR_beamer_template v2.8.0).
+- **Liveries**: `_extensions/engine/liveries/` holds `ncar`, `ucar` and `ncarucar` (which
+  extend it) and `ucp` (extends ucar). `livery_build.py` writes each one's
+  `build/livery.{json,sty,css,theme}` (committed; `--check` in CI; an unknown `livery.yml`
+  key is warned about, `KNOWN`). `engine_livery.sty` inputs the `.sty`; both Lua filters
+  take the directory from the `livery:` metadata key, else `liveries/<brand>`.
+- **Roles only**: no palette name is read outside `build/livery.sty`; the Sass sets every
+  color as `var(--engine-*)` (its `$ncar-*` variables are compile-time defaults for Quarto's
+  own rules, restated with the roles at the end of the file); the highlight theme is
+  generated per livery from `engine.theme`.
+- **Geometry**: margin, tab, logo box (height per slide kind, top, aspect, corner on content
+  slides: top-right, top-left, none), the page number's corner, divider block and
+  full-figure lengths are the livery's `geometry` fractions: `engine@geom@*` in the `.sty`,
+  `--engine-*` pixels in the css (ncar's are the HTML/PDF numbers, not the pptx template's
+  tighter ones). `signoff`: a second lockup at the foot (light/dark images, aspect, height,
+  bottom, corner), on every slide but feature and full, the dark variant on fields.
+- **Art**: `art.waves` (control points and per-kind shifts, drawn by the engine in the
+  roles' colors; the pptx divider layout from the same numbers); a livery without them
+  draws plain fields, or names a static picture per slide kind
+  (`art.title|section|closing|content`), and `art.titlegraphic` is the default title photo.
+- **Title styles**: `title.style` is `cover` (default) or `band` (`title: {style: band, top,
+  bottom, split, band, field, field-text, logo-height, signoff-height}`: a field in a role
+  with `art.title` over it, a band holding the text left of `split` and the photo right of
+  it, the mark and sign-off centred in the strip below; the closing slide wears the field,
+  `art.closing` or the title's art, and the strip's images; CU NSI uses it). `title=light`
+  follows the brand's own light cover (UCAR Communications' template, slide 4): white
+  field, text in the foreground role, the wave lines alone.
+- **Marks by field** (3.3.0): `marks: {<role>: {logo, signoff}}`; content slides wear
+  `background`'s, dividers, the cover title, closing and feature covers `primary`'s, the band
+  title and closing `title.field`'s. `livery_build.py` writes `marks` for every livery
+  (`background` defaults to `logo.medium.light` and `signoff.light`, `primary` to the dark
+  ones, any other role to primary's; `title.logo`/`title.signoff` are deprecated aliases).
+- **Fonts**: `installed-fonts` names installed faces that `fonts=brand` and the css
+  `local()` sources prefer over the bundled files; `fonts=bundled` never probes.
+- **Templates** (Phase 3): each livery's `template.pptx` is generated by
+  `livery_template.py` from its data (never by hand; `livery_check.py` fails one that does
+  not rebuild byte-identically, in CI too), with `Closing` and `Title Slide (light)` layouts
+  pandoc never picks and the framework's `slide_layout.py` points slides at; the theme1.xml
+  slots follow the roles (`SLOT_ROLES`); the web logos are the brand kit's RGB PNGs (Canto;
+  see each livery's `reference/notes.md`). The framework loads `livery.py` and
+  `pptx_waves.py` from the vendored copy.
+- **Overleaf** (3.4.0): `overleaf_zip.py` packs any livery with the theme's `.sty` and the
+  starter (`_extensions/engine/talk.tex`, linked at the root) as a pure-XeLaTeX project.
 
 Checking a change: `tools/parity.sh baseline` on main, then `check` (every PDF
 page's pixels, pdftotext, the HTML). HTML colors live in the compiled theme and
 the livery's css, so a Sass change is checked by screenshotting every slide of
 `talk-quarto.html` and `examples/quarto-demo.html` before and after (Playwright,
 serve the repo root) and diffing the pixels above the progress bar.
-
-The framework that consumes this engine is `benkirk/quarto-livery-decks`
-(vendored there under `docs/common/_extensions/`; re-vendor with
-`quarto update`).
 
 ## Build
 
