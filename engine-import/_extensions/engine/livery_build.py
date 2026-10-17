@@ -641,22 +641,16 @@ def emit_css(livery: dict, extra: str = "") -> str:
             props.append(f"--engine-logo-w: {round(logo['height'] * H, 1) * logo['aspect']:.1f}px;")
     if "aspect" in logo:
         props.append(f"--engine-logo-aspect: {logo['aspect']};")
-    for k in ("top", "title", "section", "closing"):   # the logo's top, and its height per slide kind
-        if k in logo:
-            props.append(f"--engine-logo-{k}{'' if k == 'top' else '-h'}: {px(logo[k])};")
+    if "top" in logo:   # the content mark's top (the field slides' marks are their compositions')
+        props.append(f"--engine-logo-top: {px(logo['top'])};")
     for k in ("margin", "tab"):
         if k in geom:
             props.append(f"--engine-{k}: {px(geom[k], W)};")
-    for k, v in geom.get("divider", {}).items():
-        props.append(f"--engine-divider-{k}: {px(v)};")
     for k, v in geom.get("full", {}).items():
         props.append(f"--engine-full-{k}: {px(v, W if k == 'pad' else H)};")
-    if "label-color" in livery.get("divider", {}):
-        props.append(f"--engine-divider-label: {livery['divider']['label-color']};")
     props.append(f'--engine-font-family: "{family}";')
     if hfamily:
         props.append(f'--engine-heading-font-family: "{hfamily}";')
-    props.append("--engine-overlay: color-mix(in srgb, var(--engine-dark) 72%, transparent);")
     # the content-slide mark's corner (top-right | top-left | none) and the page number's; the title
     # box gives way on the mark's side
     corner = logo.get("corner", "top-right")
@@ -680,24 +674,6 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-signoff-left: {margin if so['corner'] == 'bottom-left' else 'auto'};")
         props.append(f"--engine-signoff-right: {'auto' if so['corner'] == 'bottom-left' else margin};")
         props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
-    t = livery.get("title", {})
-    band = t.get("style") == "band"
-    if band:   # the band title's box, text column, strip and images (engine-revealjs.scss .engine-band)
-        top, bottom = t["top"], t["bottom"]
-        props += [f"--engine-band-top: {px(top)};", f"--engine-band-height: {px(bottom - top)};",
-                  f"--engine-band-split: {t['split'] * 100:g}%;",
-                  f"--engine-band-text-w: calc({px(t['split'], W)} - var(--engine-margin) - 64px);",
-                  f"--engine-band-strip: {px((1 - bottom) / 2)};",   # the strip's middle, from the bottom
-                  f"--engine-band-fill: var(--engine-{t['band']});", f"--engine-band-field: var(--engine-{t['field']});",
-                  f"--engine-band-field-text: var(--engine-{t['field-text']});",
-                  f"--engine-band-logo-h: {px(t['logo-height'])};",
-                  f"--engine-band-logo-w: {round(t['logo-height'] * H, 1) * logo.get('aspect', 1):.1f}px;"]
-        so_left = livery.get("signoff", {}).get("corner", "bottom-left") == "bottom-left" and "signoff" in livery
-        props += [f"--engine-band-logo-left: {'auto' if so_left else margin};",
-                  f"--engine-band-logo-right: {margin if so_left else 'auto'};"]
-        if "signoff" in livery:
-            props += [f"--engine-band-signoff-h: {px(t['signoff-height'])};",
-                      f"--engine-band-signoff-w: {round(t['signoff-height'] * H, 1) * livery['signoff']['aspect']:.1f}px;"]
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
     L.append("html:root {\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
@@ -705,12 +681,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
              "\n  --mermaid-edge-color: var(--engine-foreground);\n  --mermaid-label-bg-color: var(--engine-background);"
              "\n  --mermaid-label-fg-color: var(--engine-primary-contrast);"
              "\n  --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;\n}")
-    SEL = {"title": "section.engine-title", "section": "section.slide.engine-section",
-           "closing": "section.slide.level2.closing", "content": "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full)"}
-    for kind, sel in SEL.items():   # a static background per slide kind (the engine draws no waves there)
-        f = livery.get("art", {}).get(kind)
-        if isinstance(f, str):
-            L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
+    f = livery.get("art", {}).get("content")   # content slides' static background (the compositions carry the rest)
+    if isinstance(f, str):
+        sel = "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full)"
+        L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
     marks = livery["marks"]
     light, dark = (Path(marks[r]["logo"]).name for r in ("background", "primary"))
     L.append(".reveal .slides section.slide::after,\n.reveal .slides section.engine-title::after "
@@ -725,14 +699,6 @@ def emit_css(livery: dict, extra: str = "") -> str:
     art = livery.get("art", {})
     if isinstance(art.get("titlegraphic"), str):   # the title photo when a deck sets none
         L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')
-    if band:   # the band's strip images, on the title and the closing slide; the closing wears the title art
-        sel = ".reveal .slides section.engine-title.engine-band", ".reveal .slides section.slide.level2.closing.engine-band"
-        m = marks[t["field"]]
-        L.append(",\n".join(f"{s}::after" for s in sel) + f' {{ background-image: url("{Path(m["logo"]).name}"); }}')
-        if "signoff" in m:
-            L.append(",\n".join(f"{s} .engine-signoff" for s in sel) + f' {{ background-image: url("{Path(m["signoff"]).name}"); }}')
-        if not isinstance(art.get("closing"), str) and isinstance(art.get("title"), str):
-            L.append(f'{sel[1]} {{ background: url("{Path(art["title"]).name}") center / cover no-repeat; }}')
     L += emit_css_compositions(livery)
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
@@ -756,16 +722,18 @@ CSEL = {"title": TITLE_SEL,
 
 def emit_css_compositions(livery: dict) -> list[str]:
     """Each composition's boxes and roles as one set of generic --engine-cmp-* properties on its
-    selector (CSEL), so the scss reads one name set whatever the variant; slide pixels."""
+    selector (CSEL), so the scss reads one name set whatever the variant (slide pixels), with its
+    art as the section's background and its mark's and sign-off's images."""
     px = lambda v, axis: f"{round(v * axis, 1):g}px"
     role = lambda r: r if str(r).startswith("#") else f"var(--engine-{r})"
     L = ["/* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */"]
     for comp, sel in CSEL.items():
         c, props = livery["compositions"][comp], []
-        for k in BOXED:
-            box = c[k]["box"] if c[k] else [0, 0, 0, 0]
+        for k in BOXED:   # x y w h, and r b: the distance of its right and bottom edges from the slide's
+            x, y, w, h = c[k]["box"] if c[k] else [0, 0, 0, 0]
             props.append(f"--engine-cmp-{k}-display: {'block' if c[k] else 'none'};")
-            props += [f"--engine-cmp-{k}-{a}: {px(v, W if a in 'xw' else H)};" for a, v in zip("xywh", box)]
+            props += [f"--engine-cmp-{k}-{a}: {px(v, W if a in 'xwr' else H)};"
+                      for a, v in zip("xywhrb", (x, y, w, h, 1 - x - w, 1 - y - h))]
         props.append(f"--engine-cmp-field: {role(c['field']['role']) if c['field'] else 'transparent'};")
         col = c["column"]
         props.append(f"--engine-cmp-text: {role(col['role'])};")
@@ -776,6 +744,7 @@ def emit_css_compositions(livery: dict) -> list[str]:
         props += [f"--engine-cmp-rule-w: {px(rule[0], W)};", f"--engine-cmp-rule-h: {px(rule[1], H)};"]
         if c["fineprint"]:
             props.append(f"--engine-cmp-fineprint-color: {role(c['fineprint']['role'])};")
+            props.append(f"--engine-cmp-fineprint-justify: {'flex-end' if c['fineprint']['anchor'] == 'bottom' else 'flex-start'};")
         for k in ("band", "bar", "panel"):
             if c[k]:
                 fill = role(c[k]["role"])
@@ -783,7 +752,15 @@ def emit_css_compositions(livery: dict) -> list[str]:
                 props.append(f"--engine-cmp-{k}-fill: " + (fill if op == 1 else f"color-mix(in srgb, {fill} {op * 100:g}%, transparent)") + ";")
         if c["eyebrow"]:
             props.append(f"--engine-cmp-eyebrow: {role(c['eyebrow']['color'])};")
+            props.append(f'--engine-cmp-eyebrow-label: "{c["eyebrow"]["label"]} ";')
+        art = livery.get("art", {}).get(c["art"]) if c["art"] else None   # the art under the field, or none
+        props.append(f'background: {"url(%s) center / cover no-repeat" % json.dumps(Path(art).name) if art else "none"};')
         L.append(f"{sel} {{\n  " + "\n  ".join(props) + "\n}")
+        for k, kind, rule in (("mark", "logo", "::after"), ("signoff", "signoff", " .engine-signoff")):
+            if c[k]:   # the image its role wears (marks; a role without its own wears primary's)
+                img = livery["marks"].get(c[k]["role"], livery["marks"]["primary"]).get(kind)
+                if img:
+                    L.append(f'{sel}{rule} {{ background-image: url("{Path(img).name}"); }}')
     return L
 
 
