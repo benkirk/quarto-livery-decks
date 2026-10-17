@@ -17,11 +17,11 @@ roles:
 aspect: "16:9"
 
 signoff:                  # the lockup as the brand's "sign off" at the foot of every slide
-  light: rio-color
-  dark: rio-color
-  aspect: 6.413           # the Research & Innovation Office lockup, 1911/298
-  height: 0.05
-  bottom: 0.03
+  light: cu-color
+  dark: cu-color
+  aspect: 10.903          # the CU Boulder lockup, viewBox 868.22 x 79.63
+  height: 0.04            # one line, so lower than a two-line lockup: 0.27 of the width
+  bottom: 0.035
   corner: bottom-left
 
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
@@ -31,7 +31,7 @@ geometry:                 # fractions of the slide (of its width: margin, tab, f
     corner: none          # no mark top right: the sign-off carries the lockup (the NSI flavor puts its mark top-left)
     height: 0.0644
     top: 0.0533
-    aspect: 6.413
+    aspect: 10.903
     title: 0.09
     section: 0.08
     closing: 0.10

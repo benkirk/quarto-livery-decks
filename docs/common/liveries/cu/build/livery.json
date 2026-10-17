@@ -32,7 +32,7 @@
       "pad": 0.025
     },
     "logo": {
-      "aspect": 6.413,
+      "aspect": 10.903,
       "closing": 0.1,
       "corner": "none",
       "height": 0.0644,
@@ -62,16 +62,16 @@
   },
   "logo": {
     "images": {
-      "rio-color": {
-        "path": "logos/cu-rio-lockup.png"
+      "cu-color": {
+        "path": "logos/cu-boulder-lockup.png"
       },
-      "rio-white": {
-        "path": "logos/cu-rio-lockup-white.png"
+      "cu-white": {
+        "path": "logos/cu-boulder-lockup-white.png"
       }
     },
     "medium": {
-      "dark": "rio-color",
-      "light": "rio-color"
+      "dark": "cu-color",
+      "light": "cu-color"
     }
   },
   "name": "cu",
@@ -120,12 +120,12 @@
     "warning": "#CFB87C"
   },
   "signoff": {
-    "aspect": 6.413,
-    "bottom": 0.03,
+    "aspect": 10.903,
+    "bottom": 0.035,
     "corner": "bottom-left",
-    "dark": "logos/cu-rio-lockup.png",
-    "height": 0.05,
-    "light": "logos/cu-rio-lockup.png"
+    "dark": "logos/cu-boulder-lockup.png",
+    "height": 0.04,
+    "light": "logos/cu-boulder-lockup.png"
   },
   "typography": {
     "base": "TeX Gyre Heros",

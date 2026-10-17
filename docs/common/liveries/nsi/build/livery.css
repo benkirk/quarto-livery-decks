@@ -90,12 +90,12 @@ html:root {
 .reveal .slides section.engine-title::after { background-image: url("nsi-lockup.png"); }
 .reveal .slides section.slide.engine-field::after,
 .reveal .slides section.engine-title.engine-field::after { background-image: url("nsi-lockup-black.png"); }
-.reveal .slides section .engine-signoff { background-image: url("cu-rio-lockup.png"); }
+.reveal .slides section .engine-signoff { background-image: url("rio-lockup.png"); }
 .reveal .slides section.engine-field .engine-signoff,
-.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("cu-rio-lockup.png"); }
+.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("rio-lockup.png"); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("campus.jpg") center / cover no-repeat; }
 .reveal .slides section.engine-title.engine-band::after,
 .reveal .slides section.slide.level2.closing.engine-band::after { background-image: url("nsi-lockup-white.png"); }
 .reveal .slides section.engine-title.engine-band .engine-signoff,
-.reveal .slides section.slide.level2.closing.engine-band .engine-signoff { background-image: url("cu-rio-lockup-white.png"); }
+.reveal .slides section.slide.level2.closing.engine-band .engine-signoff { background-image: url("rio-lockup-white.png"); }
 .reveal .slides section.slide.level2.closing.engine-band { background: url("constellation.jpg") center / cover no-repeat; }
