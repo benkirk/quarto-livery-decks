@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
 # Engine knobs the brand.yml standard has no slot for. Role values are palette names from
 # _brand.yml or hex. Geometry is in fractions of the slide; the numbers are the ncar livery's
 # (the engine's reference geometry), the lockup aspect is this brand's.
@@ -14,8 +16,6 @@ roles:
   warning: cu-gold                # the caution slide's bar; its fill is the derived blend
   dark: black
 
-aspect: "16:9"
-
 signoff:                  # the lockup as the brand's "sign off" at the foot of every slide
   light: cu-color
   dark: cu-color
@@ -26,26 +26,26 @@ signoff:                  # the lockup as the brand's "sign off" at the foot of 
 
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06
-  tab: 0.018
+  tab-width: 0.018
   logo:
     corner: none          # no mark top right: the sign-off carries the lockup (the NSI flavor puts its mark top-left)
     height: 0.0644
     top: 0.0533
     aspect: 10.903
-    title: 0.09
-    section: 0.08
-    closing: 0.10
+    title-height: 0.09
+    section-height: 0.08
+    closing-height: 0.10
   pagenumber:
     corner: bottom-right  # the reference deck's
-  divider:
+  section:
     top: 0.1333
     bottom: 0.0889
   full:
     pad: 0.025
-    floor: 0.075
+    footline: 0.075
     caption: 0.06
 
-divider:
+section:
   label: Section
   tab: true
 
@@ -105,4 +105,4 @@ charts:
   maps:
     campus: ["#F3F0E9", "#D2B39F", "#AE7858", "#9C3F29", "#76312B", "#412429"]
   diverging: [sky-blue, "#9C3F29"]
-  sequential: campus                    # the default color map (heatmaps), not the gold ramp
+  default-map: campus                   # the default color map (heatmaps), not the gold ramp

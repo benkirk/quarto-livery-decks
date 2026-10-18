@@ -33,13 +33,15 @@ help: ## Show this help message
 latex: ## Build latex/: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
 	$(MAKE) -C latex default examples variants
 
-test: ## Run the engine's tests: livery_build.py --check, livery_check.py, compositions, type, charts
+test: ## Run the engine's tests: livery_build.py --check, livery_check.py, compositions, type, charts, schema
 	set -e
 	python3 _extensions/engine/livery_build.py --check liveries/*/
 	python3 _extensions/engine/livery_check.py liveries/*/
 	python3 tests/test_compositions.py
 	python3 tests/test_type.py
 	python3 tests/test_charts.py
+	python3 tests/test_schema.py
+	python3 _extensions/engine/livery.py schema --doc --check
 
 # The build-environment image (README "Building in the container"); CI publishes it
 # multi-platform as ghcr.io/benkirk/quarto-livery-decks (.github/workflows/image.yaml).

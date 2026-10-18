@@ -49,11 +49,11 @@ LINE      = 1.2           # line height / font size, for the text estimates
 CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 K         = livery_mod.canvas_scale(LIVERY)   # the lengths below were drawn for 7.5 in: scale to the canvas
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
-FULL_FLOOR = LIVERY["geometry"]["full"]["floor"]     # the footline (slide number) and the caption
+FULL_FLOOR = LIVERY["geometry"]["full"]["footline"]  # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
 CAP_SIZE   = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the themes' caption size, the muted color
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
-CAUTION_FILL = RGBColor.from_string(livery_mod.derived(LIVERY, "caution-fill"))  # warning at 18% on white
+CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
 CAUTION_W    = Pt(6 * K)
@@ -534,7 +534,7 @@ def draw_feature(slide, width, height, photo):
     else:
         draw_cover(slide, width, height, photo, c)
         if c["column"]["tab"]:
-            _rect(slide, [0, y, GEOM["tab"], 0.16], width, height, RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4")), name="Title tab")
+            _rect(slide, [0, y, GEOM["tab-width"], 0.16], width, height, RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4")), name="Title tab")
         if c["column"]["rule"]:
             _rect(slide, [x, y + 0.185, c["column"]["rule"][0], c["column"]["rule"][1]], width, height,
                   RGBColor.from_string(livery_mod.scheme(LIVERY, "accent1")), name="Title rule")

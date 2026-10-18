@@ -57,7 +57,7 @@ def resolve(knobs: dict, parent: dict | None = None) -> dict:
                 continue
             (root / name).mkdir()
             (root / name / "_brand.yml").write_text("color: {palette: {blue: '#003366'}, primary: blue}\n")
-            (root / name / "livery.yml").write_text(json.dumps(k))
+            (root / name / "livery.yml").write_text(json.dumps({"schema": 1, "name": name, **k}))
         return lb.type_scale("x", lb.read(root / "x"))
 
 

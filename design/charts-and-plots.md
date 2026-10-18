@@ -229,13 +229,13 @@ charts:
   maps: {campus: ["#...", ...]}       # more color maps, light to dark, that leave the slots alone
   sets: {light: {3: [...], ...}}      # its curated small-series sets
   categorical: ["#0057c2", ...]       # pin the whole cycle; the checks still run
-  sequential: primary                 # the default colormap: a hue (its nearest ramp) or a map's name
+  default-map: primary                # the default colormap: a hue (its nearest ramp) or a map's name
   diverging: [primary, accent]        # the two poles
   status: {good: ..., warning: ..., serious: ..., critical: ...}
   dark: {categorical: [...], diverging: [...]}   # pinned dark selections win over derived ones
 ```
 
-`charts` joins `KNOWN`; #58's schema must cover it. A flavor inherits its parent's charts
+`charts` is in the schema (`livery.schema.json`, #58). A flavor inherits its parent's charts
 through `merge()`. A brand guide's published data palette goes in `ramps`/`sets` or `extended`,
 its source in `reference/notes.md`.
 

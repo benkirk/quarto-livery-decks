@@ -30,9 +30,9 @@
   --engine-logo-aspect: 3.934;
   --engine-logo-top: 48px;
   --engine-margin: 96px;
-  --engine-tab: 28.8px;
+  --engine-tab-width: 28.8px;
   --engine-full-pad: 40px;
-  --engine-full-floor: 67.5px;
+  --engine-full-footline: 67.5px;
   --engine-full-caption: 54px;
   --engine-type-body: calc(26.67px * var(--engine-type-scale, 1));
   --engine-type-frametitle: calc(44.44px * var(--engine-type-scale, 1));

@@ -146,8 +146,8 @@ def use(path=None) -> dict:
         b = charts[m]
         for tag in ([""] if m == mode else []) + (["_dark"] if m == "dark" else []):
             seq = b["sequential"]
-            _register(f"livery{tag}", _cmap(f"livery{tag}", seq[b["sequential-default"]]))
-            _register(f"livery{tag}_r", _cmap(f"livery{tag}_r", seq[b["sequential-default"]][::-1]))
+            _register(f"livery{tag}", _cmap(f"livery{tag}", seq[b["default-map"]]))
+            _register(f"livery{tag}_r", _cmap(f"livery{tag}_r", seq[b["default-map"]][::-1]))
             _register(f"livery_div{tag}", _cmap(f"livery_div{tag}", b["diverging"]))
             for n, r in seq.items():
                 _register(f"livery_seq_{n}{tag}", _cmap(f"livery_seq_{n}{tag}", r))

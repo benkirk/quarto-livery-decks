@@ -79,8 +79,8 @@ $mermaid-label-fg-color: $engine-primary;
 /*-- scss:rules --*/
 
 // slide geometry: the livery's fractions as slide pixels in its build/livery.css
-// (--engine-margin, -tab, -logo-top, -logo-h/-w/-aspect, -logo-title-h/-section-h/
-// -closing-h, -divider-top/-bottom, -full-pad/-floor/-caption), beside the brand
+// (--engine-margin, -tab-width, -logo-top, -logo-h/-w/-aspect, -full-pad/-footline/-caption),
+// beside the brand
 // roles (--engine-primary, ...); engine-revealjs.lua attaches it
 
 // ---------------------------------------------------------------------------
@@ -156,7 +156,7 @@ $mermaid-label-fg-color: $engine-primary;
     left: calc(-1 * var(--engine-title-left, var(--engine-margin)));
     top: 0;
     bottom: 0;
-    width: var(--engine-tab);
+    width: var(--engine-tab-width);
     background: var(--engine-accent);
   }
 }
@@ -471,7 +471,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
       left: calc(-1 * var(--engine-cmp-column-x));
       top: 0.08em;
       bottom: 0.08em;
-      width: var(--engine-tab);
+      width: var(--engine-tab-width);
       background: var(--engine-accent);
     }
   }
@@ -541,7 +541,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
       left: calc(-1 * var(--engine-cmp-column-x));
       top: 0.08em;
       bottom: 0.08em;
-      width: var(--engine-tab);
+      width: var(--engine-tab-width);
       background: var(--engine-accent);
     }
   }

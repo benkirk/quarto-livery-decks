@@ -378,13 +378,8 @@ def charts(livery: dict, knobs: dict | None) -> dict:
     """livery.json `charts`: {surfaces, mode, light: {...}, dark: {...}, sources, brand, figsize}.
     livery is the resolved json so far (roles, palette, mode, geometry, frametitle, type); knobs is
     livery.yml `charts:` (merged through extends)."""
-    k = dict(knobs or {})
+    k = dict(knobs or {})   # its keys are the schema's (livery.schema.json), checked by livery_build.py
     roles, palette, mode = livery["roles"], livery["palette"], livery["mode"]
-    unknown = set(k) - {"anchors", "extended", "avoid", "chroma", "ramps", "maps", "sets", "categorical",
-                        "sequential", "diverging", "status", "muted", "dark"}
-    unknown |= {f"dark.{x}" for x in set(k.get("dark") or {}) - {"categorical", "sequential", "diverging", "status", "muted"}}
-    if unknown:
-        raise ValueError(f"charts: unknown keys {sorted(unknown)}")
     norm = lambda v, where: _norm(v, palette, roles, where)
     light_bg = roles["background"] if mode == "light" else roles["foreground"]
     dark_bg = roles.get("dark", "#000000") if mode == "light" else roles["background"]
@@ -458,8 +453,8 @@ def charts(livery: dict, knobs: dict | None) -> dict:
         if m == "dark":
             seq = {n: list(reversed(r)) for n, r in seq.items()}
         blk["sequential"] = seq
-        primary_seq = given.get("sequential", k.get("sequential", "primary"))   # a map's name, or a color
-        blk["sequential-default"] = primary_seq if primary_seq in seq else _nearest_ramp(seq, norm(primary_seq, "sequential"))
+        default = given.get("default-map", k.get("default-map", "primary"))   # a map's name, or a color
+        blk["default-map"] = default if default in seq else _nearest_ramp(seq, norm(default, "default-map"))
         # diverging
         if given.get("diverging") and len(given["diverging"]) > 2:
             blk["diverging"] = [norm(c, f"{m}.diverging") for c in given["diverging"]]
@@ -504,7 +499,7 @@ def chrome(livery: dict, surfaces: dict) -> dict:
     for m in ("light", "dark"):
         if m == mode:
             out[m] = {"text": fg, "spine": roles.get("muted", fg).upper(),
-                      "grid": livery.get("derived", {}).get("rule", mix(fg, surfaces[m], 0.7)).upper()}
+                      "grid": livery.get("blends", {}).get("rule", mix(fg, surfaces[m], 0.7)).upper()}
         else:
             text = lighter if m == "dark" else darker
             out[m] = {"text": text, "spine": mix(text, surfaces[m], 0.45), "grid": mix(text, surfaces[m], 0.75)}

@@ -15,7 +15,11 @@ history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
 `ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by the engine's `livery_build.py`
-into `build/livery.{json,sty,css,theme,mplstyle}` (an unknown `livery.yml` key is warned about).
+into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
+validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
+out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
+schema (`livery.py schema --doc`, `--check` in CI and `make test`). A key is renamed only with Ben's
+agreement.
 `design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
 next step (#58, the customer surface: a `livery` command, a `livery.yml` schema, immutable
 releases and a changelog).
@@ -220,7 +224,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   theme's tint ladders; nasa: NASA's Horizon Design System). `livery_check.py` prints the checks
   (a generated palette must pass, a published one only warns), and `--swatch DIR` draws a
   contact sheet; `tests/test_charts.py`. `charts.chrome` is a plot's non-data ink per mode.
-  `charts.maps` adds color maps without constraining the slots (`ramps` do), and `sequential` may
+  `charts.maps` adds color maps without constraining the slots (`ramps` do), and `default-map` may
   name one: ncar's and ucar's vivid brand-blue maps, cu's campus map (its roof tile and sandstone
   sampled from nsi's campus photo). `decks/plots/README.md` shows the plots and palettes of every
   livery; `make gallery` there rebuilds its committed images.

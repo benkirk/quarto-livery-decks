@@ -1,10 +1,11 @@
 """Read a livery's resolved truth, build/livery.json, for the template builder, the checks, the
 pptx post-render steps and the framework's scripts.
 
-    import livery as livery_mod     load, color, scheme, derived, mix, font_file, mark, files
+    import livery as livery_mod     load, color, scheme, blend, mix, font_file, mark, files
     livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
     livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
     livery.py figsize <livery dir>  the plots' default size, charts.figsize.full: "<w> <h>" in inches
+    livery.py schema --doc [--check]  livery.yml's reference from its schema (livery_schema.py)
 
 The directory comes from the argument, else $LIVERY_DIR (exported by the framework's
 Make.common), else a `_livery` link in the current directory. Generate the file with
@@ -52,9 +53,9 @@ def scheme(livery: dict, slot: str) -> str:
     return livery["pptx"]["scheme"][slot].lstrip("#").upper()
 
 
-def derived(livery: dict, key: str) -> str:
+def blend(livery: dict, key: str) -> str:
     """The hex of a blend livery_build.py derived from the roles (table-rule, caution-fill, ...)."""
-    return livery["derived"][key].lstrip("#").upper()
+    return livery["blends"][key].lstrip("#").upper()
 
 
 def type_pt(livery: dict, role: str, height_pt: float | None = None) -> float:
@@ -144,6 +145,10 @@ def figsize(d: str) -> str:
 
 
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["schema"]:
+        import livery_schema
+        livery_schema.main(sys.argv[2:])
+        sys.exit()
     cmds = {"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}
     if len(sys.argv) != 3 or sys.argv[1] not in cmds:
         sys.exit("usage: livery.py deps|mono|figsize <livery dir>")

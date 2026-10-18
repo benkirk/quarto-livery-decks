@@ -7,8 +7,8 @@
 Color names in livery.yml roles resolve against the brand palette; a value starting with '#'
 passes through. `extends: <name>` names a sibling livery whose resolved values the child's
 override key by key (dicts merge, everything else replaces); the parent's relative paths are
-rebased onto the child. `derived` holds the theme's blends of two roles (BLENDS), computed
-here unless livery.yml sets the key. livery.json is the one truth (Lua and Python read it);
+rebased onto the child. `blends` holds the theme's blends of two roles (BLENDS), computed
+here unless livery.yml's `blends:` sets the key. livery.json is the one truth (Lua and Python read it);
 livery.sty is what engine_livery.sty inputs (overrides/livery-extra.sty of the livery and its
 ancestors appended); livery.css what engine-revealjs.lua attaches; livery.theme is pandoc's
 highlight theme, engine.theme with the roles filled in; livery.mplstyle matplotlib's style (the
@@ -23,15 +23,21 @@ import json
 import math
 import os
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 import yaml
 
-# the chart colors (livery_charts.py), loaded by path: this script is also loaded by path (the
-# tests), where the engine directory is not on sys.path
-_spec = importlib.util.spec_from_file_location("livery_charts", Path(__file__).resolve().parent / "livery_charts.py")
-livery_charts = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(livery_charts)
+# the chart colors (livery_charts.py) and livery.yml's schema (livery_schema.py), loaded by path:
+# this script is also loaded by path (the tests), where the engine directory is not on sys.path
+def _sibling(name: str):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+livery_charts, livery_schema = _sibling("livery_charts"), _sibling("livery_schema")
 
 # (key, role a, role b, share of a): the theme's recipes, engine-revealjs.scss `table` and
 # `.engine-caution`, beamerinnerthemeEngine.sty `enginecautionfill`
@@ -60,10 +66,6 @@ BAND = {"top": 0.27, "bottom": 0.72, "split": 0.62, "band": "primary", "field": 
 SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2": "surface",
               "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
-# the livery.yml keys this script reads; any other is reported, not silently dropped
-KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider", "art", "pptx", "overrides",
-         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature", "type", "frametitle",
-         "charts"}
 # the content slides' title (livery.yml frametitle:): its alignment beside the mark, the accent tab at the
 # paper's edge, the hairline under it
 FRAMETITLE = {"align": "left", "tab": True, "rule": True}
@@ -143,9 +145,10 @@ def rebase(data: dict, parent: Path, child: Path) -> dict:
 def read(d: Path) -> dict:
     brand = yaml.safe_load((d / "_brand.yml").read_text()) or {}
     knobs = yaml.safe_load((d / "livery.yml").read_text()) or {}
-    for k in sorted(set(knobs) - KNOWN):
-        print(f"warning: {d.name}: unknown livery.yml key {k!r} (ignored)", file=sys.stderr)
-    merged = {"brand": brand, **{k: v for k, v in knobs.items() if k != "extends"}}
+    errors = livery_schema.check(knobs, brand, d)   # each file as written, before extends merges
+    if errors:
+        sys.exit("\n".join(errors))
+    merged = {"brand": brand, **{k: v for k, v in knobs.items() if k not in ("extends", "schema")}}
     parent = knobs.get("extends")
     if parent:   # pptx.scheme holds only explicit overrides; resolve() fills the rest from the roles
         merged = merge(rebase(read(d.parent / parent), d.parent / parent, d), merged)
@@ -170,19 +173,19 @@ def resolve(d: Path) -> tuple[dict, dict]:
     if "dark" in sources:   # code text: the dark role unless a livery says otherwise (a dark livery's dark is a field)
         sources.setdefault("code-text", sources["dark"])
     roles = {k: hex_of(v) for k, v in sources.items()}
-    derived = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
-    derived.update({k: hex_of(v) for k, v in data.get("derived", {}).items()})
+    blends = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
+    blends.update({k: hex_of(v) for k, v in data.get("blends", {}).items()})
     out = {
         "name": data.get("name", d.name),
         "palette": palette,
         "roles": roles,
-        "derived": derived,
+        "blends": blends,
         # dark: light text on a dark background (content slides); the formats add what that needs
         "mode": "dark" if luminance(roles["background"]) < luminance(roles["foreground"]) else "light",
         "typography": data["brand"].get("typography", {}),
         "logo": data["brand"].get("logo", {}),
     }
-    for key in ("aspect", "geometry", "divider", "art", "pptx", "overrides", "latex"):
+    for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
     out["frametitle"] = {**FRAMETITLE, **(data.get("frametitle") or {})}
@@ -284,7 +287,7 @@ def band(name: str, title: dict, out: dict) -> dict:
             sys.exit(f"{name}: title.{k} {t[k]!r} is not a role")
     if "signoff" in out:
         t.setdefault("signoff-height", out["signoff"]["height"])
-    t.setdefault("logo-height", out.get("geometry", {}).get("logo", {}).get("title", 0.09))
+    t.setdefault("logo-height", out.get("geometry", {}).get("logo", {}).get("title-height", 0.09))
     return t
 
 
@@ -335,6 +338,14 @@ def variant(base: dict, **over) -> dict:
     return out
 
 
+def slide_hw(out: dict) -> float:
+    """The slide's height over its width, from pptx.size as a ratio of small whole numbers (the
+    default 13.333 x 7.5 in and ncar's 10 x 5.625 in are both 16:9)."""
+    w, h = (out.get("pptx") or {}).get("size") or CANVAS
+    r = Fraction(w / h).limit_denominator(32)
+    return r.denominator / r.numerator
+
+
 def compositions(name: str, data: dict, out: dict) -> dict:
     """The title, closing, section and feature slides as boxes ([x, y, w, h], slide fractions, y
     down) and roles, one fully resolved entry per COMPOSITIONS name with every COMP_KEYS key, so
@@ -342,12 +353,11 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     title, signoff and art knobs; livery.yml `compositions: {<name>: {<key>: ...}}` overrides,
     an override on title reaching its photo and light variants, one on closing its light one."""
     g = out.get("geometry", {}); m = g.get("margin", 0.06); logo = g.get("logo", {})
-    aw, ah = (int(v) for v in str(out.get("aspect", "16:9")).split(":"))
-    hw = ah / aw   # a height as a fraction of the width
+    hw = slide_hw(out)   # a height as a fraction of the width
     art = out.get("art") or {}
     has_art = lambda k: isinstance(art.get(k), str)
     waves = art.get("waves")
-    t = {**BAND, "logo-height": logo.get("title", 0.09), **(out.get("title") or {})}
+    t = {**BAND, "logo-height": logo.get("title-height", 0.09), **(out.get("title") or {})}
     so = out.get("signoff")
     if so:
         t.setdefault("signoff-height", so["height"])
@@ -386,7 +396,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     empty = dict.fromkeys(COMP_KEYS)
     pad_w = 1 - 2 * m   # the HTML's padded box, which its percentages are of
     rule = [0.13, 0.0033]   # [width of W, thickness of H]
-    tm = (0.06, logo.get("title", 0.09))   # the title mark's y and height; the column starts 0.05 under it
+    tm = (0.06, logo.get("title-height", 0.09))   # the title mark's y and height; the column starts 0.05 under it
     ty = tm[0] + tm[1] + 0.05
     title = {**empty,
              "field": {"role": "primary", "box": _box(0, 0, 1, 1)},
@@ -432,7 +442,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                   "column": {"box": _box(m, top, split - m - 64 / W, bottom - top), "anchor": "middle",
                              "role": "primary-text", "tab": True, "rule": rule},
                   "fineprint": {"box": _box(m, bottom + 0.018, split - m - 64 / W, 0.06), "anchor": "top", "role": t["field-text"]}}
-    cm = (0.09, logo.get("closing", 0.10))   # the closing mark's y and height; the column starts 0.03 under it
+    cm = (0.09, logo.get("closing-height", 0.10))   # the closing mark's y and height; the column starts 0.03 under it
     cy = cm[0] + cm[1] + 0.03
     closing_col = {"box": _box(m, cy, 0.62, 0.88 - cy), "anchor": "middle",
                    "role": "primary-text", "tab": True, "rule": None}
@@ -448,12 +458,12 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                     "art": "closing" if has_art("closing") else "title" if has_art("title") else None,
                     "mark": smark, "signoff": ssign,
                     "column": {**closing_col, "box": _box(m, 0.10, 0.62, bottom - 0.13), "role": t["field-text"]}}
-    div = g.get("divider", {}); dv = out.get("divider", {})
+    div = g.get("section", {}); dv = out.get("section", {})
     section = {**empty,
                "field": {"role": "primary", "box": _box(0, 0, 1, 1)},
                "art": "section" if has_art("section") else None,
                "waves": wave("bands", shift.get("section", 0), [0.18, 0.10]),
-               "mark": mark(0.08, logo.get("section", 0.08), "primary"),
+               "mark": mark(0.08, logo.get("section-height", 0.08), "primary"),
                "signoff": signoff("primary"),
                "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
                           "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
@@ -583,12 +593,12 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{src[1:].upper()}}}")
         else:
             L.append(f"\\colorlet{{{tex}}}{{{tex_name(src, names)}}}")
-    L.append("% derived blends")
-    for key, hexv in livery["derived"].items():
+    L.append("% the blends")
+    for key, hexv in livery["blends"].items():
         L.append(f"\\definecolor{{{tex_name('brand-' + key, {})}}}{{HTML}}{{{hexv[1:]}}}")
     blends = {k: mix(livery["roles"][a], livery["roles"][b], s) for k, a, b, s in BLENDS if a in livery["roles"] and b in livery["roles"]}
-    for key, color in BEAMER_BLENDS.items():   # a livery's derived: override, which the theme would recompute
-        if key in livery["derived"] and livery["derived"][key] != blends.get(key):
+    for key, color in BEAMER_BLENDS.items():   # a livery's blends: override, which the theme would recompute
+        if key in livery["blends"] and livery["blends"][key] != blends.get(key):
             L.append(f"\\colorlet{{{color}}}{{{tex_name('brand-' + key, {})}}}")
     marks = livery["marks"]
     stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
@@ -651,10 +661,10 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for k, v in geom.items():
         if isinstance(v, dict):
             for k2, v2 in v.items():
-                L.append(f"\\def\\engine@geom@{k}{k2}{{{v2}}}")
+                L.append(f"\\def\\engine@geom@{k}{k2.replace('-', '')}{{{v2}}}")
         elif not isinstance(v, list):
             L.append(f"\\def\\engine@geom@{k.replace('-', '')}{{{v}}}")
-    L.append(f"\\def\\engine@divider@label{{{livery.get('divider', {}).get('label', 'Section')}}}")
+    L.append(f"\\def\\engine@section@label{{{livery.get('section', {}).get('label', 'Section')}}}")
     art = livery.get("art", {})
     waves = art.get("waves")
     if waves:
@@ -783,7 +793,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
                      f'font-weight: {f.get("weight", 400)}; font-display: block; '
                      f'src: {local}url("{Path(f["path"]).name}") format("{"opentype" if Path(f["path"]).suffix == ".otf" else "truetype"}"); }}')
     props = [f"--engine-{k}: {v};" for k, v in livery["roles"].items()]
-    props += [f"--engine-{k}: {v};" for k, v in livery["derived"].items()]
+    props += [f"--engine-{k}: {v};" for k, v in livery["blends"].items()]
     geom = livery.get("geometry", {})
     logo = geom.get("logo", {})
     px = lambda frac, axis=H: f"{round(frac * axis, 1):g}px"
@@ -795,7 +805,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-logo-aspect: {logo['aspect']};")
     if "top" in logo:   # the content mark's top (the field slides' marks are their compositions')
         props.append(f"--engine-logo-top: {px(logo['top'])};")
-    for k in ("margin", "tab"):
+    for k in ("margin", "tab-width"):
         if k in geom:
             props.append(f"--engine-{k}: {px(geom[k], W)};")
     for k, v in geom.get("full", {}).items():
@@ -1077,7 +1087,7 @@ def overrides(d: Path, name: str, comment: str = "% {}") -> str:
 
 def emit_theme(livery: dict) -> str:
     """engine.theme (pandoc's highlight theme, colors as $role or $blend) with the livery's hex."""
-    colors = {**livery["roles"], **livery["derived"]}
+    colors = {**livery["roles"], **livery["blends"]}
     def fill(v):
         if isinstance(v, str) and v.startswith("$"):
             return colors[v[1:]]

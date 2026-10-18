@@ -39,7 +39,7 @@
 % ---------------------------------------------------------------------------
 % (the fractions are the livery's: engine@geom@* in its build/livery.sty)
 \newdimen\engine@margin      \engine@margin=\engine@geom@margin\paperwidth
-\newdimen\engine@tabwidth    \engine@tabwidth=\engine@geom@tab\paperwidth
+\newdimen\engine@tabwidth    \engine@tabwidth=\engine@geom@tabwidth\paperwidth
 \newdimen\engine@logoheight  \engine@logoheight=\engine@geom@logoheight\paperheight
 \newdimen\engine@logotop     \engine@logotop=\engine@geom@logotop\paperheight
 % the content mark's distance from its edge: geometry.logo.inset, else the margin
@@ -364,7 +364,7 @@
 \newdimen\engine@fullpad    \engine@fullpad=\engine@geom@fullpad\paperwidth
 \newdimen\engine@fullfloor
 \def\engine@drawfullbg{%
-  \engine@fullfloor=\engine@geom@fullfloor\paperheight
+  \engine@fullfloor=\engine@geom@fullfootline\paperheight
   \ifx\engine@fullcaption\@empty\else
     \node[anchor=south,inner sep=0pt,text width=0.8\paperwidth,align=center,
       font=\engine@fs{caption},text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};

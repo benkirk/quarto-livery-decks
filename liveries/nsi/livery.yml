@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
 # Engine knobs for the NSI flavor of cu: the center's mark top left, the master deck's band title
 # (black field, constellation art, gold band with the campus photo, the two lockups below), the
 # deck's satellite photo behind content slides. Numbers are fractions of the slide, measured on

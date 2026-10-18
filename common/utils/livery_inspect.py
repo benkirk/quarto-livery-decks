@@ -7,8 +7,8 @@ Writes <livery dir>/reference/report.md: slide size and aspect, the theme's twel
 slots and font scheme, every master and layout with its placeholders, pictures and
 background, which layout each sample slide uses, and every srgbClr ranked by frequency.
 With --media the deck's pictures go to reference/media/ (large; keep them out of git).
-Seeds _brand.yml and livery.yml when the livery has none, with a layout-mapping table to
-fill in by hand (which reference layout is pandoc's "Title Slide", and so on).
+Seeds _brand.yml and livery.yml (schema 1, the roles on the theme's slots) when the livery has
+none.
 """
 
 import argparse
@@ -27,8 +27,6 @@ A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 NS = {"a": A, "p": P}
 SLOTS = ["dk1", "lt1", "dk2", "lt2", "accent1", "accent2", "accent3", "accent4", "accent5", "accent6", "hlink", "folHlink"]
-PANDOC_LAYOUTS = ["Title Slide", "Title and Content", "Section Header", "Two Content",
-                  "Comparison", "Content with Caption", "Blank"]
 
 
 def scheme(theme_xml: bytes) -> tuple[dict, dict]:
@@ -111,7 +109,6 @@ def report(ref: Path, prs, z) -> str:
     L += [f"| `#{c}` | {n} |" for c, n in srgb_counts(z)[:40]]
     media = [n for n in z.namelist() if n.startswith("ppt/media/")]
     L += ["", "## Media", "", f"{len(media)} files: " + ", ".join(f"`{Path(n).name}` ({z.getinfo(n).file_size // 1024} KB)" for n in media), ""]
-    L += ["## Mapping to pandoc's layouts", "", "Fill in `livery.yml` (`template.layouts`): " + ", ".join(f"`{n}`" for n in PANDOC_LAYOUTS) + ".", ""]
     return "\n".join(L)
 
 
@@ -128,14 +125,12 @@ def seed_brand(colors: dict, fonts: dict) -> str:
     return "\n".join(L)
 
 
-def seed_livery(name: str, layouts: list[str]) -> str:
-    L = [f"# Seeded by livery_inspect.py; fill the layout mapping (reference layout -> pandoc's name),",
-         "# then livery_template.py builds template.pptx. See reference/report.md.",
-         f"name: {name}", "extends: null", "", "roles:", "  primary-text: lt1", "  primary-contrast: dk2",
-         "  accent: accent2", "  highlight: accent5", "  muted: dk1", "  surface: lt2", "  warning: accent3", "  dark: accent4", "",
-         "template:", "  layouts:"]
-    L += [f"    {p}: TODO   # one of: " + ", ".join(layouts) if i == 0 else f"    {p}: TODO" for i, p in enumerate(PANDOC_LAYOUTS)]
-    L += ["", "art: {}", ""]
+def seed_livery(name: str) -> str:
+    L = ["# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json",
+         "# Seeded by livery_inspect.py from the reference deck (reference/report.md); the keys are",
+         "# liveries/REFERENCE.md's. livery_template.py builds template.pptx from the data.",
+         "schema: 1", f"name: {name}", "extends: null", "", "roles:", "  primary-text: lt1", "  primary-contrast: dk2",
+         "  accent: accent2", "  highlight: accent5", "  muted: dk1", "  surface: lt2", "  warning: accent3", "  dark: accent4", ""]
     return "\n".join(L)
 
 
@@ -158,8 +153,7 @@ def main():
                     (out / "media" / Path(n).name).write_bytes(z.read(n))
             print(f"extracted media to {out / 'media'}")
         colors, fonts = scheme(z.read("ppt/theme/theme1.xml"))
-    layouts = [lay.name for lay in prs.slide_masters[0].slide_layouts]
-    for fname, content in (("_brand.yml", seed_brand(colors, fonts)), ("livery.yml", seed_livery(a.livery.name, layouts))):
+    for fname, content in (("_brand.yml", seed_brand(colors, fonts)), ("livery.yml", seed_livery(a.livery.name))):
         f = a.livery / fname
         if f.exists():
             print(f"kept {f} (exists; the seed is in reference/report.md's terms)")

@@ -811,25 +811,10 @@ sections 4 and 6; `liveries/cu/` and `nasa/` are worked examples, their
 and fonts, in Quarto's [brand.yml](https://quarto.org/docs/authoring/brand.html) form),
 `livery.yml` (everything else), `fonts/`, `logos/`, optionally `art/`, the generated
 `template.pptx`, and `build/`, which `livery_build.py` writes from the two yml files and which
-is committed. The knobs in `livery.yml`:
-
-| knob | |
-|---|---|
-| `roles` | which palette color plays each role: `primary`, `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`, `surface`, `warning`, `dark`, `code-text` |
-| `geometry` | the margin, the title tab, the logo box (height per slide kind, its corner on content slides: `top-right`, `top-left`, `none`, and its `inset` from that edge, the margin by default), the page number's corner, the divider block, the full-figure paddings |
-| `frametitle` | the content slides' title: `align` (`left` or `center`, in the room beside the mark), `tab` and `rule` (the accent tab and the hairline, both on by default). The body starts below the title band, or below a taller mark |
-| `type` | text sizes in points on the PowerPoint canvas, by role (`body`, `frametitle`, `title`, `section`, `table`, `footnote`, ...) and `levels` (the five list levels); a role left out is the engine's default scaled to the canvas ("Text sizes and the slide size") |
-| `signoff` | a second lockup at the foot of every slide but feature and full slides (light and dark images, aspect, height, bottom, corner) |
-| `marks` | which mark and sign-off each field wears, by role: content slides `background`, covers and dividers `primary`, the band title `title.field` |
-| `title` | the title slide's composition: `style: cover` (the default: the text beside the photo or the waves) or `style: band` (a band across a field, the text left of `split`, the photo right of it, the marks in the strip below) |
-| `feature` | `style: bar` (the default: the photo under a dark bar holding the title, the body on a translucent panel) or `style: cover` (the title cover's field, waves and mark, the photo in its right part) |
-| `compositions` | overrides of the slide compositions' boxes, e.g. `title: {column: {box: [0.06, 0.375, 0.50, 0.485]}}` |
-| `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none (`ncar`: the Mesa Lab, which its family inherits) |
-| `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it ("Installed brand fonts") |
-| `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`ucar` extends `ncar`; `nsi` extends `cu`) |
-| `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |
-| `charts` | the chart colors' sources ("Plots and chart colors"): `anchors` (brand hues that must appear, in order), `extended` (secondary brand colors to use before any are generated), `avoid` (hue ranges), a brand's published `ramps` and `sets`, extra color `maps` (and `sequential`, the default one), or a pinned `categorical`, `diverging`, `status`, `muted` (and `dark:` versions). With none, the engine generates a palette from the brand's colors that passes the dataviz checks |
-| `latex`, `css` | named palette colors for LaTeX, and `overrides/livery-extra.{sty,css}` for anything the knobs don't cover |
+is committed. `livery.yml` starts with `schema: 1`; every key, with its type, default and what it
+does on the slide, is in [`liveries/REFERENCE.md`](liveries/REFERENCE.md), generated from the
+engine's schema (`_extensions/engine/livery.schema.json`), which also lets an editor check the
+file as you type.
 
 From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
 
@@ -838,7 +823,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    layouts and placeholders, the colors by frequency, the media) and seeds `_brand.yml` and
    `livery.yml`. The deck itself stays out of git.
 2. **Decide the data.** Write the judgement calls into `reference/notes.md` as you make them;
-   `livery_build.py` warns about a key it does not know.
+   `livery_build.py` refuses a key or a value the schema does not allow, naming its path.
    - **Palette and roles.** `_brand.yml` (the brand.yml standard): the palette with the
      brand's names and `primary`/`secondary`/`foreground`/`background`. `livery.yml`
      `roles`: `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`, `surface`,
@@ -851,7 +836,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Marks.** The logos in `_brand.yml`, a `signoff` lockup if the brand wants one at the
      foot, and `marks` when a field needs another mark than the defaults (`background` wears
      `logo.medium.light`, `primary` the dark one, every other field primary's).
-   - **Geometry.** Copy ncar's fractions, then set the lockup's `aspect`, the marks' corners,
+   - **Geometry.** Copy ncar's fractions, then set the lockup's `geometry.logo.aspect`, the marks' corners,
      and `logo.inset` to put the content mark nearer the paper's edge.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
      hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover

@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
 # Engine knobs the brand.yml standard has no slot for. Role values are palette names from
 # _brand.yml or hex. Geometry is in fractions of the slide; today's numbers come from
 # beamerouterthemeEngine.sty, engine-revealjs.scss (1600x900 slide px), section_subtitle.py and
@@ -15,10 +17,8 @@ roles:
   warning: yellow
   dark: space
 
-derived:                  # blends livery_build.py computes from the roles (BLENDS); a key here overrides
+blends:                   # blends livery_build.py computes from the roles (BLENDS); a key here overrides
   alert-text: "#B5540A"   # warnings and errors in code: the theme's dark orange, not a blend
-
-aspect: "16:9"
 
 # signoff:                # a second mark, the brand's "sign off" lockup at the foot of every
 #   light: <image>        # slide but feature and full: logo.images names for light and dark
@@ -33,34 +33,34 @@ aspect: "16:9"
 #   top: 0.27             # text left of split and the photo (titlegraphic, else art.titlegraphic)
 #   bottom: 0.72          # right of it; the mark and the sign-off centred in the strip below; the
 #   split: 0.62           # closing slide wears the field, art.closing (else art.title) and the
-#   band: primary         # strip's images. Colors are roles; logo and signoff are logo.images
-#   field: dark           # names (default: the dark variants), heights fractions of the slide
-#   field-text: background  # (default: geometry.logo.title and signoff.height)
-#   logo: <image>
-#   signoff: <image>
+#   band: primary         # strip's marks (marks.<field>). Colors are roles, heights fractions
+#   field: dark           # of the slide (default: geometry.logo.title-height and signoff.height)
+#   field-text: background
+#   logo-height: 0.09
+#   signoff-height: 0.05
 
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06            # 96 px of 1600; deck_qa.py's overflow edge is 1 - margin
-  tab: 0.018              # 29 px; the divider's accent tab
+  tab-width: 0.018        # 29 px; the divider's accent tab
   logo:
     # corner: top-right   # the mark's corner on content slides: top-right | top-left | none (none drops it everywhere)
     height: 0.0644        # content slides: 58 px of 900 (beamer drew 0.06 before Phase 2)
     top: 0.0533           # 48 px
     aspect: 3.934         # NSF NCAR lockup, 1200/305
-    title: 0.09           # the lockup on the title, section and closing slides (beamer's sizes;
-    section: 0.08         # HTML drew 70, 58 and 58 px before Phase 2)
-    closing: 0.10
-  divider:                # the section slide's block: padding above and below (120 / 80 px);
+    title-height: 0.09    # the lockup on the title, section and closing slides (beamer's sizes;
+    section-height: 0.08  # HTML drew 70, 58 and 58 px before Phase 2)
+    closing-height: 0.10
+  section:                # the section slide's block: padding above and below (120 / 80 px);
     top: 0.1333           # section_subtitle.py centers the pptx block in the same band
     bottom: 0.0889
   full:                   # the full-figure slide: margin round the figure, footline, caption line
     pad: 0.025
-    floor: 0.075
+    footline: 0.075
     caption: 0.06
   # pagenumber:
   #   corner: bottom-left # bottom-left | bottom-right
 
-divider:
+section:
   label: Section          # "Section n" eyebrow over the title; each format sets it in capitals
   tab: true
 
@@ -153,4 +153,4 @@ charts:
     ncar: ["#BFE5F9", "#86D3FC", "#42C0FF", "#0057C2", "#00357A", "#011837"]
     # the same along UCAR Aqua (ucar's and ucp's default)
     ucar: ["#C0F0F5", "#34E1F4", "#00A2B4", "#00818F", "#00357A", "#011837"]
-  sequential: ncar
+  default-map: ncar

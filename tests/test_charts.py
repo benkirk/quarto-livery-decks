@@ -7,8 +7,8 @@ The color math against fixed points; every livery (liveries/, or the argument): 
 modes, no check fails, a generated palette passes every check, the build is deterministic, the
 published palettes come out as given (ncar's and ucar's sam-queries pins, nasa's HDS colors); then
 the rules on made-up liveries: one brand hue grows to eight that pass, an avoided hue range stays
-empty, a light pin is lifted for the dark surface, a ninth series never makes a family, unknown
-keys are refused, an extra map joins the generated ones without touching the slots; each livery's build/livery.mplstyle parses in matplotlib (the cycle is the
+empty, a light pin is lifted for the dark surface, a ninth series never makes a family, an
+unknown color is refused (unknown keys are the schema's: test_schema.py), an extra map joins the generated ones without touching the slots; each livery's build/livery.mplstyle parses in matplotlib (the cycle is the
 categorical slots, the sizes the type scale), and the Custom Colors names are plain.
 """
 
@@ -60,7 +60,7 @@ def check_livery(d: Path):
         return
     for m in ("light", "dark"):
         b = ch[m]
-        for key in ("surface", "categorical", "families", "sequential", "sequential-default", "diverging",
+        for key in ("surface", "categorical", "families", "sequential", "default-map", "diverging",
                     "status", "muted", "area-alpha", "published"):
             check(key in b, f"{d.name}: charts.{m}.{key} missing")
         check(len(b["families"]) <= C.SLOTS, f"{d.name}: {m} has {len(b['families'])} families")
@@ -120,7 +120,7 @@ def rules():
     ch = C.charts(pinned, {"categorical": many})
     check(len(ch["light"]["families"]) == C.SLOTS, "a ninth series made a family")
     check("fail" not in C.states(ch), "a published palette's failure is not downgraded")
-    for bad in ({"colours": []}, {"dark": {"cycle": []}}, {"anchors": ["no-such-color"]}):
+    for bad in ({"anchors": ["no-such-color"]}, {"default-map": "no-such-color"}):   # unknown keys: test_schema.py
         try:
             C.charts(pinned, bad)
             check(False, f"charts {bad} is accepted")
@@ -129,11 +129,11 @@ def rules():
     # maps: an extra color map beside the generated ones, nameable as the default, leaving the
     # categorical selection as it was; reversed on dark like every map
     warm = ["#F3F0E9", "#D2B39F", "#AE7858", "#9C3F29", "#76312B", "#412429"]
-    plain, mapped = C.charts(one, {}), C.charts(one, {"maps": {"warm": warm}, "sequential": "warm"})
+    plain, mapped = C.charts(one, {}), C.charts(one, {"maps": {"warm": warm}, "default-map": "warm"})
     check(mapped["light"]["sequential"]["warm"] == warm and mapped["dark"]["sequential"]["warm"] == warm[::-1],
           "a map is not kept light to dark (reversed on dark)")
-    check(mapped["light"]["sequential-default"] == "warm" and mapped["dark"]["sequential-default"] == "warm",
-          "sequential: <map name> is not the default")
+    check(mapped["light"]["default-map"] == "warm" and mapped["dark"]["default-map"] == "warm",
+          "default-map: <map name> is not the default")
     check(mapped["light"]["categorical"] == plain["light"]["categorical"], "a map changed the categorical slots")
     check(set(mapped["light"]["sequential"]) == set(plain["light"]["sequential"]) | {"warm"}, "a map replaced the generated ramps")
     fs = C.figsize(fake({}, {}))

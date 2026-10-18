@@ -12,7 +12,7 @@ blues and red are too dark for small text on black (NASA Blue 2.0:1, NASA Red 4.
 small-text roles are lifted: `primary-contrast` `light-blue` `#6E9BFF` (7.8:1), `highlight` the
 reference deck's own cyan `#00B0F0` (8.5:1), `muted` `steel` `#A3A7AD` (8.7:1). NASA Red stays
 the accent (tabs, bullets, marks of emphasis); code alerts get `light-red` `#FF4458` through
-`derived: alert-text` (the default blend darkens the accent to 2.0:1). `surface` is `graphite`
+`blends: alert-text` (the default blend darkens the accent to 2.0:1). `surface` is `graphite`
 `#1C2026` (code, table bands), and code text has its own role, `code-text: frost` `#E6E8EB`,
 because the `dark` role stays black for the bars and fields (engine >= 3.8.0). The pptx link
 slots are restated (`hlink: light-blue`, `folHlink: cyan`).

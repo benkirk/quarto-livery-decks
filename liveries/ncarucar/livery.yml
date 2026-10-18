@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
 # brand=ncarucar as a flavor of ncar: only the lockup differs.
 name: ncarucar
 extends: ncar
