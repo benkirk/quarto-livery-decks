@@ -119,7 +119,7 @@ def check_livery(d: Path, swatch: Path | None = None) -> bool:
     missing = [f"{what}: {path}" for path, what in livery_mod.files(livery) if not (d / path).exists()]
     r.check(not missing, "every file the data names exists", "; ".join(missing))
     check_template(r, livery, d)
-    roles = {**livery["roles"], **livery.get("derived", {})}
+    roles = {**livery["roles"], **livery.get("blends", {})}
     for fg, bg in CONTRAST:
         if fg in roles and bg in roles:
             ratio = contrast(roles[fg], roles[bg])

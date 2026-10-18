@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
 # brand=ucar as a flavor: the roles of ncar_branding.sty's ucar branch, the UCAR logo's
 # shape (381/97, drawn at 0.8 of the NSF NCAR lockup's height, as the revealjs theme does).
 name: ucar
@@ -13,7 +15,7 @@ geometry:
     height: 0.0516        # 46.4 px of 900
     aspect: 3.950         # UCAR-Logo_Color_RGB.png, 1588/402
 
-divider:
+section:
   label-color: "#011837"  # Space on Aqua: Light Aqua is too light for the eyebrow (Brand Guide p22)
 
 # Chart colors: ncar's (sam-queries' validated series, the koru ramps, the burn scale) with UCAR
@@ -22,4 +24,4 @@ charts:
   categorical: ["#00A2B4", "#E0681A", "#0057C2", "#D4246B", "#9A7B00", "#6B46C1"]
   dark:
     categorical: ["#11A0B0", "#D9772C", "#4687EA", "#DE4B80", "#AD8D1C", "#8F70E8"]
-  sequential: ucar   # ncar's map along UCAR Aqua (ncar's livery.yml)
+  default-map: ucar  # ncar's map along UCAR Aqua (ncar's livery.yml)

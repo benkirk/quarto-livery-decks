@@ -4,7 +4,13 @@
     "title": "art/constellation.jpg",
     "titlegraphic": "art/campus.jpg"
   },
-  "aspect": "16:9",
+  "blends": {
+    "alert-text": "#958459",
+    "caution-fill": "#F6F2E7",
+    "rule": "#AAA8A3",
+    "table-band": "#F8F6F2",
+    "table-rule": "#C2C0BA"
+  },
   "charts": {
     "brand": [
       "#CFB87C",
@@ -36,6 +42,7 @@
         "#009EB1",
         "#B8566A"
       ],
+      "default-map": "campus",
       "diverging": [
         "#64B9FD",
         "#4D7B9F",
@@ -179,7 +186,6 @@
           "#F6E2E5"
         ]
       },
-      "sequential-default": "campus",
       "status": {
         "critical": "#E3655A",
         "good": "#00893D",
@@ -210,6 +216,7 @@
         "#334C98",
         "#008777"
       ],
+      "default-map": "campus",
       "diverging": [
         "#096FAE",
         "#8CB4D5",
@@ -353,7 +360,6 @@
           "#004E44"
         ]
       },
-      "sequential-default": "campus",
       "status": {
         "critical": "#D2554C",
         "good": "#00672D",
@@ -959,17 +965,6 @@
       "waves": null
     }
   },
-  "derived": {
-    "alert-text": "#958459",
-    "caution-fill": "#F6F2E7",
-    "rule": "#AAA8A3",
-    "table-band": "#F8F6F2",
-    "table-rule": "#C2C0BA"
-  },
-  "divider": {
-    "label": "Section",
-    "tab": true
-  },
   "frametitle": {
     "align": "center",
     "body": 0.1972,
@@ -977,30 +972,30 @@
     "tab": false
   },
   "geometry": {
-    "divider": {
-      "bottom": 0.0889,
-      "top": 0.1333
-    },
     "full": {
       "caption": 0.06,
-      "floor": 0.075,
+      "footline": 0.075,
       "pad": 0.025
     },
     "logo": {
       "aspect": 1.83,
-      "closing": 0.1,
+      "closing-height": 0.1,
       "corner": "top-left",
       "height": 0.135,
       "inset": 0.015,
-      "section": 0.08,
-      "title": 0.09,
+      "section-height": 0.08,
+      "title-height": 0.09,
       "top": 0.04
     },
     "margin": 0.06,
     "pagenumber": {
       "corner": "bottom-right"
     },
-    "tab": 0.018
+    "section": {
+      "bottom": 0.0889,
+      "top": 0.1333
+    },
+    "tab-width": 0.018
   },
   "installed-fonts": {
     "base": {
@@ -1141,6 +1136,10 @@
     "secondary": "#565A5C",
     "surface": "#F3F0E9",
     "warning": "#CFB87C"
+  },
+  "section": {
+    "label": "Section",
+    "tab": true
   },
   "signoff": {
     "aspect": 6.317,

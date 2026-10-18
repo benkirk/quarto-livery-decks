@@ -14,6 +14,7 @@ dependencies:
   - pip:
       - bash_kernel
       - ipykernel
+      - jsonschema    # livery_build.py validates livery.yml (_extensions/engine/livery.schema.json)
       - jupyter_client
       - matplotlib    # plots in the livery (build/livery.mplstyle, the engine's mpl/livery_mpl.py)
       - nbclient

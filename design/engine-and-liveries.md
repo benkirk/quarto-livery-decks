@@ -151,19 +151,11 @@ liveries/<name>/
   _brand.yml      the authoring manifest, in the Quarto/Posit brand.yml standard, kept
                   strictly standard: color.palette plus color.primary/secondary/foreground/
                   background, typography fonts with file sources, logo light and dark
-  livery.yml      engine knobs the standard has no slot for: extends; roles (primary-text,
-                  primary-contrast, accent, muted, surface, warning, dark); art {title,
-                  content, section, closing, feature}; divider {label, eyebrow, tab};
-                  signoff {light, dark, aspect, height, bottom, corner}: a second lockup at
-                  the foot; geometry.logo.corner (top-right | top-left | none) and
-                  geometry.pagenumber.corner (bottom-left | bottom-right); title {style:
-                  cover | band, ...}; marks {<role>: {logo, signoff}}: the mark and sign-off
-                  each field wears by its role (background, primary, the band's field);
-                  installed-fonts {base, headings}: installed faces preferred over the
-                  bundled ones; pptx {template, fonts, typeface, heading-typeface, scheme};
-                  feature {style: bar | cover}: the photo slide's look; compositions
-                  {<name>: {<key>: ...}}: overrides of the composition boxes (section 5);
-                  aspect (16:9 default); overrides. Any other key is warned about
+  livery.yml      engine knobs the standard has no slot for, `schema: 1` first; the schema
+                  is _extensions/engine/livery.schema.json (JSON Schema 2020-12), its
+                  reference liveries/REFERENCE.md (generated: livery.py schema --doc).
+                  livery_build.py validates each file as written, before extends merges,
+                  and refuses an unknown key or an out-of-range value with its path
   template.pptx   THE SPEC: pandoc-compliant, derived from the reference deck (section 6)
   logos/          pdf (LaTeX) and png/svg (web, RGB), same basenames, light and dark variants
   art/            background art per slide kind: svg (web) + pdf (LaTeX) + png (pptx master

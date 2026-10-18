@@ -167,7 +167,7 @@ class Builder:
 
     # ------------------------------------------------------------------ master
     def master(self):
-        g = self.geom; m, tab = g["margin"], g["tab"]
+        g = self.geom; m, tab = g["margin"], g["tab-width"]
         title_top, rule_y, body_bottom = 0.049, 0.1444, 1 - 0.0778
         body_top = self.L.get("frametitle", {}).get("body", 0.1667)   # below a taller mark
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
@@ -262,7 +262,7 @@ class Builder:
         the column's middle (section_subtitle.py places them on each slide)."""
         col = c["column"]; x, y, w, h = col["box"]; role = col["role"]
         no_inset = 'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="{}"><a:normAutofit/></a:bodyPr><a:lstStyle>'
-        tab = lambda ty, th: [self.rect("Title tab", 0, ty, self.geom["tab"], th, "accent4")] if col["tab"] else []
+        tab = lambda ty, th: [self.rect("Title tab", 0, ty, self.geom["tab-width"], th, "accent4")] if col["tab"] else []
         out = []
         if kind == "title":
             if col["anchor"] == "middle":   # the band: the title down to the rule at the middle, the subtitle under it

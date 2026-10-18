@@ -82,7 +82,7 @@ def palettes(out):
         ch = json.load(open(os.path.join(LIVERIES_DIR, name, "build", "livery.json")))["charts"]
         for m in ("light", "dark"):
             b = ch[m]
-            rows.append((f"{name} {m}", b["surface"], b["categorical"][:8], b["sequential"][b["sequential-default"]],
+            rows.append((f"{name} {m}", b["surface"], b["categorical"][:8], b["sequential"][b["default-map"]],
                          b["diverging"]))
     width = LW + 8 * (S + G) + 30 + 260 + 30 + 220 + 12
     img = Image.new("RGB", (width, len(rows) * (S + 10) + 10), "#FFFFFF")

@@ -3,7 +3,13 @@
     "content": "art/starfield.jpg",
     "titlegraphic": "../nasa/art/earth-limb.jpg"
   },
-  "aspect": "16:9",
+  "blends": {
+    "alert-text": "#FF4458",
+    "caution-fill": "#2E2408",
+    "rule": "#606367",
+    "table-band": "#111317",
+    "table-rule": "#494D51"
+  },
   "charts": {
     "brand": [
       "#E42E25",
@@ -43,6 +49,7 @@
         "#4B9609",
         "#0CC9AC"
       ],
+      "default-map": "blue",
       "diverging": [
         "#83B1FF",
         "#5C76A1",
@@ -232,7 +239,6 @@
           "#FEEBBE"
         ]
       },
-      "sequential-default": "blue",
       "sets": {
         "2": [
           "#256EE4",
@@ -291,6 +297,7 @@
         "#387D00",
         "#0CC9AC"
       ],
+      "default-map": "blue",
       "diverging": [
         "#1159CD",
         "#8AADE7",
@@ -480,7 +487,6 @@
           "#291C00"
         ]
       },
-      "sequential-default": "blue",
       "sets": {
         "2": [
           "#1159CD",
@@ -1110,17 +1116,6 @@
       "waves": null
     }
   },
-  "derived": {
-    "alert-text": "#FF4458",
-    "caution-fill": "#2E2408",
-    "rule": "#606367",
-    "table-band": "#111317",
-    "table-rule": "#494D51"
-  },
-  "divider": {
-    "label": "Section",
-    "tab": true
-  },
   "frametitle": {
     "align": "left",
     "body": 0.1667,
@@ -1128,29 +1123,29 @@
     "tab": true
   },
   "geometry": {
-    "divider": {
-      "bottom": 0.0889,
-      "top": 0.1333
-    },
     "full": {
       "caption": 0.06,
-      "floor": 0.075,
+      "footline": 0.075,
       "pad": 0.025
     },
     "logo": {
       "aspect": 1.2146,
-      "closing": 0.16,
+      "closing-height": 0.16,
       "corner": "top-right",
       "height": 0.075,
-      "section": 0.11,
-      "title": 0.16,
+      "section-height": 0.11,
+      "title-height": 0.16,
       "top": 0.045
     },
     "margin": 0.06,
     "pagenumber": {
       "corner": "bottom-right"
     },
-    "tab": 0.018
+    "section": {
+      "bottom": 0.0889,
+      "top": 0.1333
+    },
+    "tab-width": 0.018
   },
   "latex": {
     "colors": {
@@ -1257,6 +1252,10 @@
     "secondary": "#8A8D8F",
     "surface": "#1C2026",
     "warning": "#FFC72C"
+  },
+  "section": {
+    "label": "Section",
+    "tab": true
   },
   "signoff": {
     "aspect": 22.208,

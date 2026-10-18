@@ -31,7 +31,7 @@ def today(L: dict) -> dict:
     logo, art, so = g["logo"], L.get("art", {}), L.get("signoff")
     has = lambda k: isinstance(art.get(k), str)
     waves = art.get("waves")
-    t = {**lb.BAND, "logo-height": logo.get("title", 0.09), **L.get("title", {})}
+    t = {**lb.BAND, "logo-height": logo.get("title-height", 0.09), **L.get("title", {})}
     if so:
         t.setdefault("signoff-height", so["height"])
     pad = 1 - 2 * m   # in-flow percentages are of the padded box (scss padding: ... var(--engine-margin))
@@ -53,7 +53,7 @@ def today(L: dict) -> dict:
     # title: padding 180px m 60px, mark top 72px, text max-width 58% (44% with a photo), fineprint bottom 36px max-width 50%
     title = {**empty, "field": {"role": "primary", "box": box(0, 0, 1, 1)}, "art": "title" if has("title") else None,
              "waves": wave("bands", waves and waves["shift"]["title"], [0.18, 0.10]),
-             "mark": mark(72 / H, logo["title"], "primary"), "signoff": signoff("primary"),
+             "mark": mark(72 / H, logo["title-height"], "primary"), "signoff": signoff("primary"),
              "column": {"box": box(m, 180 / H, 0.58 * pad, 1 - 240 / H), "anchor": "top", "role": "primary-text",
                         "tab": True, "rule": rule},
              "fineprint": {"box": box(m, 1 - 36 / H - 0.10, 0.50, 0.10), "anchor": "bottom", "role": "primary-text"}}
@@ -85,15 +85,15 @@ def today(L: dict) -> dict:
     ccol = {"box": box(m, 150 / H, 0.60 * pad, 1 - 230 / H), "anchor": "middle", "role": "primary-text", "tab": True, "rule": None}
     closing = {**empty, "field": {"role": "primary", "box": box(0, 0, 1, 1)}, "art": "closing" if has("closing") else None,
                "waves": wave("bands", waves and waves["shift"]["title"], [0.18, 0.10]),
-               "mark": mark(81 / H, logo["closing"], "primary"), "signoff": signoff("primary"), "column": ccol}
+               "mark": mark(81 / H, logo["closing-height"], "primary"), "signoff": signoff("primary"), "column": ccol}
     cband = {**empty, "field": {"role": t["field"], "box": box(0, 0, 1, 1)},
              "art": "closing" if has("closing") else "title" if has("title") else None,
              "mark": smark, "signoff": ssign, "column": {**ccol, "role": t["field-text"]}}
-    # section: padding divider-top m divider-bottom, flex-centred, h1 max-width 62%, mark top 72px
-    dv, d = g["divider"], L.get("divider", {})
+    # section: padding section-top m section-bottom, flex-centred, h1 max-width 62%, mark top 72px
+    dv, d = g["section"], L.get("section", {})
     section = {**empty, "field": {"role": "primary", "box": box(0, 0, 1, 1)}, "art": "section" if has("section") else None,
                "waves": wave("bands", waves and waves["shift"]["section"], [0.18, 0.10]),
-               "mark": mark(72 / H, logo["section"], "primary"), "signoff": signoff("primary"),
+               "mark": mark(72 / H, logo["section-height"], "primary"), "signoff": signoff("primary"),
                "column": {"box": box(m, dv["top"], 0.62 * pad, 1 - dv["top"] - dv["bottom"]), "anchor": "middle",
                           "role": "primary-text", "tab": d.get("tab", True), "rule": None},
                "eyebrow": {"label": d.get("label", "Section"), "color": d.get("label-color", "secondary")}}
@@ -153,12 +153,12 @@ EXPECTED_DELTAS = {
     "art.title under light": ({"pdf": "painted", "html": "painted", "pptx": "none", "decided": None},
                                each(("title-light", "closing-light"), lambda x, L: x.update(art=None))),
     "section column": ({"pdf": "vfill thirds, 0.62W", "html": "centred in divider, 0.546W", "pptx": "centred, 0.62",
-                        "decided": "centred in [m, divider.top, 0.62, ...]"}, each(("section",), setbox("column", 2, 0.62))),
+                        "decided": "centred in [m, section.top, 0.62, ...]"}, each(("section",), setbox("column", 2, 0.62))),
     "closing column": ({"pdf": "vfill thirds, 0.62W", "html": "centred in padding, 0.528W", "pptx": "fixed 0.30/0.49, 0.62W",
                         "decided": "[m, mark bottom + 0.03, 0.62, 0.88 - y] middle"},
                        each(("closing", "closing-light", "closing-band"), lambda x, L: x["column"].update(
-                           box=[L["geometry"]["margin"], 0.09 + L["geometry"]["logo"]["closing"] + 0.03, 0.62,
-                                0.88 - 0.09 - L["geometry"]["logo"]["closing"] - 0.03]))),
+                           box=[L["geometry"]["margin"], 0.09 + L["geometry"]["logo"]["closing-height"] + 0.03, 0.62,
+                                0.88 - 0.09 - L["geometry"]["logo"]["closing-height"] - 0.03]))),
     "closing-band column": ({"pdf": "strut + vfill", "html": "as closing", "pptx": "0.30/0.49",
                              "decided": "[m, 0.10, 0.62, bottom - 0.13]"},
                             lambda c, L: c["closing-band"]["column"].update(box=[L["geometry"]["margin"], 0.10, 0.62,
@@ -226,7 +226,7 @@ def flavor(tmp: Path, name: str, parent: Path, knobs: str) -> dict:
         (tmp / parent.name).symlink_to(parent)
     d = tmp / name; d.mkdir()
     (d / "_brand.yml").write_text("{}\n")
-    (d / "livery.yml").write_text(f"name: {name}\nextends: {parent.name}\n{knobs}")
+    (d / "livery.yml").write_text(f"schema: 1\nname: {name}\nextends: {parent.name}\n{knobs}")
     (d / "template.pptx").write_text("")   # resolve() only warns without one
     return lb.resolve(d)[0]
 

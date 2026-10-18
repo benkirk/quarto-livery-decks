@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
 # Engine knobs for NASA dark: nasa with content slides on black (the reference deck's look), a faint
 # deep field behind them, the cover and closing on black with the full-color insignia (the brand
 # allows it on black and on photographs). Dividers stay on NASA Blue. Everything not here is nasa's.
@@ -12,7 +14,7 @@ roles:
   code-text: frost          # the dark role is black here (bars, fields), so code text needs its own
   dark: black
 
-derived:
+blends:
   alert-text: light-red     # the default blend darkens the accent: 2.0:1 on graphite
 
 marks:                      # the field each slide wears picks its marks: black slides the full-color

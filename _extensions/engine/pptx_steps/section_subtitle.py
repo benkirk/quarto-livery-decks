@@ -41,9 +41,9 @@ PT_PX = CANVAS["h"] / 900                   # points of type per slide pixel
 COLUMN = LIVERY["compositions"]["section"]["column"]   # the divider's text column (compositions)
 BLOCK_TOP = round(COLUMN["box"][1] * 900)                 # the block is centred between its top
 BLOCK_BOTTOM = round((COLUMN["box"][1] + COLUMN["box"][3]) * 900)   # and bottom (120 ... 820 px)
-TAB_W = round(GEOM["tab"] * 1600)           # the divider's tab, geometry.tab of the width
+TAB_W = round(GEOM["tab-width"] * 1600)     # the divider's tab, geometry.tab-width of the width
 TAB = COLUMN["tab"]
-LABEL = LIVERY["divider"]["label"]          # "Section"; cap="all" sets it in capitals
+LABEL = LIVERY["section"]["label"]          # "Section"; cap="all" sets it in capitals
 LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
 LABEL_GAP = 10                              # margin-bottom 0.5em
 BODY_GAP = 22                               # .engine-subtitle margin-top 0.7em
