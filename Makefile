@@ -12,7 +12,7 @@ config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/p
 # -------------------------------------------------------------------
 help: ## Show this help message
 	@echo ""
-	@echo -e "\033[1;36mquarto-docs-framework - Makefile Help\033[0m"
+	@echo -e "\033[1;36mquarto-livery-decks - Makefile Help\033[0m"
 	@echo -e "\033[1;36m=====================================\033[0m"
 	@echo ""
 	@echo -e "\033[1mAvailable targets:\033[0m"
@@ -28,15 +28,15 @@ help: ## Show this help message
 	@echo -e "  \033[33mmake conda-env\033[0m           Create conda environment from conda-env.yaml"
 	@echo ""
 
-# The engine's pure-LaTeX side (docs/latex: the starter deck, the examples and their
+# The engine's pure-LaTeX side (latex/: the starter deck, the examples and their
 # variants) and the engine's tests (tests/: the compositions and the type scale).
-latex: ## Build docs/latex: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
-	$(MAKE) -C docs/latex default examples variants
+latex: ## Build latex/: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
+	$(MAKE) -C latex default examples variants
 
 test: ## Run the engine's tests: livery_build.py --check, livery_check.py, compositions, type
 	set -e
-	python3 docs/common/_extensions/engine/livery_build.py --check docs/common/liveries/*/
-	python3 docs/common/_extensions/engine/livery_check.py docs/common/liveries/*/
+	python3 _extensions/engine/livery_build.py --check liveries/*/
+	python3 _extensions/engine/livery_check.py liveries/*/
 	python3 tests/test_compositions.py
 	python3 tests/test_type.py
 

@@ -2,12 +2,14 @@
 .git
 .github
 conda-env/
-# The host's rendered decks and caches: outputs anchored one level under docs/, so the
-# tracked assets under docs/common/ (every livery's template.pptx) are never matched.
-docs/*/*.pptx
-docs/*/*.pdf
-docs/*/*.html
-docs/*/*-overleaf.zip
+# The host's rendered decks and caches: outputs anchored one level under decks/ and latex/,
+# so tracked assets (every livery's template.pptx, the example diagrams) are never matched.
+decks/*/*.pptx
+decks/*/*.pdf
+decks/*/*.html
+decks/*/*-overleaf.zip
+latex/*.pdf
+latex/*-overleaf.zip
 **/*_files/
 **/.quarto/
 **/*.quarto_ipynb
@@ -17,9 +19,9 @@ docs/*/*-overleaf.zip
 **/_baseline/
 **/_check/
 # The README's screenshots (3 MB nothing in the image reads)
-docs/quickstart/screenshots/
+decks/quickstart/screenshots/
 # A livery's reference deck and its extracted media (gitignored too)
-docs/common/liveries/*/reference/media/
-docs/common/liveries/*/reference/*.pptx
+liveries/*/reference/media/
+liveries/*/reference/*.pptx
 .playwright-mcp/
 *~

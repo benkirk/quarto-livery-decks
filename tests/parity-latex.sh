@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Parity check for the engine refactor (docs/design/engine-and-liveries.md, section 8).
+# Parity check for the engine refactor (design/engine-and-liveries.md, section 8).
 #
 #   tests/parity-latex.sh baseline   build every deck and snapshot it into _baseline/latex/
 #   tests/parity-latex.sh check      rebuild, snapshot into _check/latex/, diff against the baseline
 #
-# Decks: docs/latex's make default html examples variants. A snapshot holds, per PDF, its
+# Decks: latex/'s make default html examples variants. A snapshot holds, per PDF, its
 # `pdftotext -layout` and every page rendered at 40 dpi (pdftoppm), and per HTML deck the
 # file itself. NORMALIZE (a sed program) is applied to the text snapshots of both sides, so a
 # rename can be checked with its nouns folded: NORMALIZE='s/ncar/X/g; s/engine/X/g'.
@@ -12,7 +12,7 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-LATEX=$ROOT/docs/latex
+LATEX=$ROOT/latex
 BASE=$ROOT/_baseline/latex CHECK=$ROOT/_check/latex
 verb=${1:-}
 case "$verb" in baseline|check) ;; *) sed -n '2,11p' "$0"; exit 2;; esac

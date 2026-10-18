@@ -1,4 +1,4 @@
-# LaTeX build products (docs/.gitignore already covers talk.pdf, *_files/, .quarto/
+# LaTeX build products (the root .gitignore covers talk.pdf, *_files/, .quarto/
 # and the Overleaf zip)
 *.aux
 *.fdb_latexmk

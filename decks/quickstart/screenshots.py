@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""README screenshots of the quickstart deck: `make screenshots` in docs/quickstart/.
+"""README screenshots of the quickstart deck: `make screenshots` in decks/quickstart/.
 
 Reads the built quickstart.{html,pdf} and writes the committed PNGs in screenshots/:
   NN-<name>.png   one HTML slide each, 960 px wide (SLIDES below)

@@ -1,13 +1,13 @@
 # Shared recipes for decks (pptx, revealjs, beamer). A deck Makefile includes
-# this file by a path relative to the deck directory: `include ../Make.common`
-# for docs/<deck>/ here, `include ../framework/docs/Make.common` in a repo that
+# this file by a path relative to the deck directory: `include ../../Make.common`
+# for decks/<deck>/ here, `include ../framework/Make.common` in a repo that
 # has this framework as a submodule (README "Using the framework from another
-# repo"). Include it; a symlink to it would point PRESENTATIONS_ROOT at the
+# repo"). Include it; a symlink to it would point FRAMEWORK_ROOT at the
 # link's own directory. One deck per directory by default, named after the
 # directory (OUT); a directory holding several decks lists them in DECKS (each
 # <name>.qmd builds <name>.{pptx,html,pdf}). `site` gathers the HTML decks into
 # one static site and `publish` pushes it to a GitHub Pages branch (README
-# "Publishing the HTML decks"). With no Makefile at all, `make -f <framework>/docs/Make.common
+# "Publishing the HTML decks"). With no Makefile at all, `make -f <framework>/Make.common
 # DECKS="a b"` works the same (the container's entrypoint does that, README "Building in the
 # container"): this file reads its own location from MAKEFILE_LIST.
 
@@ -18,33 +18,34 @@
 # A failed post-render step must not leave a "finished" output behind.
 .DELETE_ON_ERROR:
 
-PRESENTATIONS_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
-EMBED_FONTS        := $(PRESENTATIONS_ROOT)common/utils/embed_fonts.py
-ENABLE_AUTOFIT     := $(PRESENTATIONS_ROOT)common/utils/enable_autofit.py
-SECTION_SUBTITLE   := $(PRESENTATIONS_ROOT)common/utils/section_subtitle.py
-STYLE_FOOTNOTES    := $(PRESENTATIONS_ROOT)common/utils/style_footnotes.py
-LINK_CAPTIONS      := $(PRESENTATIONS_ROOT)common/utils/link_captions.py
-SLIDE_LAYOUT       := $(PRESENTATIONS_ROOT)common/utils/slide_layout.py
-STYLE_TABLES       := $(PRESENTATIONS_ROOT)common/utils/style_tables.py
-TYPE_STEP          := $(PRESENTATIONS_ROOT)common/utils/type_step.py
-DECK_QA            := $(PRESENTATIONS_ROOT)common/utils/deck_qa.py
-COMP_MEASURE       := $(PRESENTATIONS_ROOT)common/utils/comp_measure.py
-SITE_INDEX         := $(PRESENTATIONS_ROOT)common/utils/site_index.py
-SHARED_QUARTO_YML  := $(PRESENTATIONS_ROOT)common/_quarto.yml
-SHARED_EXTENSIONS  := $(PRESENTATIONS_ROOT)common/_extensions
-SHARED_COMMON      := $(PRESENTATIONS_ROOT)common
-OVERLEAF_ZIP       := $(PRESENTATIONS_ROOT)common/_extensions/engine/overleaf_zip.py
+FRAMEWORK_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
+EMBED_FONTS        := $(FRAMEWORK_ROOT)common/utils/embed_fonts.py
+ENABLE_AUTOFIT     := $(FRAMEWORK_ROOT)common/utils/enable_autofit.py
+SECTION_SUBTITLE   := $(FRAMEWORK_ROOT)common/utils/section_subtitle.py
+STYLE_FOOTNOTES    := $(FRAMEWORK_ROOT)common/utils/style_footnotes.py
+LINK_CAPTIONS      := $(FRAMEWORK_ROOT)common/utils/link_captions.py
+SLIDE_LAYOUT       := $(FRAMEWORK_ROOT)common/utils/slide_layout.py
+STYLE_TABLES       := $(FRAMEWORK_ROOT)common/utils/style_tables.py
+TYPE_STEP          := $(FRAMEWORK_ROOT)common/utils/type_step.py
+DECK_QA            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
+COMP_MEASURE       := $(FRAMEWORK_ROOT)common/utils/comp_measure.py
+SITE_INDEX         := $(FRAMEWORK_ROOT)common/utils/site_index.py
+SHARED_QUARTO_YML  := $(FRAMEWORK_ROOT)common/_quarto.yml
+SHARED_EXTENSIONS  := $(FRAMEWORK_ROOT)_extensions
+SHARED_LIVERIES    := $(FRAMEWORK_ROOT)liveries
+SHARED_COMMON      := $(FRAMEWORK_ROOT)common
+OVERLEAF_ZIP       := $(FRAMEWORK_ROOT)_extensions/engine/overleaf_zip.py
 
-# The brand: a directory under common/liveries/ (docs/design/engine-and-liveries.md,
+# The brand: a directory under liveries/ (design/engine-and-liveries.md,
 # section 4). `make LIVERY=cu` switches it; LIVERY_DIR is exported for the post-render
 # scripts, which read $(LIVERY_DIR)/build/livery.json through utils/livery.py.
 LIVERY     ?= ncar
-LIVERY_DIR ?= $(SHARED_COMMON)/liveries/$(LIVERY)
+LIVERY_DIR ?= $(SHARED_LIVERIES)/$(LIVERY)
 # A sub-make inherits the exported LIVERY_DIR, which `?=` would keep: an explicit
 # LIVERY= on its command line must win (gallery.py's `make html LIVERY=cu` once
 # stamped cu and linked ncar).
 ifeq ($(origin LIVERY),command line)
-override LIVERY_DIR := $(SHARED_COMMON)/liveries/$(LIVERY)
+override LIVERY_DIR := $(SHARED_LIVERIES)/$(LIVERY)
 endif
 export LIVERY_DIR
 

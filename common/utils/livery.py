@@ -5,7 +5,7 @@
     livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
     livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
 
-The reader lives in the engine (_extensions/engine/livery.py, beside the template
+The reader lives in the engine (<repo>/_extensions/engine/livery.py, beside the template
 builder); this loads it by path, since both files are named livery. `deps` prints
 build/livery.{json,sty,css,theme}, the template and every file the data names (the parent's
 too), joined to the directory as given; nothing when build/livery.json is missing."""
@@ -15,7 +15,7 @@ import os
 import sys
 from pathlib import Path
 
-ENGINE = Path(__file__).resolve().parent.parent / "_extensions" / "engine"
+ENGINE = Path(__file__).resolve().parents[2] / "_extensions" / "engine"
 
 
 def engine_module(name: str):

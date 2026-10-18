@@ -48,7 +48,7 @@ attached here with the font and logo files and the autofit script as an HTML dep
 
 The waves are inline SVG drawn in slide pixels (the theme fixes the slide at
 1600x900) from the same fitted curves as beamerouterthemeEngine.sty (see
-docs/common/utils/fit-waves.py); `themeoptions: [waves=false]` drops them from content
+common/utils/fit-waves.py); `themeoptions: [waves=false]` drops them from content
 slides.
 ]]
 
@@ -83,7 +83,7 @@ local function deck_type_scale(meta, body_pt, who)
 end
 
 -- A bundled livery: liveries/<brand> beside the _extensions/ that holds this extension
--- (docs/common/liveries in the framework). A deck reaches the extension through a linked
+-- (liveries/ at the top of this repo). A deck reaches the extension through a linked
 -- _extensions/, and Lua does not resolve links, so the extension's own directory is found
 -- first: changing into a directory does resolve them.
 local function bundled_livery(extdir, brand)
@@ -384,7 +384,7 @@ end
 ---------------------------------------------------------------------------
 -- brand waves (y runs down here, up in TikZ)
 ---------------------------------------------------------------------------
--- The livery's wave lines (art.waves in livery.json; docs/common/utils/fit-waves.py fits them): each
+-- The livery's wave lines (art.waves in livery.json; common/utils/fit-waves.py fits them): each
 -- two cubics from the top edge to the bottom edge, as {x, y} fractions of the slide (y
 -- down): start, ctrl, ctrl, peak, ctrl, ctrl, end; and the shift of the cover art per
 -- slide kind. Set from the livery in Pandoc(); nil when the livery has no waves.

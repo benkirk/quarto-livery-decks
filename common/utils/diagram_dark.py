@@ -4,7 +4,7 @@
     diagram_dark.py <in.png> <out.png> <background hex> <foreground hex>
 
 Mermaid and Graphviz draw dark lines and text on white. On a dark livery (livery.json "mode":
-"dark") docs/common/diagram-dark.lua sends each diagram Quarto baked for pptx and PDF through
+"dark") common/diagram-dark.lua sends each diagram Quarto baked for pptx and PDF through
 this: every pixel's HLS lightness is inverted (c' = c + 255 - max - min, which keeps hue and
 saturation), then black maps to the slide's background and white to its foreground, channel by
 channel. White becomes the background, black text the foreground, a pale fill its dark shade of

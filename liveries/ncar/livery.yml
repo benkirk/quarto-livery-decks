@@ -65,7 +65,7 @@ divider:
   tab: true
 
 art:                      # backgrounds. waves: the brand's lines, drawn by the engine in the roles'
-  waves:                  # colors (docs/common/utils/fit-waves.py fits them); or a file per slide kind (title,
+  waves:                  # colors (common/utils/fit-waves.py fits them); or a file per slide kind (title,
     shift:                # section, closing, content) placed as the background instead;
                           # titlegraphic: the title photo for decks that set none
       title: 0.20         # how far right of the cover art's position each slide kind draws them

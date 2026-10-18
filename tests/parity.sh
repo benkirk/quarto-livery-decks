@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Parity check for the de-branding refactor (docs/design/engine-and-liveries.md, section 8).
+# Parity check for the de-branding refactor (design/engine-and-liveries.md, section 8).
 #
 #   tests/parity.sh baseline [deck dir...]   build the decks and snapshot them into _baseline/
 #   tests/parity.sh check    [deck dir...]   rebuild, snapshot into _check/, diff against _baseline/
 #
-# Default deck dirs: docs/quickstart docs/sample docs/fixtures, relative to the repository root,
+# Default deck dirs: decks/quickstart decks/sample decks/fixtures, relative to the repository root,
 # each built under every livery in PARITY_LIVERIES (default "ncar cu nsi"; ncar's snapshots keep
 # the deck's name, the others get a -<livery> suffix and guard the engine against regressions).
 # Every deck of a directory (its Makefile's DECKS) gets a snapshot, which
@@ -12,7 +12,7 @@
 # docProps/core.xml carries the render time and custom.xml pandoc's dump of the YAML metadata,
 # so both are skipped), the pptx member list, `pdftotext -layout` of the PDF and its pages at
 # 40 dpi (a differing page fails), the HTML file (Jupyter's random cell ids normalized), three
-# greps (media count, divider labels, embedded fonts), and for docs/quickstart the README
+# greps (media count, divider labels, embedded fonts), and for decks/quickstart the README
 # screenshots, reshot into the snapshot (the committed PNGs are restored afterwards: they
 # were shot on another machine and differ in rasterization and date). Screenshot
 # differences are reported as hints, not failures: reveal's transition timing leaves a
@@ -29,7 +29,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 verb=${1:-}; shift || true
 case "$verb" in baseline|check) ;; *) sed -n '2,13p' "$0"; exit 2;; esac
-dirs=("$@"); [ ${#dirs[@]} -gt 0 ] || dirs=(docs/quickstart docs/sample docs/fixtures)
+dirs=("$@"); [ ${#dirs[@]} -gt 0 ] || dirs=(decks/quickstart decks/sample decks/fixtures)
 # every deck under every livery: ncar is the parity fixture (snapshots keep their names), the
 # others (cu) have no upstream to match and serve as the regression check for engine changes
 liveries=(${PARITY_LIVERIES:-ncar cu nsi})

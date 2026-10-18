@@ -4,4 +4,4 @@
 # (type-body: 10). All share _body.qmd.
 DECKS := photo light photo-light small
 
-include ../Make.common
+include ../../Make.common

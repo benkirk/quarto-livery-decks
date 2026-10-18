@@ -1,3 +1,3 @@
 OUT := $(notdir $(CURDIR))
 
-include ../Make.common
+include ../../Make.common

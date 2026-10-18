@@ -1,6 +1,6 @@
 OUT := $(notdir $(CURDIR))
 
-include ../Make.common
+include ../../Make.common
 
 # The README's images (screenshots/*.png, committed): rerun after editing the deck.
 .PHONY: screenshots gallery

@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 
 UTILS = Path(__file__).resolve().parent
-ENGINE_CHECK = UTILS.parent / "_extensions" / "engine" / "livery_check.py"
-QUICKSTART = UTILS.parents[1] / "quickstart"
+ENGINE_CHECK = UTILS.parents[1] / "_extensions" / "engine" / "livery_check.py"
+QUICKSTART = UTILS.parents[1] / "decks" / "quickstart"
 
 
 def main() -> int:
@@ -27,7 +27,7 @@ def main() -> int:
         ok = subprocess.run([sys.executable, str(ENGINE_CHECK), str(d)]).returncode == 0
         if ok and a.qa:
             ok = subprocess.run(["make", "-C", str(QUICKSTART), "qa", f"LIVERY={d.resolve().name}"]).returncode == 0
-            print(f"{d.resolve().name}: {'ok   ' if ok else 'FAIL '} make -C docs/quickstart qa")
+            print(f"{d.resolve().name}: {'ok   ' if ok else 'FAIL '} make -C decks/quickstart qa")
         bad |= not ok
     return 1 if bad else 0
 

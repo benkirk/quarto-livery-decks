@@ -302,7 +302,7 @@ local function deck_type_scale(meta, body_pt, who)
 end
 
 -- A bundled livery: liveries/<brand> beside the _extensions/ that holds this extension
--- (docs/common/liveries in the framework). A deck reaches the extension through a linked
+-- (liveries/ at the top of this repo). A deck reaches the extension through a linked
 -- _extensions/, and Lua does not resolve links, so the extension's own directory is found
 -- first: changing into a directory does resolve them.
 local function bundled_livery(extdir, brand)

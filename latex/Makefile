@@ -9,14 +9,15 @@
 #   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (overleaf_zip.py)
 #   make clean
 #
-# The theme lives in ../common/_extensions/engine/, the liveries in ../common/liveries/.
-# LaTeX finds the .sty files, a brand='s liveries/<name>/ and its logos through TEXINPUTS,
-# and the bundled fonts through TTFONTS (set here, and by latexmkrc).
+# The theme lives in ../_extensions/engine/, the liveries in ../liveries/. LaTeX finds the
+# .sty files, a brand='s liveries/<name>/ and its logos through TEXINPUTS, and the bundled
+# fonts through TTFONTS (set here, and by latexmkrc), as an Overleaf zip's latexmkrc does.
+# Never $(ROOT)//: that would search conda-env/ too.
 #
-COMMON  := $(abspath $(CURDIR)/../common)
-THEME   := $(COMMON)/_extensions/engine
+ROOT    := $(abspath $(CURDIR)/..)
+THEME   := $(ROOT)/_extensions/engine
 ENGINE  ?= xelatex
-TEXENV  := TEXINPUTS=$(COMMON)//:$(CURDIR)/: TTFONTS=$(COMMON)//:
+TEXENV  := TEXINPUTS=$(THEME)//:$(ROOT)/liveries//:$(ROOT)/:$(CURDIR)/: TTFONTS=$(ROOT)/liveries//:$(THEME)//:
 LATEXMK := latexmk -interaction=nonstopmode -halt-on-error
 
 VARIANTS := template-ucar template-ucp template-ncarucar template-light template-43 template-pdflatex \
@@ -82,7 +83,7 @@ $(DIAGRAMS)/%.pdf: $(DIAGRAMS)/%.mmd
 # files.  overleaf_zip.py packs any livery the same way (the framework's too).
 overleaf: engine-beamer-overleaf.zip
 engine-beamer-overleaf.zip: talk.tex FORCE
-	python3 $(THEME)/overleaf_zip.py $(COMMON)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
+	python3 $(THEME)/overleaf_zip.py $(ROOT)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
 
 clean:
 	latexmk -C -quiet talk.tex 2>/dev/null

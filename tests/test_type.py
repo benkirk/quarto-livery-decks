@@ -3,7 +3,7 @@
 
     tests/test_type.py [<liveries dir>]
 
-For every livery (docs/common/liveries, or the argument): every role and list level is a multiple of 0.5 pt, the
+For every livery (liveries/, or the argument): every role and list level is a multiple of 0.5 pt, the
 template's slide size is the canvas, and every size in its master and layouts is a role's. Then
 the rules on made-up liveries: the defaults, a canvas alone scaling them, a body alone carrying
 the body roles and the levels, an explicit size winning, a flavor inheriting.
@@ -17,7 +17,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent / "docs" / "common"
+ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
 spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
 lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)

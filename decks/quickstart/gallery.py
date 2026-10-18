@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The README's livery gallery: `make gallery` in docs/quickstart/ writes screenshots/liveries.png.
+"""The README's livery gallery: `make gallery` in decks/quickstart/ writes screenshots/liveries.png.
 
 One row per livery in LIVERIES (built with `make html LIVERY=<name>`, which is safe to switch:
 Make drops the stale HTML dependency first), four HTML slides across: the title, a divider, a
