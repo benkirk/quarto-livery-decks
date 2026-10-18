@@ -396,6 +396,14 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, #58 step 4: plot authors.** `livery_mpl` states its stable API (`__all__`: `use`,
+  `colors`, `cycle`, `families`, `status`, `muted`, `figsize()`, `shade_family()`, `dark()`, and the
+  colormaps), listed in `decks/plots/README.md`, a change to it a changelog *Plots* entry; and
+  `__version__`, the engine's (`_extension.yml` in the engine, the bundle's `livery.json` stamp in
+  a charts bundle). The bundle's README names the version and its release. CI's standalone-bundle
+  step and `test_cli.py` check the version and the stamp. Ben: the zip alone now; a
+  pip-installable `livery_mpl` is forward work (his webapp will want it for its plots). #58's
+  steps are done; v2.0.0 waits on Ben's word.
 - **2026-10-18, #58 step 3: versions, immutable releases, a changelog.** `livery build` stamps
   `engine` (`_extension.yml`'s version) and `schema` into `build/livery.json`; `livery deps`, which
   `Make.common` runs once a build, warns when a livery's stamp is another version ("rebuild it with

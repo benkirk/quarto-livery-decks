@@ -52,9 +52,15 @@ script below is now a `livery` subcommand.
   `themeoptions: [brand=ucar]`.
 
 ### Plots
+- `livery_mpl` has a stated, stable API: `__all__` (`use`, `colors`, `cycle`, `families`,
+  `status`, `muted`, `figsize()`, `shade_family()`, `dark()`) and the `livery`, `livery_r`,
+  `livery_div` and `livery_seq_*` colormaps with their `_dark` twins, listed in
+  `decks/plots/README.md`; a change to them is an entry here.
+- `livery_mpl.__version__` is the engine's version (a charts bundle's: the engine that packed it).
+  A bundle's `livery.json` carries the `engine` and `schema` stamp, and its README names the
+  version and its release.
 - A livery's default color map is `charts.default-map` (was `charts.sequential`), and
-  `livery.json` `charts.<mode>.default-map` (was `sequential-default`). `livery_mpl`'s names are
-  unchanged.
+  `livery.json` `charts.<mode>.default-map` (was `sequential-default`).
 
 ### LaTeX
 - **`brand=` is gone**: `livery=` is the one option, a bundled livery being

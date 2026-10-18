@@ -28,6 +28,10 @@ matplotlib (and seaborn, which draws through it) in the {name} livery's chart co
 type sizes, from quarto-livery-decks (design/charts-and-plots.md). Generated from the livery's
 build/livery.json; do not edit, rebuild it (`make charts-zip LIVERY={name}`).
 
+Packed by engine {engine} (`livery_mpl.__version__`) from a livery written for schema {schema}.
+Each release attaches one bundle per livery (this version's: .../releases/tag/v{engine} at
+https://github.com/benkirk/quarto-livery-decks), and its CHANGELOG.md says what changed for plots.
+
     import livery_mpl                  # fonts, style, colormaps: every plot after this is styled
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()           # the slide's content area, {full_w} x {full_h} in
@@ -42,7 +46,10 @@ Keep this directory beside your script, or put it on PYTHONPATH. Without the hel
   a figure at this size has the slide's text sizes ({body} pt labels on a {canvas} in slide)
 - colormaps: livery (sequential), livery_div (diverging), livery_seq_<ramp>, each with _dark
 - with livery_mpl.dark(force=True): the dark chrome and colors, for a dark slide or page
+- livery_mpl.use(path): another livery (a directory, or another bundle)
 - fonts/: the livery's fonts and their licenses
+
+These names, livery_mpl.__all__ and the colormaps, are the helper's stable API.
 """
 
 
@@ -72,7 +79,7 @@ def bundle(livery_dir: Path) -> dict[str, bytes | Path]:
     out["livery_mpl.py"] = ENGINE / "mpl" / "livery_mpl.py"
     ch, ty = data["charts"], data["type"]
     out["README.md"] = README.format(
-        name=name, mode=ch["mode"], full_w=ch["figsize"]["full"][0], full_h=ch["figsize"]["full"][1],
+        name=name, engine=data["engine"], schema=data["schema"], mode=ch["mode"], full_w=ch["figsize"]["full"][0], full_h=ch["figsize"]["full"][1],
         body=ty["roles"]["body"]["pt"], canvas=f"{ty['canvas']['w'] / 72:g} x {ty['canvas']['h'] / 72:g}").encode()
     with tempfile.TemporaryDirectory() as tmp:
         sheet = Path(tmp) / f"charts-{name}.png"
