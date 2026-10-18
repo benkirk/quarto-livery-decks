@@ -142,6 +142,21 @@ notification Light Red `#FFEBEE`, Yellow `#FFF9C4`. The brand page
 Medium Blue are the only candidates for `charts.extended`, and they are website UI colors, not
 brand colors: a decision for step 5.
 
+The style guide's source, `CuBoulder/styleguide` (`scss/modules/_colors.scss`, last changed
+2019-12-06; its header links Material Design's color tool), defines two more, `$purple #5E35B1`
+and `$orange #FF9800`, that the site never lists, and its `docs/_data/colors.yml` has errors (Blue as
+`#E1F5FE`, Red as Brick's `#ae5a39`): not a source to pin brand colors to.
+
+**CU Boulder Accessible Color Contrast Recommendations** (Rev. 6-28-17, one page, CU Digital
+Accessibility; `colorado.edu/digital-accessibility/sites/default/files/attached-files/
+cu_boulder_accessible_color_contrast_recommendations_rev_6-28-17.pdf`): a WCAG 2.0 AA text/background
+matrix of White, Black, Gold `#CFB87C` (PMS 4525 C, CMYK 0 10 48 22), Dark Gray `#565A5C` (PMS 425 C,
+CMYK 38 28 21 63), Light Gray `#A2A4A3` (PMS 422 C, CMYK 16 11 11 29) and Web Express `#007BC8`
+(Process Blue C). It confirms our gold and grays with their Pantones, and that Gold and Light Gray
+fail on white even as large text (why the chart slots move CU Gold to `#AD8E38` and never use Light
+Gray as a series). Web Express was the old Web Express CMS's blue: `#007BC8` here, where the
+accessibility web page tests `#0377BD`; superseded by CUB Sky Blue `#096FAE`, and unused.
+
 **Plots in PDF take Type 3 fonts.** TeX Gyre Heros is a CFF OpenType font (`OTTO`). Asked for
 `pdf.fonttype: 42`, matplotlib (3.11) embeds it but declares it a TrueType font, and poppler reports
 "Mismatch between font type and embedded font file"; Ghostscript renders it silently. So

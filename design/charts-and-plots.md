@@ -392,6 +392,8 @@ Brand pages, read through search results (the sites were blocked from the sessio
 [CU Boulder visual identity](https://www.colorado.edu/imc/cu-boulder-brand/visual-identity),
 [CU color specifications](https://www.cu.edu/brand-and-identity-guidelines/color-specifications),
 [Accessible CU Boulder color combinations](https://www.colorado.edu/digital-accessibility/color-combinations),
+[CU Boulder Accessible Color Contrast Recommendations, rev. 6-28-17](https://www.colorado.edu/digital-accessibility/sites/default/files/attached-files/cu_boulder_accessible_color_contrast_recommendations_rev_6-28-17.pdf) (read 2026-10-18),
+[CU Boulder web style guide](https://styleguide.colorado.edu) and its source [CuBoulder/styleguide](https://github.com/CuBoulder/styleguide) (a Material Design web palette, 2019),
 [NASA Brand Center guidelines](https://www.nasa.gov/nasa-brand-center/brand-guidelines),
 [NASA insignia guidelines for grantees](https://www.nasa.gov/wp-content/uploads/2018/03/nasa_insignia_guidelines_for_nasa_grantees.pdf),
 [NASA style guide, 2006](https://w3.cs.jmu.edu/bernstdh/web/common/policies/NASA_StyleGuide_Nov06.pdf),
