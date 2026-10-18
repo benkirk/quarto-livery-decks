@@ -74,7 +74,7 @@ default color map, the diverging scale. Where they come from (each livery's
 The colors pass the dataviz checks (lightness band, chroma, separation under color blindness,
 contrast on the surface). A palette the engine generates must pass. A brand's published palette
 is kept as given, and its shortfalls are reported as warnings. `python3
-_extensions/engine/livery_check.py liveries/<name> --swatch DIR` prints the checks and draws a
+_extensions/engine/livery.py check liveries/<name> --swatch DIR` prints the checks and draws a
 livery's full contact sheet.
 
 ## Outside the decks

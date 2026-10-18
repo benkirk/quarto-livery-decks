@@ -14,26 +14,33 @@ Overleaf packer) was `benkirk/beamer-livery-theme` until 2026-10, when it merged
 history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
-`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by the engine's `livery_build.py`
+`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by `livery build`
 into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
 validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
 out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
-schema (`livery.py schema --doc`, `--check` in CI and `make test`). A key is renamed only with Ben's
+schema (`livery schema --doc`, `--check` in CI and `make test`). A key is renamed only with Ben's
 agreement.
+
+**The `livery` command** is `_extensions/engine/livery.py` (argparse subcommands; README for
+owners: `liveries/README.md`): `new` (`livery_new.py`: a scaffold that builds as it stands, Public
+Sans from `liveries/nasa` as its stand-in face, a placeholder mark; `--from <deck>`, `--extends`),
+`inspect` (`livery_inspect.py`), `build [--check]` (`livery_build.py`), `template`
+(`livery_template.py`), `check [--swatch] [--qa]` (`livery_check.py`; `--qa` runs the quickstart's
+`make qa` with `LIVERY=` for a bundled livery, else `LIVERY_DIR=`), `all` (build, template,
+check; the root `make livery LIVERY=|LIVERY_DIR=`), `zip [--charts]` (`overleaf_zip.py`,
+`mpl_zip.py`), `schema --doc`, and `deps|mono|figsize` for `Make.common`. The modules have no
+entry points of their own; `livery.py` imports each only when its subcommand runs, so `zip`
+needs nothing beyond Python (the release job).
 `design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
 next step (#58, the customer surface: a `livery` command, a `livery.yml` schema, immutable
 releases and a changelog).
 
-The engine also holds the json reader (`livery.py`), the template builder
-(`livery_template.py`), the wave shapes (`pptx_waves.py`) and the livery checks
-(`livery_check.py`), and the pptx post-render steps (`pptx_post.py` over `pptx_steps/`). The
-reader's `deps|mono|figsize <dir>` commands serve `Make.common`; `utils/comp_measure.py`,
-`deck_qa.py` and `site_index.py` append the engine's directory to `sys.path` to import it, and
-`utils/livery_check.py` wraps the engine's checks and adds `--qa`.
-Onboarding a brand from a reference PowerPoint (design section 6):
-`utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck, the engine's
-`livery_template.py` builds its `template.pptx` from the data, and the decisions go in
-`reference/notes.md`. `nsi` (the CU Center for National Security Initiatives) is `cu`'s
+The engine also holds the json reader (`livery.py`, also the command), the wave shapes
+(`pptx_waves.py`) and the pptx post-render steps (`pptx_post.py` over `pptx_steps/`);
+`utils/comp_measure.py`, `deck_qa.py` and `site_index.py` append the engine's directory to
+`sys.path` to import the reader. Onboarding a brand from a reference PowerPoint (design section
+6): `livery new liveries/<name> --from <deck>` writes `reference/report.md` and the scaffold,
+`make livery` builds and checks it, and the decisions go in `reference/notes.md`. `nsi` (the CU Center for National Security Initiatives) is `cu`'s
 flavor (`extends: cu`) on the band title style (`title: {style: band}`); `nasa` (NASA general,
 external communication; no official template, so the Brand Center's rules and NASA Science's
 public-engagement deck) and its flavor `nasa-dark` (content on black) are the first dark
@@ -126,7 +133,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   as the one commit on `PUBLISH_BRANCH` (gh-pages) under `PUBLISH_PREFIX`.
   README "Publishing the HTML decks".
 - **Overleaf**: `make overleaf LIVERY=<name>` (any deck directory; `LIVERY_DIR=` for a consumer's
-  own livery) writes `<name>-overleaf.zip` with the engine's `overleaf_zip.py`: the theme's `.sty`,
+  own livery) writes `<name>-overleaf.zip` with `livery zip`: the theme's `.sty`,
   the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
   `latexmkrc` and a starter on `livery=liveries/<name>, fonts=bundled`; it compiles with
   `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
@@ -221,7 +228,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   muted), and `figsize`, the content area in canvas inches. The engine's `livery_charts.py`
   generates them at build time by the dataviz checks, or takes a brand's published palette from
   `livery.yml` `charts:` as given (ncar and ucar: sam-queries' validated sets and the UCAR web
-  theme's tint ladders; nasa: NASA's Horizon Design System). `livery_check.py` prints the checks
+  theme's tint ladders; nasa: NASA's Horizon Design System). `livery check` prints the checks
   (a generated palette must pass, a published one only warns), and `--swatch DIR` draws a
   contact sheet; `tests/test_charts.py`. `charts.chrome` is a plot's non-data ink per mode.
   `charts.maps` adds color maps without constraining the slots (`ramps` do), and `default-map` may
@@ -234,7 +241,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   as paths); `livery.css` `--engine-data-*`/`--engine-status-*` (the dark set on `.brand-dark`);
   `livery.sty` `EngineData*` and a pgfplots `livery` cycle list (the default once pgfplots is
   loaded); `template.pptx` the mode's slots as a named `<a:custClrLst>` (PowerPoint's Custom
-  Colors row, at most eight; `livery_check.py` checks it). `Make.common` exports `MATPLOTLIBRC`
+  Colors row, at most eight; `livery check` checks it). `Make.common` exports `MATPLOTLIBRC`
   (the style), prepends `_extensions/engine/mpl` to `PYTHONPATH` (`livery_mpl.py`: fonts by
   `addfont()`, colormaps with `_dark` twins, `figsize()`, `shade_family()`, `dark()`), passes
   `charts.figsize.full` as `-M fig-width/fig-height` to pptx and HTML (`livery.py figsize`; a
@@ -248,7 +255,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   left its text at 92%; no block margin; max-width 100%), beamer `\pandocbounded{\includegraphics
   [width=<f>\paperwidth]}`; pptx needs nothing (pandoc places a picture at its natural size, fit
   to the placeholder). Plot text then measures the slide's (HTML 1.00, PDF 1.00, pptx 1.01).
-  `mpl_zip.py` (`make charts-zip`) packs the style, the helper, `livery.json`, the fonts and
+  `livery zip --charts` (`make charts-zip`) packs the style, the helper, `livery.json`, the fonts and
   licenses and the swatch sheet; `release.yml` attaches one per livery.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
@@ -294,8 +301,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `engine-revealjs.lua` for HTML. Only plain
   paragraphs qualify; anything else after a divider stays a slide of its own.
   In pptx the blue field, logo and waves are the template's Section Header
-  layout, which the engine's `livery_template.py` generates with the rest of the
-  template from the livery's data (rerun it after a livery change, never edit
+  layout, which `livery template` generates with the rest of the
+  template from the livery's data (`make livery` after a livery change, never edit
   `template.pptx` by hand); `section_subtitle.py` adds "SECTION n", the tab and
   placement.
 - **Front matter must be line 1** of every deck `.qmd`: anything above the
@@ -373,7 +380,7 @@ it does, by area, beyond the format notes above:
   `previews`, `diagrams`, `overleaf`) sets `TEXINPUTS`/`TTFONTS` (above); its
   `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
-- **Checking a change**: `make test` (`livery_build.py --check` and `livery_check.py` on every
+- **Checking a change**: `make test` (`livery build --check` and `livery check` on every
   livery, `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change of a
   box, and `tests/test_type.py`). For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
@@ -557,12 +564,12 @@ cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries 
 size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSIDE that image at
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
-`livery_build.py --check`, the sample deck in every format with its theme greps, quickstart and
+`livery build --check`, the sample deck in every format with its theme greps, quickstart and
 fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, README "Using the framework from another
 repo", plus `make site`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new
-livery joins by existing): `utils/livery_check.py --qa` (the engine's checks, then
+livery joins by existing): `livery check --qa` (the engine's checks, then
 `make -C decks/quickstart qa LIVERY=<name>`: all three formats and `deck_qa.py`), the
 livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's paths unset and
 `pdffonts` showing its bundled family, and `make measure` report-only (`MEASURE_FAIL=`). A

@@ -3,7 +3,7 @@
 The reference deck is the CU Center for National Security Initiatives' master deck,
 `NSI MASTER SLIDE DECK JULY2026 EXTERNAL.pptx` (a Google Slides export, July 2026), supplied by
 Ben from NSI. It is not committed: download it beside this file as `reference/cu.pptx` to rerun
-`livery_inspect.py`. The stricter authority is the CU Boulder brand site
+`livery inspect`. The stricter authority is the CU Boulder brand site
 (https://www.colorado.edu/imc/cu-boulder-brand/visual-identity, .../campus-lockups-and-marks);
 the deck is "a strong guide" where the two differ (Ben, 2026-10-16).
 
@@ -96,7 +96,7 @@ Open (deferred 2026-10-16, none blocking):
   pptx instead (`pptx.typeface`, and `heading-typeface` for titles), most simply Arial, which
   every PowerPoint has and the NSI deck itself uses as its second font, at the cost of the
   brand's Helvetica look on Macs. Either route is a livery change only; rerun
-  `livery_template.py` after it. HTML and PDF already prefer an installed Helvetica Neue
+  `make livery LIVERY=cu` after it. HTML and PDF already prefer an installed Helvetica Neue
   (`installed-fonts`, see Fonts); a PDF built that way carries the face to every reader, which
   is the builder's licence question, not the repo's.
 - **The accent tab vanishes on the gold fields.** `accent` and `primary` are both CU Gold, so

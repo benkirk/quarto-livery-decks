@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 """Resolve a livery (_brand.yml + livery.yml, `extends` applied) into build/livery.{json,sty,css,theme,mplstyle}.
 
-    livery_build.py <livery dir>...          write build/ (committed)
-    livery_build.py --check <livery dir>...  exit 1 if a committed build/ is stale
+    livery build <livery dir>...          write build/ (committed)
+    livery build --check <livery dir>...  exit 1 if a committed build/ is stale
 
 Color names in livery.yml roles resolve against the brand palette; a value starting with '#'
 passes through. `extends: <name>` names a sibling livery whose resolved values the child's
@@ -17,7 +16,6 @@ for each field by its role (MARK_ROLES); `installed-fonts` names installed faces
 `compositions` the title, closing, section and feature slides as boxes (compositions()).
 """
 
-import argparse
 import importlib.util
 import json
 import math
@@ -225,7 +223,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["pptx"]["scheme"] = scheme
     tmpl = d / out["pptx"].get("template", "template.pptx")
     if not tmpl.exists():   # livery_template.py builds it from build/livery.json, so only a warning
-        print(f"{d.name}: pptx template {tmpl} missing; run livery_template.py", file=sys.stderr)
+        print(f"{d.name}: pptx template {tmpl} missing; run livery template", file=sys.stderr)
     return out, sources
 
 
@@ -1106,25 +1104,18 @@ def outputs(d: Path) -> dict[Path, str]:
             build / "livery.mplstyle": emit_mplstyle(livery, d)}
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("liveries", nargs="+", type=Path)
-    ap.add_argument("--check", action="store_true", help="fail if a committed build/ is stale")
-    a = ap.parse_args()
+def build(liveries: list[Path], check: bool = False) -> int:
+    """Write each livery's build/ (or with check, compare it); 1 when one is stale."""
     stale = 0
-    for d in a.liveries:
+    for d in liveries:
         for target, text in outputs(d).items():
-            if a.check:
+            if check:
                 if not target.exists() or target.read_text() != text:
-                    print(f"stale: {target} (run livery_build.py {d})"); stale = 1
+                    print(f"stale: {target} (run livery build {d})"); stale = 1
                 else:
                     print(f"fresh: {target}")
             else:
                 target.parent.mkdir(exist_ok=True)
                 target.write_text(text)
                 print(f"wrote {target}")
-    sys.exit(stale)
-
-
-if __name__ == "__main__":
-    main()
+    return stale

@@ -301,35 +301,31 @@ and a short list of judgement calls.
 cleanly delete layouts. The repo convention holds: python-pptx for the report,
 lxml-on-zip for the writes, fixed zip timestamps for reproducible files.
 
-**Tools**, in `common/utils/`:
+**Tools**: the `livery` command (`_extensions/engine/livery.py`; `liveries/README.md`):
 
-1. `livery_inspect.py reference.pptx <livery dir>` writes `reference/report.md` (slide
-   size and aspect; the twelve scheme slots; the font scheme; per master and layout its
-   name, type, placeholders with boxes, pictures and background fill; every `srgbClr`
-   ranked by frequency), extracts the media into `reference/media/`, and seeds
-   `_brand.yml` (palette from the slots and the frequent hexes, fonts from the font
-   scheme) and a `livery.yml` with a blank layout-mapping table.
-2. `livery_template.py <livery dir>` (in the engine since 3.3.0) produces the compliant template from the reference's
-   master and the mapped layouts: renames them to pandoc's names (`Title Slide`,
-   `Title and Content`, `Section Header`, `Two Content`, `Comparison`,
-   `Content with Caption`, `Blank`), guarantees the five `slideLayout1` placeholders
-   (`ctrTitle`, `subTitle`, `dt`, `ftr`, `sldNum`), writes the slot contract into
-   `clrScheme` and the font scheme, places art and logo media as `ppt/media/image*`,
-   injects `fonts/pptx/*.fntdata` if present, and then measures the result into the
-   geometry block of `livery.json`.
-3. `livery_check.py <livery dir>` verifies layout names, the five placeholders, the slot
-   contract, media naming and `build/` freshness, then runs
-   `make -C decks/quickstart qa LIVERY=<name>`.
+1. `livery new <livery dir> --from reference.pptx` writes `reference/report.md` (`livery
+   inspect`: slide size and aspect; the twelve scheme slots; the font scheme; per master and
+   layout its name, type, placeholders with boxes, pictures and background fill; every
+   `srgbClr` ranked by frequency) and a scaffold that builds as it stands: `_brand.yml` with
+   the palette on the slots, a stand-in face and a placeholder mark, and a `livery.yml` with
+   the roles on the slots, the default geometry, the deck's fonts as the pptx typefaces and
+   its slide size.
+2. `livery template <livery dir>` generates the pandoc-compliant template from the livery's
+   data, not from the reference's master: pandoc's seven layout names and three of the
+   engine's, the five `slideLayout1` placeholders, the slot contract in `clrScheme` and the
+   font scheme, the marks, art and waves.
+3. `livery check <livery dir> --qa` verifies `build/` freshness, the files the data names,
+   the layout names and placeholders, the slot contract, media naming, that the template
+   rebuilds from the data, contrast and the chart colors, then runs `make -C
+   decks/quickstart qa` under the livery. `livery all` (`make livery`) is build, template,
+   check.
 
-**The human steps**, in order: inspect → map the reference layouts onto pandoc's (which
-of a customer's six title variants is "Title Slide"; which rich layouts pandoc can never
-pick and should be dropped) → choose the roles (customer slots are arbitrarily ordered,
-`dk2` is not reliably the primary; the builder warns on WCAG contrast for the
-small-text role) → logo variants and clear space → art per slide kind (vector preferred;
-rasters acceptable on masters, never as a procedural recipe) → build, template, check →
-open the template in PowerPoint (the "Repair?" prompt cannot be automated) → `make
-screenshots` contact sheet reviewed against the reference and committed under
-`reference/` → commit.
+**The human steps**, in order: inspect → choose the roles (customer slots are arbitrarily
+ordered, `dk2` is not reliably the primary; the check warns on WCAG contrast for the
+small-text roles) → logo variants and clear space → art per slide kind (vector preferred;
+rasters acceptable on masters, never as a procedural recipe) → `make livery` → open the
+template in PowerPoint (the "Repair?" prompt cannot be automated) → `make screenshots`
+contact sheet reviewed against the reference and committed under `reference/` → commit.
 
 **Not doable, by design**: extracting the reference's embedded fonts (licensing, EOT
 decoding; the customer supplies the TTFs), and vectorizing bitmap art.
@@ -400,6 +396,20 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, #58 step 2: the `livery` command.** `_extensions/engine/livery.py` is the one
+  entry point, argparse subcommands over the engine's modules, each imported when its command
+  runs: `new` (`livery_new.py`), `inspect` (`livery_inspect.py`, moved from `common/utils/`),
+  `build`, `template`, `check [--swatch] [--qa]` (the `common/utils/livery_check.py` wrapper folded
+  in: `--qa` runs the quickstart's `make qa` with `LIVERY=` for a bundled livery, else
+  `LIVERY_DIR=`), `all`, `zip [--charts]`, `schema --doc` and `deps|mono|figsize`. The modules lost
+  their `main()`s and shebangs; every caller moved (Makefiles, CI, tests, docs). `livery new`
+  scaffolds a livery that builds as it stands: the palette on PowerPoint's slot names (the
+  deck's with `--from`, else a neutral one whose generated chart colors pass), Public Sans from
+  `liveries/nasa` as the stand-in face, a placeholder mark drawn from the name; `--extends` a
+  flavor. Acceptance held: `livery new --from` nasa's template, `make livery LIVERY_DIR=`, the
+  quickstart in every format, its Overleaf zip compiled clean. `make livery` at the root runs
+  `livery all`. README "Adding a livery" moved to `liveries/README.md` (Ben: the top README is
+  too big); section 6 above follows the command. Next: step 3, versions and immutable releases.
 - **2026-10-18, #58 step 1: livery.yml's schema** (#77). `livery.schema.json` (JSON Schema
   2020-12) names every key the engine reads, each described by what it does on the slide;
   `livery_schema.py` validates each `livery.yml` as written (before `extends` merges) and the

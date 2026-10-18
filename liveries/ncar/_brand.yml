@@ -1,6 +1,6 @@
 # The NSF NCAR brand in Quarto's brand.yml standard (https://posit-dev.github.io/brand-yml),
 # kept strictly standard. Engine knobs the standard has no slot for are in livery.yml;
-# both resolve into build/livery.json (utils/livery_build.py). Values: engine_livery.sty,
+# both resolve into build/livery.json (`livery build`). Values: engine_livery.sty,
 # the 2026 "Vermilion" NSF NCAR / UCAR / UCP Brand Guide pp. 17-21.
 meta:
   name: NSF NCAR
