@@ -400,6 +400,18 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, #58 step 1: livery.yml's schema** (#77). `livery.schema.json` (JSON Schema
+  2020-12) names every key the engine reads, each described by what it does on the slide;
+  `livery_schema.py` validates each `livery.yml` as written (before `extends` merges) and the
+  `_brand.yml` parts the engine reads, and `livery_build.py` refuses with `<file>: <path>:
+  <message>`. Every livery.yml starts with the editor line and `schema: 1`.
+  `liveries/REFERENCE.md` is generated (`livery.py schema --doc`, `--check` in CI). Renamed with
+  Ben: `divider` -> `section`, `geometry.divider` -> `geometry.section`, `geometry.tab` ->
+  `tab-width`, `geometry.logo.{title,section,closing}` -> `*-height`, `full.floor` ->
+  `footline`, `derived` -> `blends`, `charts.sequential` -> `default-map`; `aspect` is gone (from
+  `pptx.size`), so is the unread `overrides` key; livery.json and its readers follow. Parity
+  identical but the compiled theme's hashed name (its CSS and livery.css identical with the two
+  renamed properties folded). Next: step 2, the `livery` command.
 - **2026-10-18, #58 step 0: the compatibility debt cleared.** Ben is the only consumer, so no
   shims. Gone: the v1 beamer environments (`NCARprettyframe`, `NCARtitleframe`) and no-op
   commands, with README's 2020-brand migration section; `brandedfonts` and the `fonts=poppins`
