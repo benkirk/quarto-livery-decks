@@ -16,7 +16,8 @@ test "$(run "$img" uname -m)" = "$(uname -m)"
 run "$img" --help
 run "$img" quarto --version
 run "$img" bash -c 'echo "QUARTO_CHROMIUM=$QUARTO_CHROMIUM"; "$QUARTO_CHROMIUM" --version'
-run "$img" bash -c 'echo "font families: $(fc-list : family | sort -u | wc -l)"'
+run "$img" bash -c 'echo "font families: $(/usr/bin/fc-list : family | sort -u | wc -l), the liveries'"'"' Poppins: $(/usr/bin/fc-list : family | grep -c Poppins)"'
+run "$img" bash -c 'test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0'   # LibreOffice's fontconfig sees them
 
 echo "== 1. a bare directory: no Makefile; mermaid exercises QUARTO_CHROMIUM, the PDF XeLaTeX"
 work=$(mktemp -d "$tmp/hello.XXXXXX")   # no spaces: Quarto's \input@path cannot take them

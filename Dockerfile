@@ -109,17 +109,15 @@ chmod -R a+rX "$PLAYWRIGHT_BROWSERS_PATH"   # the zip carries 600 on a few files
 "$QUARTO_CHROMIUM" --version
 EOS
 
-# 6. Fonts fontconfig is told about beyond the system's, which XeLaTeX (fonts=brand),
-#    Chromium and LibreOffice all read: /opt/fonts, an empty mount point for the host's own
-#    (a brand's licensed faces: `-v "$PWD/fonts:/opt/fonts:ro"`), and the liveries' bundled
+# 6. Fonts beyond the system's: /opt/fonts, an empty mount point for the host's own (a
+#    brand's licensed faces: `-v "$PWD/fonts:/opt/fonts:ro"`), and the liveries' bundled
 #    fonts in the framework copied below, so LibreOffice renders a pptx with its real faces
 #    when `make measure` shoots it (a livery mounted from the host is not covered: /opt/fonts).
-RUN mkdir -p /opt/fonts \
-    && printf '%s\n' '<?xml version="1.0"?>' '<!DOCTYPE fontconfig SYSTEM "fonts.dtd">' '<fontconfig>' \
-         '<dir>/opt/fonts</dir>' \
-         '<dir>/opt/quarto-livery-decks/docs/common/liveries</dir>' \
-         '<dir>/opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/liveries</dir>' \
-         '</fontconfig>' > /etc/fonts/conf.d/60-opt-fonts.conf
+#    Linked under /usr/local/share/fonts, a directory every fontconfig scans: the SYSTEM one
+#    (/etc/fonts), which the apt XeLaTeX, Chromium and LibreOffice use, and the conda env's
+#    own (first on PATH as fc-cache/fc-list, with its own fonts.conf), which never read a
+#    file dropped into /etc/fonts/conf.d.
+RUN mkdir -p /opt/fonts /usr/local/share/fonts && ln -s /opt/fonts /usr/local/share/fonts/host
 
 # 7. The framework itself, last: it changes most often (.dockerignore keeps outputs and the
 #    host's conda-env/ out). A mounted tree belongs to whoever mounted it: let git act in it.
@@ -129,13 +127,14 @@ ENV FRAMEWORK=/opt/quarto-livery-decks
 RUN <<'EOS'
 set -eo pipefail
 git config --system safe.directory '*'
-# the liveries' fonts are now in place: rebuild the font cache and prove fontconfig sees them
-cat /etc/fonts/conf.d/60-opt-fonts.conf
-fc-cache -fv > /tmp/fc-cache.log 2>&1 || echo "fc-cache exit $?"
-grep -E '/opt/|liveries|fail|error|invalid' /tmp/fc-cache.log || echo "(fc-cache said nothing about /opt)"
-ls -la /opt/quarto-livery-decks/docs/common/liveries/ /opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/liveries/ncar/fonts/
-fc-list | grep -i poppins || { echo "fontconfig does not see Poppins" >&2; exit 1; }
-rm -f /tmp/fc-cache.log
+# the liveries' fonts (step 6): the system fontconfig must see them, the conda one should
+ln -s /opt/quarto-livery-decks/docs/common/liveries /usr/local/share/fonts/liveries
+ln -s /opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/liveries /usr/local/share/fonts/engine-liveries
+/usr/bin/fc-cache -f
+fc-cache -f || true
+echo "system fontconfig: $(/usr/bin/fc-list : family | sort -u | wc -l) families, Poppins $(/usr/bin/fc-list : family | grep -c Poppins)"
+echo "conda fontconfig:  $(fc-list : family | sort -u | wc -l) families, Poppins $(fc-list : family | grep -c Poppins || true)"
+test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0 || { /usr/bin/fc-cache -fv 2>&1 | grep -E 'local/share|liveries' >&2; exit 1; }
 # everything a plain user needs must be readable
 bad=$(find /opt -not -perm -o=r); test -z "$bad" || { echo "$bad"; exit 1; }
 EOS
