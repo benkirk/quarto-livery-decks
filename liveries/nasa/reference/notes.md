@@ -10,7 +10,7 @@ a NASA deck, the NASA Science public-engagement deck ("Collection of Interactive
 Slides to be Used in Public Engagement", NASA/JPL-Caltech, 2021;
 https://science.nasa.gov/resource/collection-of-interactive-powerpoint-slides-to-be-used-in-public-engagement/).
 The deck is not committed: download its PPTX beside this file as `reference/nasa.pptx` to rerun
-`livery_inspect.py`. `report.md` is the tool's reading of it. Ben's brief (2026-10-17): we may take
+`livery inspect`. `report.md` is the tool's reading of it. Ben's brief (2026-10-17): we may take
 liberties where the guidelines are silent.
 
 ## The reference deck

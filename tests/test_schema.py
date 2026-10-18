@@ -6,7 +6,7 @@
 Every bundled livery passes as written; the schema names exactly the engine's own sets (type roles,
 compositions and their parts, theme slots, blends, roles, installed faces, art kinds); a livery
 without `schema:`, with an unknown schema number, a misspelt key or an out-of-range fraction is
-refused with the path and the reason, by the schema and by livery_build.py itself; the committed
+refused with the path and the reason, by the schema and by `livery build` itself; the committed
 liveries/REFERENCE.md is the schema's.
 """
 
@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
 spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
 lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
-S = lb.livery_schema
+S = lb.schema()
 fails = []
 
 
@@ -92,19 +92,19 @@ for what, (change, expect) in cases.items():
     errs = errors_for(change)
     check(any(expect in e for e in errs), f"{what}: expected {expect!r}, got {errs}")
 
-# livery_build.py refuses one too, naming the file, path and reason
+# `livery build` refuses one too, naming the file, path and reason
 with tempfile.TemporaryDirectory() as tmp:
     t = Path(tmp) / "liveries"
     for name in ("ncar", "ucar"):
         shutil.copytree(ROOT / "liveries" / name, t / name, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
     y = t / "ucar" / "livery.yml"
     y.write_text(y.read_text().replace("\nsection:", "\nsection:\n  lable: Part", 1))
-    r = subprocess.run([sys.executable, str(ENGINE / "livery_build.py"), str(t / "ucar")], capture_output=True, text=True)
+    r = subprocess.run([sys.executable, str(ENGINE / "livery.py"), "build", str(t / "ucar")], capture_output=True, text=True)
     check(r.returncode != 0 and f"{t / 'ucar' / 'livery.yml'}: section.lable: unknown key" in r.stderr,
-          f"livery_build.py on a misspelt key: rc {r.returncode}, {r.stderr.strip()!r}")
+          f"livery build on a misspelt key: rc {r.returncode}, {r.stderr.strip()!r}")
 
 # the reference is the schema's
-check((ROOT / "liveries" / "REFERENCE.md").read_text() == S.doc(), "liveries/REFERENCE.md is stale (livery.py schema --doc)")
+check((ROOT / "liveries" / "REFERENCE.md").read_text() == S.doc(), "liveries/REFERENCE.md is stale (livery schema --doc)")
 
 if fails:
     print("schema:", *fails, sep="\n  ")

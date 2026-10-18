@@ -1,21 +1,15 @@
-#!/usr/bin/env python3
-"""Report on a reference PowerPoint and seed a livery from it (design section 6, step 1).
+"""Report on a reference PowerPoint (design section 6, step 1).
 
-    livery_inspect.py <reference.pptx> <livery dir> [--media]
+    livery inspect <reference.pptx> [-o report.md] [--media DIR]
 
-Writes <livery dir>/reference/report.md: slide size and aspect, the theme's twelve color
-slots and font scheme, every master and layout with its placeholders, pictures and
-background, which layout each sample slide uses, and every srgbClr ranked by frequency.
-With --media the deck's pictures go to reference/media/ (large; keep them out of git).
-Seeds _brand.yml and livery.yml (schema 1, the roles on the theme's slots) when the livery has
-none.
+The report: slide size and aspect, the theme's twelve color slots and font scheme, every master
+and layout with its placeholders, pictures and background, which layout each sample slide uses,
+and every srgbClr ranked by frequency. --media extracts the deck's pictures (large; keep them out
+of git). `livery new --from` seeds a livery from facts(): the slots, the fonts, the slide size.
 """
 
-import argparse
 import collections
 import re
-import shutil
-import sys
 import zipfile
 from pathlib import Path
 
@@ -80,7 +74,7 @@ def report(ref: Path, prs, z) -> str:
     W, H = prs.slide_width, prs.slide_height
     colors, fonts = scheme(z.read("ppt/theme/theme1.xml"))
     L = [f"# Reference deck: {ref.name}", "",
-         f"Written by `livery_inspect.py`; the deck itself is not committed (see the onboarding notes).", "",
+         f"Written by `livery inspect`; the deck itself is not committed (see the onboarding notes).", "",
          "## Slide", "",
          f"- size {W} x {H} EMU ({Emu(W).inches:.2f} x {Emu(H).inches:.2f} in), aspect {W / H:.4f}"
          f" ({'16:9' if abs(W / H - 16 / 9) < 0.01 else '4:3' if abs(W / H - 4 / 3) < 0.01 else 'other'})",
@@ -112,54 +106,31 @@ def report(ref: Path, prs, z) -> str:
     return "\n".join(L)
 
 
-def seed_brand(colors: dict, fonts: dict) -> str:
-    L = ["# Seeded by livery_inspect.py from the reference deck's theme; name the colors and check them",
-         "# against the brand guide. Fonts: the scheme's; replace with the brand's files.",
-         "meta:", "  name: TODO", "", "color:", "  palette:"]
+def facts(deck: Path) -> dict:
+    """What `livery new --from` seeds from: the theme's slots as hex (a system color by its last
+    value), its fonts and the slide size in inches."""
+    prs = Presentation(str(deck))
+    with zipfile.ZipFile(deck) as z:
+        colors, fonts = scheme(z.read("ppt/theme/theme1.xml"))
+    hexes = {}
     for k, v in colors.items():
-        if not v.startswith("system") and k not in ("hlink", "folHlink"):
-            L.append(f'    {k}: "#{v}"')
-    L += ["  primary: dk2", "  secondary: accent1", "  foreground: dk1", "  background: lt1", "",
-          "typography:", f"  base: {fonts.get('minor', 'TODO')}", f"  headings: {fonts.get('major', 'TODO')}", "  fonts: []", "",
-          "logo:", "  images: {}", "  medium: {light: TODO, dark: TODO}", ""]
-    return "\n".join(L)
+        m = re.search(r"\(([0-9A-Fa-f]{6})\)", v) if v.startswith("system") else None
+        if m or not v.startswith("system"):
+            hexes[k] = (m.group(1) if m else v).upper()
+    return {"colors": hexes, "fonts": fonts,
+            "size": [round(Emu(prs.slide_width).inches, 3), round(Emu(prs.slide_height).inches, 3)]}
 
 
-def seed_livery(name: str) -> str:
-    L = ["# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json",
-         "# Seeded by livery_inspect.py from the reference deck (reference/report.md); the keys are",
-         "# liveries/REFERENCE.md's. livery_template.py builds template.pptx from the data.",
-         "schema: 1", f"name: {name}", "extends: null", "", "roles:", "  primary-text: lt1", "  primary-contrast: dk2",
-         "  accent: accent2", "  highlight: accent5", "  muted: dk1", "  surface: lt2", "  warning: accent3", "  dark: accent4", ""]
-    return "\n".join(L)
-
-
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("reference", type=Path)
-    ap.add_argument("livery", type=Path)
-    ap.add_argument("--media", action="store_true", help="extract the pictures to reference/media/")
-    a = ap.parse_args()
-    prs = Presentation(str(a.reference))
-    with zipfile.ZipFile(a.reference) as z:
-        text = report(a.reference, prs, z)
-        out = a.livery / "reference"; out.mkdir(parents=True, exist_ok=True)
-        (out / "report.md").write_text(text)
-        print(f"wrote {out / 'report.md'}")
-        if a.media:
-            (out / "media").mkdir(exist_ok=True)
+def inspect(deck: Path, out: Path, media: Path | None = None):
+    """Write the report on the deck to out, and its pictures into media when given."""
+    prs = Presentation(str(deck))
+    with zipfile.ZipFile(deck) as z:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(report(deck, prs, z))
+        print(f"wrote {out}")
+        if media:
+            media.mkdir(parents=True, exist_ok=True)
             for n in z.namelist():
                 if n.startswith("ppt/media/"):
-                    (out / "media" / Path(n).name).write_bytes(z.read(n))
-            print(f"extracted media to {out / 'media'}")
-        colors, fonts = scheme(z.read("ppt/theme/theme1.xml"))
-    for fname, content in (("_brand.yml", seed_brand(colors, fonts)), ("livery.yml", seed_livery(a.livery.name))):
-        f = a.livery / fname
-        if f.exists():
-            print(f"kept {f} (exists; the seed is in reference/report.md's terms)")
-        else:
-            f.write_text(content); print(f"seeded {f}")
-
-
-if __name__ == "__main__":
-    main()
+                    (media / Path(n).name).write_bytes(z.read(n))
+            print(f"extracted media to {media}")

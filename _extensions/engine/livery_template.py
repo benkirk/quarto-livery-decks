@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
 """Build a livery's pandoc-compliant template.pptx from its data (design section 6, step 2).
 
-    livery_template.py <livery dir> [-o template.pptx]
+    livery template <livery dir> [-o template.pptx]
 
 Everything comes from build/livery.json: the theme's color slots (pptx.scheme) and its Custom
 Colors row (the chart colors, livery_charts.custom_colors()), the typeface,
@@ -17,7 +16,6 @@ embedded later by embed_fonts.py; a deck's title photo by slide_layout.py.
 Rewrites in place with fixed zip timestamps, so an unchanged rebuild is byte-identical.
 """
 
-import argparse
 import json
 import sys
 import zipfile
@@ -483,16 +481,9 @@ class Builder:
                 z.writestr(zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0)), data.encode("utf-8") if isinstance(data, str) else data, zipfile.ZIP_DEFLATED)
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("livery", type=Path)
-    ap.add_argument("-o", "--out", type=Path, help="default: <livery>/template.pptx")
-    a = ap.parse_args()
-    livery = livery_mod.load(a.livery)
-    out = a.out or a.livery / "template.pptx"   # a flavor gets its own, even if it inherited its parent's
-    Builder(livery).build(out, a.livery)
-    print(f"livery_template: wrote {out} ({len(ALL_LAYOUTS)} layouts)")
-
-
-if __name__ == "__main__":
-    main()
+def write(d: Path, out: Path | None = None):
+    """Build the livery's template.pptx (default <livery>/template.pptx) from its build/livery.json."""
+    livery = livery_mod.load(d)
+    out = out or d / "template.pptx"   # a flavor gets its own, even if it inherited its parent's
+    Builder(livery).build(out, d)
+    print(f"livery template: wrote {out} ({len(ALL_LAYOUTS)} layouts)")

@@ -5,7 +5,7 @@ CONDA_ROOT := $(shell conda info --base)
 # Common way to initialize environment across various types of systems
 config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/profile.d/conda.sh
 
-.PHONY: help latex test image clean clobber distclean
+.PHONY: help latex test livery image clean clobber distclean
 
 # -------------------------------------------------------------------
 # Default target: help
@@ -33,15 +33,22 @@ help: ## Show this help message
 latex: ## Build latex/: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
 	$(MAKE) -C latex default examples variants
 
-test: ## Run the engine's tests: livery_build.py --check, livery_check.py, compositions, type, charts, schema
+test: ## Run the engine's tests: livery build --check, livery check, compositions, type, charts, schema
 	set -e
-	python3 _extensions/engine/livery_build.py --check liveries/*/
-	python3 _extensions/engine/livery_check.py liveries/*/
+	python3 _extensions/engine/livery.py build --check liveries/*/
+	python3 _extensions/engine/livery.py check liveries/*/
 	python3 tests/test_compositions.py
 	python3 tests/test_type.py
 	python3 tests/test_charts.py
 	python3 tests/test_schema.py
+	python3 tests/test_cli.py
 	python3 _extensions/engine/livery.py schema --doc --check
+
+# A livery's onboarding loop (`livery all`, liveries/README.md): build/ from its yml files, its
+# template.pptx, then its checks. LIVERY names one under liveries/, LIVERY_DIR any directory.
+livery: ## Build, template and check a livery: make livery LIVERY=<name> (or LIVERY_DIR=<dir>)
+	test -n "$(or $(LIVERY_DIR),$(LIVERY))" || { echo "usage: make livery LIVERY=<name> | LIVERY_DIR=<dir>"; exit 2; }
+	python3 _extensions/engine/livery.py all $(or $(LIVERY_DIR),liveries/$(LIVERY))
 
 # The build-environment image (README "Building in the container"); CI publishes it
 # multi-platform as ghcr.io/benkirk/quarto-livery-decks (.github/workflows/image.yaml).

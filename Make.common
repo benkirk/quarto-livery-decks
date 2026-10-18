@@ -27,8 +27,6 @@ SITE_INDEX         := $(FRAMEWORK_ROOT)common/utils/site_index.py
 SHARED_QUARTO_YML  := $(FRAMEWORK_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(FRAMEWORK_ROOT)_extensions
 SHARED_LIVERIES    := $(FRAMEWORK_ROOT)liveries
-OVERLEAF_ZIP       := $(FRAMEWORK_ROOT)_extensions/engine/overleaf_zip.py
-MPL_ZIP            := $(FRAMEWORK_ROOT)_extensions/engine/mpl_zip.py
 LIVERY_MPL_DIR     := $(abspath $(FRAMEWORK_ROOT)_extensions/engine/mpl)
 
 # The brand: a directory under liveries/ (design/engine-and-liveries.md,
@@ -96,18 +94,18 @@ MEASURE_FAIL ?= html,pdf,pptx
 measure: all
 	python3 $(COMP_MEASURE) --fail-on "$(MEASURE_FAIL)" $(DECKS)
 
-# A pure-LaTeX project of the livery (the engine's overleaf_zip.py): the theme, the livery's
+# A pure-LaTeX project of the livery (`livery zip`): the theme, the livery's
 # files and a starter, compiling with `latexmk -xelatex talk.tex` alone, or opened on Overleaf.
 # release.yml attaches one per livery to a GitHub Release; a consumer repo's own livery too
 # (`make overleaf LIVERY_DIR=path/to/livery`).
 overleaf:
-	python3 $(OVERLEAF_ZIP) $(LIVERY_DIR) -o $(LIVERY)-overleaf.zip
+	python3 $(LIVERY_PY) zip $(LIVERY_DIR) -o $(LIVERY)-overleaf.zip
 
-# The livery's plot style for matplotlib outside the decks (the engine's mpl_zip.py): the style,
+# The livery's plot style for matplotlib outside the decks (`livery zip --charts`): the style,
 # the livery_mpl helper, livery.json, the fonts and their licenses, the colors' contact sheet.
 # release.yml attaches one per livery beside the Overleaf zips.
 charts-zip:
-	python3 $(MPL_ZIP) $(LIVERY_DIR) -o $(LIVERY)-charts.zip
+	python3 $(LIVERY_PY) zip --charts $(LIVERY_DIR) -o $(LIVERY)-charts.zip
 
 # One static site of the HTML decks, servable as is (`python3 -m http.server -d _site`).
 # Every deck's <deck>_files/libs/ is a subset of one union, so the site keeps a single

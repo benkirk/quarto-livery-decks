@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 """Check a livery directory before decks are built from it (design section 6, step 3).
 
-    livery_check.py <livery dir>...
+    livery check <livery dir>... [--swatch DIR] [--qa]
 
-Per livery: build/ is fresh (livery_build.py --check); every file the data names exists (fonts,
+Per livery: build/ is fresh (livery build --check); every file the data names exists (fonts,
 logos, the marks, art, the template, the font blobs when pptx.fonts is set); template.pptx is
 pandoc-compliant (the seven layout names and our two extra ones, slideLayout1's five placeholders,
 the chrome placeholders at idx 20-22 and no content box there, the color and font schemes
@@ -11,22 +10,19 @@ matching the json, media numbered without gaps) and rebuilds byte-identically fr
 hand-edited template fails); WCAG 4.5:1 warnings for the small-text roles, which never fail; the chart
 colors' checks (livery_charts.py: a generated palette must pass, a published one only warns), and
 with --swatch DIR their contact sheet, DIR/charts-<livery>.png (needs Pillow).
-Exit 1 on any failure. (The framework's livery_check.py wraps this and adds --qa.)"""
+Exit 1 on any failure. With --qa (the `livery` command's), the quickstart deck's `make qa` follows."""
 
-import argparse
 import re
-import subprocess
-import sys
 import tempfile
 import zipfile
 from pathlib import Path
 
 import livery as livery_mod
 import livery_charts
+import livery_build
 from livery_build import SLOT_ROLES
 from livery_template import EXTRA_LAYOUTS, LAYOUTS, Builder
 
-LIVERY_BUILD = Path(__file__).resolve().parent / "livery_build.py"
 CHROME = {"dt": 20, "ftr": 21, "sldNum": 22}      # livery_template.py's chrome placeholders
 TITLE_PH = {"ctrTitle", "subTitle", "dt", "ftr", "sldNum"}   # pandoc's five for Title Slide
 # small text on a field: the pairs that must read (WCAG AA, 4.5:1)
@@ -76,7 +72,7 @@ def check_template(r, livery, d):
         missing = [l for l in LAYOUTS if l not in found]
         r.check(not missing, "the seven layouts pandoc looks up by name", f"missing {missing}")
         extra = [l for l in EXTRA_LAYOUTS if l not in found]
-        r.check(not extra, "Closing, Title Slide (light) and Closing (light), for slide_layout.py", f"missing {extra}: rerun livery_template.py")
+        r.check(not extra, "Closing, Title Slide (light) and Closing (light), for slide_layout.py", f"missing {extra}: rerun livery template")
         if "Title Slide" in found:
             types = set(re.findall(r'<p:ph [^>]*type="([^"]+)"', found["Title Slide"]))
             r.check(TITLE_PH <= types, "Title Slide has ctrTitle, subTitle, dt, ftr, sldNum", f"missing {sorted(TITLE_PH - types)}")
@@ -113,8 +109,11 @@ def check_template(r, livery, d):
 
 def check_livery(d: Path, swatch: Path | None = None) -> bool:
     r = Report(d.name)
-    p = subprocess.run([sys.executable, str(LIVERY_BUILD), "--check", str(d)], capture_output=True, text=True)
-    r.check(p.returncode == 0, "build/ is fresh", (p.stdout + p.stderr).strip().splitlines()[-1] if (p.stdout + p.stderr).strip() else "")
+    try:
+        stale = [t.name for t, text in livery_build.outputs(d).items() if not t.exists() or t.read_text() != text]
+        r.check(not stale, "build/ is fresh", f"stale: {', '.join(stale)} (run livery build {d})")
+    except SystemExit as e:   # the build refuses the livery (schema): its message
+        r.check(False, "build/ is fresh", str(e).splitlines()[0])
     livery = livery_mod.load(d)
     missing = [f"{what}: {path}" for path, what in livery_mod.files(livery) if not (d / path).exists()]
     r.check(not missing, "every file the data names exists", "; ".join(missing))
@@ -133,7 +132,7 @@ def check_charts(r, livery, swatch=None):
     (a published palette's failures arrive as warnings); the contact sheet when asked for."""
     ch = livery.get("charts")
     if not ch:
-        r.fail("livery.json has no charts: rerun livery_build.py")
+        r.fail("livery.json has no charts: rerun livery build")
         return
     for line in livery_charts.report(livery["name"], ch)[0:]:
         state, _, rest = line.strip().partition("  ")
@@ -146,13 +145,6 @@ def check_charts(r, livery, swatch=None):
         r.ok(f"charts swatch sheet: {out}")
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("liveries", nargs="+", type=Path)
-    ap.add_argument("--swatch", type=Path, metavar="DIR", help="write each livery's chart contact sheet into DIR")
-    a = ap.parse_args()
-    return 0 if all([check_livery(d.resolve(), a.swatch) for d in a.liveries]) else 1
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+def check(liveries: list[Path], swatch: Path | None = None) -> bool:
+    """Every livery's checks (each runs, so all failures print); True when all pass."""
+    return all([check_livery(d.resolve(), swatch) for d in liveries])

@@ -86,7 +86,7 @@ jobs:
           exit "$bad"
 
       - name: Check the committed liveries are built
-        run: python3 _extensions/engine/livery_build.py --check liveries/*/
+        run: python3 _extensions/engine/livery.py build --check liveries/*/
 
       # timeout: a wedged browser render (mermaid) should fail here in minutes, with
       # diagnostics, not at the job's cap
@@ -270,12 +270,14 @@ jobs:
       # the resolved compositions against the decided numbers (a changed box is named in
       # EXPECTED_DELTAS or fails); every livery's sizes in whole or half points on its canvas,
       # and every size in its template a role's; every livery.yml valid against the schema, the
-      # refusals with their paths, and liveries/REFERENCE.md generated from the schema
-      - name: Test the compositions, the type scale and the schema
+      # refusals with their paths, and liveries/REFERENCE.md generated from the schema; the
+      # livery command's scaffolds (new, with a deck, a flavor) passing build, template and check
+      - name: Test the compositions, the type scale, the schema and the livery command
         run: |
           python3 tests/test_compositions.py
           python3 tests/test_type.py
           python3 tests/test_schema.py
+          python3 tests/test_cli.py
           python3 _extensions/engine/livery.py schema --doc --check
 
       # the starter (talk.tex), the examples (template, paper, mathfonts, the Quarto demo) and
@@ -359,7 +361,7 @@ jobs:
       # quickstart deck's `make qa LIVERY=`: all three formats, overflow, slide-count parity,
       # short slides, contact sheets in _qa/ (deck_qa.py)
       - name: Check the livery, then build and QA the quickstart deck under it
-        run: timeout 1500 python3 common/utils/livery_check.py --qa "liveries/$LIVERY"
+        run: timeout 1500 python3 _extensions/engine/livery.py check --qa "liveries/$LIVERY"
 
       # the livery reached the output: Make's link and stamp, the template's primary slot in
       # the theme, the embedded typeface, the livery's css in the HTML

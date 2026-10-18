@@ -37,7 +37,7 @@
 \edef\engineliverydir{\engine@livery/}
 \InputIfFileExists{\engineliverydir build/livery.sty}{}{%
   \PackageError{engine_livery}{no livery at \engineliverydir: build/livery.sty is missing}
-    {Pass livery=<dir> (a directory holding build/livery.sty, from livery_build.py),
+    {Pass livery=<dir> (a directory holding build/livery.sty, from `livery build`),
      liveries/<name> for a bundled one.}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

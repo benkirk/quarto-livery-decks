@@ -1,0 +1,90 @@
+# Liveries
+
+A livery is a brand as a directory of data and assets: `_brand.yml` (the colors, fonts and logos,
+in Quarto's [brand.yml](https://quarto.org/docs/authoring/brand.html) form), `livery.yml`
+(everything else; every key in [REFERENCE.md](REFERENCE.md)), `fonts/`, `logos/`, optionally
+`art/`, `reference/notes.md` (the decisions taken), and two generated, committed things:
+`build/` (what the formats read) and `template.pptx`. `cu/` and `nasa/` are worked examples, their
+`reference/notes.md` the decisions they took; the design is `design/engine-and-liveries.md`,
+sections 4 and 6.
+
+## The `livery` command
+
+Everything a livery owner does is one command, `_extensions/engine/livery.py` (Python 3 in the
+framework's environment, README "Quick start"):
+
+| command | what it does |
+|---|---|
+| `livery new <dir> [--from <deck.pptx>] [--extends <name>]` | scaffolds a livery that builds as it stands: a palette on PowerPoint's theme slots, the roles on them, Public Sans as a stand-in face, a placeholder mark from the livery's name, the default geometry, `reference/notes.md`. `--from` takes the reference deck's colors, fonts and slide size and writes `reference/report.md`; `--extends` makes a flavor of a livery beside it |
+| `livery inspect <deck.pptx> [-o report.md] [--media DIR]` | reports on a reference deck: slide size, theme slots, fonts, layouts and placeholders, colors by frequency, media |
+| `livery build <dir>... [--check]` | validates `livery.yml` and `_brand.yml` against the schema and resolves them into `build/livery.{json,sty,css,theme,mplstyle}`; `--check` fails on a stale `build/` |
+| `livery template <dir> [-o FILE]` | generates `template.pptx` from `build/livery.json` (never edit it by hand) |
+| `livery check <dir>... [--swatch DIR] [--qa]` | build freshness, every file the data names, the template's pandoc compliance and that it rebuilds from the data, contrast warnings, the chart colors' checks (`--swatch`: their contact sheet `DIR/charts-<name>.png`); `--qa` then runs the quickstart deck's `make qa` under the livery |
+| `livery all <dir>... [--qa]` | build, template, check: the loop to rerun after every edit |
+| `livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]` | the Overleaf project: the theme, the livery and a starter deck |
+| `livery zip --charts <dir> -o <zip>` | the charts bundle: the plot style and helper for matplotlib outside the decks |
+| `livery schema --doc [--check]` | regenerates [REFERENCE.md](REFERENCE.md) from the schema |
+
+`make livery LIVERY=<name>` at the top of the repository runs `livery all liveries/<name>`, and
+`make livery LIVERY_DIR=<dir>` a livery anywhere. A deck directory's `make overleaf` and
+`make charts-zip` run the two `zip`s for the deck's livery.
+
+## Adding a livery
+
+From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
+
+1. **Scaffold it.** `livery new liveries/<name> --from <deck.pptx>` (or without `--from`, from a
+   brand guide). The deck stays out of git; `reference/report.md` is its reading.
+2. **Decide the data**, writing the judgement calls into `reference/notes.md` as you make them.
+   The build refuses a key or a value the schema does not allow, naming its path;
+   [REFERENCE.md](REFERENCE.md) says what each key does on the slide.
+   - **Palette and roles.** `_brand.yml`: the palette under the brand's own names (the scaffold
+     names the colors after the theme slots) and `primary`/`secondary`/`foreground`/`background`.
+     `livery.yml` `roles`: `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`,
+     `surface`, `warning`, `dark`, and `code-text` when code should not be the `dark` role. A
+     background darker than the foreground makes a dark livery (README "The liveries").
+   - **Fonts.** The brand's font files in `_brand.yml` in place of the stand-in (free,
+     bundleable; a proprietary face is named in the pptx and stood in for elsewhere),
+     `typography.monospace` for a code face, `installed-fonts` for a proprietary face to prefer
+     where installed, and `pptx.typeface` (and `heading-typeface`).
+   - **Marks.** The brand's logos in `_brand.yml` in place of the placeholder (an RGB PNG for
+     the web, the same name as `.pdf` for LaTeX), a `signoff` lockup if the brand wants one at
+     the foot, and `marks` when a field needs another mark than the defaults (`background` wears
+     `logo.medium.light`, `primary` the dark one, every other field primary's).
+   - **Geometry.** The scaffold's fractions are ncar's; set the lockup's `geometry.logo.aspect`,
+     the marks' corners, and `logo.inset` to put the content mark nearer the paper's edge.
+   - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
+     hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover (nsi);
+     `feature.style`; `compositions` to move any box of the composed slides.
+   - **Art.** `art`: wave curves (`common/utils/fit-waves.py` fits them to the brand's cover
+     art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo.
+   - **Type.** `type:` in points and `pptx.size`, the brand template's canvas (README "Text
+     sizes and the slide size").
+   - **Chart colors.** A brand guide's published data palette goes in `charts:` (`ramps`,
+     `sets`, or `extended` for secondary colors), its source in `reference/notes.md`; with
+     nothing, the engine generates one from the brand's own colors. Look at the swatch sheet
+     (step 3) and record the result in the notes.
+   - **Flavors.** `extends:` makes a livery a flavor of another, naming only what differs
+     (`livery new liveries/<name> --extends <parent>`).
+3. **Build and check.** `make livery LIVERY=<name>` after every change; `livery check
+   liveries/<name> --qa` adds the quickstart deck's `make qa` and the chart colors' contact sheet
+   in `decks/quickstart/_qa/`. `make -C decks/plots qa LIVERY=<name>` shows the plots in it,
+   `make -C decks/quickstart measure LIVERY=<name>` checks the composed slides.
+4. **Look.** `make -C decks/quickstart pptx html pdf LIVERY=<name>`; open the pptx in PowerPoint
+   (the "Repair?" prompt cannot be automated), the HTML in a browser, the PDF.
+   `make -C decks/quickstart overleaf LIVERY=<name>`, unzip it somewhere clean and
+   `latexmk -xelatex talk.tex`: the pure-LaTeX path. Commit `build/`, `template.pptx`, the assets
+   and the notes. CI builds the quickstart under every livery directory and compiles its
+   Overleaf zip, so the new one is checked from its first push.
+5. **Release.** Add the livery's row to README "LaTeX and Overleaf" and "The liveries", `make
+   gallery` it into the README, then cut a release. The tag is the engine's version: `version:`
+   in `_extensions/engine/_extension.yml` (and `VERSION` in `engine-revealjs.lua`, which names the
+   HTML dependency), so bump both, merge, then tag `v<version>`; the release workflow refuses any
+   other tag. While a change stays backwards compatible the current tag may be moved instead
+   (`git tag -f vX.Y.Z && git push -f origin vX.Y.Z`). The workflow attaches one Overleaf zip
+   and one charts bundle per livery, replacing an existing release's, and the Overleaf links
+   serve the latest.
+
+A livery outside this repository (README "Using the framework from another repo") is the same
+directory anywhere: `livery new path/to/mybrand`, `make livery LIVERY_DIR=path/to/mybrand` in the
+framework, and `make pptx LIVERY_DIR=path/to/mybrand` in a deck.

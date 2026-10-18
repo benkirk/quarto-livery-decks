@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
 """Pack one livery's plot style into a charts bundle, for matplotlib outside the decks.
 
-    mpl_zip.py <livery dir> -o <zip>
+    livery zip --charts <livery dir> -o <zip>
 
 The zip holds, at its top: livery_mpl.py (the engine's helper), build/livery.mplstyle and
 build/livery.json as livery.mplstyle and livery.json (its font paths rewritten to fonts/), every
@@ -10,7 +9,6 @@ directories, the chart colors' contact sheet (charts-<name>.png, livery_charts.s
 Pillow) and a README. Unzipped anywhere, `import livery_mpl` in a script beside it (or with the
 directory on PYTHONPATH) plots in the livery: the helper finds the livery.json beside itself."""
 
-import argparse
 import json
 import sys
 import tempfile
@@ -83,22 +81,15 @@ def bundle(livery_dir: Path) -> dict[str, bytes | Path]:
     return out
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("livery", type=Path)
-    ap.add_argument("-o", "--out", type=Path, required=True, help="the zip to write")
-    a = ap.parse_args()
-    files = bundle(a.livery)
+def write(livery: Path, out: Path):
+    """The livery's charts bundle."""
+    files = bundle(livery)
     missing = [str(v) for v in files.values() if isinstance(v, Path) and not v.is_file()]
     if missing:
         sys.exit("missing: " + ", ".join(missing))
-    a.out.unlink(missing_ok=True)
-    with zipfile.ZipFile(a.out, "w", zipfile.ZIP_DEFLATED) as zf:
+    out.unlink(missing_ok=True)
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
         for arc in sorted(files):
             v = files[arc]
             zf.writestr(arc, v) if isinstance(v, bytes) else zf.write(v, arc)
-    print(f"wrote {a.out}: {a.livery.name}, {len(files)} files")
-
-
-if __name__ == "__main__":
-    main()
+    print(f"wrote {out}: {livery.name}, {len(files)} files")

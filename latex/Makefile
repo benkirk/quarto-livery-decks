@@ -6,7 +6,7 @@
 #   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex
 #   make previews   math-fonts.png from the specimen (needs poppler's pdftoppm)
 #   make diagrams   examples/diagrams/*.pdf from their .dot/.mmd (needs Graphviz, npx)
-#   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (overleaf_zip.py)
+#   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (livery zip)
 #   make clean
 #
 # The theme lives in ../_extensions/engine/, the liveries in ../liveries/. LaTeX finds the
@@ -83,10 +83,10 @@ $(DIAGRAMS)/%.pdf: $(DIAGRAMS)/%.mmd
 
 # An Overleaf project: the starter deck on the ncar livery, one photo, latexmkrc
 # (which finds the theme) and the LaTeX half of the theme -- no Quarto or revealjs
-# files.  overleaf_zip.py packs any livery the same way (the framework's too).
+# files.  `livery zip` packs any livery the same way (the framework's too).
 overleaf: engine-beamer-overleaf.zip
 engine-beamer-overleaf.zip: talk.tex FORCE
-	python3 $(THEME)/overleaf_zip.py $(ROOT)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
+	python3 $(THEME)/livery.py zip $(ROOT)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
 
 clean:
 	latexmk -C -quiet talk.tex 2>/dev/null

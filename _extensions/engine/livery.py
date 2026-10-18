@@ -1,17 +1,31 @@
-"""Read a livery's resolved truth, build/livery.json, for the template builder, the checks, the
-pptx post-render steps and the framework's scripts.
+#!/usr/bin/env python3
+"""The `livery` command, everything a livery owner does, and the reader of a livery's resolved
+truth, build/livery.json, for the template builder, the checks, the pptx post-render steps and
+the framework's scripts.
+
+    livery new <dir> [--from <deck.pptx>] [--extends <name>]   scaffold a livery (livery_new.py)
+    livery inspect <deck.pptx> [-o report.md] [--media DIR]     report on a reference deck
+    livery build <dir>... [--check]     _brand.yml + livery.yml -> build/, validated (livery_build.py)
+    livery template <dir> [-o FILE]     build/livery.json -> template.pptx (livery_template.py)
+    livery check <dir>... [--swatch DIR] [--qa]   the livery's checks; --qa then the quickstart's make qa
+    livery all <dir>... [--qa]          build, template, check: the onboarding loop
+    livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]   the Overleaf project (overleaf_zip.py)
+    livery zip --charts <dir> -o <zip>  the charts bundle for matplotlib (mpl_zip.py)
+    livery schema --doc [-o FILE] [--check]   livery.yml's reference from its schema
+    livery deps|mono|figsize <dir>      for Make.common: the files a deck build reads, the code
+                                        face's family, the plots' default size ("<w> <h>" inches)
+
+`livery` is this file: `python3 <framework>/_extensions/engine/livery.py`, or the framework's
+`make livery LIVERY=<name>` (or LIVERY_DIR=), which runs `livery all`. The subcommands import
+their modules only when run, so `zip` needs nothing beyond Python and the engine.
 
     import livery as livery_mod     load, color, scheme, blend, mix, font_file, mark, files
-    livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
-    livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
-    livery.py figsize <livery dir>  the plots' default size, charts.figsize.full: "<w> <h>" in inches
-    livery.py schema --doc [--check]  livery.yml's reference from its schema (livery_schema.py)
 
-The directory comes from the argument, else $LIVERY_DIR (exported by the framework's
-Make.common), else a `_livery` link in the current directory. Generate the file with
-livery_build.py. `deps` prints build/livery.{json,sty,css,theme,mplstyle}, the template and every
-file the data names (the parent's too), joined to the directory as given; each command prints
-nothing when build/livery.json is missing."""
+The reader's directory comes from the argument, else $LIVERY_DIR (exported by the framework's
+Make.common), else a `_livery` link in the current directory. `deps` prints
+build/livery.{json,sty,css,theme,mplstyle}, the template and every file the data names (the
+parent's too), joined to the directory as given; deps, mono and figsize print nothing when
+build/livery.json is missing."""
 
 import json
 import math
@@ -31,7 +45,7 @@ def load(path: str | os.PathLike | None = None) -> dict:
     d = livery_dir(path)
     f = d / "build" / "livery.json"
     if not f.exists():
-        raise FileNotFoundError(f"{f} missing: run livery_build.py {d}")
+        raise FileNotFoundError(f"{f} missing: run livery build {d}")
     data = json.loads(f.read_text())
     data["dir"] = str(d)
     return data
@@ -54,7 +68,7 @@ def scheme(livery: dict, slot: str) -> str:
 
 
 def blend(livery: dict, key: str) -> str:
-    """The hex of a blend livery_build.py derived from the roles (table-rule, caution-fill, ...)."""
+    """The hex of a blend `livery build` derived from the roles (table-rule, caution-fill, ...)."""
     return livery["blends"][key].lstrip("#").upper()
 
 
@@ -144,12 +158,113 @@ def figsize(d: str) -> str:
     return " ".join(str(v) for v in load(d)["charts"]["figsize"]["full"])
 
 
-if __name__ == "__main__":
-    if sys.argv[1:2] == ["schema"]:
+ENGINE = Path(__file__).resolve().parent
+QUICKSTART = ENGINE.parents[1] / "decks" / "quickstart"   # the framework's, for check --qa
+
+
+def check_qa(d: Path) -> bool:
+    """The quickstart deck's `make qa` under the livery: LIVERY=<name> for one of the framework's
+    liveries, else LIVERY_DIR=<dir>."""
+    import subprocess
+    if not (QUICKSTART / "Makefile").exists():
+        print(f"{d.name}: --qa needs the framework's decks/quickstart, not found at {QUICKSTART}")
+        return False
+    bundled = (ENGINE.parents[1] / "liveries" / d.name).resolve() == d.resolve()
+    which = f"LIVERY={d.name}" if bundled else f"LIVERY_DIR={d.resolve()}"
+    ok = subprocess.run(["make", "-C", str(QUICKSTART), "qa", which]).returncode == 0
+    print(f"{d.name}: {'ok   ' if ok else 'FAIL '} make -C decks/quickstart qa {which}")
+    return ok
+
+
+def check_cmd(dirs: list[Path], swatch: Path | None, qa: bool) -> int:
+    import livery_check
+    bad = 0
+    for d in dirs:
+        ok = livery_check.check([d], swatch or (QUICKSTART / "_qa" if qa else None))
+        if ok and qa:
+            ok = check_qa(d)
+        bad |= not ok
+    return 1 if bad else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+    ap = argparse.ArgumentParser(prog="livery", description="Everything a livery owner does (livery.py).")
+    sub = ap.add_subparsers(dest="cmd", required=True, metavar="command")
+    p = sub.add_parser("new", help="scaffold a livery directory")
+    p.add_argument("dir", type=Path)
+    p.add_argument("--from", dest="deck", type=Path, metavar="DECK", help="a reference deck (.pptx) to seed it from")
+    p.add_argument("--extends", metavar="NAME", help="make a flavor of the livery NAME beside it")
+    p = sub.add_parser("inspect", help="report on a reference deck")
+    p.add_argument("deck", type=Path)
+    p.add_argument("-o", "--output", type=Path, default=Path("report.md"))
+    p.add_argument("--media", type=Path, metavar="DIR", help="extract the deck's pictures into DIR")
+    p = sub.add_parser("build", help="write build/ from _brand.yml and livery.yml")
+    p.add_argument("dirs", nargs="+", type=Path)
+    p.add_argument("--check", action="store_true", help="exit 1 if a committed build/ is stale")
+    p = sub.add_parser("template", help="build template.pptx from build/livery.json")
+    p.add_argument("dir", type=Path)
+    p.add_argument("-o", "--output", type=Path, help="default: <dir>/template.pptx")
+    p = sub.add_parser("check", help="the livery's checks")
+    p.add_argument("dirs", nargs="+", type=Path)
+    p.add_argument("--swatch", type=Path, metavar="DIR", help="write the chart colors' contact sheet into DIR")
+    p.add_argument("--qa", action="store_true", help="then the quickstart deck's make qa under the livery")
+    p = sub.add_parser("all", help="build, template, check")
+    p.add_argument("dirs", nargs="+", type=Path)
+    p.add_argument("--qa", action="store_true", help="then the quickstart deck's make qa under the livery")
+    p = sub.add_parser("zip", help="the Overleaf project, or with --charts the charts bundle")
+    p.add_argument("dir", type=Path)
+    p.add_argument("-o", "--output", type=Path, required=True)
+    p.add_argument("--charts", action="store_true", help="the charts bundle for matplotlib")
+    p.add_argument("--starter", type=Path, help="the Overleaf starter (default: the engine's talk.tex)")
+    p.add_argument("--photo", type=Path, help="the Overleaf title and photo-slide picture")
+    p = sub.add_parser("schema", help="livery.yml's reference from its schema")
+    p.add_argument("--doc", action="store_true", required=True)
+    p.add_argument("-o", "--output", type=Path)
+    p.add_argument("--check", action="store_true", help="exit 1 if the file is not the schema's")
+    for name, help in (("deps", "the files a deck build reads (Make.common)"),
+                       ("mono", "the code face's family, or nothing"), ("figsize", "the plots' default size")):
+        sub.add_parser(name, help=help).add_argument("dir")
+    a = ap.parse_args(argv)
+
+    if a.cmd == "new":
+        import livery_new
+        livery_new.new(a.dir, a.deck, a.extends)
+    elif a.cmd == "inspect":
+        import livery_inspect
+        livery_inspect.inspect(a.deck, a.output, a.media)
+    elif a.cmd == "build":
+        import livery_build
+        return livery_build.build(a.dirs, a.check)
+    elif a.cmd == "template":
+        import livery_template
+        livery_template.write(a.dir, a.output)
+    elif a.cmd == "check":
+        return check_cmd(a.dirs, a.swatch, a.qa)
+    elif a.cmd == "all":
+        import livery_build
+        import livery_template
+        for d in a.dirs:
+            if livery_build.build([d]):
+                return 1
+            livery_template.write(d)
+        return check_cmd(a.dirs, None, a.qa)
+    elif a.cmd == "zip":
+        if a.charts:
+            if a.starter or a.photo:
+                ap.error("--starter and --photo are the Overleaf zip's, not --charts'")
+            import mpl_zip
+            mpl_zip.write(a.dir, a.output)
+        else:
+            import overleaf_zip
+            overleaf_zip.write(a.dir, a.output, *([a.starter] if a.starter else []), photo=a.photo)
+    elif a.cmd == "schema":
         import livery_schema
-        livery_schema.main(sys.argv[2:])
-        sys.exit()
-    cmds = {"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}
-    if len(sys.argv) != 3 or sys.argv[1] not in cmds:
-        sys.exit("usage: livery.py deps|mono|figsize <livery dir>")
-    print(cmds[sys.argv[1]](sys.argv[2]))
+        return livery_schema.write_doc(a.output or livery_schema.REFERENCE, a.check)
+    else:
+        print({"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}[a.cmd](a.dir))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

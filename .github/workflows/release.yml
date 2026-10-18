@@ -5,7 +5,7 @@
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-charts.zip
 # A v* tag also publishes the container image under its semver tags (ci.yaml -> image.yaml).
 # Tags are cut by hand after a livery change, or moved while a change stays backwards
-# compatible (README "Adding a livery", step 6). The tag must be the engine's version:
+# compatible (liveries/README.md, "Release"). The tag must be the engine's version:
 # `version:` in _extensions/engine/_extension.yml (one number since #57).
 name: release
 
