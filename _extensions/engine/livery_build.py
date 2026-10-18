@@ -173,21 +173,27 @@ def resolve(d: Path) -> tuple[dict, dict]:
     data = read(d)
     palette = {k: str(v).upper() for k, v in data["brand"].get("color", {}).get("palette", {}).items()}
 
-    def hex_of(name):
+    def hex_of(name, where):   # where: the key, as the schema's errors name it
         if isinstance(name, str) and name.startswith("#"):
             return name.upper()
         if name in palette:
             return palette[name]
-        sys.exit(f"{d.name}: color {name!r} is neither a palette name nor a hex value")
+        sys.exit(f"{d / where[0]}: {where[1]}: {name!r} is neither a palette name nor a hex value "
+                 "(_brand.yml color.palette)")
 
     color = data["brand"].get("color", {})
     sources = {k: color[k] for k in ("primary", "secondary", "foreground", "background") if k in color}
     sources.update(data.get("roles", {}))
     if "dark" in sources:   # code text: the dark role unless a livery says otherwise (a dark livery's dark is a field)
         sources.setdefault("code-text", sources["dark"])
-    roles = {k: hex_of(v) for k, v in sources.items()}
+    given = data.get("roles", {})
+    def role_key(k):   # a role's key: livery.yml's roles, else the brand's color, else code-text's dark
+        if k in given:
+            return ("livery.yml", f"roles.{k}")
+        return ("_brand.yml", f"color.{k}") if k in color else ("livery.yml", "roles.dark")
+    roles = {k: hex_of(v, role_key(k)) for k, v in sources.items()}
     blends = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
-    blends.update({k: hex_of(v) for k, v in data.get("blends", {}).items()})
+    blends.update({k: hex_of(v, ("livery.yml", f"blends.{k}")) for k, v in data.get("blends", {}).items()})
     out = {
         "engine": ENGINE_VERSION,   # the engine that wrote it (Make.common warns when it is another)
         "schema": data["schema"],   # the livery.yml schema it was written for
@@ -236,11 +242,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out.setdefault("pptx", {})
     # the slot contract, from the roles; a livery's own pptx.scheme overrides slot by slot
     scheme = {slot: roles[role] for slot, role in SLOT_ROLES.items() if role in roles}
-    scheme.update({k: hex_of(v) for k, v in out["pptx"].get("scheme", {}).items()})
+    scheme.update({k: hex_of(v, ("livery.yml", f"pptx.scheme.{k}")) for k, v in out["pptx"].get("scheme", {}).items()})
     out["pptx"]["scheme"] = scheme
-    tmpl = d / out["pptx"].get("template", "template.pptx")
-    if not tmpl.exists():   # livery_template.py builds it from build/livery.json, so only a warning
-        print(f"{d.name}: pptx template {tmpl} missing; run livery template", file=sys.stderr)
     return out, sources
 
 
@@ -1121,11 +1124,16 @@ def outputs(d: Path) -> dict[Path, str]:
             build / "livery.mplstyle": emit_mplstyle(livery, d)}
 
 
-def build(liveries: list[Path], check: bool = False) -> int:
-    """Write each livery's build/ (or with check, compare it); 1 when one is stale."""
+def build(liveries: list[Path], check: bool = False, template_note: bool = True) -> int:
+    """Write each livery's build/ (or with check, compare it); 1 when one is stale. template_note:
+    say so when the livery has no template.pptx yet (`livery all` builds it next, so it doesn't)."""
     stale = 0
     for d in liveries:
-        for target, text in outputs(d).items():
+        out = outputs(d)
+        tmpl = d / (json.loads(out[d / "build" / "livery.json"])["pptx"].get("template") or "template.pptx")
+        if template_note and not tmpl.exists():   # `livery template` builds it from build/livery.json
+            print(f"{d.name}: no {tmpl} yet: run livery template {d}", file=sys.stderr)
+        for target, text in out.items():
             if check:
                 if not target.exists() or target.read_text() != text:
                     print(f"stale: {target} (run livery build {d})"); stale = 1

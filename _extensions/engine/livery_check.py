@@ -33,14 +33,29 @@ CONTRAST = [("primary-contrast", "background"), ("highlight", "background"), ("m
 
 
 class Report:
-    def __init__(self, name):
-        self.name, self.failed = name, False
+    """A livery's checks as lines: warnings and failures always, a passing check only when verbose,
+    then one summary line."""
+    def __init__(self, name, verbose=False):
+        self.name, self.verbose = name, verbose
+        self.n, self.warned, self.failures = 0, 0, 0
 
-    def ok(self, what): print(f"{self.name}: ok    {what}")
-    def warn(self, what): print(f"{self.name}: warn  {what}")
-    def fail(self, what): print(f"{self.name}: FAIL  {what}"); self.failed = True
+    @property
+    def failed(self): return self.failures > 0
+    def ok(self, what):
+        self.n += 1
+        if self.verbose:
+            print(f"{self.name}: ok    {what}")
+    def warn(self, what): self.n += 1; self.warned += 1; print(f"{self.name}: warn  {what}")
+    def fail(self, what): self.n += 1; self.failures += 1; print(f"{self.name}: FAIL  {what}")
+    def note(self, what): print(f"{self.name}: {what}")
     def check(self, cond, what, detail=""):
         (self.ok if cond else self.fail)(what + (f": {detail}" if detail and not cond else ""))
+    def summary(self):
+        warned = f", {self.warned} warning{'s' * (self.warned != 1)}" if self.warned else ""
+        if self.failures:
+            print(f"{self.name}: FAILED ({self.failures} of {self.n} checks{warned})")
+        else:
+            print(f"{self.name}: ok ({self.n} checks{warned})")
 
 
 def luminance(hexv):
@@ -107,8 +122,8 @@ def check_template(r, livery, d):
         r.check(rebuilt.read_bytes() == tmpl.read_bytes(), "template.pptx rebuilds byte-identically from the data (not hand-edited)")
 
 
-def check_livery(d: Path, swatch: Path | None = None) -> bool:
-    r = Report(d.name)
+def check_livery(d: Path, swatch: Path | None = None, verbose: bool = False) -> bool:
+    r = Report(d.name, verbose)
     try:
         stale = [t.name for t, text in livery_build.outputs(d).items() if not t.exists() or t.read_text() != text]
         r.check(not stale, "build/ is fresh", f"stale: {', '.join(stale)} (run livery build {d})")
@@ -124,6 +139,7 @@ def check_livery(d: Path, swatch: Path | None = None) -> bool:
             ratio = contrast(roles[fg], roles[bg])
             (r.ok if ratio >= 4.5 else r.warn)(f"contrast {fg} on {bg}: {ratio:.1f}:1")
     check_charts(r, livery, swatch)
+    r.summary()
     return not r.failed
 
 
@@ -142,9 +158,10 @@ def check_charts(r, livery, swatch=None):
         swatch.mkdir(parents=True, exist_ok=True)
         out = swatch / f"charts-{Path(livery['dir']).name}.png"
         livery_charts.swatch(livery["name"], ch, out)
-        r.ok(f"charts swatch sheet: {out}")
+        r.note(f"charts swatch sheet: {out}")
 
 
-def check(liveries: list[Path], swatch: Path | None = None) -> bool:
-    """Every livery's checks (each runs, so all failures print); True when all pass."""
-    return all([check_livery(d.resolve(), swatch) for d in liveries])
+def check(liveries: list[Path], swatch: Path | None = None, verbose: bool = False) -> bool:
+    """Every livery's checks (each runs, so all failures print); True when all pass. Quiet unless
+    verbose: warnings, failures and a summary line per livery."""
+    return all([check_livery(d.resolve(), swatch, verbose) for d in liveries])

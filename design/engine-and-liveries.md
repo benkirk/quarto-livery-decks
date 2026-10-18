@@ -396,6 +396,13 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, the `livery` command's first-use friction** (issue #87). Nine rough edges a new
+  livery owner hits, as a checklist; the first five fixed in one PR: `bin/livery` (on PATH after
+  `source etc/config_env.sh` and in the image, following links to itself), no false "template
+  missing" in `livery all` (`build(template_note=False)`), a quiet `livery check` (warnings,
+  failures, a summary line; `-v`), palette errors that name their key, and the scaffold's editor
+  line by the schema's real path (relative within a project, absolute across trees). Ben on a
+  `pyproject.toml` for the command: not yet (it needs the checkout); revisit with #81.
 - **2026-10-18, calendar versions.** Ben: versions are `YY.MM.N` (the month unpadded, `N` the
   month's release count from 0), with the `YY.MM` shortcut where a tool supports a moving name:
   the container image's `metadata-action` semver patterns give `26.10.0` and `26.10` (the year

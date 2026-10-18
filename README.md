@@ -118,6 +118,7 @@ on white, are turned to the dark with their hues kept (`diagram-dark.lua`).
 
 ```
 quarto-livery-decks/
+├── bin/livery             # the livery command (liveries/README.md), on PATH after config_env.sh
 ├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/charts-zip/clean)
 ├── _extensions/engine/    # the engine (symlinked into decks): the pptx, beamer and revealjs
 │                          #   formats and their Lua filters, pptx_post.py and its steps

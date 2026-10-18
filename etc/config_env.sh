@@ -34,3 +34,6 @@ fi
 make --silent -C ${ROOT_DIR} ${ENV_NAME}
 
 conda activate ${ENV_DIR}
+
+# the framework's own commands: bin/livery (liveries/README.md)
+export PATH="${ROOT_DIR}/bin:${PATH}"

@@ -186,11 +186,11 @@ def check_qa(d: Path) -> bool:
     return ok
 
 
-def check_cmd(dirs: list[Path], swatch: Path | None, qa: bool) -> int:
+def check_cmd(dirs: list[Path], swatch: Path | None, qa: bool, verbose: bool = False) -> int:
     import livery_check
     bad = 0
     for d in dirs:
-        ok = livery_check.check([d], swatch or (QUICKSTART / "_qa" if qa else None))
+        ok = livery_check.check([d], swatch or (QUICKSTART / "_qa" if qa else None), verbose)
         if ok and qa:
             ok = check_qa(d)
         bad |= not ok
@@ -219,9 +219,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("dirs", nargs="+", type=Path)
     p.add_argument("--swatch", type=Path, metavar="DIR", help="write the chart colors' contact sheet into DIR")
     p.add_argument("--qa", action="store_true", help="then the quickstart deck's make qa under the livery")
+    p.add_argument("-v", "--verbose", action="store_true", help="print every check, not only warnings and failures")
     p = sub.add_parser("all", help="build, template, check")
     p.add_argument("dirs", nargs="+", type=Path)
     p.add_argument("--qa", action="store_true", help="then the quickstart deck's make qa under the livery")
+    p.add_argument("-v", "--verbose", action="store_true", help="print every check, not only warnings and failures")
     p = sub.add_parser("zip", help="the Overleaf project, or with --charts the charts bundle")
     p.add_argument("dir", type=Path)
     p.add_argument("-o", "--output", type=Path, required=True)
@@ -250,15 +252,15 @@ def main(argv: list[str] | None = None) -> int:
         import livery_template
         livery_template.write(a.dir, a.output)
     elif a.cmd == "check":
-        return check_cmd(a.dirs, a.swatch, a.qa)
+        return check_cmd(a.dirs, a.swatch, a.qa, a.verbose)
     elif a.cmd == "all":
         import livery_build
         import livery_template
         for d in a.dirs:
-            if livery_build.build([d]):
+            if livery_build.build([d], template_note=False):   # the template comes next
                 return 1
             livery_template.write(d)
-        return check_cmd(a.dirs, None, a.qa)
+        return check_cmd(a.dirs, None, a.qa, a.verbose)
     elif a.cmd == "zip":
         if a.charts:
             if a.starter or a.photo:

@@ -22,7 +22,10 @@ schema (`livery schema --doc`, `--check` in CI and `make test`). A key is rename
 agreement.
 
 **The `livery` command** is `_extensions/engine/livery.py` (argparse subcommands; README for
-owners: `liveries/README.md`): `new` (`livery_new.py`: a scaffold that builds as it stands, Public
+owners: `liveries/README.md`), launched as `bin/livery` (on PATH after `source etc/config_env.sh`
+and in the image; it follows links to itself; the Makefiles call `python3 $(LIVERY_PY)` and need
+no PATH). `check` is quiet (warnings, failures, a summary line; `-v` for all); a palette name
+that is not one fails with its key (`roles.accent: ...`): `new` (`livery_new.py`: a scaffold that builds as it stands, Public
 Sans from `liveries/nasa` as its stand-in face, a placeholder mark; `--from <deck>`, `--extends`),
 `inspect` (`livery_inspect.py`), `build [--check]` (`livery_build.py`), `template`
 (`livery_template.py`), `check [--swatch] [--qa]` (`livery_check.py`; `--qa` runs the quickstart's

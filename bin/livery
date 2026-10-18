@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# The livery command (liveries/README.md): _extensions/engine/livery.py, beside this directory.
+# On PATH after `source etc/config_env.sh` and in the container; from a consumer repo,
+# <framework>/bin/livery, or a link to it anywhere. It runs the python3 on PATH (the
+# framework's conda env).
+src=${BASH_SOURCE[0]}
+while [ -L "$src" ]; do   # follow links to this file, so a link in ~/bin finds the engine
+  dir=$(cd "$(dirname "$src")" && pwd -P)
+  src=$(readlink "$src")
+  [[ $src == /* ]] || src=$dir/$src
+done
+exec python3 "$(cd "$(dirname "$src")" && pwd -P)/../_extensions/engine/livery.py" "$@"
