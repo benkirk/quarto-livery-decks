@@ -15,7 +15,7 @@ slide". Don't restate them; use them.
 
 ## Loop
 
-1. `make -C docs/<deck> qa` (or `make qa DECKS=<name>` in a multi-deck directory). It
+1. `make -C decks/<deck> qa` (or `make qa DECKS=<name>` in a multi-deck directory). It
    builds every format, then writes `_qa/report.txt`, `usage.tsv`, `<deck>-html.png`
    and `<deck>-pdf.png` contact sheets, and per-slide PNGs.
 2. Fix the failures (`source ...`, `PDF ...`, `HTML ...`, a slide-count MISMATCH)
@@ -84,4 +84,4 @@ slide". Don't restate them; use them.
   - revealjs inline code breaks at hyphens inside table cells;
   - two-line slide titles run into the title rule in HTML.
 
-  Both belong in the engine (`docs/common/_extensions/engine/`).
+  Both belong in the engine (`_extensions/engine/`).

@@ -68,8 +68,9 @@ Fonts link), and `linked-images.lua:11`. Only `section_subtitle.py` and
 ## 2. Repositories
 
 **Since 2026-10-18 (#57) the engine lives in `quarto-livery-decks`**: `beamer-livery-theme` merged
-in with its history (the engine at `docs/common/_extensions/engine/`, its LaTeX examples at
-`docs/latex/`, its tests at `tests/`, every livery in `docs/common/liveries/`) and is archived;
+in with its history (the engine at `_extensions/engine/`, its LaTeX examples at `latex/`, its
+tests at `tests/`, every livery in `liveries/`, since the flatten of the same day; until then
+all under `docs/`), to be archived on GitHub;
 one version number, `_extension.yml`'s, tags the one repo. The rest of this section is the
 two-repo arrangement as designed and run from 2026-10-16 to 2026-10-18.
 
@@ -241,7 +242,7 @@ For `beamer-livery-theme`:
 - The reference liveries live under `liveries/` in the engine repo; vendoring brings
   them along under the extension directory, and the framework's `liveries/ncar` becomes a
   link to the vendored copy. (Since #57 nothing is vendored: every livery is in
-  `docs/common/liveries/`, and the bundled fallback is `liveries/<brand>` beside the
+  `liveries/`, and the bundled fallback is `liveries/<brand>` beside the
   `_extensions/` that holds the engine.)
 
 **Compositions** (2026-10-17, `composition-handoff.md`): the title (cover, photo, light,
@@ -256,7 +257,7 @@ cover` picks the photo slide's look per livery. Every format has one drawer that
 parts in those boxes (beamer `\engine@drawcomp`, the scss on `--engine-cmp-*` variables, the
 template builder's `field_layout`, the framework's `slide_layout.py`), so no composition
 number lives in theme code, and `comp_measure.py` (`make measure`) checks every format against
-the boxes; `docs/design/compositions-baseline.md` is the before-picture. A new composition, or
+the boxes; `design/compositions-baseline.md` is the before-picture. A new composition, or
 a livery's own look for one, is data: a box override in `livery.yml`, not a fifth drawer.
 
 **Type** (2026-10-17; points since engine 3.6.0): a livery states its text sizes in **points on
@@ -284,7 +285,7 @@ For `quarto-livery-decks`:
   `linked-images.lua` (`quarto.json.decode` of `livery.json`), `site_index.py`
   (palette and font family; a Google Fonts link only for a google source),
   `deck_qa.py` (`EDGE` from the livery's margin).
-- `Make.common`: `LIVERY ?= ncar`; `LIVERY_DIR ?= $(SHARED_COMMON)/liveries/$(LIVERY)`;
+- `Make.common`: `LIVERY ?= ncar`; `LIVERY_DIR ?= $(SHARED_LIVERIES)/$(LIVERY)`;
   a `.livery` stamp whose content is `$(LIVERY)` and an `ln -sfn` rule for the `_livery`
   link (a missing-only rule, like today's three, would silently keep the old livery
   after `make LIVERY=cu`); `DEPS += _livery`; `FORMAT_HTML ?= engine-revealjs` and
@@ -308,7 +309,7 @@ and a short list of judgement calls.
 cleanly delete layouts. The repo convention holds: python-pptx for the report,
 lxml-on-zip for the writes, fixed zip timestamps for reproducible files.
 
-**Tools**, in `docs/common/utils/`:
+**Tools**, in `common/utils/`:
 
 1. `livery_inspect.py reference.pptx <livery dir>` writes `reference/report.md` (slide
    size and aspect; the twelve scheme slots; the font scheme; per master and layout its
@@ -326,7 +327,7 @@ lxml-on-zip for the writes, fixed zip timestamps for reproducible files.
    geometry block of `livery.json`.
 3. `livery_check.py <livery dir>` verifies layout names, the five placeholders, the slot
    contract, media naming and `build/` freshness, then runs
-   `make -C docs/quickstart qa LIVERY=<name>`.
+   `make -C decks/quickstart qa LIVERY=<name>`.
 
 **The human steps**, in order: inspect → map the reference layouts onto pandoc's (which
 of a customer's six title variants is "Title Slide"; which rich layouts pandoc can never
@@ -407,6 +408,22 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, `docs/` flattened; version 1.0.0** (this repo, `flatten`). Ben: "a lot of core
+  infrastructure in docs". Everything moved up a level: `Make.common`, `_extensions/engine/`,
+  `liveries/`, `common/` (`_quarto.yml`, the Lua filters, `utils/`), `decks/` (quickstart,
+  sample, fixtures), `latex/`, `design/`, beside `tests/`. Decks include `../../Make.common`,
+  a consumer `../framework/Make.common`, the container `make -f /opt/quarto-livery-decks/Make.common`.
+  The engine's livery lookup is unchanged (liveries beside `_extensions/`); LaTeX's
+  `TEXINPUTS` names `_extensions/engine//` and `liveries//` as an Overleaf zip does, never the
+  root's `//` (it would reach `conda-env/`). The two NCAR decks, `sam_and_pbs` and
+  `new_user_samples`, left the repo (they read hpc-scheduling-tools' data; the history keeps
+  them). The engine's version became 1.0.0 (`_extension.yml` and `engine-revealjs.lua`'s
+  `VERSION`, which had lagged at 3.7.0), and v1.0.0 is cut again over the first one: the repo
+  was two days old and Ben its only user. Parity against the morning's baselines: unchanged but
+  for the named text (the quickstart's closing slide names `decks/`, the sample's
+  project-config slide shows `_quarto.yml`'s corrected comment, the LaTeX demo's install line
+  names the framework's Makefile) and the HTML dependency's version, folded by `NORMALIZE`.
+  Next: #57 Phase B.
 - **2026-10-18, one repository** (#57 Phase A; this repo #60 the move, #61 CI, #62 docs).
   Ben chose the bold option of the retrospective: `beamer-livery-theme` merged in with its
   history (a fresh clone through `git filter-repo --to-subdirectory-filter engine-import`, an

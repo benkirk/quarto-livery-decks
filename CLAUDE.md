@@ -9,14 +9,14 @@ A [Quarto](https://quarto.org) framework for documentation decks (`.pptx`
 primary; `.html`/revealjs and `.pdf`/beamer secondary) and the engine that draws them, in one
 repository. It is the **multi-brand successor** of `benkirk/quarto-docs-framework` (the
 `upstream` remote), which stays the NCAR framework. The **engine**
-(`docs/common/_extensions/engine/`: the beamer and revealjs themes, the livery tools, the
+(`_extensions/engine/`: the beamer and revealjs themes, the livery tools, the
 Overleaf packer) was `benkirk/beamer-livery-theme` until 2026-10, when it merged here with its
 history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
-by hand). Each brand is a **livery** directory under `docs/common/liveries/` (`ncar`, `ucar`,
+by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
 `ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by the engine's `livery_build.py`
 into `build/livery.{json,sty,css,theme}` (an unknown `livery.yml` key is warned about).
-`docs/design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
+`design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
 next step (#57 Phase B: the pptx format moves into the engine; then #58, the customer surface).
 
 The engine also holds the json reader (`livery.py`), the template builder
@@ -35,18 +35,21 @@ livery (see "Dark liveries" below). The reference decks themselves live on Drive
 not in git. A livery without `pptx.fonts` embeds nothing (`embed_fonts.py` says so and leaves
 the deck alone); a livery without `art.waves` gets straight-edged title fields in every format.
 
-`docs/latex/` is the engine's pure-LaTeX side (the starter `talk.tex`, a link to the
+`latex/` is the engine's pure-LaTeX side (the starter `talk.tex`, a link to the
 extension's copy; `examples/` and their variants; `make latex`), and `tests/` holds the
 engine's tests (`make test`) and both parity harnesses ("The engine" below).
 
-Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
-machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua
-filters, post-render utilities) and `docs/Make.common`.
-`docs/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
-`docs/sample/sample.qmd` is the cookbook of every pattern. The README covers
+Decks live under `decks/<deck>/` as a `.qmd` plus a 1-line Makefile
+(`include ../../Make.common`). The shared machinery sits at the top since the flatten
+(2026-10-18): `Make.common`, the engine in `_extensions/engine/`, the liveries (each with its
+`template.pptx`) in `liveries/`, and `common/` (`_quarto.yml`, the Lua filters, the
+post-render utilities); `latex/`, `design/` and `tests/` beside them. No `_quarto.yml` at the
+root: each deck is its own Quarto project through its linked one.
+`decks/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
+`decks/sample/sample.qmd` is the cookbook of every pattern. The README covers
 layout, template constraints, and font embedding.
 
-- **README images** are `docs/quickstart/screenshots/*.png`, committed. After
+- **README images** are `decks/quickstart/screenshots/*.png`, committed. After
   editing the quickstart deck run `make screenshots` there, look at them, and
   commit them. Slides are found by title (`SLIDES` in `screenshots.py`), so a
   renamed slide needs that list updated. `make gallery` (`gallery.py`) writes
@@ -57,11 +60,11 @@ layout, template constraints, and font embedding.
 
 Other repos can take the framework as a submodule and keep their decks in their
 own tree (README "Using the framework from another repo"); the deck Makefile
-includes `../framework/docs/Make.common`. So nothing may assume a deck sits in
-`docs/<deck>/`: the shared `_quarto.yml` reaches `common/` as `_engine/`, a link
+includes `../framework/Make.common`. So nothing may assume a deck sits in
+`decks/<deck>/`: the shared `_quarto.yml` reaches `common/` as `_engine/`, a link
 Make creates in each deck directory. `ci.yaml`'s `consumer` job builds a deck that way,
 and the image's smoke test a bare directory with no Makefile at all (`make -f
-<framework>/docs/Make.common DECKS=...`, which the entrypoint supplies).
+<framework>/Make.common DECKS=...`, which the entrypoint supplies).
 
 ## Environment & build
 
@@ -77,7 +80,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   is baked as Dockerfile `ENV` and asserted against conda-forge's `activate.d/quarto.sh` at build
   time, so `docker run`, any `--user` and GitHub `container:` jobs (which bypass the entrypoint) see
   the same environment. `etc/entrypoint.sh` only gives an arbitrary uid a writable HOME and turns
-  `make` in a Makefile-less directory into `make -f /opt/quarto-livery-decks/docs/Make.common
+  `make` in a Makefile-less directory into `make -f /opt/quarto-livery-decks/Make.common
   DECKS=<its qmds>`. `/opt/fonts`, an empty mount point for a host's licensed fonts
   (`-v "$PWD/fonts:/opt/fonts:ro"`), and the image's liveries' `fonts/` are linked under
   `/usr/local/share/fonts`, so LibreOffice renders a pptx with its real faces when `make measure`
@@ -116,7 +119,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   in the same colors. `*† text*` works too.
 - **Linked images** (`[![](x.png)](url)`): the picture is the link in every
   format, and each shows the URL: the HTML footer and a PDF foot line come from
-  `docs/common/linked-images.lua`, the pptx caption box from `link_captions.py`
+  `common/linked-images.lua`, the pptx caption box from `link_captions.py`
   (after pandoc, because anything after an image splits a pptx slide). A deck
   should not hand-roll footers for this. README "Linked images".
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
@@ -153,7 +156,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   shapes, so a pptx cover redraws its field, waves and marks on the slide. **`make measure`**
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
-  contact sheet `_qa/compositions-<livery>.png`; `docs/design/compositions-baseline.md` is the
+  contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
   before-picture. The pptx can't flow a stack: `band_stack()` centres a band's date, title,
   rule and subtitle on the column from estimates of their text (the rule moves onto the slide),
   a closing splits its column at the middle. Over art, a mark's box is the eroded mask's core
@@ -169,7 +172,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   absolute pads by `livery.canvas_scale()`; `scale=` rounds a pptx size to the half point.
   A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>`
   (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
-  reads it from `docProps/custom.xml`); `docs/fixtures/small.qmd` is `type-body: 10`.
+  reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
   since a dark livery's `dark` stays a field color; beamer mixes its tints toward
@@ -192,7 +195,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Title photo**: a deck's `titlegraphic:`, else the livery's `art.titlegraphic` (ncar: the
   Mesa Lab, inherited by its family; nsi: the campus; nasa: the Earth limb); `titlegraphic:
   none` keeps the plain cover (both engine filters and `slide_layout.py`; beamer
-  `\enginenotitlegraphic`). `docs/fixtures/light.qmd` opts out, so the plain light cover stays
+  `\enginenotitlegraphic`). `decks/fixtures/light.qmd` opts out, so the plain light cover stays
   in CI and parity. The quickstart sets none, so the gallery shows each livery's own.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
@@ -205,9 +208,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).
 - **PDF** is `--to engine-beamer`: the engine beamer theme in
-  `docs/common/_extensions/engine/`, edited in place like everything else. Its
+  `_extensions/engine/`, edited in place like everything else. Its
   pure-LaTeX side (the starter `talk.tex`, the examples and their variants) builds
-  in `docs/latex/` (`make latex`); the engine's tests are `make test`. The extension's Lua filter loads the theme in place
+  in `latex/` (`make latex`); the engine's tests are `make test`. The extension's Lua filter loads the theme in place
   through `\input@path`, so nothing is copied into deck directories. Needs
   XeLaTeX (TinyTeX or TeX Live) and Quarto >= 1.6 (`quarto-required` in the
   shared `_quarto.yml`; `conda-env.yaml` pins it). Beamer has no autofit: dense slides
@@ -218,13 +221,13 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **HTML** is `--to engine-revealjs`, from the same extension (see
   "revealjs (HTML) theme" below).
 - **Theme options** (`themeoptions:` in a deck's front matter) replace the
-  shared list in `docs/common/_quarto.yml`, so a deck that sets any must
+  shared list in `common/_quarto.yml`, so a deck that sets any must
   repeat `fonts=bundled`. `mathfont=` (default a serif math font,
   NewCM Book scaled to Poppins; `stix`, `lm`, `pagella`, `sans`, `fira`,
   `poppins` for the old Poppins-letter look, `keep`, or a font name; Quarto's
   own `mathfont:` key still wins) and `waves=false` (drops the faint wave
   lines behind content slides in PDF and HTML; pptx has them on the master).
-  The waves are fitted to the brand's cover art by `docs/common/utils/fit-waves.py`,
+  The waves are fitted to the brand's cover art by `common/utils/fit-waves.py`,
   which prints the livery's `art.waves` block to paste.
 - **Format conditionals**: `when-format="beamer"` matches the custom
   `engine-beamer` format; `when-format="engine-beamer"` matches nothing. Always
@@ -261,7 +264,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   cu and linked ncar); `override LIVERY_DIR` when `LIVERY` is command-line.
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
-  cache, so `Make.common` is `.NOTPARALLEL`. `docs/fixtures/` is such a directory:
+  cache, so `Make.common` is `.NOTPARALLEL`. `decks/fixtures/` is such a directory:
   `photo` (a `titlegraphic:` title) and `light` (`title=light`) on one `_body.qmd`, in
   CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
   ncar, cu and nsi).
@@ -276,7 +279,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 
 ## The engine
 
-`docs/common/_extensions/engine/` is the source, edited in place (no vendoring since #57). What
+`_extensions/engine/` is the source, edited in place (no vendoring since #57). What
 it does, by area, beyond the format notes above:
 
 - **Names**: the formats `engine-beamer` / `engine-revealjs`, `\usetheme{Engine}`, the
@@ -288,9 +291,10 @@ it does, by area, beyond the format notes above:
   extension's real directory (a deck reaches it through a linked `_extensions/`, and Lua does
   not resolve links; changing into the directory does). `_extension.yml`'s default
   `highlight-style` is `../../liveries/ncar/build/livery.theme`, which Quarto resolves
-  lexically through the link, so `docs/latex/examples/` links `liveries` beside its
+  lexically through the link, so `latex/examples/` links `liveries` beside its
   `_extensions` (the shape of an Overleaf zip). LaTeX finds `brand=<name>`'s
-  `liveries/<name>/` through `TEXINPUTS` (`docs/common//`).
+  `liveries/<name>/` through `TEXINPUTS` (`_extensions/engine//`, `liveries//` and the root
+  itself, as an Overleaf zip's `latexmkrc`; never the root's `//`, which reaches `conda-env/`).
 - **Roles only**: no palette name is read outside `build/livery.sty`; the Sass sets every color
   as `var(--engine-*)` (its `$ncar-*` variables are compile-time defaults for Quarto's own
   rules, restated with the roles at the end of the file); the highlight theme is generated per
@@ -300,7 +304,7 @@ it does, by area, beyond the format notes above:
   fractions: `engine@geom@*` in the `.sty`, `--engine-*` pixels in the css (ncar's are the
   HTML/PDF numbers, not the pptx template's tighter ones).
 - **Art**: `art.waves` (control points and per-kind shifts, drawn in the roles' colors; the pptx
-  divider layout from the same numbers; `docs/common/utils/fit-waves.py` fits them to a brand's
+  divider layout from the same numbers; `common/utils/fit-waves.py` fits them to a brand's
   cover art), or a static picture per slide kind (`art.title|section|closing|content`).
 - **Title styles**: `title.style` `cover` (default) or `band` (a field in a role with
   `art.title` over it, a band holding the text left of `split` and the photo right of it, the
@@ -309,8 +313,8 @@ it does, by area, beyond the format notes above:
 - **Templates**: `livery_template.py` generates each `template.pptx` with `Closing` and
   `Title Slide (light)` layouts pandoc never picks; the theme1.xml slots follow the roles
   (`SLOT_ROLES`); the web logos are the brand kit's RGB PNGs (see each `reference/notes.md`).
-- **LaTeX**: `docs/latex/Makefile` (`default` talk.pdf, `examples`, `variants`, `html`,
-  `previews`, `diagrams`, `overleaf`) sets `TEXINPUTS`/`TTFONTS` to `docs/common//`; its
+- **LaTeX**: `latex/Makefile` (`default` talk.pdf, `examples`, `variants`, `html`,
+  `previews`, `diagrams`, `overleaf`) sets `TEXINPUTS`/`TTFONTS` (above); its
   `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery_build.py --check` and `livery_check.py` on every
@@ -319,7 +323,7 @@ it does, by area, beyond the format notes above:
   before and `check` after (every deck of quickstart, sample and fixtures under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
-  baseline|check` (docs/latex's PDFs page by page, the demo's HTML), same checkout, same day. A
+  baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. A
   Sass change is checked by screenshotting every slide before and after (Playwright).
 - **Version**: one number, `version:` in `_extension.yml`; a `v*` tag must equal it
   (`release.yml` checks). `VERSION` in `engine-revealjs.lua` names the HTML dependency
@@ -329,7 +333,7 @@ it does, by area, beyond the format notes above:
 ## pandoc pptx gotchas (hard-won — read before restructuring slides)
 
 - **Content after a table or image splits the slide** into an untitled
-  continuation. `docs/common/single-body.lua` (shared `_quarto.yml`,
+  continuation. `common/single-body.lua` (shared `_quarto.yml`,
   pptx-only) moves the paragraphs after one table or image (a † footnote, a
   remark) into its caption, which pandoc draws at the slide's foot;
   `style_footnotes.py` then styles a footnote there, left-aligned. Anything
@@ -340,13 +344,13 @@ it does, by area, beyond the format notes above:
   so put it inside the last column. Code blocks are text and never split.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
-  slide; `docs/common/notes-last.lua` (shared `_quarto.yml`, pptx-only) moves
+  slide; `common/notes-last.lua` (shared `_quarto.yml`, pptx-only) moves
   every slide's notes to its end. Notes after an image or table do not split.
 - **Raw-HTML `<figure>` wrappers demote columns slides to the Comparison
   layout**: quarto wraps rendered diagrams in `` `<figure>`{=html} `` inlines,
   pandoc's layout chooser counts them as text, and the other column's text gets
   stuffed into Comparison's tiny per-column heading box.
-  `docs/common/strip-raw-figure.lua` (wired into the shared `_quarto.yml`,
+  `common/strip-raw-figure.lua` (wired into the shared `_quarto.yml`,
   pptx-only) strips them; don't remove it.
 - **A lead paragraph before a table demotes the slide** to Content with
   Caption: the title moves into a small side caption and the title bar stays
@@ -453,8 +457,9 @@ bit while building it:
   nodes between/inside the subgraphs does not help. If parallel lanes must stay
   readable, drop the boxes and mark the grouping with `classDef` fills plus a
   prefix in the node label (`CSG · …`, `HSG · …`); plain rank ordering then
-  guarantees no crossings. `docs/sam_and_pbs/sam_and_pbs.qmd`'s "SAM to PBS
-  Schematic" is the worked example — it took four renders to learn this.
+  guarantees no crossings. The worked example was the "SAM to PBS Schematic" of the
+  `sam_and_pbs` deck (in this repo's history before the flatten; it now belongs with
+  hpc-scheduling-tools) — it took four renders to learn this.
 - **Look at the rendered PNG, not the source.** Every mermaid failure above is
   silent: no warning, no error, just a diagram that is wrong or unreadable.
   Extract it from the deck and view it:
@@ -465,10 +470,6 @@ bit while building it:
   out 1.4:1 with its right and bottom labels clipped (the renderer mis-measures
   wrapped `<br/>` lines). As `flowchart TB` with one short line per label, it
   was 2.7:1 and clean.
-- `docs/sam_and_pbs/tree2mermaid.py` converts PBS `resource_group` trees into
-  styled mermaid; its frozen inputs/fragments regenerate via `refresh_data.sh`
-  (needs the `hpc-scheduling-tools` checkout four levels up + SAM credentials;
-  rendering the deck itself never does).
 
 ## Graphviz diagrams
 
@@ -493,7 +494,7 @@ One workflow, `.github/workflows/ci.yaml`, on pushes to main, `v*` tags and PRs.
 job calls `image.yaml` (reusable): the image is built natively on `ubuntu-24.04` and
 `ubuntu-24.04-arm` (no QEMU), each leg smoke-tested on its host as the runner's own
 unprivileged user (`.github/scripts/smoke-test.sh`: a bare directory of `.qmd` files with a
-mermaid block, then `docs/quickstart` through its real Makefile, both bind-mounted, outputs
+mermaid block, then `decks/quickstart` through its real Makefile, both bind-mounted, outputs
 owned by that user), pushed by digest, merged into one tagged manifest list (`main`, `latest`,
 `sha-`, `pr-N`, semver on a tag) and pulled again on both platforms. Build cache: a registry
 cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries the per-platform
@@ -502,11 +503,11 @@ its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the ent
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
 `livery_build.py --check`, the sample deck in every format with its theme greps, quickstart and
 fixtures `all`), `consumer` (the submodule layout, README "Using the framework from another
-repo", plus `make site`), `latex` (the engine's `tests/`, then `docs/latex`'s starter, examples,
+repo", plus `make site`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
-one per directory under `docs/common/liveries/` (a new
+one per directory under `liveries/` (a new
 livery joins by existing): `utils/livery_check.py --qa` (the engine's checks, then
-`make -C docs/quickstart qa LIVERY=<name>`: all three formats and `deck_qa.py`), the
+`make -C decks/quickstart qa LIVERY=<name>`: all three formats and `deck_qa.py`), the
 livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's paths unset and
 `pdffonts` showing its bundled family, and `make measure` report-only (`MEASURE_FAIL=`). A
 fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
