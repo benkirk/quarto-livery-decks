@@ -75,10 +75,14 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   time, so `docker run`, any `--user` and GitHub `container:` jobs (which bypass the entrypoint) see
   the same environment. `etc/entrypoint.sh` only gives an arbitrary uid a writable HOME and turns
   `make` in a Makefile-less directory into `make -f /opt/quarto-livery-decks/docs/Make.common
-  DECKS=<its qmds>`. fontconfig is also told about `/opt/fonts`, an empty mount point for a host's
-  licensed fonts (`-v "$PWD/fonts:/opt/fonts:ro"`), and the image's liveries' bundled fonts, so
-  LibreOffice renders a pptx with its real faces when `make measure` shoots it (a livery mounted
-  from the host is not covered). Everything under `/opt` must stay world-readable (asserted). The three
+  DECKS=<its qmds>`. `/opt/fonts`, an empty mount point for a host's licensed fonts
+  (`-v "$PWD/fonts:/opt/fonts:ro"`), and the image's liveries' `fonts/` are linked under
+  `/usr/local/share/fonts`, so LibreOffice renders a pptx with its real faces when `make measure`
+  shoots it (a livery mounted from the host is not covered). Two fontconfigs live in the image:
+  the conda env's (`fc-cache`/`fc-list` on PATH, its own `fonts.conf`) and the system's
+  (`/usr/bin/fc-*`, `/etc/fonts`), which the apt XeLaTeX, Chromium and LibreOffice use; a file in
+  `/etc/fonts/conf.d` reaches only the second, a directory under `/usr/local/share/fonts` both.
+  Everything under `/opt` must stay world-readable (asserted). The three
   `_quarto.yml`/`_extensions`/`_engine` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory.
