@@ -418,7 +418,9 @@ Newest first. The first unchecked item of section 7 is the next step.
   filters and the `.sty` take `liveries/ncar`. The Sass palette is named by role
   (`$engine-primary`, ...). Kept: the 2020 color names in ncar's `livery-extra.sty`
   (`template.tex` prints a sentence about them; removing them changes a page). Parity identical
-  under both harnesses. Next: step 1, the schema.
+  under both harnesses but for the compiled theme's file name, which Quarto hashes from the Sass
+  source (the CSS itself is identical once its nine `--quarto-scss-export-*` copies of the renamed
+  variables, which nothing reads, are folded). Next: step 1, the schema.
 - **2026-10-18, the image under Apptainer and Podman** (#73). `runtimes.yaml` runs the image as
   HPC users do, pulled anonymously: Apptainer from its PPA (unprivileged user namespaces, no
   setuid; the PPA's package carries what Ubuntu 24.04's AppArmor needs, on arm64 too) on both
