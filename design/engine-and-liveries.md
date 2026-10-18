@@ -418,7 +418,7 @@ Newest first. The first unchecked item of section 7 is the next step.
   per livery if asked). `decks/plots/README.md` with a gallery of every livery's plots and
   palettes. Fixes: three negated checks in CI and the smoke test that could never fail, the
   smoke test on macOS, latex/'s build products out of a local image. Main is protected and PRs
-  squash-merge from here. Next: #57 Phase B, then the release.
+  squash-merge from here. Next: #57 Phase B (`design/phase-b-handoff.md`), then the release.
 - **2026-10-18, charts and plots built** (steps 2-4 of `design/charts-and-plots.md`; this repo
   #67 the formats, #68 the decks and image, #69 the bundle and docs, stacked on #64). Every
   format draws the chart colors: `build/livery.mplstyle` (matplotlib, sizes from the type roles; Type 3 for cu's CFF
