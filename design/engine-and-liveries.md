@@ -420,8 +420,9 @@ Newest first. The first unchecked item of section 7 is the next step.
   `make clean`'s `_engine` removal. `brand=` is gone too: `livery=` is the one key, a bundled
   livery is `livery=liveries/<name>` (latex's variants, the starter), and with none both Lua
   filters and the `.sty` take `liveries/ncar`. The Sass palette is named by role
-  (`$engine-primary`, ...). Kept: the 2020 color names in ncar's `livery-extra.sty`
-  (`template.tex` prints a sentence about them; removing them changes a page). Parity identical
+  (`$engine-primary`, ...). The 2020 color names (ncar's whole `overrides/livery-extra.sty`)
+  followed in a PR of their own at Ben's word, since `template.tex`'s colors page printed a
+  sentence about them: that page alone changes. Parity identical
   under both harnesses but for the compiled theme's file name, which Quarto hashes from the Sass
   source (the CSS itself is identical once its nine `--quarto-scss-export-*` copies of the renamed
   variables, which nothing reads, are folded). Next: step 1, the schema.
