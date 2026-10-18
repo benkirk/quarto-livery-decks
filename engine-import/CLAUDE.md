@@ -86,6 +86,15 @@ engine does today, by area:
   callout title tints (Quarto mixes them toward its light `$body-bg`) and a CSS lightness flip
   for inline Graphviz SVG. `livery_check.py` checks code-text, alert-text, caution-fill and
   table-band contrast too. The framework recolors baked diagram PNGs (`diagram-dark.lua`).
+- **Content title** (3.8.0): `frametitle: {align: left|center, tab, rule}` (`FRAMETITLE`;
+  `livery.json` always has it, with `body`, the body's top: 0.1667, or 0.0222 under a taller mark);
+  beamer `\engine@ft@*` (only when not the defaults), css `--engine-title-justify/-text-align/-tab/-rule`
+  and `--engine-body-top`, the template builder's title style, tab, rule and body boxes. Beamer
+  draws the title band as HTML and the template do: centred in 44-114 px of 900 (a taller title
+  grows down), the hairline at 130 px (or 16 px under the title), the body from 150 px. Before,
+  it stacked the title from 0.045 of the height, higher than the other two. `geometry.logo.inset`
+  (a fraction of the width, default the margin) puts the content mark nearer the paper's edge; the
+  title's room beside it follows (nsi: 0.015).
 - **Code face** (3.8.0): `_brand.yml` `typography.monospace` with files of its own: beamer sets it
   at 1.0 (`\engine@monofont@*`), HTML `--r-code-font`, the Lua dependency ships its files.
 - **Fonts**: `installed-fonts` names installed faces that `fonts=brand` and the css

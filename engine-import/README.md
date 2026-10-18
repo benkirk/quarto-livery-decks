@@ -353,7 +353,8 @@ logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 | knob | |
 |---|---|
 | `roles` | which palette color plays each role: `primary`, `accent`, `highlight`, `muted`, `surface`, `warning`, `dark`, `code-text`, ... A `background` darker than the `foreground` makes a **dark** livery (`livery.json` `mode: dark`; the framework's `nasa-dark`): beamer tints toward the background, the HTML deck's callouts and inline Graphviz turn to the dark |
-| `geometry` | the margin, the title tab, the logo box (height per slide kind, its corner on content slides: `top-right`, `top-left`, `none`), the page number's corner, the divider block, the full-figure paddings, the body text sizes |
+| `geometry` | the margin, the title tab, the logo box (height per slide kind, its corner on content slides: `top-right`, `top-left`, `none`, and its `inset` from that edge, the margin by default), the page number's corner, the divider block, the full-figure paddings, the body text sizes |
+| `frametitle` | the content slides' title: `align` (`left` or `center`, in the room beside the mark), `tab` and `rule` (the accent tab and the hairline, both on by default). The body starts at 150 px of 900, or below a taller mark |
 | `signoff` | a second lockup at the foot of every slide (light and dark images, aspect, height, bottom, corner) |
 | `marks` | which mark and sign-off each field wears, by role: content slides `background`, covers and dividers `primary`, the band title `title.field` |
 | `title` | the title slide's composition: `style: cover` (the default: the text beside the photo or the waves) or `style: band` (a band across a field, the text left of `split`, the photo right of it, the marks in the strip below) |

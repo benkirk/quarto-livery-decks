@@ -54,7 +54,11 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 # the livery.yml keys this script reads; any other is reported, not silently dropped
 KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider", "art", "pptx", "overrides",
-         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature", "type"}
+         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature", "type", "frametitle"}
+# the content slides' title (livery.yml frametitle:): its alignment beside the mark, the accent tab at the
+# paper's edge, the hairline under it
+FRAMETITLE = {"align": "left", "tab": True, "rule": True}
+BODY_TOP = 0.1667   # the content body's top, a fraction of the height (150 px of 900)
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
 MARK_ROLES = ("background", "primary")
@@ -172,6 +176,13 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("aspect", "geometry", "divider", "art", "pptx", "overrides", "latex"):
         if key in data:
             out[key] = data[key]
+    out["frametitle"] = {**FRAMETITLE, **(data.get("frametitle") or {})}
+    if out["frametitle"]["align"] not in ("left", "center"):
+        sys.exit(f"{d.name}: frametitle.align {out['frametitle']['align']!r} is not left or center")
+    # the body's top (150 px of 900, as HTML pads it), or below a taller mark in a top corner
+    lg = (out.get("geometry") or {}).get("logo") or {}
+    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) + 0.0222 if lg.get("corner", "top-right") != "none" else 0
+    out["frametitle"]["body"] = round(max(BODY_TOP, below), 4)
     for corner, legal in (("logo", ("top-right", "top-left", "none")), ("pagenumber", ("bottom-left", "bottom-right"))):
         v = out.get("geometry", {}).get(corner, {}).get("corner")
         if v is not None and v not in legal:
@@ -622,6 +633,14 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for k, tex in (("base", "base"), ("headings", "head")):
             for face, names in installed.get(k, {}).get("faces", {}).items():
                 L.append(f"\\def\\engine@installed@{tex}@{face}{{{names[0]}}}")
+    ft = livery.get("frametitle", {**FRAMETITLE, "body": BODY_TOP})
+    if ft != {**FRAMETITLE, "body": BODY_TOP}:   # the content title, when not the engine's (left, tab, rule)
+        L.append("% the content slides' title: alignment, accent tab, hairline, the body's top (frametitle)")
+        L.append(f"\\def\\engine@ft@align{{{ft['align']}}}")
+        for k in ("tab", "rule"):
+            if not ft[k]:
+                L.append(f"\\def\\engine@ft@no{k}{{}}")
+        L.append(f"\\def\\engine@ft@bodytop{{{ft['body']}}}")
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
     for k, v in geom.items():
@@ -776,11 +795,22 @@ def emit_css(livery: dict, extra: str = "") -> str:
     # box gives way on the mark's side
     corner = logo.get("corner", "top-right")
     margin = "var(--engine-margin)"
-    beside = f"calc({margin} + 40px + var(--engine-logo-w))"
-    props.append(f"--engine-logo-left: {margin if corner == 'top-left' else 'auto'};")
-    props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else margin};")
+    inset = px(logo["inset"], W) if "inset" in logo else margin   # the mark's distance from its edge
+    beside = f"calc({inset} + 40px + var(--engine-logo-w))"
+    props.append(f"--engine-logo-left: {inset if corner == 'top-left' else 'auto'};")
+    props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
     props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
     props.append(f"--engine-logo-content: {'none' if corner == 'none' else '\"\"'};")
+    ft = livery.get("frametitle", {**FRAMETITLE, "body": BODY_TOP})
+    if ft["body"] != BODY_TOP:
+        props.append(f"--engine-body-top: {px(ft['body'])};")
+    if ft["align"] == "center":
+        props.append("--engine-title-justify: center;")
+        props.append("--engine-title-text-align: center;")
+    if not ft["tab"]:
+        props.append("--engine-title-tab: none;")
+    if not ft["rule"]:
+        props.append("--engine-title-rule: none;")
     props.append(f"--engine-title-left: {beside if corner == 'top-left' else margin};")
     props.append(f"--engine-title-right: {beside if corner == 'top-right' else margin};")
     pn = geom.get("pagenumber", {}).get("corner", "bottom-left")

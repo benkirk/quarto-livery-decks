@@ -166,11 +166,13 @@ class Builder:
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab"]
-        title_top, rule_y, body_top, body_bottom = 0.049, 0.1444, 0.1667, 1 - 0.0778
+        title_top, rule_y, body_bottom = 0.049, 0.1444, 1 - 0.0778
+        body_top = self.L.get("frametitle", {}).get("body", 0.1667)   # below a taller mark
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
         corner = self.logo_corner
-        title_x = m + logo_w + 0.025 if corner == "top-left" else m
-        title_w = 1 - 2 * m - (logo_w + 0.025 if corner != "none" else 0)
+        inset = g["logo"].get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
+        title_x = inset + logo_w + 0.025 if corner == "top-left" else m
+        title_w = 1 - 2 * m - (logo_w + 0.025 + inset - m if corner != "none" else 0)
         # the ladder: the livery's five list levels (type.levels), the first the body
         sizes = self.levels
         ind, tabsz, ins = (round(v * self.k) for v in (228600, 457200, 45720))   # 0.25, 0.5, 0.05 in on 7.5 in
@@ -211,13 +213,16 @@ class Builder:
         waves = "".join(self.own(pptx_waves.wave_shapes(self.waves["lines"], self.sid + 1, W_EMU, H_EMU,
                                                         self.waves["shift"]["content"], "lt2"))) if self.waves else ""
         art = self.art_pic("rId4", "content")   # under everything (the layouts with a field hide the master)
-        logo = "" if corner == "none" else self.pic("rId2", "Logo (light)", m if corner == "top-left" else 1 - m - logo_w,
+        logo = "" if corner == "none" else self.pic("rId2", "Logo (light)", inset if corner == "top-left" else 1 - inset - logo_w,
                                                     g["logo"]["top"], logo_w, logo_h)
         so = ""
         if self.signoff:   # the content slides' sign-off, the light one in its corner
             h = self.signoff["height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
             x = m if self.signoff["corner"] == "bottom-left" else 1 - m - w
             so = self.pic("rId3", "Sign-off (light)", x, 1 - self.signoff["bottom"] - h, w, h)
+        ft = self.L.get("frametitle", {})   # the livery's content title: no tab, no rule, centred
+        tab_sp = tab_sp if ft.get("tab", True) else ""
+        rule = rule if ft.get("rule", True) else ""
         shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo + so
         return (XMLDECL + f'<p:sldMaster {NSDECL}><p:cSld><p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg>'
                 f'<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
@@ -226,7 +231,7 @@ class Builder:
                 f'<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" '
                 f'accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>'
                 f'<p:sldLayoutIdLst>' + "".join(f'<p:sldLayoutId id="{2147483649 + i}" r:id="rId{10 + i}"/>' for i in range(len(ALL_LAYOUTS))) +
-                f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
+                f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="{"ctr" if ft.get("align") == "center" else "l"}" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
                 f'latinLnBrk="0" hangingPunct="1"><a:spcBef><a:spcPct val="0"/></a:spcBef><a:buNone/>'
                 f'<a:defRPr sz="{self.sz("frametitle")}" b="1" kern="1200" baseline="0">{fill("tx1")}<a:latin typeface="+mj-lt"/>'
                 f'<a:ea typeface="+mj-ea"/><a:cs typeface="+mj-cs"/></a:defRPr></a:lvl1pPr></p:titleStyle>'
@@ -341,7 +346,7 @@ class Builder:
 
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
-        body_top, body_bottom = 0.1667, 1 - 0.0778
+        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), 1 - 0.0778
         h = body_bottom - body_top
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
