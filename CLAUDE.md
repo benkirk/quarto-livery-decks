@@ -104,7 +104,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `section_subtitle`, `enable_autofit`, `embed_fonts` (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
   HTML theme) and `type_step` (a deck's `type-body:`/`type-scale:`) on one python-pptx
-  Presentation; each is a module with a `run()`, the order's reasons are in the driver. pandoc gets `-M monofont=<family>` when the livery bundles a
+  Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
+  that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
+  measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
+  the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a
+  `pptx.heading-typeface`, Courier and other unbundled faces at 0.6 em a character). pandoc gets `-M monofont=<family>` when the livery bundles a
   code face (`typography.monospace`, `livery.py mono`), and the pptx format takes the
   livery's highlight theme (`_livery/build/livery.theme`) like HTML and PDF.
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
@@ -134,12 +138,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   body in HTML and PDF. pptx drops slide classes, so the engine's `slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
-  centers a table by an estimated height. `.center` is the theme's, not
+  centers a table by its measured height (rows in PowerPoint's own sizing can still differ). `.center` is the theme's, not
   Quarto's (which moves the title). README "Centering and scaling a short slide".
 - **Warning slides** (`{.caution}`): the body on a soft yellow
   field with a brand-yellow bar; footnotes stay below it in HTML and PDF. pptx:
-  `slide_layout.py` fills the body text box, adds the bar, and cuts the box to an
-  estimate of its text (pandoc gives it the whole content area). Set all four of
+  `slide_layout.py` fills the body text box, adds the bar, and cuts the box to its
+  text, measured (pandoc gives it the whole content area). Set all four of
   a placeholder's left/top/width/height together: it inherits its frame, and
   setting one leaves the others at 0 (the text vanishes).
 - **Full-slide figures** (`{.full}`): one diagram or image fills
@@ -165,7 +169,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
   before-picture. The pptx can't flow a stack: `band_stack()` centres a band's date, title,
-  rule and subtitle on the column from estimates of their text (the rule moves onto the slide),
+  rule and subtitle on the column from their text, measured (the rule moves onto the slide),
   a closing splits its column at the middle. Over art, a mark's box is the eroded mask's core
   widened along its rows (`widened()`), so thin type ("Office") is not lost.
 - **Type**: text sizes are **points on the livery's pptx canvas**, whole or

@@ -4,7 +4,7 @@
 pandoc drops slide classes, so the engine's slide-layout.lua leaves one speaker-notes line,
 "engine-layout: vcenter scale=1.4", on each slide that asks for a layout; this removes the line
 and applies what pptx can express. vcenter: body text anchored mid-placeholder, a table moved to
-the middle of its area (an estimate: PowerPoint sizes rows itself). scale=S: every body and
+the middle of its area (its rows measured; PowerPoint sizes rows itself). scale=S: every body and
 table run at S times its inherited size. hcenter, fill: nothing (a text box cannot shrink-wrap).
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
@@ -250,7 +250,7 @@ def lay_out(slide, words):
                 if est < shape.height:
                     shape.top = shape.top + (shape.height - est) // 2
                     shape.height = est
-    # after scale=: the box is cut to an estimate of the text at the size it is set in
+    # after scale=: the box is cut to the text measured at the size it is set in
     if "caution" in words:
         for shape in [sh for sh in slide.shapes if _is_body(sh)]:
             caution_box(slide, shape, vcenter)
@@ -366,7 +366,7 @@ def band_stack(slide, width, height):
     middle, as HTML and PDF centre theirs. pandoc puts the subtitle and the author in one
     paragraph of the subtitle placeholder, a blank line between them: the rule (a layout shape,
     moved onto the slide; this deck's Title Slide layout serves the title slide alone) goes in
-    that blank line, under a subtitle alone, or over an author alone. From estimates of the
+    that blank line, under a subtitle alone, or over an author alone. From the
     title's and subtitle's text heights, measured in the livery's faces."""
     ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
     title, date, sub = (ph.get(t) for t in (PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE, PP_PLACEHOLDER.SUBTITLE))
