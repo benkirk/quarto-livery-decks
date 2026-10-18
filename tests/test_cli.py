@@ -7,7 +7,8 @@
 slide size reach the livery), and a flavor (`--extends`) each pass `livery all` (build, template,
 check) as they stand; `new` refuses a non-empty directory and a parent that is not beside it;
 `zip` packs both bundles; every bundled build/livery.json records the engine's version and its schema,
-and `deps` warns when a build records another. The decks under a scaffold are CI's and liveries/README.md's
+and `deps` warns when a build records another; `livery_mpl.__version__` is the engine's, in the
+engine and in an unpacked charts bundle. The decks under a scaffold are CI's and liveries/README.md's
 acceptance, not this test's.
 """
 
@@ -74,7 +75,20 @@ with tempfile.TemporaryDirectory() as tmp:
     j.write_text(json.dumps({**json.loads(j.read_text()), "engine": "0.0.1"}))
     check("written by engine 0.0.1" in run("deps", d).stderr, "deps does not warn on another engine's build")
 
+# livery_mpl's version: the engine's in the engine, the packing engine's in a bundle
+with tempfile.TemporaryDirectory() as tmp:
+    t = Path(tmp)
+    run("zip", "--charts", ROOT / "liveries" / "ncar", "-o", t / "c.zip")
+    zipfile.ZipFile(t / "c.zip").extractall(t / "bundle")
+    probe = "import livery_mpl as m; print(m.__version__); assert all(hasattr(m, n) for n in m.__all__)"
+    env = {k: v for k, v in __import__("os").environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+    for where, kw in (("engine", {"env": {**env, "LIVERY_DIR": str(ROOT / "liveries" / "ncar"),
+                                          "PYTHONPATH": str(ROOT / "_extensions" / "engine" / "mpl")}}),
+                      ("bundle", {"env": env, "cwd": t / "bundle"})):
+        r = subprocess.run([sys.executable, "-c", probe], capture_output=True, text=True, **kw)
+        check(r.returncode == 0 and r.stdout.strip() == version, f"livery_mpl in the {where}: {r.stdout.strip()!r} {r.stderr.strip()[-200:]}")
+
 if fails:
     print("cli:", *fails, sep="\n  ")
     sys.exit(1)
-print("cli: three scaffolds pass livery all, the refusals hold, both zips pack, the builds are stamped")
+print("cli: three scaffolds pass livery all, the refusals hold, both zips pack, the builds and livery_mpl are stamped")

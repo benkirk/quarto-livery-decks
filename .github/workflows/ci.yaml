@@ -415,12 +415,16 @@ jobs:
           assert L["typography"]["base"] in mine, mine
           fm.findfont(L["typography"]["base"], fallback_to_default=False)
           assert [c.upper() for c in plt.rcParams["axes.prop_cycle"].by_key()["color"]] == L["charts"][L["charts"]["mode"]]["categorical"]
+          # the stamp: the engine that packed it, in the helper and its livery.json alike
+          v = [l.split(":", 1)[1].strip() for l in open(os.environ["ENGINE_YML"]) if l.startswith("version:")][0]
+          assert livery_mpl.__version__ == L["engine"] == v and L["schema"] == 1, (livery_mpl.__version__, L["engine"], v)
+          assert all(hasattr(livery_mpl, n) for n in livery_mpl.__all__)
           fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
           ax.plot([0, 1, 2], [0, 1, 3], label="a"); ax.set_xlabel("x"); ax.legend()
           fig.savefig("/tmp/charts-plot.pdf")
           print(L["typography"]["base"].replace(" ", ""))
           PY
-          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC python3 /tmp/charts-plot.py | tail -1)
+          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC ENGINE_YML="$PWD/_extensions/engine/_extension.yml" python3 /tmp/charts-plot.py | tail -1)
           pdffonts /tmp/charts-plot.pdf | tee /dev/stderr | grep -c "$family" >/dev/null
 
       # the title, divider, closing and feature slides of every format against the livery's

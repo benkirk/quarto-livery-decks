@@ -48,6 +48,11 @@ same as body text in every format.
 | `livery_mpl.shade_family(c, n)` | `n` tints of `c` toward the surface, as the families are built |
 | `with livery_mpl.dark():` | a `{.brand-dark}` slide: the dark chrome and colors where that slide is dark (HTML, a dark livery) |
 | colormaps | `livery` (the default, the livery's own map), `livery_r`, `livery_div` (diverging), `livery_seq_<ramp>`, each with a `_dark` twin |
+| `livery_mpl.use(path)` | another livery: a directory, or a charts bundle's |
+| `livery_mpl.__version__` | the engine's version (a charts bundle's: the engine that packed it, also its `livery.json`'s `engine`) |
+
+These are the helper's stable API (`livery_mpl.__all__` and the colormaps): a change to any of
+them is a *Plots* entry in [`CHANGELOG.md`](../../CHANGELOG.md).
 
 What breaks it: `sns.set_theme()` or `plt.style.use(...)` (they replace the livery's style), a
 hand-picked `figsize` (it changes the text size), a colormap by name such as `viridis`, more
@@ -82,7 +87,9 @@ livery's full contact sheet.
 `make charts-zip LIVERY=<name>` (any deck directory) writes `<name>-charts.zip`: the style, the
 helper, `livery.json`, the fonts and their licenses, and the contact sheet. Unzip it beside a
 script, `import livery_mpl`, and its plots wear the livery. Every release attaches one per
-livery: `releases/latest/download/<name>-charts.zip`.
+livery: `releases/latest/download/<name>-charts.zip`. Its README and `livery_mpl.__version__`
+name the engine that packed it, and its `livery.json` carries the same `engine` and `schema`
+stamp as the livery's build.
 
 ## Rebuilding the images
 

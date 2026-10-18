@@ -19,11 +19,16 @@ directory, else a livery.json beside this file (the charts bundle, mpl_zip.py).
     with livery_mpl.dark():    the dark chrome, slots and maps, where the slide is dark: an HTML
                                .brand-dark slide, every slide of a dark livery; elsewhere (pptx
                                and PDF draw .brand-dark as an ordinary slide) it changes nothing
+    livery_mpl.use(path)       load another livery (a directory, or a bundle's)
+    livery_mpl.__version__     the engine's version (a bundle's: the engine that packed it)
 
 Colormaps: livery (the default sequential map), livery_r, livery_div (diverging), one
 livery_seq_<ramp> per sequential ramp, each with a _dark twin (the dark selections), all
 interpolated in OKLab between the livery's steps. A figure drawn at figsize() carries the
 slide's own text sizes in every format.
+
+These names (__all__, and the colormaps) are the stable API: a change to them is a Plots entry
+in CHANGELOG.md.
 """
 
 import json
@@ -43,6 +48,25 @@ from matplotlib import colormaps, font_manager
 from matplotlib.colors import LinearSegmentedColormap
 
 HERE = Path(__file__).resolve().parent
+
+__all__ = ["__version__", "use", "colors", "cycle", "families", "status", "muted", "figsize",
+           "shade_family", "dark"]
+
+
+def _engine_version() -> str:
+    """The engine's version: its _extension.yml beside this file's directory (in the engine), else
+    the stamp in the livery.json beside this file (a charts bundle: the engine that packed it)."""
+    ext = HERE.parent / "_extension.yml"
+    if ext.exists():
+        for line in ext.read_text().splitlines():
+            if line.startswith("version:"):
+                return line.split(":", 1)[1].strip()
+    if (HERE / "livery.json").exists():
+        return json.loads((HERE / "livery.json").read_text()).get("engine", "unknown")
+    return "unknown"
+
+
+__version__ = _engine_version()
 
 
 def _find(path=None) -> Path:
