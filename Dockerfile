@@ -126,9 +126,19 @@ RUN mkdir -p /opt/fonts \
 COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENV FRAMEWORK=/opt/quarto-livery-decks
-RUN git config --system safe.directory '*' \
-    && fc-cache -f >/dev/null && fc-list : family | grep -c Poppins >/dev/null \
-    && test -z "$(find /opt -not -perm -o=r -print -quit)" || { find /opt -not -perm -o=r; exit 1; }
+RUN <<'EOS'
+set -eo pipefail
+git config --system safe.directory '*'
+# the liveries' fonts are now in place: rebuild the font cache and prove fontconfig sees them
+cat /etc/fonts/conf.d/60-opt-fonts.conf
+fc-cache -fv > /tmp/fc-cache.log 2>&1 || echo "fc-cache exit $?"
+grep -E '/opt/|liveries|fail|error|invalid' /tmp/fc-cache.log || echo "(fc-cache said nothing about /opt)"
+ls -la /opt/quarto-livery-decks/docs/common/liveries/ /opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/liveries/ncar/fonts/
+fc-list | grep -i poppins || { echo "fontconfig does not see Poppins" >&2; exit 1; }
+rm -f /tmp/fc-cache.log
+# everything a plain user needs must be readable
+bad=$(find /opt -not -perm -o=r); test -z "$bad" || { echo "$bad"; exit 1; }
+EOS
 
 # Provenance, set by CI (--build-arg); empty locally. After everything, so a new SHA
 # invalidates no layer above. The entrypoint's --help prints them.
