@@ -5,7 +5,7 @@ file becomes a branded PowerPoint (`.pptx`, the first-class output), a revealjs 
 a beamer PDF. The brand is a **livery**, a directory of data and assets, and
 `make pptx LIVERY=cu` is the whole switch. Three brand families ship here: NCAR, the
 University of Colorado and NASA ("The liveries" below). Clone, set up the conda env, copy the
-quickstart deck, write Markdown.
+quickstart deck, write Markdown. What each release changed is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ![Four slides of the quickstart deck: the title slide, the MPAS-A governing equations, a two-column slide with a table, and a mermaid diagram](decks/quickstart/screenshots/hero.png)
 

@@ -20,6 +20,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 import sys
 from fractions import Fraction
 from pathlib import Path
@@ -37,6 +38,8 @@ def _sibling(name: str):
 
 
 livery_charts = _sibling("livery_charts")
+# the engine's one version, _extension.yml's (a release's tag; build/livery.json records it)
+ENGINE_VERSION = re.search(r"^version:\s*(\S+)", (Path(__file__).resolve().parent / "_extension.yml").read_text(), re.M)[1]
 
 # (key, role a, role b, share of a): the theme's recipes, engine-revealjs.scss `table` and
 # `.engine-caution`, beamerinnerthemeEngine.sty `enginecautionfill`
@@ -158,7 +161,7 @@ def read(d: Path) -> dict:
     errors = schema().check(knobs, brand, d)   # each file as written, before extends merges
     if errors:
         sys.exit("\n".join(errors))
-    merged = {"brand": brand, **{k: v for k, v in knobs.items() if k not in ("extends", "schema")}}
+    merged = {"brand": brand, **{k: v for k, v in knobs.items() if k != "extends"}}
     parent = knobs.get("extends")
     if parent:   # pptx.scheme holds only explicit overrides; resolve() fills the rest from the roles
         merged = merge(rebase(read(d.parent / parent), d.parent / parent, d), merged)
@@ -186,6 +189,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     blends = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
     blends.update({k: hex_of(v) for k, v in data.get("blends", {}).items()})
     out = {
+        "engine": ENGINE_VERSION,   # the engine that wrote it (Make.common warns when it is another)
+        "schema": data["schema"],   # the livery.yml schema it was written for
         "name": data.get("name", d.name),
         "palette": palette,
         "roles": roles,

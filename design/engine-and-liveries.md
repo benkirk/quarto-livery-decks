@@ -396,6 +396,15 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, #58 step 3: versions, immutable releases, a changelog.** `livery build` stamps
+  `engine` (`_extension.yml`'s version) and `schema` into `build/livery.json`; `livery deps`, which
+  `Make.common` runs once a build, warns when a livery's stamp is another version ("rebuild it with
+  `livery build`"), so a version bump rebuilds every bundled livery in its PR. `release.yml`
+  refuses a tag whose release exists (`--clobber` and the moved-tag branch are gone) or that has no
+  `CHANGELOG.md` entry, and publishes the entry as the notes. `CHANGELOG.md` (Keep a Changelog;
+  Decks, Liveries, Plots, LaTeX) is seeded with 1.0.0 (and the engine's 3.x line), 1.1.0 and the
+  sprint so far under [Unreleased]. Tags are immutable from here: a fix is a new patch release.
+  Next: step 4, plot authors; then v2.0.0 at Ben's word.
 - **2026-10-18, #58 step 2: the `livery` command.** `_extensions/engine/livery.py` is the one
   entry point, argparse subcommands over the engine's modules, each imported when its command
   runs: `new` (`livery_new.py`), `inspect` (`livery_inspect.py`, moved from `common/utils/`),

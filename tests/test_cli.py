@@ -6,11 +6,13 @@
 `livery new` without a deck, with one (`--from` a bundled template.pptx: its slots, fonts and
 slide size reach the livery), and a flavor (`--extends`) each pass `livery all` (build, template,
 check) as they stand; `new` refuses a non-empty directory and a parent that is not beside it;
-`zip` packs both bundles. The decks under a scaffold are CI's and liveries/README.md's
+`zip` packs both bundles; every bundled build/livery.json records the engine's version and its schema,
+and `deps` warns when a build records another. The decks under a scaffold are CI's and liveries/README.md's
 acceptance, not this test's.
 """
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -59,7 +61,20 @@ with tempfile.TemporaryDirectory() as tmp:
         ok = r.returncode == 0 and member in zipfile.ZipFile(args[-1]).namelist()
         check(ok, f"{' '.join(map(str, args[:2]))}: {r.stderr.strip()}")
 
+# the version stamp: every bundled build names this engine and its schema; deps warns on another
+version = re.search(r"^version:\s*(\S+)", (ROOT / "_extensions" / "engine" / "_extension.yml").read_text(), re.M)[1]
+for j in sorted((ROOT / "liveries").glob("*/build/livery.json")):
+    lv = json.loads(j.read_text())
+    check(lv.get("engine") == version and lv.get("schema") == 1, f"{j.parent.parent.name}: livery.json engine/schema {lv.get('engine')}/{lv.get('schema')}")
+with tempfile.TemporaryDirectory() as tmp:
+    d = Path(tmp) / "plain"
+    run("new", d); run("build", d)
+    check("warning" not in run("deps", d).stderr, "deps warns on a current build")
+    j = d / "build" / "livery.json"
+    j.write_text(json.dumps({**json.loads(j.read_text()), "engine": "0.0.1"}))
+    check("written by engine 0.0.1" in run("deps", d).stderr, "deps does not warn on another engine's build")
+
 if fails:
     print("cli:", *fails, sep="\n  ")
     sys.exit(1)
-print("cli: three scaffolds pass livery all, the refusals hold, both zips pack")
+print("cli: three scaffolds pass livery all, the refusals hold, both zips pack, the builds are stamped")

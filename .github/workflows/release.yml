@@ -4,9 +4,10 @@
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-overleaf.zip
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-charts.zip
 # A v* tag also publishes the container image under its semver tags (ci.yaml -> image.yaml).
-# Tags are cut by hand after a livery change, or moved while a change stays backwards
-# compatible (liveries/README.md, "Release"). The tag must be the engine's version:
-# `version:` in _extensions/engine/_extension.yml (one number since #57).
+# Tags are cut by hand (liveries/README.md, "Release") and never moved: a fix is a new patch
+# release, so this refuses a tag whose release exists. The tag must be the engine's version,
+# `version:` in _extensions/engine/_extension.yml, and CHANGELOG.md must have its entry, which
+# becomes the release's notes.
 name: release
 
 on:
@@ -23,11 +24,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Tag matches the engine's version
+      - name: The tag is the engine's version, new, with a changelog entry
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           v=$(sed -n 's/^version: *//p' _extensions/engine/_extension.yml)
           echo "engine $v, tag $GITHUB_REF_NAME"
           test "v$v" = "$GITHUB_REF_NAME"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::error::release $GITHUB_REF_NAME exists: a tag is never re-cut; a fix is a new patch release"; exit 1
+          fi
+          # the entry: from its "## [x.y.z]" heading to the next release's
+          awk -v h="## [$v]" 'index($0, h) == 1 {on = 1; next} on && /^## \[/ {exit} on' CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::CHANGELOG.md has no ## [$v] entry"; exit 1
+          fi
 
       # make overleaf and charts-zip need only python3 and the engine (no conda, no quarto);
       # the charts bundle's contact sheet needs Pillow (the runner's own python refuses pip)
@@ -43,18 +54,14 @@ jobs:
           done
           ls -l decks/quickstart/*-overleaf.zip decks/quickstart/*-charts.zip
 
-      # a moved tag (re-cut while a change stays backwards compatible) replaces the
-      # existing release's zips instead of failing on it
-      # the same tag has ci.yaml publish the build-environment image under its semver tags
-      # (image.yaml); the notes name them
+      # the notes: the changelog's entry, then the image's tags (the same tag has ci.yaml publish
+      # the build-environment image under its semver tags, image.yaml)
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           v=${GITHUB_REF_NAME#v}
-          notes="Container image (the framework with its build environment, README \"Building in the container\"): \`ghcr.io/$GITHUB_REPOSITORY:$v\`, also \`:${v%.*}\` and \`:${v%%.*}\`."
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" decks/quickstart/*-overleaf.zip decks/quickstart/*-charts.zip --clobber
-          else
-            gh release create "$GITHUB_REF_NAME" decks/quickstart/*-overleaf.zip decks/quickstart/*-charts.zip --title "$GITHUB_REF_NAME" --generate-notes --notes "$notes"
-          fi
+          printf '\nContainer image (the framework with its build environment, README "Building in the container"): `ghcr.io/%s:%s`, also `:%s` and `:%s`.\n' \
+            "$GITHUB_REPOSITORY" "$v" "${v%.*}" "${v%%.*}" >> notes.md
+          gh release create "$GITHUB_REF_NAME" decks/quickstart/*-overleaf.zip decks/quickstart/*-charts.zip \
+            --title "$GITHUB_REF_NAME" --notes-file notes.md
