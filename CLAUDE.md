@@ -6,37 +6,38 @@ structure or conventions below change.
 ## What this is
 
 A [Quarto](https://quarto.org) framework for documentation decks (`.pptx`
-primary; `.html`/revealjs and `.pdf`/beamer secondary), and the **multi-brand
-successor** of `benkirk/quarto-docs-framework` (the `upstream` remote), which
-stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (NASA general is done, as `nasa` and
-`nasa-dark`, 2026-10-17; next: the NASA program flavors):
-a generalized **engine** (`docs/common/_extensions/engine/`, until 2026-10 the separate
-repo `benkirk/beamer-livery-theme`, merged here with its history, #57) plus per-brand **livery** directories under
-`docs/common/liveries/`; its section 10 logs progress and names the next step.
-Phase 1 (the framework reads the livery) is done and Phase 2 (the engine) is under
-way: the theme is renamed and reads a livery. Every livery lives in `docs/common/liveries/`
-(the NCAR family `ncar`, `ucar`, `ucp`, `ncarucar` beside the others), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`
-(an unknown `livery.yml` key is warned about). The engine also holds the json reader
-(`livery.py`), the template builder (`livery_template.py`), the wave shapes
-(`pptx_waves.py`) and the livery checks (`livery_check.py`), since engine 3.3.0:
-`utils/livery.py` is a shim that loads the engine's reader by path (both are named
-`livery`; `engine_module()` loads any engine module the same way) and adds
-`livery.py deps <dir>`, and `utils/livery_check.py` wraps the engine's checks and adds
-`--qa`. NCAR PDF and HTML decks
-still build byte-identically to upstream; the pptx template is generated. Phase 3
-(onboarding a brand from a reference PowerPoint, design section 6) is under way:
-`utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck,
-the engine's `livery_template.py` builds its `template.pptx` from the data, and the first
-non-NCAR livery, `cu` (CU Boulder), is a real directory under `docs/common/liveries/`
-with its decisions in `reference/notes.md`; `nsi` (the CU Center for National Security
-Initiatives) is its first flavor (`extends: cu`), on the engine's band title style
-(`title: {style: band}`, engine >= 3.1.0). `nasa` (NASA general, external communication;
-no official template, so the Brand Center's rules and NASA Science's public-engagement deck)
-and its dark flavor `nasa-dark` (`extends: nasa`, content on black) are the first dark livery
-(see "Dark liveries" below). The reference decks themselves live on
-Drive or a laptop, not in git. A livery without `pptx.fonts` embeds nothing
-(`embed_fonts.py` says so and leaves the deck alone); a livery without `art.waves`
-gets straight-edged title fields in every format.
+primary; `.html`/revealjs and `.pdf`/beamer secondary) and the engine that draws them, in one
+repository. It is the **multi-brand successor** of `benkirk/quarto-docs-framework` (the
+`upstream` remote), which stays the NCAR framework. The **engine**
+(`docs/common/_extensions/engine/`: the beamer and revealjs themes, the livery tools, the
+Overleaf packer) was `benkirk/beamer-livery-theme` until 2026-10, when it merged here with its
+history (#57; `git log --follow` reaches back through it); it generalizes
+`benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
+by hand). Each brand is a **livery** directory under `docs/common/liveries/` (`ncar`, `ucar`,
+`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by the engine's `livery_build.py`
+into `build/livery.{json,sty,css,theme}` (an unknown `livery.yml` key is warned about).
+`docs/design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
+next step (#57 Phase B: the pptx format moves into the engine; then #58, the customer surface).
+
+The engine also holds the json reader (`livery.py`), the template builder
+(`livery_template.py`), the wave shapes (`pptx_waves.py`) and the livery checks
+(`livery_check.py`): `utils/livery.py` is a shim that loads the engine's reader by path (both
+are named `livery`; `engine_module()` loads any engine module the same way) and adds
+`livery.py deps <dir>`, and `utils/livery_check.py` wraps the engine's checks and adds `--qa`.
+Onboarding a brand from a reference PowerPoint (design section 6):
+`utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck, the engine's
+`livery_template.py` builds its `template.pptx` from the data, and the decisions go in
+`reference/notes.md`. `nsi` (the CU Center for National Security Initiatives) is `cu`'s
+flavor (`extends: cu`) on the band title style (`title: {style: band}`); `nasa` (NASA general,
+external communication; no official template, so the Brand Center's rules and NASA Science's
+public-engagement deck) and its flavor `nasa-dark` (content on black) are the first dark
+livery (see "Dark liveries" below). The reference decks themselves live on Drive or a laptop,
+not in git. A livery without `pptx.fonts` embeds nothing (`embed_fonts.py` says so and leaves
+the deck alone); a livery without `art.waves` gets straight-edged title fields in every format.
+
+`docs/latex/` is the engine's pure-LaTeX side (the starter `talk.tex`, a link to the
+extension's copy; `examples/` and their variants; `make latex`), and `tests/` holds the
+engine's tests (`make test`) and both parity harnesses ("The engine" below).
 
 Decks live under `docs/<deck>/` as a `.qmd` plus a 1-line Makefile; shared
 machinery is in `docs/common/` (the brand `template.pptx`, `_quarto.yml`, Lua
@@ -109,7 +110,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
   on a `v*` tag (cut by hand, asked first: the README's Overleaf links serve `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, or `‡` for a second): the
-  theme (>= 2.4.0) lifts every one on a slide, columns included, to the slide's
+  theme lifts every one on a slide, columns included, to the slide's
   foot in HTML and PDF, under a short muted rule with the marker in the accent
   orange; pptx can't move content, so `style_footnotes.py` mutes them in place
   in the same colors. `*† text*` works too.
@@ -119,26 +120,26 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   (after pandoc, because anything after an image splits a pptx slide). A deck
   should not hand-roll footers for this. README "Linked images".
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
-  `{.fill}`, each independent): the theme (>= 2.5.0) centers and scales the
+  `{.fill}`, each independent): the theme centers and scales the
   body in HTML and PDF. pptx drops slide classes, so `common/slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
   centers a table by an estimated height. `.center` is the theme's, not
   Quarto's (which moves the title). README "Centering and scaling a short slide".
-- **Warning slides** (`{.caution}`, theme >= 2.8.0): the body on a soft yellow
+- **Warning slides** (`{.caution}`): the body on a soft yellow
   field with a brand-yellow bar; footnotes stay below it in HTML and PDF. pptx:
   `slide_layout.py` fills the body text box, adds the bar, and cuts the box to an
   estimate of its text (pandoc gives it the whole content area). Set all four of
   a placeholder's left/top/width/height together: it inherits its frame, and
   setting one leaves the others at 0 (the text vanishes).
-- **Full-slide figures** (`{.full}`, theme >= 2.7.0): one diagram or image fills
+- **Full-slide figures** (`{.full}`): one diagram or image fills
   the slide, the paragraph after it is a one-line caption. HTML and PDF are the
   theme's (PDF frame key `ncarfull=`). pptx: `slide-layout.lua` writes
   `engine-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
   one picture to the slide and centers pandoc's caption box under it. Any other
   body is left alone with a warning. `make qa` fails a caption that wraps.
-- **Compositions** (engine >= 3.5.0): the title (`title`, `title-photo`, `title-light`,
+- **Compositions**: the title (`title`, `title-photo`, `title-light`,
   `title-photo-light`, `title-band`), closing (`closing`, `closing-light`, `closing-band`),
   `section` and `feature` slides are boxes in `build/livery.json` `compositions` (`[x, y, w, h]`
   slide fractions, y down; every key, null when absent), derived by the engine's
@@ -157,7 +158,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   rule and subtitle on the column from estimates of their text (the rule moves onto the slide),
   a closing splits its column at the middle. Over art, a mark's box is the eroded mask's core
   widened along its rows (`widened()`), so thin type ("Office") is not lost.
-- **Type** (engine >= 3.6.0): text sizes are **points on the livery's pptx canvas**, whole or
+- **Type**: text sizes are **points on the livery's pptx canvas**, whole or
   half points (a pasted slide carries round numbers; nasa: the reference deck's 10 x 5.625 in,
   body 12, titles 22): `livery.yml` `type:` (role -> pt, `levels`)
   and `pptx.size` (inches, default 13.333 x 7.5), defaulting to the engine's `TYPE` (the NSF NCAR
@@ -166,10 +167,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   deck's (body 16, titles 32, cover 48, dividers 60). HTML and beamer take the same sizes as fractions of the slide height, so
   the formats fit and overflow alike; the post-processors read `livery.type_pt()` and scale their
   absolute pads by `livery.canvas_scale()`; `scale=` rounds a pptx size to the half point.
-  A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>` (engine >= 3.7.0:
-  beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
+  A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>`
+  (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
   reads it from `docProps/custom.xml`); `docs/fixtures/small.qmd` is `type-body: 10`.
-- **Dark liveries** (engine >= 3.8.0): `livery.json` `mode` is `dark` when the background is
+- **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
   since a dark livery's `dark` stays a field color; beamer mixes its tints toward
   `BrandBackground`, not white; `livery.css` gains callout title tints and a lightness flip
@@ -180,7 +181,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
-- **Content title** (engine >= 3.8.0): `livery.yml` `frametitle: {align: left|center, tab, rule}`
+- **Content title**: `livery.yml` `frametitle: {align: left|center, tab, rule}`
   (nsi: centred, no tab, no hairline, as the NSI master deck's slide 20; its mark at the paper's
   edge, `geometry.logo.inset: 0.015`); the body starts below
   a mark taller than ncar's (`livery.json` `frametitle.body`). Beamer centres the title in the
@@ -196,7 +197,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
-  its role (`marks:`, engine >= 3.3.0; `livery.json` always has `marks`, read with
+  its role (`marks:`; `livery.json` always has `marks`, read with
   `livery.mark(livery, role, "logo"|"signoff")`): content slides `background`,
   dividers, covers and the cover closing `primary`, the band title and closing
   `title.field`. Defaults: background `logo.medium.light`/`signoff.light`, primary the
@@ -218,7 +219,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   "revealjs (HTML) theme" below).
 - **Theme options** (`themeoptions:` in a deck's front matter) replace the
   shared list in `docs/common/_quarto.yml`, so a deck that sets any must
-  repeat `fonts=bundled`. Theme 2.3: `mathfont=` (default a serif math font,
+  repeat `fonts=bundled`. `mathfont=` (default a serif math font,
   NewCM Book scaled to Poppins; `stix`, `lm`, `pagella`, `sans`, `fira`,
   `poppins` for the old Poppins-letter look, `keep`, or a font name; Quarto's
   own `mathfont:` key still wins) and `waves=false` (drops the faint wave
@@ -228,7 +229,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Format conditionals**: `when-format="beamer"` matches the custom
   `engine-beamer` format; `when-format="engine-beamer"` matches nothing. Always
   write `beamer`.
-- **Poppins has no arrows or ⚠**: theme 2.6 borrows ⚠ → ← ↔ ⇒ from DejaVu
+- **Poppins has no arrows or ⚠**: the theme borrows ⚠ → ← ↔ ⇒ from DejaVu
   Sans in the PDF, so `## ⚠︎ Title` and `A → B` work in every format. Any other
   missing symbol still drops out of the PDF, with a warning in the log.
 - **Divider subtitles**: a paragraph right after a `#` divider becomes that
@@ -272,6 +273,58 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - Executable ```{bash} cells run at render time via the jupyter `bash` kernel
   (deck frontmatter: `engine: jupyter`, `jupyter: bash`). Keep them
   deterministic — CI renders the sample deck.
+
+## The engine
+
+`docs/common/_extensions/engine/` is the source, edited in place (no vendoring since #57). What
+it does, by area, beyond the format notes above:
+
+- **Names**: the formats `engine-beamer` / `engine-revealjs`, `\usetheme{Engine}`, the
+  `engine@` namespace, `\engine*` commands, `engine*` frame keys, `engine-*` classes and
+  properties (renamed from NCAR_beamer_template v2.8.0).
+- **Finding the livery**: `engine_livery.sty` inputs `<livery>/build/livery.sty`. Both Lua
+  filters take the directory from the `livery:` key (this framework: `_livery`), else
+  `liveries/<brand>` beside the `_extensions/` that holds the extension, found from the
+  extension's real directory (a deck reaches it through a linked `_extensions/`, and Lua does
+  not resolve links; changing into the directory does). `_extension.yml`'s default
+  `highlight-style` is `../../liveries/ncar/build/livery.theme`, which Quarto resolves
+  lexically through the link, so `docs/latex/examples/` links `liveries` beside its
+  `_extensions` (the shape of an Overleaf zip). LaTeX finds `brand=<name>`'s
+  `liveries/<name>/` through `TEXINPUTS` (`docs/common//`).
+- **Roles only**: no palette name is read outside `build/livery.sty`; the Sass sets every color
+  as `var(--engine-*)` (its `$ncar-*` variables are compile-time defaults for Quarto's own
+  rules, restated with the roles at the end of the file); the highlight theme is generated per
+  livery from `engine.theme`.
+- **Geometry**: margin, tab, logo box (height per slide kind, top, aspect, corner, `inset`), the
+  page number's corner, divider block and full-figure lengths are the livery's `geometry`
+  fractions: `engine@geom@*` in the `.sty`, `--engine-*` pixels in the css (ncar's are the
+  HTML/PDF numbers, not the pptx template's tighter ones).
+- **Art**: `art.waves` (control points and per-kind shifts, drawn in the roles' colors; the pptx
+  divider layout from the same numbers; `docs/common/utils/fit-waves.py` fits them to a brand's
+  cover art), or a static picture per slide kind (`art.title|section|closing|content`).
+- **Title styles**: `title.style` `cover` (default) or `band` (a field in a role with
+  `art.title` over it, a band holding the text left of `split` and the photo right of it, the
+  marks centred in the strip below; nsi). `title=light` follows the brand's own light cover
+  (UCAR Communications' template, slide 4).
+- **Templates**: `livery_template.py` generates each `template.pptx` with `Closing` and
+  `Title Slide (light)` layouts pandoc never picks; the theme1.xml slots follow the roles
+  (`SLOT_ROLES`); the web logos are the brand kit's RGB PNGs (see each `reference/notes.md`).
+- **LaTeX**: `docs/latex/Makefile` (`default` talk.pdf, `examples`, `variants`, `html`,
+  `previews`, `diagrams`, `overleaf`) sets `TEXINPUTS`/`TTFONTS` to `docs/common//`; its
+  `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
+  the `\enginethemeoptions`/`\engineaspectratio` hooks.
+- **Checking a change**: `make test` (`livery_build.py --check` and `livery_check.py` on every
+  livery, `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change of a
+  box, and `tests/test_type.py`). For anything that can move pixels, `tests/parity.sh baseline`
+  before and `check` after (every deck of quickstart, sample and fixtures under
+  `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
+  screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
+  baseline|check` (docs/latex's PDFs page by page, the demo's HTML), same checkout, same day. A
+  Sass change is checked by screenshotting every slide before and after (Playwright).
+- **Version**: one number, `version:` in `_extension.yml`; a `v*` tag must equal it
+  (`release.yml` checks). `VERSION` in `engine-revealjs.lua` names the HTML dependency
+  (`engine-revealjs-<VERSION>`), so changing it changes every HTML deck's paths. Ask Ben
+  before any tag.
 
 ## pandoc pptx gotchas (hard-won — read before restructuring slides)
 
@@ -356,7 +409,7 @@ bit while building it:
 - **Mermaid must render unscaled.** Quarto renders each diagram inside its
   slide, which reveal has scaled to the window, and mermaid measured labels at
   that scale (0.8 at 1280 px): boxes 20% small, labels clipped. The theme's
-  script renders in mermaid's own scratch element instead (theme 2.2.0).
+  script renders in mermaid's own scratch element instead.
 - **A percentage image height resolves against the whole slide**, so the
   beamer screenshot recipe `{height="72%"}` overflowed; the theme's Lua filter
   maps it onto the content height (2.2.0): 72% is the full cap, a smaller
@@ -467,5 +520,8 @@ tags.
 ## Git
 
 - Standalone repo (often checked out nested inside `hpc-scheduling-tools/docs/`,
-  which git-ignores it). Default branch `main`; branch + PR to merge.
+  which git-ignores it). Default branch `main`; branch + PR to merge, as merge commits (a
+  squash would flatten the engine's imported history out of `git log --follow`).
+- `upstream` is `quarto-docs-framework`. The engine's old repo and `NCAR_beamer_template` are
+  not remotes here; a fix wanted from the NCAR theme is ported by hand.
 - Generated outputs (`*.pptx`, `~$*` lock files, `*_files/`) stay untracked.

@@ -230,8 +230,7 @@ type-body: 10      # the body in points; every size scales by 10/12 under ncar
 The NSF NCAR guide's "10 pts for three and four column layouts" is `type-body: 10`. PowerPoint
 gets every size rounded to the half point (`type_step.py`), and a slide's `scale=` multiplies
 on top. In plain LaTeX or Overleaf, the theme option `typescale=0.85` does the same. A livery's
-sizes live in its `livery.yml` (`type:`, `pptx.size`;
-[beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)'s README lists the roles).
+sizes live in its `livery.yml` (`type:`, `pptx.size`; `livery_build.py`'s `TYPE` lists the roles).
 
 ## About text autofit
 
@@ -376,7 +375,7 @@ beamer theme in `docs/common/_extensions/engine/` (until 2026-10 its own reposit
   - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
     OpenType math font) changes the math font; the default is New Computer
     Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key
-    also works. The theme README shows every preset on one slide.
+    also works. "Math fonts" below shows every preset on one slide.
   - `waves=false` removes the faint wave lines behind content slides of a
     livery that has them (they are on the pptx master too).
 - **Markdown extras:**
@@ -393,35 +392,6 @@ beamer theme in `docs/common/_extensions/engine/` (until 2026-10 its own reposit
   - `### Heading {.example}` / `{.alert}` give block variants.
   - `[text]{.alert}` emphasizes text.
 - **Dense slides**: beamer has no autofit; see "About text autofit".
-
-### LaTeX and Overleaf
-
-Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop. Each
-release of this repo carries one project zip per livery: the theme's `.sty`, the
-livery's fonts, logos and art, a `latexmkrc`, and a starter `talk.tex` on
-`\usetheme[livery=liveries/<name>, fonts=bundled]{Engine}`. One click opens it
-as a new Overleaf project (set the compiler to XeLaTeX if it asks):
-
-| livery | | |
-|---|---|---|
-| `ncar` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip&engine=xelatex) | [ncar-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip) |
-| `cu` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip&engine=xelatex) | [cu-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip) |
-| `nsi` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip&engine=xelatex) | [nsi-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip) |
-| `nasa` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip&engine=xelatex) | [nasa-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip) |
-| `nasa-dark` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip&engine=xelatex) | [nasa-dark-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip) |
-
-The same zip, unzipped, is the local path: `latexmk -xelatex talk.tex` builds it
-with nothing but XeLaTeX. To pack one yourself: `make overleaf LIVERY=cu` in any
-deck directory writes `cu-overleaf.zip`, with the engine's `overleaf_zip.py`; a repo
-that uses this framework packs its own livery with `make overleaf LIVERY_DIR=<dir>`.
-The starter always uses the bundled fonts: a livery that prefers an installed face
-(`installed-fonts`) would probe the system by name, which is too slow for a free
-Overleaf compile. The NCAR family's other members (ucar, ucp, ncarucar) have their links
-in the [theme README](https://github.com/benkirk/beamer-livery-theme#overleaf).
-
-Pushing a `v*` tag runs `release.yml`, which attaches the zips to that release (see
-"Adding a livery", step 6); CI (`ci.yaml`, the livery matrix) compiles each livery's zip
-in a clean directory on every push.
 
 ### HTML (revealjs)
 
@@ -452,6 +422,219 @@ and keep `<deck>_files/` beside it.
   gives a single self-contained `.html`.
 - **PDF from the browser:** open `<deck>.html?print-pdf` in Chrome and print
   with background graphics. `make pdf` is usually the better handout.
+
+## LaTeX and Overleaf
+
+Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop:
+`\usetheme[livery=<dir>]{Engine}`, or `\usetheme[brand=<name>]{Engine}` for one of
+`docs/common/liveries/` by name. The starter deck under the `ncar` and `cu` liveries:
+
+![The LaTeX starter deck under the ncar and cu liveries](docs/latex/preview.png)
+
+### Overleaf
+
+Each release of this repo carries one project zip per livery: the theme's `.sty`, the
+livery's fonts, logos and art, a `latexmkrc`, and a starter `talk.tex` on
+`\usetheme[livery=liveries/<name>, fonts=bundled]{Engine}`. One click opens it
+as a new Overleaf project:
+
+| livery | | |
+|---|---|---|
+| `ncar` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip&engine=xelatex) | [ncar-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip) |
+| `ucar` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ucar-overleaf.zip&engine=xelatex) | [ucar-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ucar-overleaf.zip) |
+| `ucp` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ucp-overleaf.zip&engine=xelatex) | [ucp-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ucp-overleaf.zip) |
+| `ncarucar` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncarucar-overleaf.zip&engine=xelatex) | [ncarucar-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncarucar-overleaf.zip) |
+| `cu` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip&engine=xelatex) | [cu-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip) |
+| `nsi` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip&engine=xelatex) | [nsi-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip) |
+| `nasa` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip&engine=xelatex) | [nasa-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip) |
+| `nasa-dark` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip&engine=xelatex) | [nasa-dark-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip) |
+
+By hand: download a zip, then **New Project → Upload Project**, **Menu → Compiler →
+XeLaTeX** and **Recompile**. Under pdfLaTeX the deck builds too, but in Helvetica with
+Computer Modern math, the theme's pdfLaTeX fallback.
+
+![Overleaf compiler setting](docs/latex/overleaf-compiler.png)
+
+The same zip, unzipped, is the local path: `latexmk -xelatex talk.tex` builds it
+with nothing but XeLaTeX. To pack one yourself: `make overleaf LIVERY=cu` in any
+deck directory writes `cu-overleaf.zip`, with the engine's `overleaf_zip.py`; a repo
+that uses this framework packs its own livery with `make overleaf LIVERY_DIR=<dir>`.
+The starter always uses the bundled fonts: a livery that prefers an installed face
+(`installed-fonts`) would probe the system by name, which is too slow for a free
+Overleaf compile. An existing Overleaf project takes the `_extensions/engine` and
+`liveries` folders of a zip and its `latexmkrc` at the project root, then
+`\usetheme[livery=liveries/<name>, fonts=bundled]{Engine}`.
+
+Pushing a `v*` tag runs `release.yml`, which attaches the zips to that release (see
+"Adding a livery", step 6); CI (`ci.yaml`, the livery matrix) compiles each livery's zip
+in a clean directory on every push.
+
+### The starter and the examples
+
+`docs/latex/` holds the engine's own LaTeX decks. Build them there:
+
+| | `make` target | output |
+|---|---|---|
+| the starter deck, `talk.tex` (a link to the extension's copy, which the Overleaf zips carry) | `make` | `talk.pdf` |
+| every feature: `examples/template.tex`; `paper.tex`, a document that is not slides; `mathfonts.tex`, the math-font specimen; `quarto-demo.qmd` | `make examples` | `examples/*.pdf` |
+| `template.tex` under UCAR, UCP, NCAR-UCAR, the light title, 4:3, pdfLaTeX and `mathfont=poppins` | `make variants` | `examples/template-*.pdf` |
+| the Quarto demo as an HTML deck | `make html` | `examples/quarto-demo.html` |
+
+`make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
+MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and
+`TTFONTS` at `docs/common/`, where the theme and the liveries' bundled fonts are. With a
+minimal TeX Live, the demo's callouts need `fontawesome5` (`texlive-fonts-extra` on Debian
+and Ubuntu). The demo names no `livery:`, so it shows the `brand=` route: Quarto finds
+`liveries/<brand>` beside `_extensions/`, a link in `examples/`.
+
+### An existing LaTeX deck
+
+Point TeX at the theme and the liveries, then switch the theme:
+
+```bash
+export TEXINPUTS=/path/to/quarto-livery-decks/docs/common//:
+export TTFONTS=/path/to/quarto-livery-decks/docs/common//:   # the bundled fonts
+latexmk -xelatex my-talk.tex
+```
+
+```latex
+\usetheme[livery=/path/to/livery]{Engine}   % any livery: a directory holding build/livery.sty
+\usetheme[brand=ucar]{Engine}               % one of docs/common/liveries/ by name
+\usetheme{Engine}                           % ncar
+```
+
+A deck written for the 2020-brand NCAR theme moves over with two changes (see "From the
+2020-brand NCAR theme" below).
+
+### Writing slides in LaTeX
+
+A Quarto deck writes the same things in Markdown ("PDF (beamer)" above; the sample deck has every one).
+
+| | LaTeX |
+|---|---|
+| Title slide | `\titlepage` in a `[plain]` frame |
+| Photo on the title slide (else the livery's default, if it has one: the NCAR family's is the Mesa Lab) | `\titlegraphic{\includegraphics{photo.jpg}}`; `\enginenotitlegraphic` for the plain cover |
+| Fine print under the title | `\titlefineprint{...}` |
+| Section divider | `\section{...}` |
+| Divider subtitle | `\sectionsubtitle{...}` before `\section` |
+| Slide | `\begin{frame}{Title}` |
+| Blocks | `block`, `exampleblock`, `alertblock` |
+| Emphasis | `\alert{...}` |
+| Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first in the frame and again after the content, then `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` |
+| Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` |
+| Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body |
+| Closing slide | `\engineclosingframe{Thank you!}{...}` |
+| Center or scale a short slide's body | `\begin{frame}[c]`, `\fontsize` |
+| Code | `lstlisting` (styled automatically) |
+| Table | your own `tabular`, unstyled; `\engineth{...}` for a header cell and `\rowcolor{enginetableband}` for a band are there to use |
+| Extra logo or slide decoration | `\logo{...}`: bottom right, above the footer (space reserved) |
+| Theme options | `\usetheme[<options>]{Engine}` |
+| Math font | `\usetheme[mathfont=stix]{Engine}` |
+| Smaller (or larger) text | `\usetheme[typescale=0.85]{Engine}` |
+
+### Theme options
+
+| option | values | default | |
+|---|---|---|---|
+| `livery` | a directory holding `build/livery.sty` | `liveries/<brand>` | the brand: colors, fonts, logos, geometry, art; in Quarto the `livery:` metadata key, a directory relative to the project (this framework sets `livery: _livery`) |
+| `brand` | a directory name under `docs/common/liveries/` | `ncar` | a livery by name, found through `TEXINPUTS` in LaTeX and beside `_extensions/` in Quarto |
+| `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or white with the full-color logo (the brand's own light cover) |
+| `fonts` | `brand`, `bundled`, `helvetica` | `brand` (`helvetica` under pdfLaTeX) | `brand` uses the livery's installed fonts when this machine has them, else its bundled files; `bundled` always the bundled files (reproducible; what Overleaf gets); `helvetica` the sanctioned substitute, and the only choice under pdfLaTeX |
+| `footer` | `minimal`, `full` | `minimal` | page number only, or also the section, short title and date |
+| `sectionpages` | `true`, `false` | `true` | a branded divider slide at each section |
+| `logo` | `true`, `false` | `true` | logo on content slides (in the corner the livery names) |
+| `waves` | `true`, `false` | `true` | the livery's faint wave lines behind content slides, when it has them |
+| `typescale` | a factor | `1` | every text size times it; a Quarto deck sets it with `type-body: <pt>` (over the livery's body) or `type-scale:` |
+| `mathfont` | `serif`, `lm`, `stix`, `pagella`, `sans`, `fira`, `poppins`, `keep`, or a font name | `serif` | the math font (next section) |
+| `autofit` | `true`, `false` | `true` | HTML only: shrink overflowing content slides to fit |
+
+A Quarto deck here sets them with `themeoptions:` ("PDF (beamer)"); its livery comes from
+`LIVERY=`. The HTML format reads `livery`, `brand`, `title`, `waves` and `autofit` and
+ignores the rest.
+
+### Math fonts
+
+The brand fonts have no math (Poppins, Helvetica Neue). Left to itself, beamer
+sets the letters of an equation in the text font's italic among Computer Modern
+symbols, which is fine for a variable name in a sentence and falls apart on
+anything with fractions or operators. So the theme sets a serif math font,
+scaled a little to sit with a large x-height, and `mathfont=` picks which:
+
+![math fonts](docs/latex/math-fonts.png)
+
+| `mathfont=` | font | |
+|---|---|---|
+| `serif` | New Computer Modern Math (Book) | the default; Latin Modern Math where it is not installed |
+| `lm` | Latin Modern Math | lighter Computer Modern |
+| `stix` | STIX Two Math | Times-like, compact |
+| `pagella` | TeX Gyre Pagella Math | Palatino-like |
+| `sans` | Lete Sans Math | a complete sans math font (Lato); Fira Math where it is not installed |
+| `fira` | Fira Math | humanist sans; no bold or script alphabets |
+| `poppins` | the text font's letters, Computer Modern symbols | beamer's own approach |
+| `keep` | | leave the document's math setup alone |
+| anything else | that OpenType math font, by name or file | for example `mathfont=XITSMath-Regular.otf` |
+
+Under pdfLaTeX `serif` gives Computer Modern math and the other presets fall
+back to it. The fonts come with TeX Live (`newcomputermodern`, `stix2-otf`,
+`tex-gyre-math`, `lete-sans-math`, `firamath`; Debian and Ubuntu ship Pagella
+Math in `fonts-texgyre-math`, not in `texlive-fonts-extra`); a preset whose
+font is missing warns and keeps the document's math font.
+
+In Quarto, `themeoptions: [mathfont=stix]` does the same, and Quarto's own
+`mathfont:` key also works (the theme then leaves math alone). The HTML deck
+is unaffected: MathJax sets its own serif math.
+
+`\enginemathfont{<preset>}` selects a preset later in the preamble, and
+`\enginemathversion{<version>}{<preset>}` sets one up as a math version to
+compare several in one document; `docs/latex/examples/mathfonts.tex` is
+the specimen above.
+
+### Colors
+
+The themes read only **roles**, which the livery sets: `BrandPrimary`,
+`BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`,
+`BrandHighlight` (a second small-text accent: examples, tips, strings),
+`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and
+`BrandDark`, plus the blends the builder derives (`BrandTableRule`, `BrandCautionFill`,
+...). Use those in your own slides and they follow the livery. Code is set in
+`BrandCodeText`, which is `BrandDark` unless the livery names another color: on a dark
+livery the dark role is a field color, not a text color. Code highlighting follows the
+same roles: `engine.theme` is the template, each livery's `build/livery.theme` the filled
+copy, and a Quarto project points `highlight-style` at it.
+
+Each livery also exports its **palette by name** (`latex.colors` in its
+`livery.yml`), for slides that will only ever wear that brand:
+- **ncar**: `NCARBlue`, `DarkBlue`, `Space`, `LightBlue`, `LightGray`, `BrandOrange`, `BrandYellow`
+- **ucar**, **ucp**, **ncarucar**: those plus `UCARAqua`, `UCARAquaContrast`, `LightAqua`
+- **cu**, **nsi**: `CUGold`, `CUBlack`, `CUDarkGray`, `CULightGray`, `CUAccessibleGold`, `CUSkyBlue`, ...
+- **nasa**, **nasa-dark**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...
+
+### From the 2020-brand NCAR theme
+
+The 2020-brand theme (`\usetheme{ncar}`, CoolGray with the `#1A658F` blue and Cormorant) is
+kept at tag [`v1.0-brand2020`](https://github.com/benkirk/NCAR_beamer_template/tree/v1.0-brand2020)
+and on branch `brand-2020` of `NCAR_beamer_template`. A deck written for it moves over with
+two changes:
+
+1. `\usetheme{ncar}` becomes `\usetheme{Engine}`.
+2. `TEXINPUTS` and `TTFONTS` point at this repo's `docs/common/` (see
+   "An existing LaTeX deck" above).
+
+How its pieces map:
+
+| 2020-brand theme | Engine |
+|---|---|
+| `NCARtitleframe[img]` | the title slide; its body (usually `\vspace` plus `\maketitle`) is ignored |
+| `NCARprettyframe[img]` | a photo feature frame, or a brand-field frame without an image |
+| its color names (`NCARBlue`, `CoolGray11`, `DeepBlue`, ...) | compile, mapped onto the nearest 2026 colors; `HilightGreen` is an NCAR Blue text highlight, legible on white |
+| `\logo{...}` | decorates the bottom of a slide |
+| `listings` | loaded automatically; your own `\lstset` applies |
+| `\titlebackground`, `\nobackground`, `\defaultbackground` | accepted, and do nothing |
+| no divider slides | a divider slide at each `\section` (`sectionpages=false` turns them off) |
+| the section name in the footer | `footer=full` |
+| Helvetica text | Poppins, which is wider: a slide packed to the limit may need trimming or `[shrink]` |
+| math in the text font | a serif math font (`mathfont=poppins` for the text font's letters) |
+| plain content slides | the brand's faint wave lines (`waves=false` removes them) |
 
 ## Checking a deck
 
@@ -588,8 +771,30 @@ into the .pptx.
 
 A livery is a brand as a directory of data and assets (`docs/design/engine-and-liveries.md`,
 sections 4 and 6; `docs/common/liveries/cu/` and `nasa/` are worked examples, their
-`reference/notes.md` the decisions they took; the theme README's "Liveries" section lists
-every knob). From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
+`reference/notes.md` the decisions they took). The directory holds `_brand.yml` (the colors
+and fonts, in Quarto's [brand.yml](https://quarto.org/docs/authoring/brand.html) form),
+`livery.yml` (everything else), `fonts/`, `logos/`, optionally `art/`, the generated
+`template.pptx`, and `build/`, which `livery_build.py` writes from the two yml files and which
+is committed. The knobs in `livery.yml`:
+
+| knob | |
+|---|---|
+| `roles` | which palette color plays each role: `primary`, `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`, `surface`, `warning`, `dark`, `code-text` |
+| `geometry` | the margin, the title tab, the logo box (height per slide kind, its corner on content slides: `top-right`, `top-left`, `none`, and its `inset` from that edge, the margin by default), the page number's corner, the divider block, the full-figure paddings |
+| `frametitle` | the content slides' title: `align` (`left` or `center`, in the room beside the mark), `tab` and `rule` (the accent tab and the hairline, both on by default). The body starts below the title band, or below a taller mark |
+| `type` | text sizes in points on the PowerPoint canvas, by role (`body`, `frametitle`, `title`, `section`, `table`, `footnote`, ...) and `levels` (the five list levels); a role left out is the engine's default scaled to the canvas ("Text sizes and the slide size") |
+| `signoff` | a second lockup at the foot of every slide but feature and full slides (light and dark images, aspect, height, bottom, corner) |
+| `marks` | which mark and sign-off each field wears, by role: content slides `background`, covers and dividers `primary`, the band title `title.field` |
+| `title` | the title slide's composition: `style: cover` (the default: the text beside the photo or the waves) or `style: band` (a band across a field, the text left of `split`, the photo right of it, the marks in the strip below) |
+| `feature` | `style: bar` (the default: the photo under a dark bar holding the title, the body on a translucent panel) or `style: cover` (the title cover's field, waves and mark, the photo in its right part) |
+| `compositions` | overrides of the slide compositions' boxes, e.g. `title: {column: {box: [0.06, 0.375, 0.50, 0.485]}}` |
+| `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none (`ncar`: the Mesa Lab, which its family inherits) |
+| `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it ("Installed brand fonts") |
+| `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`ucar` extends `ncar`; `nsi` extends `cu`) |
+| `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |
+| `latex`, `css` | named palette colors for LaTeX, and `overrides/livery-extra.{sty,css}` for anything the knobs don't cover |
+
+From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
 
 1. **Inspect the reference deck.** `python3 docs/common/utils/livery_inspect.py <deck.pptx>
    docs/common/liveries/<name>` writes `reference/report.md` (slide size, theme slots, fonts,
@@ -810,11 +1015,15 @@ license:
   is licensed under the [SIL Open Font License](https://openfontlicense.org); **TeX Gyre
   Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License; **Inter, Public
   Sans and DM Mono** (`docs/common/liveries/nasa/fonts/`) under the SIL Open Font License.
+- **The photographs in `docs/latex/images/wallpaper/`** come from the NCAR beamer template
+  as example imagery for the LaTeX examples. Replace them with your own.
 
 ## Origins
 
 This framework generalizes [`benkirk/quarto-docs-framework`](https://github.com/benkirk/quarto-docs-framework),
 which remains NCAR's single-brand deck framework, to any brand through liveries. Its engine
-was [`benkirk/beamer-livery-theme`](https://github.com/benkirk/beamer-livery-theme) until
+generalizes [`benkirk/NCAR_beamer_template`](https://github.com/benkirk/NCAR_beamer_template),
+which remains the single-brand NCAR beamer theme (a fix wanted from it is ported by hand). The
+engine was [`benkirk/beamer-livery-theme`](https://github.com/benkirk/beamer-livery-theme) until
 2026-10, when it merged into this repository with its history (#57). The design
 is [`docs/design/engine-and-liveries.md`](docs/design/engine-and-liveries.md).

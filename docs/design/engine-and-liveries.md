@@ -67,6 +67,12 @@ Fonts link), and `linked-images.lua:11`. Only `section_subtitle.py` and
 
 ## 2. Repositories
 
+**Since 2026-10-18 (#57) the engine lives in `quarto-livery-decks`**: `beamer-livery-theme` merged
+in with its history (the engine at `docs/common/_extensions/engine/`, its LaTeX examples at
+`docs/latex/`, its tests at `tests/`, every livery in `docs/common/liveries/`) and is archived;
+one version number, `_extension.yml`'s, tags the one repo. The rest of this section is the
+two-repo arrangement as designed and run from 2026-10-16 to 2026-10-18.
+
 Two new repositories, forked, with general nouns. The NCAR repositories stay exactly as
 they are for the people who use `\usetheme{NCAR}` from LaTeX and for the NCAR decks
 built here.
@@ -234,7 +240,9 @@ For `beamer-livery-theme`:
 - `highlight-style` is overridable by the project (`_livery/build/livery.theme`).
 - The reference liveries live under `liveries/` in the engine repo; vendoring brings
   them along under the extension directory, and the framework's `liveries/ncar` becomes a
-  link to the vendored copy.
+  link to the vendored copy. (Since #57 nothing is vendored: every livery is in
+  `docs/common/liveries/`, and the bundled fallback is `liveries/<brand>` beside the
+  `_extensions/` that holds the engine.)
 
 **Compositions** (2026-10-17, `composition-handoff.md`): the title (cover, photo, light,
 photo-light, band), closing (cover, light, band), section and feature slides are each one
@@ -399,6 +407,27 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, one repository** (#57 Phase A; this repo #60 the move, #61 CI, #62 docs).
+  Ben chose the bold option of the retrospective: `beamer-livery-theme` merged in with its
+  history (a fresh clone through `git filter-repo --to-subdirectory-filter engine-import`, an
+  unrelated-histories merge after the vendored copy was removed, so `git log --follow` pairs
+  each file with the engine's own and reaches back to the 2026 brand rebuild). The engine is
+  `docs/common/_extensions/engine/`, every livery `docs/common/liveries/` (ncar a real
+  directory; ucar, ucp, ncarucar beside it, so the CI matrix and the release zips are eight),
+  the LaTeX examples `docs/latex/`, the tests `tests/`. A deck's `brand=` without `livery:`
+  finds `liveries/<brand>` beside the `_extensions/` that holds the engine, from the
+  extension's real directory; `_extension.yml`'s default highlight style is resolved lexically
+  by Quarto, so `docs/latex/examples/` links `liveries` beside its `_extensions`. CI's new
+  `latex` job runs the engine's tests and builds its examples; `release.yml` requires the tag to
+  equal `_extension.yml`'s `version:`. Parity, baselines on `main` the same morning: every deck of
+  quickstart, sample and fixtures under ncar, cu, nsi, nasa and nasa-dark unchanged (pptx XML,
+  PDF text and pages, HTML), the engine's 195 LaTeX pages pixel-identical, all eight templates
+  rebuilt byte-identically. Changed from the plan: `fit-waves.py` went to `docs/common/utils/`;
+  `test_type.py` now checks every livery's template, not only the engine's four; the
+  `quarto-demo.qmd` install line and `_quarto.yml`'s "vendored" comment wait (both are deck
+  content, the sample quotes `_quarto.yml`). Open with Ben: the release number (v4.0.0
+  proposed), archiving `beamer-livery-theme` with a banner, and whether to flatten `docs/`
+  before that release. Next: Phase B, the pptx format into the engine.
 - **2026-10-17, nsi content titles** (stacked on the NASA work: beamer-livery-theme `nsi-title`,
   this repo `nsi-title`; still 3.8.0). Ben compared an nsi text slide with Lindsay's slide 20 of the
   NSI master deck: her mark is larger, her titles centred, no gold tab; and our PDF's title sat
