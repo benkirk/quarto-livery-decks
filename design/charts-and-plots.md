@@ -356,11 +356,15 @@ the reference document's theme into every deck: a test deck built with pandoc 3.
    file's §10 entry in `engine-and-liveries.md`; a note on #58).
 5. **Final color polish** (laptop, with the brand guide and PowerPoint for Mac):
    - NCAR: does the 2026 guide list vermilion `#FF1F1F` and the grays `#97999b`, `#bbbcbc`? If
-     so, add them and a `vermilion` ramp, with the guide's pages.
+     so, add them and a `vermilion` ramp, with the guide's pages. **Answered 2026-10-18: no**
+     (pp. 17-22 list exactly the ten colors; `liveries/ncar/reference/notes.md`).
    - NASA: does the 2024 insignia color guide give `#0032A0` and `#E4002B`? Then the
      screen-color issue: HDS against the Pantone conversions, the invented neutrals, the
-     Office cyan.
+     Office cyan. **Answered 2026-10-18: yes**, one set for every medium (the Brand Center's
+     insignia colors; `liveries/nasa/reference/notes.md`); the screen-color decision stays open.
    - CU: `styleguide.colorado.edu/colors`, the full named web colors; any for `extended`?
+     **Read 2026-10-18**: a Material Design UI palette, no further brand hue; Brick `#AE5A39`
+     and Medium Blue `#4FC3F7` are the candidates (`liveries/cu/reference/notes.md`).
    - PowerPoint for Mac: the Custom Colors row in a built deck's picker, a native chart per
      livery.
 

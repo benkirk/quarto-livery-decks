@@ -408,6 +408,24 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, charts and plots built** (steps 2-4 of `design/charts-and-plots.md`; this repo
+  #67 the formats, #68 the decks and image, #69 the bundle and docs, stacked on #64). Every
+  format draws the chart colors: `build/livery.mplstyle` (matplotlib, sizes from the type roles; Type 3 for cu's CFF
+  font, which matplotlib embeds mislabeled under type 42), `--engine-data-*` in the css,
+  `EngineData*` and a default pgfplots cycle in the sty, a named Custom Colors row in every
+  template. `livery_mpl.py` (fonts, colormaps, `figsize()`, `dark()`) on PYTHONPATH and the style
+  as `MATPLOTLIBRC` from `Make.common`, the content area as `-M fig-width/fig-height` (verified to
+  reach Quarto's Python setup cell). `engine-plots.lua` shows a Jupyter figure at the canvas
+  scale in HTML and beamer, so plot text measures the slide's (HTML 1.00, PDF 1.00, pptx 1.01;
+  reveal's auto-stretch had left it at 92%). `decks/plots` in CI and parity; the image's
+  matplotlib font cache (the image 7.51 to 8.21 GB uncompressed on arm64, the conda env
+  layer +470 MB); `make charts-zip`, one per livery on a release. Found on
+  the way: cu's and nsi's `.brand-dark` slide kept the content photo; deck_qa took a plot's axis
+  0 for the frame number. Answered from step 5: the 2026 NCAR guide has no vermilion or web
+  grays; NASA's Brand Center gives `#0032A0`/`#E4002B` for every medium (#66's first question);
+  CU's web style guide is a Material UI palette, Brick and Medium Blue its only extra hues. Open
+  (step 5, with Ben): the Custom Colors row in PowerPoint for Mac (this session had no screen
+  access), whether CU takes Brick, ncar's pale heatmap (the koru ladder ends at NCAR Blue).
 - **2026-10-18, charts and plots designed** (`design/charts-and-plots.md`). Ben: plots in the
   container, in the brand's colors and fonts, and brand-inspired large color maps that stay
   distinguishable. The design: the engine generates every chart color from the livery at build

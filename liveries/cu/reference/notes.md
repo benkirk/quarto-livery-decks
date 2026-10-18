@@ -130,6 +130,18 @@ page tests a "Web Express Blue" `#0377BD`: none is a brand standard, so none is 
 palette or a fuller web palette turns up (styleguide.colorado.edu/colors), it goes in
 `charts.extended` and replaces generated hues.
 
+**styleguide.colorado.edu/colors, read 2026-10-18** (hexes from its `css/ucb-styles.css`): the web
+style guide's palette, "chosen from the Google Material Color Palette", one secondary or tertiary
+color per page. Beyond Black and Gold it shares nothing with the brand page: neutrals Light Gray
+`#EEEEEE`, Dark Gray `#424242`; link Blue `#0277BD`; secondary Light Blue `#E1F5FE`, Light Green
+`#DCEDC8`, Light Gold `#F1EBD9`, Medium Blue `#4FC3F7`, Dark Blue `#01579B`, Brick `#AE5A39`;
+application (error, warning, success) Red `#B71C1C`, Green `#2E7D32`, Amber `#FFD740`;
+notification Light Red `#FFEBEE`, Yellow `#FFF9C4`. The brand page
+(colorado.edu/imc/cu-boulder-brand/visual-identity) confirms our nine exactly (its Sky Blue RGB,
+9 112 174, is `#0970AE`, one off its stated hex). So CU publishes no further brand hue; Brick and
+Medium Blue are the only candidates for `charts.extended`, and they are website UI colors, not
+brand colors: a decision for step 5.
+
 **Plots in PDF take Type 3 fonts.** TeX Gyre Heros is a CFF OpenType font (`OTTO`). Asked for
 `pdf.fonttype: 42`, matplotlib (3.11) embeds it but declares it a TrueType font, and poppler reports
 "Mismatch between font type and embedded font file"; Ghostscript renders it silently. So

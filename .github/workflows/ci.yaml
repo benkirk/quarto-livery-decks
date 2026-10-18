@@ -4,7 +4,7 @@
 # fixture and plots decks; a hello-world deck in a consumer's layout (the framework one level down, as
 # a submodule would be: README "Using the framework from another repo"); and every livery
 # under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
-# Overleaf zip compiled in a clean directory, the compositions measured). A new livery joins
+# Overleaf zip compiled and the charts bundle tried in a clean directory, the compositions measured). A new livery joins
 # by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.
 name: CI
 
@@ -381,6 +381,28 @@ jobs:
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -c "${family// /}" >/dev/null
           ! pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null
 
+      # the charts bundle unpacked alone, no framework on the paths: a script beside it plots in the
+      # livery's colors and embeds its bundled font (found in the bundle, never an installed one)
+      - name: Pack and try the charts bundle
+        run: |
+          make -C decks/quickstart charts-zip LIVERY="$LIVERY"
+          rm -rf /tmp/charts && mkdir /tmp/charts && unzip -q "decks/quickstart/$LIVERY-charts.zip" -d /tmp/charts
+          cat > /tmp/charts-plot.py <<'PY'
+          import sys; sys.path.insert(0, "/tmp/charts")
+          import json, os, livery_mpl, matplotlib.pyplot as plt
+          from matplotlib import font_manager as fm
+          L = json.load(open("/tmp/charts/livery.json"))
+          path = fm.findfont(L["typography"]["base"], fallback_to_default=False)
+          assert os.path.realpath(path).startswith(os.path.realpath("/tmp/charts/fonts")), path
+          assert [c.upper() for c in plt.rcParams["axes.prop_cycle"].by_key()["color"]] == L["charts"][L["charts"]["mode"]]["categorical"]
+          fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
+          ax.plot([0, 1, 2], [0, 1, 3], label="a"); ax.set_xlabel("x"); ax.legend()
+          fig.savefig("/tmp/charts-plot.pdf")
+          print(L["typography"]["base"].replace(" ", ""))
+          PY
+          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC python3 /tmp/charts-plot.py | tail -1)
+          pdffonts /tmp/charts-plot.pdf | tee /dev/stderr | grep -c "$family" >/dev/null
+
       # the title, divider, closing and feature slides of every format against the livery's
       # compositions (comp_measure.py; pptx through the image's LibreOffice). Report-only
       # (MEASURE_FAIL empty) until the formats draw from the boxes; the sheet and table are uploaded
@@ -396,6 +418,7 @@ jobs:
             decks/quickstart/quickstart.html
             decks/quickstart/quickstart.pdf
             decks/quickstart/${{ matrix.livery }}-overleaf.zip
+            decks/quickstart/${{ matrix.livery }}-charts.zip
             decks/quickstart/_qa/
             decks/fixtures/_qa/measure.tsv
             decks/fixtures/_qa/compositions-${{ matrix.livery }}.png

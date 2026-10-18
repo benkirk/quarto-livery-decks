@@ -8,6 +8,7 @@ decks/*/*.pptx
 decks/*/*.pdf
 decks/*/*.html
 decks/*/*-overleaf.zip
+decks/*/*-charts.zip
 latex/*.pdf
 latex/*-overleaf.zip
 **/*_files/
