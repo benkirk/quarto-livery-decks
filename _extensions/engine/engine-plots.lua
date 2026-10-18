@@ -5,7 +5,8 @@
 -- slide's size when the picture is shown at width / canvas width of the slide. pptx does that by
 -- itself (pandoc places a picture at its natural size); HTML and beamer need the width written:
 -- reveal would stretch a lone picture to the slide's free height, and beamer's paper is not the
--- canvas. A figure is a picture in Quarto's figure-<format>/ directory with no size of its own.
+-- canvas. A figure is a Jupyter cell's picture in Quarto's figure-<format>/ directory with no size
+-- of its own.
 
 local M = {}
 
@@ -35,11 +36,13 @@ function M.natural_inches(path)
   return nil
 end
 
--- the figure's file when img is a plot Quarto saved for this format, else nil
+-- the figure's file when img is a plot a Jupyter cell made for this format, else nil: Quarto
+-- names those <cell or label>-output-<n>.<ext>, beside the mermaid and Graphviz pictures in the
+-- same figure-<format>/ directory, which keep their own sizes
 function M.figure_path(img, format)
   if img.attributes.width or img.attributes.height then return nil end   -- the author sized it
   local src = img.src
-  if not src:match("figure%-" .. format:gsub("%-", "%%-") .. "/") then return nil end
+  if not src:match("figure%-" .. format:gsub("%-", "%%-") .. "/[^/]*%-output%-%d+%.%w+$") then return nil end
   if src:match("^/") then return src end
   return pandoc.path.join({ pandoc.system.get_working_directory(), src })
 end
