@@ -498,7 +498,7 @@ Point TeX at the theme and the liveries, then switch the theme:
 ```bash
 QLD=/path/to/quarto-livery-decks
 export TEXINPUTS=$QLD/_extensions/engine//:$QLD/liveries//:$QLD/:
-export TTFONTS=$QLD/liveries//:   # the bundled fonts
+export TTFONTS=$QLD/:$QLD/liveries//:   # the bundled fonts
 latexmk -xelatex my-talk.tex
 ```
 

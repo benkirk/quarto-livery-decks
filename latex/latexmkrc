@@ -5,4 +5,4 @@
 # which writes its own latexmkrc.)  The engine is not set here: the Makefile
 # passes -xelatex.
 $ENV{'TEXINPUTS'} = '../_extensions/engine//:../liveries//:../:' . ($ENV{'TEXINPUTS'} // '');
-$ENV{'TTFONTS'}   = '../liveries//:../_extensions/engine//:' . ($ENV{'TTFONTS'}   // '');
+$ENV{'TTFONTS'}   = '../:../liveries//:../_extensions/engine//:' . ($ENV{'TTFONTS'}   // '');

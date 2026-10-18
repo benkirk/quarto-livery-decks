@@ -12,12 +12,15 @@
 # The theme lives in ../_extensions/engine/, the liveries in ../liveries/. LaTeX finds the
 # .sty files, a brand='s liveries/<name>/ and its logos through TEXINPUTS, and the bundled
 # fonts through TTFONTS (set here, and by latexmkrc), as an Overleaf zip's latexmkrc does.
-# Never $(ROOT)//: that would search conda-env/ too.
+# The root itself is on both: brand= names its files as liveries/<name>/..., which the
+# theme looks up as files first (TTFONTS without it falls back to an installed face by
+# name: in the image, Poppins with SemiBold for bold). Never $(ROOT)//: that would
+# search conda-env/ too.
 #
 ROOT    := $(abspath $(CURDIR)/..)
 THEME   := $(ROOT)/_extensions/engine
 ENGINE  ?= xelatex
-TEXENV  := TEXINPUTS=$(THEME)//:$(ROOT)/liveries//:$(ROOT)/:$(CURDIR)/: TTFONTS=$(ROOT)/liveries//:$(THEME)//:
+TEXENV  := TEXINPUTS=$(THEME)//:$(ROOT)/liveries//:$(ROOT)/:$(CURDIR)/: TTFONTS=$(ROOT)/:$(ROOT)/liveries//:$(THEME)//:
 LATEXMK := latexmk -interaction=nonstopmode -halt-on-error
 
 VARIANTS := template-ucar template-ucp template-ncarucar template-light template-43 template-pdflatex \

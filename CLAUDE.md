@@ -295,6 +295,9 @@ it does, by area, beyond the format notes above:
   `_extensions` (the shape of an Overleaf zip). LaTeX finds `brand=<name>`'s
   `liveries/<name>/` through `TEXINPUTS` (`_extensions/engine//`, `liveries//` and the root
   itself, as an Overleaf zip's `latexmkrc`; never the root's `//`, which reaches `conda-env/`).
+  `TTFONTS` needs the root too: the theme looks the bundled fonts up as files,
+  `liveries/<name>/fonts/...`, and a miss falls back to an installed face by name silently (the
+  image's Poppins then sets bold in SemiBold; a Mac with Poppins installed hides the miss).
 - **Roles only**: no palette name is read outside `build/livery.sty`; the Sass sets every color
   as `var(--engine-*)` (its `$ncar-*` variables are compile-time defaults for Quarto's own
   rules, restated with the roles at the end of the file); the highlight theme is generated per
