@@ -407,8 +407,10 @@ Newest first. The first unchecked item of section 7 is the next step.
   broken), and a deck-wide `type-scale:` moves every format alike but cannot replace per-slide
   tuning. Fixed: `comp_measure` matched the cover as the divider (#45) and drew pptx shots in a
   serif (LibreOffice reads no embedded fonts; #48); the caution box was cut before `scale=`
-  (#46); the nsi band cover's pptx rule sat above the subtitle (#47). Open: pptx code blocks at
-  the body size (branch `pptx-code-size`, awaiting Ben), nsi pptx titles in a regular-width face.
+  (#46); the nsi band cover's pptx rule sat above the subtitle (#47). Then code sizes (#50, engine
+  #35, 3.7.1): pptx sets code at the body's size, which Ben preferred, so the `code` role went
+  up to meet it (ncar 10 pt on 12, cu and nsi 14 on 16). nsi's pptx titles, regular-width where
+  HTML and PDF are condensed, are left to PowerPoint's autofit.
   Next: NASA.
 - **2026-10-17, type in points** (beamer-livery-theme #32, #33, 3.6.0; this repo #40, #41). Ben
   asked whether the sizes were "nice" numbers: pptx slides get pasted into decks people keep by

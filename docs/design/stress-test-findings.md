@@ -26,8 +26,9 @@ from copies in a scratch directory. No SAMuel content appears below beyond slide
   liveries. In the old outputs they filled 0.61 in PDF, 0.58 in pptx and 0.47 in HTML. The
   decks were tuned on the old PDF/pptx sizes, which were 31% and 20% larger than today's.
   The slides are consistent and uniformly roomy, not broken.
-- **Five framework defects, all in pptx or the measuring tools, none in HTML or PDF.**
-  Fixed in #45-#48; one more waits for a decision (section 7).
+- **Four defects, all in pptx or the measuring tools, none in HTML or PDF**, fixed in
+  #45-#48. One more mismatch, code size, was settled the other way round: HTML and PDF code
+  went up to meet pptx's (#50, section 7).
 
 ## 2. Method
 
@@ -98,8 +99,8 @@ Body height against HTML's, median [10th-90th percentile]:
 | ncar PDF / pptx | 0.95 [0.94-0.95] / 1.01 [0.98-1.10] | 0.94 / 1.02 | 1.00 / 1.19 |
 | nsi PDF / pptx | 0.93 [0.92-0.94] / 1.02 [0.97-1.11] | 0.92 / 0.99 | 1.01 / 1.17 |
 
-The pptx code column is section 5's code-size defect; with it fixed it is 0.93 in both
-liveries.
+The pptx code column is section 5's code-size mismatch; after #50 it is 1.04 (ncar) and
+1.01 (nsi).
 
 **Title lines** (content slides): HTML 206 single, 2 double under both liveries (the
 `.full` slides' captions aside). PDF: ncar wraps one title (2-concepts s22 "replay(history)
@@ -149,18 +150,21 @@ both liveries.
   Condensed. The pptx names Helvetica Neue for everything, at full width, in a title box
   sized for one 32 pt line (0.095 of the height). Three titles that are one line in HTML/PDF
   wrap in pptx and spill out of the box. PowerPoint shrinks them only once edited, so the
-  file opens overflowing. Options: name the condensed face for pptx headings (`Helvetica Neue
-  Condensed Bold`, which `installed-fonts` already lists), or give the title placeholder a
-  two-line height. A livery decision, not made here.
+  file opens overflowing. Options were the condensed face for pptx headings or a two-line
+  title placeholder. **Ben's decision: leave it to PowerPoint's autofit.**
 - Fill shifts slightly (text use 0.39 against ncar's 0.40); nothing that collapses. The gold
   fields, 60 pt dividers and 48 pt cover measure clean.
 
 **Framework:**
 
-- **pptx code blocks at the body size** (12 pt ncar, 16 pt nsi), where the livery's `code` role
-  (8 pt, 11 pt) sets them in HTML and PDF. pandoc gives code no size. Branch
-  `pptx-code-size` adds `style_code.py`; held for a decision because it changes every pptx
-  deck's code (section 7).
+- **Code blocks at different sizes**: pptx at the body size (12 pt ncar, 16 pt nsi), as pandoc
+  gives code no size, while HTML and PDF used the livery's `code` role (8 pt, 11 pt). Shown
+  both, Ben preferred pptx's larger code, so the role went up instead: ncar 10 pt (engine
+  3.7.1, beamer-livery-theme #35), cu and nsi 14 pt (#50). The code slides' pptx height went
+  from 1.19x HTML's to 1.04x (ncar) and 1.17x to 1.01x (nsi), with `make qa` clean and no
+  verdict changes. The branch `pptx-code-size` (shrinking pptx code to the role) is not
+  merged. The sample deck's deferred "Project config" slide now runs further off the page,
+  where `deck_qa` cannot see it.
 - **The caution box was cut before `scale=`** (fixed, #46). 2-concepts s23 and 3-databases s15
   shrank to 0.87 and 0.93 in pptx under ncar.
 - **The nsi band cover's pptx stack** read date / title / rule / subtitle / author, 0.033 low.
@@ -211,17 +215,16 @@ both liveries.
 | #46 | framework | caution box cut after `scale=`; the estimate counts line breaks |
 | #47 | framework | nsi band cover: rule between subtitle and author, stack centred |
 | #48 | measurement | `comp_measure`'s LibreOffice profile gets the livery's fonts (and stand-in) |
-| (held) | framework | `style_code.py`: pptx code at the livery's `code` size |
+| #50 | framework | code blocks a step under the body: ncar 10 pt (engine #35, 3.7.1), cu/nsi 14 pt |
 
-Open, for Ben:
+Decided by Ben: pptx code stays at body size and HTML/PDF code goes up to meet it (#50); nsi's
+pptx titles are left to PowerPoint's autofit.
 
-1. **pptx code size** (branch `pptx-code-size`): every pptx deck's code blocks drop from body
-   size to the livery's `code` size (ncar 12 -> 8 pt), as HTML and PDF already set them.
-2. **nsi pptx headings:** name the condensed Helvetica Neue for titles, or a two-line title
-   box, or leave it.
-3. **The scratch measuring scripts** (per-slide verdicts across formats, the ncar-against-nsi
+Open:
+
+1. **The scratch measuring scripts** (per-slide verdicts across formats, the ncar-against-nsi
    composer) could become a `utils/` tool (`make verdicts`?). They found everything above that
    `deck_qa` and `comp_measure` did not.
-4. **For the SAMuel author** (not changed here): the `scale="1.15"` slides could go to about
+2. **For the SAMuel author** (not changed here): the `scale="1.15"` slides could go to about
    1.4-1.5 to look as they did in the old PDF, or the deck could take `type-scale: 1.2` and
    keep its per-slide values.
