@@ -1,0 +1,8 @@
+# latexmk reads this file when run from this directory: a bare `latexmk -xelatex
+# talk.tex` here finds the theme in ../common/_extensions/engine/, the liveries'
+# build/livery.sty and logos and the bundled fonts in ../common/liveries/, as the
+# Makefile's TEXINPUTS/TTFONTS do.  (An Overleaf project is `make overleaf`'s zip,
+# which writes its own latexmkrc.)  The engine is not set here: the Makefile
+# passes -xelatex.
+$ENV{'TEXINPUTS'} = '../common//:' . ($ENV{'TEXINPUTS'} // '');
+$ENV{'TTFONTS'}   = '../common//:' . ($ENV{'TTFONTS'}   // '');

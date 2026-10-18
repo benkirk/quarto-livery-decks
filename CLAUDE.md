@@ -10,17 +10,16 @@ primary; `.html`/revealjs and `.pdf`/beamer secondary), and the **multi-brand
 successor** of `benkirk/quarto-docs-framework` (the `upstream` remote), which
 stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (NASA general is done, as `nasa` and
 `nasa-dark`, 2026-10-17; next: the NASA program flavors):
-a generalized **engine** (the vendored theme, forked as
-`benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
+a generalized **engine** (`docs/common/_extensions/engine/`, until 2026-10 the separate
+repo `benkirk/beamer-livery-theme`, merged here with its history, #57) plus per-brand **livery** directories under
 `docs/common/liveries/`; its section 10 logs progress and names the next step.
 Phase 1 (the framework reads the livery) is done and Phase 2 (the engine) is under
-way: the theme is renamed and reads a livery. The reference liveries live in the engine
-(`_extensions/benkirk/engine/liveries/`; `docs/common/liveries/ncar` is a link to its
-`ncar`), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`
+way: the theme is renamed and reads a livery. Every livery lives in `docs/common/liveries/`
+(the NCAR family `ncar`, `ucar`, `ucp`, `ncarucar` beside the others), built by the engine's `livery_build.py` into `build/livery.{json,sty,css}`
 (an unknown `livery.yml` key is warned about). The engine also holds the json reader
 (`livery.py`), the template builder (`livery_template.py`), the wave shapes
 (`pptx_waves.py`) and the livery checks (`livery_check.py`), since engine 3.3.0:
-`utils/livery.py` is a shim that loads the vendored reader by path (both are named
+`utils/livery.py` is a shim that loads the engine's reader by path (both are named
 `livery`; `engine_module()` loads any engine module the same way) and adds
 `livery.py deps <dir>`, and `utils/livery_check.py` wraps the engine's checks and adds
 `--qa`. NCAR PDF and HTML decks
@@ -204,14 +203,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   dark ones, any other role primary's (nsi: black mark on gold, white on the band). pandoc writes no slide-number box, so
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).
-- **PDF** is `--to engine-beamer`: the engine beamer theme, vendored from
-  `benkirk/beamer-livery-theme` into `docs/common/_extensions/benkirk/engine/`.
-  Don't edit the vendored copy. Change the theme repo, then re-vendor with
-  `cd docs/common && quarto update benkirk/beamer-livery-theme` (the
-  vendored `_extension.yml` records no source, so the bare `quarto update`
-  fails). To build against an engine branch before it is merged, `make
-  vendor-engine` (root Makefile, `ENGINE=../beamer-livery-theme`) syncs that
-  checkout in; the `quarto update` after the merge must then show no diff. The extension's Lua filter loads the theme in place
+- **PDF** is `--to engine-beamer`: the engine beamer theme in
+  `docs/common/_extensions/engine/`, edited in place like everything else. Its
+  pure-LaTeX side (the starter `talk.tex`, the examples and their variants) builds
+  in `docs/latex/` (`make latex`); the engine's tests are `make test`. The extension's Lua filter loads the theme in place
   through `\input@path`, so nothing is copied into deck directories. Needs
   XeLaTeX (TinyTeX or TeX Live) and Quarto >= 1.6 (`quarto-required` in the
   shared `_quarto.yml`; `conda-env.yaml` pins it). Beamer has no autofit: dense slides
@@ -219,7 +214,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   or add `{.shrink}` to the heading. A full-width 16:9 screenshot is taller than
   the frame's content area; cap it with `{height="72%" fig-align="center"}`
   (pptx ignores the attribute and fits the placeholder anyway).
-- **HTML** is `--to engine-revealjs`, from the same vendored extension (see
+- **HTML** is `--to engine-revealjs`, from the same extension (see
   "revealjs (HTML) theme" below).
 - **Theme options** (`themeoptions:` in a deck's front matter) replace the
   shared list in `docs/common/_quarto.yml`, so a deck that sets any must
@@ -228,8 +223,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `poppins` for the old Poppins-letter look, `keep`, or a font name; Quarto's
   own `mathfont:` key still wins) and `waves=false` (drops the faint wave
   lines behind content slides in PDF and HTML; pptx has them on the master).
-  The waves are fitted to the brand's cover art by `tools/fit-waves.py` in
-  the theme repo, which prints the TikZ and Lua blocks to paste.
+  The waves are fitted to the brand's cover art by `docs/common/utils/fit-waves.py`,
+  which prints the livery's `art.waves` block to paste.
 - **Format conditionals**: `when-format="beamer"` matches the custom
   `engine-beamer` format; `when-format="engine-beamer"` matches nothing. Always
   write `beamer`.
@@ -331,8 +326,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 
 ## revealjs (HTML) theme
 
-Lives in the vendored extension (`engine-revealjs.{scss,css,js,lua}`,
-`title-slide.html`); change it in the theme repo, like beamer. Things that
+Lives in the engine extension (`engine-revealjs.{scss,css,js,lua}`,
+`title-slide.html`), beside the beamer theme. Things that
 bit while building it:
 
 - **The slide is 1600x900 slide pixels** (`width`/`height`, `margin: 0`);

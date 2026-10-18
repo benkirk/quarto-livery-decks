@@ -301,6 +301,16 @@ local function deck_type_scale(meta, body_pt, who)
   return ts or 1
 end
 
+-- A bundled livery: liveries/<brand> beside the _extensions/ that holds this extension
+-- (docs/common/liveries in the framework). A deck reaches the extension through a linked
+-- _extensions/, and Lua does not resolve links, so the extension's own directory is found
+-- first: changing into a directory does resolve them.
+local function bundled_livery(extdir, brand)
+  local ok, real = pcall(pandoc.system.with_working_directory, extdir, pandoc.system.get_working_directory)
+  local root = pandoc.path.directory(pandoc.path.directory(ok and real or extdir))
+  return pandoc.path.join({ root, "liveries", brand })
+end
+
 local function load_theme(doc)
   local extdir = pandoc.path.directory(quarto.utils.resolve_path("engine_livery.sty"))
   if not pandoc.path.is_absolute(extdir) then
@@ -330,7 +340,7 @@ local function load_theme(doc)
     if not set then table.insert(opts, "mathfont=keep") end
   end
   -- the livery: `livery:` in the metadata (a directory, relative to the project), else
-  -- the bundled liveries/<brand> for themeoptions brand= (ncar)
+  -- the bundled liveries/<brand> for themeoptions brand= (ncar), beside _extensions/
   local livery, brand = doc.meta["livery"] and pandoc.utils.stringify(doc.meta["livery"]), "ncar"
   for _, o in ipairs(opts) do brand = o:match("^%s*brand%s*=%s*(%S+)") or brand end
   if livery then
@@ -338,7 +348,7 @@ local function load_theme(doc)
       livery = pandoc.path.join({ pandoc.system.get_working_directory(), livery })
     end
   else
-    livery = extdir .. "/liveries/" .. brand
+    livery = bundled_livery(extdir, brand)
   end
   table.insert(opts, "livery=" .. livery)
   -- the deck's size step as typescale= (a deck's own typescale= in themeoptions wins)

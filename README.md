@@ -99,13 +99,12 @@ livery can be a *flavor* of another (`extends:`), naming only what differs.
 
 | Family | Liveries | Faces | Marks | Look |
 |---|---|---|---|---|
-| **NCAR** | `ncar` (NSF NCAR, the default); the engine's reference liveries `ucar`, `ucp` and `ncarucar` | Poppins, bundled, embedded in the pptx | each member's lockup top right | the 2026 brand palette; deep-blue fields and the wave super-graphic; the Mesa Lab on the cover |
+| **NCAR** | `ncar` (NSF NCAR, the default); `ucar`, `ucp` and `ncarucar`, the brand guide's other lockups | Poppins, bundled, embedded in the pptx | each member's lockup top right | the 2026 brand palette; deep-blue fields and the wave super-graphic; the Mesa Lab on the cover |
 | **University of Colorado** | `cu` (CU Boulder); `nsi`, the Center for National Security Initiatives (`extends: cu`) | Helvetica Neue where installed; TeX Gyre Heros, Condensed for headings, standing in | `cu`: the CU Boulder lockup as a sign-off, bottom left; `nsi`: the center's mark top left, the Research & Innovation Office lockup as its sign-off | gold fields, a faded Flatirons photo behind content; `nsi`: its master deck's band title, a satellite photo behind content, centred titles |
 | **NASA** | `nasa` (external communication, on white); `nasa-dark` (`extends: nasa`, on black); program liveries belong here too | NASA's digital faces, bundled: Inter headings, Public Sans body, DM Mono code | the insignia top right and the agency name at the foot, the brand's preferred identifier | NASA Blue fields with the white-rule insignia; `nasa-dark`: content on black over a faint deep field, cover and closing on black |
 
 `make <format> LIVERY=<name>` picks one of `docs/common/liveries/` (`ncar` is the default);
-`LIVERY_DIR=<path>` takes a livery from anywhere, the engine's reference ones included:
-`make pptx LIVERY_DIR=../common/_extensions/benkirk/engine/liveries/ucar`. Each livery's
+`LIVERY_DIR=<path>` takes a livery from anywhere (a repo's own, say). Each livery's
 `reference/notes.md` records its sources and every judgement call, and CI builds the
 quickstart deck under each one.
 
@@ -119,23 +118,23 @@ on white, are turned to the dark with their hues kept (`diagram-dark.lua`).
 
 ```
 quarto-livery-decks/
-├── Makefile               # top-level: `make conda-env`, env mgmt, `make vendor-engine`
+├── Makefile               # top-level: `make conda-env`, env mgmt, `make latex`, `make test`
 ├── conda-env.yaml         # quarto + jupyter + bash_kernel + helpers
 ├── Dockerfile             # the build-environment image ("Building in the container")
 ├── docs/
 │   ├── Make.common        # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/clean)
 │   ├── common/
 │   │   ├── _quarto.yml    # shared Quarto config (symlinked into decks)
-│   │   ├── _extensions/benkirk/engine/  # the engine (vendored theme; symlinked into decks):
-│   │   │                                #   the beamer and revealjs themes, the livery tools
+│   │   ├── _extensions/engine/  # the engine (symlinked into decks): the beamer and
+│   │   │                        #   revealjs themes, the livery tools, the Overleaf packer
 │   │   ├── liveries/           # one directory per livery (`make LIVERY=<name>`):
-│   │   │   ├── ncar/           #   a link to the engine's reference livery
-│   │   │   ├── cu/  nsi/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
-│   │   │   ├── nasa/           #     template.pptx and build/ (both generated, committed),
-│   │   │   └── nasa-dark/      #     reference/notes.md
+│   │   │   ├── ncar/  ucar/    #   _brand.yml, livery.yml, fonts/, logos/, art/,
+│   │   │   ├── ucp/  ncarucar/ #     template.pptx and build/ (both generated, committed),
+│   │   │   ├── cu/  nsi/       #     reference/notes.md
+│   │   │   └── nasa/  nasa-dark/
 │   │   ├── *.lua               # pandoc filters ("Build pipeline" below)
 │   │   └── utils/
-│   │       ├── livery.py           # the engine's livery reader, loaded from the vendored engine;
+│   │       ├── livery.py           # the engine's livery reader, loaded from the engine;
 │   │       │                       #   `livery.py deps <dir>`: the livery files a build reads
 │   │       ├── livery_check.py     # the engine's livery checks, plus --qa
 │   │       ├── livery_inspect.py   # reports on a reference pptx, seeds a livery (onboarding)
@@ -143,7 +142,6 @@ quarto-livery-decks/
 │   │       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
 │   │       ├── diagram_dark.py     # a diagram picture turned to the dark (dark liveries)
 │   │       ├── site_index.py       # `make site`: the index page
-│   │       ├── parity.sh           # snapshots every deck under every livery, before and after
 │   │       └── *.py                # the pptx post-render steps ("Build pipeline" below)
 │   ├── quickstart/                 # the short exemplar deck: copy this one
 │   │   ├── quickstart.qmd
@@ -152,15 +150,19 @@ quarto-livery-decks/
 │   │   └── screenshots/    (those images, committed)
 │   ├── fixtures/                   # small decks for the title variants and type steps,
 │   │                               #   for parity.sh and CI
-│   └── sample/                     # the cookbook deck
-│       ├── Makefile        (3-line include of ../Make.common)
-│       ├── _quarto.yml     (symlink → ../common/_quarto.yml)
-│       ├── _extensions     (symlink → ../common/_extensions, made by make)
-│       ├── _engine         (symlink → ../common, made by make)
-│       ├── _livery         (symlink → the livery in use, made by make)
-│       ├── sample.qmd      (the cookbook)
-│       ├── old.qmd         (a longer real-world example)
-│       └── images/         (drop your PNGs / JPGs here)
+│   ├── sample/                     # the cookbook deck
+│   │   ├── Makefile        (3-line include of ../Make.common)
+│   │   ├── _quarto.yml     (symlink → ../common/_quarto.yml)
+│   │   ├── _extensions     (symlink → ../common/_extensions, made by make)
+│   │   ├── _engine         (symlink → ../common, made by make)
+│   │   ├── _livery         (symlink → the livery in use, made by make)
+│   │   ├── sample.qmd      (the cookbook)
+│   │   ├── old.qmd         (a longer real-world example)
+│   │   └── images/         (drop your PNGs / JPGs here)
+│   └── latex/                      # the engine's pure-LaTeX side: talk.tex (the starter),
+│                                   #   examples/ and their variants (`make latex`)
+├── tests/                 # the engine's tests (`make test`) and the parity harnesses:
+│                          #   parity.sh (every deck, every livery), parity-latex.sh (docs/latex)
 └── conda-env/              # local conda prefix, gitignored
 ```
 
@@ -312,7 +314,7 @@ files, which this never does; check before you publish a PDF built this way.
 ## Template constraints
 
 Each livery's `template.pptx` is generated by the engine's `livery_template.py`
-(`docs/common/_extensions/benkirk/engine/`) from the livery's data (`build/livery.json`:
+(`docs/common/_extensions/engine/`) from the livery's data (`build/livery.json`:
 theme slots, typeface, marks, geometry, art); never edit it by hand, change the
 livery and rerun the tool. It keeps the things pandoc is strict about:
 
@@ -349,8 +351,8 @@ unzip -p docs/common/liveries/ncar/template.pptx \
 ## PDF (beamer)
 
 `make pdf` renders with `--to engine-beamer`. That format comes from the engine's
-beamer theme ([benkirk/beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)),
-which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
+beamer theme in `docs/common/_extensions/engine/` (until 2026-10 its own repository,
+[benkirk/beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)). Make symlinks
 `_extensions` into each deck directory, just as it does for `_quarto.yml`.
 
 - **You need Quarto 1.6 or newer** (the conda env pins it): the theme's Lua
@@ -391,7 +393,6 @@ which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
   - `### Heading {.example}` / `{.alert}` give block variants.
   - `[text]{.alert}` emphasizes text.
 - **Dense slides**: beamer has no autofit; see "About text autofit".
-- **To update the theme:** `cd docs/common && quarto update benkirk/beamer-livery-theme`.
 
 ### LaTeX and Overleaf
 
@@ -425,7 +426,7 @@ in a clean directory on every push.
 ### HTML (revealjs)
 
 `make html` renders with `--to engine-revealjs`, the web format from the same
-vendored extension. The deck looks like the PDF: title slide with the livery's
+extension. The deck looks like the PDF: title slide with the livery's
 art (or `titlegraphic:`), section dividers with subtitles, content slides
 with the livery's title and marks, `.feature` and `.closing` slides. The same
 `themeoptions:` apply (`title=`, `waves=`; math in the browser is
@@ -618,9 +619,9 @@ every knob). From a reference PowerPoint, or a brand guide alone, to a deck in t
    - **Type.** `type:` in points and `pptx.size`, the brand template's canvas ("Text sizes
      and the slide size").
    - **Flavors.** `extends:` makes the livery a flavor of another, naming only what differs.
-3. **Build.** `python3 docs/common/_extensions/benkirk/engine/livery_build.py
+3. **Build.** `python3 docs/common/_extensions/engine/livery_build.py
    docs/common/liveries/<name>` resolves everything into `build/livery.{json,sty,css,theme}`;
-   `python3 docs/common/_extensions/benkirk/engine/livery_template.py docs/common/liveries/<name>`
+   `python3 docs/common/_extensions/engine/livery_template.py docs/common/liveries/<name>`
    generates `template.pptx` from it. Rerun both after any change; never edit the template by hand.
 4. **Check.** `python3 docs/common/utils/livery_check.py docs/common/liveries/<name> --qa`:
    build freshness, every file the data names, the template's pandoc compliance and that it
@@ -708,7 +709,7 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" -w /work/docs/presentations/roadmap ghcr.io/benkirk/quarto-livery-decks make pptx`.
 - **Make variables pass through**: `LIVERY=cu`, `DECKS="a b"`, and a livery of your own
   inside the mount, `LIVERY_DIR=/work/mylivery` (build it once with `docker run ...
-  python3 /opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/livery_build.py
+  python3 /opt/quarto-livery-decks/docs/common/_extensions/engine/livery_build.py
   /work/mylivery`). `make qa`, `make measure`, `make overleaf` and `make site` work;
   `make publish` wants your git credentials, so run it on the host.
 - **Any user.** The image runs as root unless told otherwise; `--user "$(id -u):$(id -g)"`
@@ -793,8 +794,8 @@ available to anyone who wants to build decks, or a livery, of their own.
 **Each livery's marks and pictures belong to their owner** and are not covered by that
 license:
 
-- **The NSF, NCAR, UCAR and UCP logos and brand marks** (`docs/common/liveries/ncar/` and
-  the vendored theme) are trademarks used under the
+- **The NSF, NCAR, UCAR and UCP logos and brand marks** (`docs/common/liveries/ncar/`,
+  `ucar/`, `ucp/` and `ncarucar/`) are trademarks used under the
   [UCAR brand guidelines](https://ucar.canto.com/v/branding); the NCAR family's cover photo
   of the Mesa Lab is NCAR's.
 - **The CU Boulder lockups, the NSI and Research & Innovation Office lockups, and the
@@ -805,7 +806,7 @@ license:
   public domain and its use is restricted by the
   [NASA brand guidelines](https://www.nasa.gov/nasa-brand-center/brand-guidelines/). The
   `nasa` liveries' photographs are NASA's (images.nasa.gov); see their `reference/notes.md`.
-- **The Poppins font** (`docs/common/liveries/ncar/fonts/` and the vendored theme)
+- **The Poppins font** (`docs/common/liveries/ncar/fonts/`)
   is licensed under the [SIL Open Font License](https://openfontlicense.org); **TeX Gyre
   Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License; **Inter, Public
   Sans and DM Mono** (`docs/common/liveries/nasa/fonts/`) under the SIL Open Font License.
@@ -813,6 +814,7 @@ license:
 ## Origins
 
 This framework generalizes [`benkirk/quarto-docs-framework`](https://github.com/benkirk/quarto-docs-framework),
-which remains NCAR's single-brand deck framework, to any brand through liveries; its engine
-is [`benkirk/beamer-livery-theme`](https://github.com/benkirk/beamer-livery-theme). The design
+which remains NCAR's single-brand deck framework, to any brand through liveries. Its engine
+was [`benkirk/beamer-livery-theme`](https://github.com/benkirk/beamer-livery-theme) until
+2026-10, when it merged into this repository with its history (#57). The design
 is [`docs/design/engine-and-liveries.md`](docs/design/engine-and-liveries.md).

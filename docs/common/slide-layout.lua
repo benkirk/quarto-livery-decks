@@ -1,5 +1,5 @@
 -- pptx only. The theme's per-slide layout controls (.hcenter, .vcenter,
--- .center, scale="S", .fill, .full, .caution, .feature; see the vendored engine-revealjs.lua) mean nothing
+-- .center, scale="S", .fill, .full, .caution, .feature; see the engine's engine-revealjs.lua) mean nothing
 -- to pandoc's pptx writer, which drops slide classes. Carry them to
 -- utils/slide_layout.py as one speaker-notes line,
 --   engine-layout: hcenter vcenter scale=1.4

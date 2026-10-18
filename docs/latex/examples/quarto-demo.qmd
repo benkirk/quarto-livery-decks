@@ -1,0 +1,199 @@
+---
+title: "The NSF NCAR Beamer Theme"
+subtitle: "Branded PDF and HTML slides from Quarto Markdown"
+author: "Presenter Name(s) Here"
+institute: "Presenter Title, CISL, NSF NCAR"
+date: today
+date-format: long
+titlegraphic: ../images/wallpaper/mesa_lab_sunset.jpg
+fineprint: >-
+  This material is based upon work supported by the NSF National Center for
+  Atmospheric Research, a major facility sponsored by the U.S. National
+  Science Foundation.
+format:
+  engine-beamer:
+    # themeoptions: [brand=ucar, title=light, footer=full, mathfont=stix]
+    keep-tex: false
+---
+
+## Overview
+
+- Install once per project: `quarto add benkirk/beamer-livery-theme`
+- Render with `format: engine-beamer` (PDF) or `engine-revealjs` (HTML)
+- Every beamer feature of the LaTeX theme is reachable from Markdown
+
+# Basics
+
+A paragraph right after a divider becomes its subtitle.
+
+## A Basic Slide
+
+- Poppins Bold headlines, Poppins Regular body text
+  - Dark Blue on white is the primary text color
+    - accents (orange, yellow) only in small amounts
+- Use [alerted text]{.alert} sparingly
+
+1. Numbered items
+2. Carry the brand color, too
+
+$$
+\frac{\partial u}{\partial t} + (u\cdot\nabla)u = -\frac{1}{\rho}\nabla p + \nu\nabla^2 u
+$$
+
+## ⚠︎ Arrows and Warnings
+
+- Poppins has neither; the PDF borrows them from DejaVu Sans
+- Logs → jobs → charges, and A ⇒ B
+
+## Blocks
+
+### Regular block
+
+Level-3 headings inside a slide become beamer blocks.
+
+### Example block {.example}
+
+Add `{.example}` to the heading.
+
+### Alert block {.alert}
+
+Or `{.alert}` -- keep these rare.
+
+## Columns
+
+:::: {.columns}
+::: {.column width="48%"}
+### Left
+
+- First item
+- Second item
+:::
+::: {.column width="48%"}
+### Right
+
+1. First item
+2. Second item
+
+† A footnote written inside a column still lands at the slide's foot.
+:::
+::::
+
+‡ A second one stacks under the same rule, in the order written.
+
+## Feature Slide {.feature background="../images/wallpaper/mesa_lab.jpg"}
+
+### The body on a panel
+
+`{.feature background="photo.jpg"}` on the heading. Photo slides carry no
+logo -- the brand guide forbids logos on busy photos.
+
+# Content
+
+## Code
+
+```python
+#!/usr/bin/env python
+import os
+
+if __name__ == "__main__":
+    print("Hello World!")   # brand-colored highlighting
+    print(os.uname())
+```
+
+## Tables and Figures
+
+:::: {.columns}
+::: {.column width="50%"}
+| System  | Nodes |   Cores |
+|:--------|------:|--------:|
+| Derecho | 2,488 | 323,712 |
+| Casper  |   104 |   5,008 |
+:::
+::: {.column width="45%"}
+![A captioned figure.](../images/wallpaper/NCAR_Clouds.jpg)
+:::
+::::
+
+## A Full-Width Figure
+
+![](../images/wallpaper/NCAR_Clouds.jpg){height="72%" fig-align="center"}
+
+## Callouts
+
+::: {.callout-note}
+Quarto callouts render in both formats.
+:::
+
+::: {.callout-warning}
+Keep slides short: beamer does not shrink overflowing content (HTML does).
+:::
+
+# Layout
+
+Short slides: center the body, and scale it, per slide.
+
+## Centered and Scaled {.center scale="1.4"}
+
+| System  | Nodes |   Cores |
+|:--------|------:|--------:|
+| Derecho | 2,488 | 323,712 |
+| Casper  |   104 |   5,008 |
+
+† `{.center scale="1.4"}`: the table, not the title or this footnote.
+
+## Fill the Slide {.hcenter .fill}
+
+```bash
+#!/bin/bash
+#PBS -A <project>
+#PBS -l select=1:ncpus=128
+#PBS -l walltime=01:00:00
+mpiexec ./a.out
+```
+
+## ⚠︎ A Warning Slide {.caution .vcenter}
+
+- `{.caution}` sets the body on a soft yellow field, with a brand-yellow bar.
+- Keep it for warnings: the brand asks for accents in small amounts.
+
+*† Footnotes stay below the box.*
+
+## Centered Down {.vcenter}
+
+- `.hcenter` centers the body across; its text stays left-aligned
+- `.vcenter` centers it down; `.center` does both
+- `scale="S"` sizes it; `.fill` grows it to fit (HTML only)
+
+# Diagrams
+
+Rendered from the same sources as the LaTeX example: live in HTML, images in the PDF.
+
+## Graphviz
+
+```{dot}
+//| file: diagrams/systems.dot
+//| fig-width: 9
+```
+
+## Mermaid
+
+```{mermaid}
+%%| file: diagrams/render.mmd
+%%| fig-width: 9
+```
+
+## Mermaid, the whole slide {.full}
+
+```{mermaid}
+%%| file: diagrams/render.mmd
+%%| fig-width: 10
+```
+
+`{.full}` on the heading: one figure fills the slide, and the paragraph after it is its caption.
+
+## Thank you! {.closing}
+
+Questions?
+
+**Presenter Name** \
+`name@ucar.edu`

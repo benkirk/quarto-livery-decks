@@ -5,8 +5,8 @@
     livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
     livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
 
-The reader lives in the vendored engine (_extensions/benkirk/engine/livery.py, beside the
-template builder); this loads it by path, since both files are named livery. `deps` prints
+The reader lives in the engine (_extensions/engine/livery.py, beside the template
+builder); this loads it by path, since both files are named livery. `deps` prints
 build/livery.{json,sty,css,theme}, the template and every file the data names (the parent's
 too), joined to the directory as given; nothing when build/livery.json is missing."""
 
@@ -15,11 +15,11 @@ import os
 import sys
 from pathlib import Path
 
-ENGINE = Path(__file__).resolve().parent.parent / "_extensions" / "benkirk" / "engine"
+ENGINE = Path(__file__).resolve().parent.parent / "_extensions" / "engine"
 
 
 def engine_module(name: str):
-    """A module of the vendored engine, loaded by path (engine_<name>, so it shadows nothing here)."""
+    """A module of the engine, loaded by path (engine_<name>, so it shadows nothing here)."""
     spec = importlib.util.spec_from_file_location(f"engine_{name}", ENGINE / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

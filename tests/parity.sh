@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Parity check for the de-branding refactor (docs/design/engine-and-liveries.md, section 8).
 #
-#   utils/parity.sh baseline [deck dir...]   build the decks and snapshot them into _baseline/
-#   utils/parity.sh check    [deck dir...]   rebuild, snapshot into _check/, diff against _baseline/
+#   tests/parity.sh baseline [deck dir...]   build the decks and snapshot them into _baseline/
+#   tests/parity.sh check    [deck dir...]   rebuild, snapshot into _check/, diff against _baseline/
 #
 # Default deck dirs: docs/quickstart docs/sample docs/fixtures, relative to the repository root,
 # each built under every livery in PARITY_LIVERIES (default "ncar cu nsi"; ncar's snapshots keep
@@ -26,7 +26,7 @@
 set -euo pipefail
 : "${NORMALIZE:=}"
 
-ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 verb=${1:-}; shift || true
 case "$verb" in baseline|check) ;; *) sed -n '2,13p' "$0"; exit 2;; esac
 dirs=("$@"); [ ${#dirs[@]} -gt 0 ] || dirs=(docs/quickstart docs/sample docs/fixtures)

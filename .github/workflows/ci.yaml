@@ -80,7 +80,7 @@ jobs:
           exit "$bad"
 
       - name: Check the committed liveries are built
-        run: python3 docs/common/_extensions/benkirk/engine/livery_build.py --check docs/common/liveries/*/
+        run: python3 docs/common/_extensions/engine/livery_build.py --check docs/common/liveries/*/
 
       # timeout: a wedged browser render (mermaid) should fail here in minutes, with
       # diagnostics, not at the job's cap

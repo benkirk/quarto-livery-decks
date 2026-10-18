@@ -48,7 +48,7 @@ attached here with the font and logo files and the autofit script as an HTML dep
 
 The waves are inline SVG drawn in slide pixels (the theme fixes the slide at
 1600x900) from the same fitted curves as beamerouterthemeEngine.sty (see
-tools/fit-waves.py); `themeoptions: [waves=false]` drops them from content
+docs/common/utils/fit-waves.py); `themeoptions: [waves=false]` drops them from content
 slides.
 ]]
 
@@ -60,7 +60,7 @@ local VERSION = "3.7.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
--- project), else the bundled liveries/<brand> for themeoptions brand= (ncar). Its
+-- project), else the bundled liveries/<brand> beside _extensions/ for themeoptions brand= (ncar). Its
 -- build/livery.json carries the roles the waves and fields are drawn in; build/livery.css,
 -- attached with the font and logo files, the rest.
 local EXTDIR = pandoc.path.directory(quarto.utils.resolve_path("engine-revealjs.lua"))
@@ -82,12 +82,22 @@ local function deck_type_scale(meta, body_pt, who)
   return ts or 1
 end
 
+-- A bundled livery: liveries/<brand> beside the _extensions/ that holds this extension
+-- (docs/common/liveries in the framework). A deck reaches the extension through a linked
+-- _extensions/, and Lua does not resolve links, so the extension's own directory is found
+-- first: changing into a directory does resolve them.
+local function bundled_livery(extdir, brand)
+  local ok, real = pcall(pandoc.system.with_working_directory, extdir, pandoc.system.get_working_directory)
+  local root = pandoc.path.directory(pandoc.path.directory(ok and real or extdir))
+  return pandoc.path.join({ root, "liveries", brand })
+end
+
 local function load_livery(meta, brand)
   local dir = meta["livery"] and pandoc.utils.stringify(meta["livery"])
   if dir and not pandoc.path.is_absolute(dir) then
     dir = pandoc.path.join({ pandoc.system.get_working_directory(), dir })
   end
-  dir = dir or pandoc.path.join({ EXTDIR, "liveries", brand })
+  dir = dir or bundled_livery(EXTDIR, brand)
   local f = io.open(pandoc.path.join({ dir, "build", "livery.json" }))
   if not f then
     error("engine-revealjs: no livery at " .. dir .. " (build/livery.json is missing): set `livery:` "
@@ -374,7 +384,7 @@ end
 ---------------------------------------------------------------------------
 -- brand waves (y runs down here, up in TikZ)
 ---------------------------------------------------------------------------
--- The livery's wave lines (art.waves in livery.json; tools/fit-waves.py fits them): each
+-- The livery's wave lines (art.waves in livery.json; docs/common/utils/fit-waves.py fits them): each
 -- two cubics from the top edge to the bottom edge, as {x, y} fractions of the slide (y
 -- down): start, ctrl, ctrl, peak, ctrl, ctrl, end; and the shift of the cover art per
 -- slide kind. Set from the livery in Pandoc(); nil when the livery has no waves.

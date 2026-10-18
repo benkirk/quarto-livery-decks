@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # make overleaf needs only python3 and the vendored engine (no conda, no quarto)
+      # make overleaf needs only python3 and the engine (no conda, no quarto)
       - name: Build one zip per livery
         run: |
           for d in docs/common/liveries/*/; do
