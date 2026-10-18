@@ -15,3 +15,10 @@ geometry:
 
 divider:
   label-color: "#011837"  # Space on Aqua: Light Aqua is too light for the eyebrow (Brand Guide p22)
+
+# Chart colors: ncar's (sam-queries' validated series, the koru ramps, the burn scale) with UCAR
+# Aqua leading: the same series with slots 1 and 3 swapped, which passes the same checks.
+charts:
+  categorical: ["#00A2B4", "#E0681A", "#0057C2", "#D4246B", "#9A7B00", "#6B46C1"]
+  dark:
+    categorical: ["#11A0B0", "#D9772C", "#4687EA", "#DE4B80", "#AD8D1C", "#8F70E8"]

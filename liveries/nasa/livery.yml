@@ -93,3 +93,36 @@ type:                     # points on that canvas
   fineprint: 6
   pagenumber: 8
   footer: 8
+
+charts:   # NASA's own chart palette: the Horizon Design System's dataviz tokens, verbatim
+  # (nasa/hds-core f036e73, tokens.json dataviz.color, CC0; reference/notes.md). The brand red and
+  # blue are "never for dataviz" there, so they are not anchors here.
+  anchors: []
+  extended: []
+  diverging: ["#1159CD", "#C41D14"]   # HDS blue 70 and red 70 as the poles; HDS publishes no diverging scale
+  categorical: ["#1159CD", "#EF483F", "#E8892E", "#386470", "#B0A26A", "#3F83EF", "#8F0800", "#79A3AD", "#3E1C99", "#E09D00", "#387D00", "#0CC9AC"]
+  dark:
+    categorical: ["#256EE4", "#EF483F", "#F29D49", "#487682", "#C2B47C", "#609AF6", "#FA8C87", "#79A3AD", "#794BE4", "#F5AF0C", "#4B9609", "#0CC9AC"]
+  sets:   # the curated small-series sets, option 1 of four for each size
+    light:
+      2: ["#1159CD", "#E8892E"]
+      3: ["#1159CD", "#E8892E", "#0CC9AC"]
+      4: ["#1159CD", "#E8892E", "#0CC9AC", "#387D00"]
+      5: ["#1159CD", "#E8892E", "#0CC9AC", "#387D00", "#B0A26A"]
+    dark:
+      2: ["#256EE4", "#F29D49"]
+      3: ["#256EE4", "#F29D49", "#0CC9AC"]
+      4: ["#256EE4", "#F29D49", "#0CC9AC", "#4B9609"]
+      5: ["#256EE4", "#F29D49", "#0CC9AC", "#4B9609", "#C2B47C"]
+  ramps:   # light to dark, steps 10..100
+    red: ["#FEDAD8", "#F7B6B2", "#FA8C87", "#F66860", "#EF483F", "#E42E25", "#C41D14", "#870700", "#460401", "#260200"]
+    orange: ["#FCE3CA", "#FAC48C", "#F29D49", "#E88323", "#D96A00", "#B25600", "#914500", "#5C2B00", "#3B1B00", "#241000"]
+    yellow: ["#FEEBBE", "#FFCB47", "#F5AF0C", "#E09D00", "#C78B00", "#A37200", "#825B00", "#573B00", "#422D00", "#291C00"]
+    gold: ["#F0E9CC", "#DED19B", "#C2B47C", "#AB9D67", "#968A53", "#7D733E", "#6B612B", "#403916", "#2E280F", "#1C1807"]
+    lime: ["#D6FAAF", "#B0E879", "#8BD640", "#70C421", "#60B015", "#4B9609", "#387D00", "#214D00", "#183B00", "#0E2100"]
+    green: ["#C8FADB", "#8EEDB3", "#45E580", "#1FCF62", "#09B84F", "#00993D", "#007D34", "#004D21", "#003618", "#001A0B"]
+    aqua: ["#BDFCF2", "#79F2DF", "#42DBC2", "#0CC9AC", "#05B59B", "#00917E", "#007869", "#004A41", "#00332F", "#001C1A"]
+    slate: ["#D8EDF2", "#B8D3D9", "#99B8BF", "#79A3AD", "#5F919E", "#487682", "#386470", "#1D3D47", "#112930", "#08171C"]
+    blue: ["#D8E6FE", "#AFCDFC", "#82B0FA", "#609AF6", "#3F83EF", "#256EE4", "#1159CD", "#003487", "#011B46", "#000B1C"]
+    purple: ["#E9DFFE", "#D3BEFC", "#B799FA", "#A47EF6", "#8E62EF", "#794BE4", "#6337CD", "#3E1C99", "#1D0F46", "#0B002B"]
+    magenta: ["#FCD7F6", "#FCAFF0", "#F783E4", "#F25FDC", "#EB3BD1", "#D42CBD", "#BF1BAB", "#820974", "#470041", "#1C001A"]

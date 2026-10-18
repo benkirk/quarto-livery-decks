@@ -48,3 +48,10 @@ Graphviz as SVG, which the engine's `livery.css` flips the same way (a CSS filte
   The deck is consistent, but PowerPoint's built-in table, chart and SmartArt styles assume a
   light `lt1`. Swapping the `clrMap` instead (PowerPoint's own way of a dark theme) needs engine
   design: a follow-up.
+
+## Chart colors (2026-10-18)
+
+Inherited from nasa (HDS's dataviz palette, its dark set on this livery's black); see
+../nasa/reference/notes.md. The fact check found that `cyan` `#00B0F0`, taken from the NASA
+Science reference deck for `highlight`, is Office's standard "Light Blue" swatch, not a NASA
+color; it stays until the screen-color decision (see nasa's notes).

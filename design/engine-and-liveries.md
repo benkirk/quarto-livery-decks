@@ -408,6 +408,17 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, charts and plots designed** (`design/charts-and-plots.md`). Ben: plots in the
+  container, in the brand's colors and fonts, and brand-inspired large color maps that stay
+  distinguishable. The design: the engine generates every chart color from the livery at build
+  time (`livery_charts.py`: categorical, families, sequential, diverging, status, per mode, by the
+  dataviz checks), a brand's published chart palette taken as given (nasa: NASA's Horizon Design
+  System; ncar and ucar: sam-queries' validated sets and the UCAR web theme's tint ladders), and
+  every format fed from it (a matplotlib style and helper, css and sty tokens, a Custom Colors row
+  in the pptx templates), with matplotlib, numpy, pandas, seaborn and scipy in the image. The
+  session also fact-checked every livery's colors against its brand's published sources (section
+  2 there). Five PRs: the generator first, then the formats, decks and image, the release bundle,
+  and a final color polish from Ben's laptop. Next: the generator.
 - **2026-10-18, `docs/` flattened; version 1.0.0** (this repo, `flatten`). Ben: "a lot of core
   infrastructure in docs". Everything moved up a level: `Make.common`, `_extensions/engine/`,
   `liveries/`, `common/` (`_quarto.yml`, the Lua filters, `utils/`), `decks/` (quickstart,

@@ -8,7 +8,9 @@ logos, the marks, art, the template, the font blobs when pptx.fonts is set); tem
 pandoc-compliant (the seven layout names and our two extra ones, slideLayout1's five placeholders,
 the chrome placeholders at idx 20-22 and no content box there, the color and font schemes
 matching the json, media numbered without gaps) and rebuilds byte-identically from the data (a
-hand-edited template fails); WCAG 4.5:1 warnings for the small-text roles, which never fail.
+hand-edited template fails); WCAG 4.5:1 warnings for the small-text roles, which never fail; the chart
+colors' checks (livery_charts.py: a generated palette must pass, a published one only warns), and
+with --swatch DIR their contact sheet, DIR/charts-<livery>.png (needs Pillow).
 Exit 1 on any failure. (The framework's livery_check.py wraps this and adds --qa.)"""
 
 import argparse
@@ -20,6 +22,7 @@ import zipfile
 from pathlib import Path
 
 import livery as livery_mod
+import livery_charts
 from livery_build import SLOT_ROLES
 from livery_template import EXTRA_LAYOUTS, LAYOUTS, Builder
 
@@ -105,7 +108,7 @@ def check_template(r, livery, d):
         r.check(rebuilt.read_bytes() == tmpl.read_bytes(), "template.pptx rebuilds byte-identically from the data (not hand-edited)")
 
 
-def check_livery(d: Path) -> bool:
+def check_livery(d: Path, swatch: Path | None = None) -> bool:
     r = Report(d.name)
     p = subprocess.run([sys.executable, str(LIVERY_BUILD), "--check", str(d)], capture_output=True, text=True)
     r.check(p.returncode == 0, "build/ is fresh", (p.stdout + p.stderr).strip().splitlines()[-1] if (p.stdout + p.stderr).strip() else "")
@@ -118,14 +121,34 @@ def check_livery(d: Path) -> bool:
         if fg in roles and bg in roles:
             ratio = contrast(roles[fg], roles[bg])
             (r.ok if ratio >= 4.5 else r.warn)(f"contrast {fg} on {bg}: {ratio:.1f}:1")
+    check_charts(r, livery, swatch)
     return not r.failed
+
+
+def check_charts(r, livery, swatch=None):
+    """The chart colors: every check of livery_charts.evaluate() as a line, a fail failing the livery
+    (a published palette's failures arrive as warnings); the contact sheet when asked for."""
+    ch = livery.get("charts")
+    if not ch:
+        r.fail("livery.json has no charts: rerun livery_build.py")
+        return
+    for line in livery_charts.report(livery["name"], ch)[0:]:
+        state, _, rest = line.strip().partition("  ")
+        if state in ("pass", "warn", "fail"):
+            {"pass": r.ok, "warn": r.warn, "fail": r.fail}[state](f"charts {rest.strip()}")
+    if swatch:
+        swatch.mkdir(parents=True, exist_ok=True)
+        out = swatch / f"charts-{Path(livery['dir']).name}.png"
+        livery_charts.swatch(livery["name"], ch, out)
+        r.ok(f"charts swatch sheet: {out}")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("liveries", nargs="+", type=Path)
+    ap.add_argument("--swatch", type=Path, metavar="DIR", help="write each livery's chart contact sheet into DIR")
     a = ap.parse_args()
-    return 0 if all([check_livery(d.resolve()) for d in a.liveries]) else 1
+    return 0 if all([check_livery(d.resolve(), a.swatch) for d in a.liveries]) else 1
 
 
 if __name__ == "__main__":

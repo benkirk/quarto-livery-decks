@@ -77,3 +77,8 @@ mark (0.197; `frametitle.body`, engine 3.8.0). Still different from hers, left a
 titles' condensed face in HTML and PDF (Heros Condensed, the brand's headline rule; her deck sets
 regular-width Helvetica Neue Bold, as the pptx does), her ~18 pt body with black bullets, and her
 white footer band under the photo with a larger RIO lockup.
+
+## Chart colors (2026-10-18)
+
+Inherited from cu through `extends` (generated from CU Gold and Sky Blue); see
+../cu/reference/notes.md.
