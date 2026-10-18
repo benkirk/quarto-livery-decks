@@ -92,7 +92,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the conda env's (`fc-cache`/`fc-list` on PATH, its own `fonts.conf`) and the system's
   (`/usr/bin/fc-*`, `/etc/fonts`), which the apt XeLaTeX, Chromium and LibreOffice use; a file in
   `/etc/fonts/conf.d` reaches only the second, a directory under `/usr/local/share/fonts` both.
-  Everything under `/opt` must stay world-readable (asserted). The two
+  Everything under `/opt` must stay world-readable (asserted). `smoke-test.sh` takes `RUNTIME=docker|podman|apptainer` (default
+  docker, as `image.yaml` calls it); its container calls go through one adapter (`argv`). The two
   `_quarto.yml`/`_extensions` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
@@ -560,7 +561,16 @@ livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's 
 `pdffonts` showing its bundled family, and `make measure` report-only (`MEASURE_FAIL=`). A
 fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
 the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
-more; a tool the decks need goes into the Dockerfile. The package must be public on ghcr for
+more; a tool the decks need goes into the Dockerfile. `runtimes` (`runtimes.yaml`, reusable, also weekly and on
+demand against `:latest`) runs the image as HPC users do, pulled anonymously and doing nothing
+special for them: Apptainer in unprivileged user-namespace mode (no setuid) on both
+architectures, from the PPA or else the release .deb (the runner's userns sysctl is never
+weakened), and rootless Podman on amd64, each through `smoke-test.sh` with `RUNTIME=apptainer`
+(`$1` a SIF) or `RUNTIME=podman`; Apptainer then runs `apptainer-extra.sh` (the native
+cd-and-run form from a scratch directory outside HOME, `exec`, `--cleanenv`, `--containall`,
+the read-only image) and its report-only "lived-in HOME" table in the step summary (a host
+matplotlib cache, host Jupyter kernels, `pip --user` packages, module `PYTHONPATH` and
+`TEXINPUTS`: it never fails the job). Not a required check. The package must be public on ghcr for
 anonymous pulls (a first push makes it private). `cron-clean-action-log.yaml` prunes old runs
 and untagged image versions monthly with the workflow's own token; `release.yml` refuses a tag
 that is not `v` + `_extension.yml`'s `version:`, attaches the Overleaf zips and names the image
