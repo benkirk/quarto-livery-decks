@@ -129,3 +129,10 @@ link blue `#0277BD` and light green `#DCEDC8`, mostly Material Design values, an
 page tests a "Web Express Blue" `#0377BD`: none is a brand standard, so none is used. If a CU chart
 palette or a fuller web palette turns up (styleguide.colorado.edu/colors), it goes in
 `charts.extended` and replaces generated hues.
+
+**Plots in PDF take Type 3 fonts.** TeX Gyre Heros is a CFF OpenType font (`OTTO`). Asked for
+`pdf.fonttype: 42`, matplotlib (3.11) embeds it but declares it a TrueType font, and poppler reports
+"Mismatch between font type and embedded font file"; Ghostscript renders it silently. So
+`livery_build.py` gives a livery whose base family is CFF `pdf.fonttype: 3` (`is_cff()`): the
+glyphs are embedded as Type 3 procedures, still subset and searchable (pdffonts: `Type 3`, `uni
+yes`). nsi inherits it. SVG takes paths and PNG pixels, so only the beamer PDF is affected.

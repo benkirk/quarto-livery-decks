@@ -118,6 +118,39 @@
 \def\engine@type@leveliii{{0.8333}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}
 \def\engine@type@levelv{{0.6667}{1.4}}
+% chart colors (livery.json charts, dark): the categorical slots, muted, status
+\definecolor{EngineData1}{HTML}{256EE4}
+\definecolor{EngineData2}{HTML}{EF483F}
+\definecolor{EngineData3}{HTML}{F29D49}
+\definecolor{EngineData4}{HTML}{487682}
+\definecolor{EngineData5}{HTML}{C2B47C}
+\definecolor{EngineData6}{HTML}{609AF6}
+\definecolor{EngineData7}{HTML}{FA8C87}
+\definecolor{EngineData8}{HTML}{79A3AD}
+\definecolor{EngineData9}{HTML}{794BE4}
+\definecolor{EngineData10}{HTML}{F5AF0C}
+\definecolor{EngineData11}{HTML}{4B9609}
+\definecolor{EngineData12}{HTML}{0CC9AC}
+\definecolor{EngineDataMuted}{HTML}{34383E}
+\definecolor{EngineStatusGood}{HTML}{007433}
+\definecolor{EngineStatusWarning}{HTML}{A27900}
+\definecolor{EngineStatusSerious}{HTML}{B45C00}
+\definecolor{EngineStatusCritical}{HTML}{B33832}
+\AtBeginDocument{\@ifpackageloaded{pgfplots}{%
+\pgfplotscreateplotcyclelist{livery}{%
+  {EngineData1,mark=*},
+  {EngineData2,mark=square*},
+  {EngineData3,mark=triangle*},
+  {EngineData4,mark=diamond*},
+  {EngineData5,mark=pentagon*},
+  {EngineData6,mark=o},
+  {EngineData7,mark=square},
+  {EngineData8,mark=triangle},
+  {EngineData9,mark=*},
+  {EngineData10,mark=square*},
+  {EngineData11,mark=triangle*},
+  {EngineData12,mark=diamond*}}%
+\pgfplotsset{cycle list name=livery}}{}}
 % compositions (livery_build.py compositions()): boxes in fractions of the slide, y down
 \def\engine@c@title@field@x{0}
 \def\engine@c@title@field@y{0}

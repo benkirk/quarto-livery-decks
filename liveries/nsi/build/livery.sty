@@ -120,6 +120,31 @@
 \def\engine@type@leveliii{{0.8125}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}
 \def\engine@type@levelv{{0.6875}{1.4}}
+% chart colors (livery.json charts, light): the categorical slots, muted, status
+\definecolor{EngineData1}{HTML}{AD8E38}
+\definecolor{EngineData2}{HTML}{096FAE}
+\definecolor{EngineData3}{HTML}{7D4000}
+\definecolor{EngineData4}{HTML}{00A2AE}
+\definecolor{EngineData5}{HTML}{7A3270}
+\definecolor{EngineData6}{HTML}{6C7300}
+\definecolor{EngineData7}{HTML}{6382D3}
+\definecolor{EngineData8}{HTML}{007E67}
+\definecolor{EngineDataMuted}{HTML}{B9C3C7}
+\definecolor{EngineStatusGood}{HTML}{20A04E}
+\definecolor{EngineStatusWarning}{HTML}{9A7300}
+\definecolor{EngineStatusSerious}{HTML}{B05A00}
+\definecolor{EngineStatusCritical}{HTML}{CE5249}
+\AtBeginDocument{\@ifpackageloaded{pgfplots}{%
+\pgfplotscreateplotcyclelist{livery}{%
+  {EngineData1,mark=*},
+  {EngineData2,mark=square*},
+  {EngineData3,mark=triangle*},
+  {EngineData4,mark=diamond*},
+  {EngineData5,mark=pentagon*},
+  {EngineData6,mark=o},
+  {EngineData7,mark=square},
+  {EngineData8,mark=triangle}}%
+\pgfplotsset{cycle list name=livery}}{}}
 % compositions (livery_build.py compositions()): boxes in fractions of the slide, y down
 \def\engine@c@title@field@x{0}
 \def\engine@c@title@field@y{0}

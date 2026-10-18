@@ -83,6 +83,37 @@
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
 }
+/* chart colors (livery.json charts) */
+:root {
+  --engine-data-1: #AD8E38;
+  --engine-data-2: #096FAE;
+  --engine-data-3: #7D4000;
+  --engine-data-4: #00A2AE;
+  --engine-data-5: #7A3270;
+  --engine-data-6: #6C7300;
+  --engine-data-7: #6382D3;
+  --engine-data-8: #007E67;
+  --engine-data-muted: #B9C3C7;
+  --engine-status-good: #20A04E;
+  --engine-status-warning: #9A7300;
+  --engine-status-serious: #B05A00;
+  --engine-status-critical: #CE5249;
+}
+.reveal .slides section.slide.brand-dark {
+  --engine-data-1: #AD8E38;
+  --engine-data-2: #096FAE;
+  --engine-data-3: #9C3C40;
+  --engine-data-4: #009FAA;
+  --engine-data-5: #A45E00;
+  --engine-data-6: #8D3F78;
+  --engine-data-7: #6988DA;
+  --engine-data-8: #008F71;
+  --engine-data-muted: #32393D;
+  --engine-status-good: #33AC5A;
+  --engine-status-warning: #7A5B00;
+  --engine-status-serious: #D76F04;
+  --engine-status-critical: #D95B52;
+}
 html:root {
   --r-main-font-size: var(--engine-type-body);
   --mermaid-bg-color: var(--engine-background);

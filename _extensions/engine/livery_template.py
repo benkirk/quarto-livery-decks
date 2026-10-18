@@ -3,7 +3,8 @@
 
     livery_template.py <livery dir> [-o template.pptx]
 
-Everything comes from build/livery.json: the theme's color slots (pptx.scheme), the typeface,
+Everything comes from build/livery.json: the theme's color slots (pptx.scheme) and its Custom
+Colors row (the chart colors, livery_charts.custom_colors()), the typeface,
 the geometry fractions, the marks (marks), art.content and the wave curves on the master, and
 the compositions (compositions) of the field layouts: their field, art, band, waves, marks, the
 band's default photo and the text column the placeholders are derived from. The master carries
@@ -25,6 +26,7 @@ from pathlib import Path
 import livery as livery_mod
 import pptx_waves
 from livery_build import SLOT_ROLES
+from livery_charts import custom_colors
 
 # the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
 # by default. The themes think in 1600x900 slide pixels.
@@ -395,8 +397,11 @@ class Builder:
                '<a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst>'
                '<a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill>'
                '<a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme>')
+        # the chart colors as PowerPoint's Custom Colors row (every color picker), named "Data 1 · Blue"
+        cust = "".join(f'<a:custClr name="{n}"><a:srgbClr val="{c.lstrip("#")}"/></a:custClr>' for n, c in custom_colors(self.L["charts"]))
         return (XMLDECL + f'<a:theme xmlns:a="{A}" name="{self.L["name"]}"><a:themeElements><a:clrScheme name="{self.L["name"]}">{cs}'
-                f'</a:clrScheme>{fs}{fmt}</a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>')
+                f'</a:clrScheme>{fs}{fmt}</a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/>'
+                f'<a:custClrLst>{cust}</a:custClrLst></a:theme>')
 
     def build(self, out: Path, livery_dir: Path):
         parts = {}

@@ -10,6 +10,18 @@
       "#CFB87C",
       "#096FAE"
     ],
+    "chrome": {
+      "dark": {
+        "grid": "#222222",
+        "spine": "#717171",
+        "text": "#FFFFFF"
+      },
+      "light": {
+        "grid": "#AAA8A3",
+        "spine": "#565A5C",
+        "text": "#000000"
+      }
+    },
     "dark": {
       "area-alpha": 1.0,
       "categorical": [

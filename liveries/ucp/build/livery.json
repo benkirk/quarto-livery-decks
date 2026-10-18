@@ -110,6 +110,18 @@
       "#42C0FF",
       "#FAA119"
     ],
+    "chrome": {
+      "dark": {
+        "grid": "#374B66",
+        "spine": "#828FA1",
+        "text": "#FFFFFF"
+      },
+      "light": {
+        "grid": "#A9B8CB",
+        "spine": "#6B7C99",
+        "text": "#00357A"
+      }
+    },
     "dark": {
       "area-alpha": 1.0,
       "categorical": [

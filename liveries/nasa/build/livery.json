@@ -14,6 +14,18 @@
       "#3F83EF",
       "#8E62EF"
     ],
+    "chrome": {
+      "dark": {
+        "grid": "#222222",
+        "spine": "#717171",
+        "text": "#FFFFFF"
+      },
+      "light": {
+        "grid": "#B0B1B2",
+        "spine": "#5C5E62",
+        "text": "#1C1C1C"
+      }
+    },
     "dark": {
       "area-alpha": 1.0,
       "categorical": [

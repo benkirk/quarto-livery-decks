@@ -95,6 +95,9 @@ def check_template(r, livery, d):
         want = {s: v.lstrip("#").upper() for s, v in livery["pptx"]["scheme"].items()}
         diff = {s: (scheme.get(s), want[s]) for s in SLOT_ROLES if scheme.get(s) != want.get(s)}
         r.check(not diff, "theme1.xml clrScheme is pptx.scheme", str(diff))
+        cust = re.findall(r'<a:custClr name="([^"]*)"><a:srgbClr val="([0-9A-Fa-f]{6})"/></a:custClr>', theme)
+        want_cust = [(n, c.lstrip("#")) for n, c in livery_charts.custom_colors(livery["charts"])] if livery.get("charts") else []
+        r.check(cust == want_cust, "theme1.xml Custom Colors row is the chart colors", f"{cust} != {want_cust}")
         major = re.search(r'<a:majorFont><a:latin typeface="([^"]*)"', theme)
         minor = re.search(r'<a:minorFont><a:latin typeface="([^"]*)"', theme)
         tf, hf = livery["pptx"]["typeface"], livery["pptx"].get("heading-typeface", livery["pptx"]["typeface"])

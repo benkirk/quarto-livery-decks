@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resolve a livery (_brand.yml + livery.yml, `extends` applied) into build/livery.{json,sty,css}.
+"""Resolve a livery (_brand.yml + livery.yml, `extends` applied) into build/livery.{json,sty,css,theme,mplstyle}.
 
     livery_build.py <livery dir>...          write build/ (committed)
     livery_build.py --check <livery dir>...  exit 1 if a committed build/ is stale
@@ -11,7 +11,8 @@ rebased onto the child. `derived` holds the theme's blends of two roles (BLENDS)
 here unless livery.yml sets the key. livery.json is the one truth (Lua and Python read it);
 livery.sty is what engine_livery.sty inputs (overrides/livery-extra.sty of the livery and its
 ancestors appended); livery.css what engine-revealjs.lua attaches; livery.theme is pandoc's
-highlight theme, engine.theme with the roles filled in. `marks` names the mark and sign-off
+highlight theme, engine.theme with the roles filled in; livery.mplstyle matplotlib's style (the
+chart colors of livery.json `charts`, emit_mplstyle()). `marks` names the mark and sign-off
 for each field by its role (MARK_ROLES); `installed-fonts` names installed faces to prefer;
 `compositions` the title, closing, section and feature slides as boxes (compositions()).
 """
@@ -692,10 +693,32 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     b, lead = ty["roles"]["body"]["pt"], ty["roles"]["body"]["leading"]
     for n, v in zip(("ii", "iii", "iv", "v"), ty["levels"][1:]):   # letters: TeX names take no digits
         L.append(f"\\def\\engine@type@level{n}{{{{{round(v / b, 4)}}}{{{lead}}}}}")
+    L += emit_sty_charts(livery)
     L += emit_sty_compositions(livery, stem)
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
     return "\n".join(L) + "\n"
+
+
+def emit_sty_charts(livery: dict) -> list[str]:
+    """The chart colors of the livery's mode (livery.json charts) as EngineData1.., EngineDataMuted and
+    EngineStatus<State>, and a pgfplots cycle list `livery` of the categorical slots, made the
+    default when a document loads pgfplots (so LaTeX and Overleaf plots match the slides)."""
+    ch = livery["charts"]
+    b = ch[ch["mode"]]
+    L = [f"% chart colors (livery.json charts, {ch['mode']}): the categorical slots, muted, status"]
+    for i, c in enumerate(b["categorical"], 1):
+        L.append(f"\\definecolor{{EngineData{i}}}{{HTML}}{{{c[1:].upper()}}}")
+    L.append(f"\\definecolor{{EngineDataMuted}}{{HTML}}{{{b['muted'][1:].upper()}}}")
+    for k, c in b["status"].items():
+        L.append(f"\\definecolor{{EngineStatus{k.capitalize()}}}{{HTML}}{{{c[1:].upper()}}}")
+    marks = ("*", "square*", "triangle*", "diamond*", "pentagon*", "o", "square", "triangle")
+    entries = "\n".join(f"  {{EngineData{i},mark={marks[(i - 1) % len(marks)]}}}," for i in range(1, len(b["categorical"]) + 1))
+    L.append("\\AtBeginDocument{\\@ifpackageloaded{pgfplots}{%")
+    L.append("\\pgfplotscreateplotcyclelist{livery}{%")
+    L.append(entries.rstrip(",") + "}%")
+    L.append("\\pgfplotsset{cycle list name=livery}}{}}")
+    return L
 
 
 # the role each composition key is drawn in -> the colorlet suffix livery.sty gives it
@@ -838,6 +861,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-signoff-right: {'auto' if so['corner'] == 'bottom-left' else margin};")
         props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
+    L += emit_css_charts(livery)
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
     if mfamily:   # the code face: reveal's code and pre read --r-code-font
         L.append(f'html:root {{ --r-code-font: "{mfamily}", "SFMono-Regular", Menlo, Monaco, Consolas, monospace; }}')
@@ -869,6 +893,101 @@ def emit_css(livery: dict, extra: str = "") -> str:
         L += emit_css_dark()
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
+
+
+def emit_css_charts(livery: dict) -> list[str]:
+    """The chart colors as --engine-data-1.., --engine-data-muted and --engine-status-*: the livery's
+    mode on :root, and on a light livery the dark set on a .brand-dark slide."""
+    ch = livery["charts"]
+    def props(b):
+        p = [f"--engine-data-{i}: {c};" for i, c in enumerate(b["categorical"], 1)]
+        p.append(f"--engine-data-muted: {b['muted']};")
+        return p + [f"--engine-status-{k}: {c};" for k, c in b["status"].items()]
+    L = ["/* chart colors (livery.json charts) */", ":root {\n  " + "\n  ".join(props(ch[ch["mode"]])) + "\n}"]
+    if ch["mode"] == "light":
+        L.append(".reveal .slides section.slide.brand-dark {\n  " + "\n  ".join(props(ch["dark"])) + "\n}")
+    return L
+
+
+def is_cff(path: Path) -> bool:
+    """An OpenType font with CFF outlines ('OTTO'): matplotlib's pdf.fonttype 42 writes one into a
+    PDF as a TrueType font, which poppler reports as a mismatch, so its PDFs take Type 3."""
+    try:
+        with open(path, "rb") as f:
+            return f.read(4) == b"OTTO"
+    except OSError:
+        return False
+
+
+def emit_mplstyle(livery: dict, d: Path) -> str:
+    """matplotlib's style (Make.common's MATPLOTLIBRC; livery_mpl.py applies it too): the chrome of the
+    livery's mode (livery.json charts.chrome), transparent figures so a plot sits on any field, the
+    categorical slots as the color cycle, the base family over DejaVu Sans, and sizes in points on the
+    pptx canvas (labels and titles body, ticks and legends the third list level, other text the
+    caption), so a figure drawn at charts.figsize carries the slide's own text sizes. Hex values
+    without '#', which starts a comment in an rc file."""
+    ch = livery["charts"]
+    mode = ch["mode"]
+    c, b = ch["chrome"][mode], ch[mode]
+    h = lambda v: v.lstrip("#").upper()
+    family, files = base_font(livery)
+    pt = lambda role: livery["type"]["roles"][role]["pt"]
+    small = livery["type"]["levels"][2]
+    cff = bool(files) and is_cff(d / files[0]["path"])
+    cycle = ", ".join(f"'{h(x)}'" for x in b["categorical"])
+    rc = [
+        ("font.family", "sans-serif"),
+        ("font.sans-serif", f"{family}, DejaVu Sans" if family else "DejaVu Sans"),
+        ("font.size", pt("caption")),
+        ("mathtext.fontset", "custom"),
+        ("mathtext.rm", family or "DejaVu Sans"),
+        ("mathtext.sf", family or "DejaVu Sans"),
+        ("mathtext.it", f"{family or 'DejaVu Sans'}:italic"),
+        ("mathtext.bf", f"{family or 'DejaVu Sans'}:bold"),
+        ("mathtext.fallback", "stixsans"),
+        ("text.color", h(c["text"])),
+        ("axes.labelcolor", h(c["text"])),
+        ("axes.edgecolor", h(c["spine"])),
+        ("axes.facecolor", "none"),
+        ("axes.labelsize", pt("body")),
+        ("axes.titlesize", pt("body")),
+        ("axes.linewidth", 0.8),
+        ("axes.spines.top", False),
+        ("axes.spines.right", False),
+        ("axes.grid", True),
+        ("axes.axisbelow", True),
+        ("axes.prop_cycle", f"cycler('color', [{cycle}])"),
+        ("grid.color", h(c["grid"])),
+        ("grid.linewidth", 0.5),
+        ("xtick.color", h(c["spine"])),
+        ("ytick.color", h(c["spine"])),
+        ("xtick.labelcolor", h(c["text"])),
+        ("ytick.labelcolor", h(c["text"])),
+        ("xtick.labelsize", small),
+        ("ytick.labelsize", small),
+        ("legend.fontsize", small),
+        ("legend.title_fontsize", small),
+        ("legend.frameon", False),
+        ("lines.linewidth", 2.0),
+        ("patch.edgecolor", h(ch[mode]["surface"])),
+        ("figure.facecolor", "none"),
+        ("figure.edgecolor", "none"),
+        ("figure.titlesize", pt("subhead")),
+        ("figure.figsize", ", ".join(str(v) for v in ch["figsize"]["full"])),
+        ("figure.constrained_layout.use", True),
+        ("savefig.facecolor", "none"),
+        ("savefig.edgecolor", "none"),
+        ("savefig.transparent", True),
+        ("savefig.dpi", 200),
+        ("pdf.fonttype", 3 if cff else 42),
+        ("ps.fonttype", 3 if cff else 42),
+        ("svg.fonttype", "path"),
+    ]
+    head = [f"# build/livery.mplstyle: GENERATED by livery_build.py from livery.json charts; do not edit.",
+            f"# livery {livery['name']}, {mode}; sizes in points on its {livery['type']['canvas']['w'] / 72:g} x "
+            f"{livery['type']['canvas']['h'] / 72:g} in canvas: draw at charts.figsize.",
+            "# the base family is a CFF OpenType font: PDF takes Type 3 (see is_cff())" if cff else None]
+    return "\n".join([x for x in head if x] + [f"{k}: {v}" for k, v in rc]) + "\n"
 
 
 def emit_css_dark() -> list[str]:
@@ -978,7 +1097,8 @@ def outputs(d: Path) -> dict[Path, str]:
     return {build / "livery.json": json.dumps(livery, indent=2, sort_keys=True) + "\n",
             build / "livery.theme": emit_theme(livery),
             build / "livery.sty": emit_sty(livery, sources, overrides(d, "livery-extra.sty")),
-            build / "livery.css": emit_css(livery, overrides(d, "livery-extra.css", "/* {} */"))}
+            build / "livery.css": emit_css(livery, overrides(d, "livery-extra.css", "/* {} */")),
+            build / "livery.mplstyle": emit_mplstyle(livery, d)}
 
 
 def main():
