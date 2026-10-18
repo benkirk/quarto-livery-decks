@@ -72,7 +72,7 @@ if grep -q 'building the font cache' "$tmp/hello.log"; then echo "matplotlib reb
 if grep -q 'findfont: Font family' "$tmp/hello.log"; then grep 'findfont' "$tmp/hello.log" >&2; exit 1; fi
 ls "$work"/hello_files/figure-revealjs/*.svg
 test "$(unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image')" -ge 2   # mermaid and the plot
-pdffonts "$work/hello.pdf" | grep -q TeXGyreHeros
+run -v "$work:/work" "$img" pdffonts /work/hello.pdf | grep -c TeXGyreHeros >/dev/null   # poppler is in the image, not on the host
 for f in hello.pptx hello.html hello.pdf; do
   test -s "$work/$f"
   test "$(stat -c %u "$work/$f")" = "$(id -u)"
