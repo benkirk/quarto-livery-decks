@@ -424,7 +424,8 @@ jobs:
           fig.savefig("/tmp/charts-plot.pdf")
           print(L["typography"]["base"].replace(" ", ""))
           PY
-          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC ENGINE_YML="$PWD/_extensions/engine/_extension.yml" python3 /tmp/charts-plot.py | tail -1)
+          engine_yml="$PWD/_extensions/engine/_extension.yml"   # before the cd below
+          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC ENGINE_YML="$engine_yml" python3 /tmp/charts-plot.py | tail -1)
           pdffonts /tmp/charts-plot.pdf | tee /dev/stderr | grep -c "$family" >/dev/null
 
       # the title, divider, closing and feature slides of every format against the livery's
