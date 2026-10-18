@@ -5,7 +5,7 @@ A linked image in the deck, [![](shot.png)](https://...), becomes a picture
 with a click hyperlink, which PowerPoint shows only as a hand cursor in slide
 show. This step adds a small muted caption with the URL at the bottom center
 of each such slide (the HTML and PDF decks get the same line from
-common/linked-images.lua). The caption box is itself the link, so its text
+the engine's linked-images.lua). The caption box is itself the link, so its text
 keeps the muted color instead of PowerPoint's hyperlink blue, and the picture
 gets the URL as its hover tooltip.
 

@@ -1,27 +1,31 @@
 -- On a dark livery (build/livery.json "mode": "dark"), swap each diagram Quarto baked to PNG
 -- (mermaid and graphviz cells, for pptx and PDF) for a copy turned to the dark by
--- utils/diagram_dark.py: lightness flipped, hues kept, white to the slide's background, black to
+-- diagram_dark.py (beside this filter): lightness flipped, hues kept, white to the slide's background, black to
 -- its foreground. Quarto renders diagram cells before any Lua filter runs, so the picture is
 -- recolored, not the diagram source. HTML draws mermaid live in the livery's roles and inlines
 -- graphviz as SVG (the engine's livery.css turns that one); a light livery is left alone.
 
 local livery
+local DIR   -- `livery:` in the metadata (an engine format's filter sets the one it resolved)
 
+-- the livery: DIR, else $LIVERY_DIR, else a _livery link; false unless it is dark
 local function load_livery()
   if livery ~= nil then return livery end
   livery = false
-  local f = io.open("_livery/build/livery.json", "r")
-  if f then
-    local ok, data = pcall(pandoc.json.decode, f:read("a"))
-    f:close()
-    if ok and type(data) == "table" and data.mode == "dark" then livery = data end
+  for _, dir in ipairs({ DIR, os.getenv("LIVERY_DIR"), "_livery" }) do
+    local f = dir and io.open(dir .. "/build/livery.json", "r")
+    if f then
+      local ok, data = pcall(pandoc.json.decode, f:read("a"))
+      f:close()
+      if ok and type(data) == "table" and data.mode == "dark" then livery = data end
+      break
+    end
   end
   return livery
 end
 
 local function script()
-  local here = PANDOC_SCRIPT_FILE and pandoc.path.directory(PANDOC_SCRIPT_FILE) or "_engine"
-  return pandoc.path.join({ here, "utils", "diagram_dark.py" })
+  return quarto.utils.resolve_path("diagram_dark.py")   -- beside this filter
 end
 
 local done = {}   -- in.png -> out.png, so a picture used twice is recolored once
@@ -43,7 +47,7 @@ end
 
 local function html() return FORMAT:match("html") or FORMAT:match("revealjs") end
 
-function Image(el)
+local function Image(el)
   if html() then return nil end
   local out = turn(el.src)
   if out then el.src = out; return el end
@@ -65,11 +69,14 @@ local function raw(el)
   local text = paths(el.text)
   if text then el.text = text; return el end
 end
-RawInline, RawBlock = raw, raw
-
-function Header(el)
+local function Header(el)
   local opts = el.attributes["frameoptions"]
   if html() or not opts then return nil end
   local text = paths(opts)
   if text then el.attributes["frameoptions"] = text; return el end
 end
+
+return {
+  { Meta = function(meta) DIR = meta.livery and pandoc.utils.stringify(meta.livery) end },
+  { Image = Image, RawInline = raw, RawBlock = raw, Header = Header },
+}

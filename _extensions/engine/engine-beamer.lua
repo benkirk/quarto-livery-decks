@@ -369,6 +369,7 @@ local function load_theme(doc)
     end
   else
     livery = bundled_livery(extdir, brand)
+    doc.meta["livery"] = livery   -- for the filters after this one (linked-images, diagram-dark)
   end
   table.insert(opts, "livery=" .. livery)
   -- the deck's size step as typescale= (a deck's own typescale= in themeoptions wins)

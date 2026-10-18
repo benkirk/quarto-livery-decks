@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Apply the theme's per-slide layout controls to a pandoc-rendered pptx.
 
-pandoc drops slide classes, so common/slide-layout.lua leaves one speaker-notes line,
+pandoc drops slide classes, so the engine's slide-layout.lua leaves one speaker-notes line,
 "engine-layout: vcenter scale=1.4", on each slide that asks for a layout; this removes the line
 and applies what pptx can express. vcenter: body text anchored mid-placeholder, a table moved to
 the middle of its area (an estimate: PowerPoint sizes rows itself). scale=S: every body and

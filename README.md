@@ -119,17 +119,17 @@ on white, are turned to the dark with their hues kept (`diagram-dark.lua`).
 ```
 quarto-livery-decks/
 ├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/charts-zip/clean)
-├── _extensions/engine/    # the engine (symlinked into decks): the beamer and revealjs themes,
-│                          #   the livery tools, the chart colors (livery_charts.py), the
+├── _extensions/engine/    # the engine (symlinked into decks): the pptx, beamer and revealjs
+│                          #   formats and their Lua filters ("Build pipeline" below), the
+│                          #   livery tools, the chart colors (livery_charts.py), the
 │                          #   Overleaf and charts packers, mpl/livery_mpl.py (plots)
 ├── liveries/              # one directory per livery (`make LIVERY=<name>`):
 │   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
 │   ├── ucp/  ncarucar/    #     template.pptx and build/ (both generated, committed),
 │   ├── cu/  nsi/          #     reference/notes.md
 │   └── nasa/  nasa-dark/
-├── common/                # what decks share (symlinked into each as _engine):
+├── common/                # what decks share:
 │   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
-│   ├── *.lua              #   pandoc filters ("Build pipeline" below)
 │   └── utils/
 │       ├── livery.py           # the engine's livery reader, loaded from the engine;
 │       │                       #   `livery.py deps <dir>`: the livery files a build reads
@@ -137,7 +137,6 @@ quarto-livery-decks/
 │       ├── livery_inspect.py   # reports on a reference pptx, seeds a livery (onboarding)
 │       ├── deck_qa.py          # `make qa`: overflow, slide counts, contact sheets
 │       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
-│       ├── diagram_dark.py     # a diagram picture turned to the dark (dark liveries)
 │       ├── site_index.py       # `make site`: the index page
 │       ├── fit-waves.py        # fits a brand's wave curves to its cover art (art.waves)
 │       └── *.py                # the pptx post-render steps ("Build pipeline" below)
@@ -155,7 +154,6 @@ quarto-livery-decks/
 │       ├── Makefile        (one line: include ../../Make.common)
 │       ├── _quarto.yml     (symlink → ../../common/_quarto.yml)
 │       ├── _extensions     (symlink → ../../_extensions, made by make)
-│       ├── _engine         (symlink → ../../common, made by make)
 │       ├── _livery         (symlink → the livery in use, made by make)
 │       ├── sample.qmd      (the cookbook)
 │       ├── old.qmd         (a longer real-world example)
@@ -176,11 +174,12 @@ quarto-livery-decks/
 
 Per deck, `make pptx` runs:
 
-1. `quarto render <deck>.qmd --to pptx -o <deck>.pptx`, with
-   `reference-doc: _livery/template.pptx` from the deck's `_quarto.yml`, so the output
+1. `quarto render <deck>.qmd --to engine-pptx -o <deck>.pptx`, the engine's pptx format,
+   with `reference-doc: _livery/template.pptx` from the deck's `_quarto.yml`, so the output
    inherits the livery's theme colors, layouts and masters. Code is highlighted in the
    livery's colors (`_livery/build/livery.theme`, as in HTML and PDF), set in its code face
-   when it has one, and the shared Lua filters prepare the document for pandoc's pptx writer:
+   when it has one, and the format's Lua filters (in `_extensions/engine/`) prepare the
+   document for pandoc's pptx writer:
    - `strip-raw-figure.lua`, `notes-last.lua` and `single-body.lua` keep pandoc from
      demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text
      after a table or image);
@@ -728,7 +727,7 @@ Wrap an image in a link and the picture opens that page, in every format:
 
 Each format also shows the URL, small and muted, so a reader knows the
 picture is live: the slide footer in HTML, a line at the foot of the PDF page
-(`common/linked-images.lua`), and a caption box in pptx (`link_captions.py`;
+(the engine's `linked-images.lua`), and a caption box in pptx (`link_captions.py`;
 pandoc can't add one without splitting the slide). One line per slide, from
 its first linked image. `{height="72%"}` is the full-width screenshot recipe
 and fits all three.
@@ -943,10 +942,10 @@ make pptx                         # or: make pptx LIVERY=cu
   everything else from that path. A symlink to it would not work: the path
   would be the link's own directory.
 - **Make links the rest into the deck directory on the first build:**
-  `_quarto.yml`, `_extensions`, `_engine` (this repo's `common/`, which
-  the shared `_quarto.yml` reaches its filters through) and `_livery` (the livery in
-  use, which it reaches the pptx template through). The consumer gitignores those
-  links, and its build outputs.
+  `_quarto.yml`, `_extensions` (the engine, whose formats bring their filters) and
+  `_livery` (the livery in use, which it reaches the pptx template through). The consumer
+  gitignores those links, and its build outputs. An `_engine` link left by an older
+  framework is unused; `make clean` removes it.
 - **A livery of its own**: a directory anywhere, built as in "Adding a livery", chosen
   with `make pptx LIVERY_DIR=path/to/livery`; `make overleaf LIVERY_DIR=...` packs its
   Overleaf zip, which the consumer releases itself.
@@ -1003,8 +1002,8 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   `apptainer run --bind "$PWD:/work" --pwd /work docker://ghcr.io/benkirk/quarto-livery-decks make pptx`
   (`apptainer exec` skips the entrypoint: pass
   `make -f /opt/quarto-livery-decks/Make.common DECKS=roadmap pptx` yourself).
-- **What the build writes** into the directory: the `_quarto.yml`, `_extensions`,
-  `_engine` and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
+- **What the build writes** into the directory: the `_quarto.yml`, `_extensions`
+  and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
   outputs (gitignore them, as a submodule consumer does). The links point into
   `/opt/quarto-livery-decks`, which the host cannot see; a host build re-points them and
   the container re-points the host's, so the two can alternate in one directory.

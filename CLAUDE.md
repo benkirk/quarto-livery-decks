@@ -42,7 +42,7 @@ engine's tests (`make test`) and both parity harnesses ("The engine" below).
 Decks live under `decks/<deck>/` as a `.qmd` plus a 1-line Makefile
 (`include ../../Make.common`). The shared machinery sits at the top since the flatten
 (2026-10-18): `Make.common`, the engine in `_extensions/engine/`, the liveries (each with its
-`template.pptx`) in `liveries/`, and `common/` (`_quarto.yml`, the Lua filters, the
+`template.pptx`) in `liveries/`, and `common/` (`_quarto.yml`, the
 post-render utilities); `latex/`, `design/` and `tests/` beside them. No `_quarto.yml` at the
 root: each deck is its own Quarto project through its linked one.
 `decks/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
@@ -62,8 +62,8 @@ layout, template constraints, and font embedding.
 Other repos can take the framework as a submodule and keep their decks in their
 own tree (README "Using the framework from another repo"); the deck Makefile
 includes `../framework/Make.common`. So nothing may assume a deck sits in
-`decks/<deck>/`: the shared `_quarto.yml` reaches `common/` as `_engine/`, a link
-Make creates in each deck directory. `ci.yaml`'s `consumer` job builds a deck that way,
+`decks/<deck>/`: the shared `_quarto.yml` and the engine (`_extensions`, whose formats carry
+their Lua filters) are links Make creates in each deck directory. `ci.yaml`'s `consumer` job builds a deck that way,
 and the image's smoke test a bare directory with no Makefile at all (`make -f
 <framework>/Make.common DECKS=...`, which the entrypoint supplies).
 
@@ -91,10 +91,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the conda env's (`fc-cache`/`fc-list` on PATH, its own `fonts.conf`) and the system's
   (`/usr/bin/fc-*`, `/etc/fonts`), which the apt XeLaTeX, Chromium and LibreOffice use; a file in
   `/etc/fonts/conf.d` reaches only the second, a directory under `/usr/local/share/fonts` both.
-  Everything under `/opt` must stay world-readable (asserted). The three
-  `_quarto.yml`/`_extensions`/`_engine` links are `ln -sfn`, so a dangling link left by the other
+  Everything under `/opt` must stay world-readable (asserted). The two
+  `_quarto.yml`/`_extensions` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
-- **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory.
+- **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
+  `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
+  `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe post-processes with
   `section_subtitle.py`, `enable_autofit.py`, `embed_fonts.py`,
@@ -122,12 +124,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   in the same colors. `*† text*` works too.
 - **Linked images** (`[![](x.png)](url)`): the picture is the link in every
   format, and each shows the URL: the HTML footer and a PDF foot line come from
-  `common/linked-images.lua`, the pptx caption box from `link_captions.py`
+  the engine's `linked-images.lua`, the pptx caption box from `link_captions.py`
   (after pandoc, because anything after an image splits a pptx slide). A deck
   should not hand-roll footers for this. README "Linked images".
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
   `{.fill}`, each independent): the theme centers and scales the
-  body in HTML and PDF. pptx drops slide classes, so `common/slide-layout.lua`
+  body in HTML and PDF. pptx drops slide classes, so the engine's `slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
   centers a table by an estimated height. `.center` is the theme's, not
@@ -181,8 +183,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   since a dark livery's `dark` stays a field color; beamer mixes its tints toward
   `BrandBackground`, not white; `livery.css` gains callout title tints and a lightness flip
   (CSS filter) for inline Graphviz. Quarto bakes mermaid and dot cells to PNG before any Lua
-  filter runs (even `at: pre-ast`), so `common/diagram-dark.lua` swaps each baked picture for
-  a copy from `utils/diagram_dark.py` (HLS lightness flipped, hues kept, white to the
+  filter runs (even `at: pre-ast`), so the engine's `diagram-dark.lua` swaps each baked picture for
+  a copy from `diagram_dark.py` beside it (HLS lightness flipped, hues kept, white to the
   background, black to the foreground): Image elements in pptx, and in beamer the raw LaTeX
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
@@ -373,8 +375,8 @@ it does, by area, beyond the format notes above:
 ## pandoc pptx gotchas (hard-won — read before restructuring slides)
 
 - **Content after a table or image splits the slide** into an untitled
-  continuation. `common/single-body.lua` (shared `_quarto.yml`,
-  pptx-only) moves the paragraphs after one table or image (a † footnote, a
+  continuation. `single-body.lua` (the engine-pptx
+  format's) moves the paragraphs after one table or image (a † footnote, a
   remark) into its caption, which pandoc draws at the slide's foot;
   `style_footnotes.py` then styles a footnote there, left-aligned. Anything
   else after it (a list, code, a second table) still splits, on purpose. Never
@@ -384,14 +386,14 @@ it does, by area, beyond the format notes above:
   so put it inside the last column. Code blocks are text and never split.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
-  slide; `common/notes-last.lua` (shared `_quarto.yml`, pptx-only) moves
+  slide; `notes-last.lua` (engine-pptx) moves
   every slide's notes to its end. Notes after an image or table do not split.
 - **Raw-HTML `<figure>` wrappers demote columns slides to the Comparison
   layout**: quarto wraps rendered diagrams in `` `<figure>`{=html} `` inlines,
   pandoc's layout chooser counts them as text, and the other column's text gets
   stuffed into Comparison's tiny per-column heading box.
-  `common/strip-raw-figure.lua` (wired into the shared `_quarto.yml`,
-  pptx-only) strips them; don't remove it.
+  `strip-raw-figure.lua` (an engine-pptx
+  filter) strips them; don't remove it.
 - **A lead paragraph before a table demotes the slide** to Content with
   Caption: the title moves into a small side caption and the title bar stays
   empty. Put the lead in the slide title (or the notes) and start the body

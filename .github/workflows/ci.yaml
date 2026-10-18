@@ -208,7 +208,7 @@ jobs:
       - name: Check the framework was applied
         run: |
           cd "$DECK"
-          ls -l _quarto.yml _extensions _engine _livery
+          ls -l _quarto.yml _extensions _livery
           unzip -p hello.pptx ppt/slideLayouts/slideLayout3.xml | grep -c 'name="Section Header"' >/dev/null
           unzip -p hello.pptx 'ppt/slides/*.xml' | grep -c 'engine-section-label' >/dev/null
           grep -q 'livery.css' hello.html
