@@ -1,6 +1,7 @@
 # Pushing a tag v* publishes a GitHub Release carrying one Overleaf/pure-LaTeX project zip
 # per livery under docs/common/liveries/, at the stable URLs the README links:
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-overleaf.zip
+# A v* tag also publishes the container image under its semver tags (ci.yaml -> image.yaml).
 # Tags are cut by hand after a livery change, or moved while a change stays backwards
 # compatible (README "Adding a livery", step 6).
 name: release
@@ -29,12 +30,16 @@ jobs:
 
       # a moved tag (re-cut while a change stays backwards compatible) replaces the
       # existing release's zips instead of failing on it
+      # the same tag has ci.yaml publish the build-environment image under its semver tags
+      # (image.yaml); the notes name them
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          v=${GITHUB_REF_NAME#v}
+          notes="Container image (the framework with its build environment, README \"Building in the container\"): \`ghcr.io/$GITHUB_REPOSITORY:$v\`, also \`:${v%.*}\` and \`:${v%%.*}\`."
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" docs/quickstart/*-overleaf.zip --clobber
           else
-            gh release create "$GITHUB_REF_NAME" docs/quickstart/*-overleaf.zip --title "$GITHUB_REF_NAME" --generate-notes
+            gh release create "$GITHUB_REF_NAME" docs/quickstart/*-overleaf.zip --title "$GITHUB_REF_NAME" --generate-notes --notes "$notes"
           fi

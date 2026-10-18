@@ -56,7 +56,9 @@ Other repos can take the framework as a submodule and keep their decks in their
 own tree (README "Using the framework from another repo"); the deck Makefile
 includes `../framework/docs/Make.common`. So nothing may assume a deck sits in
 `docs/<deck>/`: the shared `_quarto.yml` reaches `common/` as `_engine/`, a link
-Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
+Make creates in each deck directory. `ci.yaml`'s `consumer` job builds a deck that way,
+and the image's smoke test a bare directory with no Makefile at all (`make -f
+<framework>/docs/Make.common DECKS=...`, which the entrypoint supplies).
 
 ## Environment & build
 
@@ -64,6 +66,25 @@ Make creates in each deck directory. `ci-consumer.yaml` builds a deck that way.
   with `make conda-env`). Quarto **requires real conda activation** — the
   `activate.d` scripts export `QUARTO_DENO`, `QUARTO_PANDOC`, etc.; merely
   putting `conda-env/bin` on `PATH` fails with a missing-deno error.
+- **Container**: `ghcr.io/benkirk/quarto-livery-decks` (root `Dockerfile`; `make image` builds it
+  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, README "Building in the
+  container") carries the conda env, apt TeX Live, LibreOffice, a broad font set and ONE Playwright
+  headless Chromium that both Quarto (`QUARTO_CHROMIUM`) and `make qa` (`CHROME`) use, at
+  `/opt/pw-browsers/headless_shell`; the framework is at `/opt/quarto-livery-decks`. The activation
+  is baked as Dockerfile `ENV` and asserted against conda-forge's `activate.d/quarto.sh` at build
+  time, so `docker run`, any `--user` and GitHub `container:` jobs (which bypass the entrypoint) see
+  the same environment. `etc/entrypoint.sh` only gives an arbitrary uid a writable HOME and turns
+  `make` in a Makefile-less directory into `make -f /opt/quarto-livery-decks/docs/Make.common
+  DECKS=<its qmds>`. `/opt/fonts`, an empty mount point for a host's licensed fonts
+  (`-v "$PWD/fonts:/opt/fonts:ro"`), and the image's liveries' `fonts/` are linked under
+  `/usr/local/share/fonts`, so LibreOffice renders a pptx with its real faces when `make measure`
+  shoots it (a livery mounted from the host is not covered). Two fontconfigs live in the image:
+  the conda env's (`fc-cache`/`fc-list` on PATH, its own `fonts.conf`) and the system's
+  (`/usr/bin/fc-*`, `/etc/fonts`), which the apt XeLaTeX, Chromium and LibreOffice use; a file in
+  `/etc/fonts/conf.d` reaches only the second, a directory under `/usr/local/share/fonts` both.
+  Everything under `/opt` must stay world-readable (asserted). The three
+  `_quarto.yml`/`_extensions`/`_engine` links are `ln -sfn`, so a dangling link left by the other
+  side (host or container) is re-pointed; a real file or a resolving link is never touched.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory.
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe post-processes with
@@ -336,7 +357,8 @@ bit while building it:
   images, outside the template's font machinery.
 - **Install Chrome Headless Shell once** (`quarto install chrome-headless-shell`).
   With only the system Chrome, quarto's handshake can wedge and a render hangs
-  with no output (CI hit it; so did a local `make all`, for 29 minutes).
+  with no output (CI hit it; so did a local `make all`, for 29 minutes). In the
+  container `QUARTO_CHROMIUM` already points at Playwright's headless shell.
 - Layout tricks that work: subgraphs with `direction TB` + invisible `~~~`
   links to stack wide fan-outs vertically; an invisible `~~~` edge plus the
   real edge to force a child *below* its parent while the arrow points up.
@@ -389,22 +411,30 @@ bit while building it:
 
 ## CI
 
-`.github/workflows/ci-build-sample.yaml` renders the sample, quickstart and fixture decks;
-`ci-liveries.yaml` runs `utils/livery_check.py` on each directory under
-`docs/common/liveries/` (build freshness, the files the data names, the
-template's pandoc compliance and that it rebuilds byte-identically from the
-data, contrast warnings), then renders the quickstart deck under it with
-`LIVERY=<name>` and checks the livery reached the pptx, then (on an apt TeX
-Live, as the engine's CI) the PDF and the livery's Overleaf zip compiled in a
-clean directory with TeX's paths unset, `pdffonts` showing its bundled family
-(a new livery joins the matrix by existing). Notes:
-login-shell default (`bash -el`) is required for conda activation, and
-because of it a `run:` script must not end with `exit N` (in a login shell
-`exit` runs `~/.bash_logout`, which returns 1 on the runner and overrides
-N; end with a test such as `test "$bad" -eq 0` instead);
-`quarto install chrome-headless-shell` is required — quarto wedges forever
-against the runner's system Chrome when rendering mermaid (job + `timeout`
-guards keep any future hang to minutes, not the 6-hour cap).
+One workflow, `.github/workflows/ci.yaml`, on pushes to main, `v*` tags and PRs. Its `image`
+job calls `image.yaml` (reusable): the image is built natively on `ubuntu-24.04` and
+`ubuntu-24.04-arm` (no QEMU), each leg smoke-tested on its host as the runner's own
+unprivileged user (`.github/scripts/smoke-test.sh`: a bare directory of `.qmd` files with a
+mermaid block, then `docs/quickstart` through its real Makefile, both bind-mounted, outputs
+owned by that user), pushed by digest, merged into one tagged manifest list (`main`, `latest`,
+`sha-`, `pr-N`, semver on a tag) and pulled again on both platforms. Build cache: a registry
+cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries the per-platform
+size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSIDE that image at
+its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
+bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
+`livery_build.py --check`, the sample deck in every format with its theme greps, quickstart and
+fixtures `all`), `consumer` (the submodule layout, README "Using the framework from another
+repo", plus `make site`), and `livery`, one per directory under `docs/common/liveries/` (a new
+livery joins by existing): `utils/livery_check.py --qa` (the engine's checks, then
+`make -C docs/quickstart qa LIVERY=<name>`: all three formats and `deck_qa.py`), the
+livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's paths unset and
+`pdffonts` showing its bundled family, and `make measure` report-only (`MEASURE_FAIL=`). A
+fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
+the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
+more; a tool the decks need goes into the Dockerfile. The package must be public on ghcr for
+anonymous pulls (a first push makes it private). `cron-clean-action-log.yaml` prunes old runs
+and untagged image versions monthly with the workflow's own token; `release.yml` attaches the
+Overleaf zips and names the image tags.
 
 ## Git
 

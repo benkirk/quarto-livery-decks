@@ -61,7 +61,9 @@ snapshot() {   # <deck dir> <deck name> <out dir> <livery>, after build
     grep -c 'embeddedFontLst' "$out/pptx/ppt/presentation.xml" || true
   } >"$out/greps.txt"
   # after the greps, which read the engine's own names
-  [ -z "$NORMALIZE" ] || find "$out/pptx" \( -name '*.xml' -o -name '*.rels' \) -exec sed -i '' -E "$NORMALIZE" {} +
+  # sed -i with a backup suffix works on both GNU and BSD sed (GNU rejects -i '')
+  [ -z "$NORMALIZE" ] || { find "$out/pptx" \( -name '*.xml' -o -name '*.rels' \) -exec sed -i.orig -E "$NORMALIZE" {} + &&
+    find "$out/pptx" -name '*.orig' -delete; }
 }
 
 bad=0

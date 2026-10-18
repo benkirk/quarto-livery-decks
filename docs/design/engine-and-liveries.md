@@ -398,6 +398,19 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, the container image** (this repo, `container-image`). Ben asked for the CI to
+  be audited and for a product: the build environment as a multi-platform image a customer
+  bind-mounts a deck directory into. `ghcr.io/benkirk/quarto-livery-decks` (root `Dockerfile`:
+  ubuntu + micromamba on the same `conda-env.yaml`, apt TeX Live, LibreOffice, a broad font set,
+  one Playwright headless Chromium for Quarto and `make qa` alike; activation baked as `ENV` and
+  asserted against conda-forge's activate.d) is built natively on amd64 and arm64 runners and
+  merged into one manifest list (`image.yaml`, after sam-queries' workflow), each leg smoke-tested
+  on its host as a plain user with a mounted deck directory. A bare directory of `.qmd` files
+  builds with `make pptx` (the entrypoint supplies `Make.common` and `DECKS`); `Make.common`
+  re-points a dangling link so host and container builds alternate. The three CI workflows became
+  one, `ci.yaml`, whose deck jobs run inside the image: no conda, TinyTeX, apt or chrome steps,
+  no login-shell `set -e` gaps, `make qa` per livery at last; the cron job lost its PAT and a
+  deprecated action. README "Building in the container".
 - **2026-10-17, the SAMuel stress test** (this repo #45-#48; `stress-test-findings.md`). The 13
   SAMuel decks, tuned on theme 2.8.0, rebuilt unchanged under ncar and nsi: every deck in every
   format, counts identical to the old outputs, `make qa` clean. Per-slide verdicts (fits, sparse,

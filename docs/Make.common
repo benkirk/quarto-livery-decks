@@ -7,7 +7,9 @@
 # directory (OUT); a directory holding several decks lists them in DECKS (each
 # <name>.qmd builds <name>.{pptx,html,pdf}). `site` gathers the HTML decks into
 # one static site and `publish` pushes it to a GitHub Pages branch (README
-# "Publishing the HTML decks").
+# "Publishing the HTML decks"). With no Makefile at all, `make -f <framework>/docs/Make.common
+# DECKS="a b"` works the same (the container's entrypoint does that, README "Building in the
+# container"): this file reads its own location from MAKEFILE_LIST.
 
 .PHONY: pptx html pdf all qa measure site publish overleaf clean distclean
 
@@ -134,21 +136,25 @@ publish: site
 
 # Auto-symlink the shared _quarto.yml into the deck dir. A deck that
 # needs custom config can commit a real _quarto.yml; make will see the
-# file exists and skip this rule.
+# file exists and skip this rule. Make also runs it for a DANGLING link,
+# which it cannot stat: the one a build in the container left (pointing
+# into /opt/quarto-livery-decks, invisible on the host), or a host build
+# left for the container. So -f re-points such a link, while a real file
+# or a link that resolves (to any framework checkout) is never touched.
 _quarto.yml:
-	ln -s $(SHARED_QUARTO_YML) $@
+	ln -sfn $(SHARED_QUARTO_YML) $@
 
 # Same for the shared Quarto extensions (the engine theme: engine-beamer and
 # engine-revealjs): each deck dir is its own project root, and quarto does not
 # look above it.  Every format needs it -- _quarto.yml names both, and quarto
 # resolves all listed formats even when rendering pptx.
 _extensions:
-	ln -s $(SHARED_EXTENSIONS) $@
+	ln -sfn $(SHARED_EXTENSIONS) $@
 
 # And common/ itself, which the shared _quarto.yml reaches as _engine/ (its
 # filters, the pptx template), so a deck works wherever its directory is.
 _engine:
-	ln -s $(SHARED_COMMON) $@
+	ln -sfn $(SHARED_COMMON) $@
 
 # The livery link follows LIVERY. A missing-only rule like the three above would
 # silently keep the old livery after `make LIVERY=cu`, so the link is remade whenever
