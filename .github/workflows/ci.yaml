@@ -272,7 +272,7 @@ jobs:
       - name: Check the livery was applied
         run: |
           cd docs/quickstart
-          test "$(cat .livery)" = "$LIVERY"
+          test "$(basename "$(cat .livery)")" = "$LIVERY"   # the stamp holds the livery's directory
           test "$(basename "$(readlink _livery)")" = "$LIVERY"
           json=../common/liveries/$LIVERY/build/livery.json
           primary=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['scheme']['dk2'].lstrip('#'))" "$json")
