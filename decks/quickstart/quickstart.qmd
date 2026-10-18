@@ -190,6 +190,6 @@ Everything one `make` runs. `{.full}` gives a diagram this detailed the whole sl
 
 ## Thank you! {.closing}
 
-Copy this deck to start your own: `docs/quickstart/quickstart.qmd`
+Copy this deck to start your own: `decks/quickstart/quickstart.qmd`
 
-The full cookbook: `docs/sample/sample.qmd`
+The full cookbook: `decks/sample/sample.qmd`

@@ -18,7 +18,7 @@ format:
 
 ## Overview
 
-- Install once per project: `quarto add benkirk/beamer-livery-theme`
+- One-line Makefile per deck: `include ../framework/Make.common`
 - Render with `format: engine-beamer` (PDF) or `engine-revealjs` (HTML)
 - Every beamer feature of the LaTeX theme is reachable from Markdown
 
