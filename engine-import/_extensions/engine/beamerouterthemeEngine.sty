@@ -216,9 +216,11 @@
 % the title's style (title.style in livery.yml): the cover (default) or the band
 \providecommand\engine@title@style{cover}
 \def\engine@ifband{\engine@ifcorner{\engine@title@style}{band}}
-% a deck without \titlegraphic gets the livery's default photo (art.titlegraphic)
+% a deck without \titlegraphic gets the livery's default photo (art.titlegraphic), unless it
+% says \enginenotitlegraphic in its preamble (Quarto: `titlegraphic: none`) for the plain cover
+\newcommand\enginenotitlegraphic{\def\engine@notitlegraphic{}}
 \AtBeginDocument{\ifx\inserttitlegraphic\@empty\ifcsname engine@art@titlegraphic\endcsname
-  \titlegraphic{\includegraphics{\engine@art@titlegraphic}}\fi\fi}
+  \ifdefined\engine@notitlegraphic\else\titlegraphic{\includegraphics{\engine@art@titlegraphic}}\fi\fi\fi}
 % the compositions the title and closing slides wear (the band wins over title=light)
 \def\engine@tmp{light}\ifx\engine@titlestyle\engine@tmp
   \engine@ifband{\PackageWarning{beamerthemeEngine}{title=light is ignored under the livery's band title}

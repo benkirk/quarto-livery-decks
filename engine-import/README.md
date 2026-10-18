@@ -132,7 +132,7 @@ A deck written for the 2020-brand NCAR theme moves over with two changes (see th
 | | LaTeX | Quarto Markdown |
 |---|---|---|
 | Title slide | `\titlepage` in a `[plain]` frame | automatic from `title:`, `subtitle:`, `author:`, `institute:`, `date:` |
-| Photo on the title slide | `\titlegraphic{\includegraphics{photo.jpg}}` | `titlegraphic: photo.jpg` |
+| Photo on the title slide (else the livery's default, if it has one: the NCAR family's is the Mesa Lab) | `\titlegraphic{\includegraphics{photo.jpg}}`; `\enginenotitlegraphic` for the plain cover | `titlegraphic: photo.jpg`; `titlegraphic: none` for the plain cover |
 | Fine print under the title | `\titlefineprint{...}` | `fineprint: "..."` |
 | Section divider | `\section{...}` | `# Section` |
 | Divider subtitle | `\sectionsubtitle{...}` before `\section` | a paragraph right after `# Section` |
@@ -364,7 +364,7 @@ logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 | `title` | the title slide's composition: `style: cover` (the default: the text beside the photo or the waves) or `style: band` (a band across a field, the text left of `split`, the photo right of it, the marks in the strip below) |
 | `feature` | `style: bar` (the default: the photo under a dark bar holding the title, the body on a translucent panel) or `style: cover` (the title cover's field, waves and mark, the photo in its right part) |
 | `compositions` | overrides of the slide compositions' boxes (below), e.g. `title: {column: {box: [0.06, 0.375, 0.50, 0.485]}}` |
-| `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none |
+| `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none (`ncar`: the Mesa Lab, which its family inherits) |
 | `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it (below) |
 | `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`ucar` extends `ncar`; `nsi` extends `cu`) |
 | `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |

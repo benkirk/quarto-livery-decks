@@ -82,6 +82,7 @@ html:root {
 .reveal .slides section.engine-title::after { background-image: url("NSF-NCAR-UCAR_Logo_FullColor_RGB.png"); }
 .reveal .slides section.slide.engine-field::after,
 .reveal .slides section.engine-title.engine-field::after { background-image: url("NSF-NCAR-UCAR_Logo_Color-White_RGB.png"); }
+.reveal .slides section.engine-title .engine-title-photo-default { background: url("mesa-lab.jpg") center / cover no-repeat; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;
