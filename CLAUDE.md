@@ -75,10 +75,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   time, so `docker run`, any `--user` and GitHub `container:` jobs (which bypass the entrypoint) see
   the same environment. `etc/entrypoint.sh` only gives an arbitrary uid a writable HOME and turns
   `make` in a Makefile-less directory into `make -f /opt/quarto-livery-decks/docs/Make.common
-  DECKS=<its qmds>`. `/opt/fonts` is an empty, fontconfig-registered mount point for a host's
-  licensed fonts (`-v "$PWD/fonts:/opt/fonts:ro"`); a livery's bundled fonts are not installed
-  system-wide, so LibreOffice substitutes for them when `make measure` renders the pptx (a known
-  follow-up: register `liveries/*/fonts` too). Everything under `/opt` must stay world-readable (asserted). The three
+  DECKS=<its qmds>`. fontconfig is also told about `/opt/fonts`, an empty mount point for a host's
+  licensed fonts (`-v "$PWD/fonts:/opt/fonts:ro"`), and the image's liveries' bundled fonts, so
+  LibreOffice renders a pptx with its real faces when `make measure` shoots it (a livery mounted
+  from the host is not covered). Everything under `/opt` must stay world-readable (asserted). The three
   `_quarto.yml`/`_extensions`/`_engine` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory.

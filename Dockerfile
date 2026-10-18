@@ -109,13 +109,17 @@ chmod -R a+rX "$PLAYWRIGHT_BROWSERS_PATH"   # the zip carries 600 on a few files
 "$QUARTO_CHROMIUM" --version
 EOS
 
-# 6. A mount point for the host's own fonts (a brand's licensed faces: a livery's
-#    installed-fonts, the PDF's fonts=brand), registered with fontconfig, which XeLaTeX,
-#    Chromium and LibreOffice all read: `-v "$PWD/fonts:/opt/fonts:ro"`. Empty in the image.
+# 6. Fonts fontconfig is told about beyond the system's, which XeLaTeX (fonts=brand),
+#    Chromium and LibreOffice all read: /opt/fonts, an empty mount point for the host's own
+#    (a brand's licensed faces: `-v "$PWD/fonts:/opt/fonts:ro"`), and the liveries' bundled
+#    fonts in the framework copied below, so LibreOffice renders a pptx with its real faces
+#    when `make measure` shoots it (a livery mounted from the host is not covered: /opt/fonts).
 RUN mkdir -p /opt/fonts \
-    && printf '%s\n' '<?xml version="1.0"?>' '<!DOCTYPE fontconfig SYSTEM "fonts.dtd">' \
-         '<fontconfig><dir>/opt/fonts</dir></fontconfig>' > /etc/fonts/conf.d/60-opt-fonts.conf \
-    && fc-cache -f >/dev/null
+    && printf '%s\n' '<?xml version="1.0"?>' '<!DOCTYPE fontconfig SYSTEM "fonts.dtd">' '<fontconfig>' \
+         '<dir>/opt/fonts</dir>' \
+         '<dir>/opt/quarto-livery-decks/docs/common/liveries</dir>' \
+         '<dir>/opt/quarto-livery-decks/docs/common/_extensions/benkirk/engine/liveries</dir>' \
+         '</fontconfig>' > /etc/fonts/conf.d/60-opt-fonts.conf
 
 # 7. The framework itself, last: it changes most often (.dockerignore keeps outputs and the
 #    host's conda-env/ out). A mounted tree belongs to whoever mounted it: let git act in it.
@@ -123,6 +127,7 @@ COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENV FRAMEWORK=/opt/quarto-livery-decks
 RUN git config --system safe.directory '*' \
+    && fc-cache -f >/dev/null && fc-list : family | grep -q Poppins \
     && test -z "$(find /opt -not -perm -o=r -print -quit)" || { find /opt -not -perm -o=r; exit 1; }
 
 # Provenance, set by CI (--build-arg); empty locally. After everything, so a new SHA
