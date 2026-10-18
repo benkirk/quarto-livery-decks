@@ -278,7 +278,7 @@ Questions: your.name@ucar.edu
 
 # Backup
 
-## Project config: `_quarto.yml` {scale="0.45"}
+## Project config: `_quarto.yml` {scale="0.47"}
 
 ```{.yaml}
 {{< include _quarto.yml >}}
