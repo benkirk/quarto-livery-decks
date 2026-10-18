@@ -42,7 +42,7 @@ format:
     fontsize: 10pt        # ~pptx text density; beamer has no autofit
     themeoptions: [fonts=bundled]  # bundled Poppins; skip the system-font probe
     fig-format: pdf       # plots: vector, the livery's font embedded (livery.mplstyle pdf.fonttype)
-    fig-dpi: 200          # what a vector plot rasterizes (imshow, rasterized=True)
+    fig-dpi: 300          # Quarto's own: it sizes the baked mermaid and Graphviz PNGs by it
   engine-revealjs:         # engine revealjs (HTML) theme, same extension
     highlight-style: _livery/build/livery.theme
     toc: false
