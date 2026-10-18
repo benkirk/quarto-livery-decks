@@ -56,11 +56,11 @@ for f in hello.pptx hello.html hello.pdf; do
   test -s "$work/$f"
   test "$(stat -c %u "$work/$f")" = "$(id -u)"
 done
-readlink "$work/_quarto.yml" | grep -q '^/opt/quarto-livery-decks/'
+readlink "$work/_quarto.yml" | grep -c '^/opt/quarto-livery-decks/' >/dev/null
 test "$(cat "$work/.livery")" = cu
-unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -q 'engine-section-label'
-! unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -q '<a:t>last-modified</a:t>'
-unzip -l "$work/hello.pptx" | grep -q 'ppt/media/image'       # the mermaid PNG
+unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c 'engine-section-label' >/dev/null
+! unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null
+unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image' >/dev/null       # the mermaid PNG
 grep -q 'livery.css' "$work/hello.html"
 
 echo "== 2. a tree with Makefiles (a submodule consumer's layout): the quickstart deck"

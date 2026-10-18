@@ -127,7 +127,7 @@ COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENV FRAMEWORK=/opt/quarto-livery-decks
 RUN git config --system safe.directory '*' \
-    && fc-cache -f >/dev/null && fc-list : family | grep -q Poppins \
+    && fc-cache -f >/dev/null && fc-list : family | grep -c Poppins >/dev/null \
     && test -z "$(find /opt -not -perm -o=r -print -quit)" || { find /opt -not -perm -o=r; exit 1; }
 
 # Provenance, set by CI (--build-arg); empty locally. After everything, so a new SHA

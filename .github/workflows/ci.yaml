@@ -94,7 +94,7 @@ jobs:
 
       - name: Check dates resolved in sample.pptx
         run: |
-          if unzip -p docs/sample/sample.pptx 'ppt/slides/*.xml' | grep -q '<a:t>last-modified</a:t>'; then
+          if unzip -p docs/sample/sample.pptx 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null; then
             echo '::error::sample.pptx contains a literal "last-modified" date (#7)'
             exit 1
           fi
@@ -197,8 +197,8 @@ jobs:
         run: |
           cd "$DECK"
           ls -l _quarto.yml _extensions _engine _livery
-          unzip -p hello.pptx ppt/slideLayouts/slideLayout3.xml | grep -q 'name="Section Header"'
-          unzip -p hello.pptx 'ppt/slides/*.xml' | grep -q 'engine-section-label'
+          unzip -p hello.pptx ppt/slideLayouts/slideLayout3.xml | grep -c 'name="Section Header"' >/dev/null
+          unzip -p hello.pptx 'ppt/slides/*.xml' | grep -c 'engine-section-label' >/dev/null
           grep -q 'livery.css' hello.html
 
       # the static site: one shared libs/, references rewritten, an index
@@ -278,11 +278,11 @@ jobs:
           primary=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['scheme']['dk2'].lstrip('#'))" "$json")
           typeface=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['typeface'])" "$json")
           embeds=$(python3 -c "import json,sys; print('fonts' in json.load(open(sys.argv[1]))['pptx'])" "$json")
-          unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "$primary"
+          unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -c "$primary" >/dev/null
           # a livery with font blobs (pptx.fonts) embeds them; one without names its typeface only
-          test "$embeds" = False || unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
-          test "$embeds" = True || ! unzip -p quickstart.pptx ppt/presentation.xml | grep -q "embeddedFontLst"
-          unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -q "typeface=\"$typeface\""
+          test "$embeds" = False || unzip -p quickstart.pptx ppt/presentation.xml | grep -c "embeddedFontLst" >/dev/null
+          test "$embeds" = True || ! unzip -p quickstart.pptx ppt/presentation.xml | grep -c "embeddedFontLst" >/dev/null
+          unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -c "typeface=\"$typeface\"" >/dev/null
           grep -q 'livery.css' quickstart.html
 
       # the zip unpacked flat, no TEXINPUTS/TTFONTS: its latexmkrc alone must find the
@@ -293,8 +293,8 @@ jobs:
           rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q "docs/quickstart/$LIVERY-overleaf.zip" -d /tmp/overleaf
           (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex)
           family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "docs/common/liveries/$LIVERY/build/livery.json")
-          pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -q "${family// /}"
-          ! pdffonts /tmp/overleaf/talk.pdf | grep -q HelveticaNeue
+          pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -c "${family// /}" >/dev/null
+          ! pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null
 
       # the title, divider, closing and feature slides of every format against the livery's
       # compositions (comp_measure.py; pptx through the image's LibreOffice). Report-only
