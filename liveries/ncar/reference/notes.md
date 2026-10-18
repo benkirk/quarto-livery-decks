@@ -28,6 +28,12 @@ here as they are made (design section 6, "the human steps").
   `#0057C2 #CE8200 #009BD7 #AA9100 #008D9D #883500 #881E70 #C14054` on white: the brand blue,
   orange, light blue, yellow and teal moved into the mark band (orange, yellow and teal darkened
   for 3:1), then a brown, a plum and a rose.
+- **Vermilion and the web grays are not in the 2026 guide** (checked 2026-10-18 against
+  `Vermilion_NSFNCAR-UCAR-UCP_BrandGuide.pdf`, pp. 17-22): its palettes list exactly our ten
+  colors, its only gray Light Gray `#F1F0EE` (Cool Gray 1, 37%); "Vermilion" names the edition,
+  and no page gives `#FF1F1F`, `#97999B` or `#BBBCBC` (the UCAR web themes' values). So they stay
+  out of the palette. The guide's accents, orange and yellow, are the ones it names "for things
+  like charts, graphs" (p. 17).
 
 ## Color fact check (2026-10-18)
 

@@ -11,7 +11,7 @@
 # DECKS="a b"` works the same (the container's entrypoint does that, README "Building in the
 # container"): this file reads its own location from MAKEFILE_LIST.
 
-.PHONY: pptx html pdf all qa measure site publish overleaf clean distclean
+.PHONY: pptx html pdf all qa measure site publish overleaf charts-zip clean distclean
 
 # Every deck in a directory shares one .quarto/ project cache.
 .NOTPARALLEL:
@@ -35,6 +35,7 @@ SHARED_EXTENSIONS  := $(FRAMEWORK_ROOT)_extensions
 SHARED_LIVERIES    := $(FRAMEWORK_ROOT)liveries
 SHARED_COMMON      := $(FRAMEWORK_ROOT)common
 OVERLEAF_ZIP       := $(FRAMEWORK_ROOT)_extensions/engine/overleaf_zip.py
+MPL_ZIP            := $(FRAMEWORK_ROOT)_extensions/engine/mpl_zip.py
 LIVERY_MPL_DIR     := $(abspath $(FRAMEWORK_ROOT)_extensions/engine/mpl)
 
 # The brand: a directory under liveries/ (design/engine-and-liveries.md,
@@ -108,6 +109,12 @@ measure: all
 # (`make overleaf LIVERY_DIR=path/to/livery`).
 overleaf:
 	python3 $(OVERLEAF_ZIP) $(LIVERY_DIR) -o $(LIVERY)-overleaf.zip
+
+# The livery's plot style for matplotlib outside the decks (the engine's mpl_zip.py): the style,
+# the livery_mpl helper, livery.json, the fonts and their licenses, the colors' contact sheet.
+# release.yml attaches one per livery beside the Overleaf zips.
+charts-zip:
+	python3 $(MPL_ZIP) $(LIVERY_DIR) -o $(LIVERY)-charts.zip
 
 # One static site of the HTML decks, servable as is (`python3 -m http.server -d _site`).
 # Every deck's <deck>_files/libs/ is a subset of one union, so the site keeps a single
@@ -232,7 +239,7 @@ $(OUT).pdf: $(QFILE) $(DEPS) | _livery
 endif
 
 clean:
-	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip
+	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip *-charts.zip
 	rm -rf $(DECKS:=_files) $(SITE)
 
 distclean:

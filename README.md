@@ -118,9 +118,10 @@ on white, are turned to the dark with their hues kept (`diagram-dark.lua`).
 
 ```
 quarto-livery-decks/
-├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/clean)
+├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/charts-zip/clean)
 ├── _extensions/engine/    # the engine (symlinked into decks): the beamer and revealjs themes,
-│                          #   the livery tools, the Overleaf packer
+│                          #   the livery tools, the chart colors (livery_charts.py), the
+│                          #   Overleaf and charts packers, mpl/livery_mpl.py (plots)
 ├── liveries/              # one directory per livery (`make LIVERY=<name>`):
 │   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
 │   ├── ucp/  ncarucar/    #     template.pptx and build/ (both generated, committed),
@@ -148,6 +149,7 @@ quarto-livery-decks/
 │   │   └── screenshots/    (those images, committed)
 │   ├── fixtures/          # small decks for the title variants and type steps,
 │   │                      #   for parity.sh and CI
+│   ├── plots/             # the plots cookbook (jupyter: python3, matplotlib, seaborn)
 │   └── sample/            # the cookbook deck
 │       ├── Makefile        (one line: include ../../Make.common)
 │       ├── _quarto.yml     (symlink → ../../common/_quarto.yml)
@@ -163,7 +165,7 @@ quarto-livery-decks/
 ├── tests/                 # the engine's tests (`make test`) and the parity harnesses:
 │                          #   parity.sh (every deck, every livery), parity-latex.sh (latex/)
 ├── Makefile               # top-level: `make conda-env`, env mgmt, `make latex`, `make test`
-├── conda-env.yaml         # quarto + jupyter + bash_kernel + helpers
+├── conda-env.yaml         # quarto + jupyter + bash_kernel + the scientific stack + helpers
 ├── Dockerfile             # the build-environment image ("Building in the container")
 ├── etc/                   # config_env.sh, the image's entrypoint
 └── conda-env/             # local conda prefix, gitignored
@@ -601,7 +603,9 @@ The themes read only **roles**, which the livery sets: `BrandPrimary`,
 `BrandHighlight` (a second small-text accent: examples, tips, strings),
 `BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and
 `BrandDark`, plus the blends the builder derives (`BrandTableRule`, `BrandCautionFill`,
-...). Use those in your own slides and they follow the livery. Code is set in
+...). Use those in your own slides and they follow the livery. The chart colors are
+`EngineData1`, `EngineData2`, ..., `EngineDataMuted` and `EngineStatusGood`/`Warning`/`Serious`/
+`Critical`; a document that loads pgfplots plots in them by default (the `livery` cycle list). Code is set in
 `BrandCodeText`, which is `BrandDark` unless the livery names another color: on a dark
 livery the dark role is a field color, not a text color. Code highlighting follows the
 same roles: `engine.theme` is the template, each livery's `build/livery.theme` the filled
@@ -772,6 +776,63 @@ jupyter: bash
 Code runs on the build host, not the viewer's machine: output is baked
 into the .pptx.
 
+## Plots and chart colors
+
+A Python plot wears the livery with no styling code: its chart colors, its font, and the slide's
+own text sizes, in all three formats (design/charts-and-plots.md). `decks/plots/plots.qmd` is
+the cookbook: lines, a seaborn bar chart from pandas, a stacked area in hue families, a heatmap,
+a diverging field, two plots in columns, math in the labels, a dark slide.
+
+````markdown
+---
+engine: jupyter
+jupyter: python3
+---
+
+```{python}
+#| include: false
+import livery_mpl            # the livery's fonts, colormaps and helpers
+import matplotlib.pyplot as plt
+```
+
+## A plot
+
+```{python}
+fig, ax = plt.subplots()     # the content area: labels at the body size
+ax.plot(x, y)                # the livery's categorical colors, in order
+plt.show()
+```
+````
+
+- **What does it.** Each livery's `build/livery.mplstyle` (generated with its other files)
+  holds the chrome of its mode, transparent figures (a plot sits on any field, dark ones too),
+  the categorical colors as the color cycle, the brand font over DejaVu Sans, and sizes in
+  points on the PowerPoint canvas: axis labels at the body size, ticks and legends a list level
+  down. `Make.common` exports it as `MATPLOTLIBRC`, puts the engine's `livery_mpl` on
+  `PYTHONPATH` and passes the content area as the deck's `fig-width`/`fig-height` (pptx and
+  HTML; in the PDF, whose `fig-width` sizes the diagrams in paper inches, the helper sets it), so
+  even a deck that never imports the helper plots in the brand's colors. The engine shows each figure
+  at the canvas scale (HTML and PDF; pptx does by itself), so plot text matches slide text.
+- **`livery_mpl`** registers the fonts, applies the style and the colormaps (`livery`, the
+  default, and `livery_r`; `livery_div`; `livery_seq_<ramp>`; each with a `_dark` twin), and offers
+  `colors`, `families` (up to 8 hues by 3 tints, for a large map where the hue names the group),
+  `status`, `muted` ("Other"), `figsize("half")` for a plot in one of two columns,
+  `shade_family(color, n)`, and `with livery_mpl.dark():` for a `{.brand-dark}` slide (it
+  applies where the slide is dark: HTML, or every slide of a dark livery).
+- **Formats.** pptx gets PNG at 200 dpi, HTML SVG with the text as paths (an `<img>` cannot
+  see the page's fonts), PDF a vector PDF with the font embedded (Type 3 for a CFF `.otf`
+  family such as cu's TeX Gyre Heros, which matplotlib would otherwise mislabel).
+- **What breaks it.** `sns.set_theme()` or `plt.style.use(...)` replace the livery's style; a
+  hand-picked `figsize` changes the text size; a colormap by name leaves the brand; past eight
+  series, fold the rest into "Other".
+- **Elsewhere.** The same colors are `--engine-data-1..8`, `--engine-data-muted` and
+  `--engine-status-*` in the HTML deck, `EngineData1..8` (and a pgfplots `livery` cycle list,
+  the default when a LaTeX document loads pgfplots) in the PDF, and a **Custom Colors** row in
+  every PowerPoint color picker of a framework deck ("Data 1 · Blue", ...). For matplotlib
+  outside the decks, `make charts-zip LIVERY=<name>` writes `<name>-charts.zip` (the style, the
+  helper, the fonts and their licenses, a contact sheet of the colors); each release carries
+  one per livery, `releases/latest/download/<name>-charts.zip`.
+
 ## Adding a livery
 
 A livery is a brand as a directory of data and assets (`design/engine-and-liveries.md`,
@@ -797,6 +858,7 @@ is committed. The knobs in `livery.yml`:
 | `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it ("Installed brand fonts") |
 | `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`ucar` extends `ncar`; `nsi` extends `cu`) |
 | `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |
+| `charts` | the chart colors' sources ("Plots and chart colors"): `anchors` (brand hues that must appear, in order), `extended` (secondary brand colors to use before any are generated), `avoid` (hue ranges), a brand's published `ramps` and `sets`, or a pinned `categorical`, `diverging`, `status`, `muted` (and `dark:` versions). With none, the engine generates a palette from the brand's colors that passes the dataviz checks |
 | `latex`, `css` | named palette colors for LaTeX, and `overrides/livery-extra.{sty,css}` for anything the knobs don't cover |
 
 From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
@@ -828,15 +890,21 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      for a default title photo.
    - **Type.** `type:` in points and `pptx.size`, the brand template's canvas ("Text sizes
      and the slide size").
+   - **Chart colors.** A brand guide's published data palette goes in `charts:` (`ramps`,
+     `sets`, or `extended` for secondary colors), its source in `reference/notes.md`; with
+     nothing, the engine generates one from the brand's own colors. Look at the swatch sheet
+     (step 4) and record the result in the notes.
    - **Flavors.** `extends:` makes the livery a flavor of another, naming only what differs.
 3. **Build.** `python3 _extensions/engine/livery_build.py
-   liveries/<name>` resolves everything into `build/livery.{json,sty,css,theme}`;
+   liveries/<name>` resolves everything into `build/livery.{json,sty,css,theme,mplstyle}`;
    `python3 _extensions/engine/livery_template.py liveries/<name>`
    generates `template.pptx` from it. Rerun both after any change; never edit the template by hand.
 4. **Check.** `python3 common/utils/livery_check.py liveries/<name> --qa`:
    build freshness, every file the data names, the template's pandoc compliance and that it
-   rebuilds from the data, contrast warnings for the small-text roles, then the quickstart
-   deck's `make qa` under the livery. `make -C decks/quickstart measure LIVERY=<name>`
+   rebuilds from the data, contrast warnings for the small-text roles, the chart colors' checks
+   (with `--swatch DIR`, their contact sheet `DIR/charts-<name>.png`; `--qa` writes it into
+   `decks/quickstart/_qa/`), then the quickstart deck's `make qa` under the livery.
+   `make -C decks/plots qa LIVERY=<name>` shows the plots in it. `make -C decks/quickstart measure LIVERY=<name>`
    checks the composed slides.
 5. **Look.** `make -C decks/quickstart pptx html pdf LIVERY=<name>`; open the pptx in
    PowerPoint (the "Repair?" prompt cannot be automated), the HTML in a browser, the PDF.
@@ -851,7 +919,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    workflow refuses any other tag. While a change stays backwards compatible the current tag
    may be moved instead (`git tag -f vX.Y.Z && git push -f origin vX.Y.Z`). The workflow
    attaches one zip per livery, replacing an existing release's, and the Overleaf links serve
-   the latest.
+   the latest; `make charts-zip LIVERY=<name>` is the charts bundle the same release carries.
 
 ## Using the framework from another repo
 
@@ -945,7 +1013,9 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   pptx with its real faces when `make measure` shoots it. Your own licensed faces (a
   livery's `installed-fonts`, PDF `fonts=brand`) mount read-only on `/opt/fonts`, which
   fontconfig is told about, so XeLaTeX, Chromium and LibreOffice all see them:
-  `-v "$PWD/fonts:/opt/fonts:ro"`.
+  `-v "$PWD/fonts:/opt/fonts:ro"`. matplotlib's font cache is built into the image and
+  copied into HOME, so a deck's first plot does not rescan every font; with `/opt/fonts`
+  mounted, matplotlib builds its own cache once instead, so that it sees your faces.
 - **Tags**: `latest` and `main` (the main branch), `sha-<short>` (every commit), `1.2.3`,
   `1.2` and `1` (a release), `pr-N` (a pull request). The mount path may not contain
   spaces, `%` or `#` (LaTeX's `\input@path`).

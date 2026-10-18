@@ -107,8 +107,13 @@ for a few series.
 ## Color fact check (2026-10-18)
 
 NASA Blue and NASA Red are print colors: the insignia is PMS 286 and PMS 185 (NASA's insignia
-guidelines for grantees), and `#0032A0`/`#E4002B` are those Pantones' standard sRGB values; that
-the 2024 insignia color guide gives these hexes could not be confirmed (nasa.gov was blocked). NASA's
+guidelines for grantees), and `#0032A0`/`#E4002B` are those Pantones' standard sRGB values.
+**Confirmed 2026-10-18** on the Brand Center's Brand Guidelines page (updated 2026-02-27), in its
+image "NASA Full-Color Insignia Colors" (`wp-content/uploads/2023/07/nasa-insignia-colorguide.png`):
+NASA Blue RGB 0 50 160, `#0032A0`, CMYK 100/80/0/12, PMS 286; NASA Red RGB 228 0 43, `#E4002B`,
+CMYK 0/100/100/0, PMS 185. One set for every medium ("PANTONE, CMYK or the RGB using the color
+formulas given above"), no separate screen hex; `#0B3D91`/`#FC3D21` appear nowhere on the page.
+"2024" is only in another image's file name, so cite it as the Brand Center's insignia colors. NASA's
 screen colors are different: HDS `nasa-blue` `#1C67E3` (tint `#288BFF`, shade `#0B3D91`),
 `nasa-red` `#F64137` (tint `#FF5C52`, shade `#B60109`), `international-orange` `#EA6F24`, and a
 carbon neutral ramp with `carbon-90` `#17171B` as the dark background. carbon, gray, silver,

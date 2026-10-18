@@ -15,7 +15,7 @@ history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
 `ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by the engine's `livery_build.py`
-into `build/livery.{json,sty,css,theme}` (an unknown `livery.yml` key is warned about).
+into `build/livery.{json,sty,css,theme,mplstyle}` (an unknown `livery.yml` key is warned about).
 `design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
 next step (#57 Phase B: the pptx format moves into the engine; then #58, the customer surface).
 
@@ -46,7 +46,8 @@ Decks live under `decks/<deck>/` as a `.qmd` plus a 1-line Makefile
 post-render utilities); `latex/`, `design/` and `tests/` beside them. No `_quarto.yml` at the
 root: each deck is its own Quarto project through its linked one.
 `decks/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
-`decks/sample/sample.qmd` is the cookbook of every pattern. The README covers
+`decks/sample/sample.qmd` is the cookbook of every pattern, `decks/plots/plots.qmd` that of
+plots (`jupyter: python3`; README "Plots and chart colors"). The README covers
 layout, template constraints, and font embedding.
 
 - **README images** are `decks/quickstart/screenshots/*.png`, committed. After
@@ -81,7 +82,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   time, so `docker run`, any `--user` and GitHub `container:` jobs (which bypass the entrypoint) see
   the same environment. `etc/entrypoint.sh` only gives an arbitrary uid a writable HOME and turns
   `make` in a Makefile-less directory into `make -f /opt/quarto-livery-decks/Make.common
-  DECKS=<its qmds>`. `/opt/fonts`, an empty mount point for a host's licensed fonts
+  DECKS=<its qmds>`, and seeds matplotlib's font cache (built into `/opt/matplotlib` over every
+  font, the liveries' too) into HOME unless `/opt/fonts` has files (a cache never rescans);
+  `container:` jobs bypass it and build their own on the first plot. `/opt/fonts`, an empty mount point for a host's licensed fonts
   (`-v "$PWD/fonts:/opt/fonts:ro"`), and the image's liveries' `fonts/` are linked under
   `/usr/local/share/fonts`, so LibreOffice renders a pptx with its real faces when `make measure`
   shoots it (a livery mounted from the host is not covered). Two fontconfigs live in the image:
@@ -204,7 +207,29 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `livery.yml` `charts:` as given (ncar and ucar: sam-queries' validated sets and the UCAR web
   theme's tint ladders; nasa: NASA's Horizon Design System). `livery_check.py` prints the checks
   (a generated palette must pass, a published one only warns), and `--swatch DIR` draws a
-  contact sheet; `tests/test_charts.py`. No format draws them yet.
+  contact sheet; `tests/test_charts.py`. `charts.chrome` is a plot's non-data ink per mode.
+- **Plots**: every format draws the chart colors. `build/livery.mplstyle` (`emit_mplstyle()`: the
+  livery mode's chrome and cycle, transparent figures, the base family over DejaVu Sans, sizes
+  from the type roles, `pdf.fonttype` 3 for a CFF `.otf` base family, cu/nsi, else 42; SVG text
+  as paths); `livery.css` `--engine-data-*`/`--engine-status-*` (the dark set on `.brand-dark`);
+  `livery.sty` `EngineData*` and a pgfplots `livery` cycle list (the default once pgfplots is
+  loaded); `template.pptx` the mode's slots as a named `<a:custClrLst>` (PowerPoint's Custom
+  Colors row, at most eight; `livery_check.py` checks it). `Make.common` exports `MATPLOTLIBRC`
+  (the style), prepends `_extensions/engine/mpl` to `PYTHONPATH` (`livery_mpl.py`: fonts by
+  `addfont()`, colormaps with `_dark` twins, `figsize()`, `shade_family()`, `dark()`), passes
+  `charts.figsize.full` as `-M fig-width/fig-height` to pptx and HTML (`livery.py figsize`; a
+  cell's own wins; not to beamer, whose fig-width is paper inches and sizes its baked diagrams:
+  4.25 in pushed the sample's Graphviz off the frame; `livery_mpl` sets PDF plots' size)
+  and `ENGINE_FORMAT` per recipe (`dark()` applies only where the slide is dark: HTML, a dark
+  livery). `common/_quarto.yml`: pptx png at 200 dpi, revealjs svg; beamer keeps Quarto's pdf at 300.
+  `engine-plots.lua` (dofile'd by both filters) shows a figure in Quarto's `figure-<format>/` at
+  its natural inches over the canvas width: HTML `width: calc(<px> * var(--engine-fit))` with
+  `.engine-plot` (out of reveal's auto-stretch, which sized a lone plot to the free height and
+  left its text at 92%; no block margin; max-width 100%), beamer `\pandocbounded{\includegraphics
+  [width=<f>\paperwidth]}`; pptx needs nothing (pandoc places a picture at its natural size, fit
+  to the placeholder). Plot text then measures the slide's (HTML 1.00, PDF 1.00, pptx 1.01).
+  `mpl_zip.py` (`make charts-zip`) packs the style, the helper, `livery.json`, the fonts and
+  licenses and the swatch sheet; `release.yml` attaches one per livery.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
@@ -331,7 +356,7 @@ it does, by area, beyond the format notes above:
 - **Checking a change**: `make test` (`livery_build.py --check` and `livery_check.py` on every
   livery, `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change of a
   box, and `tests/test_type.py`). For anything that can move pixels, `tests/parity.sh baseline`
-  before and `check` after (every deck of quickstart, sample and fixtures under
+  before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
   baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. A
@@ -513,7 +538,7 @@ size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSID
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
 `livery_build.py --check`, the sample deck in every format with its theme greps, quickstart and
-fixtures `all`), `consumer` (the submodule layout, README "Using the framework from another
+fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, README "Using the framework from another
 repo", plus `make site`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new
@@ -532,8 +557,14 @@ tags.
 ## Git
 
 - Standalone repo (often checked out nested inside `hpc-scheduling-tools/docs/`,
-  which git-ignores it). Default branch `main`; branch + PR to merge, as merge commits (a
-  squash would flatten the engine's imported history out of `git log --follow`).
+  which git-ignores it). Default branch `main`, protected since 2026-10-18: PRs only (no
+  approval needed), linear history, required checks (the image's manifest merge, the LaTeX and
+  engine tests, the consumer and sample jobs, every `Check livery <name>`: a new or renamed
+  livery means updating the list), no force push; the owner can bypass. PRs land as **squash**
+  merges (the only method enabled; title and body from the PR) and the branch is deleted. The
+  engine's imported history stays reachable through #57's merge commit. A stacked PR: retarget
+  the child to `main` before merging its parent, then `git rebase --onto origin/main <old parent
+  tip> <child>` and force-push it, so its PR holds only its own commits.
 - `upstream` is `quarto-docs-framework`. The engine's old repo and `NCAR_beamer_template` are
   not remotes here; a fix wanted from the NCAR theme is ported by hand.
 - Generated outputs (`*.pptx`, `~$*` lock files, `*_files/`) stay untracked.

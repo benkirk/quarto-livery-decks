@@ -130,6 +130,33 @@ page tests a "Web Express Blue" `#0377BD`: none is a brand standard, so none is 
 palette or a fuller web palette turns up (styleguide.colorado.edu/colors), it goes in
 `charts.extended` and replaces generated hues.
 
+**styleguide.colorado.edu/colors, read 2026-10-18** (hexes from its `css/ucb-styles.css`): the web
+style guide's palette, "chosen from the Google Material Color Palette", one secondary or tertiary
+color per page. Beyond Black and Gold it shares nothing with the brand page: neutrals Light Gray
+`#EEEEEE`, Dark Gray `#424242`; link Blue `#0277BD`; secondary Light Blue `#E1F5FE`, Light Green
+`#DCEDC8`, Light Gold `#F1EBD9`, Medium Blue `#4FC3F7`, Dark Blue `#01579B`, Brick `#AE5A39`;
+application (error, warning, success) Red `#B71C1C`, Green `#2E7D32`, Amber `#FFD740`;
+notification Light Red `#FFEBEE`, Yellow `#FFF9C4`. The brand page
+(colorado.edu/imc/cu-boulder-brand/visual-identity) confirms our nine exactly (its Sky Blue RGB,
+9 112 174, is `#0970AE`, one off its stated hex). So CU publishes no further brand hue; Brick and
+Medium Blue are the only candidates for `charts.extended`, and they are website UI colors, not
+brand colors: a decision for step 5.
+
+The style guide's source, `CuBoulder/styleguide` (`scss/modules/_colors.scss`, last changed
+2019-12-06; its header links Material Design's color tool), defines two more, `$purple #5E35B1`
+and `$orange #FF9800`, that the site never lists, and its `docs/_data/colors.yml` has errors (Blue as
+`#E1F5FE`, Red as Brick's `#ae5a39`): not a source to pin brand colors to.
+
+**CU Boulder Accessible Color Contrast Recommendations** (Rev. 6-28-17, one page, CU Digital
+Accessibility; `colorado.edu/digital-accessibility/sites/default/files/attached-files/
+cu_boulder_accessible_color_contrast_recommendations_rev_6-28-17.pdf`): a WCAG 2.0 AA text/background
+matrix of White, Black, Gold `#CFB87C` (PMS 4525 C, CMYK 0 10 48 22), Dark Gray `#565A5C` (PMS 425 C,
+CMYK 38 28 21 63), Light Gray `#A2A4A3` (PMS 422 C, CMYK 16 11 11 29) and Web Express `#007BC8`
+(Process Blue C). It confirms our gold and grays with their Pantones, and that Gold and Light Gray
+fail on white even as large text (why the chart slots move CU Gold to `#AD8E38` and never use Light
+Gray as a series). Web Express was the old Web Express CMS's blue: `#007BC8` here, where the
+accessibility web page tests `#0377BD`; superseded by CUB Sky Blue `#096FAE`, and unused.
+
 **Plots in PDF take Type 3 fonts.** TeX Gyre Heros is a CFF OpenType font (`OTTO`). Asked for
 `pdf.fonttype: 42`, matplotlib (3.11) embeds it but declares it a TrueType font, and poppler reports
 "Mismatch between font type and embedded font file"; Ghostscript renders it silently. So
