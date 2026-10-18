@@ -408,6 +408,17 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, B.11: the `engine-pptx` format** (#57 Phase B). The engine's `_extension.yml`
+  contributes `pptx`: the template default, `slide-level: 2`, `toc: false` and the six filters in
+  their order (strip-raw-figure, slide-layout, notes-last, single-body, linked-images,
+  diagram-dark), which move from `common/` into the engine with `diagram_dark.py`; linked-images
+  and diagram-dark ride on `engine-beamer` and `engine-revealjs` too, after their own filters,
+  where the project's list had put them (`quarto inspect` shows the same order). Decks render
+  `--to engine-pptx`; `common/_quarto.yml` loses `filters:` and its project `reference-doc`
+  still wins. The `_engine` link is gone (the decks' committed links deleted, `make clean`
+  removes a stale one). Parity unchanged but for the sample's two slides on `_quarto.yml`,
+  whose shorter listing now shows whole in HTML too (scale 0.47; the 53-line file scrolled).
+  Next: B.12, `pptx_post.py`.
 - **2026-10-18, chart colors polished** (step 5 of `design/charts-and-plots.md`). Ben: "their campus
   is famously sandstone with red tile roofs": cu's third series color is the roof tile sampled
   from the campus photo (`#9C3F29`; CU's web Brick is too near the gold for a scatter), its
