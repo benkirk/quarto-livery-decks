@@ -28,7 +28,9 @@ CHROME = {"dt": 20, "ftr": 21, "sldNum": 22}      # livery_template.py's chrome 
 TITLE_PH = {"ctrTitle", "subTitle", "dt", "ftr", "sldNum"}   # pandoc's five for Title Slide
 # small text on a field: the pairs that must read (WCAG AA, 4.5:1)
 CONTRAST = [("primary-contrast", "background"), ("highlight", "background"), ("muted", "background"),
-            ("foreground", "background"), ("foreground", "surface"), ("primary-text", "primary")]
+            ("foreground", "background"), ("foreground", "surface"), ("primary-text", "primary"),
+            ("code-text", "surface"), ("alert-text", "surface"), ("foreground", "caution-fill"),
+            ("foreground", "table-band")]   # derived blends count as roles here
 
 
 class Report:
@@ -111,7 +113,7 @@ def check_livery(d: Path) -> bool:
     missing = [f"{what}: {path}" for path, what in livery_mod.files(livery) if not (d / path).exists()]
     r.check(not missing, "every file the data names exists", "; ".join(missing))
     check_template(r, livery, d)
-    roles = livery["roles"]
+    roles = {**livery["roles"], **livery.get("derived", {})}
     for fg, bg in CONTRAST:
         if fg in roles and bg in roles:
             ratio = contrast(roles[fg], roles[bg])

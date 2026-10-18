@@ -34,11 +34,14 @@ BLENDS = [
     ("alert-text", "accent", "dark", 0.72),
     ("rule", "foreground", "surface", 0.30),
 ]
+# blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
+BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
 # livery role -> the LaTeX color the themes read (engine_livery.sty's six, plus the four new)
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "primary-contrast": "BrandPrimaryContrast", "secondary": "BrandSecondary",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
-            "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark"}
+            "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark",
+            "code-text": "BrandCodeText"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
 # art.<kind> files: backgrounds per slide kind, and titlegraphic, the title photo a deck sets none of
 ART_KINDS = ("title", "section", "closing", "content", "titlegraphic")
@@ -80,6 +83,13 @@ COMP_KEYS = ("field", "art", "photo", "band", "waves", "bar", "panel", "mark", "
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
 FACE_KEYS = ("regular", "bold", "italic", "bolditalic", "semibold")
+
+
+def luminance(hexv: str) -> float:
+    """WCAG relative luminance of '#RRGGBB'."""
+    ch = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (ch(x / 255) for x in bytes.fromhex(hexv.lstrip("#")))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
 def mix(a: str, b: str, share: float) -> str:
@@ -144,6 +154,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     color = data["brand"].get("color", {})
     sources = {k: color[k] for k in ("primary", "secondary", "foreground", "background") if k in color}
     sources.update(data.get("roles", {}))
+    if "dark" in sources:   # code text: the dark role unless a livery says otherwise (a dark livery's dark is a field)
+        sources.setdefault("code-text", sources["dark"])
     roles = {k: hex_of(v) for k, v in sources.items()}
     derived = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
     derived.update({k: hex_of(v) for k, v in data.get("derived", {}).items()})
@@ -152,6 +164,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
         "palette": palette,
         "roles": roles,
         "derived": derived,
+        # dark: light text on a dark background (content slides); the formats add what that needs
+        "mode": "dark" if luminance(roles["background"]) < luminance(roles["foreground"]) else "light",
         "typography": data["brand"].get("typography", {}),
         "logo": data["brand"].get("logo", {}),
     }
@@ -508,6 +522,23 @@ def heading_font(livery: dict) -> tuple[str, list]:
     return "", []
 
 
+def mono_font(livery: dict) -> tuple[str, dict]:
+    """typography.monospace (a family name, or {family: ...}) with files of its own: the code face, as
+    {regular, italic, bold} files; bold is the heaviest upright above 400 (DM Mono has a Medium only)."""
+    t = livery["typography"]
+    m = t.get("monospace")
+    family = m.get("family", "") if isinstance(m, dict) else (m or "")
+    files = next((f.get("files", []) for f in t.get("fonts", []) if family and f.get("family") == family), [])
+    faces = {}
+    for f in files:
+        w, it = int(f.get("weight", 400)), f.get("style") == "italic"
+        if w == 400:
+            faces["italic" if it else "regular"] = f
+        elif w > 400 and not it and w >= int(faces.get("bold", {}).get("weight", 0)):
+            faces["bold"] = f
+    return (family, faces) if "regular" in faces else ("", {})
+
+
 FACE_OF = {(400, False): "regular", (700, False): "bold", (400, True): "italic", (700, True): "bolditalic", (600, False): "semibold"}
 
 
@@ -539,6 +570,10 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% derived blends")
     for key, hexv in livery["derived"].items():
         L.append(f"\\definecolor{{{tex_name('brand-' + key, {})}}}{{HTML}}{{{hexv[1:]}}}")
+    blends = {k: mix(livery["roles"][a], livery["roles"][b], s) for k, a, b, s in BLENDS if a in livery["roles"] and b in livery["roles"]}
+    for key, color in BEAMER_BLENDS.items():   # a livery's derived: override, which the theme would recompute
+        if key in livery["derived"] and livery["derived"][key] != blends.get(key):
+            L.append(f"\\colorlet{{{color}}}{{{tex_name('brand-' + key, {})}}}")
     marks = livery["marks"]
     stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
     L.append("% marks: light on the background field, dark on primary (the print lockup when there is one)")
@@ -571,6 +606,14 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             face = face_of(f)
             if face:
                 L.append(f"\\def\\engine@headfont@{face}{{{Path(f['path']).stem}}}")
+    mfamily, mfaces = mono_font(livery)
+    if mfamily:   # the code face (typography.monospace), when the livery bundles one
+        L.append("% the code face's files (typography.monospace)")
+        L.append(f"\\def\\engine@monofont@family{{{mfamily}}}")
+        L.append(f"\\def\\engine@monofont@dir{{{texpath(Path(mfaces['regular']['path']).parent.as_posix())}/}}")
+        L.append(f"\\def\\engine@monofont@ext{{{Path(mfaces['regular']['path']).suffix}}}")
+        for face, f in mfaces.items():
+            L.append(f"\\def\\engine@monofont@{face}{{{Path(f['path']).stem}}}")
     installed = livery.get("installed-fonts", {})
     if installed:   # installed faces fonts=brand prefers (engine_livery.sty), by full name
         L.append("% installed fonts to prefer under fonts=brand (installed-fonts), by full name")
@@ -684,7 +727,9 @@ def emit_css(livery: dict, extra: str = "") -> str:
     family, files = base_font(livery)
     hfamily, hfiles = heading_font(livery)
     installed = livery.get("installed-fonts", {})
-    for fam, fs, inst in ((family, files, installed.get("base")), (hfamily, hfiles, installed.get("headings"))):
+    mfamily, mfaces = mono_font(livery)
+    for fam, fs, inst in ((family, files, installed.get("base")), (hfamily, hfiles, installed.get("headings")),
+                          (mfamily, list(mfaces.values()), None)):
         for f in fs:   # an installed face first, by full and PostScript name (CSS local() matches no family)
             names = (inst or {}).get("faces", {}).get(face_of(f), [])
             local = "".join(f'local("{n}"), ' for n in names)
@@ -752,6 +797,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
+    if mfamily:   # the code face: reveal's code and pre read --r-code-font
+        L.append(f'html:root {{ --r-code-font: "{mfamily}", "SFMono-Regular", Menlo, Monaco, Consolas, monospace; }}')
     L.append("html:root {\n  --r-main-font-size: var(--engine-type-body);\n  --mermaid-bg-color: var(--engine-background);\n  --mermaid-node-bg-color: var(--engine-surface);"
              "\n  --mermaid-node-fg-color: var(--engine-foreground);\n  --mermaid-fg-color: var(--engine-foreground);"
              "\n  --mermaid-edge-color: var(--engine-foreground);\n  --mermaid-label-bg-color: var(--engine-background);"
@@ -776,8 +823,23 @@ def emit_css(livery: dict, extra: str = "") -> str:
     if isinstance(art.get("titlegraphic"), str):   # the title photo when a deck sets none
         L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')
     L += emit_css_compositions(livery)
+    if livery.get("mode") == "dark":
+        L += emit_css_dark()
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
+
+
+def emit_css_dark() -> list[str]:
+    """A dark livery's extras: Quarto tints callout titles toward its light $body-bg, and Graphviz
+    draws black on white inline; the diagram is turned to the dark (lightness flipped, hues kept)."""
+    L = ["/* mode: dark */"]
+    for name, role in (("note", "primary-contrast"), ("tip", "highlight"), ("important", "foreground"),
+                       ("warning", "accent"), ("caution", "accent")):
+        L.append(f".reveal div.callout.callout-{name}.callout-style-default .callout-title "
+                 f"{{ background-color: color-mix(in srgb, var(--engine-{role}) 18%, var(--engine-background)); }}")
+    L.append(".reveal svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }")
+    L.append(".reveal svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }")
+    return L
 
 
 # composition -> the selector its custom properties go on, in cascade order: base, photo, light,
