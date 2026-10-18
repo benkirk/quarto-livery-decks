@@ -398,6 +398,20 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, the SAMuel stress test** (this repo #45-#48; `stress-test-findings.md`). The 13
+  SAMuel decks, tuned on theme 2.8.0, rebuilt unchanged under ncar and nsi: every deck in every
+  format, counts identical to the old outputs, `make qa` clean. Per-slide verdicts (fits, sparse,
+  overflows) agree across the three formats on 201 of 208 content slides under ncar and 204 under
+  nsi, against 187 on the old outputs; the PDF body is 0.95x HTML's and pptx 1.01x (old: 1.21x,
+  1.20x). The old `scale="1.15"` slides now fill 0.40 of the body in every format (sparse, not
+  broken), and a deck-wide `type-scale:` moves every format alike but cannot replace per-slide
+  tuning. Fixed: `comp_measure` matched the cover as the divider (#45) and drew pptx shots in a
+  serif (LibreOffice reads no embedded fonts; #48); the caution box was cut before `scale=`
+  (#46); the nsi band cover's pptx rule sat above the subtitle (#47). Then code sizes (#50, engine
+  #35, 3.7.1): pptx sets code at the body's size, which Ben preferred, so the `code` role went
+  up to meet it (ncar 10 pt on 12, cu and nsi 14 on 16). nsi's pptx titles, regular-width where
+  HTML and PDF are condensed, are left to PowerPoint's autofit.
+  Next: NASA.
 - **2026-10-17, type in points** (beamer-livery-theme #32, #33, 3.6.0; this repo #40, #41). Ben
   asked whether the sizes were "nice" numbers: pptx slides get pasted into decks people keep by
   hand, and ours carried 16.79/15.11/13.6/12.24 pt, on a canvas a third larger than the brand
