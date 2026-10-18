@@ -965,6 +965,7 @@
       "waves": null
     }
   },
+  "engine": "1.1.0",
   "frametitle": {
     "align": "center",
     "body": 0.1972,
@@ -1137,6 +1138,7 @@
     "surface": "#F3F0E9",
     "warning": "#CFB87C"
   },
+  "schema": 1,
   "section": {
     "label": "Section",
     "tab": true

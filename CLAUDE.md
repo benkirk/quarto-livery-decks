@@ -137,7 +137,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
   `latexmkrc` and a starter on `livery=liveries/<name>, fonts=bundled`; it compiles with
   `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
-  on a `v*` tag (cut by hand, asked first: the README's Overleaf links serve `releases/latest`).
+  on a `v*` tag (cut by hand, asked first, never moved: the README's Overleaf links serve
+  `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, or `‡` for a second): the
   theme lifts every one on a slide, columns included, to the slide's
   foot in HTML and PDF, under a short muted rule with the marker in the accent
@@ -390,8 +391,14 @@ it does, by area, beyond the format notes above:
   Sass change is checked by screenshotting every slide before and after (Playwright).
 - **Version**: one number, `version:` in `_extension.yml`; a `v*` tag must equal it
   (`release.yml` checks). `VERSION` in `engine-revealjs.lua` names the HTML dependency
-  (`engine-revealjs-<VERSION>`), so changing it changes every HTML deck's paths. Ask Ben
-  before any tag.
+  (`engine-revealjs-<VERSION>`), so changing it changes every HTML deck's paths. `livery build`
+  stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
+  liveries/*/` in the same PR (CI's `--check`), and `livery deps` warns a deck build when a
+  livery's stamp is another version. **Tags are immutable**: a fix is a new patch release;
+  `release.yml` refuses a tag whose release exists. `CHANGELOG.md` (Decks, Liveries, Plots,
+  LaTeX; Keep a Changelog) gets every user-visible change under `[Unreleased]` in the PR that
+  makes it; a release renames that section to `[x.y.z] - date` before its tag, and the entry
+  becomes the release's notes. Ask Ben before any tag.
 
 ## pandoc pptx gotchas (hard-won — read before restructuring slides)
 
@@ -588,8 +595,9 @@ row): a `gate` row fails the job, a new row starts `report` until it is fixed. N
 check. The package must be public on ghcr for
 anonymous pulls (a first push makes it private). `cron-clean-action-log.yaml` prunes old runs
 and untagged image versions monthly with the workflow's own token; `release.yml` refuses a tag
-that is not `v` + `_extension.yml`'s `version:`, attaches the Overleaf zips and names the image
-tags.
+that is not `v` + `_extension.yml`'s `version:`, one whose release exists, or one without a
+`CHANGELOG.md` entry, then attaches the Overleaf zips and charts bundles with the entry and the
+image tags as its notes.
 
 ## Git
 

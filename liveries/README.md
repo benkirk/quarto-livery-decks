@@ -77,13 +77,15 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    and the notes. CI builds the quickstart under every livery directory and compiles its
    Overleaf zip, so the new one is checked from its first push.
 5. **Release.** Add the livery's row to README "LaTeX and Overleaf" and "The liveries", `make
-   gallery` it into the README, then cut a release. The tag is the engine's version: `version:`
-   in `_extensions/engine/_extension.yml` (and `VERSION` in `engine-revealjs.lua`, which names the
-   HTML dependency), so bump both, merge, then tag `v<version>`; the release workflow refuses any
-   other tag. While a change stays backwards compatible the current tag may be moved instead
-   (`git tag -f vX.Y.Z && git push -f origin vX.Y.Z`). The workflow attaches one Overleaf zip
-   and one charts bundle per livery, replacing an existing release's, and the Overleaf links
-   serve the latest.
+   gallery` it into the README, and its entry to [`CHANGELOG.md`](../CHANGELOG.md) under
+   *Liveries*. A release is the engine's version: bump `version:` in
+   `_extensions/engine/_extension.yml` and `VERSION` in `engine-revealjs.lua` (which names the
+   HTML dependency), `livery build liveries/*/` (each `build/livery.json` records the version),
+   rename the changelog's `[Unreleased]` to `[<version>] - <date>`, merge, then tag `v<version>`.
+   Tags are never moved: a fix is a new patch release. The release workflow refuses a tag that
+   is not the version, one that was released before and one without a changelog entry; it
+   attaches one Overleaf zip and one charts bundle per livery, with the entry as the notes, and
+   the Overleaf links serve the latest.
 
 A livery outside this repository (README "Using the framework from another repo") is the same
 directory anywhere: `livery new path/to/mybrand`, `make livery LIVERY_DIR=path/to/mybrand` in the
