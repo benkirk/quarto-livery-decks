@@ -19,28 +19,21 @@
 .DELETE_ON_ERROR:
 
 FRAMEWORK_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
-EMBED_FONTS        := $(FRAMEWORK_ROOT)common/utils/embed_fonts.py
-ENABLE_AUTOFIT     := $(FRAMEWORK_ROOT)common/utils/enable_autofit.py
-SECTION_SUBTITLE   := $(FRAMEWORK_ROOT)common/utils/section_subtitle.py
-STYLE_FOOTNOTES    := $(FRAMEWORK_ROOT)common/utils/style_footnotes.py
-LINK_CAPTIONS      := $(FRAMEWORK_ROOT)common/utils/link_captions.py
-SLIDE_LAYOUT       := $(FRAMEWORK_ROOT)common/utils/slide_layout.py
-STYLE_TABLES       := $(FRAMEWORK_ROOT)common/utils/style_tables.py
-TYPE_STEP          := $(FRAMEWORK_ROOT)common/utils/type_step.py
+PPTX_POST          := $(FRAMEWORK_ROOT)_extensions/engine/pptx_post.py
+LIVERY_PY          := $(FRAMEWORK_ROOT)_extensions/engine/livery.py
 DECK_QA            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
 COMP_MEASURE       := $(FRAMEWORK_ROOT)common/utils/comp_measure.py
 SITE_INDEX         := $(FRAMEWORK_ROOT)common/utils/site_index.py
 SHARED_QUARTO_YML  := $(FRAMEWORK_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(FRAMEWORK_ROOT)_extensions
 SHARED_LIVERIES    := $(FRAMEWORK_ROOT)liveries
-SHARED_COMMON      := $(FRAMEWORK_ROOT)common
 OVERLEAF_ZIP       := $(FRAMEWORK_ROOT)_extensions/engine/overleaf_zip.py
 MPL_ZIP            := $(FRAMEWORK_ROOT)_extensions/engine/mpl_zip.py
 LIVERY_MPL_DIR     := $(abspath $(FRAMEWORK_ROOT)_extensions/engine/mpl)
 
 # The brand: a directory under liveries/ (design/engine-and-liveries.md,
 # section 4). `make LIVERY=cu` switches it; LIVERY_DIR is exported for the post-render
-# scripts, which read $(LIVERY_DIR)/build/livery.json through utils/livery.py.
+# steps (pptx_post.py), which read $(LIVERY_DIR)/build/livery.json through the engine's livery.py.
 LIVERY     ?= ncar
 LIVERY_DIR ?= $(SHARED_LIVERIES)/$(LIVERY)
 # A sub-make inherits the exported LIVERY_DIR, which `?=` would keep: an explicit
@@ -72,9 +65,9 @@ PUBLISH_PREFIX ?=
 FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua)
 # The livery's files (build/, template, fonts, logos, art, its parent's too): the _livery link's
 # mtime does not change when a file in the livery does.
-LIVERY_FILES := $(shell python3 $(SHARED_COMMON)/utils/livery.py deps $(LIVERY_DIR))
+LIVERY_FILES := $(shell python3 $(LIVERY_PY) deps $(LIVERY_DIR))
 # the livery's code face (typography.monospace): pandoc's pptx writer takes it as monofont
-LIVERY_MONO  := $(shell python3 $(SHARED_COMMON)/utils/livery.py mono $(LIVERY_DIR))
+LIVERY_MONO  := $(shell python3 $(LIVERY_PY) mono $(LIVERY_DIR))
 # Plots (design/charts-and-plots.md): matplotlib reads the livery's style with no code at all,
 # `import livery_mpl` finds the helper (fonts, colormaps, figsize(), dark()), and a figure's
 # default size is the content area in canvas inches (charts.figsize.full), so its text is the
@@ -82,7 +75,7 @@ LIVERY_MONO  := $(shell python3 $(SHARED_COMMON)/utils/livery.py mono $(LIVERY_D
 # paper inches and sizes its baked diagrams; there livery_mpl sets the plots' size itself.
 export MATPLOTLIBRC := $(abspath $(LIVERY_DIR))/build/livery.mplstyle
 export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(PYTHONPATH),:$(PYTHONPATH))
-LIVERY_FIGSIZE := $(shell python3 $(SHARED_COMMON)/utils/livery.py figsize $(LIVERY_DIR))
+LIVERY_FIGSIZE := $(shell python3 $(LIVERY_PY) figsize $(LIVERY_DIR))
 FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fig-height:$(word 2,$(LIVERY_FIGSIZE)))
 DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES)
 
@@ -190,14 +183,7 @@ _livery: .livery
 
 define render_pptx
 	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(FIG_SIZE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")
-	python3 $(SECTION_SUBTITLE) $@
-	python3 $(ENABLE_AUTOFIT) $@
-	python3 $(EMBED_FONTS) $@
-	python3 $(STYLE_FOOTNOTES) $@
-	python3 $(LINK_CAPTIONS) $@
-	python3 $(SLIDE_LAYOUT) $@
-	python3 $(STYLE_TABLES) $@
-	python3 $(TYPE_STEP) $@
+	python3 $(PPTX_POST) $@
 endef
 
 # The engine's HTML dependency (livery.css, its fonts and logos) is named for the engine's

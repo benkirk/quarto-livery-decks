@@ -27,8 +27,8 @@ from pathlib import Path
 
 import yaml
 
-# the chart colors (livery_charts.py), loaded by path: this script is also loaded by path (the tests,
-# the framework's engine_module()), where the engine directory is not on sys.path
+# the chart colors (livery_charts.py), loaded by path: this script is also loaded by path (the
+# tests), where the engine directory is not on sys.path
 _spec = importlib.util.spec_from_file_location("livery_charts", Path(__file__).resolve().parent / "livery_charts.py")
 livery_charts = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(livery_charts)

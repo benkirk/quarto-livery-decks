@@ -25,7 +25,8 @@ import zipfile
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import livery as livery_mod  # noqa: E402
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
+import livery as livery_mod  # noqa: E402  (the engine's reader)
 from deck_qa import deck_sources, serve  # noqa: E402
 
 W, H = 1600, 900

@@ -11,10 +11,7 @@ slide's foot, which pptx cannot do without splitting the slide.
 Idempotent; a deck with no footnotes is untouched."""
 
 import copy
-import sys
-from pathlib import Path
 
-from pptx import Presentation
 from pptx.enum.text import PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Pt
@@ -64,16 +61,8 @@ def _split_marker(para, start):
     return para.runs[start]
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: style_footnotes.py <file.pptx>", file=sys.stderr)
-        return 2
-    pptx = Path(sys.argv[1]).resolve()
-    if not pptx.exists():
-        print(f"error: {pptx} not found", file=sys.stderr)
-        return 2
-
-    prs = Presentation(str(pptx))
+def run(prs, name: str) -> None:
+    """The open deck, changed in place; name for the message."""
     styled = 0
     for slide in prs.slides:
         for shape in slide.shapes:
@@ -92,10 +81,4 @@ def main() -> int:
                     run.font.size = FOOT_SIZE
                     run.font.color.rgb = MARK_COLOR if run._r is mark._r else FOOT_COLOR
                 styled += 1
-    prs.save(str(pptx))
-    print(f"style_footnotes: restyled {styled} footnote paragraph(s) → {pptx.name}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    print(f"style_footnotes: restyled {styled} footnote paragraph(s) → {name}")

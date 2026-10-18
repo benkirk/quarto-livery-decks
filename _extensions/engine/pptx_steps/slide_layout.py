@@ -28,7 +28,6 @@ import sys
 from pathlib import Path
 
 from lxml import etree
-from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_PLACEHOLDER
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
@@ -37,8 +36,7 @@ from pptx.oxml.ns import qn
 from pptx.util import Pt
 
 import livery as livery_mod
-
-pptx_waves = livery_mod.engine_module("pptx_waves")   # shared with the engine's template builder
+import pptx_waves   # the waves, shared with the engine's template builder
 
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
@@ -509,16 +507,8 @@ def add_slide_number(slide):
     return False
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: slide_layout.py <file.pptx>", file=sys.stderr)
-        return 2
-    pptx = Path(sys.argv[1]).resolve()
-    if not pptx.exists():
-        print(f"error: {pptx} not found", file=sys.stderr)
-        return 2
-
-    prs = Presentation(str(pptx))
+def run(prs, pptx: Path) -> None:
+    """The open deck, changed in place; pptx its path (a titlegraphic: is relative to its directory)."""
     w, h = prs.slide_width, prs.slide_height
     done = 0
     light = _custom_prop(prs, "engine-title") == "light"
@@ -572,10 +562,4 @@ def main() -> int:
         done += 1
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
         band_stack(prs.slides[0], w, h)
-    prs.save(str(pptx))
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

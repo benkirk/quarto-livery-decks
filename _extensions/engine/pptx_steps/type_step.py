@@ -6,14 +6,12 @@ in points; every size scales by it over the livery's body, livery.json type) or
 pandoc records both in docProps/custom.xml. Every text size in the master, the layouts and the
 slides (rPr, defRPr and endParaRPr sz, spcPts) is multiplied and rounded to the half point, so
 12 pt at type-body 10 is 10, not 10.02; a slide's own scale= (slide_layout.py) multiplies on
-top. A deck without either is left alone. Run it after the other post-processors; it marks
+top. A deck without either is left alone. Last in pptx_post.py; it marks
 the deck (engine-type-step in custom.xml), so a second run changes nothing."""
 
 import sys
-from pathlib import Path
 
 from lxml import etree
-from pptx import Presentation
 from pptx.oxml.ns import qn
 
 import livery as livery_mod
@@ -64,8 +62,8 @@ def scale(root, f):
     return n
 
 
-def main(path):
-    prs = Presentation(path)
+def run(prs, path) -> None:
+    """The open deck, changed in place; path for the messages."""
     part = _custom(prs)
     if part is None:
         return
@@ -81,10 +79,4 @@ def main(path):
     mark = etree.SubElement(root, f"{{{CP}}}property", fmtid=FMTID, pid=str(pid), name="engine-type-step")
     etree.SubElement(mark, f"{{{VT}}}lpwstr").text = f"{f:.4f}"
     part._blob = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
-    prs.save(path)
     print(f"type_step: sizes x {f:.4f} ({n} runs and styles, to the half point) -> {path}")
-
-
-if __name__ == "__main__":
-    for p in sys.argv[1:] or sys.exit(__doc__):
-        main(Path(p))

@@ -12,10 +12,6 @@ gets the URL as its hover tooltip.
 Runs after pandoc, so it cannot split a slide. Idempotent: a slide that
 already has a caption is skipped."""
 
-import sys
-from pathlib import Path
-
-from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Pt
@@ -45,16 +41,8 @@ def _set_tooltip(shape, url):
         hlink.set("tooltip", url)
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: link_captions.py <file.pptx>", file=sys.stderr)
-        return 2
-    pptx = Path(sys.argv[1]).resolve()
-    if not pptx.exists():
-        print(f"error: {pptx} not found", file=sys.stderr)
-        return 2
-
-    prs = Presentation(str(pptx))
+def run(prs, name: str) -> None:
+    """The open deck, changed in place; name for the message."""
     width = int(prs.slide_width * BAND_WIDTH)
     left = (prs.slide_width - width) // 2
     top = round(prs.slide_height * (1 - BAND_TOP))
@@ -80,10 +68,4 @@ def main() -> int:
         run.font.size = SIZE
         run.font.color.rgb = COLOR
         added += 1
-    prs.save(str(pptx))
-    print(f"link_captions: captioned {added} linked picture slide(s) → {pptx.name}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    print(f"link_captions: captioned {added} linked picture slide(s) → {name}")

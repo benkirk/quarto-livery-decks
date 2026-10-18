@@ -21,9 +21,10 @@ next step (#57 Phase B: the pptx format moves into the engine; then #58, the cus
 
 The engine also holds the json reader (`livery.py`), the template builder
 (`livery_template.py`), the wave shapes (`pptx_waves.py`) and the livery checks
-(`livery_check.py`): `utils/livery.py` is a shim that loads the engine's reader by path (both
-are named `livery`; `engine_module()` loads any engine module the same way) and adds
-`livery.py deps <dir>`, and `utils/livery_check.py` wraps the engine's checks and adds `--qa`.
+(`livery_check.py`), and the pptx post-render steps (`pptx_post.py` over `pptx_steps/`). The
+reader's `deps|mono|figsize <dir>` commands serve `Make.common`; `utils/comp_measure.py`,
+`deck_qa.py` and `site_index.py` append the engine's directory to `sys.path` to import it, and
+`utils/livery_check.py` wraps the engine's checks and adds `--qa`.
 Onboarding a brand from a reference PowerPoint (design section 6):
 `utils/livery_inspect.py` writes a livery's `reference/report.md` from the deck, the engine's
 `livery_template.py` builds its `template.pptx` from the data, and the decisions go in
@@ -98,11 +99,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
   `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
-  `_quarto.yml` and `_extensions`. The pptx recipe post-processes with
-  `section_subtitle.py`, `enable_autofit.py`, `embed_fonts.py`,
-  `style_footnotes.py`, `link_captions.py`, `slide_layout.py`,
-  `style_tables.py` (tables drawn as in the HTML theme), and `type_step.py` (a deck's
-  `type-body:`/`type-scale:`). pandoc gets `-M monofont=<family>` when the livery bundles a
+  `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
+  which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
+  `section_subtitle`, `enable_autofit`, `embed_fonts` (on the zip's parts), then
+  `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
+  HTML theme) and `type_step` (a deck's `type-body:`/`type-scale:`) on one python-pptx
+  Presentation; each is a module with a `run()`, the order's reasons are in the driver. pandoc gets `-M monofont=<family>` when the livery bundles a
   code face (`typography.monospace`, `livery.py mono`), and the pptx format takes the
   livery's highlight theme (`_livery/build/livery.theme`) like HTML and PDF.
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
