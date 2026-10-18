@@ -75,6 +75,8 @@ art:                      # backgrounds. waves: the brand's lines, drawn by the 
       - [[0.4862, 0.0000], [0.5087, 0.1976], [0.6068, 0.4965], [0.6068, 0.6766], [0.6068, 0.8741], [0.5756, 0.9681], [0.5674, 1.0000]]
       - [[0.5138, 0.0000], [0.5402, 0.1583], [0.6570, 0.4747], [0.6570, 0.6423], [0.6570, 0.8307], [0.6286, 0.9166], [0.6000, 1.0000]]
       - [[0.5427, 0.0000], [0.5762, 0.1381], [0.7073, 0.4410], [0.7073, 0.6182], [0.7073, 0.8242], [0.6639, 0.9245], [0.6320, 1.0000]]
+  titlegraphic: art/mesa-lab.jpg   # the NCAR Mesa Lab under the Flatirons, for decks that set none
+                          # (a deck's `titlegraphic: none` keeps the plain cover)
 
 compositions:             # overrides of the engine's boxes (livery_build.py compositions()); [x, y, w, h]
   title:                  # fractions. The cover title's text sits where the brand's pptx template puts

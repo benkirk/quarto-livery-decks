@@ -189,6 +189,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
   pandoc's `monofont` in pptx (nasa: DM Mono). The other liveries keep the defaults.
+- **Title photo**: a deck's `titlegraphic:`, else the livery's `art.titlegraphic` (ncar: the
+  Mesa Lab, inherited by its family; nsi: the campus; nasa: the Earth limb); `titlegraphic:
+  none` keeps the plain cover (both engine filters and `slide_layout.py`; beamer
+  `\enginenotitlegraphic`). `docs/fixtures/light.qmd` opts out, so the plain light cover stays
+  in CI and parity. The quickstart sets none, so the gallery shows each livery's own.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
@@ -251,7 +256,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
   rebuilds the decks. The `_livery` link is order-only (make stats a link's target, the
   directory, which would look stale forever after a switch); the `.livery` stamp is the
-  prerequisite. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`
+  prerequisite, and holds the livery's directory, so a `LIVERY_DIR` switch under one name rebuilds too. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`
   before rendering: that dependency is named for the engine version, and quarto keeps a
   copied file newer than its source, so a livery switch kept the old livery's css. A file included from anywhere else (e.g. `../other_deck/_x.qmd`) is invisible
   to make; `touch <deck>.qmd` after editing one.

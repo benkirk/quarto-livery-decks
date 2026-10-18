@@ -4,6 +4,7 @@ subtitle: "themeoptions: title=light"
 author: "Parity fixture"
 date: 2026-10-16
 themeoptions: [fonts=bundled, title=light]
+titlegraphic: none   # the plain light cover, not the livery's default photo
 ---
 
 {{< include _body.qmd >}}

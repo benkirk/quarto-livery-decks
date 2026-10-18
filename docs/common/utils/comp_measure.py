@@ -69,12 +69,13 @@ def headings(deck):
 
 def composition_names(fm, L):
     """kind -> composition, as the drawers pick: a band wins over light; a photo is the deck's
-    titlegraphic or the livery's art.titlegraphic."""
+    titlegraphic or the livery's art.titlegraphic (unless titlegraphic: none)."""
     opts = fm.get("themeoptions") or []
     opts = opts if isinstance(opts, list) else str(opts).split(",")
     light = any(str(o).strip() == "title=light" for o in opts)
     band = (L.get("title") or {}).get("style") == "band"
-    photo = bool(fm.get("titlegraphic")) or isinstance((L.get("art") or {}).get("titlegraphic"), str)
+    tg = fm.get("titlegraphic")   # `titlegraphic: none` asks for the plain cover over the livery's default
+    photo = (bool(tg) and tg != "none") or (not tg and isinstance((L.get("art") or {}).get("titlegraphic"), str))
     title = "title-band" if band else ("title-photo" if photo else "title") + ("-light" if light else "")
     closing = "closing-band" if band else "closing-light" if light else "closing"
     return {"title": title, "section": "section", "closing": closing, "feature": "feature"}

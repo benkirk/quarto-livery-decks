@@ -158,16 +158,16 @@ _extensions:
 _engine:
 	ln -sfn $(SHARED_COMMON) $@
 
-# The livery link follows LIVERY. A missing-only rule like the three above would
-# silently keep the old livery after `make LIVERY=cu`, so the link is remade whenever
-# the .livery stamp (whose content is the livery's name) changes, and the stamp is
-# phony until it matches.
-ifneq ($(shell cat .livery 2>/dev/null),$(LIVERY))
+# The livery link follows LIVERY (or LIVERY_DIR). A missing-only rule like the three above
+# would silently keep the old livery after `make LIVERY=cu`, so the link is remade whenever
+# the .livery stamp (whose content is the livery's directory, so a LIVERY_DIR switch under
+# one name counts too) changes, and the stamp is phony until it matches.
+ifneq ($(shell cat .livery 2>/dev/null),$(LIVERY_DIR))
 .PHONY: .livery
 endif
 .livery:
 	@test -d $(LIVERY_DIR) || { echo "no livery '$(LIVERY)': $(LIVERY_DIR) is missing" >&2; exit 1; }
-	@echo $(LIVERY) > $@
+	@echo $(LIVERY_DIR) > $@
 
 # Decks depend on the stamp and take the link order-only: make stats a link's target, the
 # livery directory, which is older than a fresh stamp, so as a prerequisite the link would
