@@ -161,14 +161,14 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            # branch name (main), PR number (pr-12), tag name (v1.2.3)
+            # branch name (main), PR number (pr-12), tag name (v26.10.0)
             type=ref,event=branch
             type=ref,event=pr
             type=ref,event=tag
-            # semver components from the tag (v1.2.3 -> 1.2.3, 1.2, 1)
+            # the release's calendar version from the tag, YY.MM.N, and the month's shortcut YY.MM,
+            # which follows the month's newest release (v26.10.1 -> 26.10.1, 26.10)
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
             # short commit SHA always
             type=sha,prefix=sha-
             # 'latest' only on main

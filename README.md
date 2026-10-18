@@ -910,8 +910,8 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   `-v "$PWD/fonts:/opt/fonts:ro"`. matplotlib's font cache is built into the image and
   copied into HOME, so a deck's first plot does not rescan every font; with `/opt/fonts`
   mounted, matplotlib builds its own cache once instead, so that it sees your faces.
-- **Tags**: `latest` and `main` (the main branch), `sha-<short>` (every commit), `1.2.3`,
-  `1.2` and `1` (a release), `pr-N` (a pull request). The mount path may not contain
+- **Tags**: `latest` and `main` (the main branch), `sha-<short>` (every commit), `26.10.0` (a
+  release, `YY.MM.N`) and `26.10` (the month's newest release), `pr-N` (a pull request). The mount path may not contain
   spaces, `%` or `#` (LaTeX's `\input@path`).
 - **The image itself**: `Dockerfile` at the repo root; `make image` builds it locally and
   `.github/scripts/smoke-test.sh <image>` runs what CI runs on it. `.github/workflows/image.yaml`

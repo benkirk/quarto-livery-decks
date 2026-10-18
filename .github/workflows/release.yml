@@ -4,8 +4,10 @@
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-overleaf.zip
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-charts.zip
 # A v* tag also publishes the container image under its semver tags (ci.yaml -> image.yaml).
-# Tags are cut by hand (liveries/README.md, "Release") and never moved: a fix is a new patch
-# release, so this refuses a tag whose release exists. The tag must be the engine's version,
+# Versions are calendar versions, YY.MM.N: the year and month of the release (the month
+# unpadded) and N, from 0, the month's release count. Tags are cut by hand (liveries/README.md,
+# "Release") and never moved: another release in the month is the next N, so this refuses a tag
+# whose release exists, or whose month is still to come. The tag must be the engine's version,
 # `version:` in _extensions/engine/_extension.yml, and CHANGELOG.md must have its entry, which
 # becomes the release's notes.
 name: release
@@ -31,6 +33,12 @@ jobs:
           v=$(sed -n 's/^version: *//p' _extensions/engine/_extension.yml)
           echo "engine $v, tag $GITHUB_REF_NAME"
           test "v$v" = "$GITHUB_REF_NAME"
+          if ! [[ "$v" =~ ^([0-9]{2})\.([1-9]|1[0-2])\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::$v is not a calendar version YY.MM.N (the month unpadded)"; exit 1
+          fi
+          if (( 10#${BASH_REMATCH[1]} * 100 + BASH_REMATCH[2] > 10#$(date -u +%y) * 100 + 10#$(date -u +%m) )); then
+            echo "::error::$v is a month still to come"; exit 1
+          fi
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             echo "::error::release $GITHUB_REF_NAME exists: a tag is never re-cut; a fix is a new patch release"; exit 1
           fi

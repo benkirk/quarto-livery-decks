@@ -396,6 +396,14 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, calendar versions.** Ben: versions are `YY.MM.N` (the month unpadded, `N` the
+  month's release count from 0), with the `YY.MM` shortcut where a tool supports a moving name:
+  the container image's `metadata-action` semver patterns give `26.10.0` and `26.10` (the year
+  alias is dropped). `release.yml` also refuses a tag that is not `YY.MM.N` or names a month
+  still to come; tags stay immutable, the next release in a month is the next `N`. The version is
+  26.10.0, every livery rebuilt for its stamp, and `CHANGELOG.md` is one `[26.10.0]` entry, the
+  first release, describing what ships; the sprint's v1.0.0 and v1.1.0 are withdrawn (deleted with
+  Ben's go). Compatibility is not in the number: a livery's is its `schema:`.
 - **2026-10-18, #58 step 4: plot authors.** `livery_mpl` states its stable API (`__all__`: `use`,
   `colors`, `cycle`, `families`, `status`, `muted`, `figsize()`, `shade_family()`, `dark()`, and the
   colormaps), listed in `decks/plots/README.md`, a change to it a changelog *Plots* entry; and

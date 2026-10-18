@@ -389,13 +389,17 @@ it does, by area, beyond the format notes above:
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
   baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. A
   Sass change is checked by screenshotting every slide before and after (Playwright).
-- **Version**: one number, `version:` in `_extension.yml`; a `v*` tag must equal it
+- **Version**: one calendar version, `YY.MM.N` (Ben, 2026-10-18: the month unpadded, `N` the
+  month's release count from 0; the container image also gets `YY.MM`, the month's newest; the
+  first release is 26.10.0, and v1.0.0/v1.1.0 were withdrawn), `version:` in `_extension.yml`;
+  a `v*` tag must equal it
   (`release.yml` checks). `VERSION` in `engine-revealjs.lua` names the HTML dependency
   (`engine-revealjs-<VERSION>`), so changing it changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
   liveries/*/` in the same PR (CI's `--check`), and `livery deps` warns a deck build when a
-  livery's stamp is another version. **Tags are immutable**: a fix is a new patch release;
-  `release.yml` refuses a tag whose release exists. `CHANGELOG.md` (Decks, Liveries, Plots,
+  livery's stamp is another version. **Tags are immutable**: another release in the month is
+  the next `N`; `release.yml` refuses a tag whose release exists, that is not `YY.MM.N`, or whose
+  month is still to come. `CHANGELOG.md` (Decks, Liveries, Plots,
   LaTeX; Keep a Changelog) gets every user-visible change under `[Unreleased]` in the PR that
   makes it; a release renames that section to `[x.y.z] - date` before its tag, and the entry
   becomes the release's notes. Ask Ben before any tag.
@@ -566,7 +570,7 @@ job calls `image.yaml` (reusable): the image is built natively on `ubuntu-24.04`
 unprivileged user (`.github/scripts/smoke-test.sh`: a bare directory of `.qmd` files with a
 mermaid block, then `decks/quickstart` through its real Makefile, both bind-mounted, outputs
 owned by that user), pushed by digest, merged into one tagged manifest list (`main`, `latest`,
-`sha-`, `pr-N`, semver on a tag) and pulled again on both platforms. Build cache: a registry
+`sha-`, `pr-N`, `YY.MM.N` and `YY.MM` on a tag) and pulled again on both platforms. Build cache: a registry
 cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries the per-platform
 size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSIDE that image at
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
