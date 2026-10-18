@@ -28,7 +28,7 @@ DEFAULT_SLOTS = {"dk1": "1B2430", "lt1": "FFFFFF", "dk2": "1F4E8C", "lt2": "EEF1
 HEADER = "# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json\n"
 NOTES = """# {name}: onboarding notes
 
-The decisions taken while making this livery (README "Adding a livery"): where each color, font
+The decisions taken while making this livery (liveries/README.md, "Adding a livery"): where each color, font
 and mark came from, what the brand guide says, and what was left for later.
 
 ## Palette and roles
