@@ -388,7 +388,9 @@ block body example,block title alerted,block body alerted}
 \AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}}
 \def\engine@resetframe{%
   \def\engine@framestyle{normal}\global\engine@haspanelfalse
-  \def\engine@framehook{}
+  % the text color too: a field's hook (\engine@fieldcolors) sets it where the frame's group
+  % does not undo it, so the frame after a closing slide had white body text
+  \def\engine@framehook{\usebeamercolor[fg]{normal text}}%
   \engine@copycolors{engine@saved@}{beamer@}}
 \let\engine@envkey\KV@beamerframe@environment
 \def\KV@beamerframe@environment#1{\engine@resetframe\engine@envkey{#1}}

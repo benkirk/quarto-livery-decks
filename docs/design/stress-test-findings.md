@@ -163,8 +163,11 @@ both liveries.
   3.7.1, beamer-livery-theme #35), cu and nsi 14 pt (#50). The code slides' pptx height went
   from 1.19x HTML's to 1.04x (ncar) and 1.17x to 1.01x (nsi), with `make qa` clean and no
   verdict changes. The branch `pptx-code-size` (shrinking pptx code to the role) is not
-  merged. The sample deck's deferred "Project config" slide now runs further off the page,
-  where `deck_qa` cannot see it.
+  merged. The sample deck's "Project config" slide then ran off the PDF page, where `deck_qa`
+  cannot see it. It now shows the file alone at `scale="0.45"` (#51), with a new slide after
+  it documenting the file. Its PDF right column was blank because the closing slide before it
+  leaked white body text into the next frame; that is fixed in engine 3.7.2
+  (beamer-livery-theme #36).
 - **The caution box was cut before `scale=`** (fixed, #46). 2-concepts s23 and 3-databases s15
   shrank to 0.87 and 0.93 in pptx under ncar.
 - **The nsi band cover's pptx stack** read date / title / rule / subtitle / author, 0.033 low.
