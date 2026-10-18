@@ -13,8 +13,9 @@ Embed fonts, then extracted; no reliable Python writer exists) and injects them:
 Idempotent: replaces any existing <p:embeddedFontLst> and skips duplicate
 Relationships / Content-Types entries.
 
-Run after `quarto render ... --to pptx`, where LIVERY_DIR or a _livery link names the
-livery (utils/livery.py). Exits non-zero (with guidance) if the font blobs are missing."""
+A step of pptx_post.py, after `quarto render ... --to engine-pptx`, where LIVERY_DIR or a
+_livery link names the livery (livery.py). Exits non-zero (with guidance) if the font blobs are
+missing."""
 
 import re
 import sys

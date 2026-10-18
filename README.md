@@ -120,8 +120,8 @@ on white, are turned to the dark with their hues kept (`diagram-dark.lua`).
 quarto-livery-decks/
 ├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/charts-zip/clean)
 ├── _extensions/engine/    # the engine (symlinked into decks): the pptx, beamer and revealjs
-│                          #   formats and their Lua filters ("Build pipeline" below), the
-│                          #   livery tools, the chart colors (livery_charts.py), the
+│                          #   formats and their Lua filters, pptx_post.py and its steps
+│                          #   ("Build pipeline" below), livery.py (the reader), the livery tools, the chart colors (livery_charts.py), the
 │                          #   Overleaf and charts packers, mpl/livery_mpl.py (plots)
 ├── liveries/              # one directory per livery (`make LIVERY=<name>`):
 │   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
@@ -131,15 +131,12 @@ quarto-livery-decks/
 ├── common/                # what decks share:
 │   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
 │   └── utils/
-│       ├── livery.py           # the engine's livery reader, loaded from the engine;
-│       │                       #   `livery.py deps <dir>`: the livery files a build reads
 │       ├── livery_check.py     # the engine's livery checks, plus --qa
 │       ├── livery_inspect.py   # reports on a reference pptx, seeds a livery (onboarding)
 │       ├── deck_qa.py          # `make qa`: overflow, slide counts, contact sheets
 │       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
 │       ├── site_index.py       # `make site`: the index page
-│       ├── fit-waves.py        # fits a brand's wave curves to its cover art (art.waves)
-│       └── *.py                # the pptx post-render steps ("Build pipeline" below)
+│       └── fit-waves.py        # fits a brand's wave curves to its cover art (art.waves)
 ├── decks/
 │   ├── quickstart/        # the short exemplar deck: copy this one
 │   │   ├── quickstart.qmd
@@ -183,35 +180,38 @@ Per deck, `make pptx` runs:
    - `strip-raw-figure.lua`, `notes-last.lua` and `single-body.lua` keep pandoc from
      demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text
      after a table or image);
-   - `slide-layout.lua` carries a slide's layout classes over as a notes line for step 7;
+   - `slide-layout.lua` carries a slide's layout classes over as a notes line for `slide_layout`;
    - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see "Linked images");
    - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too).
-2. `section_subtitle.py`: merges the paragraph after a `#` section heading back onto the
-   Section Header slide as its subtitle (pandoc drops it onto a separate untitled slide),
-   then dresses every divider as the HTML and PDF decks draw it: the livery's "SECTION n"
-   label, its tab, the block centered and measured in the livery's fonts. The field, logo
-   and art come from the template's Section Header layout (see "Template constraints").
-3. `enable_autofit.py`: flips every body placeholder from "Do not Autofit" to "Shrink text
-   on overflow" (see "About text autofit").
-4. `embed_fonts.py`: re-injects the livery's font variants as `<p:embeddedFont>` entries,
-   which pandoc strips, so the font travels with the file (see "About the fonts").
-5. `style_footnotes.py`: restyles body paragraphs that start with `†` or `‡` as footnotes
-   (smaller, the livery's muted color, the marker in its accent), since pandoc ignores
-   inline size and color. HTML and PDF go further: the theme moves them to the slide's foot.
-6. `link_captions.py`: captions each linked picture (see "Linked images") with its URL,
-   bottom center, muted; the caption box is itself the link.
-7. `slide_layout.py`: applies a slide's layout controls (see "Centering and scaling a
-   short slide"); builds the photo covers and feature slides; points closing and light
-   title slides at the template's extra layouts; copies the slide number onto every slide.
-8. `style_tables.py`: styles every table as the HTML theme does (a bold capitalized header
-   over a rule in the primary color, thin rules between rows, every second row banded, the
-   blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
-   cell by cell, and evenly split columns are re-split by content.
-9. `type_step.py`: applies a deck's `type-body:` or `type-scale:` (see "Text sizes and the
-   slide size").
+2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
+   (`_extensions/engine/pptx_steps/`). It opens the deck once, runs them in this order and
+   saves once:
+   - `section_subtitle`: merges the paragraph after a `#` section heading back onto the
+     Section Header slide as its subtitle (pandoc drops it onto a separate untitled slide),
+     then dresses every divider as the HTML and PDF decks draw it: the livery's "SECTION n"
+     label, its tab, the block centered and measured in the livery's fonts. The field, logo
+     and art come from the template's Section Header layout (see "Template constraints").
+   - `enable_autofit`: flips every body placeholder from "Do not Autofit" to "Shrink text
+     on overflow" (see "About text autofit").
+   - `embed_fonts`: re-injects the livery's font variants as `<p:embeddedFont>` entries,
+     which pandoc strips, so the font travels with the file (see "About the fonts").
+   - `style_footnotes`: restyles body paragraphs that start with `†` or `‡` as footnotes
+     (smaller, the livery's muted color, the marker in its accent), since pandoc ignores
+     inline size and color. HTML and PDF go further: the theme moves them to the slide's foot.
+   - `link_captions`: captions each linked picture (see "Linked images") with its URL,
+     bottom center, muted; the caption box is itself the link.
+   - `slide_layout`: applies a slide's layout controls (see "Centering and scaling a
+     short slide"); builds the photo covers and feature slides; points closing and light
+     title slides at the template's extra layouts; copies the slide number onto every slide.
+   - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
+     over a rule in the primary color, thin rules between rows, every second row banded, the
+     blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
+     cell by cell, and evenly split columns are re-split by content.
+   - `type_step`: applies a deck's `type-body:` or `type-scale:` (see "Text sizes and the
+     slide size").
 
 `make html` (revealjs) and `make pdf` (beamer) run step 1 with the engine's own format and
-filters, which draw everything steps 2 through 9 add to the pptx.
+filters, which draw everything step 2 adds to the pptx.
 
 ## Text sizes and the slide size
 

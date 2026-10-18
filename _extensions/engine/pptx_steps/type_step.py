@@ -6,7 +6,7 @@ in points; every size scales by it over the livery's body, livery.json type) or
 pandoc records both in docProps/custom.xml. Every text size in the master, the layouts and the
 slides (rPr, defRPr and endParaRPr sz, spcPts) is multiplied and rounded to the half point, so
 12 pt at type-body 10 is 10, not 10.02; a slide's own scale= (slide_layout.py) multiplies on
-top. A deck without either is left alone. Run it after the other post-processors; it marks
+top. A deck without either is left alone. Last in pptx_post.py; it marks
 the deck (engine-type-step in custom.xml), so a second run changes nothing."""
 
 import sys

@@ -8,7 +8,7 @@ header row with no fill, bold letter-spaced capitals at 0.8x the body size and a
 the primary slot (dk2); body rows with a 1 px rule in the derived table-rule blend, every second
 row filled with the table-band blend; columns left alone when pandoc took widths from the
 source, else re-split in proportion to each column's longest cell, each 10-60% wide.
-Run it last, after slide_layout.py has scaled the runs. Idempotent."""
+Run after slide_layout has scaled the runs (pptx_post.py). Idempotent."""
 
 from lxml import etree
 from pptx.oxml.ns import qn
