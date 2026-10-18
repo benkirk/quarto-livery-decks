@@ -241,7 +241,7 @@
 \newenvironment{enginefootnotes}{%
   \par\noindent\begin{minipage}[b]{0.6\textwidth}\raggedright
   \usebeamerfont{footnote}\color{BrandMuted}%
-  {\color{BrandText!30}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
+  {\color{BrandText!30!BrandBackground}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
   {\end{minipage}\par}
 \newcommand\enginefootnote[2]{%
   \par\hangindent=1.1em\hangafter=1\noindent
@@ -251,7 +251,8 @@
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
 % bar at its left (the Quarto filter writes it for {.caution})
 % ---------------------------------------------------------------------------
-\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}
+% (livery.sty defines it first when the livery's derived: overrides caution-fill)
+\@ifundefined{\string\color@enginecautionfill}{\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}}{}
 \newsavebox\engine@cautionbox
 \newenvironment{enginecaution}{%
   \par\noindent\begin{lrbox}{\engine@cautionbox}%
@@ -268,8 +269,8 @@
 % \rowcolor{enginetableband}.  Hand-written tabulars are left alone.
 % ---------------------------------------------------------------------------
 \RequirePackage{colortbl}
-\colorlet{enginetableband}{BrandSurface!60!BrandBackground}
-\colorlet{enginetablerule}{BrandText!20!BrandSurface}
+\@ifundefined{\string\color@enginetableband}{\colorlet{enginetableband}{BrandSurface!60!BrandBackground}}{}% or livery.sty's
+\@ifundefined{\string\color@enginetablerule}{\colorlet{enginetablerule}{BrandText!20!BrandSurface}}{}
 \newcommand\engineth[1]{{\usebeamercolor[fg]{normal text}\bfseries
   \fontsize{\fpeval{0.8*\f@size}pt}{\fpeval{0.8*\strip@pt\dimexpr\f@baselineskip\relax}pt}%
   \selectfont\engine@tracking\MakeUppercase{#1}}}

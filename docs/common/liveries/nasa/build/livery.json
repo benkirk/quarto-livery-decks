@@ -1,0 +1,918 @@
+{
+  "art": {
+    "titlegraphic": "art/earth-limb.jpg"
+  },
+  "aspect": "16:9",
+  "compositions": {
+    "closing": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.28,
+          0.62,
+          0.6
+        ],
+        "role": "primary-text",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.09,
+          0.1093,
+          0.16
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "closing-band": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.1,
+          0.62,
+          0.59
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.8307,
+          0.78,
+          0.1093,
+          0.16
+        ],
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.846,
+          0.3498,
+          0.028
+        ],
+        "role": "dark"
+      },
+      "waves": null
+    },
+    "closing-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.28,
+          0.62,
+          0.6
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.09,
+          0.1093,
+          0.16
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "background"
+      },
+      "waves": null
+    },
+    "feature": {
+      "art": null,
+      "band": null,
+      "bar": {
+        "box": [
+          0,
+          0,
+          1,
+          0.2
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0,
+          0.88,
+          0.2
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": null,
+      "fineprint": null,
+      "mark": null,
+      "panel": {
+        "box": [
+          0.06,
+          0.2556,
+          0.4576,
+          0.6667
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "photo": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "signoff": null,
+      "waves": null
+    },
+    "section": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.1333,
+          0.62,
+          0.7778
+        ],
+        "role": "primary-text",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": {
+        "color": "secondary",
+        "label": "Section"
+      },
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.06,
+          0.08,
+          0.0752,
+          0.11
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "title": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.27,
+          0.5,
+          0.59
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.5,
+          0.1
+        ],
+        "role": "primary-text"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.1093,
+          0.16
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "title-band": {
+      "art": null,
+      "band": {
+        "box": [
+          0,
+          0.27,
+          1,
+          0.45
+        ],
+        "role": "primary"
+      },
+      "bar": null,
+      "column": {
+        "anchor": "middle",
+        "box": [
+          0.06,
+          0.27,
+          0.52,
+          0.45
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.738,
+          0.52,
+          0.06
+        ],
+        "role": "background"
+      },
+      "mark": {
+        "box": [
+          0.8307,
+          0.78,
+          0.1093,
+          0.16
+        ],
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.62,
+          0.27,
+          0.38,
+          0.45
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.06,
+          0.846,
+          0.3498,
+          0.028
+        ],
+        "role": "dark"
+      },
+      "waves": null
+    },
+    "title-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.27,
+          0.5,
+          0.59
+        ],
+        "role": "foreground",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.5,
+          0.1
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.1093,
+          0.16
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "background"
+      },
+      "waves": null
+    },
+    "title-photo": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.27,
+          0.44,
+          0.59
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "primary"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.44,
+          0.1
+        ],
+        "role": "primary-text"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.1093,
+          0.16
+        ],
+        "role": "primary"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "primary"
+      },
+      "waves": null
+    },
+    "title-photo-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "column": {
+        "anchor": "top",
+        "box": [
+          0.06,
+          0.27,
+          0.44,
+          0.59
+        ],
+        "role": "foreground",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.06,
+          0.86,
+          0.44,
+          0.1
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.06,
+          0.06,
+          0.1093,
+          0.16
+        ],
+        "role": "background"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.06,
+          0.937,
+          0.3498,
+          0.028
+        ],
+        "role": "background"
+      },
+      "waves": null
+    }
+  },
+  "derived": {
+    "alert-text": "#A4001F",
+    "caution-fill": "#FFF5D9",
+    "rule": "#B0B1B2",
+    "table-band": "#F6F7F8",
+    "table-rule": "#C6C6C8"
+  },
+  "divider": {
+    "label": "Section",
+    "tab": true
+  },
+  "geometry": {
+    "divider": {
+      "bottom": 0.0889,
+      "top": 0.1333
+    },
+    "full": {
+      "caption": 0.06,
+      "floor": 0.075,
+      "pad": 0.025
+    },
+    "logo": {
+      "aspect": 1.2146,
+      "closing": 0.16,
+      "corner": "top-right",
+      "height": 0.075,
+      "section": 0.11,
+      "title": 0.16,
+      "top": 0.045
+    },
+    "margin": 0.06,
+    "pagenumber": {
+      "corner": "bottom-right"
+    },
+    "tab": 0.018
+  },
+  "latex": {
+    "colors": {
+      "black": "NASABlack",
+      "carbon": "NASACarbon",
+      "gray": "NASAGray",
+      "light-gray": "NASALightGray",
+      "nasa-blue": "NASABlue",
+      "nasa-red": "NASARed",
+      "silver": "NASASilver",
+      "sky": "NASASky",
+      "white": "NASAWhite",
+      "yellow": "NASAYellow"
+    }
+  },
+  "logo": {
+    "images": {
+      "meatball": {
+        "path": "logos/meatball.png"
+      },
+      "meatball-rule": {
+        "path": "logos/meatball-rule.png"
+      },
+      "nasa-name": {
+        "path": "logos/nasa-name.png"
+      },
+      "nasa-name-white": {
+        "path": "logos/nasa-name-white.png"
+      }
+    },
+    "medium": {
+      "dark": "meatball-rule",
+      "light": "meatball"
+    }
+  },
+  "marks": {
+    "background": {
+      "logo": "logos/meatball.png",
+      "signoff": "logos/nasa-name.png"
+    },
+    "primary": {
+      "logo": "logos/meatball-rule.png",
+      "signoff": "logos/nasa-name-white.png"
+    }
+  },
+  "mode": "light",
+  "name": "nasa",
+  "palette": {
+    "black": "#000000",
+    "carbon": "#1C1C1C",
+    "gray": "#5C5E62",
+    "light-gray": "#F0F1F3",
+    "nasa-blue": "#0032A0",
+    "nasa-red": "#E4002B",
+    "silver": "#8A8D8F",
+    "sky": "#0B6BCB",
+    "white": "#FFFFFF",
+    "yellow": "#FFC72C"
+  },
+  "pptx": {
+    "heading-typeface": "Inter",
+    "scheme": {
+      "accent1": "#8A8D8F",
+      "accent2": "#0B6BCB",
+      "accent3": "#000000",
+      "accent4": "#E4002B",
+      "accent5": "#FFC72C",
+      "accent6": "#0032A0",
+      "dk1": "#1C1C1C",
+      "dk2": "#0032A0",
+      "folHlink": "#0B6BCB",
+      "hlink": "#0032A0",
+      "lt1": "#FFFFFF",
+      "lt2": "#F0F1F3"
+    },
+    "size": [
+      10,
+      5.625
+    ],
+    "template": "template.pptx",
+    "typeface": "Public Sans"
+  },
+  "roles": {
+    "accent": "#E4002B",
+    "background": "#FFFFFF",
+    "code-text": "#000000",
+    "dark": "#000000",
+    "foreground": "#1C1C1C",
+    "highlight": "#0B6BCB",
+    "muted": "#5C5E62",
+    "primary": "#0032A0",
+    "primary-contrast": "#0032A0",
+    "primary-text": "#FFFFFF",
+    "secondary": "#8A8D8F",
+    "surface": "#F0F1F3",
+    "warning": "#FFC72C"
+  },
+  "signoff": {
+    "aspect": 22.208,
+    "bottom": 0.035,
+    "corner": "bottom-left",
+    "height": 0.028
+  },
+  "type": {
+    "body": 0.02963,
+    "canvas": {
+      "h": 405,
+      "w": 720
+    },
+    "levels": [
+      12,
+      11,
+      10,
+      9,
+      8
+    ],
+    "roles": {
+      "author": {
+        "leading": 1.3,
+        "pt": 12,
+        "size": 1.0
+      },
+      "body": {
+        "leading": 1.4,
+        "pt": 12,
+        "size": 1.0
+      },
+      "caption": {
+        "leading": 1.3,
+        "pt": 9,
+        "size": 0.75
+      },
+      "closing": {
+        "leading": 1.08,
+        "pt": 32,
+        "size": 2.6667
+      },
+      "code": {
+        "leading": 1.3,
+        "pt": 10,
+        "size": 0.8333
+      },
+      "date": {
+        "leading": 1.2,
+        "pt": 10,
+        "size": 0.8333
+      },
+      "eyebrow": {
+        "leading": 1.2,
+        "pt": 9,
+        "size": 0.75
+      },
+      "fineprint": {
+        "leading": 1.4,
+        "pt": 6,
+        "size": 0.5
+      },
+      "footer": {
+        "leading": 1.2,
+        "pt": 8,
+        "size": 0.6667
+      },
+      "footnote": {
+        "leading": 1.35,
+        "pt": 8,
+        "size": 0.6667
+      },
+      "frametitle": {
+        "leading": 1.15,
+        "pt": 22,
+        "size": 1.8333
+      },
+      "institute": {
+        "leading": 1.3,
+        "pt": 12,
+        "size": 1.0
+      },
+      "pagenumber": {
+        "leading": 1.2,
+        "pt": 8,
+        "size": 0.6667
+      },
+      "section": {
+        "leading": 1.08,
+        "pt": 32,
+        "size": 2.6667
+      },
+      "sectionsubtitle": {
+        "leading": 1.3,
+        "pt": 16,
+        "size": 1.3333
+      },
+      "subhead": {
+        "leading": 1.2,
+        "pt": 16,
+        "size": 1.3333
+      },
+      "subtitle": {
+        "leading": 1.3,
+        "pt": 16,
+        "size": 1.3333
+      },
+      "table": {
+        "leading": 1.3,
+        "pt": 10,
+        "size": 0.8333
+      },
+      "title": {
+        "leading": 1.12,
+        "pt": 32,
+        "size": 2.6667
+      }
+    }
+  },
+  "typography": {
+    "base": "Public Sans",
+    "fonts": [
+      {
+        "family": "Public Sans",
+        "files": [
+          {
+            "path": "fonts/PublicSans-Regular.ttf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/PublicSans-Italic.ttf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/PublicSans-SemiBold.ttf",
+            "weight": 600
+          },
+          {
+            "path": "fonts/PublicSans-Bold.ttf",
+            "weight": 700
+          },
+          {
+            "path": "fonts/PublicSans-BoldItalic.ttf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
+      },
+      {
+        "family": "Inter",
+        "files": [
+          {
+            "path": "fonts/Inter-Regular.ttf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/Inter-Italic.ttf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/Inter-Bold.ttf",
+            "weight": 700
+          },
+          {
+            "path": "fonts/Inter-BoldItalic.ttf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
+      },
+      {
+        "family": "DM Mono",
+        "files": [
+          {
+            "path": "fonts/DMMono-Regular.ttf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/DMMono-Italic.ttf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/DMMono-Medium.ttf",
+            "weight": 500
+          }
+        ],
+        "source": "file"
+      }
+    ],
+    "headings": "Inter",
+    "monospace": "DM Mono"
+  }
+}

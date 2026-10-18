@@ -1,0 +1,88 @@
+# NASA (general, external communication) in Quarto's brand.yml standard, kept strictly standard;
+# engine knobs are in livery.yml. Values: the NASA Brand Center's guidelines
+# (nasa.gov/nasa-brand-center/brand-guidelines, 2024 insignia color guide); there is no official
+# slide template, so the rest follows the NASA Science public-engagement deck (reference/notes.md).
+# Fonts: the Horizon Design System's digital faces (Inter headings, Public Sans body, DM Mono
+# code), all SIL OFL, bundled; Helvetica appears only inside the agency-name artwork.
+meta:
+  name: National Aeronautics and Space Administration
+  link: https://www.nasa.gov
+
+color:
+  palette:
+    nasa-blue: "#0032A0"     # NASA Blue, PMS 286 (insignia color guide)
+    nasa-red: "#E4002B"      # NASA Red, PMS 185
+    black: "#000000"
+    carbon: "#1C1C1C"        # body text on white
+    gray: "#5C5E62"          # muted small text on white (6.5:1)
+    silver: "#8A8D8F"        # PMS 877, the insignia's metallic background, as a flat gray
+    light-gray: "#F0F1F3"    # code, table bands
+    sky: "#0B6BCB"           # a second blue for small text on white (5.3:1)
+    yellow: "#FFC72C"        # caution slides only
+    white: "#FFFFFF"
+  primary: nasa-blue
+  secondary: silver
+  foreground: carbon
+  background: white
+
+typography:
+  fonts:
+    - family: Public Sans
+      source: file
+      files:
+        - path: fonts/PublicSans-Regular.ttf
+          weight: 400
+        - path: fonts/PublicSans-Italic.ttf
+          weight: 400
+          style: italic
+        - path: fonts/PublicSans-SemiBold.ttf
+          weight: 600
+        - path: fonts/PublicSans-Bold.ttf
+          weight: 700
+        - path: fonts/PublicSans-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Inter
+      source: file
+      files:
+        - path: fonts/Inter-Regular.ttf
+          weight: 400
+        - path: fonts/Inter-Italic.ttf
+          weight: 400
+          style: italic
+        - path: fonts/Inter-Bold.ttf
+          weight: 700
+        - path: fonts/Inter-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: DM Mono
+      source: file
+      files:
+        - path: fonts/DMMono-Regular.ttf
+          weight: 400
+        - path: fonts/DMMono-Italic.ttf
+          weight: 400
+          style: italic
+        - path: fonts/DMMono-Medium.ttf
+          weight: 500
+  base: Public Sans
+  headings: Inter
+  monospace: DM Mono
+
+logo:
+  # the insignia (meatball) from the Brand Center's own SVG (insignia-spherecentered.svg, its middle
+  # panel), recolored to the 2024 guide's NASA Blue and Red; the agency name set in Helvetica Neue
+  # Medium and converted to outlines. reference/nasa_marks.py builds them all (SVG kept, a PNG for
+  # HTML and pptx, a PDF of the same name for LaTeX).
+  images:
+    meatball:
+      path: logos/meatball.png             # full color: white, black, gray, silver, photographs
+    meatball-rule:
+      path: logos/meatball-rule.png        # one color with white rule: the NASA Blue fields
+    nasa-name:
+      path: logos/nasa-name.png            # the agency name, black
+    nasa-name-white:
+      path: logos/nasa-name-white.png      # the agency name, white
+  medium:
+    light: meatball
+    dark: meatball-rule

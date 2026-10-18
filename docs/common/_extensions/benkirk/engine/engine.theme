@@ -1,5 +1,5 @@
 {
-  "text-color": "$dark",
+  "text-color": "$code-text",
   "background-color": "$surface",
   "line-number-color": "$muted",
   "line-number-background-color": null,
@@ -23,7 +23,7 @@
       "bold": true
     },
     "Operator": {
-      "text-color": "$dark"
+      "text-color": "$code-text"
     },
     "DecVal": {
       "text-color": "$highlight"
@@ -62,10 +62,10 @@
       "text-color": "$foreground"
     },
     "Variable": {
-      "text-color": "$dark"
+      "text-color": "$code-text"
     },
     "Extension": {
-      "text-color": "$dark"
+      "text-color": "$code-text"
     },
     "Other": {
       "text-color": "$foreground"

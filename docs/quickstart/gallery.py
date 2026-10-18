@@ -13,7 +13,7 @@ import tempfile
 
 import screenshots
 
-LIVERIES = ["ncar", "cu", "nsi"]
+LIVERIES = ["ncar", "cu", "nsi", "nasa", "nasa-dark"]
 COLUMNS = ["01-title", "02-divider", "03-text", "11-closing"]
 
 

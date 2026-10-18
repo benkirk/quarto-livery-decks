@@ -346,8 +346,9 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
    becomes a link to the vendored reference livery.
 3. CU Boulder: the first foreign livery and the first run of the onboarding tools (no
    waves, other fonts, a template from a reference deck). Joins the CI matrix.
-4. NASA general, then the first program flavor via `extends` (recolored template, its
-   own lockups).
+4. NASA general (done 2026-10-17: `nasa` and its dark flavor `nasa-dark`, engine 3.8.0), then
+   the NASA programs (Artemis, Commercial Crew, ISS): Ben expects them to bear no relation to
+   the general livery, so each stands alone rather than extending it.
 
 Before step 4 (done 2026-10-16, engine 3.3.0): the post-NSI refactor (`docs/design/refactor-handoff.md`): the pptx template
 tooling moves into the engine, marks are keyed by the field's role (`marks:`), and five cheap
@@ -398,6 +399,35 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, NASA general, light and dark** (beamer-livery-theme 3.8.0; this repo
+  `nasa-livery`). Ben asked for a general NASA style for external communication in light and
+  dark, with the preferred fonts and the meatball; there is no official template, so we take
+  liberties. Sources: the Brand Center's guidelines (the 2024 color guide: NASA Blue `#0032A0`,
+  Red `#E4002B`, superseding the `#0B3D91`/`#FC3D21` still quoted elsewhere; the insignia rules;
+  the Horizon digital faces) and NASA Science's public-engagement deck (10 x 5.625 in, black
+  slides, insignia top right; `nasa/reference/report.md`). Decided with Ben: the Horizon faces
+  (Inter, Public Sans, DM Mono) for all text, Helvetica only inside the agency-name artwork;
+  the insignia top right and the agency name as the sign-off, which together are the brand's
+  preferred identifier; dark *content* slides, diagrams included; NASA photography. Two
+  liveries, `nasa` and `nasa-dark` (`extends: nasa`); a deck-level mode switch would need
+  engine design. The insignia comes from the Brand Center's own SVG, recolored to the 2024
+  values, plus the guide's one-color white-rule version for the NASA Blue fields
+  (`nasa/reference/nasa_marks.py`). Engine 3.8.0 (one PR): a `code-text` role (code was drawn
+  in `dark`, a field color), beamer tints mixed toward the background rather than white, an
+  overridden blend reaching beamer, `livery.json` `mode` (dark when the background is darker
+  than the foreground) with dark-only css (callout title tints; a CSS lightness flip for inline
+  Graphviz), contrast checks for the code and blend pairs, and `typography.monospace` (a
+  bundled code face; DM Mono). The engine's four liveries rebuild their templates
+  byte-identically and its 202 PDF pages pixel-identically. Here: Quarto bakes mermaid and
+  dot cells to PNG before any Lua filter runs (tested even `at: pre-ast`), so
+  `diagram-dark.lua` recolors the baked pictures (`utils/diagram_dark.py`: HLS lightness
+  flipped, hues kept), in pptx and in beamer's raw LaTeX and `enginefull=` frame option; the
+  pptx now takes the livery's highlight theme like HTML and PDF (a small visible change for
+  ncar and cu: their pptx code wears their HTML colors), and pandoc's `monofont` from the
+  livery. nasa's body is 12 pt, the share of the slide ncar's and cu's take (14 and 13 overflowed the sample deck's dense PDF slides into the sign-off).
+  Follow-ups: whether the code-face treatment should be backported to ncar, cu and nsi (Ben);
+  a native pptx `clrMap` swap for dark liveries (now `dk1` holds white); the fntdata blobs for
+  embedding the Horizon faces (one PowerPoint save by Ben). Next: the NASA program liveries.
 - **2026-10-17, the container image** (this repo, `container-image`). Ben asked for the CI to
   be audited and for a product: the build environment as a multi-platform image a customer
   bind-mounts a deck directory into. `ghcr.io/benkirk/quarto-livery-decks` (root `Dockerfile`:

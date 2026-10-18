@@ -8,8 +8,8 @@ structure or conventions below change.
 A [Quarto](https://quarto.org) framework for documentation decks (`.pptx`
 primary; `.html`/revealjs and `.pdf`/beamer secondary), and the **multi-brand
 successor** of `benkirk/quarto-docs-framework` (the `upstream` remote), which
-stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (next: NASA; the compositions and the
-type scale are done, 2026-10-17):
+stays the NCAR framework. `docs/design/engine-and-liveries.md` is the roadmap (NASA general is done, as `nasa` and
+`nasa-dark`, 2026-10-17; next: the NASA program flavors):
 a generalized **engine** (the vendored theme, forked as
 `benkirk/beamer-livery-theme`) plus per-brand **livery** directories under
 `docs/common/liveries/`; its section 10 logs progress and names the next step.
@@ -31,7 +31,10 @@ the engine's `livery_template.py` builds its `template.pptx` from the data, and 
 non-NCAR livery, `cu` (CU Boulder), is a real directory under `docs/common/liveries/`
 with its decisions in `reference/notes.md`; `nsi` (the CU Center for National Security
 Initiatives) is its first flavor (`extends: cu`), on the engine's band title style
-(`title: {style: band}`, engine >= 3.1.0). The reference decks themselves live on
+(`title: {style: band}`, engine >= 3.1.0). `nasa` (NASA general, external communication;
+no official template, so the Brand Center's rules and NASA Science's public-engagement deck)
+and its dark flavor `nasa-dark` (`extends: nasa`, content on black) are the first dark livery
+(see "Dark liveries" below). The reference decks themselves live on
 Drive or a laptop, not in git. A livery without `pptx.fonts` embeds nothing
 (`embed_fonts.py` says so and leaves the deck alone); a livery without `art.waves`
 gets straight-edged title fields in every format.
@@ -91,7 +94,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `section_subtitle.py`, `enable_autofit.py`, `embed_fonts.py`,
   `style_footnotes.py`, `link_captions.py`, `slide_layout.py`,
   `style_tables.py` (tables drawn as in the HTML theme), and `type_step.py` (a deck's
-  `type-body:`/`type-scale:`).
+  `type-body:`/`type-scale:`). pandoc gets `-M monofont=<family>` when the livery bundles a
+  code face (`typography.monospace`, `livery.py mono`), and the pptx format takes the
+  livery's highlight theme (`_livery/build/livery.theme`) like HTML and PDF.
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
   `libs/`, `images/`, `SITE_EXTRA` directories, an index from `site_index.py` in
   the livery's colors with its fonts copied to `fonts/`;
@@ -154,7 +159,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   a closing splits its column at the middle. Over art, a mark's box is the eroded mask's core
   widened along its rows (`widened()`), so thin type ("Office") is not lost.
 - **Type** (engine >= 3.6.0): text sizes are **points on the livery's pptx canvas**, whole or
-  half points (a pasted slide carries round numbers): `livery.yml` `type:` (role -> pt, `levels`)
+  half points (a pasted slide carries round numbers; nasa: the reference deck's 10 x 5.625 in,
+  body 12, titles 22): `livery.yml` `type:` (role -> pt, `levels`)
   and `pptx.size` (inches, default 13.333 x 7.5), defaulting to the engine's `TYPE` (the NSF NCAR
   template's guidance carried onto 540 pt). ncar is on the brand template's own canvas, 10 x
   5.625 in, at its guidance (body 12, titles 20; its family inherits); cu's are the NSI master
@@ -164,6 +170,20 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>` (engine >= 3.7.0:
   beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
   reads it from `docProps/custom.xml`); `docs/fixtures/small.qmd` is `type-body: 10`.
+- **Dark liveries** (engine >= 3.8.0): `livery.json` `mode` is `dark` when the background is
+  darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
+  since a dark livery's `dark` stays a field color; beamer mixes its tints toward
+  `BrandBackground`, not white; `livery.css` gains callout title tints and a lightness flip
+  (CSS filter) for inline Graphviz. Quarto bakes mermaid and dot cells to PNG before any Lua
+  filter runs (even `at: pre-ast`), so `common/diagram-dark.lua` swaps each baked picture for
+  a copy from `utils/diagram_dark.py` (HLS lightness flipped, hues kept, white to the
+  background, black to the foreground): Image elements in pptx, and in beamer the raw LaTeX
+  and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
+  the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
+  holds white (a native `clrMap` swap is a follow-up).
+- **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
+  beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
+  pandoc's `monofont` in pptx (nasa: DM Mono). The other liveries keep the defaults.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by

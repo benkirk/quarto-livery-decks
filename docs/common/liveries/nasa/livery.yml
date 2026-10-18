@@ -1,0 +1,95 @@
+# Engine knobs for NASA (general, external communication), light: content on white, NASA Blue
+# fields. No official slide template exists; the canvas, the corner mark and the type follow the
+# NASA Science public-engagement deck (reference/report.md), the marks the Brand Center's rules
+# (reference/notes.md). nasa-dark extends this.
+name: nasa
+extends: null
+
+roles:
+  primary-text: white           # text on NASA Blue (10.7:1)
+  primary-contrast: nasa-blue   # NASA Blue as small text on white
+  accent: nasa-red
+  highlight: sky                # a second blue for small text on white: examples, tips, strings
+  muted: gray
+  surface: light-gray
+  warning: yellow
+  dark: black
+
+aspect: "16:9"
+
+signoff:                  # the agency name at the foot: with the insignia top right, the brand's
+  light: nasa-name        # preferred identifier (insignia upper right, agency name left, one line)
+  dark: nasa-name-white
+  aspect: 22.208          # the outlined name, 2665 x 120 px
+  height: 0.028
+  bottom: 0.035
+  corner: bottom-left
+
+geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
+  margin: 0.06
+  tab: 0.018
+  logo:
+    corner: top-right     # the insignia, as the reference deck places it
+    height: 0.075         # 0.42 in on the 5.625 in canvas, 68 px on a 900 px slide (minimum: 37 px)
+    top: 0.045
+    aspect: 1.2146        # the insignia's box with the vector, 583 x 480
+    title: 0.16
+    section: 0.11
+    closing: 0.16
+  pagenumber:
+    corner: bottom-right  # the reference deck's
+  divider:
+    top: 0.1333
+    bottom: 0.0889
+  full:
+    pad: 0.025
+    floor: 0.075
+    caption: 0.06
+
+divider:
+  label: Section
+  tab: true
+
+art:                      # no wave curves: fields end in a straight edge
+  titlegraphic: art/earth-limb.jpg   # ISS Expedition 42, iss042e340851 (reference/notes.md)
+
+latex:
+  colors:
+    nasa-blue: NASABlue
+    nasa-red: NASARed
+    black: NASABlack
+    carbon: NASACarbon
+    gray: NASAGray
+    silver: NASASilver
+    light-gray: NASALightGray
+    sky: NASASky
+    yellow: NASAYellow
+    white: NASAWhite
+
+pptx:
+  template: template.pptx
+  typeface: Public Sans          # bundled for HTML and PDF; the pptx names it (no fntdata blobs yet:
+  heading-typeface: Inter        # embed_fonts.py leaves the deck alone until PowerPoint makes them)
+  size: [10, 5.625]              # the reference deck's canvas, so a slide pastes 1:1
+
+type:                     # points on that canvas
+  body: 12                # the share of the slide ncar's and cu's bodies take, so a deck moves between
+  levels: [12, 11, 10, 9, 8]    # liveries without trimming (13 and 14 overflowed the sample deck's PDF)
+  frametitle: 22          # the reference deck's slide titles, 20-24 bold
+  subhead: 16
+  table: 10
+  code: 10                # a step under the body, as ncar's
+  caption: 9
+  footnote: 8
+  title: 32               # its cover, 36
+  subtitle: 16
+  date: 10
+  author: 12
+  institute: 12
+  section: 32
+  sectionsubtitle: 16
+  eyebrow: 9
+  closing: 32
+  fineprint: 6
+  pagenumber: 8
+  footer: 8

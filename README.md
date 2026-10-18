@@ -8,16 +8,17 @@
 A [Quarto](https://quarto.org) framework for documentation decks in any brand: one
 Markdown file becomes a branded PowerPoint (`.pptx`, the first-class output), a
 revealjs HTML deck and a beamer PDF. The brand is a **livery**, a directory of data
-and assets; `make pptx LIVERY=cu` is the whole switch. Three ship here: `ncar`
-(NSF NCAR), `cu` (University of Colorado Boulder) and `nsi` (the CU Center for
-National Security Initiatives). Clone, set up the conda env, copy the quickstart
+and assets; `make pptx LIVERY=cu` is the whole switch. Five ship here: `ncar`
+(NSF NCAR), `cu` (University of Colorado Boulder), `nsi` (the CU Center for
+National Security Initiatives), and `nasa` and `nasa-dark` (NASA, for external
+communication, on white and on black). Clone, set up the conda env, copy the quickstart
 deck, write Markdown.
 
 ![Four slides of the quickstart deck: the title slide, the MPAS-A governing equations, a two-column slide with a table, and a mermaid diagram](docs/quickstart/screenshots/hero.png)
 
 The same quickstart deck under each livery (title, divider, content, closing):
 
-![The quickstart deck under the ncar, cu and nsi liveries](docs/quickstart/screenshots/liveries.png)
+![The quickstart deck under the ncar, cu, nsi, nasa and nasa-dark liveries](docs/quickstart/screenshots/liveries.png)
 
 Two example decks ship with the framework:
 
@@ -110,7 +111,9 @@ quarto-livery-decks/
 │   │   │   ├── cu/             #   CU Boulder: _brand.yml, livery.yml, fonts/, logos/, art/,
 │   │   │   │                   #     template.pptx (generated), build/ (generated, committed),
 │   │   │   │                   #     reference/notes.md (its decisions)
-│   │   │   └── nsi/            #   CU NSI, a flavor of cu (extends: cu)
+│   │   │   ├── nsi/            #   CU NSI, a flavor of cu (extends: cu)
+│   │   │   ├── nasa/           #   NASA (light): the insignia, Inter/Public Sans/DM Mono
+│   │   │   └── nasa-dark/      #   NASA on black, a flavor of nasa (extends: nasa)
 │   │   ├── *.lua               # pandoc filters for pptx (see "pandoc pptx gotchas" in CLAUDE.md)
 │   │   └── utils/
 │   │       ├── livery.py           # the engine's livery reader, loaded from the vendored engine;
@@ -149,7 +152,14 @@ bottom-right; its `reference/notes.md` records the decisions. `nsi`, the CU Cent
 National Security Initiatives, is a flavor of `cu` (`extends: cu`) with the center's
 mark top left, the Research & Innovation Office lockup as its sign-off, its master
 deck's band title (black field, constellation picture, gold band with the campus
-photo, the two lockups beneath) and its satellite photo behind content slides. A new
+photo, the two lockups beneath) and its satellite photo behind content slides. `nasa` is
+NASA for external communication (no official template exists, so it follows the Brand
+Center's rules and NASA Science's public-engagement deck): the 2024 NASA Blue and Red, the
+Horizon Design System's faces (Inter headings, Public Sans body, DM Mono code; all bundled),
+the insignia top right and the agency name at the foot (the brand's preferred identifier),
+NASA Blue fields with the white-rule insignia. `nasa-dark` (`extends: nasa`) puts the content
+slides on black over a faint Hubble deep field, the cover and closing on black with the
+full-color insignia, and turns the baked mermaid and Graphviz diagrams to the dark. A new
 livery drops in as a sibling directory and CI builds the quickstart deck under it
 ("Adding a livery" below).
 
@@ -285,6 +295,8 @@ as a new Overleaf project (set the compiler to XeLaTeX if it asks):
 | `ncar` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip&engine=xelatex) | [ncar-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/ncar-overleaf.zip) |
 | `cu` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip&engine=xelatex) | [cu-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/cu-overleaf.zip) |
 | `nsi` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip&engine=xelatex) | [nsi-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip) |
+| `nasa` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip&engine=xelatex) | [nasa-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip) |
+| `nasa-dark` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip&engine=xelatex) | [nasa-dark-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip) |
 
 The same zip, unzipped, is the local path: `latexmk -xelatex talk.tex` builds it
 with nothing but XeLaTeX. To pack one yourself: `make overleaf LIVERY=cu` in any
@@ -605,7 +617,9 @@ into the .pptx.
 Each livery states its text sizes in whole or half points on its PowerPoint canvas, from the
 brand's own template or deck. ncar uses the NSF NCAR template's 10 x 5.625 in slide, with a 12 pt
 body, 12/11/10/9/8 pt list levels, 20 pt slide titles and a 22 pt cover title. cu uses the NSI
-deck's 13.33 x 7.5 in slide, with a 16 pt body, 32 pt titles and 60 pt dividers. So a slide
+deck's 13.33 x 7.5 in slide, with a 16 pt body, 32 pt titles and 60 pt dividers. nasa and
+nasa-dark use the NASA Science public-engagement deck's 10 x 5.625 in slide, with a 12 pt body
+and 22 pt titles. So a slide
 copied from a built pptx into a hand-made deck on that template keeps its geometry and its
 round sizes. HTML and PDF set the same sizes as the same share of the slide, so a slide fits,
 or overflows, alike in all three. `scale="S"` on a slide still sizes it in every format, and
@@ -745,6 +759,11 @@ license:
   photographs** of the `cu` and `nsi` liveries are the University of Colorado's and its
   units', reproduced here as the livery's reference assets; see each livery's
   `reference/notes.md` for their sources.
+- **The NASA insignia** (`docs/common/liveries/nasa/logos/`) is NASA's; it is not in the
+  public domain and its use is restricted by the
+  [NASA brand guidelines](https://www.nasa.gov/nasa-brand-center/brand-guidelines/). The
+  `nasa` liveries' photographs are NASA's (images.nasa.gov); see their `reference/notes.md`.
 - **The Poppins font** (`docs/common/liveries/ncar/fonts/` and the vendored theme)
   is licensed under the [SIL Open Font License](https://openfontlicense.org); **TeX Gyre
-  Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License.
+  Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License; **Inter, Public
+  Sans and DM Mono** (`docs/common/liveries/nasa/fonts/`) under the SIL Open Font License.

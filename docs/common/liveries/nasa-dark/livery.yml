@@ -1,0 +1,41 @@
+# Engine knobs for NASA dark: nasa with content slides on black (the reference deck's look), a faint
+# deep field behind them, the cover and closing on black with the full-color insignia (the brand
+# allows it on black and on photographs). Dividers stay on NASA Blue. Everything not here is nasa's.
+name: nasa-dark
+extends: nasa
+
+roles:
+  primary-contrast: light-blue
+  highlight: cyan
+  muted: steel
+  surface: graphite
+  code-text: frost          # the dark role is black here (bars, fields), so code text needs its own
+  dark: black
+
+derived:
+  alert-text: light-red     # the default blend darkens the accent: 2.0:1 on graphite
+
+marks:                      # the field each slide wears picks its marks: black slides the full-color
+  background: {logo: meatball, signoff: nasa-name-white}   # insignia and the white name; NASA
+  dark: {logo: meatball, signoff: nasa-name-white}          # Blue keeps nasa's white-rule insignia
+
+compositions:               # the cover and closing on black, as the reference deck's
+  title:
+    field: {role: dark}
+    mark: {role: dark}
+    signoff: {role: dark}
+  closing:
+    field: {role: dark}
+    mark: {role: dark}
+    signoff: {role: dark}
+  feature:                  # the bar is the dark role (black): its text in the foreground (white)
+    column: {role: foreground}
+
+art:
+  content: art/starfield.jpg   # Hubble eXtreme Deep Field, darkened to 3% mean (reference/notes.md)
+
+pptx:
+  template: template.pptx
+  scheme:                   # the link slots follow primary and highlight; NASA Blue links vanish on black
+    hlink: light-blue
+    folHlink: cyan
