@@ -7,7 +7,7 @@
 
 The reader lives in the engine (<repo>/_extensions/engine/livery.py, beside the template
 builder); this loads it by path, since both files are named livery. `deps` prints
-build/livery.{json,sty,css,theme}, the template and every file the data names (the parent's
+build/livery.{json,sty,css,theme,mplstyle}, the template and every file the data names (the parent's
 too), joined to the directory as given; nothing when build/livery.json is missing."""
 
 import importlib.util
@@ -34,7 +34,7 @@ def deps(d: str) -> list[str]:
     if not (Path(d) / "build" / "livery.json").exists():
         return []
     lv = _reader.load(d)
-    rel = [f"build/livery.{x}" for x in ("json", "sty", "css", "theme")] + [p for p, _ in _reader.files(lv)]
+    rel = [f"build/livery.{x}" for x in ("json", "sty", "css", "theme", "mplstyle")] + [p for p, _ in _reader.files(lv)]
     return sorted({os.path.normpath(Path(d) / p) for p in rel if (Path(d) / p).exists()})
 
 

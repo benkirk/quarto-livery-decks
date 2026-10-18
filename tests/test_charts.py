@@ -8,7 +8,8 @@ modes, no check fails, a generated palette passes every check, the build is dete
 published palettes come out as given (ncar's and ucar's sam-queries pins, nasa's HDS colors); then
 the rules on made-up liveries: one brand hue grows to eight that pass, an avoided hue range stays
 empty, a light pin is lifted for the dark surface, a ninth series never makes a family, unknown
-keys are refused.
+keys are refused; each livery's build/livery.mplstyle parses in matplotlib (the cycle is the
+categorical slots, the sizes the type scale), and the Custom Colors names are plain.
 """
 
 import importlib.util
@@ -129,12 +130,35 @@ def rules():
     check(fs["full"] == [11.73, 5.67] and fs["half"][0] < fs["full"][0] / 2, f"figsize {fs}")
 
 
+def style(d: Path, L: dict):
+    """build/livery.mplstyle as matplotlib reads it: no unknown key, the cycle, chrome and sizes."""
+    import matplotlib
+    import warnings
+    f = d / "build" / "livery.mplstyle"
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        rc = matplotlib.rc_params_from_file(f, use_default_template=False, fail_on_error=True)
+    check(not w, f"{d.name}: livery.mplstyle warns: {[str(x.message) for x in w]}")
+    ch = L["charts"]
+    cycle = [c.upper() for c in rc["axes.prop_cycle"].by_key()["color"]]
+    check(cycle == ch[ch["mode"]]["categorical"], f"{d.name}: mplstyle cycle {cycle}")
+    check(rc["axes.labelsize"] == L["type"]["roles"]["body"]["pt"], f"{d.name}: mplstyle label size")
+    check(rc["text.color"].upper() == ch["chrome"][ch["mode"]]["text"], f"{d.name}: mplstyle text color")
+    check(rc["savefig.transparent"] is True and rc["svg.fonttype"] == "path", f"{d.name}: mplstyle not transparent or svg text")
+    family = L["typography"].get("base")
+    check(rc["font.sans-serif"][:2] == [family, "DejaVu Sans"], f"{d.name}: mplstyle family {rc['font.sans-serif']}")
+    names = [n for n, _ in C.custom_colors(ch)]
+    check(len(names) <= C.SLOTS and all(n.startswith(f"Data {i} \u00b7 ") for i, n in enumerate(names, 1)),
+          f"{d.name}: custom colors {names}")
+
+
 def main():
     lv = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "liveries"
     dirs = sorted(p for p in lv.iterdir() if (p / "livery.yml").exists())
     math_points()
     for d in dirs:
         check_livery(d)
+        style(d, json.loads((d / "build" / "livery.json").read_text()))
     rules()
     for f in fails:
         print("FAIL", f)

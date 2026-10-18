@@ -485,7 +485,55 @@ def charts(livery: dict, knobs: dict | None) -> dict:
     out["sources"] = sources
     out["brand"] = hues[:n_brand]
     out["figsize"] = figsize(livery)
+    out["chrome"] = chrome(livery, surfaces)
     return out
+
+
+def chrome(livery: dict, surfaces: dict) -> dict:
+    """{mode: {text, spine, grid}}: a plot's non-data ink per mode, which a dark theme swaps while the
+    hues stay. The livery's own mode takes its roles (foreground, muted, derived.rule); the other mode
+    the lighter (dark) or darker (light) of foreground and background, its spines and grid that text
+    blended toward the surface."""
+    roles, mode = livery["roles"], livery["mode"]
+    fg, bg = roles["foreground"].upper(), roles["background"].upper()
+    lighter, darker = sorted((fg, bg), key=luminance, reverse=True)
+    out = {}
+    for m in ("light", "dark"):
+        if m == mode:
+            out[m] = {"text": fg, "spine": roles.get("muted", fg).upper(),
+                      "grid": livery.get("derived", {}).get("rule", mix(fg, surfaces[m], 0.7)).upper()}
+        else:
+            text = lighter if m == "dark" else darker
+            out[m] = {"text": text, "spine": mix(text, surfaces[m], 0.45), "grid": mix(text, surfaces[m], 0.75)}
+    return out
+
+
+# OKLCH hue (degrees) -> a plain name, for PowerPoint's Custom Colors row: the upper bound of each bin
+HUE_NAMES = ((15, "Pink"), (40, "Red"), (70, "Orange"), (110, "Yellow"), (165, "Green"), (215, "Teal"),
+             (240, "Cyan"), (280, "Blue"), (320, "Purple"), (345, "Magenta"), (360, "Pink"))
+
+
+def hue_name(c: str) -> str:
+    """A color's plain name: Gray below the neutral chroma, else its hue's, a grayish cyan or blue
+    Slate, a dark orange Brown and a dark yellow Gold."""
+    L, C, h = oklch(c)
+    if C < NEUTRAL:
+        return "Gray"
+    name = next(n for top, n in HUE_NAMES if h < top)
+    if name in ("Teal", "Cyan", "Blue") and C < 0.08:
+        return "Slate"
+    if name == "Orange" and L < 0.55:
+        return "Brown"
+    if name == "Yellow" and L < 0.8:
+        return "Gold"
+    return name
+
+
+def custom_colors(ch: dict) -> list[tuple[str, str]]:
+    """The categorical slots of the deck's own mode as (name, hex), "Data 1 · Blue": the Custom
+    Colors row livery_template.py writes into theme1.xml (a dark livery's slides are dark); the first
+    SLOTS of a longer published set, as the method's eight fixed slots."""
+    return [(f"Data {i} \u00b7 {hue_name(c)}", c.upper()) for i, c in enumerate(ch[ch["mode"]]["categorical"][:SLOTS], 1)]
 
 
 def _status(hue: float, cat: list[str], mode: str, surface: str) -> str:

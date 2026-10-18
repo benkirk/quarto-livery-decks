@@ -82,6 +82,45 @@
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
 }
+/* chart colors (livery.json charts) */
+:root {
+  --engine-data-1: #1159CD;
+  --engine-data-2: #EF483F;
+  --engine-data-3: #E8892E;
+  --engine-data-4: #386470;
+  --engine-data-5: #B0A26A;
+  --engine-data-6: #3F83EF;
+  --engine-data-7: #8F0800;
+  --engine-data-8: #79A3AD;
+  --engine-data-9: #3E1C99;
+  --engine-data-10: #E09D00;
+  --engine-data-11: #387D00;
+  --engine-data-12: #0CC9AC;
+  --engine-data-muted: #BDC1C9;
+  --engine-status-good: #2AA654;
+  --engine-status-warning: #A27900;
+  --engine-status-serious: #B45C00;
+  --engine-status-critical: #B63B35;
+}
+.reveal .slides section.slide.brand-dark {
+  --engine-data-1: #256EE4;
+  --engine-data-2: #EF483F;
+  --engine-data-3: #F29D49;
+  --engine-data-4: #487682;
+  --engine-data-5: #C2B47C;
+  --engine-data-6: #609AF6;
+  --engine-data-7: #FA8C87;
+  --engine-data-8: #79A3AD;
+  --engine-data-9: #794BE4;
+  --engine-data-10: #F5AF0C;
+  --engine-data-11: #4B9609;
+  --engine-data-12: #0CC9AC;
+  --engine-data-muted: #35383E;
+  --engine-status-good: #007433;
+  --engine-status-warning: #A27900;
+  --engine-status-serious: #B45C00;
+  --engine-status-critical: #B33832;
+}
 html:root { --r-code-font: "DM Mono", "SFMono-Regular", Menlo, Monaco, Consolas, monospace; }
 html:root {
   --r-main-font-size: var(--engine-type-body);

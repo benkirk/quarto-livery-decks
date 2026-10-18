@@ -15,10 +15,15 @@ dependencies:
       - bash_kernel
       - ipykernel
       - jupyter_client
+      - matplotlib    # plots in the livery (build/livery.mplstyle, the engine's mpl/livery_mpl.py)
       - nbclient
       - nbformat
+      - numpy
+      - pandas
       - pillow        # `make qa` contact sheets
       - pipdeptree
       - playwright    # `make qa` HTML checks (Makefile installs its headless Chromium)
       - python-pptx
       - pyyaml
+      - scipy
+      - seaborn

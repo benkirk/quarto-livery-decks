@@ -67,6 +67,33 @@
   --engine-pagenumber-left: 50px;
   --engine-pagenumber-right: auto;
 }
+/* chart colors (livery.json charts) */
+:root {
+  --engine-data-1: #00A2B4;
+  --engine-data-2: #E0681A;
+  --engine-data-3: #0057C2;
+  --engine-data-4: #D4246B;
+  --engine-data-5: #9A7B00;
+  --engine-data-6: #6B46C1;
+  --engine-data-muted: #BDC1C9;
+  --engine-status-good: #139948;
+  --engine-status-warning: #7A5B00;
+  --engine-status-serious: #974C00;
+  --engine-status-critical: #A82E29;
+}
+.reveal .slides section.slide.brand-dark {
+  --engine-data-1: #11A0B0;
+  --engine-data-2: #D9772C;
+  --engine-data-3: #4687EA;
+  --engine-data-4: #DE4B80;
+  --engine-data-5: #AD8D1C;
+  --engine-data-6: #8F70E8;
+  --engine-data-muted: #41444B;
+  --engine-status-good: #139948;
+  --engine-status-warning: #886600;
+  --engine-status-serious: #A85500;
+  --engine-status-critical: #B63B35;
+}
 html:root {
   --r-main-font-size: var(--engine-type-body);
   --mermaid-bg-color: var(--engine-background);
