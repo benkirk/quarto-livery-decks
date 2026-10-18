@@ -67,6 +67,12 @@ Fonts link), and `linked-images.lua:11`. Only `section_subtitle.py` and
 
 ## 2. Repositories
 
+**Since 2026-10-18 (#57) the engine lives in `quarto-livery-decks`**: `beamer-livery-theme` merged
+in with its history (the engine at `docs/common/_extensions/engine/`, its LaTeX examples at
+`docs/latex/`, its tests at `tests/`, every livery in `docs/common/liveries/`) and is archived;
+one version number, `_extension.yml`'s, tags the one repo. The rest of this section is the
+two-repo arrangement as designed and run from 2026-10-16 to 2026-10-18.
+
 Two new repositories, forked, with general nouns. The NCAR repositories stay exactly as
 they are for the people who use `\usetheme{NCAR}` from LaTeX and for the NCAR decks
 built here.
@@ -234,7 +240,9 @@ For `beamer-livery-theme`:
 - `highlight-style` is overridable by the project (`_livery/build/livery.theme`).
 - The reference liveries live under `liveries/` in the engine repo; vendoring brings
   them along under the extension directory, and the framework's `liveries/ncar` becomes a
-  link to the vendored copy.
+  link to the vendored copy. (Since #57 nothing is vendored: every livery is in
+  `docs/common/liveries/`, and the bundled fallback is `liveries/<brand>` beside the
+  `_extensions/` that holds the engine.)
 
 **Compositions** (2026-10-17, `composition-handoff.md`): the title (cover, photo, light,
 photo-light, band), closing (cover, light, band), section and feature slides are each one
