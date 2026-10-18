@@ -221,7 +221,6 @@ endif
 
 clean:
 	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip *-charts.zip
-	[ ! -L _engine ] || rm _engine   # the link to common/ that decks had before the engine-pptx format
 	rm -rf $(DECKS:=_files) $(SITE)
 
 distclean:

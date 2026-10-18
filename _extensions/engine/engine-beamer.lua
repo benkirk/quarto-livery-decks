@@ -36,7 +36,7 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
 
-  metadata `themeoptions: [brand=ucar, title=light, ...]`
+  metadata `themeoptions: [title=light, footer=full, ...]`
       options for \usetheme{Engine} (see beamerthemeEngine.sty)
 
 The filter also loads the theme: it puts this extension's directory on
@@ -301,14 +301,14 @@ local function deck_type_scale(meta, body_pt, who)
   return ts or 1
 end
 
--- A bundled livery: liveries/<brand> beside the _extensions/ that holds this extension
+-- The default livery: liveries/ncar beside the _extensions/ that holds this extension
 -- (liveries/ at the top of this repo). A deck reaches the extension through a linked
 -- _extensions/, and Lua does not resolve links, so the extension's own directory is found
 -- first: changing into a directory does resolve them.
-local function bundled_livery(extdir, brand)
+local function default_livery(extdir)
   local ok, real = pcall(pandoc.system.with_working_directory, extdir, pandoc.system.get_working_directory)
   local root = pandoc.path.directory(pandoc.path.directory(ok and real or extdir))
-  return pandoc.path.join({ root, "liveries", brand })
+  return pandoc.path.join({ root, "liveries", "ncar" })
 end
 
 local LIVERY   -- build/livery.json, read by load_theme
@@ -360,15 +360,14 @@ local function load_theme(doc)
     if not set then table.insert(opts, "mathfont=keep") end
   end
   -- the livery: `livery:` in the metadata (a directory, relative to the project), else
-  -- the bundled liveries/<brand> for themeoptions brand= (ncar), beside _extensions/
-  local livery, brand = doc.meta["livery"] and pandoc.utils.stringify(doc.meta["livery"]), "ncar"
-  for _, o in ipairs(opts) do brand = o:match("^%s*brand%s*=%s*(%S+)") or brand end
+  -- the bundled liveries/ncar beside _extensions/
+  local livery = doc.meta["livery"] and pandoc.utils.stringify(doc.meta["livery"])
   if livery then
     if not pandoc.path.is_absolute(livery) then
       livery = pandoc.path.join({ pandoc.system.get_working_directory(), livery })
     end
   else
-    livery = bundled_livery(extdir, brand)
+    livery = default_livery(extdir)
     doc.meta["livery"] = livery   -- for the filters after this one (linked-images, diagram-dark)
   end
   table.insert(opts, "livery=" .. livery)

@@ -10,16 +10,16 @@
 // literals (it passes some through lighten()), and the visible ones among
 // Quarto's rules are restated with the roles at the end of this file.
 
-// the ncar livery's palette, as Sass defaults only (see above)
-$ncar-blue: #0057C2;
-$ncar-dark-blue: #00357A;
-$ncar-space: #011837;
-$ncar-light-blue: #42C0FF;
-$ncar-light-gray: #F1F0EE;
-$ncar-orange: #FAA119;
-$ncar-yellow: #FFDD31;
-$ucar-aqua-contrast: #00818F;
-$ncar-muted: #6B7C99;
+// the ncar livery's roles, as Sass defaults only (see above)
+$engine-primary: #0057C2;
+$engine-foreground: #00357A;
+$engine-dark: #011837;
+$engine-secondary: #42C0FF;
+$engine-surface: #F1F0EE;
+$engine-accent: #FAA119;
+$engine-warning: #FFDD31;
+$engine-highlight: #00818F;
+$engine-muted: #6B7C99;
 
 // type: the ncar family as the Sass literal; the livery's --engine-font-family wins below
 $font-family-sans-serif: "Poppins", Helvetica, Arial, sans-serif;
@@ -37,44 +37,44 @@ $presentation-h4-font-size: 1em;
 
 // colors
 $body-bg: #fff;
-$body-color: $ncar-dark-blue;
-$text-muted: $ncar-muted;
-$primary: $ncar-blue;
-$secondary: $ncar-dark-blue;
-$link-color: $ncar-blue;
-$selection-bg: $ncar-light-blue;
-$selection-color: $ncar-space;
-$presentation-heading-color: $ncar-dark-blue;
-$presentation-list-bullet-color: $ncar-blue;
-$border-color: mix($ncar-dark-blue, $ncar-light-gray, 25%);
+$body-color: $engine-foreground;
+$text-muted: $engine-muted;
+$primary: $engine-primary;
+$secondary: $engine-foreground;
+$link-color: $engine-primary;
+$selection-bg: $engine-secondary;
+$selection-color: $engine-dark;
+$presentation-heading-color: $engine-foreground;
+$presentation-list-bullet-color: $engine-primary;
+$border-color: mix($engine-foreground, $engine-surface, 25%);
 $border-radius: 0;             // flat, as in the NCAR web design system
-$light-bg-link-color: $ncar-blue;
+$light-bg-link-color: $engine-primary;
 $dark-bg-text-color: #fff;
-$dark-bg-link-color: $ncar-light-blue;
-$dark-bg-code-color: $ncar-yellow;
+$dark-bg-link-color: $engine-secondary;
+$dark-bg-code-color: $engine-warning;
 
 // code: surface-colored blocks (as the listings style); token colors from the livery's theme
-$code-block-bg: $ncar-light-gray;
-$code-block-border-color: $ncar-light-gray;
+$code-block-bg: $engine-surface;
+$code-block-border-color: $engine-surface;
 $code-block-font-size: calc(var(--engine-type-code, 0.66) * 1em);
-$code-color: $ncar-space;
+$code-color: $engine-dark;
 
 // callouts, as engine-beamer.lua maps them
-$callout-color-note: $ncar-blue;
-$callout-color-tip: $ucar-aqua-contrast;
-$callout-color-important: $ncar-dark-blue;
-$callout-color-caution: $ncar-orange;
-$callout-color-warning: $ncar-orange;
+$callout-color-note: $engine-primary;
+$callout-color-tip: $engine-highlight;
+$callout-color-important: $engine-foreground;
+$callout-color-caution: $engine-accent;
+$callout-color-warning: $engine-accent;
 
 // mermaid renders live in HTML, so it can wear the brand (pptx/pdf: baked PNGs)
 $mermaid-font-family: $font-family-sans-serif;
 $mermaid-bg-color: #fff;
-$mermaid-node-bg-color: $ncar-light-gray;
-$mermaid-node-fg-color: $ncar-dark-blue;
-$mermaid-fg-color: $ncar-dark-blue;
-$mermaid-edge-color: $ncar-dark-blue;
+$mermaid-node-bg-color: $engine-surface;
+$mermaid-node-fg-color: $engine-foreground;
+$mermaid-fg-color: $engine-foreground;
+$mermaid-edge-color: $engine-foreground;
 $mermaid-label-bg-color: #fff;
-$mermaid-label-fg-color: $ncar-blue;
+$mermaid-label-fg-color: $engine-primary;
 
 /*-- scss:rules --*/
 

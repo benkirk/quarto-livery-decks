@@ -282,8 +282,6 @@ def band(name: str, title: dict, out: dict) -> dict:
     for k in ("band", "field", "field-text"):
         if t[k] not in out["roles"]:
             sys.exit(f"{name}: title.{k} {t[k]!r} is not a role")
-    for k in ("logo", "signoff"):   # the old spelling of marks.<field>, which marks() reads
-        t.pop(k, None)
     if "signoff" in out:
         t.setdefault("signoff-height", out["signoff"]["height"])
     t.setdefault("logo-height", out.get("geometry", {}).get("logo", {}).get("title", 0.09))
@@ -299,12 +297,6 @@ def marks(name: str, data: dict, out: dict) -> dict:
     given = {k: dict(v or {}) for k, v in (data.get("marks") or {}).items()}
     t = data.get("title") or {}
     field = {**BAND, **t}["field"] if t.get("style") == "band" else None
-    alias = {k: t[k] for k in ("logo", "signoff") if k in t}
-    if alias and field:
-        print(f"warning: {name}: title.logo and title.signoff are deprecated; write marks: {{{field}: ...}}", file=sys.stderr)
-        given[field] = {**alias, **given.get(field, {})}
-    elif alias:
-        print(f"warning: {name}: title.logo and title.signoff apply to a band title only (ignored)", file=sys.stderr)
     defaults = {"background": {"logo": medium.get("light"), "signoff": so.get("light")},
                 "primary": {"logo": medium.get("dark"), "signoff": so.get("dark")}}
     roles = list(MARK_ROLES) + [r for r in [field, *given] if r and r not in MARK_ROLES]

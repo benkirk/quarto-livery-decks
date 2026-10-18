@@ -10,7 +10,7 @@ roles:
   primary-contrast: ncar-blue   # primary as small text on white
   accent: orange
   highlight: ucar-aqua-contrast   # a second small-text accent on white: examples, tips, strings (Brand Guide p18)
-  muted: "#6B7C99"              # $ncar-muted: HTML, pptx; the PDF's CoolGray7 (#6686AF) joins it in Phase 2
+  muted: "#6B7C99"              # every format's muted (the PDF's CoolGray7, #6686AF, joined it in Phase 2)
   surface: light-gray
   warning: yellow
   dark: space

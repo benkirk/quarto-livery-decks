@@ -7,24 +7,20 @@
 %
 % Options:
 %   livery=<dir>             the livery directory (build/livery.sty, fonts/, logos/); absolute,
-%                             or relative to TeX's search path (default: the bundled
-%                             liveries/<brand>)
-%   brand=ncar|ucar|ucp|ncarucar  the old spelling of livery=liveries/<brand>       (ncar)
-%   fonts=brand|bundled|helvetica   the livery's font (poppins is its old spelling), its
-%                             bundled copy only, or the sanctioned substitute (default:
-%                             brand under XeTeX/LuaTeX, helvetica under pdfTeX)
-%   brandedfonts              legacy (v1) spelling of fonts=brand
+%                             or relative to TeX's search path, a bundled one being
+%                             liveries/<name>                              (liveries/ncar)
+%   fonts=brand|bundled|helvetica   the livery's font, its bundled copy only, or the
+%                             sanctioned substitute (default: brand under XeTeX/LuaTeX,
+%                             helvetica under pdfTeX)
 %   mathfont=serif|lm|stix|pagella|sans|poppins|keep|<font>
 %                             math font (default: a serif math font; see
 %                             "Math font" below)
 %
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=engine,prefix=engine@}
-\DeclareStringOption[]{livery}
-\DeclareStringOption[ncar]{brand}
+\DeclareStringOption[liveries/ncar]{livery}
 \DeclareStringOption[auto]{fonts}
 \DeclareStringOption[serif]{mathfont}
-\DeclareVoidOption{brandedfonts}{\def\engine@fonts{poppins}}
 \ProcessKeyvalOptions*
 
 \RequirePackage{iftex}
@@ -37,12 +33,12 @@
 % BrandSurface, BrandWarning, BrandDark), blends, logos, fonts and geometry, generated into
 % build/livery.sty by livery_build.py; its overrides/livery-extra.sty is appended there.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\ifx\engine@livery\@empty\edef\engine@livery{liveries/\engine@brand}\fi
+\ifx\engine@livery\@empty\def\engine@livery{liveries/ncar}\fi
 \edef\engineliverydir{\engine@livery/}
 \InputIfFileExists{\engineliverydir build/livery.sty}{}{%
   \PackageError{engine_livery}{no livery at \engineliverydir: build/livery.sty is missing}
     {Pass livery=<dir> (a directory holding build/livery.sty, from livery_build.py),
-     or brand=ncar|ucar|ucp|ncarucar for a bundled one.}}
+     liveries/<name> for a bundled one.}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fonts: the livery's base family (Brand Guide p20: Poppins Bold headlines, Poppins
@@ -51,7 +47,7 @@
 %   fonts=brand     the livery's installed-fonts when this machine has them (by name, so
 %                   only a livery that names some probes fontconfig), else the bundled
 %                   copy where TeX can find it, else an installed system copy of the
-%                   family (fonts=poppins is the old spelling)
+%                   family
 %   fonts=bundled   always the bundled copy (an error if TeX cannot find it)
 %   fonts=helvetica Helvetica (pdfLaTeX) / TeX Gyre Heros (XeLaTeX, LuaLaTeX)
 %
@@ -61,18 +57,22 @@
 % builds find the relative one through kpathsea (TEXINPUTS=<theme>// for logos and
 % TTFONTS=<theme>// for fonts).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\def\engine@tmp{brand}\ifx\engine@fonts\engine@tmp\def\engine@fonts{poppins}\fi
-\newif\ifengine@poppins \engine@poppinsfalse
-\newif\ifengine@bundledpoppins \engine@bundledpoppinsfalse
+\newif\ifengine@basefont \engine@basefontfalse        % the livery's base family is set
+\newif\ifengine@bundledfont \engine@bundledfontfalse    % ... from its bundled files
 \newif\ifengine@installedhead \engine@installedheadfalse
 \def\engine@tmp{auto}\ifx\engine@fonts\engine@tmp
-  \iftutex\def\engine@fonts{poppins}\else\def\engine@fonts{helvetica}\fi
+  \iftutex\def\engine@fonts{brand}\else\def\engine@fonts{helvetica}\fi
+\fi
+\@namedef{engine@fonts@brand}{}\@namedef{engine@fonts@bundled}{}\@namedef{engine@fonts@helvetica}{}
+\ifcsname engine@fonts@\engine@fonts\endcsname\else
+  \PackageError{engine_livery}{fonts=\engine@fonts\space is not brand, bundled or helvetica}{}%
+  \def\engine@fonts{brand}%
 \fi
 \ifdefined\engine@font@ext\else\def\engine@font@ext{.ttf}\fi
 \def\engine@tmp{helvetica}\ifx\engine@fonts\engine@tmp\else
   \iftutex
     \RequirePackage{fontspec}
-    \def\engine@bundledpoppins{%
+    \def\engine@usebundledfont{%
       \edef\engine@tmp{\noexpand\setsansfont{\engine@font@family}[%
         Scale          = 1.0,  % pandoc sets Scale=MatchLowercase, shrinking the face
         Path           = \engine@font@dir,
@@ -82,7 +82,7 @@
         ItalicFont     = \engine@font@italic,
         BoldItalicFont = \engine@font@bolditalic,
         \ifdefined\engine@font@semibold FontFace = {sb}{n}{\engine@font@semibold},\fi]}%
-      \engine@tmp\engine@poppinstrue\engine@bundledpoppinstrue}
+      \engine@tmp\engine@basefonttrue\engine@bundledfonttrue}
     % installed-fonts (livery.sty's \engine@installed@base|head@<face>, full names): the
     % base faces, and the headings faces as \engineheadingfont when this machine has them
     \def\engine@installedfonts{%
@@ -92,7 +92,7 @@
         \ifdefined\engine@installed@base@italic ItalicFont = \engine@installed@base@italic,\fi
         \ifdefined\engine@installed@base@bolditalic BoldItalicFont = \engine@installed@base@bolditalic,\fi
         \ifdefined\engine@installed@base@semibold FontFace = {sb}{n}{\engine@installed@base@semibold},\fi]}%
-      \engine@tmp\engine@poppinstrue
+      \engine@tmp\engine@basefonttrue
       \ifdefined\engine@installed@head@regular
         \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@installed@head@regular}}%
         \engine@tmp{%
@@ -109,14 +109,14 @@
     % free-plan compile is allowed -- and then found nothing anyway.
     \def\engine@brandfonts{%
       \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@dir\engine@font@regular\engine@font@ext}}%
-      \engine@tmp{\engine@bundledpoppins}{%
+      \engine@tmp{\engine@usebundledfont}{%
         \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@font@family}}%
         \engine@tmp{%
           \edef\engine@tmp{\noexpand\setsansfont{\engine@font@family}[Scale=1.0,FontFace={sb}{n}{Font=* SemiBold}]}%
-          \engine@tmp\engine@poppinstrue
-        }{\engine@bundledpoppins}}}
+          \engine@tmp\engine@basefonttrue
+        }{\engine@usebundledfont}}}
     \def\engine@tmp{bundled}\ifx\engine@fonts\engine@tmp
-      \engine@bundledpoppins
+      \engine@usebundledfont
     \else\ifdefined\engine@font@installed
       \edef\engine@tmp{\noexpand\IfFontExistsTF{\engine@installed@base@regular}}%
       \engine@tmp{\engine@installedfonts}{\engine@brandfonts}%
@@ -145,7 +145,7 @@
   \engine@tmp
 \fi\fi\fi
 
-\ifengine@poppins\else
+\ifengine@basefont\else
   \iftutex
     \RequirePackage{fontspec}
     \IfFontExistsTF{TeX Gyre Heros}{\setsansfont{TeX Gyre Heros}[Scale=1.0]}{}%
@@ -256,13 +256,13 @@
 \@namedef{engine@mathpreset@poppins}{%
   \@ifpackageloaded{unicode-math}{%
     \engine@setmath{latinmodern-math.otf}{Scale=1.0}%
-    \ifengine@bundledpoppins
+    \ifengine@bundledfont
       \edef\engine@tmp{\noexpand\setmathfont{\engine@font@italic\engine@font@ext}[range=it/{latin,Latin},
         Path=\engine@font@dir,\engine@mathversionopt]%
         \noexpand\setmathfont{\engine@font@regular\engine@font@ext}[range=up/{latin,Latin,num},
         Path=\engine@font@dir,\engine@mathversionopt]}%
       \engine@tmp
-    \else\ifengine@poppins
+    \else\ifengine@basefont
       \edef\engine@tmp{\noexpand\setmathfont{\engine@font@family\space Italic}[range=it/{latin,Latin},\engine@mathversionopt]%
         \noexpand\setmathfont{\engine@font@family}[range=up/{latin,Latin,num},\engine@mathversionopt]}%
       \engine@tmp
@@ -304,7 +304,7 @@
 % semibold where the livery's bundled family has one (Poppins SemiBold), else bold: asking
 % for sb without one is a "Font shape undefined" warning per use (Overleaf counts it as an
 % error; TeX Gyre Heros has no semibold)
-\ifengine@poppins\ifdefined\engine@font@semibold
+\ifengine@basefont\ifdefined\engine@font@semibold
   \DeclareRobustCommand{\sbseries}{\fontseries{sb}\selectfont}
 \else
   \DeclareRobustCommand{\sbseries}{\bfseries}
@@ -351,7 +351,6 @@
       breaklines=true, showstringspaces=false, captionpos=b,
       numbers=none, numbersep=5pt, tabsize=2,
     }%
-    \lstdefinestyle{ncar}{style=engine}% the style's old name
     \lstset{style=engine}%
   }{}%
 }

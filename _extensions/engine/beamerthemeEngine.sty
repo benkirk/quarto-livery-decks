@@ -3,13 +3,12 @@
 %
 % \usetheme[<options>]{Engine}
 %
-%   livery=<dir>               the livery (build/livery.sty, fonts/, logos/); default
-%                              the bundled liveries/<brand>
-%   brand=ncar|ucar|ucp|ncarucar   the old spelling of livery=liveries/<brand> (ncar)
+%   livery=<dir>               the livery (build/livery.sty, fonts/, logos/); a bundled
+%                              one is liveries/<name>                (liveries/ncar)
 %   title=dark|light           title/closing slide field:
 %                              brand color w/ white-reversed logo, or
 %                              white w/ full-color logo               (dark)
-%   fonts=poppins|helvetica    (poppins under XeLaTeX/LuaLaTeX)
+%   fonts=brand|bundled|helvetica   (brand under XeLaTeX/LuaLaTeX; see engine_livery.sty)
 %   mathfont=serif|lm|stix|pagella|sans|poppins|keep|<font>
 %                              math font (serif; see engine_livery.sty)
 %   footer=minimal|full        page number only, or + section/short title/date
@@ -28,7 +27,6 @@
 \mode<presentation>
 
 \def\engine@opt@livery{}
-\def\engine@opt@brand{ncar}
 \def\engine@titlestyle{dark}
 \def\engine@opt@fonts{auto}
 \def\engine@opt@mathfont{serif}
@@ -38,7 +36,6 @@
 \newif\ifengine@waves        \engine@wavestrue
 
 \DeclareOptionBeamer{livery}{\def\engine@opt@livery{#1}}
-\DeclareOptionBeamer{brand}{\def\engine@opt@brand{#1}}
 \DeclareOptionBeamer{title}{\def\engine@titlestyle{#1}}
 \DeclareOptionBeamer{fonts}{\def\engine@opt@fonts{#1}}
 \DeclareOptionBeamer{mathfont}{\def\engine@opt@mathfont{#1}}
@@ -51,7 +48,7 @@
 
 \mode<all>
 \@ifpackageloaded{engine_livery}{}{%
-  \edef\engine@tmp{\noexpand\RequirePackage[livery=\engine@opt@livery,brand=\engine@opt@brand,fonts=\engine@opt@fonts,mathfont=\engine@opt@mathfont]{engine_livery}}%
+  \edef\engine@tmp{\noexpand\RequirePackage[livery=\engine@opt@livery,fonts=\engine@opt@fonts,mathfont=\engine@opt@mathfont]{engine_livery}}%
   \engine@tmp}
 \mode<presentation>
 
@@ -64,29 +61,5 @@
 \useoutertheme{Engine}
 
 \setbeamertemplate{navigation symbols}{}
-
-% ---------------------------------------------------------------------------
-% v1 (2020-brand theme) compatibility, so existing decks build after changing
-% \usetheme{ncar} to \usetheme{Engine}
-% ---------------------------------------------------------------------------
-\RequirePackage{environ}
-% \begin{NCARprettyframe}[<image>] ... : photo feature frame; without an image,
-% a brand-field frame
-\NewEnviron{NCARprettyframe}[1][]{%
-  \def\engine@tmp{#1}%
-  \ifx\engine@tmp\@empty
-    \begin{frame}[engineclosing]\BODY\end{frame}%
-  \else
-    \begin{frame}[enginebg={#1}]\BODY\end{frame}%
-  \fi}
-% \begin{NCARtitleframe}[<image>] ... : the title page.  The body (v1 decks put
-% spacing and \maketitle there) is ignored; the new title page lays itself out.
-\NewEnviron{NCARtitleframe}[1][]{%
-  \def\engine@tmp{#1}%
-  \ifx\engine@tmp\@empty\else\titlegraphic{\includegraphics{#1}}\fi
-  \begin{frame}[plain,noframenumbering]\titlepage\end{frame}}
-\providecommand\titlebackground{}
-\providecommand\nobackground{}
-\providecommand\defaultbackground{}
 
 \mode<all>

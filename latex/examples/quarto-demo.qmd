@@ -10,9 +10,10 @@ fineprint: >-
   This material is based upon work supported by the NSF National Center for
   Atmospheric Research, a major facility sponsored by the U.S. National
   Science Foundation.
+# livery: liveries/ucar   # another bundled livery; with none, liveries/ncar
 format:
   engine-beamer:
-    # themeoptions: [brand=ucar, title=light, footer=full, mathfont=stix]
+    # themeoptions: [title=light, footer=full, mathfont=stix]
     keep-tex: false
 ---
 
