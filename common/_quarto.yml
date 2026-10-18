@@ -48,8 +48,6 @@ format:
     # footer: "Deck title | CISL"   # small text, bottom center
     # embed-resources: true         # one self-contained .html (needs chalkboard: false)
     # chalkboard: false
-
-# Mermaid diagrams render to PNG automatically during quarto render
-diagram:
+diagram:                   # mermaid diagrams render to PNG during quarto render
   mermaid:
     theme: default
