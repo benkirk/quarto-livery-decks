@@ -150,6 +150,17 @@ chmod -R a+rX /opt/matplotlib
 bad=$(find /opt -not -perm -o=r); test -z "$bad" || { echo "$bad"; exit 1; }
 EOS
 
+# 8. Host isolation. Apptainer passes the host's environment in, and an image ENV wins over a
+#    host variable of the same name: without these, a module's PYTHONPATH or TEXINPUTS, a
+#    `pip --user` tree or a kernel registered with the host's Python (~/.local/share/jupyter)
+#    reaches the image's tools and breaks the build (runtimes.yaml's lived-in HOME rows).
+#    Docker and Podman pass nothing in, so these change nothing there; set one deliberately
+#    with `docker run -e` or APPTAINERENV_<NAME>. Python reads an empty PYTHONPATH as unset;
+#    kpathsea reads TEXINPUTS ":" as its default path, extended by a leading or trailing ":".
+ENV PYTHONPATH= PYTHONHOME= PYTHONNOUSERSITE=1 \
+    JUPYTER_PREFER_ENV_PATH=1 \
+    TEXINPUTS=:
+
 # Provenance, set by CI (--build-arg); empty locally. After everything, so a new SHA
 # invalidates no layer above. The entrypoint's --help prints them.
 ARG GIT_SHA=""

@@ -408,6 +408,18 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, the image under Apptainer and Podman** (#73). `runtimes.yaml` runs the image as
+  HPC users do, pulled anonymously: Apptainer from its PPA (unprivileged user namespaces, no
+  setuid; the PPA's package carries what Ubuntu 24.04's AppArmor needs, on arm64 too) on both
+  architectures, and rootless Podman on amd64, through `smoke-test.sh` (`RUNTIME=`), then
+  Apptainer's own forms (cd-and-run from scratch outside HOME, exec, --cleanenv, --containall,
+  the read-only SIF). First run: a SIF in ~4 min, the smoke test in ~1 min, all green. Its
+  "lived-in HOME" rows found five breaks a long-used account brings: a host `python3` or `bash`
+  kernel in `~/.local/share/jupyter`, `pip --user` packages, a module's `PYTHONPATH`, a module's
+  `TEXINPUTS` without its trailing colon (a host matplotlib cache was fine). Ben: fix them in the
+  image, generally, and gate the rows: the Dockerfile's last `ENV` (an image `ENV` beats the
+  host's under Apptainer, and is a no-op under Docker). Runs on every PR and weekly on
+  `latest`; not a required check. Next: unchanged (release v1.1.0, then #58).
 - **2026-10-18, B.13: one text measurer** (#57 Phase B, the last step). `pptx_steps/measure.py`
   holds section_subtitle's PIL measurement, and slide_layout's character counts (half an em a
   character) and one-line table rows give way to it: the caution box, the feature panel, a

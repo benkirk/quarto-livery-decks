@@ -6,6 +6,7 @@
 # under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled and the charts bundle tried in a clean directory, the compositions measured). A new livery joins
 # by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.
+# `runtimes` (runtimes.yaml) runs the image under Apptainer and rootless Podman, as HPC users do.
 name: CI
 
 on:
@@ -37,6 +38,15 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+  # the image under Apptainer (amd64, arm64) and rootless Podman, pulled anonymously
+  runtimes:
+    name: Runtimes
+    needs: image
+    if: needs.image.outputs.digest != ''
+    uses: ./.github/workflows/runtimes.yaml
+    with:
+      image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
 
   # -----------------------------------------------------------------------
   # the sample (the cookbook), quickstart (the README's exemplar), fixture and plots decks

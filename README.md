@@ -998,10 +998,19 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
 - **Any user.** The image runs as root unless told otherwise; `--user "$(id -u):$(id -g)"`
   makes the outputs yours, and the entrypoint gives that uid a HOME under `/tmp`.
   Rootless Podman needs no flag (`podman run --rm -v "$PWD:/work:Z" ...`; add
-  `--userns=keep-id` if the files come out owned by a subuid). Apptainer:
-  `apptainer run --bind "$PWD:/work" --pwd /work docker://ghcr.io/benkirk/quarto-livery-decks make pptx`
-  (`apptainer exec` skips the entrypoint: pass
-  `make -f /opt/quarto-livery-decks/Make.common DECKS=roadmap pptx` yourself).
+  `--userns=keep-id` if the files come out owned by a subuid).
+- **On an HPC system (Apptainer)**, change into the decks and run; Apptainer binds the
+  directory, scratch and project spaces included, and the outputs are yours:
+  `cd my-decks && apptainer run docker://ghcr.io/benkirk/quarto-livery-decks make pptx`.
+  The first run converts the image (a few minutes) and caches it; `apptainer pull qld.sif
+  docker://ghcr.io/benkirk/quarto-livery-decks` keeps a SIF to run instead.
+  `apptainer exec` skips the entrypoint: pass
+  `make -f /opt/quarto-livery-decks/Make.common DECKS=roadmap pptx` yourself. Your real HOME
+  is used (the caches land in `~/.cache`), and your environment passes in, except what would
+  break the build: the image ignores a module's `PYTHONPATH` and `TEXINPUTS`, `pip --user`
+  packages, and Jupyter kernels registered with your own Python (set one deliberately with
+  `APPTAINERENV_<NAME>`). If a build still behaves differently than in Docker, try
+  `apptainer run --cleanenv` first.
 - **What the build writes** into the directory: the `_quarto.yml`, `_extensions`
   and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
   outputs (gitignore them, as a submodule consumer does). The links point into
@@ -1024,7 +1033,10 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
 - **The image itself**: `Dockerfile` at the repo root; `make image` builds it locally and
   `.github/scripts/smoke-test.sh <image>` runs what CI runs on it. `.github/workflows/image.yaml`
   builds it natively on an amd64 and an arm64 runner, smoke-tests each as the runner's
-  own unprivileged user, and merges one manifest list. Quarto's conda activation is baked
+  own unprivileged user, and merges one manifest list. `.github/workflows/runtimes.yaml` runs the same smoke
+  test under Apptainer (both architectures, unprivileged) and rootless Podman, plus the
+  Apptainer forms above and a "lived-in" HOME, on every pull request and weekly against
+  `latest`. Quarto's conda activation is baked
   as `ENV` (asserted against conda-forge's `activate.d` at build time), so the image also
   works as a GitHub Actions `container:`, which is how this repo's own CI (`ci.yaml`)
   builds its decks.
