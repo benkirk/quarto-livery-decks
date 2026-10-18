@@ -78,12 +78,14 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    Overleaf zip, so the new one is checked from its first push.
 5. **Release.** Add the livery's row to README "LaTeX and Overleaf" and "The liveries", `make
    gallery` it into the README, and its entry to [`CHANGELOG.md`](../CHANGELOG.md) under
-   *Liveries*. A release is the engine's version: bump `version:` in
+   *Liveries*. A release is the engine's version, a calendar version `YY.MM.N` (the month
+   unpadded, `N` the month's release count from 0, CHANGELOG.md's preamble): set `version:` in
    `_extensions/engine/_extension.yml` and `VERSION` in `engine-revealjs.lua` (which names the
    HTML dependency), `livery build liveries/*/` (each `build/livery.json` records the version),
    rename the changelog's `[Unreleased]` to `[<version>] - <date>`, merge, then tag `v<version>`.
-   Tags are never moved: a fix is a new patch release. The release workflow refuses a tag that
-   is not the version, one that was released before and one without a changelog entry; it
+   Tags are never moved: another release in the month is the next `N`. The release workflow
+   refuses a tag that is not the version or not `YY.MM.N`, a month still to come, one that was
+   released before and one without a changelog entry; it
    attaches one Overleaf zip and one charts bundle per livery, with the entry as the notes, and
    the Overleaf links serve the latest.
 
