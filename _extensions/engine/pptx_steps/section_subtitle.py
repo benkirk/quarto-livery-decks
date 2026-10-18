@@ -46,7 +46,7 @@ TAB = COLUMN["tab"]
 LABEL = LIVERY["divider"]["label"]          # "Section"; cap="all" sets it in capitals
 LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
 LABEL_GAP = 10                              # margin-bottom 0.5em
-BODY_GAP = 22                               # .ncar-subtitle margin-top 0.7em
+BODY_GAP = 22                               # .engine-subtitle margin-top 0.7em
 LINE = 1.4                                  # ascent + descent of the heading font, in em
 DECOR = ("engine-section-label", "engine-section-tab")
 

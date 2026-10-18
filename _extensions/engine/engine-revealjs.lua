@@ -24,7 +24,7 @@ The same Markdown as the beamer theme (engine-beamer.lua):
       content slide on Space, white text, the white-reversed logo (HTML only;
       pptx and beamer draw an ordinary slide)
 
-  metadata `livery: <dir>` or `themeoptions: [brand=ucar, title=light]`, `titlegraphic:`,
+  metadata `livery: <dir>`, `themeoptions: [title=light]`, `titlegraphic:`,
   `fineprint:`, `institute:` -- as for beamer; HTML also reads `autofit=false`
 
 Overflowing content slides shrink their body text to fit (engine-revealjs.js);
@@ -41,7 +41,7 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
       at its left: the warning slides (footnotes stay below it)
 
 Layout lives in engine-revealjs.scss; colors, fonts and logos come from the livery
-(`livery:` in the metadata, else the bundled liveries/<brand>): its build/livery.css,
+(`livery:` in the metadata, else the bundled liveries/ncar): its build/livery.css,
 attached here with the font and logo files and the autofit script as an HTML dependency
 (Quarto copies them into <deck>_files/libs/, or inlines everything under
 `embed-resources: true`), and build/livery.json for the roles the waves are drawn in.
@@ -60,7 +60,7 @@ local VERSION = "1.1.0"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
--- project), else the bundled liveries/<brand> beside _extensions/ for themeoptions brand= (ncar). Its
+-- project), else the bundled liveries/ncar beside _extensions/. Its
 -- build/livery.json carries the roles the waves and fields are drawn in; build/livery.css,
 -- attached with the font and logo files, the rest.
 local EXTDIR = pandoc.path.directory(quarto.utils.resolve_path("engine-revealjs.lua"))
@@ -82,10 +82,6 @@ local function deck_type_scale(meta, body_pt, who)
   return ts or 1
 end
 
--- A bundled livery: liveries/<brand> beside the _extensions/ that holds this extension
--- (liveries/ at the top of this repo). A deck reaches the extension through a linked
--- _extensions/, and Lua does not resolve links, so the extension's own directory is found
--- first: changing into a directory does resolve them.
 local PLOTS = dofile(pandoc.path.join({ EXTDIR, "engine-plots.lua" }))
 
 -- Plots at the canvas scale (engine-plots.lua): a figure shown at its natural inches times the
@@ -111,22 +107,26 @@ local function size_plots(doc, livery)
   })
 end
 
-local function bundled_livery(extdir, brand)
+-- The default livery: liveries/ncar beside the _extensions/ that holds this extension
+-- (liveries/ at the top of this repo). A deck reaches the extension through a linked
+-- _extensions/, and Lua does not resolve links, so the extension's own directory is found
+-- first: changing into a directory does resolve them.
+local function default_livery(extdir)
   local ok, real = pcall(pandoc.system.with_working_directory, extdir, pandoc.system.get_working_directory)
   local root = pandoc.path.directory(pandoc.path.directory(ok and real or extdir))
-  return pandoc.path.join({ root, "liveries", brand })
+  return pandoc.path.join({ root, "liveries", "ncar" })
 end
 
-local function load_livery(meta, brand)
+local function load_livery(meta)
   local dir = meta["livery"] and pandoc.utils.stringify(meta["livery"])
   if dir and not pandoc.path.is_absolute(dir) then
     dir = pandoc.path.join({ pandoc.system.get_working_directory(), dir })
   end
-  dir = dir or bundled_livery(EXTDIR, brand)
+  dir = dir or default_livery(EXTDIR)
   local f = io.open(pandoc.path.join({ dir, "build", "livery.json" }))
   if not f then
     error("engine-revealjs: no livery at " .. dir .. " (build/livery.json is missing): set `livery:` "
-      .. "to a livery directory, or themeoptions brand=ncar|ucar|ucp|ncarucar for a bundled one")
+      .. "to a livery directory (a bundled one is liveries/<name>)")
   end
   local livery = quarto.json.decode(f:read("a")); f:close()
   -- the physical directory: a flavor's inherited files are `../<parent>/...`, and joined onto a
@@ -586,7 +586,7 @@ function Pandoc(doc)
   local meta = doc.meta
   local opts = theme_options(meta)
 
-  local livery = load_livery(meta, opts.brand or "ncar")
+  local livery = load_livery(meta)
   -- the filters after this one (linked-images, diagram-dark) read the livery it resolved
   if not meta["livery"] then meta["livery"] = livery.dir end
   if livery.type and livery.type.canvas then doc = size_plots(doc, livery); meta = doc.meta end

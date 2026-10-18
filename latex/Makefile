@@ -10,9 +10,9 @@
 #   make clean
 #
 # The theme lives in ../_extensions/engine/, the liveries in ../liveries/. LaTeX finds the
-# .sty files, a brand='s liveries/<name>/ and its logos through TEXINPUTS, and the bundled
+# .sty files, a livery=liveries/<name>/ and its logos through TEXINPUTS, and the bundled
 # fonts through TTFONTS (set here, and by latexmkrc), as an Overleaf zip's latexmkrc does.
-# The root itself is on both: brand= names its files as liveries/<name>/..., which the
+# The root itself is on both: livery= names its files as liveries/<name>/..., which the
 # theme looks up as files first (TTFONTS without it falls back to an installed face by
 # name: in the image, Poppins with SemiBold for bold). Never $(ROOT)//: that would
 # search conda-env/ too.
@@ -46,9 +46,9 @@ examples/quarto-demo.pdf: examples/quarto-demo.qmd FORCE
 	cd examples && quarto render quarto-demo.qmd --to engine-beamer
 
 # \enginethemeoptions / \engineaspectratio are hooks in examples/template.tex
-opts_template-ucar       := brand=ucar
-opts_template-ucp        := brand=ucp
-opts_template-ncarucar   := brand=ncarucar,footer=full
+opts_template-ucar       := livery=liveries/ucar
+opts_template-ucp        := livery=liveries/ucp
+opts_template-ncarucar   := livery=liveries/ncarucar,footer=full
 opts_template-light      := title=light,fonts=bundled
 opts_template-43         :=
 opts_template-pdflatex   :=

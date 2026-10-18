@@ -431,8 +431,7 @@ and keep `<deck>_files/` beside it.
 ## LaTeX and Overleaf
 
 Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop:
-`\usetheme[livery=<dir>]{Engine}`, or `\usetheme[brand=<name>]{Engine}` for one of
-`liveries/` by name. The starter deck under the `ncar` and `cu` liveries:
+`\usetheme[livery=<dir>]{Engine}`, a bundled one being `livery=liveries/<name>`. The starter deck under the `ncar` and `cu` liveries:
 
 ![The LaTeX starter deck under the ncar and cu liveries](latex/preview.png)
 
@@ -490,8 +489,8 @@ MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` 
 `TTFONTS` at `_extensions/engine/`, `liveries/` and the repo root, where the theme and the
 liveries' bundled fonts are, as an Overleaf zip's `latexmkrc` does. With a
 minimal TeX Live, the demo's callouts need `fontawesome5` (`texlive-fonts-extra` on Debian
-and Ubuntu). The demo names no `livery:`, so it shows the `brand=` route: Quarto finds
-`liveries/<brand>` beside `_extensions/`, a link in `examples/`.
+and Ubuntu). The demo names no `livery:`, so it shows the default: Quarto finds
+`liveries/ncar` beside `_extensions/`, a link in `examples/`.
 
 ### An existing LaTeX deck
 
@@ -506,12 +505,9 @@ latexmk -xelatex my-talk.tex
 
 ```latex
 \usetheme[livery=/path/to/livery]{Engine}   % any livery: a directory holding build/livery.sty
-\usetheme[brand=ucar]{Engine}               % one of liveries/ by name
-\usetheme{Engine}                           % ncar
+\usetheme[livery=liveries/ucar]{Engine}     % a bundled one, found through TEXINPUTS
+\usetheme{Engine}                           % liveries/ncar
 ```
-
-A deck written for the 2020-brand NCAR theme moves over with two changes (see "From the
-2020-brand NCAR theme" below).
 
 ### Writing slides in LaTeX
 
@@ -543,8 +539,7 @@ A Quarto deck writes the same things in Markdown ("PDF (beamer)" above; the samp
 
 | option | values | default | |
 |---|---|---|---|
-| `livery` | a directory holding `build/livery.sty` | `liveries/<brand>` | the brand: colors, fonts, logos, geometry, art; in Quarto the `livery:` metadata key, a directory relative to the project (this framework sets `livery: _livery`) |
-| `brand` | a directory name under `liveries/` | `ncar` | a livery by name, found through `TEXINPUTS` in LaTeX and beside `_extensions/` in Quarto |
+| `livery` | a directory holding `build/livery.sty`; a bundled one is `liveries/<name>`, found through `TEXINPUTS` | `liveries/ncar` | the brand: colors, fonts, logos, geometry, art; in Quarto the `livery:` metadata key, a directory relative to the project (this framework sets `livery: _livery`; without one, `liveries/ncar` beside `_extensions/`) |
 | `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or white with the full-color logo (the brand's own light cover) |
 | `fonts` | `brand`, `bundled`, `helvetica` | `brand` (`helvetica` under pdfLaTeX) | `brand` uses the livery's installed fonts when this machine has them, else its bundled files; `bundled` always the bundled files (reproducible; what Overleaf gets); `helvetica` the sanctioned substitute, and the only choice under pdfLaTeX |
 | `footer` | `minimal`, `full` | `minimal` | page number only, or also the section, short title and date |
@@ -556,7 +551,7 @@ A Quarto deck writes the same things in Markdown ("PDF (beamer)" above; the samp
 | `autofit` | `true`, `false` | `true` | HTML only: shrink overflowing content slides to fit |
 
 A Quarto deck here sets them with `themeoptions:` ("PDF (beamer)"); its livery comes from
-`LIVERY=`. The HTML format reads `livery`, `brand`, `title`, `waves` and `autofit` and
+`LIVERY=`. The HTML format reads `title`, `waves` and `autofit` (and the `livery:` key) and
 ignores the rest.
 
 ### Math fonts
@@ -617,33 +612,6 @@ Each livery also exports its **palette by name** (`latex.colors` in its
 - **ucar**, **ucp**, **ncarucar**: those plus `UCARAqua`, `UCARAquaContrast`, `LightAqua`
 - **cu**, **nsi**: `CUGold`, `CUBlack`, `CUDarkGray`, `CULightGray`, `CUAccessibleGold`, `CUSkyBlue`, ...
 - **nasa**, **nasa-dark**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...
-
-### From the 2020-brand NCAR theme
-
-The 2020-brand theme (`\usetheme{ncar}`, CoolGray with the `#1A658F` blue and Cormorant) is
-kept at tag [`v1.0-brand2020`](https://github.com/benkirk/NCAR_beamer_template/tree/v1.0-brand2020)
-and on branch `brand-2020` of `NCAR_beamer_template`. A deck written for it moves over with
-two changes:
-
-1. `\usetheme{ncar}` becomes `\usetheme{Engine}`.
-2. `TEXINPUTS` and `TTFONTS` point at this repo's `_extensions/engine/` and `liveries/` (see
-   "An existing LaTeX deck" above).
-
-How its pieces map:
-
-| 2020-brand theme | Engine |
-|---|---|
-| `NCARtitleframe[img]` | the title slide; its body (usually `\vspace` plus `\maketitle`) is ignored |
-| `NCARprettyframe[img]` | a photo feature frame, or a brand-field frame without an image |
-| its color names (`NCARBlue`, `CoolGray11`, `DeepBlue`, ...) | compile, mapped onto the nearest 2026 colors; `HilightGreen` is an NCAR Blue text highlight, legible on white |
-| `\logo{...}` | decorates the bottom of a slide |
-| `listings` | loaded automatically; your own `\lstset` applies |
-| `\titlebackground`, `\nobackground`, `\defaultbackground` | accepted, and do nothing |
-| no divider slides | a divider slide at each `\section` (`sectionpages=false` turns them off) |
-| the section name in the footer | `footer=full` |
-| Helvetica text | Poppins, which is wider: a slide packed to the limit may need trimming or `[shrink]` |
-| math in the text font | a serif math font (`mathfont=poppins` for the text font's letters) |
-| plain content slides | the brand's faint wave lines (`waves=false` removes them) |
 
 ## Checking a deck
 
@@ -944,8 +912,7 @@ make pptx                         # or: make pptx LIVERY=cu
 - **Make links the rest into the deck directory on the first build:**
   `_quarto.yml`, `_extensions` (the engine, whose formats bring their filters) and
   `_livery` (the livery in use, which it reaches the pptx template through). The consumer
-  gitignores those links, and its build outputs. An `_engine` link left by an older
-  framework is unused; `make clean` removes it.
+  gitignores those links, and its build outputs.
 - **A livery of its own**: a directory anywhere, built as in "Adding a livery", chosen
   with `make pptx LIVERY_DIR=path/to/livery`; `make overleaf LIVERY_DIR=...` packs its
   Overleaf zip, which the consumer releases itself.

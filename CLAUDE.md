@@ -340,8 +340,8 @@ it does, by area, beyond the format notes above:
   not resolve links; changing into the directory does). `_extension.yml`'s default
   `highlight-style` is `../../liveries/ncar/build/livery.theme`, which Quarto resolves
   lexically through the link, so `latex/examples/` links `liveries` beside its
-  `_extensions` (the shape of an Overleaf zip). LaTeX finds `brand=<name>`'s
-  `liveries/<name>/` through `TEXINPUTS` (`_extensions/engine//`, `liveries//` and the root
+  `_extensions` (the shape of an Overleaf zip). LaTeX finds `livery=liveries/<name>`
+  through `TEXINPUTS` (`_extensions/engine//`, `liveries//` and the root
   itself, as an Overleaf zip's `latexmkrc`; never the root's `//`, which reaches `conda-env/`).
   `TTFONTS` needs the root too: the theme looks the bundled fonts up as files,
   `liveries/<name>/fonts/...`, and a miss falls back to an installed face by name silently (the
@@ -446,7 +446,7 @@ bit while building it:
   livery's css is an HTML dependency whose resources (its fonts and logos) are
   copied beside it and inlined under `embed-resources`. Web logos are
   separate RGB files: the PDF lockups are CMYK and convert off-color.
-- **`hash-type: number` strips `#title-slide`**: target `.ncar-title`.
+- **`hash-type: number` strips `#title-slide`**: target `.engine-title`.
 - **`?print-pdf` moves slides into `.pdf-page` and forces `padding: 0
   !important`**: use descendant selectors (`section.slide`, not
   `.slides > section`), restate padding under `html.reveal-print`, and keep

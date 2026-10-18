@@ -277,7 +277,7 @@ jobs:
 
       # the starter (talk.tex), the examples (template, paper, mathfonts, the Quarto demo) and
       # template.tex's brand, title, aspect-ratio, pdfTeX and math-font variants; the demo's
-      # HTML too, the one deck on the brand= fallback (no livery: key)
+      # HTML too, the one deck on the default livery (no livery: key)
       - name: Build the starter deck, the examples and their variants
         run: timeout 1200 make -C latex default examples variants html
 
