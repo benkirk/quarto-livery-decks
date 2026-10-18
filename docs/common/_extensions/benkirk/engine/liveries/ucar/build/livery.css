@@ -39,7 +39,7 @@
   --engine-type-footer: calc(15.56px * var(--engine-type-scale, 1));
   --engine-type-subhead: 1.25;
   --engine-type-table: 0.8333;
-  --engine-type-code: 0.6667;
+  --engine-type-code: 0.8333;
   --engine-type-caption: 0.6667;
   --engine-type-footnote: 0.6667;
   --engine-type-title: 1.8333;
