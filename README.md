@@ -39,7 +39,7 @@ cd decks/quickstart
 make pptx              # → quickstart.pptx (the default livery, ncar)
 make html              # → quickstart.html (revealjs)
 make pdf               # → quickstart.pdf  (beamer; needs TeX)
-make pptx LIVERY=cu    # the same deck in another livery (cu, nsi, nasa, nasa-dark)
+make pptx LIVERY=cu    # the same deck in another livery (any directory under liveries/)
 ```
 
 Open `quickstart.pptx` (or `quickstart.html` in a browser), then copy
@@ -485,8 +485,8 @@ in a clean directory on every push.
 
 `make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
 MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and
-`TTFONTS` at `_extensions/engine/` and `liveries/`, where the theme and the liveries'
-bundled fonts are, as an Overleaf zip's `latexmkrc` does. With a
+`TTFONTS` at `_extensions/engine/`, `liveries/` and the repo root, where the theme and the
+liveries' bundled fonts are, as an Overleaf zip's `latexmkrc` does. With a
 minimal TeX Live, the demo's callouts need `fontawesome5` (`texlive-fonts-extra` on Debian
 and Ubuntu). The demo names no `livery:`, so it shows the `brand=` route: Quarto finds
 `liveries/<brand>` beside `_extensions/`, a link in `examples/`.
@@ -845,10 +845,13 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    assets and the notes. CI builds the quickstart under every livery directory and compiles
    its Overleaf zip, so the new one is checked from its first push.
 6. **Release.** Add the livery's row to "LaTeX and Overleaf" and to "The liveries", `make
-   gallery` it into the README, then cut a release: a new tag `vX.Y.Z`, or, while the change
-   stays backwards compatible, the current one moved (`git tag -f vX.Y.Z && git push -f origin
-   vX.Y.Z`). The release workflow attaches one zip per livery, replacing an existing
-   release's, and the Overleaf links serve the latest.
+   gallery` it into the README, then cut a release. The tag is the engine's version:
+   `version:` in `_extensions/engine/_extension.yml` (and `VERSION` in `engine-revealjs.lua`,
+   which names the HTML dependency), so bump both, merge, then tag `v<version>`; the release
+   workflow refuses any other tag. While a change stays backwards compatible the current tag
+   may be moved instead (`git tag -f vX.Y.Z && git push -f origin vX.Y.Z`). The workflow
+   attaches one zip per livery, replacing an existing release's, and the Overleaf links serve
+   the latest.
 
 ## Using the framework from another repo
 
@@ -884,7 +887,7 @@ make pptx                         # or: make pptx LIVERY=cu
   gitignored there.
 - **A framework fix goes here first.** Merge it here, then move the
   consumer's pin (`git -C docs/presentations/framework pull`, then commit the
-  new pointer). The engine follows the same path one level down.
+  new pointer). The engine is part of this repo, so the same holds for it.
 - **The deck-polish skill:** a consumer can link
   `.claude/skills/deck-polish` to `docs/presentations/framework/.claude/skills/deck-polish`.
 
@@ -994,7 +997,7 @@ publishes to a public URL; `SITE_NOINDEX` keeps it out of search engines, nothin
 
 Copyright © 2026 University Corporation for Atmospheric Research.
 
-The framework, its tools and the example decks are licensed under
+The framework, its engine, its tools and the example decks are licensed under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative
 Commons Attribution-ShareAlike 4.0 International); the full text is in
 [`LICENSE.txt`](LICENSE.txt). You may share and adapt them with attribution,
