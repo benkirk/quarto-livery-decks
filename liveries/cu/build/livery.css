@@ -81,30 +81,30 @@
 /* chart colors (livery.json charts) */
 :root {
   --engine-data-1: #AD8E38;
-  --engine-data-2: #096FAE;
-  --engine-data-3: #9C3F29;
-  --engine-data-4: #00A2AE;
-  --engine-data-5: #334C98;
-  --engine-data-6: #A86100;
-  --engine-data-7: #812F62;
-  --engine-data-8: #BC5969;
+  --engine-data-2: #9C3F29;
+  --engine-data-3: #096FAE;
+  --engine-data-4: #7A9C51;
+  --engine-data-5: #812F62;
+  --engine-data-6: #00A1B8;
+  --engine-data-7: #334C98;
+  --engine-data-8: #008777;
   --engine-data-muted: #B9C3C7;
-  --engine-status-good: #139948;
-  --engine-status-warning: #7A5B00;
-  --engine-status-serious: #DE7515;
-  --engine-status-critical: #EA6B60;
+  --engine-status-good: #00672D;
+  --engine-status-warning: #8C6800;
+  --engine-status-serious: #BD6100;
+  --engine-status-critical: #D2554C;
 }
 .reveal .slides section.slide.brand-dark {
   --engine-data-1: #AD8E38;
   --engine-data-2: #096FAE;
   --engine-data-3: #9C3F29;
-  --engine-data-4: #009FAA;
-  --engine-data-5: #AE660D;
-  --engine-data-6: #913E71;
-  --engine-data-7: #6988DA;
-  --engine-data-8: #B95666;
+  --engine-data-4: #7D9F54;
+  --engine-data-5: #913E71;
+  --engine-data-6: #AE660D;
+  --engine-data-7: #009EB1;
+  --engine-data-8: #B8566A;
   --engine-data-muted: #32393D;
-  --engine-status-good: #139948;
+  --engine-status-good: #00893D;
   --engine-status-warning: #7A5B00;
   --engine-status-serious: #DA720D;
   --engine-status-critical: #E3655A;

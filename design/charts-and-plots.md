@@ -247,7 +247,7 @@ Per livery:
 | ucar | ncar's, with UCAR Aqua leading: sam-queries' set with slots 1 and 3 swapped, which passes the same checks |
 | ucp, ncarucar | their parents' (`extends`: ucar, ncar) |
 | nasa, nasa-dark | HDS's 12 categorical colors, its sets (option 1 for 2 to 5 series) and its 11 ramps, verbatim (CC0); HDS blue 70 and red 70 as diverging poles; never the brand red and blue |
-| cu, nsi | generated from the gold and the blues, with the campus: the roof tile `#9C3F29` (sampled from the campus photo) as the third brand hue, a campus map (Light Gold, sandstone, tile) as the default, Sky Blue to the tile as diverging (2026-10-18) |
+| cu, nsi | generated from the gold and the blues, with the campus: the roof tile `#9C3F29` (sampled from the campus photo) as the third brand hue and sage the fourth, a campus map (Light Gold, sandstone, tile) as the default, Sky Blue to the tile as diverging (2026-10-18) |
 
 ncar's notes record why sam-queries' set adds a pink, a purple and a darker gold (the brand
 colors alone failed the checks), and the generator's own ncar result for comparison. The checks

@@ -131,11 +131,15 @@ gray and were left out):
   `#D2B39F`, the Flatirons' sandstone `#AE7858`, the tile in sun `#9C3F29`, in shade `#76312B` and
   in deep shade `#412429`. The sandstone alone is too gray for a series (chroma 0.08).
 - **The diverging scale**: Sky Blue to the tile, the sky over the roofs, a neutral midpoint.
+- **Sage** (Ben: "if CU needs any more color diversity I think a sage green could be aesthetic"):
+  classic sage `#9CAF88` is too gray for a series (chroma 0.06), so the generator holds its hue
+  and raises it to the chroma floor, `#7A9C51` on white, `#7D9F54` on black; the series had no
+  green before. It is the fourth hue (`extended`).
 
 The series: CU Gold moved into the mark band (`#CFB87C` becomes `#AD8E38`, close to the brand's own
-Accessible Gold), Sky Blue `#096FAE`, the tile, then five generated hues at the brand's chroma:
-`#00A2AE #334C98 #A86100 #812F62 #BC5969` on white, `#009FAA #AE660D #913E71 #6988DA #B95666` on
-black. Every check passes.
+Accessible Gold), the tile, Sky Blue `#096FAE`, sage, then four generated hues at the brand's
+chroma: `#812F62 #00A1B8 #334C98 #008777` on white, `#913E71 #AE660D #009EB1 #B8566A` on black (in
+the order the generator picks for separation). Every check passes.
 
 The fact check found the ten palette colors exactly as the brand site and cu.edu publish them.
 CU's web theme (`CuBoulder/tiamat-theme` 8df166a) adds brick `#AE5A39`, medium blue `#4FC3F7`,

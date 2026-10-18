@@ -67,7 +67,7 @@ default color map, the diverging scale. Where they come from (each livery's
   ladders, re-based on the 2026 guide.
 - **cu, nsi**: CU publishes no chart palette, so the engine generates one from CU Gold and Sky
   Blue, with the campus in it: the red tile roofs (`#9C3F29`, sampled from the campus photo) as
-  the third color, a campus map of Light Gold, the Flatirons' sandstone and the tile in sun and
+  the third color and a sage green the fourth, a campus map of Light Gold, the Flatirons' sandstone and the tile in sun and
   shade, and a diverging scale from the sky to the roofs.
 - **nasa, nasa-dark**: NASA's own dataviz palette from the Horizon Design System, verbatim.
 
