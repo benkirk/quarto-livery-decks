@@ -21,6 +21,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -123,7 +124,8 @@ def shoot_pdf(pdf, titles, out, tag):
     want = {"title": 1}
     for kind in ("section", "closing", "feature"):
         t = " ".join(titles.get(kind, "\0").split())
-        want[kind] = next((n for n, p in enumerate(pages, 1) if t in p), None)
+        # after the title page: a part deck's subtitle is often its first divider's title
+        want[kind] = next((n for n, p in enumerate(pages[1:], 2) if t in p), None)
     for kind, n in want.items():
         if n:
             stem = os.path.join(out, f"{tag}-{kind}")
@@ -133,14 +135,39 @@ def shoot_pdf(pdf, titles, out, tag):
     return shots
 
 
-def shoot_pptx(deck, titles, out):
+def _family(spec):
+    return spec if isinstance(spec, str) else (spec or {}).get("family")
+
+
+def shoot_pptx(deck, titles, out, L):
+    """soffice reads no embedded fonts, and a private profile sees none installed: it gets the
+    livery's bundled faces, and a typeface the livery names but does not bundle (cu's Helvetica
+    Neue) is drawn in its bundled stand-in (the base family), or the text is measured in a serif."""
     soffice = next((s for s in SOFFICE if s and os.path.exists(s)), None)
     if not soffice:
         return "soffice (LibreOffice) is not installed"
     with tempfile.TemporaryDirectory() as tmp:   # a private profile: a running LibreOffice blocks the default one
+        fonts = os.path.join(tmp, "profile", "user", "fonts")
+        os.makedirs(fonts)
+        bundled = set()
+        for font in L["typography"].get("fonts", []):
+            for f in font.get("files", []):
+                path = os.path.join(L["dir"], f["path"])
+                if os.path.exists(path):
+                    shutil.copy(path, fonts)
+                    bundled.add(font.get("family"))
+        src, typeface = deck + ".pptx", (L.get("pptx") or {}).get("typeface")
+        base = _family(L["typography"].get("base"))
+        if typeface and typeface not in bundled and base in bundled:
+            src = os.path.join(tmp, os.path.basename(deck) + ".pptx")
+            old, new = ('typeface="%s"' % typeface).encode(), ('typeface="%s"' % base).encode()
+            with zipfile.ZipFile(deck + ".pptx") as zin, zipfile.ZipFile(src, "w", zipfile.ZIP_DEFLATED) as zout:
+                for item in zin.infolist():
+                    data = zin.read(item.filename)
+                    zout.writestr(item, data.replace(old, new) if item.filename.endswith(".xml") else data)
         subprocess.run([soffice, f"-env:UserInstallation=file://{tmp}/profile", "--headless", "--convert-to", "pdf",
-                        "--outdir", tmp, deck + ".pptx"], check=True, capture_output=True)
-        return shoot_pdf(os.path.join(tmp, deck + ".pdf"), titles, out, f"{deck}-pptx")
+                        "--outdir", tmp, src], check=True, capture_output=True)
+        return shoot_pdf(os.path.join(tmp, os.path.basename(deck) + ".pdf"), titles, out, f"{deck}-pptx")
 
 
 # ------------------------------------------------------------------ measuring
@@ -370,7 +397,7 @@ def main():
             if not os.path.exists(path):
                 notes.append(f"{deck}: no {path}"); continue
             got = (shoot_html(deck, titles, out) if fmt == "html" else
-                   shoot_pdf(path, titles, out, f"{deck}-pdf") if fmt == "pdf" else shoot_pptx(deck, titles, out))
+                   shoot_pdf(path, titles, out, f"{deck}-pdf") if fmt == "pdf" else shoot_pptx(deck, titles, out, L))
             if isinstance(got, str):
                 notes.append(f"{deck}: {fmt} skipped: {got}"); continue
             shots[fmt] = got
