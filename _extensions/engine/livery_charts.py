@@ -380,7 +380,7 @@ def charts(livery: dict, knobs: dict | None) -> dict:
     livery.yml `charts:` (merged through extends)."""
     k = dict(knobs or {})
     roles, palette, mode = livery["roles"], livery["palette"], livery["mode"]
-    unknown = set(k) - {"anchors", "extended", "avoid", "chroma", "ramps", "sets", "categorical",
+    unknown = set(k) - {"anchors", "extended", "avoid", "chroma", "ramps", "maps", "sets", "categorical",
                         "sequential", "diverging", "status", "muted", "dark"}
     unknown |= {f"dark.{x}" for x in set(k.get("dark") or {}) - {"categorical", "sequential", "diverging", "status", "muted"}}
     if unknown:
@@ -390,6 +390,9 @@ def charts(livery: dict, knobs: dict | None) -> dict:
     dark_bg = roles.get("dark", "#000000") if mode == "light" else roles["background"]
     surfaces = {"light": light_bg.upper(), "dark": dark_bg.upper()}
     ramps = {name: [norm(c, f"ramps.{name}") for c in steps] for name, steps in (k.get("ramps") or {}).items()}
+    # maps: more sequential color maps, light to dark, beside the ramps (or the generated ones);
+    # unlike ramps they leave the categorical selection alone
+    maps = {name: [norm(c, f"maps.{name}") for c in steps] for name, steps in (k.get("maps") or {}).items()}
 
     # 1. hues in brand order: anchors, then extended, then (only if short) generated
     def chromatic(c):
@@ -451,12 +454,12 @@ def charts(livery: dict, knobs: dict | None) -> dict:
         blk["families"] = _families(cat[:SLOTS], surface, ramps if m == "light" else {}, m)
         # sequential: the brand ramps when given (light to dark; reversed for dark, so the low end
         # sits near the surface), else a ramp per categorical hue
-        seq = ramps or {f"data-{i + 1}": _ramp(c) for i, c in enumerate(cat)}
+        seq = {**(ramps or {f"data-{i + 1}": _ramp(c) for i, c in enumerate(cat)}), **maps}
         if m == "dark":
             seq = {n: list(reversed(r)) for n, r in seq.items()}
         blk["sequential"] = seq
-        primary_seq = given.get("sequential", k.get("sequential", "primary"))
-        blk["sequential-default"] = _nearest_ramp(seq, norm(primary_seq, "sequential"))
+        primary_seq = given.get("sequential", k.get("sequential", "primary"))   # a map's name, or a color
+        blk["sequential-default"] = primary_seq if primary_seq in seq else _nearest_ramp(seq, norm(primary_seq, "sequential"))
         # diverging
         if given.get("diverging") and len(given["diverging"]) > 2:
             blk["diverging"] = [norm(c, f"{m}.diverging") for c in given["diverging"]]

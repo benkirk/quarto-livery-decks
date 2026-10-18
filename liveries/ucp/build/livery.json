@@ -193,6 +193,14 @@
           "#86D3FC",
           "#BFE5F9"
         ],
+        "ncar": [
+          "#011837",
+          "#00357A",
+          "#0057C2",
+          "#42C0FF",
+          "#86D3FC",
+          "#BFE5F9"
+        ],
         "ncar-blue": [
           "#0057C2",
           "#6B8CCE",
@@ -208,6 +216,14 @@
           "#556379",
           "#A5ADB7"
         ],
+        "ucar": [
+          "#011837",
+          "#00357A",
+          "#00818F",
+          "#00A2B4",
+          "#34E1F4",
+          "#C0F0F5"
+        ],
         "ucar-aqua": [
           "#00818F",
           "#00A2B4",
@@ -219,7 +235,7 @@
           "#FFF2B9"
         ]
       },
-      "sequential-default": "ucar-aqua",
+      "sequential-default": "ucar",
       "status": {
         "critical": "#B63B35",
         "good": "#139948",
@@ -309,6 +325,14 @@
           "#86D3FC",
           "#42C0FF"
         ],
+        "ncar": [
+          "#BFE5F9",
+          "#86D3FC",
+          "#42C0FF",
+          "#0057C2",
+          "#00357A",
+          "#011837"
+        ],
         "ncar-blue": [
           "#ADC2E6",
           "#6B8CCE",
@@ -324,6 +348,14 @@
           "#556379",
           "#011837"
         ],
+        "ucar": [
+          "#C0F0F5",
+          "#34E1F4",
+          "#00A2B4",
+          "#00818F",
+          "#00357A",
+          "#011837"
+        ],
         "ucar-aqua": [
           "#71C0CB",
           "#00A2B4",
@@ -335,7 +367,7 @@
           "#FFDD31"
         ]
       },
-      "sequential-default": "ucar-aqua",
+      "sequential-default": "ucar",
       "status": {
         "critical": "#A82E29",
         "good": "#139948",

@@ -148,3 +148,9 @@ charts:
     space: ["#A5ADB7", "#556379", "#011837"]
     orange: ["#F8DBB5", "#FABE72", "#FAA119"]
     yellow: ["#FFF2B9", "#FFE77D", "#FFDD31"]
+    # the default color map: the brand's blues end to end, Light Blue's tints to Space (all 2026
+    # guide colors or their koru tints; vivid where the ladders alone stop at NCAR Blue)
+    ncar: ["#BFE5F9", "#86D3FC", "#42C0FF", "#0057C2", "#00357A", "#011837"]
+    # the same along UCAR Aqua (ucar's and ucp's default)
+    ucar: ["#C0F0F5", "#34E1F4", "#00A2B4", "#00818F", "#00357A", "#011837"]
+  sequential: ncar
