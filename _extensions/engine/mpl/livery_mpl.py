@@ -137,6 +137,8 @@ def use(path=None) -> dict:
     keep = {}
     if "QUARTO_FIG_WIDTH" in os.environ:   # Quarto's setup cell set the deck's figure size and dpi
         keep = {k: plt.rcParams[k] for k in ("figure.figsize", "figure.dpi", "savefig.dpi")}
+        if output_format() == "pdf":   # beamer's fig-width is paper inches (it sizes the diagrams), so
+            keep["figure.figsize"] = tuple(livery["charts"]["figsize"]["full"])   # none is passed there
     if style.exists():
         plt.style.use(str(style))
     plt.rcParams.update(keep)

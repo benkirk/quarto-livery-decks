@@ -77,7 +77,8 @@ LIVERY_MONO  := $(shell python3 $(SHARED_COMMON)/utils/livery.py mono $(LIVERY_D
 # Plots (design/charts-and-plots.md): matplotlib reads the livery's style with no code at all,
 # `import livery_mpl` finds the helper (fonts, colormaps, figsize(), dark()), and a figure's
 # default size is the content area in canvas inches (charts.figsize.full), so its text is the
-# slide's size. A cell's own fig-width/fig-height still wins.
+# slide's size. A cell's own fig-width/fig-height still wins. Not for beamer, whose fig-width is
+# paper inches and sizes its baked diagrams; there livery_mpl sets the plots' size itself.
 export MATPLOTLIBRC := $(abspath $(LIVERY_DIR))/build/livery.mplstyle
 export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(PYTHONPATH),:$(PYTHONPATH))
 LIVERY_FIGSIZE := $(shell python3 $(SHARED_COMMON)/utils/livery.py figsize $(LIVERY_DIR))
@@ -206,7 +207,7 @@ define render_html
 endef
 
 define render_pdf
-	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@ $(FIG_SIZE)
+	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@
 endef
 
 %.pptx: %.qmd $(DEPS) | _livery
