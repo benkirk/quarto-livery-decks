@@ -84,4 +84,4 @@ slide". Don't restate them; use them.
   - revealjs inline code breaks at hyphens inside table cells;
   - two-line slide titles run into the title rule in HTML.
 
-  Both belong in the theme repo.
+  Both belong in the engine (`docs/common/_extensions/engine/`).
