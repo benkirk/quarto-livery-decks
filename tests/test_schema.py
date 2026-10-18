@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
 spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
 lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
-S = lb.livery_schema
+S = lb.schema()
 fails = []
 
 

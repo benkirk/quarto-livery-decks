@@ -26,8 +26,9 @@ from pathlib import Path
 
 import yaml
 
-# the chart colors (livery_charts.py) and livery.yml's schema (livery_schema.py), loaded by path:
-# this script is also loaded by path (the tests), where the engine directory is not on sys.path
+# the chart colors (livery_charts.py) and livery.yml's schema (livery_schema.py, loaded when a livery
+# is read: `livery mono` and the release's zips need no jsonschema), loaded by path: this module is
+# also loaded by path (the tests), where the engine directory is not on sys.path
 def _sibling(name: str):
     spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
@@ -35,7 +36,7 @@ def _sibling(name: str):
     return mod
 
 
-livery_charts, livery_schema = _sibling("livery_charts"), _sibling("livery_schema")
+livery_charts = _sibling("livery_charts")
 
 # (key, role a, role b, share of a): the theme's recipes, engine-revealjs.scss `table` and
 # `.engine-caution`, beamerinnerthemeEngine.sty `enginecautionfill`
@@ -140,10 +141,21 @@ def rebase(data: dict, parent: Path, child: Path) -> dict:
     return data
 
 
+def schema():
+    """livery_schema.py, loaded once, when a livery is first read."""
+    global _schema
+    if _schema is None:
+        _schema = _sibling("livery_schema")
+    return _schema
+
+
+_schema = None
+
+
 def read(d: Path) -> dict:
     brand = yaml.safe_load((d / "_brand.yml").read_text()) or {}
     knobs = yaml.safe_load((d / "livery.yml").read_text()) or {}
-    errors = livery_schema.check(knobs, brand, d)   # each file as written, before extends merges
+    errors = schema().check(knobs, brand, d)   # each file as written, before extends merges
     if errors:
         sys.exit("\n".join(errors))
     merged = {"brand": brand, **{k: v for k, v in knobs.items() if k not in ("extends", "schema")}}
