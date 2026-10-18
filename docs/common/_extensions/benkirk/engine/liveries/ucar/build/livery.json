@@ -759,6 +759,7 @@
       "logo-print": "logos/UCAR-Logo_White_RGB.pdf"
     }
   },
+  "mode": "light",
   "name": "ucar",
   "palette": {
     "dark-blue": "#00357A",
@@ -799,6 +800,7 @@
   "roles": {
     "accent": "#FFDD31",
     "background": "#FFFFFF",
+    "code-text": "#011837",
     "dark": "#011837",
     "foreground": "#00357A",
     "highlight": "#00818F",

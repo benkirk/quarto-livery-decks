@@ -626,6 +626,7 @@
       "signoff": "logos/cu-boulder-lockup.png"
     }
   },
+  "mode": "light",
   "name": "cu",
   "palette": {
     "accessible-gold": "#8D7334",
@@ -660,6 +661,7 @@
   "roles": {
     "accent": "#CFB87C",
     "background": "#FFFFFF",
+    "code-text": "#000000",
     "dark": "#000000",
     "foreground": "#000000",
     "highlight": "#096FAE",

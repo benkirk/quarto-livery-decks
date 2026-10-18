@@ -3,6 +3,7 @@
 
     import livery as livery_mod     load, color, scheme, derived, mix, font_file, mark, files
     livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
+    livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
 
 The reader lives in the vendored engine (_extensions/benkirk/engine/livery.py, beside the
 template builder); this loads it by path, since both files are named livery. `deps` prints
@@ -37,7 +38,14 @@ def deps(d: str) -> list[str]:
     return sorted({os.path.normpath(Path(d) / p) for p in rel if (Path(d) / p).exists()})
 
 
+def mono(d: str) -> str:
+    """typography.monospace's family when the livery bundles its files (the engine's mono_font())."""
+    if not (Path(d) / "build" / "livery.json").exists():
+        return ""
+    return engine_module("livery_build").mono_font(_reader.load(d))[0]
+
+
 if __name__ == "__main__":
-    if sys.argv[1:2] != ["deps"] or len(sys.argv) != 3:
-        sys.exit("usage: livery.py deps <livery dir>")
-    print(" ".join(deps(sys.argv[2])))
+    if sys.argv[1:2] not in (["deps"], ["mono"]) or len(sys.argv) != 3:
+        sys.exit("usage: livery.py deps|mono <livery dir>")
+    print(" ".join(deps(sys.argv[2])) if sys.argv[1] == "deps" else mono(sys.argv[2]))

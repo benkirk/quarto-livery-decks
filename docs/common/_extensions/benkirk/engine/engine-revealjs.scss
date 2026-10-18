@@ -258,7 +258,7 @@ $mermaid-label-fg-color: $ncar-blue;
 .reveal code { font-size: 0.85em; }
 .reveal :not(pre) > code {
   background: var(--engine-surface);
-  color: var(--engine-dark);
+  color: var(--engine-code-text, var(--engine-dark));
   padding: 0.05em 0.25em;
 }
 // executed-cell output
@@ -799,7 +799,7 @@ html.reveal-print .reveal .slides {
 .reveal section.has-dark-background a, .reveal section.has-dark-background a:hover { color: var(--engine-secondary); }
 .reveal section.has-dark-background code { color: var(--engine-warning); }
 .reveal pre { background-color: var(--engine-surface); }
-.reveal pre code, .reveal pre.sourceCode code, .reveal code { color: var(--engine-dark); }
+.reveal pre code, .reveal pre.sourceCode code, .reveal code { color: var(--engine-code-text, var(--engine-dark)); }
 .reveal pre code { background-color: var(--engine-background); }
 .reveal div.callout.callout-style-simple, .reveal div.callout.callout-style-default {
   border-right-color: var(--engine-surface); border-top-color: var(--engine-surface); border-bottom-color: var(--engine-surface);

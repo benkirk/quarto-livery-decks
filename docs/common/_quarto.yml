@@ -14,6 +14,7 @@ date-format: "MMMM D, YYYY"
 # moving every slide's notes to its end makes any placement safe.
 # single-body.lua: content after a table or diagram splits the pptx slide;
 # the paragraphs after one move into its caption, at the slide's foot.
+# diagram-dark.lua: under a dark livery, the diagrams' PNGs recolored (pptx, PDF).
 # Paths go through _engine/, Make.common's link to this directory, so they hold
 # wherever the deck directory is (here, or in a repo using this as a submodule).
 # _livery/ is Make.common's link to the brand's directory (LIVERY, default ncar).
@@ -23,12 +24,14 @@ filters:
   - _engine/notes-last.lua
   - _engine/single-body.lua    # pptx: after notes-last
   - _engine/linked-images.lua   # [![](x.png)](url): a link line on the slide
+  - _engine/diagram-dark.lua    # a dark livery: baked mermaid/graphviz PNGs turned to the dark
 
 livery: _livery   # how the engine's Lua filters will find the livery (design section 5)
 
 format:
   pptx:
     reference-doc: _livery/template.pptx
+    highlight-style: _livery/build/livery.theme   # the livery's code colors, as HTML and PDF wear them
     slide-level: 2
     toc: false
   engine-beamer:           # engine beamer theme, vendored in common/_extensions

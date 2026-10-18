@@ -159,10 +159,19 @@
 % the code face: TeX's default Latin Modern Mono at 1.15, so a code line is as wide as in HTML
 % (its monospace, SF Mono or Menlo, advances 0.6 em; LM Mono 0.525) and fits or overflows alike;
 % it read a size smaller before. By file name (kpathsea, not fontconfig: see above); a deck's own
-% monofont is left alone.
+% monofont is left alone. A livery's own code face (typography.monospace, \engine@monofont@* from
+% livery.sty) takes its place at 1.0: a brand mono advancing 0.6 em is HTML's width already.
 \iftutex\AtBeginDocument{\def\engine@tmp{lmtt}\ifx\ttdefault\engine@tmp
+  \ifdefined\engine@monofont@family
+    \edef\engine@tmp{\noexpand\setmonofont{\engine@monofont@family}[%
+      Scale = 1.0, Path = \engine@monofont@dir, Extension = \engine@monofont@ext,
+      UprightFont = \engine@monofont@regular,
+      \ifdefined\engine@monofont@italic ItalicFont = \engine@monofont@italic,\fi
+      \ifdefined\engine@monofont@bold BoldFont = \engine@monofont@bold,\fi]}%
+    \engine@tmp
+  \else
   \setmonofont{lmmono10-regular}[Extension=.otf, Scale=1.15, ItalicFont=lmmono10-italic,
-    BoldFont=lmmonolt10-bold, BoldItalicFont=lmmonolt10-boldoblique]\fi}\fi
+    BoldFont=lmmonolt10-bold, BoldItalicFont=lmmonolt10-boldoblique]\fi\fi}\fi
 
 % Poppins has no warning sign or arrows: borrow them from DejaVu Sans (TeX
 % Live's copy, by file name), so `## ⚠︎ Title' and `A → B' need no raw LaTeX.
@@ -319,7 +328,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \RequirePackage{pifont}
 \newcommand{\cmark}{{\color{BrandPrimaryContrast}\ding{51}}}
-\newcommand{\xmark}{{\color{BrandText!70}\ding{55}}}
+\newcommand{\xmark}{{\color{BrandText!70!BrandBackground}\ding{55}}}
 \newcommand{\pmark}{{\color{BrandAccent}\ding{108}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -331,11 +340,11 @@
   \@ifpackageloaded{listings}{%
     \lstdefinestyle{engine}{
       backgroundcolor=\color{BrandSurface},
-      basicstyle=\ifdefined\engine@fs\engine@fs{code}\else\footnotesize\fi\ttfamily\color{BrandDark},
+      basicstyle=\ifdefined\engine@fs\engine@fs{code}\else\footnotesize\fi\ttfamily\color{BrandCodeText},
       keywordstyle=\color{BrandPrimaryContrast}\bfseries,
-      commentstyle=\color{BrandText!55}\itshape,
+      commentstyle=\color{BrandText!55!BrandBackground}\itshape,
       stringstyle=\color{BrandHighlight},
-      numberstyle=\tiny\color{BrandText!50},
+      numberstyle=\tiny\color{BrandText!50!BrandBackground},
       frame=leftline, framerule=2pt, rulecolor=\color{BrandPrimary},
       xleftmargin=6pt, framexleftmargin=4pt, aboveskip=6pt, belowskip=6pt,
       columns=fullflexible, keepspaces=true,

@@ -1,0 +1,14 @@
+# NASA (general, external communication), dark: the nasa livery with content slides on black, as
+# the NASA Science public-engagement deck sets them. Kept strictly standard; what is not here
+# (meta, typography, logos) is nasa's. Small text on black is lifted from the brand's blues and
+# red: NASA Blue reads 2.0:1 on black, NASA Red 4.3:1 (reference/notes.md).
+color:
+  palette:
+    graphite: "#1C2026"      # code, table bands
+    light-blue: "#6E9BFF"    # NASA Blue lifted for small text on black (7.8:1)
+    cyan: "#00B0F0"          # the reference deck's own accent color (8.5:1)
+    light-red: "#FF4458"     # NASA Red lifted for small text on black (6.2:1)
+    steel: "#A3A7AD"         # muted small text (8.7:1)
+    frost: "#E6E8EB"         # code text on graphite (13.3:1)
+  foreground: white
+  background: black
