@@ -34,6 +34,8 @@ format:
     highlight-style: _livery/build/livery.theme   # the livery's code colors, as HTML and PDF wear them
     slide-level: 2
     toc: false
+    fig-format: png       # plots (beamer keeps Quarto's pdf at 300 dpi, which sizes its diagrams)
+    fig-dpi: 200
   engine-beamer:           # engine beamer theme, in the repo's _extensions/engine
     highlight-style: _livery/build/livery.theme   # the livery's code colors (its default is ncar's)
     toc: false
@@ -42,11 +44,10 @@ format:
   engine-revealjs:         # engine revealjs (HTML) theme, same extension
     highlight-style: _livery/build/livery.theme
     toc: false
+    fig-format: svg       # plots: vector, text as paths (an <img> cannot see the page's fonts)
     # footer: "Deck title | CISL"   # small text, bottom center
     # embed-resources: true         # one self-contained .html (needs chalkboard: false)
     # chalkboard: false
-
-# Mermaid diagrams render to PNG automatically during quarto render
-diagram:
+diagram:                   # mermaid diagrams render to PNG during quarto render
   mermaid:
     theme: default

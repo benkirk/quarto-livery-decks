@@ -1,0 +1,188 @@
+---
+title: "Plots in the Livery"
+subtitle: "matplotlib and seaborn in the brand's colors, fonts and sizes"
+author: "Your Name, Your Lab"
+date: last-modified
+engine: jupyter
+jupyter: python3
+execute:
+  echo: false
+---
+
+```{python}
+#| include: false
+# the livery's fonts, style, colormaps and helpers (Make.common puts livery_mpl on PYTHONPATH
+# and exports MATPLOTLIBRC, so even a deck that skips this import plots in the brand's colors)
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.ndimage import gaussian_filter
+import livery_mpl
+
+rng = np.random.default_rng(2026)   # deterministic: CI and parity render this deck
+```
+
+# Plots
+
+No styling code: the livery's colors, its font and the slide's type sizes come with every figure.
+
+## Lines take the categorical slots
+
+```{python}
+x = np.linspace(0, 10, 200)
+fig, ax = plt.subplots()
+for i in range(6):
+    ax.plot(x, np.sin(x + i * 0.5) + i * 0.6, label=f"Series {i + 1}")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Signal")
+ax.legend(ncols=2, loc="upper left")
+plt.show()
+```
+
+## A seaborn bar chart from pandas
+
+```{python}
+df = pd.DataFrame({
+    "facility": np.repeat(["Derecho", "Casper", "Gust", "Cheyenne"], 3),
+    "year": np.tile(["2024", "2025", "2026"], 4),
+    "hours": [61, 72, 80, 18, 24, 31, 4, 9, 15, 40, 22, 6],
+})
+fig, ax = plt.subplots()
+sns.barplot(df, x="facility", y="hours", hue="year", ax=ax)
+ax.set_xlabel("")
+ax.set_ylabel("Core-hours (M)")
+ax.legend(title="Year", ncols=3)
+plt.show()
+```
+
+## A stacked area in hue families
+
+```{python}
+# three groups of three: the hue names the group, its tints the members (livery_mpl.families)
+months = np.arange(1, 13)
+groups = {"Atmosphere": 3, "Ocean": 3, "Land": 3}
+layers, colors, labels = [], [], []
+for g, (name, n) in enumerate(groups.items()):
+    for k in range(n):
+        layers.append(5 + 3 * np.sin(months / 2 + g + k) + rng.uniform(0, 1.5, 12))
+        colors.append(livery_mpl.families[g][k])
+        labels.append(f"{name} {k + 1}")
+fig, ax = plt.subplots()
+ax.stackplot(months, layers, colors=colors, labels=labels, alpha=livery_mpl.charts[livery_mpl.mode]["area-alpha"])
+ax.set_xlim(1, 12)
+ax.set_xlabel("Month")
+ax.set_ylabel("Allocation (%)")
+ax.legend(loc="upper left", bbox_to_anchor=(1, 1), reverse=True)
+plt.show()
+```
+
+## A heatmap on the sequential map
+
+```{python}
+hours = np.arange(24)
+days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+load = 40 + 35 * np.exp(-((hours[None, :] - 14) / 5) ** 2) * np.array([1, 1, 1, 1, 0.9, 0.4, 0.3])[:, None]
+load += rng.normal(0, 3, load.shape)
+fig, ax = plt.subplots()
+im = ax.imshow(load, aspect="auto")   # the default map is the livery's (cmap "livery")
+ax.set_yticks(range(7), days)
+ax.set_xlabel("Hour of day")
+ax.grid(False)
+fig.colorbar(im, ax=ax, label="Queue depth")
+plt.show()
+```
+
+## A diverging field, smoothed with scipy
+
+```{python}
+field = gaussian_filter(rng.normal(0, 1, (120, 240)), sigma=9)
+field /= np.abs(field).max()
+fig, ax = plt.subplots()
+im = ax.imshow(field, cmap="livery_div", vmin=-1, vmax=1, extent=(-180, 180, -90, 90))
+ax.set_xlabel("Longitude")
+ax.set_ylabel("Latitude")
+ax.grid(False)
+fig.colorbar(im, ax=ax, label="Anomaly (normalized)")
+plt.show()
+```
+
+## Two plots in columns
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{python}
+fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
+ax.scatter(rng.normal(0, 1, 120), rng.normal(0, 1, 120), s=18, label="Run A")
+ax.scatter(rng.normal(1.5, 0.7, 120), rng.normal(1, 0.7, 120), s=18, label="Run B")
+ax.set_xlabel("Bias")
+ax.set_ylabel("Spread")
+ax.legend()
+plt.show()
+```
+:::
+
+::: {.column width="50%"}
+```{python}
+fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
+ax.hist([rng.normal(0, 1, 800), rng.normal(1.2, 0.8, 800)], bins=24, histtype="stepfilled",
+        alpha=0.75, label=["Run A", "Run B"])
+ax.set_xlabel("Error")
+ax.set_ylabel("Count")
+ax.legend()
+plt.show()
+```
+:::
+
+::::
+
+## Math in the labels
+
+```{python}
+T = np.linspace(200, 320, 200)
+fig, ax = plt.subplots()
+for i, a in enumerate((0.5, 1.0, 2.0)):
+    ax.plot(T, a * np.exp((T - 273.15) / 17), label=rf"$\alpha = {a}$")
+ax.set_xlabel(r"Temperature $T$ (K)")
+ax.set_ylabel(r"$e_s(T) \propto \alpha\, e^{(T - T_0)/\tau}$")
+ax.legend()
+plt.show()
+```
+
+## On a dark slide {.brand-dark}
+
+```{python}
+# livery_mpl.dark(): the dark chrome and slots where the slide is dark (HTML's .brand-dark, every
+# slide of a dark livery); pptx and PDF draw this slide light, and there it changes nothing
+with livery_mpl.dark():
+    fig, ax = plt.subplots()
+    for i in range(4):
+        ax.plot(x, np.cos(x / 2 + i) * (1 + i / 3), label=f"Member {i + 1}")
+    ax.set_xlabel("Lead time (days)")
+    ax.set_ylabel("Anomaly")
+    ax.legend(ncols=4, loc="lower center", bbox_to_anchor=(0.5, 1))
+    plt.show()
+```
+
+## ⚠︎ What breaks the style {.caution}
+
+- `sns.set_theme()` or `plt.style.use(...)` replaces the livery's style: leave both out
+- A hand-picked `figsize` changes the text size: use `livery_mpl.figsize()` (`"half"` in a column)
+- A colormap by name (`viridis`) leaves the brand: `livery`, `livery_div`, `livery_seq_<ramp>`
+- More than eight series: fold the rest into "Other" in `livery_mpl.muted`
+
+## How it works
+
+```{.python}
+import livery_mpl                          # fonts, style, colormaps
+
+fig, ax = plt.subplots()                   # the content area, slide-sized text
+ax.plot(x, y)                              # the livery's categorical slots, in order
+ax.imshow(z)                               # the livery's sequential map
+fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))   # one of two columns
+with livery_mpl.dark():                    # a {.brand-dark} slide
+    ...
+```
+
+The style is `build/livery.mplstyle`, generated with the livery's other files.

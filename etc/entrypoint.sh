@@ -8,11 +8,18 @@ FW=${FRAMEWORK:-/opt/quarto-livery-decks}
 # 1. A writable HOME for any --user. Under `--user uid:gid` HOME is unset, /, or a host
 #    path that is not mounted, and everything that writes a per-user cache derives from it:
 #    deno (~/.cache/deno; quarto sets no DENO_DIR), jupyter's runtime dir, fontconfig's
-#    cache, TeX's TEXMFVAR. Playwright finds its browser through PLAYWRIGHT_BROWSERS_PATH
+#    cache, matplotlib's, TeX's TEXMFVAR. Playwright finds its browser through PLAYWRIGHT_BROWSERS_PATH
 #    and LibreOffice gets its profile from comp_measure.py, so nothing else moves.
 if [ -z "${HOME:-}" ] || [ ! -d "$HOME" ] || [ ! -w "$HOME" ]; then
   export HOME="/tmp/home-$(id -u)"
   mkdir -p "$HOME"
+fi
+# matplotlib's font cache, built into the image (/opt/matplotlib): seeded into HOME so a deck's
+# first plot does not rescan every font. Not when /opt/fonts holds the host's own: a cache is
+# never rescanned, so matplotlib builds one of its own that sees them.
+mpl="${MPLCONFIGDIR:-$HOME/.cache/matplotlib}"
+if [ -d /opt/matplotlib ] && [ -z "$(ls -A /opt/fonts 2>/dev/null)" ] && ! ls "$mpl"/fontlist-*.json >/dev/null 2>&1; then
+  mkdir -p "$mpl" && cp /opt/matplotlib/fontlist-*.json "$mpl"/ 2>/dev/null || true
 fi
 # a uid without a passwd entry: getpass.getuser() (jupyter_client) wants one of these
 export USER="${USER:-$(id -un 2>/dev/null || echo user)}"

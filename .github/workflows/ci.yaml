@@ -1,7 +1,7 @@
 # Every check, in one pass: the image (image.yaml: native amd64 and arm64 builds, each
 # smoke-tested as a plain user with a bind-mounted deck directory, merged into one manifest
-# list), then the deck checks INSIDE that image, at its digest: the sample, quickstart and
-# fixture decks; a hello-world deck in a consumer's layout (the framework one level down, as
+# list), then the deck checks INSIDE that image, at its digest: the sample, quickstart,
+# fixture and plots decks; a hello-world deck in a consumer's layout (the framework one level down, as
 # a submodule would be: README "Using the framework from another repo"); and every livery
 # under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled in a clean directory, the compositions measured). A new livery joins
@@ -43,10 +43,10 @@ jobs:
       packages: write
 
   # -----------------------------------------------------------------------
-  # the sample (the cookbook), quickstart (the README's exemplar) and fixture decks
+  # the sample (the cookbook), quickstart (the README's exemplar), fixture and plots decks
   # -----------------------------------------------------------------------
   sample:
-    name: Build the sample, quickstart and fixture decks
+    name: Build the sample, quickstart, fixture and plots decks
     needs: image
     if: needs.image.outputs.digest != ''
     runs-on: ubuntu-24.04
@@ -121,6 +121,18 @@ jobs:
           timeout 900 make -C decks/quickstart all
           timeout 900 make -C decks/fixtures all
 
+      # the plots cookbook (jupyter: python3, matplotlib and seaborn in the livery), every format
+      # and its QA; the HTML's plots are SVG paths sized to the canvas, the PDF embeds the livery font
+      - name: Build and QA the plots deck
+        run: |
+          timeout 900 make -C decks/plots qa
+          cd decks/plots
+          ls plots_files/figure-revealjs/*.svg
+          if grep -l '<text' plots_files/figure-revealjs/*.svg; then echo '::error::SVG plot with <text>'; exit 1; fi
+          grep -c 'class="engine-plot"' plots.html >/dev/null
+          test "$(unzip -l plots.pptx | grep -c 'ppt/media/image')" -ge 10
+          pdffonts plots.pdf | grep -q Poppins
+
       - name: Upload the decks
         uses: actions/upload-artifact@v7
         with:
@@ -134,6 +146,10 @@ jobs:
             decks/quickstart/quickstart.html
             decks/quickstart/quickstart.pdf
             decks/fixtures/*.pdf
+            decks/plots/plots.pptx
+            decks/plots/plots.html
+            decks/plots/plots_files/
+            decks/plots/plots.pdf
           if-no-files-found: error
           retention-days: 14
 

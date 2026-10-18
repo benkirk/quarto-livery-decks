@@ -872,7 +872,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
              "\n  --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;\n}")
     f = livery.get("art", {}).get("content")   # content slides' static background (the compositions carry the rest)
     if isinstance(f, str):
-        sel = "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full)"
+        # (not a .brand-dark slide, which promises the dark color: white text on the photo vanished)
+        sel = "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark)"
         L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
     marks = livery["marks"]
     light, dark = (Path(marks[r]["logo"]).name for r in ("background", "primary"))
@@ -979,6 +980,8 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
         ("savefig.edgecolor", "none"),
         ("savefig.transparent", True),
         ("savefig.dpi", 200),
+        ("savefig.pad_inches", 0),   # a tight crop adds nothing: the picture is figsize, at canvas scale
+        ("svg.hashsalt", livery["name"]),   # stable ids: a rebuilt SVG is byte-identical
         ("pdf.fonttype", 3 if cff else 42),
         ("ps.fonttype", 3 if cff else 42),
         ("svg.fonttype", "path"),

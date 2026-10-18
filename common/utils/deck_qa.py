@@ -136,9 +136,9 @@ def pdf_pages(pdf):
 
 def frame_number(w, h, words):
     """The frame-number word in a bottom corner (geometry.pagenumber.corner), or None (title,
-    section, closing pages)."""
+    section, closing pages): the lowest such number, since a plot's axis ticks can sit there too."""
     num = [wd for wd in words if wd[4].isdigit() and (wd[0] < w * 0.1 or wd[2] > w * 0.9) and wd[1] > h * 0.85]
-    return num[0] if num else None
+    return max(num, key=lambda wd: wd[3]) if num else None
 
 
 def frames(pages):

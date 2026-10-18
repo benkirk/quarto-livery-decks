@@ -291,6 +291,17 @@ $mermaid-label-fg-color: $ncar-blue;
 }
 .reveal .slides section .quarto-figure-center figcaption { text-align: center; }
 
+// a plot (.engine-plot): engine-revealjs.lua sets its width to the canvas scale, times the
+// autofit's --engine-fit; it may take the whole column (reveal's own cap is 95%), no more, and
+// needs no block margin (a plot at the full content height would overflow by reveal's)
+.reveal .slides section img.engine-plot {
+  margin-top: 0;
+  margin-bottom: 0;
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+}
+
 // mermaid pins its svg to its natural width (tiny on a 1600-px slide):
 // let diagrams fill the column instead, capped to the content height
 .reveal .slides section svg.mermaid-js {

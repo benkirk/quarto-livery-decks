@@ -4,6 +4,7 @@
     import livery as livery_mod     load, color, scheme, derived, mix, font_file, mark, files
     livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
     livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
+    livery.py figsize <livery dir>  the plots' default size, charts.figsize.full: "<w> <h>" in inches
 
 The reader lives in the engine (<repo>/_extensions/engine/livery.py, beside the template
 builder); this loads it by path, since both files are named livery. `deps` prints
@@ -45,7 +46,15 @@ def mono(d: str) -> str:
     return engine_module("livery_build").mono_font(_reader.load(d))[0]
 
 
+def figsize(d: str) -> str:
+    """charts.figsize.full, the content area in canvas inches, as "<w> <h>"."""
+    if not (Path(d) / "build" / "livery.json").exists():
+        return ""
+    return " ".join(str(v) for v in _reader.load(d)["charts"]["figsize"]["full"])
+
+
 if __name__ == "__main__":
-    if sys.argv[1:2] not in (["deps"], ["mono"]) or len(sys.argv) != 3:
-        sys.exit("usage: livery.py deps|mono <livery dir>")
-    print(" ".join(deps(sys.argv[2])) if sys.argv[1] == "deps" else mono(sys.argv[2]))
+    cmds = {"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}
+    if len(sys.argv) != 3 or sys.argv[1] not in cmds:
+        sys.exit("usage: livery.py deps|mono|figsize <livery dir>")
+    print(cmds[sys.argv[1]](sys.argv[2]))
