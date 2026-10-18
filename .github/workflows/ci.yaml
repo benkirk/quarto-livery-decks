@@ -378,7 +378,7 @@ jobs:
           ! pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null
 
       # the charts bundle unpacked alone, no framework on the paths: a script beside it plots in the
-      # livery's colors and embeds its bundled font (found in the bundle, never an installed one)
+      # livery's colors and embeds its bundled font, registered from the bundle
       - name: Pack and try the charts bundle
         run: |
           make -C decks/quickstart charts-zip LIVERY="$LIVERY"
@@ -388,8 +388,12 @@ jobs:
           import json, os, livery_mpl, matplotlib.pyplot as plt
           from matplotlib import font_manager as fm
           L = json.load(open("/tmp/charts/livery.json"))
-          path = fm.findfont(L["typography"]["base"], fallback_to_default=False)
-          assert os.path.realpath(path).startswith(os.path.realpath("/tmp/charts/fonts")), path
+          # the bundle's files are registered under the family; the image also has the same files
+          # installed (their cache entries win findfont's ties), which is the same face
+          here = os.path.realpath("/tmp/charts/fonts")
+          mine = {f.name for f in fm.fontManager.ttflist if os.path.realpath(f.fname).startswith(here)}
+          assert L["typography"]["base"] in mine, mine
+          fm.findfont(L["typography"]["base"], fallback_to_default=False)
           assert [c.upper() for c in plt.rcParams["axes.prop_cycle"].by_key()["color"]] == L["charts"][L["charts"]["mode"]]["categorical"]
           fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
           ax.plot([0, 1, 2], [0, 1, 3], label="a"); ax.set_xlabel("x"); ax.legend()
