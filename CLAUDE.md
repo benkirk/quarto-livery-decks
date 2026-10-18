@@ -449,7 +449,9 @@ its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the ent
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
 `livery_build.py --check`, the sample deck in every format with its theme greps, quickstart and
 fixtures `all`), `consumer` (the submodule layout, README "Using the framework from another
-repo", plus `make site`), and `livery`, one per directory under `docs/common/liveries/` (a new
+repo", plus `make site`), `latex` (the engine's `tests/`, then `docs/latex`'s starter, examples,
+variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
+one per directory under `docs/common/liveries/` (a new
 livery joins by existing): `utils/livery_check.py --qa` (the engine's checks, then
 `make -C docs/quickstart qa LIVERY=<name>`: all three formats and `deck_qa.py`), the
 livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's paths unset and
@@ -458,8 +460,9 @@ fork's PR has no `packages: write`: its image is built and smoke-tested, nothing
 the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
 more; a tool the decks need goes into the Dockerfile. The package must be public on ghcr for
 anonymous pulls (a first push makes it private). `cron-clean-action-log.yaml` prunes old runs
-and untagged image versions monthly with the workflow's own token; `release.yml` attaches the
-Overleaf zips and names the image tags.
+and untagged image versions monthly with the workflow's own token; `release.yml` refuses a tag
+that is not `v` + `_extension.yml`'s `version:`, attaches the Overleaf zips and names the image
+tags.
 
 ## Git
 

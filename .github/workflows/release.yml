@@ -3,7 +3,8 @@
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-overleaf.zip
 # A v* tag also publishes the container image under its semver tags (ci.yaml -> image.yaml).
 # Tags are cut by hand after a livery change, or moved while a change stays backwards
-# compatible (README "Adding a livery", step 6).
+# compatible (README "Adding a livery", step 6). The tag must be the engine's version:
+# `version:` in docs/common/_extensions/engine/_extension.yml (one number since #57).
 name: release
 
 on:
@@ -19,6 +20,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
+      - name: Tag matches the engine's version
+        run: |
+          v=$(sed -n 's/^version: *//p' docs/common/_extensions/engine/_extension.yml)
+          echo "engine $v, tag $GITHUB_REF_NAME"
+          test "v$v" = "$GITHUB_REF_NAME"
 
       # make overleaf needs only python3 and the engine (no conda, no quarto)
       - name: Build one zip per livery

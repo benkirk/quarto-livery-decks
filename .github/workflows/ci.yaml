@@ -5,7 +5,7 @@
 # a submodule would be: README "Using the framework from another repo"); and every livery
 # under docs/common/liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled in a clean directory, the compositions measured). A new livery joins
-# by existing. Container jobs run as root with GitHub's default `bash -eo pipefail`.
+# by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.
 name: CI
 
 on:
@@ -223,6 +223,75 @@ jobs:
             ${{ env.DECK }}/hello.pptx
             ${{ env.DECK }}/hello.pdf
           if-no-files-found: error
+          retention-days: 14
+
+  # -----------------------------------------------------------------------
+  # the engine's pure-LaTeX side (docs/latex) and its tests: what beamer-livery-theme's own
+  # CI checked before it merged here (#57). The liveries' build/ freshness is the sample
+  # job's, their checks and each one's Overleaf zip the livery jobs'.
+  # -----------------------------------------------------------------------
+  latex:
+    name: Build the LaTeX examples and test the engine
+    needs: image
+    if: needs.image.outputs.digest != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # the resolved compositions against the decided numbers (a changed box is named in
+      # EXPECTED_DELTAS or fails); every livery's sizes in whole or half points on its canvas,
+      # and every size in its template a role's
+      - name: Test the compositions and the type scale
+        run: |
+          python3 tests/test_compositions.py
+          python3 tests/test_type.py
+
+      # the starter (talk.tex), the examples (template, paper, mathfonts, the Quarto demo) and
+      # template.tex's brand, title, aspect-ratio, pdfTeX and math-font variants; the demo's
+      # HTML too, the one deck on the brand= fallback (no livery: key)
+      - name: Build the starter deck, the examples and their variants
+        run: timeout 1200 make -C docs/latex default examples variants html
+
+      - name: Check fonts are embedded
+        run: |
+          cd docs/latex
+          for f in talk.pdf examples/template.pdf examples/quarto-demo.pdf; do
+            pdffonts "$f" | tee /dev/stderr | grep -c Poppins-Bold >/dev/null
+          done
+
+      # mathfont=serif by default: the equation page sets its math in a serif math font, not
+      # Poppins Italic (that is what mathfont=poppins is for)
+      - name: Check the math font
+        run: |
+          cd docs/latex/examples
+          pdffonts -f 4 -l 4 template.pdf | tee /dev/stderr | grep -c 'CMMath\|LatinModernMath' >/dev/null
+          if pdffonts -f 4 -l 4 template.pdf | grep -c Poppins-Italic >/dev/null; then exit 1; fi   # (a `!` line mid-script never fails under -e)
+          pdffonts -f 4 -l 4 template-mathpoppins.pdf | grep -c Poppins-Italic >/dev/null
+
+      # the bundled liveries/ncar beside _extensions/ was found: its css attached, the waves drawn
+      - name: Check the demo's HTML carries the theme
+        run: |
+          cd docs/latex/examples
+          grep -q 'livery.css' quarto-demo.html
+          grep -q 'class="engine-waves"' quarto-demo.html
+          ls quarto-demo_files/libs/quarto-contrib/engine-revealjs-*/Poppins-Bold.ttf
+
+      - name: Upload the examples
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: latex-examples
+          path: |
+            docs/latex/talk.pdf
+            docs/latex/examples/*.pdf
+            docs/latex/examples/*.log
           retention-days: 14
 
   # -----------------------------------------------------------------------
