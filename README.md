@@ -746,11 +746,11 @@ in HTML and PDF; pptx gets them through `slide_layout.py` (step 7).
 | Control | HTML | PDF | pptx |
 |---|---|---|---|
 | `.hcenter`: center the body across as a block | yes | prose, lists, plain code (a table centers anyway) | no |
-| `.vcenter`: center it between the title and the floor | yes | yes | text yes; a table to an estimated center |
+| `.vcenter`: center it between the title and the floor | yes | yes | text yes; a table to its measured center |
 | `.center`: both (the theme's, not Quarto's) | yes | yes | as `.vcenter` |
 | `scale="S"`: text, tables and code × S | yes (autofit shrinks an overshoot) | yes (no autofit: check the page) | yes |
 | `.fill`: grow until it just fits, up to 3× | yes | no; add `scale=` | no; add `scale=` |
-| `.caution`: the body on a soft field with a bar in the warning color, for warning slides | yes | yes | yes; the box cut to an estimate of its text, footnotes inside it |
+| `.caution`: the body on a soft field with a bar in the warning color, for warning slides | yes | yes | yes; the box cut to its measured text, footnotes inside it |
 
 ### Executable shell chunks
 

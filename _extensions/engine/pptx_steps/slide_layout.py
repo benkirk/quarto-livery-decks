@@ -4,7 +4,7 @@
 pandoc drops slide classes, so the engine's slide-layout.lua leaves one speaker-notes line,
 "engine-layout: vcenter scale=1.4", on each slide that asks for a layout; this removes the line
 and applies what pptx can express. vcenter: body text anchored mid-placeholder, a table moved to
-the middle of its area (an estimate: PowerPoint sizes rows itself). scale=S: every body and
+the middle of its area (its rows measured; PowerPoint sizes rows itself). scale=S: every body and
 table run at S times its inherited size. hcenter, fill: nothing (a text box cannot shrink-wrap).
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
@@ -38,12 +38,14 @@ from pptx.util import Pt
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
+from . import measure
+
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
 FOOTNOTES = ("†", "‡")
 NOT_BODY  = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
              PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
-LINE      = 1.2           # line height / font size, for the table estimate
+LINE      = 1.2           # line height / font size, for the text estimates
 CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 K         = livery_mod.canvas_scale(LIVERY)   # the lengths below were drawn for 7.5 in: scale to the canvas
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
@@ -123,19 +125,65 @@ def _is_body(shape):
             and shape.placeholder_format.type not in NOT_BODY)
 
 
-def _text_height(shape, slide):
-    """An estimate of the text's height: characters per line from the font size (half an em
-    each), one LINE per line plus a little paragraph spacing."""
+def _size(p, shape, slide):
+    """A paragraph's size in EMU: its first sized run's, else what the placeholder inherits."""
+    sized = [r.font.size for r in p.runs if r.font.size]
+    return sized[0] if sized else Pt(_inherited(shape, slide, p.level) / 100)
+
+
+def _pieces(p, family, size, weight=None):
+    """A paragraph as (text, face) pieces for measure.runs_lines(): each run in the face the pptx
+    shows it in, at its own size (else the paragraph's, EMU) and weight (else `weight`, else
+    regular); a line break (pandoc's subtitle and author share a paragraph) as "\v"."""
+    out = []
+    for el in p._p:
+        if el.tag == qn("a:br"):
+            out.append(("\v", None))
+        elif el.tag in (qn("a:r"), qn("a:fld")):
+            rpr, t = el.find(qn("a:rPr")), el.find(qn("a:t"))
+            latin = rpr.find(qn("a:latin")) if rpr is not None else None
+            name = latin.get("typeface") if latin is not None else None
+            name = None if name and name.startswith("+") else name   # +mn-lt: the placeholder's own
+            pt = int(rpr.get("sz")) / 100 if rpr is not None and rpr.get("sz") else size / 12700
+            b = rpr.get("b") if rpr is not None else None
+            w = 700 if b in ("1", "true") else 400 if b in ("0", "false") else (weight or 400)
+            out.append((t.text or "" if t is not None else "", measure.face(name, family, w, pt)))
+    return out
+
+
+def _lines(p, family, size, width, weight=None):
+    """The lines a paragraph wraps to in width (EMU), measured in the faces the pptx shows."""
+    return measure.runs_lines(_pieces(p, family, size, weight), width / measure.PX)
+
+
+def _text_height(shape, slide, family=measure.BODY, weight=None):
+    """The text's height: each paragraph's lines measured in the livery's face, one LINE per line
+    plus a little paragraph spacing."""
     tf = shape.text_frame
     width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
-        sized = [r.font.size for r in p.runs if r.font.size]
-        size = sized[0] if sized else Pt(_inherited(shape, slide, p.level) / 100)
-        per_line = max(1, int(width / (size * 0.5)))
-        # a line break (pandoc's subtitle and author share a paragraph) starts a new line
-        lines = sum(max(1, -(-len(part) // per_line)) for part in p.text.split("\v"))
-        total += int(lines * size * LINE) + Pt(6 * K)
+        size = _size(p, shape, slide)
+        total += int(_lines(p, family, size, width, weight) * size * LINE) + Pt(6 * K)
+    return total
+
+
+def _table_height(table, other, biggest):
+    """A table's height: each row as tall as its cell of most lines, measured in the livery's base
+    face in its column's width (less the cell's margins), at the table's biggest size."""
+    widths = [col.width for col in table.columns]
+    total = 0
+    for row in table.rows:
+        most = 1
+        for cell, w in zip(row.cells, widths):
+            tf = cell.text_frame
+            inner = w - cell.margin_left - cell.margin_right
+            n = 0
+            for p in tf.paragraphs:
+                sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
+                n += _lines(p, measure.BODY, Pt(sz / 100), inner)
+            most = max(most, n)
+        total += int(most * Pt(biggest / 100) * LINE + CELL_PAD)
     return total
 
 
@@ -198,11 +246,11 @@ def lay_out(slide, words):
                         if r.get("sz"):
                             biggest = max(biggest, int(r.get("sz")))
             if vcenter and rows:
-                est = int(len(rows) * (Pt(biggest / 100) * LINE + CELL_PAD))
+                est = _table_height(shape.table, other, biggest)
                 if est < shape.height:
                     shape.top = shape.top + (shape.height - est) // 2
                     shape.height = est
-    # after scale=: the box is cut to an estimate of the text at the size it is set in
+    # after scale=: the box is cut to the text measured at the size it is set in
     if "caution" in words:
         for shape in [sh for sh in slide.shapes if _is_body(sh)]:
             caution_box(slide, shape, vcenter)
@@ -318,8 +366,8 @@ def band_stack(slide, width, height):
     middle, as HTML and PDF centre theirs. pandoc puts the subtitle and the author in one
     paragraph of the subtitle placeholder, a blank line between them: the rule (a layout shape,
     moved onto the slide; this deck's Title Slide layout serves the title slide alone) goes in
-    that blank line, under a subtitle alone, or over an author alone. From estimates of the
-    title's and subtitle's text heights."""
+    that blank line, under a subtitle alone, or over an author alone. From the
+    title's and subtitle's text heights, measured in the livery's faces."""
     ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
     title, date, sub = (ph.get(t) for t in (PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE, PP_PLACEHOLDER.SUBTITLE))
     if title is None:
@@ -328,7 +376,7 @@ def band_stack(slide, width, height):
     X, W = int(x * width), int(w * width)
     dh = int(0.04 * height) if date is not None else 0
     gaps = [int(g * height) for g in (0.01 if date is not None else 0, 0.015, 0.02)]   # date|title, title|sub, rule
-    th = _text_height(title, slide)
+    th = _text_height(title, slide, measure.TITLE, 700)   # the master's titles are bold
     text = sub.text_frame.text.strip() if sub is not None else ""
     sh = _text_height(sub, slide) if text else 0
     author = slide.part.package.core_properties.author or ""
@@ -353,10 +401,18 @@ def band_stack(slide, width, height):
     else:
         tf = sub.text_frame
         p = tf.paragraphs[0]
-        sized = [r.font.size for r in p.runs if r.font.size]
-        size = sized[0] if sized else Pt(_inherited(sub, slide, 0) / 100)
-        per_line = max(1, int((W - tf.margin_left - tf.margin_right) / (size * 0.5)))
-        n = sum(max(1, -(-len(part) // per_line)) for part in head.split("\v"))   # the subtitle's lines
+        pieces = _pieces(p, measure.BODY, _size(p, sub, slide))
+        cut, last = len(pieces), None   # the subtitle ends at the blank line (two breaks)
+        for i, (text, _f) in enumerate(pieces):
+            if text == "\v":
+                if last is not None:
+                    cut = last
+                    break
+                last = i
+            elif text:
+                last = None
+        n = measure.runs_lines(pieces[:cut], (W - tf.margin_left - tf.margin_right) / measure.PX)   # the subtitle's lines
+        size = _size(p, sub, slide)
         rule_y = sub_top + tf.margin_top + int((n + 0.5) * size * LINE)
     if sub is not None:
         sub.left, sub.top, sub.width = X, sub_top, W

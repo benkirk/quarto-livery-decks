@@ -408,6 +408,18 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, B.13: one text measurer** (#57 Phase B, the last step). `pptx_steps/measure.py`
+  holds section_subtitle's PIL measurement, and slide_layout's character counts (half an em a
+  character) and one-line table rows give way to it: the caution box, the feature panel, a
+  centred table and the band title's stack are cut to their measured text. Each run measures in
+  the face the pptx shows: a bundled family in its file, the pptx typeface as its stand-in,
+  Courier (pandoc's code face) at 0.6 em a character, and titles in the headings family only
+  with a `pptx.heading-typeface` (cu and nsi measured theirs in the condensed face the pptx
+  never sets). 17 slides changed across the eight liveries: every caution box tighter, every
+  feature panel a line taller (its fourth line had sat on the panel's edge, for autofit to
+  shrink), nsi's photo cover recentred on a one-line title. Ben approved the contact sheet. The
+  quickstart's pipeline diagram names the engine-pptx filters and `pptx_post.py`'s steps.
+  Phase B is done. Next: release v1.1.0, then #58.
 - **2026-10-18, B.12: `pptx_post.py`** (#57 Phase B). The eight post-render scripts are the
   engine's `pptx_steps/` (each `main()` now a `run()`, the logic untouched), driven by
   `pptx_post.py`, which reads a deck once, runs the zip steps (section_subtitle, enable_autofit,

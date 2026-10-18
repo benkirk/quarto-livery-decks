@@ -11,13 +11,13 @@ Zip surgery via lxml, first in pptx_post.py, before embed_fonts rewrites
 presentation.xml. Idempotent: merged dividers stay merged; label and tab are replaced."""
 
 import copy
-import functools
 import posixpath
 
 from lxml import etree
-from PIL import ImageFont
 
 import livery as livery_mod
+
+from . import measure
 
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -48,7 +48,6 @@ LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.
 LABEL_GAP = 10                              # margin-bottom 0.5em
 BODY_GAP = 22                               # .ncar-subtitle margin-top 0.7em
 LINE = 1.4                                  # ascent + descent of the heading font, in em
-TYPE = LIVERY["typography"]                 # headings face measures the title, base the subtitle
 DECOR = ("engine-section-label", "engine-section-tab")
 
 
@@ -149,26 +148,6 @@ def _ph_style(layout_root, ph_type):
     return None
 
 
-@functools.lru_cache
-def _font(family, weight, pt):
-    return ImageFont.truetype(str(livery_mod.font_file(LIVERY, family, weight)), round(pt / PT_PX))
-
-
-def _lines(paragraphs, font, width):
-    """How many lines `paragraphs` wrap to in `width` px (greedy, like PowerPoint)."""
-    n = 0
-    for text in paragraphs:
-        line = ""
-        n += 1
-        for word in text.split():
-            trial = f"{line} {word}" if line else word
-            if line and font.getlength(trial) > width:
-                n, line = n + 1, word
-            else:
-                line = trial
-    return n
-
-
 def _paragraphs(sp):
     return ["".join(t.text or "" for t in p.findall(".//a:t", NS))
             for p in sp.findall("p:txBody/a:p", NS)] if sp is not None else []
@@ -213,12 +192,12 @@ def _dress(root, layout_root, number):
 
     def height(style, sp, family, weight):
         _x, w, pt, spacing = style
-        return _lines(_paragraphs(sp), _font(family, weight, pt), w) * LINE * spacing * pt / PT_PX
+        return measure.lines(_paragraphs(sp), measure.font(family, weight, pt), w) * LINE * spacing * pt / PT_PX
 
     label_h = LINE * LABEL_PT / PT_PX
-    title_h = height(t_style, title, TYPE["headings"], 700) + 4
+    title_h = height(t_style, title, measure.TITLE, 700) + 4   # the face the pptx sets titles in
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
-    body_h = height(b_style, body, TYPE["base"], 400) + 4 if body_text else 0
+    body_h = height(b_style, body, measure.BODY, 400) + 4 if body_text else 0
     total = label_h + LABEL_GAP + title_h + (BODY_GAP + body_h if body_text else 0)
     y = (BLOCK_TOP + BLOCK_BOTTOM - total) / 2
 
