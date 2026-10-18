@@ -311,6 +311,26 @@ local function bundled_livery(extdir, brand)
   return pandoc.path.join({ root, "liveries", brand })
 end
 
+local LIVERY   -- build/livery.json, read by load_theme
+
+-- Plots at the canvas scale (engine-plots.lua): a figure's width is its natural inches over the
+-- canvas width, as a share of the paper (beamer's paper is not the pptx canvas), and
+-- \pandocbounded still keeps an oversized one inside its column and the frame.
+local function size_plots(doc)
+  if not (LIVERY and LIVERY.type and LIVERY.type.canvas) then return doc end
+  local plots = dofile(quarto.utils.resolve_path("engine-plots.lua"))
+  local canvas_in = LIVERY.type.canvas.w / 72
+  return doc:walk({
+    Image = function(img)
+      local path = plots.figure_path(img, "beamer")
+      local w = path and plots.natural_inches(path)
+      if not w then return nil end
+      return pandoc.RawInline("latex", string.format(
+        "\\pandocbounded{\\includegraphics[width=%.4f\\paperwidth]{%s}}", w / canvas_in, img.src))
+    end,
+  })
+end
+
 local function load_theme(doc)
   local extdir = pandoc.path.directory(quarto.utils.resolve_path("engine_livery.sty"))
   if not pandoc.path.is_absolute(extdir) then
@@ -355,12 +375,13 @@ local function load_theme(doc)
   local has_scale = false
   for _, o in ipairs(opts) do if o:match("^%s*typescale%s*=") then has_scale = true end end
   local jf = io.open(pandoc.path.join({ livery, "build", "livery.json" }))
-  if jf and not has_scale then
-    local lj = quarto.json.decode(jf:read("a"))
-    local f = deck_type_scale(doc.meta, lj.type.roles.body.pt, "engine-beamer")
-    if f ~= 1 then table.insert(opts, "typescale=" .. string.format("%.4f", f)) end
+  if jf then
+    LIVERY = quarto.json.decode(jf:read("a")); jf:close()
+    if not has_scale then
+      local f = deck_type_scale(doc.meta, LIVERY.type.roles.body.pt, "engine-beamer")
+      if f ~= 1 then table.insert(opts, "typescale=" .. string.format("%.4f", f)) end
+    end
   end
-  if jf then jf:close() end
   local tex = table.concat({
     "\\makeatletter",
     "\\providecommand\\input@path{}",
@@ -544,6 +565,7 @@ function Pandoc(doc)
   doc.blocks = full_frames(doc.blocks)
   doc = bound_sized_images(doc)
   load_theme(doc)
+  doc = size_plots(doc)
 
   -- `titlegraphic: none`: the plain cover, not the livery's default photo (pandoc's template
   -- would otherwise \includegraphics{none})

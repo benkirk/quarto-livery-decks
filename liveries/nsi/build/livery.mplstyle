@@ -44,6 +44,8 @@ savefig.facecolor: none
 savefig.edgecolor: none
 savefig.transparent: True
 savefig.dpi: 200
+savefig.pad_inches: 0
+svg.hashsalt: nsi
 pdf.fonttype: 3
 ps.fonttype: 3
 svg.fonttype: path

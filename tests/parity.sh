@@ -4,7 +4,7 @@
 #   tests/parity.sh baseline [deck dir...]   build the decks and snapshot them into _baseline/
 #   tests/parity.sh check    [deck dir...]   rebuild, snapshot into _check/, diff against _baseline/
 #
-# Default deck dirs: decks/quickstart decks/sample decks/fixtures, relative to the repository root,
+# Default deck dirs: decks/quickstart decks/sample decks/fixtures decks/plots, relative to the repository root,
 # each built under every livery in PARITY_LIVERIES (default "ncar cu nsi"; ncar's snapshots keep
 # the deck's name, the others get a -<livery> suffix and guard the engine against regressions).
 # Every deck of a directory (its Makefile's DECKS) gets a snapshot, which
@@ -29,7 +29,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 verb=${1:-}; shift || true
 case "$verb" in baseline|check) ;; *) sed -n '2,13p' "$0"; exit 2;; esac
-dirs=("$@"); [ ${#dirs[@]} -gt 0 ] || dirs=(decks/quickstart decks/sample decks/fixtures)
+dirs=("$@"); [ ${#dirs[@]} -gt 0 ] || dirs=(decks/quickstart decks/sample decks/fixtures decks/plots)
 # every deck under every livery: ncar is the parity fixture (snapshots keep their names), the
 # others (cu) have no upstream to match and serve as the regression check for engine changes
 liveries=(${PARITY_LIVERIES:-ncar cu nsi})

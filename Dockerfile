@@ -121,6 +121,7 @@ RUN mkdir -p /opt/fonts /usr/local/share/fonts && ln -s /opt/fonts /usr/local/sh
 
 # 7. The framework itself, last: it changes most often (.dockerignore keeps outputs and the
 #    host's conda-env/ out). A mounted tree belongs to whoever mounted it: let git act in it.
+#    matplotlib's font cache is built here too, after the liveries' fonts are linked.
 COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENV FRAMEWORK=/opt/quarto-livery-decks
@@ -134,6 +135,17 @@ fc-cache -f || true
 echo "system fontconfig: $(/usr/bin/fc-list : family | sort -u | wc -l) families, Poppins $(/usr/bin/fc-list : family | grep -c Poppins)"
 echo "conda fontconfig:  $(fc-list : family | sort -u | wc -l) families, Poppins $(fc-list : family | grep -c Poppins || true)"
 test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0 || { /usr/bin/fc-cache -fv 2>&1 | grep -E 'local/share|liveries' >&2; exit 1; }
+# matplotlib's font cache, built once over every font above (the liveries' too) into /opt/matplotlib:
+# the entrypoint seeds it into a user's HOME, so a deck's first plot does not rescan them all
+MPLCONFIGDIR=/opt/matplotlib python - <<'PY'
+from matplotlib import font_manager as fm
+fm._load_fontmanager(try_read_cache=False)
+for family in ("Poppins", "TeX Gyre Heros", "Public Sans"):
+    path = fm.findfont(family, fallback_to_default=False)
+    print(f"matplotlib: {family} -> {path}")
+PY
+ls /opt/matplotlib/fontlist-*.json
+chmod -R a+rX /opt/matplotlib
 # everything a plain user needs must be readable
 bad=$(find /opt -not -perm -o=r); test -z "$bad" || { echo "$bad"; exit 1; }
 EOS

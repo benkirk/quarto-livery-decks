@@ -34,14 +34,20 @@ format:
     highlight-style: _livery/build/livery.theme   # the livery's code colors, as HTML and PDF wear them
     slide-level: 2
     toc: false
+    fig-format: png       # plots: pixels, enough for a projector at the canvas size
+    fig-dpi: 200
   engine-beamer:           # engine beamer theme, in the repo's _extensions/engine
     highlight-style: _livery/build/livery.theme   # the livery's code colors (its default is ncar's)
     toc: false
     fontsize: 10pt        # ~pptx text density; beamer has no autofit
     themeoptions: [fonts=bundled]  # bundled Poppins; skip the system-font probe
+    fig-format: pdf       # plots: vector, the livery's font embedded (livery.mplstyle pdf.fonttype)
+    fig-dpi: 200          # what a vector plot rasterizes (imshow, rasterized=True)
   engine-revealjs:         # engine revealjs (HTML) theme, same extension
     highlight-style: _livery/build/livery.theme
     toc: false
+    fig-format: svg       # plots: vector, text as paths (an <img> cannot see the page's fonts)
+    fig-dpi: 96
     # footer: "Deck title | CISL"   # small text, bottom center
     # embed-resources: true         # one self-contained .html (needs chalkboard: false)
     # chalkboard: false

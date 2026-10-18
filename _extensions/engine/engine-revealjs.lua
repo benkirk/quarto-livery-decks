@@ -86,6 +86,31 @@ end
 -- (liveries/ at the top of this repo). A deck reaches the extension through a linked
 -- _extensions/, and Lua does not resolve links, so the extension's own directory is found
 -- first: changing into a directory does resolve them.
+local PLOTS = dofile(pandoc.path.join({ EXTDIR, "engine-plots.lua" }))
+
+-- Plots at the canvas scale (engine-plots.lua): a figure shown at its natural inches times the
+-- slide pixels per canvas inch (and the autofit's factor, as the text), kept out of reveal's
+-- stretch, which would size it to the slide's free height; the scss's max-width keeps an
+-- oversized one inside its column.
+local function size_plots(doc, livery)
+  local per_in = 1600 / (livery.type.canvas.w / 72)
+  return doc:walk({
+    Image = function(img)
+      local path = PLOTS.figure_path(img, "revealjs")
+      local w = path and PLOTS.natural_inches(path)
+      if not w then return nil end
+      local style = img.attributes.style or ""
+      if style ~= "" and not style:match(";%s*$") then style = style .. "; " end
+      img.attributes.style = style .. string.format("width: calc(%.0fpx * var(--engine-fit, 1));", w * per_in)
+      img.classes = img.classes:filter(function(c) return c ~= "r-stretch" end)
+      for _, c in ipairs({ "nostretch", "engine-plot" }) do
+        if not img.classes:includes(c) then img.classes:insert(c) end
+      end
+      return img
+    end,
+  })
+end
+
 local function bundled_livery(extdir, brand)
   local ok, real = pcall(pandoc.system.with_working_directory, extdir, pandoc.system.get_working_directory)
   local root = pandoc.path.directory(pandoc.path.directory(ok and real or extdir))
@@ -562,6 +587,7 @@ function Pandoc(doc)
   local opts = theme_options(meta)
 
   local livery = load_livery(meta, opts.brand or "ncar")
+  if livery.type and livery.type.canvas then doc = size_plots(doc, livery); meta = doc.meta end
   if livery.art and livery.art.waves then
     WAVES, SHIFT = livery.art.waves.lines, livery.art.waves.shift
   end

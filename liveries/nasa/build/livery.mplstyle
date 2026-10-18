@@ -43,6 +43,8 @@ savefig.facecolor: none
 savefig.edgecolor: none
 savefig.transparent: True
 savefig.dpi: 200
+savefig.pad_inches: 0
+svg.hashsalt: nasa
 pdf.fonttype: 42
 ps.fonttype: 42
 svg.fonttype: path

@@ -18,8 +18,9 @@ run "$img" quarto --version
 run "$img" bash -c 'echo "QUARTO_CHROMIUM=$QUARTO_CHROMIUM"; "$QUARTO_CHROMIUM" --version'
 run "$img" bash -c 'echo "font families: $(/usr/bin/fc-list : family | sort -u | wc -l), the liveries'"'"' Poppins: $(/usr/bin/fc-list : family | grep -c Poppins)"'
 run "$img" bash -c 'test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0'   # LibreOffice's fontconfig sees them
+run "$img" python -c "from matplotlib import font_manager as fm; print('matplotlib Poppins:', fm.findfont('Poppins', fallback_to_default=False))"
 
-echo "== 1. a bare directory: no Makefile; mermaid exercises QUARTO_CHROMIUM, the PDF XeLaTeX"
+echo "== 1. a bare directory: no Makefile; mermaid exercises QUARTO_CHROMIUM, the PDF XeLaTeX, a plot matplotlib"
 work=$(mktemp -d "$tmp/hello.XXXXXX")   # no spaces: Quarto's \input@path cannot take them
 cat > "$work/hello.qmd" <<'QMD'
 ---
@@ -50,9 +51,28 @@ flowchart LR
   A --> C[hello.html]
   A --> D[hello.pdf]
 ```
+
+## A plot
+
+```{python}
+#| echo: false
+import livery_mpl, matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+for i in range(3):
+    ax.plot([0, 1, 2], [i, i + 1, i + 3], label=f"Series {i + 1}")
+ax.set_xlabel("x")
+ax.legend()
+plt.show()
+```
 QMD
-build -v "$work:/work" "$img" make pptx html pdf LIVERY=cu
+build -v "$work:/work" "$img" make pptx html pdf LIVERY=cu 2>&1 | tee "$tmp/hello.log"
 ls -la "$work"
+# the plot: matplotlib found the livery's font in the seeded cache, rebuilt nothing
+if grep -q 'building the font cache' "$tmp/hello.log"; then echo "matplotlib rebuilt its font cache" >&2; exit 1; fi
+if grep -q 'findfont: Font family' "$tmp/hello.log"; then grep 'findfont' "$tmp/hello.log" >&2; exit 1; fi
+ls "$work"/hello_files/figure-revealjs/*.svg
+test "$(unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image')" -ge 2   # mermaid and the plot
+pdffonts "$work/hello.pdf" | grep -q TeXGyreHeros
 for f in hello.pptx hello.html hello.pdf; do
   test -s "$work/$f"
   test "$(stat -c %u "$work/$f")" = "$(id -u)"
