@@ -181,6 +181,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
+- **Content title** (engine >= 3.8.0): `livery.yml` `frametitle: {align: left|center, tab, rule}`
+  (nsi: centred, no tab, no hairline, as the NSI master deck's slide 20; its mark at the paper's
+  edge, `geometry.logo.inset: 0.015`); the body starts below
+  a mark taller than ncar's (`livery.json` `frametitle.body`). Beamer centres the title in the
+  same band as HTML and pptx (it sat higher before).
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
   pandoc's `monofont` in pptx (nasa: DM Mono). The other liveries keep the defaults.

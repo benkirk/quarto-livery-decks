@@ -399,6 +399,14 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-17, nsi content titles** (stacked on the NASA work: beamer-livery-theme `nsi-title`,
+  this repo `nsi-title`; still 3.8.0). Ben compared an nsi text slide with Lindsay's slide 20 of the
+  NSI master deck: her mark is larger, her titles centred, no gold tab; and our PDF's title sat
+  high against the mark. New livery knob `frametitle: {align, tab, rule}` in all three formats; the
+  body starts below a mark taller than ncar's (`frametitle.body`); beamer now centres the content
+  title in the band HTML and the pptx template use (44-114 px of 900, the rule at 130, the body at
+  150), which moves every livery's PDF titles a little. nsi: centred, no tab, no rule, its mark
+  0.135 tall from 0.04 and 0.015 from the paper's edge (the deck's; new `geometry.logo.inset`). See `nsi/reference/notes.md` for what still differs.
 - **2026-10-17, NASA general, light and dark** (beamer-livery-theme 3.8.0; this repo
   `nasa-livery`). Ben asked for a general NASA style for external communication in light and
   dark, with the preferred fonts and the meatball; there is no official template, so we take

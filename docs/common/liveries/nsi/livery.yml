@@ -15,8 +15,15 @@ signoff:                  # the deck's RIO lockup at the foot, as cu's slot (cor
 geometry:
   logo:
     corner: top-left      # the deck's content slides; the title gives way beside it
-    height: 0.085         # top 0.0533 to just above the title rule (the deck's 0.135 would cross it)
+    top: 0.04             # the deck's (Lindsay's slide 20): the body starts below it (frametitle.body)
+    inset: 0.015          # near the paper's edge, not at the text margin (the deck's 23 px of 1600)
+    height: 0.135         # and no title rule to keep clear of (frametitle)
     aspect: 1.830         # the NSI lockup, 1316/719
+
+frametitle:               # the deck's content titles: centred beside the mark, no tab, no hairline
+  align: center
+  tab: false
+  rule: false
 
 title:                    # the deck's title slide (slide 1)
   style: band

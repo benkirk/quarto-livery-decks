@@ -65,3 +65,15 @@ slide: the constellation field, as the deck's last slide.
 - `title=light` is ignored under the band, with a warning, in every format (since the
   compositions, 2026-10-17; before, the pptx drew the white light cover while HTML and PDF kept
   the band). A light title is not an nsi look.
+
+## Content titles (2026-10-17)
+
+Ben compared a content slide with the master deck's slide 20 ("MSSC Secure Research
+Infrastructure", Lindsay's): her NSI mark is larger (0.135 of the height, from 0.04), her titles
+are centred beside it, with no gold tab and no hairline. nsi now says `frametitle: {align: center,
+tab: false, rule: false}` and the mark's `top: 0.04, height: 0.135, inset: 0.015` (near the paper's edge,
+as hers, not at the text margin; `geometry.logo.inset`, engine 3.8.0); the body starts below the
+mark (0.197; `frametitle.body`, engine 3.8.0). Still different from hers, left as they are: the
+titles' condensed face in HTML and PDF (Heros Condensed, the brand's headline rule; her deck sets
+regular-width Helvetica Neue Bold, as the pptx does), her ~18 pt body with black bullets, and her
+white footer band under the photo with a larger RIO lockup.
