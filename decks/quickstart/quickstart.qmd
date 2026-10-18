@@ -148,9 +148,9 @@ caption. The title is still in the source, so navigation, notes and
 %%| fig-width: 10
 flowchart LR
     Q["quarto render<br/>deck.qmd"]:::src
-    F["Lua filters<br/>strip-raw-figure<br/>slide-layout<br/>notes-last<br/>single-body"]:::pptx
+    F["engine-pptx filters<br/>strip-raw-figure<br/>slide-layout<br/>notes-last<br/>single-body<br/>linked-images<br/>diagram-dark"]:::pptx
     PX["pandoc pptx<br/>on template.pptx"]:::pptx
-    P1["post-processing<br/>section_subtitle<br/>enable_autofit<br/>embed_poppins<br/>style_footnotes<br/>link_captions<br/>slide_layout<br/>style_tables"]:::pptx
+    P1["pptx_post.py<br/>section_subtitle<br/>enable_autofit<br/>embed_fonts<br/>style_footnotes<br/>link_captions<br/>slide_layout<br/>style_tables<br/>type_step"]:::pptx
     R["engine-revealjs.lua<br/>dividers, waves,<br/>footnotes, layout"]:::html
     RJ["revealjs<br/>+ autofit script"]:::html
     B["engine-beamer.lua<br/>frame keys,<br/>footnotes, layout"]:::pdf
