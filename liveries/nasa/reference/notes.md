@@ -89,3 +89,28 @@ sheet (Earthrise `as08-14-2383`, the Blue Marble `as17-148-22727`, an aurora lim
 
 - pptx math is OMML, which LibreOffice cannot draw (any livery); check it in PowerPoint.
 - Templates have to be opened once in PowerPoint to confirm there is no "Repair?" prompt.
+
+## Chart colors (2026-10-18)
+
+`livery.yml` `charts:` is NASA's own chart palette, verbatim: the Horizon Design System's dataviz
+tokens (`nasa/hds-core` f036e73, `tokens.json` `dataviz.color`, CC0): the 12 categorical colors
+for light and for dark, the curated sets for 2 to 5 series (option 1 of four each), and the 11
+ramps (red, orange, yellow, gold, lime, green, aqua, slate, blue, purple, magenta) in 10 steps.
+HDS says the brand red and blue are "never for dataviz", so they are not anchors. HDS publishes no
+diverging scale; its poles here are HDS blue 70 `#1159CD` and red 70 `#C41D14`.
+
+The dataviz checks warn on the published colors (reported, not fixed): the slates and the gold are
+desaturated by design, red beside orange is dE 13.4 for normal vision, five light colors are below
+3:1 on white, and several dark ones sit above the dark band. The curated sets are the safer picks
+for a few series.
+
+## Color fact check (2026-10-18)
+
+NASA Blue and NASA Red are print colors: the insignia is PMS 286 and PMS 185 (NASA's insignia
+guidelines for grantees), and `#0032A0`/`#E4002B` are those Pantones' standard sRGB values; that
+the 2024 insignia color guide gives these hexes could not be confirmed (nasa.gov was blocked). NASA's
+screen colors are different: HDS `nasa-blue` `#1C67E3` (tint `#288BFF`, shade `#0B3D91`),
+`nasa-red` `#F64137` (tint `#FF5C52`, shade `#B60109`), `international-orange` `#EA6F24`, and a
+carbon neutral ramp with `carbon-90` `#17171B` as the dark background. carbon, gray, silver,
+light-gray, sky and yellow here are ours. Whether the nasa liveries move to the HDS screen colors
+is decided later (an issue carries this).

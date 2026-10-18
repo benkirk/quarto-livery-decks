@@ -125,3 +125,26 @@ type:                     # points on that canvas, as the NSF NCAR template's gu
   fineprint: 5            # the cover's material notes
   pagenumber: 7
   footer: 7               # "OPTIONAL PRESENTATION NAME"
+
+# Chart colors (design/charts-and-plots.md; livery_charts.py). The series colors and the diverging
+# scale are sam-queries' (src/webapp/dashboards/charts/theme.py FAIR_SHARE_LIGHT/_DARK, the calendar
+# burn steps of static/css/variables.css, 6e0f00d), validated there for the NCAR brand; they add a
+# pink, a purple and a darker gold because the brand colors alone fail the checks. The ramps are
+# the UCAR web theme's tint ladders (NCAR/koru-jekyll _variables.scss, 55ce7c3: base, -33, -66),
+# light to dark; the yellow one rebuilt on the 2026 guide's #FFDD31 with the blend that fits koru's
+# own yellow ladder (OKLab toward white at 0.575 and 0.26). reference/notes.md.
+charts:
+  categorical: ["#0057C2", "#E0681A", "#00A2B4", "#D4246B", "#9A7B00", "#6B46C1"]
+  diverging: ["#1F63B0", "#86B6E6", "#DDE1E5", "#F0A07C", "#C0272D"]
+  dark:
+    categorical: ["#4687EA", "#D9772C", "#11A0B0", "#DE4B80", "#AD8D1C", "#8F70E8"]
+    diverging: ["#7AB2FA", "#4A82C4", "#4B5664", "#B5614A", "#FF9A80"]
+  ramps:
+    ncar-blue: ["#ADC2E6", "#6B8CCE", "#0057C2"]
+    light-blue: ["#BFE5F9", "#86D3FC", "#42C0FF"]
+    ucar-aqua: ["#71C0CB", "#00A2B4", "#00818F"]
+    light-aqua: ["#C0F0F5", "#86E8F5", "#34E1F4"]
+    dark-blue: ["#A8B7CE", "#5A77A6", "#00357A"]
+    space: ["#A5ADB7", "#556379", "#011837"]
+    orange: ["#F8DBB5", "#FABE72", "#FAA119"]
+    yellow: ["#FFF2B9", "#FFE77D", "#FFDD31"]

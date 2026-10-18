@@ -7,3 +7,10 @@ download it beside this file as `reference/ncarucar.pptx` to rerun `livery_inspe
 
 `report.md` is the tool's reading of it. The layout mapping and the template decisions go
 here as they are made (design section 6, "the human steps").
+
+## Chart colors (2026-10-18)
+
+Inherited through `extends`: ncar's (NSF NCAR Blue leading). See ../ncar/reference/notes.md.
+
+The official template's one-off theme values (`#003479` for `#00357A`, and so on) and its lt2
+`#E8E8E8` are a Google Slides artifact, not brand colors; see ../ncar/reference/notes.md.

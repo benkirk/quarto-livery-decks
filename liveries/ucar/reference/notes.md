@@ -7,3 +7,12 @@ download it beside this file as `reference/ucar.pptx` to rerun `livery_inspect.p
 
 `report.md` is the tool's reading of it. The layout mapping and the template decisions go
 here as they are made (design section 6, "the human steps").
+
+## Chart colors (2026-10-18)
+
+`livery.yml` `charts:` keeps ncar's ramps and diverging scale and leads the series with UCAR
+Aqua: sam-queries' validated set with slots 1 and 3 swapped (`#00A2B4` first, `#0057C2` third),
+which passes the same checks in both modes. See ../ncar/reference/notes.md.
+
+The official template's one-off theme values (`#003479` for `#00357A`, and so on) and its lt2
+`#E8E8E8` are a Google Slides artifact, not brand colors; see ../ncar/reference/notes.md.
