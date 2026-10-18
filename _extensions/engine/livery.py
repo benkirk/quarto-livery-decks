@@ -1,13 +1,21 @@
-"""Read a livery's resolved truth, build/livery.json, for the template builder, the checks and
-the framework's post-render scripts (which load this file through their own livery.py).
+"""Read a livery's resolved truth, build/livery.json, for the template builder, the checks, the
+pptx post-render steps and the framework's scripts.
+
+    import livery as livery_mod     load, color, scheme, derived, mix, font_file, mark, files
+    livery.py deps <livery dir>     the files a deck build reads from the livery (Make.common)
+    livery.py mono <livery dir>     the code face's family (typography.monospace), or nothing
+    livery.py figsize <livery dir>  the plots' default size, charts.figsize.full: "<w> <h>" in inches
 
 The directory comes from the argument, else $LIVERY_DIR (exported by the framework's
 Make.common), else a `_livery` link in the current directory. Generate the file with
-livery_build.py."""
+livery_build.py. `deps` prints build/livery.{json,sty,css,theme,mplstyle}, the template and every
+file the data names (the parent's too), joined to the directory as given; each command prints
+nothing when build/livery.json is missing."""
 
 import json
 import math
 import os
+import sys
 from pathlib import Path
 
 
@@ -110,3 +118,33 @@ def files(livery: dict) -> list[tuple[str, str]]:
         family = pptx["typeface"].lower().replace(" ", "")
         out += [(f"{pptx['fonts']}/{family}-{face}.fntdata", "pptx font blob") for face in ("regular", "bold", "italic", "bolditalic")]
     return out
+
+
+def deps(d: str) -> list[str]:
+    if not (Path(d) / "build" / "livery.json").exists():
+        return []
+    lv = load(d)
+    rel = [f"build/livery.{x}" for x in ("json", "sty", "css", "theme", "mplstyle")] + [p for p, _ in files(lv)]
+    return sorted({os.path.normpath(Path(d) / p) for p in rel if (Path(d) / p).exists()})
+
+
+def mono(d: str) -> str:
+    """typography.monospace's family when the livery bundles its files (livery_build's mono_font())."""
+    if not (Path(d) / "build" / "livery.json").exists():
+        return ""
+    import livery_build   # beside this file; only this command needs it (and PyYAML)
+    return livery_build.mono_font(load(d))[0]
+
+
+def figsize(d: str) -> str:
+    """charts.figsize.full, the content area in canvas inches, as "<w> <h>"."""
+    if not (Path(d) / "build" / "livery.json").exists():
+        return ""
+    return " ".join(str(v) for v in load(d)["charts"]["figsize"]["full"])
+
+
+if __name__ == "__main__":
+    cmds = {"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}
+    if len(sys.argv) != 3 or sys.argv[1] not in cmds:
+        sys.exit("usage: livery.py deps|mono|figsize <livery dir>")
+    print(cmds[sys.argv[1]](sys.argv[2]))

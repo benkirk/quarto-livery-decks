@@ -10,11 +10,7 @@ row filled with the table-band blend; columns left alone when pandoc took widths
 source, else re-split in proportion to each column's longest cell, each 10-60% wide.
 Run it last, after slide_layout.py has scaled the runs. Idempotent."""
 
-import sys
-from pathlib import Path
-
 from lxml import etree
-from pptx import Presentation
 from pptx.oxml.ns import qn
 
 import livery as livery_mod
@@ -119,16 +115,8 @@ def style_table(tbl, base):
     _rebalance(tbl)
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: style_tables.py <file.pptx>", file=sys.stderr)
-        return 2
-    pptx = Path(sys.argv[1]).resolve()
-    if not pptx.exists():
-        print(f"error: {pptx} not found", file=sys.stderr)
-        return 2
-
-    prs = Presentation(str(pptx))
+def run(prs, name: str) -> None:
+    """The open deck, changed in place; name for the message."""
     styled = 0
     for slide in prs.slides:
         master = slide.slide_layout.slide_master._element
@@ -138,10 +126,4 @@ def main() -> int:
             if getattr(shape, "has_table", False):
                 style_table(shape.table._tbl, base)
                 styled += 1
-    prs.save(str(pptx))
-    print(f"style_tables: styled {styled} table(s) → {pptx.name}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    print(f"style_tables: styled {styled} table(s) → {name}")

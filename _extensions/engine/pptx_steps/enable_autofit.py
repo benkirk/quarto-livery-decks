@@ -18,11 +18,6 @@ Idempotent: any bodyPr that already contains an autofit child
 (`normAutofit`, `spAutoFit`, `noAutofit`) is left alone."""
 
 import re
-import shutil
-import sys
-import tempfile
-import zipfile
-from pathlib import Path
 
 EMPTY_BODYPR = re.compile(rb"<a:bodyPr\s*/>")
 NEW_BODYPR   = b"<a:bodyPr><a:normAutofit/></a:bodyPr>"
@@ -32,29 +27,11 @@ def patch_slide(xml: bytes) -> tuple[bytes, int]:
     return EMPTY_BODYPR.subn(NEW_BODYPR, xml)
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: enable_autofit.py <file.pptx>", file=sys.stderr)
-        return 2
-    pptx = Path(sys.argv[1]).resolve()
-    if not pptx.exists():
-        print(f"error: {pptx} not found", file=sys.stderr)
-        return 2
-
-    with tempfile.TemporaryDirectory() as td:
-        tmp = Path(td) / pptx.name
-        total = 0
-        with zipfile.ZipFile(pptx, "r") as zin, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
-            for info in zin.infolist():
-                data = zin.read(info.filename)
-                if info.filename.startswith("ppt/slides/slide") and info.filename.endswith(".xml"):
-                    data, n = patch_slide(data)
-                    total += n
-                zout.writestr(info, data)
-        shutil.move(tmp, pptx)
-    print(f"enable_autofit: enabled normAutofit on {total} placeholder(s) → {pptx.name}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+def run(parts: dict, name: str) -> None:
+    """The deck's zip members (name -> bytes), changed in place; name for the message."""
+    total = 0
+    for member, data in parts.items():
+        if member.startswith("ppt/slides/slide") and member.endswith(".xml"):
+            parts[member], n = patch_slide(data)
+            total += n
+    print(f"enable_autofit: enabled normAutofit on {total} placeholder(s) → {name}")

@@ -18,7 +18,8 @@ import sys
 
 import yaml
 
-import livery as livery_mod
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[2] / "_extensions" / "engine"))
+import livery as livery_mod  # noqa: E402  (the engine's reader)
 
 PAGE = """<!DOCTYPE html>
 <html lang="en">

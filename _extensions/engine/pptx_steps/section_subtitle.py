@@ -13,11 +13,6 @@ presentation.xml. Idempotent: merged dividers stay merged; label and tab are rep
 import copy
 import functools
 import posixpath
-import shutil
-import sys
-import tempfile
-import zipfile
-from pathlib import Path
 
 from lxml import etree
 from PIL import ImageFont
@@ -249,18 +244,8 @@ def _dress(root, layout_root, number):
         _set_xfrm(body, b_style[0], y + title_h + BODY_GAP, b_style[1], body_h)
 
 
-def main():
-    if len(sys.argv) != 2:
-        print("usage: section_subtitle.py <file.pptx>", file=sys.stderr)
-        return 2
-    pptx = Path(sys.argv[1]).resolve()
-    if not pptx.exists():
-        print(f"error: {pptx} not found", file=sys.stderr)
-        return 2
-
-    with zipfile.ZipFile(pptx, "r") as zin:
-        parts = {i.filename: zin.read(i.filename) for i in zin.infolist()}
-
+def run(parts: dict, name: str) -> None:
+    """The deck's zip members (name -> bytes), changed in place; name for the message."""
     pres = _parse(parts["ppt/presentation.xml"])
     sld_id_lst = pres.find("p:sldIdLst", NS)
     presrels_name, presrels = _rels_for(parts, "ppt/presentation.xml")
@@ -297,7 +282,7 @@ def main():
 
     if not dressed:
         print("section_subtitle: no section dividers")
-        return 0
+        return
 
     # Delete each orphan slide and everything that belongs only to it.
     delete_names = set()
@@ -329,21 +314,10 @@ def main():
     for s_part in dressed:
         modified[s_part] = _serialize(info[s_part]["root"])
 
-    with tempfile.TemporaryDirectory() as td:
-        tmp = Path(td) / pptx.name
-        with zipfile.ZipFile(pptx, "r") as zin, \
-                zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
-            for i in zin.infolist():
-                if i.filename in delete_names:
-                    continue
-                zout.writestr(i, modified.get(i.filename, zin.read(i.filename)))
-        shutil.move(str(tmp), str(pptx))
+    for n in delete_names:
+        parts.pop(n, None)
+    parts.update(modified)
 
     print(f"section_subtitle: merged {len(merged)} subtitle(s), "
           f"removed {len(orphans)} orphan slide(s), dressed {len(dressed)} divider(s) "
-          f"→ {pptx.name}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+          f"→ {name}")

@@ -17,10 +17,7 @@ Run after `quarto render ... --to pptx`, where LIVERY_DIR or a _livery link name
 livery (utils/livery.py). Exits non-zero (with guidance) if the font blobs are missing."""
 
 import re
-import shutil
 import sys
-import tempfile
-import zipfile
 from pathlib import Path
 
 import livery as livery_mod
@@ -144,74 +141,43 @@ def patch_presentation_xml(xml: str, embedded_font_lst: str) -> str:
     return xml[:insert_at] + embedded_font_lst + xml[insert_at:]
 
 
-def rewrite_pptx(pptx_path: Path, blobs: dict[str, bytes]) -> tuple[int, int]:
-    with tempfile.NamedTemporaryFile(
-        suffix=".pptx", dir=pptx_path.parent, delete=False
-    ) as tmp:
-        tmp_path = Path(tmp.name)
+def rewrite_parts(parts: dict, blobs: dict[str, bytes]) -> tuple[int, int]:
+    # Pre-compute the patched rels so we know which rIds the embeddedFontLst uses.
+    rels_xml = parts["ppt/_rels/presentation.xml.rels"].decode("utf-8")
+    rids = next_rids(rels_xml, len(VARIANTS))
+    rels_xml_patched = patch_rels(rels_xml, rids)
+    blob_to_rid = effective_font_rids(rels_xml_patched)
 
-    try:
-        with zipfile.ZipFile(pptx_path, "r") as zin:
-            # Pre-compute the patched rels so we know which rIds the embeddedFontLst uses.
-            rels_xml = zin.read("ppt/_rels/presentation.xml.rels").decode("utf-8")
-            rids = next_rids(rels_xml, len(VARIANTS))
-            rels_xml_patched = patch_rels(rels_xml, rids)
-            blob_to_rid = effective_font_rids(rels_xml_patched)
+    efl = build_embedded_font_lst(blob_to_rid)
 
-            efl = build_embedded_font_lst(blob_to_rid)
+    pres_xml = parts["ppt/presentation.xml"].decode("utf-8")
+    pres_xml_patched = patch_presentation_xml(pres_xml, efl)
 
-            pres_xml = zin.read("ppt/presentation.xml").decode("utf-8")
-            pres_xml_patched = patch_presentation_xml(pres_xml, efl)
+    ct_xml = parts["[Content_Types].xml"].decode("utf-8")
+    ct_xml_patched = patch_content_types(ct_xml)
 
-            ct_xml = zin.read("[Content_Types].xml").decode("utf-8")
-            ct_xml_patched = patch_content_types(ct_xml)
+    existing_arcs = {arc for _, _, arc in VARIANTS if arc in parts}
 
-            existing_names = set(zin.namelist())
-            existing_arcs = {arc for _, _, arc in VARIANTS if arc in existing_names}
-
-            with zipfile.ZipFile(tmp_path, "w", zipfile.ZIP_DEFLATED) as zout:
-                for item in zin.infolist():
-                    name = item.filename
-                    if name in {arc for _, _, arc in VARIANTS}:
-                        # Will write fresh below; skip the existing copy.
-                        continue
-                    if name == "ppt/presentation.xml":
-                        zout.writestr(item, pres_xml_patched.encode("utf-8"))
-                    elif name == "ppt/_rels/presentation.xml.rels":
-                        zout.writestr(item, rels_xml_patched.encode("utf-8"))
-                    elif name == "[Content_Types].xml":
-                        zout.writestr(item, ct_xml_patched.encode("utf-8"))
-                    else:
-                        zout.writestr(item, zin.read(name))
-                # Inject (or re-inject) the font blobs.
-                for _, blob, arc in VARIANTS:
-                    zout.writestr(arc, blobs[blob])
-
-        shutil.move(tmp_path, pptx_path)
-        return len(VARIANTS), len(existing_arcs)
-    finally:
-        if tmp_path.exists():
-            tmp_path.unlink()
+    for _, _, arc in VARIANTS:   # written fresh below
+        parts.pop(arc, None)
+    parts["ppt/presentation.xml"] = pres_xml_patched.encode("utf-8")
+    parts["ppt/_rels/presentation.xml.rels"] = rels_xml_patched.encode("utf-8")
+    parts["[Content_Types].xml"] = ct_xml_patched.encode("utf-8")
+    # Inject (or re-inject) the font blobs.
+    for _, blob, arc in VARIANTS:
+        parts[arc] = blobs[blob]
+    return len(VARIANTS), len(existing_arcs)
 
 
-def main() -> None:
-    if len(sys.argv) != 2:
-        sys.exit("usage: embed_fonts.py <output.pptx>")
-    pptx_path = Path(sys.argv[1]).resolve()
-    if not pptx_path.exists():
-        sys.exit(f"embed_fonts: no such file: {pptx_path}")
-
+def run(parts: dict, name: str) -> None:
+    """The deck's zip members (name -> bytes), changed in place; name for the message."""
     if "fonts" not in LIVERY["pptx"]:   # a livery that names its typeface and embeds nothing
-        print(f"embed_fonts: livery {LIVERY['name']} embeds no fonts (pptx.fonts unset) → {pptx_path.name} unchanged")
+        print(f"embed_fonts: livery {LIVERY['name']} embeds no fonts (pptx.fonts unset) → {name} unchanged")
         return
     blobs = check_fonts()
-    variants, replaced = rewrite_pptx(pptx_path, blobs)
+    variants, replaced = rewrite_parts(parts, blobs)
     action = "replaced" if replaced else "embedded"
     print(
         f"embed_fonts: {action} {TYPEFACE} "
-        f"({variants} variants) → {pptx_path.name}"
+        f"({variants} variants) → {name}"
     )
-
-
-if __name__ == "__main__":
-    main()

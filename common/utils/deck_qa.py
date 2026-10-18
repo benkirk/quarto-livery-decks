@@ -418,7 +418,8 @@ def main():
     qa = args.out
     os.makedirs(qa, exist_ok=True)
     global EDGE, COLS_EDGE
-    import livery as livery_mod   # here, not at import: screenshots.py imports serve() alone
+    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
+    import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
     margin = livery_mod.load()["geometry"]["margin"]
     EDGE, COLS_EDGE = 1 - margin, 1 - margin / 2
 
