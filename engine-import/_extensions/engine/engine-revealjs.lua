@@ -506,8 +506,10 @@ local function add_dependency(livery)
     local name = pandoc.path.filename(p)
     if not seen[name] then seen[name] = true; table.insert(res, { name = name, path = rel(p) }) end
   end
-  for _, font in ipairs(livery.typography.fonts or {}) do   -- the base family and a headings family
-    if font.family == livery.typography.base or font.family == livery.typography.headings then
+  local mono = livery.typography.monospace   -- a family name, or {family = ...}
+  if type(mono) == "table" then mono = mono.family end
+  for _, font in ipairs(livery.typography.fonts or {}) do   -- the base family, a headings family, the code face
+    if font.family == livery.typography.base or font.family == livery.typography.headings or font.family == mono then
       for _, f in ipairs(font.files or {}) do add(f.path) end
     end
   end

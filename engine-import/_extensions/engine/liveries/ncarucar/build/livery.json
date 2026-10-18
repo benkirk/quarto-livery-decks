@@ -758,6 +758,7 @@
       "logo-print": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.pdf"
     }
   },
+  "mode": "light",
   "name": "ncarucar",
   "palette": {
     "dark-blue": "#00357A",
@@ -798,6 +799,7 @@
   "roles": {
     "accent": "#FAA119",
     "background": "#FFFFFF",
+    "code-text": "#011837",
     "dark": "#011837",
     "foreground": "#00357A",
     "highlight": "#00818F",

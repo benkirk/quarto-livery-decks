@@ -325,8 +325,8 @@ above.
 The themes read only **roles**, which the livery sets: `BrandPrimary`,
 `BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`,
 `BrandHighlight` (a second small-text accent: examples, tips, strings),
-`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning`
-and `BrandDark`, plus the blends the builder derives (`BrandTableRule`,
+`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning`,
+`BrandDark` and `BrandCodeText` (code; `BrandDark` unless the livery says otherwise), plus the blends the builder derives (`BrandTableRule`,
 `BrandCautionFill`, ...). Use those in your own slides and they follow the
 livery. Code highlighting follows the same roles: `engine.theme` is the
 template, each livery's `build/livery.theme` the filled copy, and a Quarto
@@ -337,6 +337,7 @@ Each livery also exports its **palette by name** (`latex.colors` in its
 - **ncar**: `NCARBlue`, `DarkBlue`, `Space`, `LightBlue`, `LightGray`, `BrandOrange`, `BrandYellow`
 - **ucar**, **ucp**, **ncarucar**: those plus `UCARAqua`, `UCARAquaContrast`, `LightAqua`
 - **cu** (quarto-livery-decks): `CUGold`, `CUBlack`, `CUDarkGray`, `CULightGray`, `CUAccessibleGold`, `CUSkyBlue`, ...
+- **nasa**, **nasa-dark** (quarto-livery-decks): `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...
 
 ## Liveries
 
@@ -351,7 +352,7 @@ logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 
 | knob | |
 |---|---|
-| `roles` | which palette color plays each role: `primary`, `accent`, `highlight`, `muted`, `surface`, `warning`, `dark`, ... |
+| `roles` | which palette color plays each role: `primary`, `accent`, `highlight`, `muted`, `surface`, `warning`, `dark`, `code-text`, ... A `background` darker than the `foreground` makes a **dark** livery (`livery.json` `mode: dark`; the framework's `nasa-dark`): beamer tints toward the background, the HTML deck's callouts and inline Graphviz turn to the dark |
 | `geometry` | the margin, the title tab, the logo box (height per slide kind, its corner on content slides: `top-right`, `top-left`, `none`), the page number's corner, the divider block, the full-figure paddings, the body text sizes |
 | `signoff` | a second lockup at the foot of every slide (light and dark images, aspect, height, bottom, corner) |
 | `marks` | which mark and sign-off each field wears, by role: content slides `background`, covers and dividers `primary`, the band title `title.field` |
@@ -359,6 +360,7 @@ logos) and `livery.theme` (code highlighting). The knobs in `livery.yml`:
 | `feature` | `style: bar` (the default: the photo under a dark bar holding the title, the body on a translucent panel) or `style: cover` (the title cover's field, waves and mark, the photo in its right part) |
 | `compositions` | overrides of the slide compositions' boxes (below), e.g. `title: {column: {box: [0.06, 0.375, 0.50, 0.485]}}` |
 | `art` | `waves` (the brand's curves as control points, drawn in the roles' colors), or a static picture per slide kind (`title`, `section`, `closing`, `content`), and `titlegraphic`, the default title photo for decks that set none |
+| `_brand.yml` `typography.monospace` | a bundled code face (family name, with files in `fonts`): beamer's code font at 1.0 in place of Latin Modern Mono, the HTML deck's `--r-code-font` |
 | `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it (below) |
 | `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`nsi` extends `cu`; `ucar` extends `ncar`) |
 | `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |
