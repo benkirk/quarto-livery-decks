@@ -22,3 +22,4 @@ charts:
   categorical: ["#00A2B4", "#E0681A", "#0057C2", "#D4246B", "#9A7B00", "#6B46C1"]
   dark:
     categorical: ["#11A0B0", "#D9772C", "#4687EA", "#DE4B80", "#AD8D1C", "#8F70E8"]
+  sequential: ucar   # ncar's map along UCAR Aqua (ncar's livery.yml)

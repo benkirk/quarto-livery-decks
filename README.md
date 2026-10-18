@@ -149,7 +149,8 @@ quarto-livery-decks/
 │   │   └── screenshots/    (those images, committed)
 │   ├── fixtures/          # small decks for the title variants and type steps,
 │   │                      #   for parity.sh and CI
-│   ├── plots/             # the plots cookbook (jupyter: python3, matplotlib, seaborn)
+│   ├── plots/             # the plots cookbook (jupyter: python3, matplotlib, seaborn);
+│   │                      #   its README.md, gallery.py (make gallery) and screenshots/
 │   └── sample/            # the cookbook deck
 │       ├── Makefile        (one line: include ../../Make.common)
 │       ├── _quarto.yml     (symlink → ../../common/_quarto.yml)
@@ -782,6 +783,8 @@ A Python plot wears the livery with no styling code: its chart colors, its font,
 own text sizes, in all three formats (design/charts-and-plots.md). `decks/plots/plots.qmd` is
 the cookbook: lines, a seaborn bar chart from pandas, a stacked area in hue families, a heatmap,
 a diverging field, two plots in columns, math in the labels, a dark slide.
+[`decks/plots/README.md`](decks/plots/README.md) shows it under every livery, with each livery's
+chart colors.
 
 ````markdown
 ---
@@ -858,7 +861,7 @@ is committed. The knobs in `livery.yml`:
 | `installed-fonts` | a proprietary face to prefer over the bundled stand-in when the machine has it ("Installed brand fonts") |
 | `extends` | a parent livery: a *flavor* inherits everything and overrides what it names (`ucar` extends `ncar`; `nsi` extends `cu`) |
 | `pptx` | the framework's template: its typeface, font blobs, color scheme and `size` (the canvas in inches, `[13.333, 7.5]` by default; the NSF NCAR template is `[10, 5.625]`) |
-| `charts` | the chart colors' sources ("Plots and chart colors"): `anchors` (brand hues that must appear, in order), `extended` (secondary brand colors to use before any are generated), `avoid` (hue ranges), a brand's published `ramps` and `sets`, or a pinned `categorical`, `diverging`, `status`, `muted` (and `dark:` versions). With none, the engine generates a palette from the brand's colors that passes the dataviz checks |
+| `charts` | the chart colors' sources ("Plots and chart colors"): `anchors` (brand hues that must appear, in order), `extended` (secondary brand colors to use before any are generated), `avoid` (hue ranges), a brand's published `ramps` and `sets`, extra color `maps` (and `sequential`, the default one), or a pinned `categorical`, `diverging`, `status`, `muted` (and `dark:` versions). With none, the engine generates a palette from the brand's colors that passes the dataviz checks |
 | `latex`, `css` | named palette colors for LaTeX, and `overrides/livery-extra.{sty,css}` for anything the knobs don't cover |
 
 From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:

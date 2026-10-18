@@ -208,6 +208,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   theme's tint ladders; nasa: NASA's Horizon Design System). `livery_check.py` prints the checks
   (a generated palette must pass, a published one only warns), and `--swatch DIR` draws a
   contact sheet; `tests/test_charts.py`. `charts.chrome` is a plot's non-data ink per mode.
+  `charts.maps` adds color maps without constraining the slots (`ramps` do), and `sequential` may
+  name one: ncar's and ucar's vivid brand-blue maps, cu's campus map (its roof tile and sandstone
+  sampled from nsi's campus photo). `decks/plots/README.md` shows the plots and palettes of every
+  livery; `make gallery` there rebuilds its committed images.
 - **Plots**: every format draws the chart colors. `build/livery.mplstyle` (`emit_mplstyle()`: the
   livery mode's chrome and cycle, transparent figures, the base family over DejaVu Sans, sizes
   from the type roles, `pdf.fonttype` 3 for a CFF `.otf` base family, cu/nsi, else 42; SVG text

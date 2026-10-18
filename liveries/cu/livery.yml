@@ -93,3 +93,16 @@ type:                      # points on the 13.333 x 7.5 in canvas, as the NSI ma
   date: 28
   section: 60              # its dividers ("Backup", "External to CU")
   closing: 48
+
+# chart colors (design/charts-and-plots.md; reference/notes.md "Chart colors"): CU publishes no chart
+# palette, so the generator builds one from CU Gold and Sky Blue, with the campus in it: the red tile
+# roofs and the sandstone, sampled from the campus photo (nsi's art/campus.jpg). The roof tile in
+# sun is the third brand hue (CU's web style guide calls the tile Brick, #AE5A39, but that lighter
+# value sits too near CU Gold in a scatter), sage the fourth; the campus map runs Light Gold, the Flatirons'
+# sandstone, the tile in sun and in shade; the diverging scale is the sky over the roofs.
+charts:
+  extended: ["#9C3F29", "#9CAF88"]      # roof tile, in sun; sage (Ben's pick), raised to the chroma floor
+  maps:
+    campus: ["#F3F0E9", "#D2B39F", "#AE7858", "#9C3F29", "#76312B", "#412429"]
+  diverging: [sky-blue, "#9C3F29"]
+  sequential: campus                    # the default color map (heatmaps), not the gold ramp

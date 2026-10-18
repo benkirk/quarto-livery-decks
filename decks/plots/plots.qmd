@@ -59,15 +59,16 @@ plt.show()
 ## A stacked area in hue families
 
 ```{python}
-# three groups of three: the hue names the group, its tints the members (livery_mpl.families)
+# three groups of three: the hue names the group, its tints the members (livery_mpl.families);
+# the groups are machines and the members their queues, names that promise no color
 months = np.arange(1, 13)
-groups = {"Atmosphere": 3, "Ocean": 3, "Land": 3}
+groups = {"Derecho": ["main", "preempt", "develop"], "Casper": ["htc", "gpu", "vis"], "Gust": ["main", "gpu", "develop"]}
 layers, colors, labels = [], [], []
-for g, (name, n) in enumerate(groups.items()):
-    for k in range(n):
+for g, (name, queues) in enumerate(groups.items()):
+    for k, queue in enumerate(queues):
         layers.append(5 + 3 * np.sin(months / 2 + g + k) + rng.uniform(0, 1.5, 12))
         colors.append(livery_mpl.families[g][k])
-        labels.append(f"{name} {k + 1}")
+        labels.append(f"{name} {queue}")
 fig, ax = plt.subplots()
 ax.stackplot(months, layers, colors=colors, labels=labels, alpha=livery_mpl.charts[livery_mpl.mode]["area-alpha"])
 ax.set_xlim(1, 12)

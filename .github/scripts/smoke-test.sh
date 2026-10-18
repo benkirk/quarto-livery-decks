@@ -12,7 +12,8 @@ build() { timeout 900 docker run --rm --user "$u" "$@"; }   # timeout cannot wra
 tmp=${RUNNER_TEMP:-${TMPDIR:-/tmp}}
 
 echo "== $img runs natively, as uid $u, with its environment"
-test "$(run "$img" uname -m)" = "$(uname -m)"
+host=$(uname -m); [ "$host" != arm64 ] || host=aarch64   # macOS names it arm64, Linux aarch64
+test "$(run "$img" uname -m)" = "$host"
 run "$img" --help
 run "$img" quarto --version
 run "$img" bash -c 'echo "QUARTO_CHROMIUM=$QUARTO_CHROMIUM"; "$QUARTO_CHROMIUM" --version'
@@ -75,12 +76,15 @@ test "$(unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image')" -ge 2   # merm
 run -v "$work:/work" "$img" pdffonts /work/hello.pdf | grep -c TeXGyreHeros >/dev/null   # poppler is in the image, not on the host
 for f in hello.pptx hello.html hello.pdf; do
   test -s "$work/$f"
-  test "$(stat -c %u "$work/$f")" = "$(id -u)"
+  test "$(stat -c %u "$work/$f" 2>/dev/null || stat -f %u "$work/$f")" = "$(id -u)"   # GNU, then BSD stat
 done
 readlink "$work/_quarto.yml" | grep -c '^/opt/quarto-livery-decks/' >/dev/null
 case "$(cat "$work/.livery")" in */liveries/cu) ;; *) echo "stamp: $(cat "$work/.livery")"; exit 1;; esac   # the livery directory
 unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c 'engine-section-label' >/dev/null
-! unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null
+# (a negated command never fails under set -e, so the absence is an explicit if)
+if unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null; then
+  echo "hello.pptx has a literal last-modified date (#7)" >&2; exit 1
+fi
 unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image' >/dev/null       # the mermaid PNG
 grep -q 'livery.css' "$work/hello.html"
 
@@ -90,7 +94,7 @@ echo "== 2. a tree with Makefiles (a submodule consumer's layout): the quickstar
 build -v "$PWD:/work" -w /work/decks/quickstart "$img" make pptx html pdf
 for f in quickstart.pptx quickstart.html quickstart.pdf; do
   test -s "decks/quickstart/$f"
-  test "$(stat -c %u "decks/quickstart/$f")" = "$(id -u)"
+  test "$(stat -c %u "decks/quickstart/$f" 2>/dev/null || stat -f %u "decks/quickstart/$f")" = "$(id -u)"
 done
 # the host can go on working there: no tracked file (the links) was re-pointed
 test -z "$(git status --short decks/quickstart | grep -v '^??')"

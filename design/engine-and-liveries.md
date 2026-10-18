@@ -408,6 +408,17 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, chart colors polished** (step 5 of `design/charts-and-plots.md`). Ben: "their campus
+  is famously sandstone with red tile roofs": cu's third series color is the roof tile sampled
+  from the campus photo (`#9C3F29`; CU's web Brick is too near the gold for a scatter), its
+  default map the campus (Light Gold, sandstone, tile), its diverging scale the sky over the
+  roofs; `charts.maps` adds a map without constraining the slots. ncar's default map runs the
+  brand's blues end to end (ucar's along UCAR Aqua): vivid, every step a guide color or tint.
+  PowerPoint for Mac shows the Custom Colors row; native charts stay on the accents (a `.crtx`
+  per livery if asked). `decks/plots/README.md` with a gallery of every livery's plots and
+  palettes. Fixes: three negated checks in CI and the smoke test that could never fail, the
+  smoke test on macOS, latex/'s build products out of a local image. Main is protected and PRs
+  squash-merge from here. Next: #57 Phase B (`design/phase-b-handoff.md`), then the release.
 - **2026-10-18, charts and plots built** (steps 2-4 of `design/charts-and-plots.md`; this repo
   #67 the formats, #68 the decks and image, #69 the bundle and docs, stacked on #64). Every
   format draws the chart colors: `build/livery.mplstyle` (matplotlib, sizes from the type roles; Type 3 for cu's CFF
