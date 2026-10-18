@@ -92,7 +92,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the conda env's (`fc-cache`/`fc-list` on PATH, its own `fonts.conf`) and the system's
   (`/usr/bin/fc-*`, `/etc/fonts`), which the apt XeLaTeX, Chromium and LibreOffice use; a file in
   `/etc/fonts/conf.d` reaches only the second, a directory under `/usr/local/share/fonts` both.
-  Everything under `/opt` must stay world-readable (asserted). `smoke-test.sh` takes `RUNTIME=docker|podman|apptainer` (default
+  Everything under `/opt` must stay world-readable (asserted). The last `ENV` isolates the image from a host's environment, which
+  Apptainer passes in (an image `ENV` wins): `PYTHONPATH`/`PYTHONHOME` empty, `PYTHONNOUSERSITE=1`,
+  `JUPYTER_PREFER_ENV_PATH=1` (the image's kernels over `~/.local/share/jupyter`), `TEXINPUTS=:`. `smoke-test.sh` takes `RUNTIME=docker|podman|apptainer` (default
   docker, as `image.yaml` calls it); its container calls go through one adapter (`argv`). The two
   `_quarto.yml`/`_extensions` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
@@ -568,9 +570,10 @@ architectures, from the PPA or else the release .deb (the runner's userns sysctl
 weakened), and rootless Podman on amd64, each through `smoke-test.sh` with `RUNTIME=apptainer`
 (`$1` a SIF) or `RUNTIME=podman`; Apptainer then runs `apptainer-extra.sh` (the native
 cd-and-run form from a scratch directory outside HOME, `exec`, `--cleanenv`, `--containall`,
-the read-only image) and its report-only "lived-in HOME" table in the step summary (a host
-matplotlib cache, host Jupyter kernels, `pip --user` packages, module `PYTHONPATH` and
-`TEXINPUTS`: it never fails the job). Not a required check. The package must be public on ghcr for
+the read-only image) and its "lived-in HOME" table in the step summary (a host matplotlib
+cache, host Jupyter kernels, `pip --user` packages, module `PYTHONPATH` and `TEXINPUTS`, one per
+row): a `gate` row fails the job, a new row starts `report` until it is fixed. Not a required
+check. The package must be public on ghcr for
 anonymous pulls (a first push makes it private). `cron-clean-action-log.yaml` prunes old runs
 and untagged image versions monthly with the workflow's own token; `release.yml` refuses a tag
 that is not `v` + `_extension.yml`'s `version:`, attaches the Overleaf zips and names the image
