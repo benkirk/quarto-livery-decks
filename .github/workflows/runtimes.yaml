@@ -1,0 +1,189 @@
+# The image as HPC users run it: Apptainer (unprivileged user namespaces, the default on a
+# modern site, no setuid) on an amd64 and an arm64 runner, and rootless Podman on amd64. The
+# image does nothing special for either; this proves that is enough. Each job pulls
+# anonymously, as a customer does, then runs .github/scripts/smoke-test.sh under that runtime;
+# Apptainer also runs apptainer-extra.sh (the native cd-and-run form, exec, --cleanenv,
+# --containall, the read-only image, and a report-only "lived-in HOME" table in the step
+# summary). ci.yaml calls it with the run's own image digest; it also runs weekly and on
+# demand against :latest, so a new Apptainer or Podman release that breaks us shows up
+# without a PR.
+name: Container runtimes
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: the image to test, ghcr.io/...@sha256:... (ci.yaml)
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      image:
+        description: the image to test
+        type: string
+        default: ghcr.io/benkirk/quarto-livery-decks:latest
+  schedule:
+    # 6:17 UTC on Mondays, against :latest
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ${{ inputs.image || 'ghcr.io/benkirk/quarto-livery-decks:latest' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  apptainer:
+    name: Apptainer ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # the OCI layers, the unpacked rootfs and the SIF: ~10 GB at the conversion's peak
+      - name: Free disk space (background)
+        run: |
+          sudo nohup sh -c 'rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup' >/dev/null 2>&1 &
+          df -h / /mnt
+
+      # /mnt (outside HOME and /tmp, as an HPC scratch space is) holds the caches, the SIF and
+      # the native form's decks
+      - name: Scratch space
+        run: |
+          sudo mkdir -p /mnt/qld && sudo chown "$(id -u):$(id -g)" /mnt/qld
+          mkdir -p /mnt/qld/cache /mnt/qld/tmp /mnt/qld/scratch
+          {
+            echo "APPTAINER_CACHEDIR=/mnt/qld/cache"
+            echo "APPTAINER_TMPDIR=/mnt/qld/tmp"
+            echo "SCRATCH=/mnt/qld/scratch"
+            echo "SIF=/mnt/qld/qld.sif"
+          } >> "$GITHUB_ENV"
+
+      # the PPA's package, else the upstream release .deb (which carries the AppArmor profile
+      # Ubuntu 24.04 needs for unprivileged user namespaces). The runner's sysctl stays as it
+      # is: weakening it would hide what a customer on 24.04 meets.
+      - name: Install Apptainer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          probe() { command -v apptainer >/dev/null && apptainer --version && apptainer exec docker://busybox true; }
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt-get install -y -q apptainer || echo "::notice::no apptainer in the PPA for $(dpkg --print-architecture)"
+          if probe; then echo "INSTALLED=ppa" >> "$GITHUB_ENV"; exit 0; fi
+          echo "::warning::the PPA's apptainer cannot run unprivileged here; trying the release .deb"
+          sysctl kernel.apparmor_restrict_unprivileged_userns kernel.unprivileged_userns_clone 2>/dev/null || true
+          ls /etc/apparmor.d | grep -i apptainer || echo "no apptainer AppArmor profile"
+          sudo apt-get remove -y -q apptainer || true
+          gh release download -R apptainer/apptainer --pattern "apptainer_*_$(dpkg --print-architecture).deb" -D "$RUNNER_TEMP/deb"
+          sudo apt-get install -y -q "$RUNNER_TEMP"/deb/apptainer_*.deb
+          probe
+          echo "INSTALLED=release .deb" >> "$GITHUB_ENV"
+
+      - name: Wait for disk space
+        run: |
+          while [ "$(df --output=avail /mnt/qld | tail -1)" -lt 15000000 ] && pgrep -f 'rm -rf /usr/share/dotnet' >/dev/null; do sleep 5; done
+          df -h / /mnt/qld
+
+      # what a customer pays once: the conversion of the published layers into a SIF
+      - name: Pull the image into a SIF
+        run: |
+          t=$SECONDS
+          apptainer pull "$SIF" "docker://$IMAGE"
+          echo "PULL_S=$((SECONDS - t))" >> "$GITHUB_ENV"
+          ls -l "$SIF"; du -sh "$APPTAINER_CACHEDIR"
+
+      - name: Smoke test under Apptainer
+        run: |
+          t=$SECONDS
+          RUNTIME=apptainer .github/scripts/smoke-test.sh "$SIF"
+          echo "SMOKE_S=$((SECONDS - t))" >> "$GITHUB_ENV"
+
+      - name: Apptainer's own forms, and a lived-in HOME (report-only)
+        run: .github/scripts/apptainer-extra.sh "$SIF"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Apptainer ${{ matrix.arch }}"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| apptainer | $(apptainer --version 2>/dev/null || echo none) (${INSTALLED:-not installed}) |"
+            echo "| image | \`$IMAGE\` |"
+            echo "| framework commit | \`$( [ -s "${SIF:-}" ] && apptainer exec "$SIF" printenv GIT_SHA || echo '?')\` |"
+            echo "| SIF | $( [ -s "${SIF:-}" ] && du -h "$SIF" | cut -f1 || echo none) in ${PULL_S:-?} s |"
+            echo "| smoke test | ${SMOKE_S:-?} s |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  podman:
+    name: Podman amd64 (rootless)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Free disk space (background)
+        run: |
+          sudo nohup sh -c 'rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup' >/dev/null 2>&1 &
+          df -h /
+
+      - name: Podman
+        run: |
+          command -v podman >/dev/null || { sudo apt-get update -q && sudo apt-get install -y -q podman; }
+          podman --version
+          podman info --format 'rootless {{.Host.Security.Rootless}}, storage {{.Store.GraphDriverName}}'
+
+      - name: Wait for disk space
+        run: |
+          while [ "$(df --output=avail / | tail -1)" -lt 15000000 ] && pgrep -f 'rm -rf /usr/share/dotnet' >/dev/null; do sleep 5; done
+          df -h /
+
+      - name: Pull the image
+        run: |
+          t=$SECONDS
+          podman pull "$IMAGE"
+          echo "PULL_S=$((SECONDS - t))" >> "$GITHUB_ENV"
+
+      # no --user: rootless Podman's root is this user, so the outputs are already theirs
+      - name: Smoke test under rootless Podman
+        run: |
+          t=$SECONDS
+          RUNTIME=podman .github/scripts/smoke-test.sh "$IMAGE"
+          echo "SMOKE_S=$((SECONDS - t))" >> "$GITHUB_ENV"
+
+      # the README's other form: the host uid inside too (its HOME, from the host's passwd,
+      # does not exist in the image; the entrypoint gives it one)
+      - name: --userns=keep-id
+        run: |
+          work=$(mktemp -d "$RUNNER_TEMP/keepid.XXXXXX")
+          printf -- '---\ntitle: "Keep id"\n---\n\n## A slide\n\nText.\n' > "$work/keepid.qmd"
+          timeout 900 podman run --rm --userns=keep-id --user "$(id -u):$(id -g)" -v "$work:/work:Z" "$IMAGE" make pptx html
+          for f in keepid.pptx keepid.html; do test -s "$work/$f"; test "$(stat -c %u "$work/$f")" = "$(id -u)"; done
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Podman amd64 (rootless)"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| podman | $(podman --version) |"
+            echo "| image | \`$IMAGE\` |"
+            echo "| digest | \`$(podman image inspect --format '{{.Digest}}' "$IMAGE" 2>/dev/null || echo '?')\` |"
+            echo "| pull | ${PULL_S:-?} s |"
+            echo "| smoke test | ${SMOKE_S:-?} s |"
+          } >> "$GITHUB_STEP_SUMMARY"

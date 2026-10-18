@@ -4,14 +4,39 @@
 # relative links), both bind-mounted into the image given as $1. Run by image.yaml on each
 # native build leg, as the runner's own unprivileged user; also runs locally after
 # `make image`: .github/scripts/smoke-test.sh ghcr.io/benkirk/quarto-livery-decks:dev
+# RUNTIME=podman (rootless: no --user, `:Z` mounts) or RUNTIME=apptainer ($1 a SIF; `run`, so
+# the entrypoint runs) run the same checks the way those users do (runtimes.yaml).
 set -euo pipefail
 img=$1
+RUNTIME=${RUNTIME:-docker}
 u="$(id -u):$(id -g)"
-run() { docker run --rm --user "$u" "$@"; }
-build() { timeout 900 docker run --rm --user "$u" "$@"; }   # timeout cannot wrap a shell function
+# c=(the $RUNTIME command line) from docker-style options: [-v host:ctr]... [-w dir] IMAGE cmd...
+argv() {
+  local w=
+  case $RUNTIME in
+    docker) c=(docker run --rm --user "$u") ;;
+    podman) c=(podman run --rm) ;;                       # rootless: the container's root is this user
+    apptainer) c=(apptainer run) ;;                      # runs as this user, HOME is this user's
+    *) echo "RUNTIME=$RUNTIME: docker, podman or apptainer" >&2; exit 2 ;;
+  esac
+  while :; do
+    case $1 in
+      -v) case $RUNTIME in docker) c+=(-v "$2") ;; podman) c+=(-v "$2:Z") ;; apptainer) c+=(--bind "$2") ;; esac; shift 2 ;;
+      -w) w=$2; shift 2 ;;
+      *) break ;;
+    esac
+  done
+  case $RUNTIME in
+    apptainer) c+=(--pwd "${w:-/work}") ;;               # Apptainer ignores WORKDIR
+    *) [ -z "$w" ] || c+=(-w "$w") ;;
+  esac
+  c+=("$@")
+}
+run() { argv "$@"; "${c[@]}"; }
+build() { argv "$@"; timeout 900 "${c[@]}"; }   # timeout cannot wrap a shell function
 tmp=${RUNNER_TEMP:-${TMPDIR:-/tmp}}
 
-echo "== $img runs natively, as uid $u, with its environment"
+echo "== $img runs natively under $RUNTIME, as uid $u, with its environment"
 host=$(uname -m); [ "$host" != arm64 ] || host=aarch64   # macOS names it arm64, Linux aarch64
 test "$(run "$img" uname -m)" = "$host"
 run "$img" --help
@@ -98,6 +123,8 @@ for f in quickstart.pptx quickstart.html quickstart.pdf; do
 done
 # the host can go on working there: no tracked file (the links) was re-pointed
 test -z "$(git status --short decks/quickstart | grep -v '^??')"
+
+[ "$RUNTIME" = docker ] || { echo "smoke test passed ($RUNTIME)"; exit 0; }
 
 echo "== 3. root works too (what GitHub container: jobs are)"
 docker run --rm -v "$work:/work" "$img" make clean
