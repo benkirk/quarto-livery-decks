@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Check livery_build.py's compositions against the slides the formats drew before them.
 
-    tools/test_compositions.py [<framework liveries dir>]
+    tests/test_compositions.py [<liveries dir>]
 
 today() restates, in slide fractions, what engine 3.4.0's revealjs theme drew for each
 composition (engine-revealjs.scss and .lua; beamer and pptx disagreed in places, recorded in
-EXPECTED_DELTAS). The resolved compositions of ncar and, when present, the framework's cu and nsi
-(benkirk/quarto-livery-decks docs/common/liveries, or the argument) must equal today() with every
-EXPECTED_DELTAS row applied: one row per decision of docs/design/composition-handoff.md "Which
-value wins", so a changed number is either named there or a failure. Then the invariants: every
+EXPECTED_DELTAS). The resolved compositions of ncar, cu and nsi (docs/common/liveries, or the
+argument) must equal today() with every EXPECTED_DELTAS row applied: one row per decision of
+docs/design/composition-handoff.md "Which value wins", so a changed number is either named there or a failure. Then the invariants: every
 entry has every key, the band's arithmetic, the light variants' roles, overrides and extends.
 """
 
@@ -18,7 +17,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent / "docs" / "common"
 ENGINE = ROOT / "_extensions" / "engine"
 spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
 lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
@@ -233,8 +232,8 @@ def flavor(tmp: Path, name: str, parent: Path, knobs: str) -> dict:
 
 
 def main():
-    fw = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT.parent / "quarto-livery-decks" / "docs" / "common" / "liveries"
-    liveries = {"ncar": ENGINE / "liveries" / "ncar"}
+    fw = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "liveries"
+    liveries = {"ncar": fw / "ncar"}
     for name in ("cu", "nsi"):
         if (fw / name / "livery.yml").exists():
             liveries[name] = fw / name
@@ -244,7 +243,7 @@ def main():
     for name, d in liveries.items():
         errs += check(name, lb.resolve(d)[0])
     with tempfile.TemporaryDirectory() as tmp:
-        tmp, ncar = Path(tmp), ENGINE / "liveries" / "ncar"
+        tmp, ncar = Path(tmp), fw / "ncar"
         # overrides: title's reaches its variants, title-photo's only that one
         L = flavor(tmp, "over", ncar, "compositions:\n  title: {column: {anchor: middle}}\n  title-photo: {fineprint: null}\n")
         c = L["compositions"]

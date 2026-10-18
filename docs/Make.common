@@ -33,7 +33,7 @@ SITE_INDEX         := $(PRESENTATIONS_ROOT)common/utils/site_index.py
 SHARED_QUARTO_YML  := $(PRESENTATIONS_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(PRESENTATIONS_ROOT)common/_extensions
 SHARED_COMMON      := $(PRESENTATIONS_ROOT)common
-OVERLEAF_ZIP       := $(PRESENTATIONS_ROOT)common/_extensions/benkirk/engine/overleaf_zip.py
+OVERLEAF_ZIP       := $(PRESENTATIONS_ROOT)common/_extensions/engine/overleaf_zip.py
 
 # The brand: a directory under common/liveries/ (docs/design/engine-and-liveries.md,
 # section 4). `make LIVERY=cu` switches it; LIVERY_DIR is exported for the post-render

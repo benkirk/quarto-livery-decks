@@ -1,23 +1,22 @@
-# engine beamer theme
+# The engine's pure-LaTeX side: the starter deck, the examples and their variants
 #
-#   make            talk.pdf             (your deck: talk.tex, XeLaTeX via latexmk)
-#   make quarto     talk-quarto.pdf      (your deck: talk-quarto.qmd, needs quarto)
-#   make html       talk-quarto.html, examples/quarto-demo.html  (revealjs, needs quarto)
+#   make            talk.pdf             (the starter: talk.tex, XeLaTeX via latexmk)
+#   make html       examples/quarto-demo.html  (revealjs, needs quarto)
 #   make examples   examples/{template,paper,mathfonts,quarto-demo}.pdf
 #   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex
-#   make previews   docs/math-fonts.png from the specimen (needs poppler's pdftoppm)
+#   make previews   math-fonts.png from the specimen (needs poppler's pdftoppm)
 #   make diagrams   examples/diagrams/*.pdf from their .dot/.mmd (needs Graphviz, npx)
 #   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (overleaf_zip.py)
 #   make clean
 #
-# The theme lives in _extensions/engine/ -- the same files that
-# `quarto add benkirk/NCAR_beamer_template` installs.  LaTeX finds the .sty
-# files and logos through TEXINPUTS, and the bundled Poppins through TTFONTS
-# (set here, and by latexmkrc for Overleaf).
+# The theme lives in ../common/_extensions/engine/, the liveries in ../common/liveries/.
+# LaTeX finds the .sty files, a brand='s liveries/<name>/ and its logos through TEXINPUTS,
+# and the bundled fonts through TTFONTS (set here, and by latexmkrc).
 #
-THEME   := $(CURDIR)/_extensions/engine
+COMMON  := $(abspath $(CURDIR)/../common)
+THEME   := $(COMMON)/_extensions/engine
 ENGINE  ?= xelatex
-TEXENV  := TEXINPUTS=$(THEME)//:$(CURDIR)/: TTFONTS=$(THEME)//:
+TEXENV  := TEXINPUTS=$(COMMON)//:$(CURDIR)/: TTFONTS=$(COMMON)//:
 LATEXMK := latexmk -interaction=nonstopmode -halt-on-error
 
 VARIANTS := template-ucar template-ucp template-ncarucar template-light template-43 template-pdflatex \
@@ -29,13 +28,7 @@ default: talk.pdf
 talk.pdf: talk.tex FORCE
 	$(TEXENV) $(LATEXMK) -$(ENGINE) talk.tex
 
-quarto: talk-quarto.pdf
-talk-quarto.pdf: talk-quarto.qmd FORCE
-	quarto render talk-quarto.qmd --to engine-beamer
-
-html: talk-quarto.html examples/quarto-demo.html
-talk-quarto.html: talk-quarto.qmd FORCE
-	quarto render talk-quarto.qmd --to engine-revealjs
+html: examples/quarto-demo.html
 
 examples/quarto-demo.html: examples/quarto-demo.qmd FORCE
 	cd examples && quarto render quarto-demo.qmd --to engine-revealjs
@@ -67,9 +60,9 @@ examples/template-%.pdf: examples/template.tex FORCE
 	  template.tex
 
 # the README's math-font specimen: the summary slide of examples/mathfonts.pdf
-previews: docs/math-fonts.png
-docs/math-fonts.png: examples/mathfonts.pdf
-	pdftoppm -r 150 -f 9 -l 9 -singlefile -png $< docs/math-fonts
+previews: math-fonts.png
+math-fonts.png: examples/mathfonts.pdf
+	pdftoppm -r 150 -f 9 -l 9 -singlefile -png $< math-fonts
 
 # One source per example diagram: quarto-demo.qmd renders it itself, and
 # template.tex includes the PDF built here (committed, so `make examples`
@@ -89,14 +82,14 @@ $(DIAGRAMS)/%.pdf: $(DIAGRAMS)/%.mmd
 # files.  overleaf_zip.py packs any livery the same way (the framework's too).
 overleaf: engine-beamer-overleaf.zip
 engine-beamer-overleaf.zip: talk.tex FORCE
-	python3 $(THEME)/overleaf_zip.py $(THEME)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
+	python3 $(THEME)/overleaf_zip.py $(COMMON)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
 
 clean:
-	latexmk -C -quiet talk.tex 2>/dev/null; rm -f talk-quarto.pdf talk-quarto.tex talk-quarto.html
+	latexmk -C -quiet talk.tex 2>/dev/null
 	rm -f engine-beamer-overleaf.zip
-	rm -rf talk-quarto_files examples/quarto-demo_files examples/quarto-demo.html
+	rm -rf examples/quarto-demo_files examples/quarto-demo.html
 	cd examples && latexmk -C -quiet template.tex paper.tex $(addsuffix .tex,$(VARIANTS)) 2>/dev/null; \
 	  rm -f *.pdf *.nav *.snm *.vrb *.xdv quarto-demo.tex
 
 FORCE:
-.PHONY: default quarto html examples variants previews diagrams overleaf clean FORCE
+.PHONY: default html examples variants previews diagrams overleaf clean FORCE

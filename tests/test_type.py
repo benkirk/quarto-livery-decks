@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Check livery_build.py's type scale: sizes in whole or half points on the livery's pptx canvas.
 
-    tools/test_type.py [<framework liveries dir>]
+    tests/test_type.py [<liveries dir>]
 
-For every engine livery and, when present, the framework's (benkirk/quarto-livery-decks
-docs/common/liveries, or the argument): every role and list level is a multiple of 0.5 pt, the
+For every livery (docs/common/liveries, or the argument): every role and list level is a multiple of 0.5 pt, the
 template's slide size is the canvas, and every size in its master and layouts is a role's. Then
 the rules on made-up liveries: the defaults, a canvas alone scaling them, a body alone carrying
 the body roles and the levels, an explicit size winning, a flavor inheriting.
@@ -18,7 +17,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent / "docs" / "common"
 ENGINE = ROOT / "_extensions" / "engine"
 spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
 lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
@@ -38,7 +37,7 @@ def check_livery(d: Path, template: bool):
         check(v * 2 == int(v * 2), f"{d.name}: type {k} {v} is not a whole or half point")
     check(t["levels"][0] == t["roles"]["body"]["pt"], f"{d.name}: levels[0] is not the body")
     tmpl = d / L["pptx"].get("template", "template.pptx")
-    if not template or not tmpl.exists():   # the framework's are rebuilt when it vendors the engine
+    if not template or not tmpl.exists():
         return
     with zipfile.ZipFile(tmpl) as z:
         sld = re.search(r'<p:sldSz cx="(\d+)" cy="(\d+)"', z.read("ppt/presentation.xml").decode())
@@ -84,12 +83,10 @@ def rules():
 
 
 def main():
-    fw = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT.parent / "quarto-livery-decks" / "docs" / "common" / "liveries"
-    dirs = sorted(p for p in (ENGINE / "liveries").iterdir() if (p / "livery.yml").exists())
-    if fw.is_dir():
-        dirs += sorted(p for p in fw.iterdir() if (p / "livery.yml").exists() and not p.is_symlink())
+    lv = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "liveries"
+    dirs = sorted(p for p in lv.iterdir() if (p / "livery.yml").exists())
     for d in dirs:
-        check_livery(d, ENGINE in d.parents)
+        check_livery(d, True)
     rules()
     for f in fails:
         print("FAIL", f)

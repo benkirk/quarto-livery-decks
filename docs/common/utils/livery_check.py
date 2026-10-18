@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 UTILS = Path(__file__).resolve().parent
-ENGINE_CHECK = UTILS.parent / "_extensions" / "benkirk" / "engine" / "livery_check.py"
+ENGINE_CHECK = UTILS.parent / "_extensions" / "engine" / "livery_check.py"
 QUICKSTART = UTILS.parents[1] / "quickstart"
 
 

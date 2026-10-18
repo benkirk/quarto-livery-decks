@@ -5,7 +5,7 @@ CONDA_ROOT := $(shell conda info --base)
 # Common way to initialize environment across various types of systems
 config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/profile.d/conda.sh
 
-.PHONY: help vendor-engine image clean clobber distclean
+.PHONY: help latex test image clean clobber distclean
 
 # -------------------------------------------------------------------
 # Default target: help
@@ -28,15 +28,17 @@ help: ## Show this help message
 	@echo -e "  \033[33mmake conda-env\033[0m           Create conda environment from conda-env.yaml"
 	@echo ""
 
-# The engine (the vendored theme) comes from benkirk/beamer-livery-theme through
-# `cd docs/common && quarto update benkirk/beamer-livery-theme` once a change is on its main.
-# To build against an engine branch first, sync a checkout of it in; after the merge the
-# quarto update must then show no diff.
-ENGINE ?= ../beamer-livery-theme
-vendor-engine: ## Sync $(ENGINE)/_extensions/engine/ into the vendored copy (an unmerged engine branch)
-	rsync -a --delete --exclude __pycache__ --exclude 'reference/media' --exclude 'reference/*.pptx' \
-	  $(ENGINE)/_extensions/engine/ docs/common/_extensions/benkirk/engine/
-	git status --short docs/common/_extensions
+# The engine's pure-LaTeX side (docs/latex: the starter deck, the examples and their
+# variants) and the engine's tests (tests/: the compositions and the type scale).
+latex: ## Build docs/latex: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
+	$(MAKE) -C docs/latex default examples variants
+
+test: ## Run the engine's tests: livery_build.py --check, livery_check.py, compositions, type
+	set -e
+	python3 docs/common/_extensions/engine/livery_build.py --check docs/common/liveries/*/
+	python3 docs/common/_extensions/engine/livery_check.py docs/common/liveries/*/
+	python3 tests/test_compositions.py
+	python3 tests/test_type.py
 
 # The build-environment image (README "Building in the container"); CI publishes it
 # multi-platform as ghcr.io/benkirk/quarto-livery-decks (.github/workflows/image.yaml).
