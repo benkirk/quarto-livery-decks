@@ -189,6 +189,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
   pandoc's `monofont` in pptx (nasa: DM Mono). The other liveries keep the defaults.
+- **Title photo**: a deck's `titlegraphic:`, else the livery's `art.titlegraphic` (ncar: the
+  Mesa Lab, inherited by its family; nsi: the campus; nasa: the Earth limb); `titlegraphic:
+  none` keeps the plain cover (both engine filters and `slide_layout.py`; beamer
+  `\enginenotitlegraphic`). `docs/fixtures/light.qmd` opts out, so the plain light cover stays
+  in CI and parity. The quickstart sets none, so the gallery shows each livery's own.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by

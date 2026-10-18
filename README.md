@@ -68,7 +68,7 @@ livery:
 
 | Slide | The Markdown behind it |
 |---|---|
-| [Title](docs/quickstart/screenshots/01-title.png) | the front matter: `title`, `subtitle`, `author`, `date`, and `titlegraphic:` for the cover photo |
+| [Title](docs/quickstart/screenshots/01-title.png) | the front matter: `title`, `subtitle`, `author`, `date`; the photo is the livery's default, `titlegraphic:` sets your own |
 | [Section divider](docs/quickstart/screenshots/02-divider.png) | `# Write Markdown`, then a paragraph: the subtitle |
 | [Bullets and a footnote](docs/quickstart/screenshots/03-text.png) | a list, then a paragraph starting with `†`; `{.vcenter scale="1.2"}` on the heading |
 | [Columns](docs/quickstart/screenshots/04-columns.png) | `:::: {.columns}` with a list in one `.column` and a table in the other |
@@ -99,7 +99,7 @@ livery can be a *flavor* of another (`extends:`), naming only what differs.
 
 | Family | Liveries | Faces | Marks | Look |
 |---|---|---|---|---|
-| **NCAR** | `ncar` (NSF NCAR, the default); the engine's reference liveries `ucar`, `ucp` and `ncarucar` | Poppins, bundled, embedded in the pptx | each member's lockup top right | the 2026 brand palette; deep-blue fields and the wave super-graphic |
+| **NCAR** | `ncar` (NSF NCAR, the default); the engine's reference liveries `ucar`, `ucp` and `ncarucar` | Poppins, bundled, embedded in the pptx | each member's lockup top right | the 2026 brand palette; deep-blue fields and the wave super-graphic; the Mesa Lab on the cover |
 | **University of Colorado** | `cu` (CU Boulder); `nsi`, the Center for National Security Initiatives (`extends: cu`) | Helvetica Neue where installed; TeX Gyre Heros, Condensed for headings, standing in | `cu`: the CU Boulder lockup as a sign-off, bottom left; `nsi`: the center's mark top left, the Research & Innovation Office lockup as its sign-off | gold fields, a faded Flatirons photo behind content; `nsi`: its master deck's band title, a satellite photo behind content, centred titles |
 | **NASA** | `nasa` (external communication, on white); `nasa-dark` (`extends: nasa`, on black); program liveries belong here too | NASA's digital faces, bundled: Inter headings, Public Sans body, DM Mono code | the insignia top right and the agency name at the foot, the brand's preferred identifier | NASA Blue fields with the white-rule insignia; `nasa-dark`: content on black over a faint deep field, cover and closing on black |
 
@@ -367,8 +367,9 @@ which is vendored in `docs/common/_extensions/benkirk/engine/`. Make symlinks
   system copy (`fonts=brand` uses an installed brand face instead; see
   "Installed brand fonts").
   - `titlegraphic: images/photo.jpg` puts a photo on the title slide, in every
-    format, where the livery's title composition places it. A livery may set a
-    default (`art.titlegraphic`: nasa's Earth limb, nsi's campus photo).
+    format, where the livery's title composition places it. Without one the livery's
+    default appears (`art.titlegraphic`: ncar's Mesa Lab, nsi's campus, nasa's Earth
+    limb); `titlegraphic: none` keeps the plain cover.
   - `fineprint: "..."` adds small print under the title block.
   - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
     OpenType math font) changes the math font; the default is New Computer
@@ -794,7 +795,8 @@ license:
 
 - **The NSF, NCAR, UCAR and UCP logos and brand marks** (`docs/common/liveries/ncar/` and
   the vendored theme) are trademarks used under the
-  [UCAR brand guidelines](https://ucar.canto.com/v/branding).
+  [UCAR brand guidelines](https://ucar.canto.com/v/branding); the NCAR family's cover photo
+  of the Mesa Lab is NCAR's.
 - **The CU Boulder lockups, the NSI and Research & Innovation Office lockups, and the
   photographs** of the `cu` and `nsi` liveries are the University of Colorado's and its
   units', reproduced here as the livery's reference assets; see each livery's
@@ -803,8 +805,6 @@ license:
   public domain and its use is restricted by the
   [NASA brand guidelines](https://www.nasa.gov/nasa-brand-center/brand-guidelines/). The
   `nasa` liveries' photographs are NASA's (images.nasa.gov); see their `reference/notes.md`.
-- **The Mesa Lab photograph** (`docs/quickstart/images/mesa_lab.jpg`, the quickstart's cover) is
-  NCAR's, from the NCAR beamer template's example imagery.
 - **The Poppins font** (`docs/common/liveries/ncar/fonts/` and the vendored theme)
   is licensed under the [SIL Open Font License](https://openfontlicense.org); **TeX Gyre
   Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License; **Inter, Public

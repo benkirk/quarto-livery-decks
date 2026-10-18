@@ -3,7 +3,6 @@ title: "Quarto Docs Framework"
 subtitle: "One Markdown file, three branded decks"
 author: "Your Name, Your Lab"
 date: last-modified
-titlegraphic: images/mesa_lab.jpg   # the cover photo (optional; without it, the livery's default, if any)
 engine: jupyter
 jupyter: bash
 ---

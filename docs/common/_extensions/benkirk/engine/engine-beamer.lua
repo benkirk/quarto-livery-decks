@@ -535,6 +535,15 @@ function Pandoc(doc)
   doc = bound_sized_images(doc)
   load_theme(doc)
 
+  -- `titlegraphic: none`: the plain cover, not the livery's default photo (pandoc's template
+  -- would otherwise \includegraphics{none})
+  if doc.meta["titlegraphic"] and pandoc.utils.stringify(doc.meta["titlegraphic"]) == "none" then
+    doc.meta["titlegraphic"] = nil
+    local hi = header_includes(doc)
+    hi:insert(pandoc.Blocks({ latex("\\enginenotitlegraphic") }))
+    doc.meta["header-includes"] = hi
+  end
+
   -- title fine print from metadata
   local fp = doc.meta["fineprint"]
   if fp then

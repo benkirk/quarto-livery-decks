@@ -253,9 +253,10 @@ def _custom_prop(prs, name):
 
 
 def _title_graphic(prs, deck_dir):
-    """The deck's `titlegraphic:` path from docProps/custom.xml, or None."""
+    """The deck's `titlegraphic:` path from docProps/custom.xml, None without one, or "none"
+    when the deck asks for the plain cover (`titlegraphic: none`)."""
     value = _custom_prop(prs, "titlegraphic")
-    return deck_dir / value if value else None
+    return "none" if value == "none" else deck_dir / value if value else None
 
 
 def use_layout(prs, slide, name):
@@ -531,6 +532,8 @@ def main() -> int:
     default = LIVERY.get("art", {}).get("titlegraphic")
     if graphic is None and default and not BAND:   # the band's layout carries the default itself
         graphic = Path(LIVERY["dir"]) / default
+    if graphic == "none":   # the plain cover, not the livery's default photo
+        graphic = None
     if graphic is not None and len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):
         if graphic.exists():
             (band_photo if BAND else title_cover)(prs.slides[0], w, h, graphic.read_bytes())

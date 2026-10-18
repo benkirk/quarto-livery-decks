@@ -584,7 +584,9 @@ function Pandoc(doc)
 
   -- title slide: the composition by the band, a photo (the deck's or the livery's) and light
   local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
-  local default_photo = not tg and livery.art and type(livery.art.titlegraphic) == "string"
+  local nophoto = tg == "none"   -- `titlegraphic: none`: the plain cover, not the livery's default
+  if nophoto then tg = nil; meta["titlegraphic"] = nil end
+  local default_photo = not tg and not nophoto and livery.art and type(livery.art.titlegraphic) == "string"
   local tcomp = comps[band and "title-band" or ((tg or default_photo) and "title-photo" or "title") .. (light and "-light" or "")]
   local bg, fieldclass = field_of(tcomp)
   title_slide_attributes(meta, { ["data-background-color"] = bg })
