@@ -129,7 +129,8 @@ serve the repo root) and diffing the pixels above the progress bar.
   on `livery=liveries/<name>, fonts=bundled`); the framework packs cu and nsi the same way.
   **Releases**: pushing a
   tag `v<version>` runs `release.yml`, which requires the tag to equal
-  `version:` in `_extensions/engine/_extension.yml`. No tags were carried over
+  `version:` in `_extensions/engine/_extension.yml`. While a change stays backwards compatible a
+  release's tag may be moved (`git tag -f`): `release.yml` replaces that release's zip. No tags were carried over
   from upstream; do not push upstream's tags here.
 - Generated outputs (`*.pdf`, `*_files/`, `.quarto/`, the zip) stay untracked.
 
