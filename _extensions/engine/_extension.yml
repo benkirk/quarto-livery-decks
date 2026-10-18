@@ -19,6 +19,8 @@ contributes:
       filters:
         - quarto          # run after quarto's filters (mermaid images exist by then)
         - engine-beamer.lua
+        - linked-images.lua   # [![](x.png)](url): a link line on the slide
+        - diagram-dark.lua    # a dark livery: baked mermaid/graphviz PNGs turned to the dark
     revealjs:
       # Slide furniture: engine-revealjs.scss (compiled into the reveal theme); the
       # livery's colors, fonts and logos: its build/livery.css, attached by
@@ -46,3 +48,28 @@ contributes:
       fig-height: 5
       filters:
         - engine-revealjs.lua
+        - linked-images.lua
+        - diagram-dark.lua
+    pptx:
+      # pandoc's pptx writer on the livery's template (a project: _livery/template.pptx), then
+      # Make.common's post-render scripts (common/utils/). The filters, in this order:
+      #   strip-raw-figure  quarto's raw-HTML <figure> wrappers: pandoc counts them as text when
+      #                     choosing a layout, demoting a columns slide with a diagram to Comparison
+      #   slide-layout      the theme's .center/scale= etc. as a notes line, for slide_layout.py
+      #   notes-last        speaker notes before a columns div split the slide; every slide's
+      #                     notes move to its end, so any placement is safe
+      #   single-body       content after a table or diagram splits the slide; the paragraphs
+      #                     after one move into its caption, at the slide's foot (after notes-last)
+      #   linked-images     [![](x.png)](url): link_captions.py draws the line (here a no-op)
+      #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark
+      reference-doc: ../../liveries/ncar/template.pptx
+      highlight-style: ../../liveries/ncar/build/livery.theme
+      slide-level: 2
+      toc: false
+      filters:
+        - strip-raw-figure.lua
+        - slide-layout.lua
+        - notes-last.lua
+        - single-body.lua
+        - linked-images.lua
+        - diagram-dark.lua

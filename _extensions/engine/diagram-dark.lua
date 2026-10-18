@@ -1,6 +1,6 @@
 -- On a dark livery (build/livery.json "mode": "dark"), swap each diagram Quarto baked to PNG
 -- (mermaid and graphviz cells, for pptx and PDF) for a copy turned to the dark by
--- utils/diagram_dark.py: lightness flipped, hues kept, white to the slide's background, black to
+-- diagram_dark.py (beside this filter): lightness flipped, hues kept, white to the slide's background, black to
 -- its foreground. Quarto renders diagram cells before any Lua filter runs, so the picture is
 -- recolored, not the diagram source. HTML draws mermaid live in the livery's roles and inlines
 -- graphviz as SVG (the engine's livery.css turns that one); a light livery is left alone.
@@ -20,8 +20,7 @@ local function load_livery()
 end
 
 local function script()
-  local here = PANDOC_SCRIPT_FILE and pandoc.path.directory(PANDOC_SCRIPT_FILE) or "_engine"
-  return pandoc.path.join({ here, "utils", "diagram_dark.py" })
+  return quarto.utils.resolve_path("diagram_dark.py")   -- beside this filter
 end
 
 local done = {}   -- in.png -> out.png, so a picture used twice is recolored once

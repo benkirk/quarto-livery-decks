@@ -84,7 +84,7 @@ export MATPLOTLIBRC := $(abspath $(LIVERY_DIR))/build/livery.mplstyle
 export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(PYTHONPATH),:$(PYTHONPATH))
 LIVERY_FIGSIZE := $(shell python3 $(SHARED_COMMON)/utils/livery.py figsize $(LIVERY_DIR))
 FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fig-height:$(word 2,$(LIVERY_FIGSIZE)))
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions _engine .livery $(LIVERY_FILES)
+DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES)
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -164,17 +164,12 @@ publish: site
 _quarto.yml:
 	ln -sfn $(SHARED_QUARTO_YML) $@
 
-# Same for the shared Quarto extensions (the engine theme: engine-beamer and
-# engine-revealjs): each deck dir is its own project root, and quarto does not
-# look above it.  Every format needs it -- _quarto.yml names both, and quarto
-# resolves all listed formats even when rendering pptx.
+# Same for the shared Quarto extensions (the engine: engine-pptx, engine-beamer and
+# engine-revealjs, with their filters): each deck dir is its own project root, and quarto
+# does not look above it. Every format needs it -- _quarto.yml names all three, and quarto
+# resolves all listed formats even when rendering one.
 _extensions:
 	ln -sfn $(SHARED_EXTENSIONS) $@
-
-# And common/ itself, which the shared _quarto.yml reaches as _engine/ (its
-# filters, the pptx template), so a deck works wherever its directory is.
-_engine:
-	ln -sfn $(SHARED_COMMON) $@
 
 # The livery link follows LIVERY (or LIVERY_DIR). A missing-only rule like the three above
 # would silently keep the old livery after `make LIVERY=cu`, so the link is remade whenever
@@ -194,7 +189,7 @@ _livery: .livery
 	@[ "$$(readlink $@)" = "$(LIVERY_DIR)" ] || ln -sfn $(LIVERY_DIR) $@
 
 define render_pptx
-	ENGINE_FORMAT=pptx quarto render $< --to pptx -o $@ $(FIG_SIZE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")
+	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(FIG_SIZE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")
 	python3 $(SECTION_SUBTITLE) $@
 	python3 $(ENABLE_AUTOFIT) $@
 	python3 $(EMBED_FONTS) $@
@@ -240,6 +235,7 @@ endif
 
 clean:
 	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip *-charts.zip
+	[ ! -L _engine ] || rm _engine   # the link to common/ that decks had before the engine-pptx format
 	rm -rf $(DECKS:=_files) $(SITE)
 
 distclean:

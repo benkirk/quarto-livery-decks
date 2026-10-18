@@ -301,13 +301,13 @@ verbatim. The next slide explains what it sets.
 - `quarto-required`: Quarto 1.6 (the beamer theme needs pandoc 3.2.1).
 - `date-format`: `date: last-modified` renders as a written date, not ISO.
 - `livery: _livery`: where the engine finds the brand; `make LIVERY=cu` switches it.
-- `filters`: five Lua filters, mostly pptx fix-ups (figure wrappers, layout controls,
-  speaker notes, one body per slide, linked images).
+- `format`: the engine's three formats, which bring their own Lua filters (pptx fix-ups,
+  linked images, dark diagrams).
 - `diagram`: mermaid's theme for the rendered diagrams.
 
 **How it's shared**
 
-- Make links it into each deck directory, beside `_engine` and `_livery`.
+- Make links it into each deck directory, beside `_extensions` and `_livery`.
 - A deck's front matter overrides it key by key; `themeoptions:` replaces the list, so
   repeat `fonts=bundled`.
 - A real `_quarto.yml` in the deck directory replaces the link.
@@ -315,8 +315,8 @@ verbatim. The next slide explains what it sets.
 ::: {.column width="50%"}
 **Per format**
 
-- `pptx`: the livery's `template.pptx`; `slide-level: 2`, so `##` starts a slide and `#` a
-  divider.
+- `engine-pptx`: the livery's `template.pptx`; the engine's `slide-level: 2`, so `##` starts
+  a slide and `#` a divider.
 - `engine-beamer` (PDF): the engine's theme at `fontsize: 10pt` with the bundled fonts, the
   livery's code colors.
 - `engine-revealjs` (HTML): the same theme and code colors; `footer:` and

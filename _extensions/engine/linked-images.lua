@@ -4,7 +4,7 @@
 --   beamer    a tiny muted line, bottom center (a TikZ overlay); a linked
 --             image taller than 68% is capped there to keep the line clear
 --   pptx      nothing here: anything after an image splits the slide, so
---             utils/link_captions.py adds a caption box after rendering
+--             common/utils/link_captions.py adds a caption box after rendering
 -- The picture itself is the link in all three. One line per slide: the first
 -- linked image's URL.
 
