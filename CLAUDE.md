@@ -17,7 +17,8 @@ by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`
 `ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by the engine's `livery_build.py`
 into `build/livery.{json,sty,css,theme,mplstyle}` (an unknown `livery.yml` key is warned about).
 `design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
-next step (#57 Phase B: the pptx format moves into the engine; then #58, the customer surface).
+next step (#58, the customer surface: a `livery` command, a `livery.yml` schema, immutable
+releases and a changelog).
 
 The engine also holds the json reader (`livery.py`), the template builder
 (`livery_template.py`), the wave shapes (`pptx_waves.py`) and the livery checks
@@ -347,9 +348,9 @@ it does, by area, beyond the format notes above:
   `liveries/<name>/fonts/...`, and a miss falls back to an installed face by name silently (the
   image's Poppins then sets bold in SemiBold; a Mac with Poppins installed hides the miss).
 - **Roles only**: no palette name is read outside `build/livery.sty`; the Sass sets every color
-  as `var(--engine-*)` (its `$ncar-*` variables are compile-time defaults for Quarto's own
-  rules, restated with the roles at the end of the file); the highlight theme is generated per
-  livery from `engine.theme`.
+  as `var(--engine-*)` (its `$engine-<role>` variables hold ncar's values as compile-time
+  defaults for Quarto's own rules, restated with the roles at the end of the file); the
+  highlight theme is generated per livery from `engine.theme`.
 - **Geometry**: margin, tab, logo box (height per slide kind, top, aspect, corner, `inset`), the
   page number's corner, divider block and full-figure lengths are the livery's `geometry`
   fractions: `engine@geom@*` in the `.sty`, `--engine-*` pixels in the css (ncar's are the

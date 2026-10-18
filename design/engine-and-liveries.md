@@ -408,6 +408,17 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, #58 step 0: the compatibility debt cleared.** Ben is the only consumer, so no
+  shims. Gone: the v1 beamer environments (`NCARprettyframe`, `NCARtitleframe`) and no-op
+  commands, with README's 2020-brand migration section; `brandedfonts` and the `fonts=poppins`
+  spelling (an unknown `fonts=` is now an error; the internal `poppins` flags are `basefont`/
+  `bundledfont`); `\lstdefinestyle{ncar}`; the `title.logo`/`title.signoff` alias;
+  `make clean`'s `_engine` removal. `brand=` is gone too: `livery=` is the one key, a bundled
+  livery is `livery=liveries/<name>` (latex's variants, the starter), and with none both Lua
+  filters and the `.sty` take `liveries/ncar`. The Sass palette is named by role
+  (`$engine-primary`, ...). Kept: the 2020 color names in ncar's `livery-extra.sty`
+  (`template.tex` prints a sentence about them; removing them changes a page). Parity identical
+  under both harnesses. Next: step 1, the schema.
 - **2026-10-18, the image under Apptainer and Podman** (#73). `runtimes.yaml` runs the image as
   HPC users do, pulled anonymously: Apptainer from its PPA (unprivileged user namespaces, no
   setuid; the PPA's package carries what Ubuntu 24.04's AppArmor needs, on arm64 too) on both
