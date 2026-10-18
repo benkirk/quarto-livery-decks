@@ -412,6 +412,14 @@ def title_cover(slide, width, height, photo):
         tree.append(copy.deepcopy(sp._element))
 
 
+def _left(shape):
+    """A feature title sits at the left of its composition's column, whatever frametitle.align
+    gives the content titles (the layout's title style); a no-op for a left-aligned livery."""
+    if LIVERY.get("frametitle", {}).get("align") == "center":
+        for p in shape.text_frame.paragraphs:
+            p.alignment = PP_ALIGN.LEFT
+
+
 def _text(shape, color, pt=None):
     for p in shape.text_frame.paragraphs:
         for r in p.runs:
@@ -456,6 +464,7 @@ def draw_feature(slide, width, height, photo):
             _frame(title, x, y, w, h, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE if c["column"]["anchor"] == "middle" else MSO_ANCHOR.TOP
             _text(title, text)
+            _left(title)
         px, py, pw, ph = c["panel"]["box"]
         for shape in body:
             _frame(shape, px, py, pw, ph, width, height)
@@ -478,6 +487,7 @@ def draw_feature(slide, width, height, photo):
             _frame(title, x, y, w, 0.16, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
             _text(title, text, livery_mod.type_pt(LIVERY, "frametitle"))
+            _left(title)
         for shape in body:
             _frame(shape, x, y + 0.21, w, h - 0.21, width, height)
             _text(shape, text, livery_mod.type_pt(LIVERY, "body"))

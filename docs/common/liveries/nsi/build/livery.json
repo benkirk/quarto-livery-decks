@@ -601,6 +601,12 @@
     "label": "Section",
     "tab": true
   },
+  "frametitle": {
+    "align": "center",
+    "body": 0.1972,
+    "rule": false,
+    "tab": false
+  },
   "geometry": {
     "divider": {
       "bottom": 0.0889,
@@ -615,10 +621,11 @@
       "aspect": 1.83,
       "closing": 0.1,
       "corner": "top-left",
-      "height": 0.085,
+      "height": 0.135,
+      "inset": 0.015,
       "section": 0.08,
       "title": 0.09,
-      "top": 0.0533
+      "top": 0.04
     },
     "margin": 0.06,
     "pagenumber": {

@@ -93,7 +93,7 @@ $mermaid-label-fg-color: $ncar-blue;
   height: 100%;
   box-sizing: border-box;
   isolation: isolate;  // keeps the z-index:-1 waves above the slide background in print
-  padding: 150px var(--engine-margin) 70px;
+  padding: var(--engine-body-top, 150px) var(--engine-margin) 70px;   // below the mark (livery.css)
 }
 
 // the mark on content slides: top right unless the livery's geometry.logo.corner says
@@ -144,10 +144,13 @@ $mermaid-label-fg-color: $ncar-blue;
   margin: 0;
   display: flex;
   align-items: center;
+  justify-content: var(--engine-title-justify, flex-start);   // the livery's frametitle.align
+  text-align: var(--engine-title-text-align, left);
   font-size: var(--engine-type-frametitle, 46px);  // fixed: {.smaller} and the autofit script shrink only the body
   line-height: 1.15;
-  // the tab: flush with the paper's left edge, as tall as the title
+  // the tab: flush with the paper's left edge, as tall as the title (frametitle.tab)
   &::before {
+    display: var(--engine-title-tab, block);
     content: "";
     position: absolute;
     left: calc(-1 * var(--engine-title-left, var(--engine-margin)));
@@ -157,8 +160,9 @@ $mermaid-label-fg-color: $ncar-blue;
     background: var(--engine-accent);
   }
 }
-// the hairline under the title block
+// the hairline under the title block (frametitle.rule)
 .reveal .slides section.slide.level2::before {
+  display: var(--engine-title-rule, block);
   content: "";
   position: absolute;
   top: 130px;
@@ -579,6 +583,8 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     min-height: 0;
     box-sizing: border-box;
     align-items: var(--engine-cmp-column-justify);
+    justify-content: flex-start;   // the composition's column, not frametitle.align
+    text-align: left;
     color: var(--engine-cmp-text);
     &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); }
   }
@@ -758,7 +764,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 // reveal's print stylesheet zeroes every section's padding (!important);
 // restate each slide type's (more specific, so these win)
 html.reveal-print .reveal .slides {
-  section.slide, section.engine-title { padding: 150px var(--engine-margin) 70px !important; }
+  section.slide, section.engine-title { padding: var(--engine-body-top, 150px) var(--engine-margin) 70px !important; }
   section.engine-title.quarto-title-block { padding: 0 !important; }
   section.slide.engine-section, section.slide.level2.closing {
     padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
