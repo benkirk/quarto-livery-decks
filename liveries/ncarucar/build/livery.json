@@ -102,6 +102,248 @@
     }
   },
   "aspect": "16:9",
+  "charts": {
+    "brand": [
+      "#0057C2",
+      "#FAA119",
+      "#42C0FF",
+      "#00818F",
+      "#FFDD31"
+    ],
+    "dark": {
+      "area-alpha": 1.0,
+      "categorical": [
+        "#4687EA",
+        "#D9772C",
+        "#11A0B0",
+        "#DE4B80",
+        "#AD8D1C",
+        "#8F70E8"
+      ],
+      "diverging": [
+        "#7AB2FA",
+        "#4A82C4",
+        "#4B5664",
+        "#B5614A",
+        "#FF9A80"
+      ],
+      "families": [
+        [
+          "#4687EA",
+          "#2E63B0",
+          "#1C4682"
+        ],
+        [
+          "#D9772C",
+          "#945C3E",
+          "#5E4541"
+        ],
+        [
+          "#11A0B0",
+          "#06748A",
+          "#02516B"
+        ],
+        [
+          "#DE4B80",
+          "#99416A",
+          "#633558"
+        ],
+        [
+          "#AD8D1C",
+          "#756A39",
+          "#494D3E"
+        ],
+        [
+          "#8F70E8",
+          "#6254AF",
+          "#3F3E81"
+        ]
+      ],
+      "muted": "#41444B",
+      "published": {
+        "categorical": true,
+        "diverging": true,
+        "sequential": true
+      },
+      "sequential": {
+        "dark-blue": [
+          "#00357A",
+          "#5A77A6",
+          "#A8B7CE"
+        ],
+        "light-aqua": [
+          "#34E1F4",
+          "#86E8F5",
+          "#C0F0F5"
+        ],
+        "light-blue": [
+          "#42C0FF",
+          "#86D3FC",
+          "#BFE5F9"
+        ],
+        "ncar-blue": [
+          "#0057C2",
+          "#6B8CCE",
+          "#ADC2E6"
+        ],
+        "orange": [
+          "#FAA119",
+          "#FABE72",
+          "#F8DBB5"
+        ],
+        "space": [
+          "#011837",
+          "#556379",
+          "#A5ADB7"
+        ],
+        "ucar-aqua": [
+          "#00818F",
+          "#00A2B4",
+          "#71C0CB"
+        ],
+        "yellow": [
+          "#FFDD31",
+          "#FFE77D",
+          "#FFF2B9"
+        ]
+      },
+      "sequential-default": "ncar-blue",
+      "status": {
+        "critical": "#B63B35",
+        "good": "#139948",
+        "serious": "#A85500",
+        "warning": "#886600"
+      },
+      "surface": "#011837"
+    },
+    "figsize": {
+      "full": [
+        8.8,
+        4.25
+      ],
+      "half": [
+        4.25,
+        4.25
+      ]
+    },
+    "light": {
+      "area-alpha": 0.85,
+      "categorical": [
+        "#0057C2",
+        "#E0681A",
+        "#00A2B4",
+        "#D4246B",
+        "#9A7B00",
+        "#6B46C1"
+      ],
+      "diverging": [
+        "#1F63B0",
+        "#86B6E6",
+        "#DDE1E5",
+        "#F0A07C",
+        "#C0272D"
+      ],
+      "families": [
+        [
+          "#0057C2",
+          "#6B8CCE",
+          "#ADC2E6"
+        ],
+        [
+          "#E0681A",
+          "#EF9D73",
+          "#FACEB9"
+        ],
+        [
+          "#00A2B4",
+          "#71C0CB",
+          "#BFE5F9"
+        ],
+        [
+          "#D4246B",
+          "#EB7B9A",
+          "#F9BECB"
+        ],
+        [
+          "#9A7B00",
+          "#BBA66B",
+          "#DCD2B5"
+        ],
+        [
+          "#6B46C1",
+          "#9786D9",
+          "#C9C2EE"
+        ]
+      ],
+      "muted": "#BDC1C9",
+      "published": {
+        "categorical": true,
+        "diverging": true,
+        "sequential": true
+      },
+      "sequential": {
+        "dark-blue": [
+          "#A8B7CE",
+          "#5A77A6",
+          "#00357A"
+        ],
+        "light-aqua": [
+          "#C0F0F5",
+          "#86E8F5",
+          "#34E1F4"
+        ],
+        "light-blue": [
+          "#BFE5F9",
+          "#86D3FC",
+          "#42C0FF"
+        ],
+        "ncar-blue": [
+          "#ADC2E6",
+          "#6B8CCE",
+          "#0057C2"
+        ],
+        "orange": [
+          "#F8DBB5",
+          "#FABE72",
+          "#FAA119"
+        ],
+        "space": [
+          "#A5ADB7",
+          "#556379",
+          "#011837"
+        ],
+        "ucar-aqua": [
+          "#71C0CB",
+          "#00A2B4",
+          "#00818F"
+        ],
+        "yellow": [
+          "#FFF2B9",
+          "#FFE77D",
+          "#FFDD31"
+        ]
+      },
+      "sequential-default": "ncar-blue",
+      "status": {
+        "critical": "#A82E29",
+        "good": "#139948",
+        "serious": "#974C00",
+        "warning": "#7A5B00"
+      },
+      "surface": "#FFFFFF"
+    },
+    "mode": "light",
+    "sources": {
+      "dark.categorical": "pinned",
+      "dark.diverging": "pinned",
+      "light.categorical": "pinned",
+      "light.diverging": "pinned"
+    },
+    "surfaces": {
+      "dark": "#011837",
+      "light": "#FFFFFF"
+    }
+  },
   "compositions": {
     "closing": {
       "art": null,

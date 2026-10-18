@@ -17,6 +17,7 @@ for each field by its role (MARK_ROLES); `installed-fonts` names installed faces
 """
 
 import argparse
+import importlib.util
 import json
 import math
 import os
@@ -24,6 +25,12 @@ import sys
 from pathlib import Path
 
 import yaml
+
+# the chart colors (livery_charts.py), loaded by path: this script is also loaded by path (the tests,
+# the framework's engine_module()), where the engine directory is not on sys.path
+_spec = importlib.util.spec_from_file_location("livery_charts", Path(__file__).resolve().parent / "livery_charts.py")
+livery_charts = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(livery_charts)
 
 # (key, role a, role b, share of a): the theme's recipes, engine-revealjs.scss `table` and
 # `.engine-caution`, beamerinnerthemeEngine.sty `enginecautionfill`
@@ -54,7 +61,8 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 # the livery.yml keys this script reads; any other is reported, not silently dropped
 KNOWN = {"name", "extends", "roles", "derived", "aspect", "geometry", "divider", "art", "pptx", "overrides",
-         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature", "type", "frametitle"}
+         "latex", "signoff", "title", "marks", "installed-fonts", "compositions", "feature", "type", "frametitle",
+         "charts"}
 # the content slides' title (livery.yml frametitle:): its alignment beside the mark, the accent tab at the
 # paper's edge, the hairline under it
 FRAMETITLE = {"align": "left", "tab": True, "rule": True}
@@ -200,6 +208,10 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["marks"] = marks(d.name, data, out)
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
+    try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
+        out["charts"] = livery_charts.charts(out, data.get("charts"))
+    except ValueError as e:
+        sys.exit(f"{d.name}: {e}")
     if "installed-fonts" in data:
         out["installed-fonts"] = installed_fonts(d.name, data["installed-fonts"])
     out.setdefault("pptx", {})

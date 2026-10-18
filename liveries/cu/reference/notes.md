@@ -113,3 +113,19 @@ Open (deferred 2026-10-16, none blocking):
   leaves when `slide_layout.py` removes it.
 - **Other CU lockups.** The one-line CU Boulder lockup is in; the lockup library (CU login)
   also has the stacked versions, should a layout want one.
+
+## Chart colors (2026-10-18)
+
+No `charts:` key: generated (design/charts-and-plots.md). CU publishes no chart palette, and the
+brand has one hue, gold, plus neutrals and two blues, so the series lead with the two brand hues
+moved into the mark band (CU Gold `#CFB87C` becomes `#AD8E38`, close to the brand's own Accessible
+Gold; Sky Blue `#096FAE` stays) and six generated hues follow at the brand's chroma:
+`#7D4000 #00A2AE #7A3270 #6C7300 #6382D3 #007E67` on white,
+`#9C3C40 #009FAA #A45E00 #8D3F78 #6988DA #008F71` on black. Every check passes.
+
+The fact check found the ten palette colors exactly as the brand site and cu.edu publish them.
+CU's web theme (`CuBoulder/tiamat-theme` 8df166a) adds brick `#AE5A39`, medium blue `#4FC3F7`,
+link blue `#0277BD` and light green `#DCEDC8`, mostly Material Design values, and the accessibility
+page tests a "Web Express Blue" `#0377BD`: none is a brand standard, so none is used. If a CU chart
+palette or a fuller web palette turns up (styleguide.colorado.edu/colors), it goes in
+`charts.extended` and replaces generated hues.

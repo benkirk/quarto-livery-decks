@@ -197,6 +197,14 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   none` keeps the plain cover (both engine filters and `slide_layout.py`; beamer
   `\enginenotitlegraphic`). `decks/fixtures/light.qmd` opts out, so the plain light cover stays
   in CI and parity. The quickstart sets none, so the gallery shows each livery's own.
+- **Chart colors** (`design/charts-and-plots.md`): `livery.json` `charts` holds every livery's chart
+  colors per mode, `light` and `dark` (categorical, families, sequential, diverging, status,
+  muted), and `figsize`, the content area in canvas inches. The engine's `livery_charts.py`
+  generates them at build time by the dataviz checks, or takes a brand's published palette from
+  `livery.yml` `charts:` as given (ncar and ucar: sam-queries' validated sets and the UCAR web
+  theme's tint ladders; nasa: NASA's Horizon Design System). `livery_check.py` prints the checks
+  (a generated palette must pass, a published one only warns), and `--swatch DIR` draws a
+  contact sheet; `tests/test_charts.py`. No format draws them yet.
 - **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. Which mark and sign-off a field wears goes by

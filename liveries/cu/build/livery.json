@@ -3,6 +3,349 @@
     "content": "art/content-flatirons.jpg"
   },
   "aspect": "16:9",
+  "charts": {
+    "brand": [
+      "#CFB87C",
+      "#096FAE"
+    ],
+    "dark": {
+      "area-alpha": 1.0,
+      "categorical": [
+        "#AD8E38",
+        "#096FAE",
+        "#9C3C40",
+        "#009FAA",
+        "#A45E00",
+        "#8D3F78",
+        "#6988DA",
+        "#008F71"
+      ],
+      "diverging": [
+        "#D9B658",
+        "#87794F",
+        "#2E3539",
+        "#8F6686",
+        "#E690CC"
+      ],
+      "families": [
+        [
+          "#AD8E38",
+          "#6A561F",
+          "#372B0C"
+        ],
+        [
+          "#096FAE",
+          "#03426A",
+          "#012037"
+        ],
+        [
+          "#9C3C40",
+          "#5F2124",
+          "#310D0F"
+        ],
+        [
+          "#009FAA",
+          "#006168",
+          "#003236"
+        ],
+        [
+          "#A45E00",
+          "#643700",
+          "#341A00"
+        ],
+        [
+          "#8D3F78",
+          "#552348",
+          "#2B0E23"
+        ],
+        [
+          "#6988DA",
+          "#3E5287",
+          "#1E2947"
+        ],
+        [
+          "#008F71",
+          "#005743",
+          "#002C21"
+        ]
+      ],
+      "generated": [
+        "#9C3C40",
+        "#009FAA",
+        "#A45E00",
+        "#8D3F78",
+        "#6988DA",
+        "#008F71"
+      ],
+      "muted": "#32393D",
+      "published": {
+        "categorical": false,
+        "diverging": false,
+        "sequential": false
+      },
+      "sequential": {
+        "data-1": [
+          "#564200",
+          "#745A00",
+          "#917314",
+          "#AD8E38",
+          "#C2AB71",
+          "#D8C9A4",
+          "#EBE4D1"
+        ],
+        "data-2": [
+          "#005588",
+          "#096FAE",
+          "#498ABE",
+          "#74A5CE",
+          "#9EC0DE",
+          "#C8DBEC",
+          "#EEF4F9"
+        ],
+        "data-3": [
+          "#7E2028",
+          "#9C3C40",
+          "#B05F5F",
+          "#C3817F",
+          "#D5A2A1",
+          "#E6C5C3",
+          "#F4E3E3"
+        ],
+        "data-4": [
+          "#00494F",
+          "#00656C",
+          "#00818A",
+          "#009FAA",
+          "#64B7BF",
+          "#9BCFD4",
+          "#C8E4E7"
+        ],
+        "data-5": [
+          "#5E3400",
+          "#804800",
+          "#A45E00",
+          "#B87E48",
+          "#CA9E76",
+          "#DCBEA3",
+          "#ECDBCC"
+        ],
+        "data-6": [
+          "#71255E",
+          "#8D3F78",
+          "#A2608F",
+          "#B781A6",
+          "#CBA3BE",
+          "#DFC5D6",
+          "#F0E3EC"
+        ],
+        "data-7": [
+          "#213882",
+          "#38529F",
+          "#506DBC",
+          "#6988DA",
+          "#8CA6E5",
+          "#B1C4EF",
+          "#D3DEF7"
+        ],
+        "data-8": [
+          "#005542",
+          "#007159",
+          "#008F71",
+          "#56A78E",
+          "#86BFAB",
+          "#B4D6CA",
+          "#DCECE6"
+        ]
+      },
+      "sequential-default": "data-1",
+      "status": {
+        "critical": "#D95B52",
+        "good": "#33AC5A",
+        "serious": "#D76F04",
+        "warning": "#7A5B00"
+      },
+      "surface": "#000000"
+    },
+    "figsize": {
+      "full": [
+        11.73,
+        5.67
+      ],
+      "half": [
+        5.67,
+        5.67
+      ]
+    },
+    "light": {
+      "area-alpha": 0.85,
+      "categorical": [
+        "#AD8E38",
+        "#096FAE",
+        "#7D4000",
+        "#00A2AE",
+        "#7A3270",
+        "#6C7300",
+        "#6382D3",
+        "#007E67"
+      ],
+      "diverging": [
+        "#AD8E38",
+        "#CBC2A2",
+        "#E3EDF2",
+        "#B697B6",
+        "#7A3270"
+      ],
+      "families": [
+        [
+          "#AD8E38",
+          "#C8B37F",
+          "#E3D9BF"
+        ],
+        [
+          "#096FAE",
+          "#6B9FCB",
+          "#B4CFE5"
+        ],
+        [
+          "#7D4000",
+          "#A97D5D",
+          "#D5BDAC"
+        ],
+        [
+          "#00A2AE",
+          "#78C1C9",
+          "#BDE0E4"
+        ],
+        [
+          "#7A3270",
+          "#A8759E",
+          "#D4B8CE"
+        ],
+        [
+          "#6C7300",
+          "#9AA066",
+          "#CBCFB2"
+        ],
+        [
+          "#6382D3",
+          "#94ACE4",
+          "#C9D5F2"
+        ],
+        [
+          "#007E67",
+          "#6DA897",
+          "#B6D3CA"
+        ]
+      ],
+      "generated": [
+        "#7D4000",
+        "#00A2AE",
+        "#7A3270",
+        "#6C7300",
+        "#6382D3",
+        "#007E67"
+      ],
+      "muted": "#B9C3C7",
+      "published": {
+        "categorical": false,
+        "diverging": false,
+        "sequential": false
+      },
+      "sequential": {
+        "data-1": [
+          "#EBE4D1",
+          "#D8C9A4",
+          "#C2AB71",
+          "#AD8E38",
+          "#917314",
+          "#745A00",
+          "#564200"
+        ],
+        "data-2": [
+          "#EEF4F9",
+          "#C8DBEC",
+          "#9EC0DE",
+          "#74A5CE",
+          "#498ABE",
+          "#096FAE",
+          "#005588"
+        ],
+        "data-3": [
+          "#F8F4F1",
+          "#E6D8CE",
+          "#D1B8A6",
+          "#BD9980",
+          "#A87B5B",
+          "#935D34",
+          "#7D4000"
+        ],
+        "data-4": [
+          "#CCE7EA",
+          "#9ED2D7",
+          "#66BAC3",
+          "#00A2AE",
+          "#00848E",
+          "#00676F",
+          "#004C52"
+        ],
+        "data-5": [
+          "#F8F3F7",
+          "#E6D5E2",
+          "#D1B3CA",
+          "#BB92B3",
+          "#A6729D",
+          "#905286",
+          "#7A3270"
+        ],
+        "data-6": [
+          "#F5F6F0",
+          "#DADEC9",
+          "#BDC29D",
+          "#A1A772",
+          "#868D45",
+          "#6C7300",
+          "#535800"
+        ],
+        "data-7": [
+          "#F2F5FC",
+          "#CFDBF4",
+          "#AABDEA",
+          "#86A0DF",
+          "#6382D3",
+          "#4A67B5",
+          "#324C98"
+        ],
+        "data-8": [
+          "#F1F6F4",
+          "#CBE0D9",
+          "#A2C7BB",
+          "#78AE9E",
+          "#4B9682",
+          "#007E67",
+          "#00614F"
+        ]
+      },
+      "sequential-default": "data-1",
+      "status": {
+        "critical": "#CE5249",
+        "good": "#20A04E",
+        "serious": "#B05A00",
+        "warning": "#9A7300"
+      },
+      "surface": "#FFFFFF"
+    },
+    "mode": "light",
+    "sources": {
+      "dark.categorical": "selected: 2 brand, 6 generated",
+      "dark.diverging": "derived",
+      "light.categorical": "selected: 2 brand, 6 generated",
+      "light.diverging": "derived"
+    },
+    "surfaces": {
+      "dark": "#000000",
+      "light": "#FFFFFF"
+    }
+  },
   "compositions": {
     "closing": {
       "art": null,
