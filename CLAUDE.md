@@ -557,8 +557,14 @@ tags.
 ## Git
 
 - Standalone repo (often checked out nested inside `hpc-scheduling-tools/docs/`,
-  which git-ignores it). Default branch `main`; branch + PR to merge, as merge commits (a
-  squash would flatten the engine's imported history out of `git log --follow`).
+  which git-ignores it). Default branch `main`, protected since 2026-10-18: PRs only (no
+  approval needed), linear history, required checks (the image's manifest merge, the LaTeX and
+  engine tests, the consumer and sample jobs, every `Check livery <name>`: a new or renamed
+  livery means updating the list), no force push; the owner can bypass. PRs land as **squash**
+  merges (the only method enabled; title and body from the PR) and the branch is deleted. The
+  engine's imported history stays reachable through #57's merge commit. A stacked PR: retarget
+  the child to `main` before merging its parent, then `git rebase --onto origin/main <old parent
+  tip> <child>` and force-push it, so its PR holds only its own commits.
 - `upstream` is `quarto-docs-framework`. The engine's old repo and `NCAR_beamer_template` are
   not remotes here; a fix wanted from the NCAR theme is ported by hand.
 - Generated outputs (`*.pptx`, `~$*` lock files, `*_files/`) stay untracked.
