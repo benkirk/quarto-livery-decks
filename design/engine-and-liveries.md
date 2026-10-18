@@ -408,6 +408,14 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 Newest first. The first unchecked item of section 7 is the next step.
 
+- **2026-10-18, B.12: `pptx_post.py`** (#57 Phase B). The eight post-render scripts are the
+  engine's `pptx_steps/` (each `main()` now a `run()`, the logic untouched), driven by
+  `pptx_post.py`, which reads a deck once, runs the zip steps (section_subtitle, enable_autofit,
+  embed_fonts) on its parts and the rest on one python-pptx Presentation, and saves once; the
+  pptx recipe is `quarto render --to engine-pptx` plus `python3 $(PPTX_POST)`. The shim
+  `common/utils/livery.py` and `engine_module()` are gone: the engine's `livery.py` has the
+  `deps|mono|figsize` commands. Parity byte-identical (every deck under ncar, cu and nsi, and the
+  quickstart's pptx under nasa-dark, which embeds no fonts). Next: B.13, one text measurer.
 - **2026-10-18, B.11: the `engine-pptx` format** (#57 Phase B). The engine's `_extension.yml`
   contributes `pptx`: the template default, `slide-level: 2`, `toc: false` and the six filters in
   their order (strip-raw-figure, slide-layout, notes-last, single-body, linked-images,
