@@ -680,6 +680,12 @@
     "label": "Section",
     "tab": true
   },
+  "frametitle": {
+    "align": "left",
+    "body": 0.1667,
+    "rule": true,
+    "tab": true
+  },
   "geometry": {
     "divider": {
       "bottom": 0.0889,

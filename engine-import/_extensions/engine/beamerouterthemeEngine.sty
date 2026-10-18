@@ -42,6 +42,10 @@
 \newdimen\engine@tabwidth    \engine@tabwidth=\engine@geom@tab\paperwidth
 \newdimen\engine@logoheight  \engine@logoheight=\engine@geom@logoheight\paperheight
 \newdimen\engine@logotop     \engine@logotop=\engine@geom@logotop\paperheight
+% the content mark's distance from its edge: geometry.logo.inset, else the margin
+\newdimen\engine@logoinset
+\AtBeginDocument{\ifdefined\engine@geom@logoinset\engine@logoinset=\engine@geom@logoinset\paperwidth
+  \else\engine@logoinset=\engine@margin\fi}
 \providecommand\engine@geom@logocorner{top-right}
 \providecommand\engine@geom@pagenumbercorner{bottom-left}
 % \engine@ifcorner{<macro>}{<value>}{<true>}{<false>}
@@ -97,35 +101,48 @@
   \advance\@tempdima by -2\engine@margin
   \ifdim\engine@logowidth>0pt
     \engine@ifstyle{normal}{\advance\@tempdima by -\engine@logowidth
-      \advance\@tempdima by -0.03\paperwidth}{}%
+      \advance\@tempdima by -0.03\paperwidth
+      \advance\@tempdima by \dimexpr\engine@margin-\engine@logoinset\relax}{}%
   \fi
   \setbox\@tempboxa=\vbox{%
-    \hsize=\@tempdima \raggedright
+    \hsize=\@tempdima
+    \def\engine@tmp{center}\ifx\engine@ft@align\engine@tmp\centering\else\raggedright\fi
     \usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}%
     \strut\insertframetitle\strut\par
     \ifx\insertframesubtitle\@empty\else
       \vskip-0.25ex{\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}%
         \strut\insertframesubtitle\strut\par}%
     \fi}%
+  % HTML's and the pptx template's band: the title centred in 44-114 px of 900 (a taller one
+  % grows down), the hairline at 130 px or 16 px under the title, the body from 150 px
+  \@tempdimb=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax
+  \@tempdimc=\dimexpr0.0778\paperheight-\@tempdimb\relax
+  \ifdim\@tempdimc<0pt \@tempdimc=0pt \fi
   \vbox{%
-    \vskip0.045\paperheight
+    \vskip\dimexpr0.0489\paperheight+0.5\@tempdimc\relax
     \hbox{%
       \hskip-\beamer@leftmargin % frametitle is typeset at the text margin
       \engine@ifstyle{normal}{%
+        \ifdefined\engine@ft@notab\hskip\engine@tabwidth\else
         {\usebeamercolor[fg]{frametitle tab}%
-         \vrule width\engine@tabwidth height\ht\@tempboxa depth\dp\@tempboxa}%
+         \vrule width\engine@tabwidth height\ht\@tempboxa depth\dp\@tempboxa}\fi
         \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
         % a top-left mark: the title starts beside it
         \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
-          \ifdim\engine@logowidth>0pt\hskip\dimexpr\engine@logowidth+0.03\paperwidth\relax\fi}{}%
+          \ifdim\engine@logowidth>0pt\hskip\dimexpr\engine@logowidth+0.03\paperwidth+\engine@logoinset-\engine@margin\relax\fi}{}%
       }{\hskip\engine@margin}%
       \box\@tempboxa}%
-    \vskip0.6ex
+    \@tempdima=\dimexpr0.1444\paperheight-0.0489\paperheight-\@tempdimb-\@tempdimc\relax
+    \ifdim\@tempdima<0.0178\paperheight \@tempdima=0.0178\paperheight \fi
+    \vskip\dimexpr0.5\@tempdimc+\@tempdima\relax\nointerlineskip   % exact positions: no baselineskip glue
     \engine@ifstyle{normal}{%
+      \ifdefined\engine@ft@norule\else
       \hbox{{\usebeamercolor[fg]{frametitle rule}%
-        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height0.4pt}}%
+        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height0.4pt}}\fi
     }{}%
-    \vskip0.02\paperheight}%
+    \ifdefined\engine@ft@bodytop   % below a taller mark (livery.sty)
+      \vskip\dimexpr\engine@ft@bodytop\paperheight-0.1444\paperheight-0.4pt\relax
+    \else\vskip\dimexpr0.0222\paperheight-0.4pt\relax\fi}%
 }
 
 % ---------------------------------------------------------------------------
@@ -325,10 +342,10 @@
       \ifengine@framelogo
         \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
           \node[anchor=north west,inner sep=0pt]
-            at (\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
+            at (\engine@logoinset,\paperheight-\engine@logotop) {\engine@framelogo};
         }{\engine@ifcorner{\engine@geom@logocorner}{none}{}{%
           \node[anchor=north east,inner sep=0pt]
-            at (\paperwidth-\engine@margin,\paperheight-\engine@logotop) {\engine@framelogo};
+            at (\paperwidth-\engine@logoinset,\paperheight-\engine@logotop) {\engine@framelogo};
         }}%
       \fi
       \engine@signoff{light}%
