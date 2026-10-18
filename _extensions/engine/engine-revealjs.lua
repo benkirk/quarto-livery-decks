@@ -587,6 +587,8 @@ function Pandoc(doc)
   local opts = theme_options(meta)
 
   local livery = load_livery(meta, opts.brand or "ncar")
+  -- the filters after this one (linked-images, diagram-dark) read the livery it resolved
+  if not meta["livery"] then meta["livery"] = livery.dir end
   if livery.type and livery.type.canvas then doc = size_plots(doc, livery); meta = doc.meta end
   if livery.art and livery.art.waves then
     WAVES, SHIFT = livery.art.waves.lines, livery.art.waves.shift
