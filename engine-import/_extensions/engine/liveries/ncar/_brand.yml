@@ -1,0 +1,59 @@
+# The NSF NCAR brand in Quarto's brand.yml standard (https://posit-dev.github.io/brand-yml),
+# kept strictly standard. Engine knobs the standard has no slot for are in livery.yml;
+# both resolve into build/livery.json (utils/livery_build.py). Values: engine_livery.sty,
+# the 2026 "Vermilion" NSF NCAR / UCAR / UCP Brand Guide pp. 17-21.
+meta:
+  name: NSF NCAR
+  link: https://ncar.ucar.edu
+
+color:
+  palette:
+    ncar-blue: "#0057C2"
+    dark-blue: "#00357A"          # primary text on light backgrounds
+    ucar-aqua: "#00A2B4"
+    ucar-aqua-contrast: "#00818F" # small text on white only
+    space: "#011837"
+    light-blue: "#42C0FF"
+    light-aqua: "#34E1F4"
+    light-gray: "#F1F0EE"
+    white: "#FFFFFF"
+    orange: "#FAA119"             # accents only (charts, highlights, the title and tab bars)
+    yellow: "#FFDD31"
+  primary: ncar-blue
+  secondary: light-blue
+  foreground: dark-blue
+  background: white
+
+typography:
+  fonts:
+    - family: Poppins
+      source: file
+      files:
+        - path: fonts/Poppins-Regular.ttf
+          weight: 400
+        - path: fonts/Poppins-Italic.ttf
+          weight: 400
+          style: italic
+        - path: fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - path: fonts/Poppins-Bold.ttf
+          weight: 700
+        - path: fonts/Poppins-BoldItalic.ttf
+          weight: 700
+          style: italic
+  base: Poppins
+  headings: Poppins
+
+logo:
+  images:
+    ncar-color:
+      path: logos/NSF-NCAR_Logo_FullColor_RGB.png
+    ncar-white:
+      path: logos/NSF-NCAR_Logo_Color-White_RGB.png
+    ncar-color-print:
+      path: logos/NSF-NCAR_Logo_FullColor_RGB.pdf
+    ncar-white-print:
+      path: logos/NSF-NCAR_Logo_Color-White_RGB.pdf
+  medium:
+    light: ncar-color     # on light backgrounds
+    dark: ncar-white      # on the brand field

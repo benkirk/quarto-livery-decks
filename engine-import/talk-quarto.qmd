@@ -1,0 +1,49 @@
+---
+# Starter deck -- edit me, then `make quarto` (-> talk-quarto.pdf)
+# or `make html` (-> talk-quarto.html, the same deck as a web page).
+# Every feature is demonstrated in examples/quarto-demo.qmd.
+title: "Talk Title Goes Here"
+subtitle: "An optional subtitle"
+author: "Your Name"
+institute: "Your Title, Your Lab, Your Institution"
+date: today
+date-format: long
+titlegraphic: images/wallpaper/mesa_lab_sunset.jpg   # optional
+themeoptions: [brand=ncar, title=dark]   # brand=ncar|ucar|ucp|ncarucar (or livery: <dir>), title=dark|light, mathfont=serif|stix|sans|...
+format: engine-beamer
+---
+
+# Introduction
+
+## A Content Slide
+
+- Make a point
+  - and support it
+- Highlight [one key idea]{.alert}
+
+### A block
+
+Level-3 headings become blocks; add `{.example}` or `{.alert}` for the variants.
+
+## A Photo Slide {.feature background="images/wallpaper/mesa_lab.jpg"}
+
+### Blocks turn translucent on photos
+
+`## Title {.feature background="photo.jpg"}`
+
+# Details
+
+## Code
+
+```bash
+#!/bin/bash
+# the whole deck is one file; edit, then `make quarto`
+quarto render talk-quarto.qmd
+```
+
+## Thank you! {.closing}
+
+Questions?
+
+**Your Name** \
+`you@example.org`

@@ -1,0 +1,819 @@
+/*-- scss:defaults --*/
+
+// engine revealjs theme -- type and slide furniture; the colors are the livery's.
+//
+// Mirrors the beamer theme (beamer*Engine.sty). Lengths are slide pixels: the
+// format fixes the slide at 1600x900 and reveal scales it to the screen. Every
+// color the engine's own rules set is a role, var(--engine-*), from the livery's
+// build/livery.css (engine-revealjs.lua attaches it, with the fonts and logos);
+// the Sass variables below are the ncar values, which Quarto's compiler needs as
+// literals (it passes some through lighten()), and the visible ones among
+// Quarto's rules are restated with the roles at the end of this file.
+
+// the ncar livery's palette, as Sass defaults only (see above)
+$ncar-blue: #0057C2;
+$ncar-dark-blue: #00357A;
+$ncar-space: #011837;
+$ncar-light-blue: #42C0FF;
+$ncar-light-gray: #F1F0EE;
+$ncar-orange: #FAA119;
+$ncar-yellow: #FFDD31;
+$ucar-aqua-contrast: #00818F;
+$ncar-muted: #6B7C99;
+
+// type: the ncar family as the Sass literal; the livery's --engine-font-family wins below
+$font-family-sans-serif: "Poppins", Helvetica, Arial, sans-serif;
+$font-family-monospace: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+$presentation-font-size-root: 28px;  // the fallback: livery.css sets --r-main-font-size from the livery's type
+// every other size reads the livery's --engine-type-* (livery_build.py TYPE), today's literal the fallback
+$presentation-line-height: 1.4;
+$presentation-heading-font: $font-family-sans-serif;
+$presentation-heading-font-weight: 700;
+$presentation-heading-line-height: 1.15;
+$presentation-h1-font-size: 2.6em;
+$presentation-h2-font-size: 1.65em;
+$presentation-h3-font-size: calc(var(--engine-type-subhead, 1.1) * 1em);
+$presentation-h4-font-size: 1em;
+
+// colors
+$body-bg: #fff;
+$body-color: $ncar-dark-blue;
+$text-muted: $ncar-muted;
+$primary: $ncar-blue;
+$secondary: $ncar-dark-blue;
+$link-color: $ncar-blue;
+$selection-bg: $ncar-light-blue;
+$selection-color: $ncar-space;
+$presentation-heading-color: $ncar-dark-blue;
+$presentation-list-bullet-color: $ncar-blue;
+$border-color: mix($ncar-dark-blue, $ncar-light-gray, 25%);
+$border-radius: 0;             // flat, as in the NCAR web design system
+$light-bg-link-color: $ncar-blue;
+$dark-bg-text-color: #fff;
+$dark-bg-link-color: $ncar-light-blue;
+$dark-bg-code-color: $ncar-yellow;
+
+// code: surface-colored blocks (as the listings style); token colors from the livery's theme
+$code-block-bg: $ncar-light-gray;
+$code-block-border-color: $ncar-light-gray;
+$code-block-font-size: calc(var(--engine-type-code, 0.66) * 1em);
+$code-color: $ncar-space;
+
+// callouts, as engine-beamer.lua maps them
+$callout-color-note: $ncar-blue;
+$callout-color-tip: $ucar-aqua-contrast;
+$callout-color-important: $ncar-dark-blue;
+$callout-color-caution: $ncar-orange;
+$callout-color-warning: $ncar-orange;
+
+// mermaid renders live in HTML, so it can wear the brand (pptx/pdf: baked PNGs)
+$mermaid-font-family: $font-family-sans-serif;
+$mermaid-bg-color: #fff;
+$mermaid-node-bg-color: $ncar-light-gray;
+$mermaid-node-fg-color: $ncar-dark-blue;
+$mermaid-fg-color: $ncar-dark-blue;
+$mermaid-edge-color: $ncar-dark-blue;
+$mermaid-label-bg-color: #fff;
+$mermaid-label-fg-color: $ncar-blue;
+
+/*-- scss:rules --*/
+
+// slide geometry: the livery's fractions as slide pixels in its build/livery.css
+// (--engine-margin, -tab, -logo-top, -logo-h/-w/-aspect, -logo-title-h/-section-h/
+// -closing-h, -divider-top/-bottom, -full-pad/-floor/-caption), beside the brand
+// roles (--engine-primary, ...); engine-revealjs.lua attaches it
+
+// ---------------------------------------------------------------------------
+// every slide: a 1600x900 box with the brand margins
+// ---------------------------------------------------------------------------
+// (descendant selectors: ?print-pdf moves each slide into a .pdf-page; the
+// vertical-stack wrappers carry no .slide class)
+.reveal .slides section.slide,
+.reveal .slides section.engine-title {
+  height: 100%;
+  box-sizing: border-box;
+  isolation: isolate;  // keeps the z-index:-1 waves above the slide background in print
+  padding: var(--engine-body-top, 150px) var(--engine-margin) 70px;   // below the mark (livery.css)
+}
+
+// the mark on content slides: top right unless the livery's geometry.logo.corner says
+// top-left or none (livery.css resolves the corner into the --engine-logo-* vars; the
+// images are set there too)
+.reveal .slides section.slide::after,
+.reveal .slides section.engine-title::after {
+  content: var(--engine-logo-content, "");
+  position: absolute;
+  top: var(--engine-logo-top);
+  left: var(--engine-logo-left, auto);
+  right: var(--engine-logo-right, var(--engine-margin));
+  width: var(--engine-logo-w);
+  height: var(--engine-logo-h);
+  background-repeat: no-repeat;
+  background-position: var(--engine-logo-position, right top);
+  background-size: contain;
+  pointer-events: none;
+}
+// the sign-off lockup at the foot (signoff in livery.yml): the Lua puts the box on every
+// slide, livery.css shows and places it when the livery has one
+.reveal .slides section .engine-signoff {
+  display: var(--engine-signoff-display, none);
+  position: absolute;
+  bottom: var(--engine-signoff-bottom, 0);
+  left: var(--engine-signoff-left, var(--engine-margin));
+  right: var(--engine-signoff-right, auto);
+  width: var(--engine-signoff-w, 0);
+  height: var(--engine-signoff-h, 0);
+  margin: 0;
+  background-repeat: no-repeat;
+  background-position: var(--engine-signoff-position, left bottom);
+  background-size: contain;
+  pointer-events: none;
+}
+// no logo on busy photos (Brand Guide p11); a feature's marks are its composition's (none on the bar)
+.reveal .slides section.slide.full .engine-signoff { display: none; }
+
+// ---------------------------------------------------------------------------
+// content slides: accent tab beside the title, hairline rule, logo
+// ---------------------------------------------------------------------------
+.reveal .slides section.slide.level2 > h2 {
+  position: absolute;
+  top: 44px;
+  left: var(--engine-title-left, var(--engine-margin));   // the title gives way on the mark's side
+  right: var(--engine-title-right, calc(var(--engine-margin) + 40px + var(--engine-logo-w)));
+  min-height: 70px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: var(--engine-title-justify, flex-start);   // the livery's frametitle.align
+  text-align: var(--engine-title-text-align, left);
+  font-size: var(--engine-type-frametitle, 46px);  // fixed: {.smaller} and the autofit script shrink only the body
+  line-height: 1.15;
+  // the tab: flush with the paper's left edge, as tall as the title (frametitle.tab)
+  &::before {
+    display: var(--engine-title-tab, block);
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--engine-title-left, var(--engine-margin)));
+    top: 0;
+    bottom: 0;
+    width: var(--engine-tab);
+    background: var(--engine-accent);
+  }
+}
+// the hairline under the title block (frametitle.rule)
+.reveal .slides section.slide.level2::before {
+  display: var(--engine-title-rule, block);
+  content: "";
+  position: absolute;
+  top: 130px;
+  left: var(--engine-margin);
+  right: var(--engine-margin);
+  height: 1px;
+  background: var(--engine-rule);
+}
+.reveal .slides section.slide.level2.feature::before,
+.reveal .slides section.slide.level2.closing::before,
+.reveal .slides section.slide.level2.brand-dark::before { content: none; }
+
+// body text
+.reveal .slides section {
+  h3 { color: var(--engine-primary-contrast); margin-top: 0.4em; }
+  h3.example, h3.alert { padding-left: 0.45em; border-left: 0.22em solid; }
+  h3.example { color: var(--engine-foreground); border-color: var(--engine-foreground); }
+  h3.alert { color: var(--engine-foreground); border-color: var(--engine-accent); }
+  strong { font-weight: 700; }
+  .alert { color: var(--engine-primary-contrast); font-weight: 700; }
+  a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.12em; }
+  p, li { margin-top: 0; }
+  li + li { margin-top: 0.25em; }
+  // nested lists: each level its ratio to the one above (livery type.levels)
+  :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level2, 0.9) * 1em); margin-top: 0.2em; }
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level3, 0.9) * 1em); }
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level4, 0.9) * 1em); }
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) { font-size: calc(var(--engine-type-level5, 0.9) * 1em); }
+}
+
+// bullets: filled circle, open circle, dash (beamerinnerthemeEngine.sty)
+.reveal .slides section ul,
+.reveal .slides section ol { display: block; }
+.reveal .slides section ul {
+  list-style: none;
+  margin-left: 1.1em;
+  padding: 0;
+  > li { position: relative; }
+  > li::before {
+    content: "";
+    position: absolute;
+    left: -0.95em;
+    top: 0.55em;
+    width: 0.36em;
+    height: 0.36em;
+    border-radius: 50%;
+    background: var(--engine-primary-contrast);
+  }
+  ul > li::before { background: none; border: 0.09em solid var(--engine-primary-contrast); box-sizing: border-box; }
+  ul ul > li::before { border: 0; border-radius: 0; background: var(--engine-primary-contrast); height: 0.1em; top: 0.7em; }
+}
+.reveal .slides section ol {
+  margin-left: 1.3em;
+  padding: 0;
+  > li::marker { color: var(--engine-primary-contrast); font-weight: 700; }
+}
+// quarto's task lists / checkboxes keep their own markers
+.reveal .slides section ul.task-list > li::before { content: none; }
+
+// tables: bold uppercase header over a primary-color rule, hairline rows
+.reveal .slides section table {
+  border-collapse: collapse;
+  font-size: calc(var(--engine-type-table, 0.85) * 1em);
+  margin: 0.4em 0;
+  th {
+    color: var(--engine-foreground);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.8em;
+    border-bottom: 3px solid var(--engine-primary) !important;
+    padding: 0.35em 0.8em;
+  }
+  td {
+    border-bottom: 1px solid var(--engine-table-rule) !important;
+    padding: 0.3em 0.8em;
+  }
+  tbody tr:nth-child(even) { background: var(--engine-table-band); }
+  caption {
+    caption-side: bottom;
+    color: var(--engine-muted);
+    font-size: 0.8em;
+    padding-top: 0.4em;
+    text-align: left;
+  }
+}
+
+// code: Light Gray with a primary-color rule on the left (listings style)
+.reveal div.sourceCode {
+  border: 0;
+  border-left: 5px solid var(--engine-primary);
+  border-radius: 0;
+  background: var(--engine-surface);
+  margin: 0.4em 0;
+}
+.reveal pre code { padding: 0.5em 0.8em; max-height: 560px; }
+.reveal code { font-size: 0.85em; }
+.reveal :not(pre) > code {
+  background: var(--engine-surface);
+  color: var(--engine-code-text, var(--engine-dark));
+  padding: 0.05em 0.25em;
+}
+// executed-cell output
+.reveal .cell-output pre { background: var(--engine-background); border-left: 5px solid var(--engine-surface); }
+
+// callouts: flat
+.reveal .callout {
+  border-radius: 0 !important;
+  .callout-header, .callout-title-container { font-weight: 700; }
+}
+
+// quotes, captions, footnotes
+.reveal blockquote {
+  width: auto;
+  margin: 0.6em 0;
+  padding: 0.2em 0 0.2em 0.8em;
+  border-left: 5px solid var(--engine-secondary);
+  background: none;
+  box-shadow: none;
+  font-style: normal;
+}
+.reveal .slides section figcaption,
+.reveal .slides section .caption {
+  color: var(--engine-muted);
+  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
+}
+.reveal .slides section .quarto-figure-center figcaption { text-align: center; }
+
+// mermaid pins its svg to its natural width (tiny on a 1600-px slide):
+// let diagrams fill the column instead, capped to the content height
+.reveal .slides section svg.mermaid-js {
+  max-width: 100% !important;
+  width: 100%;
+  height: auto;
+  max-height: calc(600px * var(--engine-fit, 1));  // shrinks with the autofit
+}
+// quarto bakes a {dot} diagram into an svg of fig-width x 96 px (960 of 1600
+// at fig-width 10) and pins max-width/max-height inline: same treatment
+.reveal .slides section .cell-output-display svg:has(> g.graph) {
+  max-width: 100% !important;
+  width: 100%;
+  height: auto;
+  max-height: calc(600px * var(--engine-fit, 1)) !important;
+}
+.reveal .slides section .footnotes,
+.reveal .slides section aside { color: var(--engine-muted); }
+
+// per-slide layout controls (engine-revealjs.lua wraps the body in .engine-body):
+// .vcenter's offset is measured by engine-revealjs.js; .hcenter shrink-wraps the
+// block and centers it, leaving its text left-aligned; .fill's code never wraps,
+// so a long line stops the growth instead of folding
+.reveal .slides section .engine-body { margin-top: var(--engine-shift, 0px); }
+.reveal .slides section.engine-fill > .engine-body :is(pre, pre code) { white-space: pre; }
+// .caution: the warning slides' body on a soft yellow field, a brand-yellow bar at its left
+.reveal .slides section.engine-caution > .engine-body {
+  box-sizing: border-box;
+  padding: 0.55em 0.9em;
+  background: var(--engine-caution-fill);
+  border-left: 8px solid var(--engine-warning);
+}
+.reveal .slides section.engine-hcenter > .engine-body {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// slide footnotes (paragraphs that start with † or ‡; engine-revealjs.lua lifts
+// them here): on the floor of the slide, under a short rule, with the marker
+// hanging in the accent color.  The autofit script reserves their height, so
+// the body shrinks above them rather than running underneath.
+.reveal .slides section .engine-footnotes {
+  position: absolute;
+  left: var(--engine-margin);
+  bottom: 70px;
+  max-width: 60%;
+  padding-top: 0.55em;
+  color: var(--engine-muted);
+  font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
+  line-height: 1.35;
+  text-align: left;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    border-top: 2px solid currentColor;
+    opacity: 0.6;
+  }
+  p {
+    margin: 0.3em 0 0;
+    padding-left: 0.9em;
+    text-indent: -0.9em;
+  }
+  p:first-child { margin-top: 0; }
+  .engine-dagger {
+    display: inline-block;
+    width: 0.9em;
+    text-indent: 0;
+    color: var(--engine-accent);
+    font-weight: 700;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// title, divider, closing and feature slides: drawn from the livery's compositions
+// (livery_build.py compositions()). livery.css sets one generic set of --engine-cmp-*
+// properties per composition on its selector (title, its photo, light and band variants;
+// closing and its light and band ones; section; feature): each box's -x -y -w -h (and -r -b,
+// its right and bottom edges' distance from the slide's), -display, and the roles as
+// --engine-cmp-field / -text / -eyebrow / -bar-fill / -panel-fill. No lengths here but type.
+// ---------------------------------------------------------------------------
+// the waves run past the slide edge (overflow), so a letterboxed screen
+// shows them continuing instead of cut off
+.engine-waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: -1;
+  pointer-events: none;
+}
+// the mark and the sign-off of every composition, from their boxes
+div.reveal div.slides section.engine-title.quarto-title-block,
+.reveal .slides section.slide.engine-section,
+.reveal .slides section.slide.level2.closing,
+.reveal .slides section.slide.level2.feature {
+  &::after {
+    display: var(--engine-cmp-mark-display);
+    left: var(--engine-cmp-mark-x);
+    top: var(--engine-cmp-mark-y);
+    right: auto;
+    bottom: auto;
+    width: var(--engine-cmp-mark-w);
+    height: var(--engine-cmp-mark-h);
+    background-position: left top;
+  }
+  .engine-signoff {
+    display: var(--engine-cmp-signoff-display);
+    left: var(--engine-cmp-signoff-x);
+    top: var(--engine-cmp-signoff-y);
+    right: auto;
+    bottom: auto;
+    width: var(--engine-cmp-signoff-w);
+    height: var(--engine-cmp-signoff-h);
+    background-position: left top;
+  }
+}
+.reveal .slides section.engine-title .engine-title-photo-img,
+.reveal .slides section.slide.feature .engine-title-photo-img {
+  position: absolute;
+  left: var(--engine-cmp-photo-x);
+  top: var(--engine-cmp-photo-y);
+  width: var(--engine-cmp-photo-w);
+  height: var(--engine-cmp-photo-h);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  object-fit: cover;
+  z-index: -1;
+}
+div.reveal div.slides section.engine-title.quarto-title-block {
+  text-align: left;
+  padding: 0;
+  // the text column: its stack from the top or centred, by the column's anchor
+  .engine-title-text {
+    position: absolute;
+    left: var(--engine-cmp-column-x);
+    top: var(--engine-cmp-column-y);
+    width: var(--engine-cmp-column-w);
+    height: var(--engine-cmp-column-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--engine-cmp-column-justify);
+  }
+  .date {
+    font-size: calc(var(--engine-type-date, 0.6) * 1em);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.9em;
+  }
+  h1.title {
+    position: relative;
+    font-size: calc(var(--engine-type-title, 2.3) * 1em);
+    line-height: 1.12;
+    margin: 0 0 0.35em;
+    // the accent bar at the paper edge, beside the title
+    &::before {
+      content: "";
+      display: var(--engine-cmp-column-tab);
+      position: absolute;
+      left: calc(-1 * var(--engine-cmp-column-x));
+      top: 0.08em;
+      bottom: 0.08em;
+      width: var(--engine-tab);
+      background: var(--engine-accent);
+    }
+  }
+  .subtitle {
+    font-size: calc(var(--engine-type-subtitle, 1) * 1em);
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 0.6em;
+  }
+  .engine-title-rule {
+    display: var(--engine-cmp-rule-display);
+    width: var(--engine-cmp-rule-w);
+    height: var(--engine-cmp-rule-h);
+    background: var(--engine-secondary);
+    margin: 0.9em 0;
+  }
+  &.engine-band .engine-title-rule { margin: 0.6em 0; }
+  .author { font-weight: 700; margin: 0; font-size: calc(var(--engine-type-author, 0.8) * 1em); }
+  .institute { margin: 0; font-size: calc(var(--engine-type-institute, 0.7) * 1em); }
+  .engine-fineprint {
+    position: absolute;
+    left: var(--engine-cmp-fineprint-x);
+    top: var(--engine-cmp-fineprint-y);
+    width: var(--engine-cmp-fineprint-w);
+    height: var(--engine-cmp-fineprint-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--engine-cmp-fineprint-justify);
+    font-size: calc(var(--engine-type-fineprint, 0.4) * 1em);
+    line-height: 1.4;
+    opacity: 0.85;
+    color: var(--engine-cmp-fineprint-color);
+    p { margin: 0; line-height: 1.4; }
+  }
+  &, h1, .subtitle, .date, .author, .institute, a { color: var(--engine-cmp-text); }
+}
+
+// ---------------------------------------------------------------------------
+// section dividers: "SECTION n", heading, subtitle, in the column
+// ---------------------------------------------------------------------------
+.reveal .slides section.slide.engine-section {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: var(--engine-cmp-column-justify);
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
+  text-align: left;
+  &[data-engine-section]::before {
+    content: var(--engine-cmp-eyebrow-label) attr(data-engine-section);
+    display: block;
+    color: var(--engine-cmp-eyebrow);
+    font-size: calc(var(--engine-type-eyebrow, 0.7) * 1em);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5em;
+  }
+  h1 {
+    position: relative;
+    font-size: calc(var(--engine-type-section, 2.6) * 1em);
+    line-height: 1.08;
+    margin: 0;
+    text-align: left;
+    &::before {
+      content: "";
+      display: var(--engine-cmp-column-tab);
+      position: absolute;
+      left: calc(-1 * var(--engine-cmp-column-x));
+      top: 0.08em;
+      bottom: 0.08em;
+      width: var(--engine-tab);
+      background: var(--engine-accent);
+    }
+  }
+  .engine-subtitle {
+    margin-top: 0.7em;
+    font-size: calc(var(--engine-type-sectionsubtitle, 1.1) * 1em);
+    p { margin: 0 0 0.4em; }
+    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
+  }
+  &, h1, .engine-subtitle, a { color: var(--engine-cmp-text); }
+}
+
+// ---------------------------------------------------------------------------
+// closing slide: the headline and the content beneath, in the column
+// ---------------------------------------------------------------------------
+.reveal .slides section.slide.level2.closing {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: var(--engine-cmp-column-justify);
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
+  > h2 {
+    position: relative;
+    top: auto; left: auto; right: auto;
+    min-height: 0;
+    display: block;
+    font-size: calc(var(--engine-type-closing, 2.6) * 1em);
+    line-height: 1.08;
+    margin: 0 0 0.4em;
+    color: var(--engine-cmp-text);
+    &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); top: 0.08em; bottom: 0.08em; }
+  }
+  &, p, li, strong { color: var(--engine-cmp-text); }   // the light closing's too: its column's role
+  &.engine-field {
+    a { color: var(--engine-cmp-text); }
+    ul > li::before { background: var(--engine-cmp-text); }
+    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// .feature: full-bleed photo, the title in the column on the bar, the body on the panel
+// ---------------------------------------------------------------------------
+.reveal .slides section.slide.level2.feature {
+  > h2 {
+    top: var(--engine-cmp-column-y);
+    left: var(--engine-cmp-column-x);
+    right: auto;
+    width: var(--engine-cmp-column-w);
+    height: var(--engine-cmp-column-h);
+    min-height: 0;
+    box-sizing: border-box;
+    align-items: var(--engine-cmp-column-justify);
+    justify-content: flex-start;   // the composition's column, not frametitle.align
+    text-align: left;
+    color: var(--engine-cmp-text);
+    &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); }
+  }
+  // the bar behind the title (engine-revealjs.lua adds the box when the composition has one)
+  .engine-feature-bar {
+    position: absolute;
+    left: var(--engine-cmp-bar-x);
+    top: var(--engine-cmp-bar-y);
+    width: var(--engine-cmp-bar-w);
+    height: var(--engine-cmp-bar-h);
+    background: var(--engine-cmp-bar-fill);
+    z-index: -1;
+  }
+}
+// the cover style (feature.style: cover): the section is the column, the title and body in it
+.reveal .slides section.slide.level2.feature.engine-feature-cover {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: var(--engine-cmp-column-justify);
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
+  > h2 {
+    position: relative;
+    top: auto; left: auto; width: auto; height: auto;
+    display: block;
+    margin: 0 0 0.5em;
+    &::before { top: 0.08em; bottom: 0.08em; }
+    &::after {
+      content: "";
+      display: var(--engine-cmp-rule-display);
+      width: var(--engine-cmp-rule-w);
+      height: var(--engine-cmp-rule-h);
+      margin-top: 0.4em;
+      background: var(--engine-secondary);
+    }
+  }
+  .engine-feature-body {
+    position: static;
+    width: auto;
+    padding: 0;
+    background: none;
+    &, p, li, strong { color: var(--engine-cmp-text); }
+  }
+}
+html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-cover {
+  padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
+}
+// the body on its translucent panel (beamer: the same panel); its height is its content's
+.reveal .slides section.slide.feature .engine-feature-body {
+  position: absolute;
+  left: var(--engine-cmp-panel-x);
+  top: var(--engine-cmp-panel-y);
+  width: var(--engine-cmp-panel-w);
+  max-height: var(--engine-cmp-panel-h);
+  box-sizing: border-box;
+  padding: 0.6em 0.9em;
+  background: var(--engine-cmp-panel-fill);
+  &, p, li, strong { color: #fff; }
+  h3, .alert, a { color: var(--engine-secondary); }
+  > :last-child { margin-bottom: 0; }
+  ul > li::before { background: var(--engine-secondary); }
+  :not(pre) > code { background: rgba(#fff, 0.14); color: var(--engine-warning); }
+}
+
+// ---------------------------------------------------------------------------
+// .brand-dark: a content slide on Space
+// ---------------------------------------------------------------------------
+.reveal .slides section.slide.brand-dark {
+  &, h2, h3, p, li, td, th, strong, .alert { color: #fff; }
+  h3, .alert { color: var(--engine-secondary); }
+  a { color: var(--engine-secondary); }
+  ul > li::before { background: var(--engine-secondary); }
+  ul ul > li::before { background: none; border-color: var(--engine-secondary); }
+  ul ul ul > li::before { background: var(--engine-secondary); }
+  ol > li::marker { color: var(--engine-secondary); }
+  table th { color: #fff; border-bottom-color: var(--engine-secondary) !important; }
+  table td { border-bottom-color: rgba(#fff, 0.25) !important; }
+  table tbody tr:nth-child(even) { background: rgba(#fff, 0.06); }
+  :not(pre) > code { background: rgba(#fff, 0.12); color: var(--engine-warning); }
+  // the hairline, lightened
+  &::before {
+    content: "" !important;
+    background: rgba(#fff, 0.25) !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// .full: one figure fills the slide, an optional caption line under it
+// ---------------------------------------------------------------------------
+// Absolutely placed, so reveal's inline display and the print padding cannot
+// move it; the title stays in the page (navigation, tools), clipped to nothing.
+.reveal .slides section.slide.level2.full {
+  &::before, &::after { content: none; }  // no rule, no logo
+  > h2 {
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    &::before { content: none; }
+  }
+}
+.reveal .slides section.slide.full .engine-full-figure {
+  position: absolute;
+  inset: var(--engine-full-pad) var(--engine-full-pad) calc(var(--engine-full-pad) + 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal .slides section.slide.full.engine-captioned .engine-full-figure {
+  bottom: calc(var(--engine-full-pad) + var(--engine-full-caption));
+}
+// every wrapper Quarto puts round a figure hands the box down to it; the
+// empty paragraphs it leaves beside one would take a share of the width
+// (not inside the svg: mermaid's labels are divs too)
+.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(:has(svg, img)) {
+  display: none;
+}
+.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):has(svg, img) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.reveal .slides section.slide.full .engine-full-figure :is(svg, img):not(svg *) {
+  width: 100%;
+  height: 100%;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain;
+}
+.reveal .slides section.slide.full .engine-full-caption {
+  position: absolute;
+  left: var(--engine-full-pad);
+  right: var(--engine-full-pad);
+  bottom: var(--engine-full-pad);
+  height: var(--engine-full-caption);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--engine-muted);
+  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
+  line-height: 1.3;
+  text-align: center;
+  p { margin: 0; }
+}
+
+// ---------------------------------------------------------------------------
+// reveal chrome: progress bar, slide number, controls, footer
+// ---------------------------------------------------------------------------
+.reveal .progress { height: 4px; color: var(--engine-accent); }
+.reveal .controls { color: var(--engine-primary-contrast); }
+.reveal .slide-number {
+  left: var(--engine-pagenumber-left, 50px);     // geometry.pagenumber.corner, via livery.css
+  right: var(--engine-pagenumber-right, auto);
+  bottom: 14px;
+  background: transparent;
+  color: var(--engine-foreground);
+  font-family: var(--engine-font-family, $font-family-sans-serif), Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: var(--engine-type-pagenumber, 14px);
+  a { color: inherit; }
+}
+.reveal.has-dark-background .slide-number { color: #fff; }
+.reveal .footer {
+  color: var(--engine-muted);
+  font-size: var(--engine-type-footer, 14px);
+}
+
+// ---------------------------------------------------------------------------
+// print (?print-pdf): keep the brand fields and waves
+// ---------------------------------------------------------------------------
+// reveal's print stylesheet zeroes every section's padding (!important);
+// restate each slide type's (more specific, so these win)
+html.reveal-print .reveal .slides {
+  section.slide, section.engine-title { padding: var(--engine-body-top, 150px) var(--engine-margin) 70px !important; }
+  section.engine-title.quarto-title-block { padding: 0 !important; }
+  section.slide.engine-section, section.slide.level2.closing {
+    padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
+  }
+  // full-height slides: no vertical centering offset
+  section.slide, section.engine-title { top: 0 !important; }
+}
+
+@media print {
+  html, body, .reveal, .reveal .slides section, .reveal .slide-background {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Quarto's own rules that show a color, restated with the livery's roles (their
+// Sass variables above are the ncar literals the compiler needs)
+// ---------------------------------------------------------------------------
+// reveal's own custom properties, set by Quarto from the Sass literals above
+:root {
+  --r-main-font: var(--engine-font-family, "Poppins"), Helvetica, Arial, sans-serif;
+  --r-heading-font: var(--engine-heading-font-family, var(--engine-font-family, "Poppins")), Helvetica, Arial, sans-serif;
+  --r-background-color: var(--engine-background);
+  --r-main-color: var(--engine-foreground);
+  --r-heading-color: var(--engine-foreground);
+  --r-link-color: var(--engine-primary-contrast);
+  --r-link-color-dark: color-mix(in srgb, var(--engine-primary-contrast) 70%, black);
+  --r-link-color-hover: color-mix(in srgb, var(--engine-primary-contrast) 75%, white);
+  --r-selection-background-color: var(--engine-secondary);
+  --r-selection-color: var(--engine-dark);
+  --quarto-body-color: var(--engine-foreground);
+  --quarto-text-muted: var(--engine-muted);
+  --quarto-border-color: var(--engine-surface);
+}
+.reveal section.has-light-background a, .reveal section.has-light-background a:hover,
+.reveal .footer a { color: var(--engine-primary-contrast); }
+.reveal section.has-dark-background a, .reveal section.has-dark-background a:hover { color: var(--engine-secondary); }
+.reveal section.has-dark-background code { color: var(--engine-warning); }
+.reveal pre { background-color: var(--engine-surface); }
+.reveal pre code, .reveal pre.sourceCode code, .reveal code { color: var(--engine-code-text, var(--engine-dark)); }
+.reveal pre code { background-color: var(--engine-background); }
+.reveal div.callout.callout-style-simple, .reveal div.callout.callout-style-default {
+  border-right-color: var(--engine-surface); border-top-color: var(--engine-surface); border-bottom-color: var(--engine-surface);
+}
+.reveal div.callout.callout-note { border-left-color: var(--engine-primary-contrast); }
+.reveal div.callout.callout-tip { border-left-color: var(--engine-highlight); }
+.reveal div.callout.callout-warning, .reveal div.callout.callout-caution { border-left-color: var(--engine-accent); }
+.reveal div.callout.callout-important { border-left-color: var(--engine-foreground); }
+.reveal .slide aside, .reveal .slide div.aside, details > summary { color: var(--engine-muted); }
+.reveal blockquote { color: var(--engine-muted); }
+::selection { background: var(--engine-secondary); color: var(--engine-dark); }

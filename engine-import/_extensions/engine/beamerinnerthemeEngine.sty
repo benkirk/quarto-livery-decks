@@ -1,0 +1,296 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerinnerthemeEngine}[2026/09/30 v2.3 engine beamer inner theme]
+%
+% Title page, section divider, closing frame, blocks and lists.
+% Title page layout follows the brand's slide template (Brand Guide p26):
+% logo lockup, date, bold title with an accent bar at the left edge,
+% subtitle, short rule, presenter, affiliation, fine print; photo (from
+% \titlegraphic) masked by the brand waves on the right.
+%
+\mode<presentation>
+\@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
+\RequirePackage{tikz}
+\providecommand\engine@titlestyle{dark}
+\@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
+
+% optional fine print under the title block, e.g. an NSF funding statement
+\def\engine@fineprint{}
+\newcommand\titlefineprint[1]{\def\engine@fineprint{#1}}
+
+% vertical accent bar spanning box #1, flush with the paper's left edge
+\def\engine@accentbar#1{%
+  \hbox{\hskip-\beamer@leftmargin
+    {\usebeamercolor[fg]{frametitle tab}%
+     \vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
+    \hskip\dimexpr\beamer@leftmargin-\engine@tabwidth\relax
+    \box#1}}
+% \engine@ctab{<box>}: the same beside a composition's column (\engine@bx from the paper's
+% edge), when the column has a tab
+\def\engine@ctab#1{\engine@ifcorner{\engine@cv{column@tab}}{true}{%
+  \hbox{\hskip-\engine@bx
+    {\usebeamercolor[fg]{frametitle tab}\vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
+    \hskip\dimexpr\engine@bx-\engine@tabwidth\relax
+    \box#1}}{\box#1}}
+
+% ---------------------------------------------------------------------------
+% title page
+% ---------------------------------------------------------------------------
+% the text sits in the composition's column, drawn by the background (beamerouterthemeEngine.sty
+% \engine@drawcomp); the frame body only fills the page
+\defbeamertemplate*{title page}{Engine}{%
+  \gdef\engine@bodystyle{title}%
+  \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
+% the title's stack, \engine@bw wide: date, title and subtitle with the tab, the rule, author, institute
+\def\engine@titlestack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    {\usebeamerfont{title}\inserttitle\par}%
+    \ifx\insertsubtitle\@empty\else
+      \vskip0.5em{\usebeamerfont{subtitle}\insertsubtitle\par}%
+    \fi}%
+  \vbox{\hsize=\engine@bw \raggedright
+    \ifx\insertdate\@empty\else
+      {\usebeamerfont{date}\MakeUppercase{\insertdate}\par}\vskip0.02\paperheight
+    \fi
+    \engine@ctab\@tempboxa
+    \vskip0.03\paperheight
+    \engine@ifc{column@rule@w}{%
+      {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
+        height\engine@cv{column@rule@h}\paperheight}\par
+      \vskip0.03\paperheight}{}%
+    \ifx\insertauthor\@empty\else{\usebeamerfont{author}\insertauthor\par}\fi
+    \ifx\insertinstitute\@empty\else{\usebeamerfont{institute}\insertinstitute\par}\fi}}
+% keep the title frame free of frame numbering by default
+\def\engine@titlepageframe{%
+  {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}
+
+% ---------------------------------------------------------------------------
+% section divider;  \sectionsubtitle{...} before \section{...} adds a line
+% under the heading, cleared again once that divider is drawn
+% ---------------------------------------------------------------------------
+\def\engine@sectionsubtitle{}
+\newcommand\sectionsubtitle[1]{\gdef\engine@sectionsubtitle{#1}}
+% the same, keyed by section number and declared in the preamble (Quarto filter)
+\newcommand\enginesectionsubtitle[2]{\expandafter\gdef\csname engine@secsub@#1\endcsname{#2}}
+\defbeamertemplate*{section page}{Engine}{%
+  \gdef\engine@bodystyle{section}%
+  \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
+% the divider's stack, in its column: the eyebrow, the heading and its subtitle, with the tab
+\def\engine@sectionstack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    \ifnum\thesection>0
+      {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
+        \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
+    \fi
+    {\usebeamerfont{section title}\insertsectionhead\par}%
+    \ifx\engine@sectionsubtitle\@empty\else
+      \vskip1.2ex
+      {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
+    \fi}%
+  \engine@ctab\@tempboxa}
+\def\insertsectionnumberlabel{\sectionname~\insertsectionnumber}
+\providecommand\sectionname{Section}
+\defbeamertemplate*{subsection page}{Engine}{%
+  \vbox{\raggedright
+    {\usebeamerfont{section number}\usebeamercolor[fg]{structure}%
+      \MakeUppercase{\insertsectionhead}\par}\vskip0.8ex
+    {\usebeamerfont{subsection title}\usebeamercolor[fg]{frametitle}%
+      \insertsubsectionhead\par}}}
+
+\ifengine@sectionpages
+  \AtBeginSection[]{%
+    \@ifundefined{engine@secsub@\thesection}{}{%
+      \expandafter\gdef\expandafter\engine@sectionsubtitle\expandafter
+        {\csname engine@secsub@\thesection\endcsname}}%
+    {\setbeamercolor{normal text}{fg=BrandPrimaryText}%
+     \begin{frame}[plain,noframenumbering]\sectionpage\end{frame}}%
+    \gdef\engine@sectionsubtitle{}}
+\fi
+
+% ---------------------------------------------------------------------------
+% closing frame:  \engineclosingframe{Thank you!}{contact details ...}
+% or \begin{frame}[engineclosing] ... \end{frame}
+% ---------------------------------------------------------------------------
+\newcommand\engineclosingframe[2]{%
+  \begin{frame}[engineclosing,plain,noframenumbering]
+    \engineclosingcontent{#1}{#2}
+  \end{frame}}
+% The body is user content, which may hold overlays (\pause): it is set in the frame body, once
+% per overlay, into a box the background places in the column under the headline.
+\newsavebox\engine@closingbody
+\newcommand\engineclosingcontent[2]{%
+  \gdef\engine@closinghead{#1}%
+  \global\setbox\engine@closingbody=\vbox{%
+    \hsize=\csname engine@c@\engine@closingcomp @column@w\endcsname\paperwidth
+    \raggedright\usebeamerfont{normal text}#2\par}%
+  \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
+\def\engine@closingstack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    \usebeamerfont{section title}\engine@closinghead\par}%
+  \vbox{\hsize=\engine@bw
+    \engine@ctab\@tempboxa
+    \vskip0.05\paperheight
+    \copy\engine@closingbody}}
+
+% ---------------------------------------------------------------------------
+% lists
+% ---------------------------------------------------------------------------
+\setbeamertemplate{itemize item}{%
+  \tikz[baseline=-0.62ex]\fill[BrandPrimaryContrast] (0,0) circle (0.42ex);}
+\setbeamertemplate{itemize subitem}{%
+  \tikz[baseline=-0.62ex]\draw[BrandPrimaryContrast,line width=0.9pt] (0,0) circle (0.36ex);}
+\setbeamertemplate{itemize subsubitem}{%
+  \tikz[baseline=-0.62ex]\fill[BrandPrimaryContrast] (-0.35ex,-0.1ex) rectangle (0.35ex,0.1ex);}
+\setbeamertemplate{enumerate item}{\textbf{\insertenumlabel.}}
+\setbeamertemplate{enumerate subitem}{\textbf{\insertenumlabel.\insertsubenumlabel}}
+\setbeamertemplate{enumerate subsubitem}{%
+  \textbf{\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}}
+\setlength{\leftmargini}{1.4em}
+% items spaced as HTML's list items are (their margins): a share of the body size (livery.sty type);
+% \list reads \@listi and \@listii (the size commands no longer reset them)
+\def\@listi{\leftmargin\leftmargini\topsep0.3\engine@typebody\parsep\z@\itemsep0.25\engine@typebody}
+\let\@listI\@listi
+\def\@listii{\leftmargin\leftmarginii\topsep0.1\engine@typebody\parsep\z@\itemsep0.15\engine@typebody}
+% tables as HTML's: the table size, rows padded (0.3em above and below their cells)
+\AtBeginDocument{\renewcommand\arraystretch{1.45}%
+  \@ifundefined{longtable}{}{\AtBeginEnvironment{longtable}{\engine@fs{table}\selectfont}}%
+  \AtBeginEnvironment{tabular}{\engine@fs{table}\selectfont}}
+% pandoc's tight lists (\tightlist zeroes \itemsep) keep it too: HTML spaces them alike
+\AtBeginDocument{\providecommand\tightlist{}\renewcommand\tightlist{\parskip\z@\ifnum\@listdepth>1
+  \itemsep0.15\engine@typebody\else\itemsep0.25\engine@typebody\fi}}
+\setbeamertemplate{sections/subsections in toc}[square]
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{:\enspace}
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+
+% ---------------------------------------------------------------------------
+% blocks: square, flat (no shadows/gradients -- Brand Guide p25)
+% ---------------------------------------------------------------------------
+\setbeamertemplate{blocks}[default]
+\addtobeamertemplate{block begin}{}{\vskip-0.2ex}
+
+% blocks on photo ("feature") frames: dark titles over white bodies, on the panel
+\def\engine@featureblocks{%
+  \setbeamercolor{block title}{fg=white,bg=BrandDark}%
+  \setbeamercolor{block body}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block title example}{fg=BrandDark,bg=BrandSecondary}%
+  \setbeamercolor{block body example}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block title alerted}{fg=BrandDark,bg=BrandAccent}%
+  \setbeamercolor{block body alerted}{fg=white,bg=BrandDark}}
+
+% ---------------------------------------------------------------------------
+% feature frames: \begin{enginefeaturepanel} ... \end{enginefeaturepanel} (the Quarto filter
+% wraps the body) sets the body, once per overlay, into a box the background places on the
+% composition's panel (white text), or under the cover's title
+% ---------------------------------------------------------------------------
+\newsavebox\engine@panelbox
+\newif\ifengine@haspanel
+\newdimen\engine@panelpad \engine@panelpad=0.6em
+\def\enginefeaturepanel{\global\engine@haspaneltrue
+  \global\setbox\engine@panelbox=\vbox\bgroup
+    \ifcsname engine@c@feature@panel@w\endcsname
+      \hsize=\dimexpr\engine@c@feature@panel@w\paperwidth-3\engine@panelpad\relax\colorlet{EngineFeatureText}{white}%
+    \else
+      \hsize=\engine@c@feature@column@w\paperwidth\colorlet{EngineFeatureText}{EngineCfeatureText}%
+    \fi
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize   % blocks and lists are set this wide, not the frame's
+    \color{EngineFeatureText}\setbeamercolor{normal text}{fg=EngineFeatureText}%
+    % blocks on the panel or the field are a heading over text, as HTML's: no box of their own (a
+    % beamer block box takes the frame's margins, not the panel's width)
+    \engine@plainblock{block}{BrandSecondary}\engine@plainblock{block example}{BrandSecondary}%
+    \engine@plainblock{block alerted}{BrandAccent}%
+    \raggedright\usebeamerfont{normal text}}
+% \engine@plainblock{<block kind>}{<title color>}: that block kind as a heading over its body
+\def\engine@plainblock#1#2{%
+  \setbeamertemplate{#1 begin}{\par\vskip0.6ex{\usebeamerfont{block title}\color{#2}\insertblocktitle\par}\vskip0.3ex
+    \usebeamerfont{block body}}%
+  \setbeamertemplate{#1 end}{\par\vskip0.6ex}}
+\def\endenginefeaturepanel{\par\egroup}
+% the bar's title, centred on it: the frame title and subtitle
+\def\engine@featuretitle{\vbox{\hsize=\engine@bw \raggedright
+  {\usebeamerfont{frametitle}\insertframetitle\par}%
+  \ifx\insertframesubtitle\@empty\else
+    \vskip0.3ex{\usebeamerfont{framesubtitle}\color{BrandSecondary}\insertframesubtitle\par}\fi}}
+% the cover's stack: the title with its tab, the subtitle, the rule, then the body
+\def\engine@featurestack{%
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+    {\usebeamerfont{frametitle}\insertframetitle\par}%
+    \ifx\insertframesubtitle\@empty\else
+      \vskip0.5ex{\usebeamerfont{framesubtitle}\insertframesubtitle\par}\fi}%
+  \vbox{\hsize=\engine@bw \raggedright
+    \engine@ctab\@tempboxa
+    \engine@ifc{column@rule@w}{\vskip0.03\paperheight
+      {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
+        height\engine@cv{column@rule@h}\paperheight}\par}{}%
+    \ifengine@haspanel\vskip0.03\paperheight\copy\engine@panelbox\global\engine@haspanelfalse\fi}}
+
+% ---------------------------------------------------------------------------
+% slide footnotes: asides at the foot of a frame, under a short muted rule,
+% the marker hanging in the accent color
+%   \enginefootnotespring          % first thing in the frame
+%   ... the frame's content ...
+%   \enginefootnotespring
+%   \begin{enginefootnotes}
+%     \enginefootnote{†}{An aside.}
+%     \enginefootnote{‡}{Another.}
+%   \end{enginefootnotes}
+% The two springs (filll) outweigh the frame's own centering (fill): the
+% content stays centered above, the footnotes stand on the floor.  The Quarto
+% filter writes all of this for paragraphs that start with † or ‡.
+% ---------------------------------------------------------------------------
+\newcommand\enginefootnotespring{\par\vskip 0pt plus 1filll\relax}
+\newenvironment{enginefootnotes}{%
+  \par\noindent\begin{minipage}[b]{0.6\textwidth}\raggedright
+  \usebeamerfont{footnote}\color{BrandMuted}%
+  {\color{BrandText!30!BrandBackground}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
+  {\end{minipage}\par}
+\newcommand\enginefootnote[2]{%
+  \par\hangindent=1.1em\hangafter=1\noindent
+  \makebox[1.1em][l]{\textcolor{BrandAccent}{\bfseries #1}}#2\par\vskip0.4ex}
+
+% ---------------------------------------------------------------------------
+% caution box: a warning slide's body on a soft yellow field, a brand-yellow
+% bar at its left (the Quarto filter writes it for {.caution})
+% ---------------------------------------------------------------------------
+% (livery.sty defines it first when the livery's derived: overrides caution-fill)
+\@ifundefined{\string\color@enginecautionfill}{\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}}{}
+\newsavebox\engine@cautionbox
+\newenvironment{enginecaution}{%
+  \par\noindent\begin{lrbox}{\engine@cautionbox}%
+  \begin{minipage}{\dimexpr\linewidth-3pt-1.1em\relax}}%
+  {\end{minipage}\end{lrbox}%
+  \hbox{{\color{BrandWarning}\vrule width 3pt}%
+    {\setlength\fboxsep{0.55em}\colorbox{enginecautionfill}{\usebox\engine@cautionbox}}}\par}
+
+% ---------------------------------------------------------------------------
+% tables: pandoc's longtable, drawn as the HTML theme draws them -- no top
+% rule, a heavy rule in the brand color under the header, a light one at the
+% foot, and every second body row on Light Gray.  The Quarto filter wraps
+% each header cell in \engineth and starts each banded row with
+% \rowcolor{enginetableband}.  Hand-written tabulars are left alone.
+% ---------------------------------------------------------------------------
+\RequirePackage{colortbl}
+\@ifundefined{\string\color@enginetableband}{\colorlet{enginetableband}{BrandSurface!60!BrandBackground}}{}% or livery.sty's
+\@ifundefined{\string\color@enginetablerule}{\colorlet{enginetablerule}{BrandText!20!BrandSurface}}{}
+\newcommand\engineth[1]{{\usebeamercolor[fg]{normal text}\bfseries
+  \fontsize{\fpeval{0.8*\f@size}pt}{\fpeval{0.8*\strip@pt\dimexpr\f@baselineskip\relax}pt}%
+  \selectfont\engine@tracking\MakeUppercase{#1}}}
+\def\engine@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=4}}{}}
+% \arrayrulecolor is global, so put it back after each table
+\AddToHook{env/longtable/begin}{%
+  \let\engine@arc\CT@arc@
+  \setlength\aboverulesep{0pt}\setlength\belowrulesep{0pt}%
+  \setlength\extrarowheight{0pt}%
+  \def\toprule{}%
+  \def\midrule{\arrayrulecolor{BrandPrimaryContrast}\specialrule{1.5pt}{0.3ex}{0pt}}%
+  \def\bottomrule{\arrayrulecolor{enginetablerule}\specialrule{0.6pt}{0pt}{0pt}}}
+\AddToHook{env/longtable/end}{\global\let\CT@arc@\engine@arc}
+
+% ---------------------------------------------------------------------------
+% misc
+% ---------------------------------------------------------------------------
+\setbeamertemplate{frametitle continuation}{\,(\insertcontinuationcount)}
+\setbeamertemplate{footnote}{%
+  \parindent 0em\noindent\raggedright
+  \hbox to 1.2em{\hfil\insertfootnotemark\,}\insertfootnotetext\par}
+
+\mode<all>

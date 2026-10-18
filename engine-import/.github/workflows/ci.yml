@@ -1,0 +1,108 @@
+name: build examples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # texlive-fonts-extra: fontawesome5 (Quarto's callout icons) and the
+      # mathfont= presets' fonts, except TeX Gyre Pagella Math
+      # (fonts-texgyre-math)
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk texlive-xetex texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended texlive-fonts-extra lmodern fonts-lmodern \
+            fonts-texgyre-math poppler-utils
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      # The demo's mermaid diagram renders through a headless browser; the
+      # runner's system Chrome can wedge quarto's handshake, so give it the
+      # Chrome Headless Shell, which quarto prefers when present.
+      - name: Install Chrome Headless Shell (mermaid rendering)
+        run: quarto install chrome-headless-shell --no-prompt
+
+      # build/livery.{json,sty,css} are generated and committed; a stale one fails here.
+      # livery_check.py then checks the files the data names and that each template.pptx is
+      # pandoc-compliant and rebuilds byte-identically (Pillow measures the title photos);
+      # test_compositions.py checks the resolved compositions against the decided numbers
+      - name: Check the liveries are built
+        run: |
+          python3 -m pip install --quiet pyyaml pillow
+          python3 _extensions/engine/livery_build.py --check _extensions/engine/liveries/*/
+          python3 _extensions/engine/livery_check.py _extensions/engine/liveries/*/
+          python3 tools/test_compositions.py
+          python3 tools/test_type.py
+
+      # No system Poppins on the runner: this exercises the bundled copy.
+      - name: Build the starter decks
+        run: make default quarto
+
+      - name: Build examples and variants
+        run: make examples variants
+
+      # Overleaf: the zip unpacked flat, no TEXINPUTS/TTFONTS; latexmkrc
+      # alone must find the theme, logos and bundled Poppins
+      - name: Build the Overleaf project
+        run: |
+          make overleaf
+          rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q engine-beamer-overleaf.zip -d /tmp/overleaf
+          cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex
+          pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -q Poppins-Bold
+
+      # the same for a flavor (ucp extends ucar extends ncar): its ../ncar/fonts/
+      # must land beside it in the zip, and the theme's default title photo path
+      - name: Build an Overleaf project for a flavor
+        run: |
+          python3 _extensions/engine/overleaf_zip.py _extensions/engine/liveries/ucp -o /tmp/ucp-overleaf.zip
+          rm -rf /tmp/overleaf-ucp && mkdir /tmp/overleaf-ucp && unzip -q /tmp/ucp-overleaf.zip -d /tmp/overleaf-ucp
+          cd /tmp/overleaf-ucp && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex
+          pdffonts /tmp/overleaf-ucp/talk.pdf | tee /dev/stderr | grep -q Poppins-Bold
+
+      - name: Check fonts are embedded
+        run: |
+          for f in talk.pdf talk-quarto.pdf examples/template.pdf examples/quarto-demo.pdf; do
+            pdffonts "$f" | tee /dev/stderr | grep -q Poppins-Bold
+          done
+
+      # mathfont=serif by default: the equation page sets its math in a serif
+      # math font, not Poppins Italic (that is what mathfont=poppins is for)
+      - name: Check the math font
+        run: |
+          pdffonts -f 4 -l 4 examples/template.pdf | tee /dev/stderr | grep -q 'CMMath\|LatinModernMath'
+          ! pdffonts -f 4 -l 4 examples/template.pdf | grep -q Poppins-Italic
+          pdffonts -f 4 -l 4 examples/template-mathpoppins.pdf | grep -q Poppins-Italic
+
+      - name: Build the HTML decks
+        run: make html
+
+      - name: Check the HTML decks carry the theme
+        run: |
+          for f in talk-quarto.html examples/quarto-demo.html; do
+            grep -q 'livery.css' "$f"            # the livery's css attached
+            grep -q 'class="engine-waves"' "$f"  # the Lua filter ran
+          done
+          ls talk-quarto_files/libs/quarto-contrib/engine-revealjs-*/Poppins-Bold.ttf
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: examples
+          path: |
+            *.pdf
+            examples/*.pdf
+            examples/*.log
+            *.html
+            *_files/
+            examples/*.html
+            examples/*_files/
