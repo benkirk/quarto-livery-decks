@@ -7,20 +7,20 @@ a beamer PDF. The brand is a **livery**, a directory of data and assets, and
 University of Colorado and NASA ("The liveries" below). Clone, set up the conda env, copy the
 quickstart deck, write Markdown.
 
-![Four slides of the quickstart deck: the title slide, the MPAS-A governing equations, a two-column slide with a table, and a mermaid diagram](docs/quickstart/screenshots/hero.png)
+![Four slides of the quickstart deck: the title slide, the MPAS-A governing equations, a two-column slide with a table, and a mermaid diagram](decks/quickstart/screenshots/hero.png)
 
 The same quickstart deck under each livery (title, divider, content, closing):
 
-![The quickstart deck under the ncar, cu, nsi, nasa and nasa-dark liveries](docs/quickstart/screenshots/liveries.png)
+![The quickstart deck under the ncar, cu, nsi, nasa and nasa-dark liveries](decks/quickstart/screenshots/liveries.png)
 
 Two example decks ship with the framework:
 
-- **`docs/quickstart/`** is twelve slides, one of each headline feature. It is the deck to
+- **`decks/quickstart/`** is twelve slides, one of each headline feature. It is the deck to
   copy when you start your own (see "What you get" below).
-- **`docs/sample/`** is a **cookbook** showing one example of every capability you're
+- **`decks/sample/`** is a **cookbook** showing one example of every capability you're
   likely to need: text formatting, math, tables, two-column layouts, image embeds,
   syntax-highlighted code, auto-captured shell output, mermaid and Graphviz diagrams,
-  speaker notes, and the `{{< include >}}` shortcode. `docs/sample/old.qmd` is a longer
+  speaker notes, and the `{{< include >}}` shortcode. `decks/sample/old.qmd` is a longer
   real-world example (database schema, REST API and deployment diagrams).
 
 ## Quick start
@@ -35,16 +35,16 @@ make conda-env
 conda activate ./conda-env
 
 # 2. Render the quickstart deck.
-cd docs/quickstart
+cd decks/quickstart
 make pptx              # → quickstart.pptx (the default livery, ncar)
 make html              # → quickstart.html (revealjs)
 make pdf               # → quickstart.pdf  (beamer; needs TeX)
-make pptx LIVERY=cu    # the same deck in another livery (cu, nsi, nasa, nasa-dark)
+make pptx LIVERY=cu    # the same deck in another livery (any directory under liveries/)
 ```
 
 Open `quickstart.pptx` (or `quickstart.html` in a browser), then copy
 `quickstart.qmd` into a new deck directory and edit it (see "Adding a new deck"
-below). When you need a pattern the quickstart deck lacks, `docs/sample/sample.qmd`
+below). When you need a pattern the quickstart deck lacks, `decks/sample/sample.qmd`
 probably has it.
 
 **Behind a restrictive proxy** (some cloud containers): if `quarto install
@@ -54,38 +54,38 @@ chrome-headless-shell` cannot download, point Quarto at any Chromium with
 `export QUARTO_CHROMIUM=/path/to/chrome`, and `make qa` at it with `CHROME`.
 
 **No conda at hand?** The published image carries the whole environment:
-`docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs:/work" -w /work/quickstart
+`docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" -w /work/decks/quickstart
 ghcr.io/benkirk/quarto-livery-decks make pptx` builds the quickstart deck, and any
 directory of `.qmd` files mounted on `/work` builds the same way ("Building in the
 container" below).
 
 ## What you get
 
-Every slide of `docs/quickstart/quickstart.qmd`, in the HTML deck under the default `ncar`
+Every slide of `decks/quickstart/quickstart.qmd`, in the HTML deck under the default `ncar`
 livery:
 
-![All twelve slides of the quickstart deck in the HTML format](docs/quickstart/screenshots/overview.png)
+![All twelve slides of the quickstart deck in the HTML format](decks/quickstart/screenshots/overview.png)
 
 | Slide | The Markdown behind it |
 |---|---|
-| [Title](docs/quickstart/screenshots/01-title.png) | the front matter: `title`, `subtitle`, `author`, `date`; the photo is the livery's default, `titlegraphic:` sets your own |
-| [Section divider](docs/quickstart/screenshots/02-divider.png) | `# Write Markdown`, then a paragraph: the subtitle |
-| [Bullets and a footnote](docs/quickstart/screenshots/03-text.png) | a list, then a paragraph starting with `†`; `{.vcenter scale="1.2"}` on the heading |
-| [Columns](docs/quickstart/screenshots/04-columns.png) | `:::: {.columns}` with a list in one `.column` and a table in the other |
-| [Equations](docs/quickstart/screenshots/05-math.png) | LaTeX between `$$`: OMML in pptx, MathJax in HTML, real TeX in the PDF |
-| [Code, static and live](docs/quickstart/screenshots/06-code.png) | a ` ```bash ` block, and a ` ```{bash} ` cell run at render time |
-| [Diagram](docs/quickstart/screenshots/07-mermaid.png) | a ` ```{mermaid} ` cell (Graphviz ` ```{dot} ` works the same way) |
-| [Photo slide](docs/quickstart/screenshots/08-feature.png) | `{.feature background-image="..."}`, the text in a `###` block |
-| [Full-slide diagram](docs/quickstart/screenshots/09-full.png) | `{.full}` on the heading: one diagram or image, then an optional caption paragraph |
-| [Short slide](docs/quickstart/screenshots/10-short.png) | `{.center scale="1.4"}` on the heading |
-| [Closing](docs/quickstart/screenshots/11-closing.png) | `## Thank you! {.closing}` |
+| [Title](decks/quickstart/screenshots/01-title.png) | the front matter: `title`, `subtitle`, `author`, `date`; the photo is the livery's default, `titlegraphic:` sets your own |
+| [Section divider](decks/quickstart/screenshots/02-divider.png) | `# Write Markdown`, then a paragraph: the subtitle |
+| [Bullets and a footnote](decks/quickstart/screenshots/03-text.png) | a list, then a paragraph starting with `†`; `{.vcenter scale="1.2"}` on the heading |
+| [Columns](decks/quickstart/screenshots/04-columns.png) | `:::: {.columns}` with a list in one `.column` and a table in the other |
+| [Equations](decks/quickstart/screenshots/05-math.png) | LaTeX between `$$`: OMML in pptx, MathJax in HTML, real TeX in the PDF |
+| [Code, static and live](decks/quickstart/screenshots/06-code.png) | a ` ```bash ` block, and a ` ```{bash} ` cell run at render time |
+| [Diagram](decks/quickstart/screenshots/07-mermaid.png) | a ` ```{mermaid} ` cell (Graphviz ` ```{dot} ` works the same way) |
+| [Photo slide](decks/quickstart/screenshots/08-feature.png) | `{.feature background-image="..."}`, the text in a `###` block |
+| [Full-slide diagram](decks/quickstart/screenshots/09-full.png) | `{.full}` on the heading: one diagram or image, then an optional caption paragraph |
+| [Short slide](decks/quickstart/screenshots/10-short.png) | `{.center scale="1.4"}` on the heading |
+| [Closing](decks/quickstart/screenshots/11-closing.png) | `## Thank you! {.closing}` |
 
 The same source as a beamer PDF (`make pdf`):
 
-![Four pages of the quickstart deck as a beamer PDF](docs/quickstart/screenshots/pdf.png)
+![Four pages of the quickstart deck as a beamer PDF](decks/quickstart/screenshots/pdf.png)
 
 The pptx is the same deck again, on the livery's PowerPoint template. To refresh these
-images after editing the deck, run `make screenshots` in `docs/quickstart/` (the shots
+images after editing the deck, run `make screenshots` in `decks/quickstart/` (the shots
 above) and `make gallery` (the livery rows); both need everything `make qa` does (see
 "Checking a deck").
 
@@ -103,7 +103,7 @@ livery can be a *flavor* of another (`extends:`), naming only what differs.
 | **University of Colorado** | `cu` (CU Boulder); `nsi`, the Center for National Security Initiatives (`extends: cu`) | Helvetica Neue where installed; TeX Gyre Heros, Condensed for headings, standing in | `cu`: the CU Boulder lockup as a sign-off, bottom left; `nsi`: the center's mark top left, the Research & Innovation Office lockup as its sign-off | gold fields, a faded Flatirons photo behind content; `nsi`: its master deck's band title, a satellite photo behind content, centred titles |
 | **NASA** | `nasa` (external communication, on white); `nasa-dark` (`extends: nasa`, on black); program liveries belong here too | NASA's digital faces, bundled: Inter headings, Public Sans body, DM Mono code | the insignia top right and the agency name at the foot, the brand's preferred identifier | NASA Blue fields with the white-rule insignia; `nasa-dark`: content on black over a faint deep field, cover and closing on black |
 
-`make <format> LIVERY=<name>` picks one of `docs/common/liveries/` (`ncar` is the default);
+`make <format> LIVERY=<name>` picks one of `liveries/` (`ncar` is the default);
 `LIVERY_DIR=<path>` takes a livery from anywhere (a repo's own, say). Each livery's
 `reference/notes.md` records its sources and every judgement call, and CI builds the
 quickstart deck under each one.
@@ -118,52 +118,55 @@ on white, are turned to the dark with their hues kept (`diagram-dark.lua`).
 
 ```
 quarto-livery-decks/
-├── Makefile               # top-level: `make conda-env`, env mgmt, `make latex`, `make test`
-├── conda-env.yaml         # quarto + jupyter + bash_kernel + helpers
-├── Dockerfile             # the build-environment image ("Building in the container")
-├── docs/
-│   ├── Make.common        # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/clean)
-│   ├── common/
-│   │   ├── _quarto.yml    # shared Quarto config (symlinked into decks)
-│   │   ├── _extensions/engine/  # the engine (symlinked into decks): the beamer and
-│   │   │                        #   revealjs themes, the livery tools, the Overleaf packer
-│   │   ├── liveries/           # one directory per livery (`make LIVERY=<name>`):
-│   │   │   ├── ncar/  ucar/    #   _brand.yml, livery.yml, fonts/, logos/, art/,
-│   │   │   ├── ucp/  ncarucar/ #     template.pptx and build/ (both generated, committed),
-│   │   │   ├── cu/  nsi/       #     reference/notes.md
-│   │   │   └── nasa/  nasa-dark/
-│   │   ├── *.lua               # pandoc filters ("Build pipeline" below)
-│   │   └── utils/
-│   │       ├── livery.py           # the engine's livery reader, loaded from the engine;
-│   │       │                       #   `livery.py deps <dir>`: the livery files a build reads
-│   │       ├── livery_check.py     # the engine's livery checks, plus --qa
-│   │       ├── livery_inspect.py   # reports on a reference pptx, seeds a livery (onboarding)
-│   │       ├── deck_qa.py          # `make qa`: overflow, slide counts, contact sheets
-│   │       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
-│   │       ├── diagram_dark.py     # a diagram picture turned to the dark (dark liveries)
-│   │       ├── site_index.py       # `make site`: the index page
-│   │       └── *.py                # the pptx post-render steps ("Build pipeline" below)
-│   ├── quickstart/                 # the short exemplar deck: copy this one
+├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/clean)
+├── _extensions/engine/    # the engine (symlinked into decks): the beamer and revealjs themes,
+│                          #   the livery tools, the Overleaf packer
+├── liveries/              # one directory per livery (`make LIVERY=<name>`):
+│   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
+│   ├── ucp/  ncarucar/    #     template.pptx and build/ (both generated, committed),
+│   ├── cu/  nsi/          #     reference/notes.md
+│   └── nasa/  nasa-dark/
+├── common/                # what decks share (symlinked into each as _engine):
+│   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
+│   ├── *.lua              #   pandoc filters ("Build pipeline" below)
+│   └── utils/
+│       ├── livery.py           # the engine's livery reader, loaded from the engine;
+│       │                       #   `livery.py deps <dir>`: the livery files a build reads
+│       ├── livery_check.py     # the engine's livery checks, plus --qa
+│       ├── livery_inspect.py   # reports on a reference pptx, seeds a livery (onboarding)
+│       ├── deck_qa.py          # `make qa`: overflow, slide counts, contact sheets
+│       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
+│       ├── diagram_dark.py     # a diagram picture turned to the dark (dark liveries)
+│       ├── site_index.py       # `make site`: the index page
+│       ├── fit-waves.py        # fits a brand's wave curves to its cover art (art.waves)
+│       └── *.py                # the pptx post-render steps ("Build pipeline" below)
+├── decks/
+│   ├── quickstart/        # the short exemplar deck: copy this one
 │   │   ├── quickstart.qmd
 │   │   ├── screenshots.py  (make screenshots: the README images)
 │   │   ├── gallery.py      (make gallery: the livery rows above)
 │   │   └── screenshots/    (those images, committed)
-│   ├── fixtures/                   # small decks for the title variants and type steps,
-│   │                               #   for parity.sh and CI
-│   ├── sample/                     # the cookbook deck
-│   │   ├── Makefile        (3-line include of ../Make.common)
-│   │   ├── _quarto.yml     (symlink → ../common/_quarto.yml)
-│   │   ├── _extensions     (symlink → ../common/_extensions, made by make)
-│   │   ├── _engine         (symlink → ../common, made by make)
-│   │   ├── _livery         (symlink → the livery in use, made by make)
-│   │   ├── sample.qmd      (the cookbook)
-│   │   ├── old.qmd         (a longer real-world example)
-│   │   └── images/         (drop your PNGs / JPGs here)
-│   └── latex/                      # the engine's pure-LaTeX side: talk.tex (the starter),
-│                                   #   examples/ and their variants (`make latex`)
+│   ├── fixtures/          # small decks for the title variants and type steps,
+│   │                      #   for parity.sh and CI
+│   └── sample/            # the cookbook deck
+│       ├── Makefile        (one line: include ../../Make.common)
+│       ├── _quarto.yml     (symlink → ../../common/_quarto.yml)
+│       ├── _extensions     (symlink → ../../_extensions, made by make)
+│       ├── _engine         (symlink → ../../common, made by make)
+│       ├── _livery         (symlink → the livery in use, made by make)
+│       ├── sample.qmd      (the cookbook)
+│       ├── old.qmd         (a longer real-world example)
+│       └── images/         (drop your PNGs / JPGs here)
+├── latex/                 # the engine's pure-LaTeX side: talk.tex (the starter),
+│                          #   examples/ and their variants (`make latex`)
+├── design/                # the design (engine-and-liveries.md) and the sprint handoffs
 ├── tests/                 # the engine's tests (`make test`) and the parity harnesses:
-│                          #   parity.sh (every deck, every livery), parity-latex.sh (docs/latex)
-└── conda-env/              # local conda prefix, gitignored
+│                          #   parity.sh (every deck, every livery), parity-latex.sh (latex/)
+├── Makefile               # top-level: `make conda-env`, env mgmt, `make latex`, `make test`
+├── conda-env.yaml         # quarto + jupyter + bash_kernel + helpers
+├── Dockerfile             # the build-environment image ("Building in the container")
+├── etc/                   # config_env.sh, the image's entrypoint
+└── conda-env/             # local conda prefix, gitignored
 ```
 
 ## Build pipeline
@@ -313,7 +316,7 @@ files, which this never does; check before you publish a PDF built this way.
 ## Template constraints
 
 Each livery's `template.pptx` is generated by the engine's `livery_template.py`
-(`docs/common/_extensions/engine/`) from the livery's data (`build/livery.json`:
+(`_extensions/engine/`) from the livery's data (`build/livery.json`:
 theme slots, typeface, marks, geometry, art); never edit it by hand, change the
 livery and rerun the tool. It keeps the things pandoc is strict about:
 
@@ -342,7 +345,7 @@ livery and rerun the tool. It keeps the things pandoc is strict about:
 Verify after any template change:
 
 ```bash
-unzip -p docs/common/liveries/ncar/template.pptx \
+unzip -p liveries/ncar/template.pptx \
   ppt/slideLayouts/slideLayout1.xml | grep -oE '<p:ph[^/]*/>'
 # expect 5 matches
 ```
@@ -350,7 +353,7 @@ unzip -p docs/common/liveries/ncar/template.pptx \
 ## PDF (beamer)
 
 `make pdf` renders with `--to engine-beamer`. That format comes from the engine's
-beamer theme in `docs/common/_extensions/engine/` (until 2026-10 its own repository,
+beamer theme in `_extensions/engine/` (until 2026-10 its own repository,
 [benkirk/beamer-livery-theme](https://github.com/benkirk/beamer-livery-theme)). Make symlinks
 `_extensions` into each deck directory, just as it does for `_quarto.yml`.
 
@@ -427,9 +430,9 @@ and keep `<deck>_files/` beside it.
 
 Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop:
 `\usetheme[livery=<dir>]{Engine}`, or `\usetheme[brand=<name>]{Engine}` for one of
-`docs/common/liveries/` by name. The starter deck under the `ncar` and `cu` liveries:
+`liveries/` by name. The starter deck under the `ncar` and `cu` liveries:
 
-![The LaTeX starter deck under the ncar and cu liveries](docs/latex/preview.png)
+![The LaTeX starter deck under the ncar and cu liveries](latex/preview.png)
 
 ### Overleaf
 
@@ -453,7 +456,7 @@ By hand: download a zip, then **New Project → Upload Project**, **Menu → Com
 XeLaTeX** and **Recompile**. Under pdfLaTeX the deck builds too, but in Helvetica with
 Computer Modern math, the theme's pdfLaTeX fallback.
 
-![Overleaf compiler setting](docs/latex/overleaf-compiler.png)
+![Overleaf compiler setting](latex/overleaf-compiler.png)
 
 The same zip, unzipped, is the local path: `latexmk -xelatex talk.tex` builds it
 with nothing but XeLaTeX. To pack one yourself: `make overleaf LIVERY=cu` in any
@@ -471,7 +474,7 @@ in a clean directory on every push.
 
 ### The starter and the examples
 
-`docs/latex/` holds the engine's own LaTeX decks. Build them there:
+`latex/` holds the engine's own LaTeX decks. Build them there:
 
 | | `make` target | output |
 |---|---|---|
@@ -482,7 +485,8 @@ in a clean directory on every push.
 
 `make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
 MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and
-`TTFONTS` at `docs/common/`, where the theme and the liveries' bundled fonts are. With a
+`TTFONTS` at `_extensions/engine/`, `liveries/` and the repo root, where the theme and the
+liveries' bundled fonts are, as an Overleaf zip's `latexmkrc` does. With a
 minimal TeX Live, the demo's callouts need `fontawesome5` (`texlive-fonts-extra` on Debian
 and Ubuntu). The demo names no `livery:`, so it shows the `brand=` route: Quarto finds
 `liveries/<brand>` beside `_extensions/`, a link in `examples/`.
@@ -492,14 +496,15 @@ and Ubuntu). The demo names no `livery:`, so it shows the `brand=` route: Quarto
 Point TeX at the theme and the liveries, then switch the theme:
 
 ```bash
-export TEXINPUTS=/path/to/quarto-livery-decks/docs/common//:
-export TTFONTS=/path/to/quarto-livery-decks/docs/common//:   # the bundled fonts
+QLD=/path/to/quarto-livery-decks
+export TEXINPUTS=$QLD/_extensions/engine//:$QLD/liveries//:$QLD/:
+export TTFONTS=$QLD/:$QLD/liveries//:   # the bundled fonts
 latexmk -xelatex my-talk.tex
 ```
 
 ```latex
 \usetheme[livery=/path/to/livery]{Engine}   % any livery: a directory holding build/livery.sty
-\usetheme[brand=ucar]{Engine}               % one of docs/common/liveries/ by name
+\usetheme[brand=ucar]{Engine}               % one of liveries/ by name
 \usetheme{Engine}                           % ncar
 ```
 
@@ -537,7 +542,7 @@ A Quarto deck writes the same things in Markdown ("PDF (beamer)" above; the samp
 | option | values | default | |
 |---|---|---|---|
 | `livery` | a directory holding `build/livery.sty` | `liveries/<brand>` | the brand: colors, fonts, logos, geometry, art; in Quarto the `livery:` metadata key, a directory relative to the project (this framework sets `livery: _livery`) |
-| `brand` | a directory name under `docs/common/liveries/` | `ncar` | a livery by name, found through `TEXINPUTS` in LaTeX and beside `_extensions/` in Quarto |
+| `brand` | a directory name under `liveries/` | `ncar` | a livery by name, found through `TEXINPUTS` in LaTeX and beside `_extensions/` in Quarto |
 | `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or white with the full-color logo (the brand's own light cover) |
 | `fonts` | `brand`, `bundled`, `helvetica` | `brand` (`helvetica` under pdfLaTeX) | `brand` uses the livery's installed fonts when this machine has them, else its bundled files; `bundled` always the bundled files (reproducible; what Overleaf gets); `helvetica` the sanctioned substitute, and the only choice under pdfLaTeX |
 | `footer` | `minimal`, `full` | `minimal` | page number only, or also the section, short title and date |
@@ -560,7 +565,7 @@ symbols, which is fine for a variable name in a sentence and falls apart on
 anything with fractions or operators. So the theme sets a serif math font,
 scaled a little to sit with a large x-height, and `mathfont=` picks which:
 
-![math fonts](docs/latex/math-fonts.png)
+![math fonts](latex/math-fonts.png)
 
 | `mathfont=` | font | |
 |---|---|---|
@@ -586,7 +591,7 @@ is unaffected: MathJax sets its own serif math.
 
 `\enginemathfont{<preset>}` selects a preset later in the preamble, and
 `\enginemathversion{<version>}{<preset>}` sets one up as a math version to
-compare several in one document; `docs/latex/examples/mathfonts.tex` is
+compare several in one document; `latex/examples/mathfonts.tex` is
 the specimen above.
 
 ### Colors
@@ -617,7 +622,7 @@ and on branch `brand-2020` of `NCAR_beamer_template`. A deck written for it move
 two changes:
 
 1. `\usetheme{ncar}` becomes `\usetheme{Engine}`.
-2. `TEXINPUTS` and `TTFONTS` point at this repo's `docs/common/` (see
+2. `TEXINPUTS` and `TTFONTS` point at this repo's `_extensions/engine/` and `liveries/` (see
    "An existing LaTeX deck" above).
 
 How its pieces map:
@@ -638,7 +643,7 @@ How its pieces map:
 
 ## Checking a deck
 
-`make qa` builds every format, then checks the outputs (`docs/common/utils/deck_qa.py`):
+`make qa` builds every format, then checks the outputs (`common/utils/deck_qa.py`):
 
 - **Failures:**
   - slide counts that differ between pptx, PDF and HTML;
@@ -674,15 +679,15 @@ covers what to do with the findings.
 ## Adding a new deck
 
 ```bash
-cd docs
+cd decks
 mkdir roadmap && cd roadmap
 
 cat > Makefile <<'EOF'
-include ../Make.common
+include ../../Make.common
 EOF
 
 # then author roadmap.qmd. _quarto.yml is auto-symlinked from
-# ../common/_quarto.yml on first `make` invocation.
+# ../../common/_quarto.yml on first `make` invocation.
 make pptx
 ```
 
@@ -694,7 +699,7 @@ full deck plus one deck per part:
 
 ```make
 DECKS := roadmap 1-intro 2-details
-include ../Make.common
+include ../../Make.common
 ```
 
 Each `<name>.qmd` builds `<name>.pptx` / `.html` / `.pdf`, and `make pptx`
@@ -769,8 +774,8 @@ into the .pptx.
 
 ## Adding a livery
 
-A livery is a brand as a directory of data and assets (`docs/design/engine-and-liveries.md`,
-sections 4 and 6; `docs/common/liveries/cu/` and `nasa/` are worked examples, their
+A livery is a brand as a directory of data and assets (`design/engine-and-liveries.md`,
+sections 4 and 6; `liveries/cu/` and `nasa/` are worked examples, their
 `reference/notes.md` the decisions they took). The directory holds `_brand.yml` (the colors
 and fonts, in Quarto's [brand.yml](https://quarto.org/docs/authoring/brand.html) form),
 `livery.yml` (everything else), `fonts/`, `logos/`, optionally `art/`, the generated
@@ -796,8 +801,8 @@ is committed. The knobs in `livery.yml`:
 
 From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
 
-1. **Inspect the reference deck.** `python3 docs/common/utils/livery_inspect.py <deck.pptx>
-   docs/common/liveries/<name>` writes `reference/report.md` (slide size, theme slots, fonts,
+1. **Inspect the reference deck.** `python3 common/utils/livery_inspect.py <deck.pptx>
+   liveries/<name>` writes `reference/report.md` (slide size, theme slots, fonts,
    layouts and placeholders, the colors by frequency, the media) and seeds `_brand.yml` and
    `livery.yml`. The deck itself stays out of git.
 2. **Decide the data.** Write the judgement calls into `reference/notes.md` as you make them;
@@ -824,26 +829,29 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Type.** `type:` in points and `pptx.size`, the brand template's canvas ("Text sizes
      and the slide size").
    - **Flavors.** `extends:` makes the livery a flavor of another, naming only what differs.
-3. **Build.** `python3 docs/common/_extensions/engine/livery_build.py
-   docs/common/liveries/<name>` resolves everything into `build/livery.{json,sty,css,theme}`;
-   `python3 docs/common/_extensions/engine/livery_template.py docs/common/liveries/<name>`
+3. **Build.** `python3 _extensions/engine/livery_build.py
+   liveries/<name>` resolves everything into `build/livery.{json,sty,css,theme}`;
+   `python3 _extensions/engine/livery_template.py liveries/<name>`
    generates `template.pptx` from it. Rerun both after any change; never edit the template by hand.
-4. **Check.** `python3 docs/common/utils/livery_check.py docs/common/liveries/<name> --qa`:
+4. **Check.** `python3 common/utils/livery_check.py liveries/<name> --qa`:
    build freshness, every file the data names, the template's pandoc compliance and that it
    rebuilds from the data, contrast warnings for the small-text roles, then the quickstart
-   deck's `make qa` under the livery. `make -C docs/quickstart measure LIVERY=<name>`
+   deck's `make qa` under the livery. `make -C decks/quickstart measure LIVERY=<name>`
    checks the composed slides.
-5. **Look.** `make -C docs/quickstart pptx html pdf LIVERY=<name>`; open the pptx in
+5. **Look.** `make -C decks/quickstart pptx html pdf LIVERY=<name>`; open the pptx in
    PowerPoint (the "Repair?" prompt cannot be automated), the HTML in a browser, the PDF.
-   `make -C docs/quickstart overleaf LIVERY=<name>`, unzip it somewhere clean and
+   `make -C decks/quickstart overleaf LIVERY=<name>`, unzip it somewhere clean and
    `latexmk -xelatex talk.tex`: the pure-LaTeX path. Commit `build/`, `template.pptx`, the
    assets and the notes. CI builds the quickstart under every livery directory and compiles
    its Overleaf zip, so the new one is checked from its first push.
 6. **Release.** Add the livery's row to "LaTeX and Overleaf" and to "The liveries", `make
-   gallery` it into the README, then cut a release: a new tag `vX.Y.Z`, or, while the change
-   stays backwards compatible, the current one moved (`git tag -f vX.Y.Z && git push -f origin
-   vX.Y.Z`). The release workflow attaches one zip per livery, replacing an existing
-   release's, and the Overleaf links serve the latest.
+   gallery` it into the README, then cut a release. The tag is the engine's version:
+   `version:` in `_extensions/engine/_extension.yml` (and `VERSION` in `engine-revealjs.lua`,
+   which names the HTML dependency), so bump both, merge, then tag `v<version>`; the release
+   workflow refuses any other tag. While a change stays backwards compatible the current tag
+   may be moved instead (`git tag -f vX.Y.Z && git push -f origin vX.Y.Z`). The workflow
+   attaches one zip per livery, replacing an existing release's, and the Overleaf links serve
+   the latest.
 
 ## Using the framework from another repo
 
@@ -854,7 +862,7 @@ nothing of the project's goes into this repo.
 ```bash
 git submodule add https://github.com/benkirk/quarto-livery-decks.git docs/presentations/framework
 mkdir docs/presentations/roadmap && cd docs/presentations/roadmap
-echo 'include ../framework/docs/Make.common' > Makefile
+echo 'include ../framework/Make.common' > Makefile
 # author roadmap.qmd, then
 make -C ../framework conda-env    # once: the framework's own environment
 make pptx                         # or: make pptx LIVERY=cu
@@ -864,7 +872,7 @@ make pptx                         # or: make pptx LIVERY=cu
   everything else from that path. A symlink to it would not work: the path
   would be the link's own directory.
 - **Make links the rest into the deck directory on the first build:**
-  `_quarto.yml`, `_extensions`, `_engine` (this repo's `docs/common/`, which
+  `_quarto.yml`, `_extensions`, `_engine` (this repo's `common/`, which
   the shared `_quarto.yml` reaches its filters through) and `_livery` (the livery in
   use, which it reaches the pptx template through). The consumer gitignores those
   links, and its build outputs.
@@ -879,7 +887,7 @@ make pptx                         # or: make pptx LIVERY=cu
   gitignored there.
 - **A framework fix goes here first.** Merge it here, then move the
   consumer's pin (`git -C docs/presentations/framework pull`, then commit the
-  new pointer). The engine follows the same path one level down.
+  new pointer). The engine is part of this repo, so the same holds for it.
 - **The deck-polish skill:** a consumer can link
   `.claude/skills/deck-polish` to `docs/presentations/framework/.claude/skills/deck-polish`.
 
@@ -909,12 +917,12 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   with `_` builds `<name>.{pptx,html,pdf}` (the entrypoint supplies the framework's
   `Make.common` and `DECKS`). A directory with a Makefile runs plain make, so a repo that
   has the framework as a submodule mounts its tree and points `-w` at the deck
-  directory; the deck's `include ../framework/docs/Make.common` then drives the image's
+  directory; the deck's `include ../framework/Make.common` then drives the image's
   toolchain with the *mounted* framework's recipes:
   `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" -w /work/docs/presentations/roadmap ghcr.io/benkirk/quarto-livery-decks make pptx`.
 - **Make variables pass through**: `LIVERY=cu`, `DECKS="a b"`, and a livery of your own
   inside the mount, `LIVERY_DIR=/work/mylivery` (build it once with `docker run ...
-  python3 /opt/quarto-livery-decks/docs/common/_extensions/engine/livery_build.py
+  python3 /opt/quarto-livery-decks/_extensions/engine/livery_build.py
   /work/mylivery`). `make qa`, `make measure`, `make overleaf` and `make site` work;
   `make publish` wants your git credentials, so run it on the host.
 - **Any user.** The image runs as root unless told otherwise; `--user "$(id -u):$(id -g)"`
@@ -923,7 +931,7 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   `--userns=keep-id` if the files come out owned by a subuid). Apptainer:
   `apptainer run --bind "$PWD:/work" --pwd /work docker://ghcr.io/benkirk/quarto-livery-decks make pptx`
   (`apptainer exec` skips the entrypoint: pass
-  `make -f /opt/quarto-livery-decks/docs/Make.common DECKS=roadmap pptx` yourself).
+  `make -f /opt/quarto-livery-decks/Make.common DECKS=roadmap pptx` yourself).
 - **What the build writes** into the directory: the `_quarto.yml`, `_extensions`,
   `_engine` and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
   outputs (gitignore them, as a submodule consumer does). The links point into
@@ -978,7 +986,7 @@ SITE_NOINDEX   := 1                        # <meta name="robots" content="noinde
 PUBLISH_PREFIX := presentations/samuel     # path under the Pages root (default: the root)
 PUBLISH_BRANCH := gh-pages                 # default
 PUBLISH_REMOTE := origin                   # default
-include ../framework/docs/Make.common
+include ../framework/Make.common
 ```
 
 Two things to know: branch-based Pages is soft-limited to 10 builds an hour, and each push
@@ -989,7 +997,7 @@ publishes to a public URL; `SITE_NOINDEX` keeps it out of search engines, nothin
 
 Copyright © 2026 University Corporation for Atmospheric Research.
 
-The framework, its tools and the example decks are licensed under
+The framework, its engine, its tools and the example decks are licensed under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative
 Commons Attribution-ShareAlike 4.0 International); the full text is in
 [`LICENSE.txt`](LICENSE.txt). You may share and adapt them with attribution,
@@ -999,7 +1007,7 @@ available to anyone who wants to build decks, or a livery, of their own.
 **Each livery's marks and pictures belong to their owner** and are not covered by that
 license:
 
-- **The NSF, NCAR, UCAR and UCP logos and brand marks** (`docs/common/liveries/ncar/`,
+- **The NSF, NCAR, UCAR and UCP logos and brand marks** (`liveries/ncar/`,
   `ucar/`, `ucp/` and `ncarucar/`) are trademarks used under the
   [UCAR brand guidelines](https://ucar.canto.com/v/branding); the NCAR family's cover photo
   of the Mesa Lab is NCAR's.
@@ -1007,15 +1015,15 @@ license:
   photographs** of the `cu` and `nsi` liveries are the University of Colorado's and its
   units', reproduced here as the livery's reference assets; see each livery's
   `reference/notes.md` for their sources.
-- **The NASA insignia** (`docs/common/liveries/nasa/logos/`) is NASA's; it is not in the
+- **The NASA insignia** (`liveries/nasa/logos/`) is NASA's; it is not in the
   public domain and its use is restricted by the
   [NASA brand guidelines](https://www.nasa.gov/nasa-brand-center/brand-guidelines/). The
   `nasa` liveries' photographs are NASA's (images.nasa.gov); see their `reference/notes.md`.
-- **The Poppins font** (`docs/common/liveries/ncar/fonts/`)
+- **The Poppins font** (`liveries/ncar/fonts/`)
   is licensed under the [SIL Open Font License](https://openfontlicense.org); **TeX Gyre
-  Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License; **Inter, Public
-  Sans and DM Mono** (`docs/common/liveries/nasa/fonts/`) under the SIL Open Font License.
-- **The photographs in `docs/latex/images/wallpaper/`** come from the NCAR beamer template
+  Heros** (`liveries/cu/fonts/`) under the GUST Font License; **Inter, Public
+  Sans and DM Mono** (`liveries/nasa/fonts/`) under the SIL Open Font License.
+- **The photographs in `latex/images/wallpaper/`** come from the NCAR beamer template
   as example imagery for the LaTeX examples. Replace them with your own.
 
 ## Origins
@@ -1026,4 +1034,4 @@ generalizes [`benkirk/NCAR_beamer_template`](https://github.com/benkirk/NCAR_bea
 which remains the single-brand NCAR beamer theme (a fix wanted from it is ported by hand). The
 engine was [`benkirk/beamer-livery-theme`](https://github.com/benkirk/beamer-livery-theme) until
 2026-10, when it merged into this repository with its history (#57). The design
-is [`docs/design/engine-and-liveries.md`](docs/design/engine-and-liveries.md).
+is [`design/engine-and-liveries.md`](design/engine-and-liveries.md).

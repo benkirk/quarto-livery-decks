@@ -3,7 +3,7 @@
 # list), then the deck checks INSIDE that image, at its digest: the sample, quickstart and
 # fixture decks; a hello-world deck in a consumer's layout (the framework one level down, as
 # a submodule would be: README "Using the framework from another repo"); and every livery
-# under docs/common/liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
+# under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled in a clean directory, the compositions measured). A new livery joins
 # by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.
 name: CI
@@ -18,7 +18,7 @@ on:
       - 'README.md'
       - 'CLAUDE.md'
       - 'LICENSE.txt'
-      - 'docs/design/**'
+      - 'design/**'
       - '.claude/**'
   workflow_dispatch:
 
@@ -66,7 +66,7 @@ jobs:
       - name: Check deck front matter starts on line 1
         run: |
           bad=0
-          for f in docs/*/*.qmd; do
+          for f in decks/*/*.qmd; do
             case "$(basename "$f")" in _*) continue ;; esac   # included fragments
             first=$(head -n1 "$f")
             if [ "$first" = "---" ]; then
@@ -80,13 +80,13 @@ jobs:
           exit "$bad"
 
       - name: Check the committed liveries are built
-        run: python3 docs/common/_extensions/engine/livery_build.py --check docs/common/liveries/*/
+        run: python3 _extensions/engine/livery_build.py --check liveries/*/
 
       # timeout: a wedged browser render (mermaid) should fail here in minutes, with
       # diagnostics, not at the job's cap
       - name: Build the sample pptx
         run: |
-          timeout 600 make -C docs/sample pptx || {
+          timeout 600 make -C decks/sample pptx || {
             echo '::error::sample pptx render timed out or failed'
             ps aux | grep -i chrom | grep -v grep || true
             exit 1
@@ -94,46 +94,46 @@ jobs:
 
       - name: Check dates resolved in sample.pptx
         run: |
-          if unzip -p docs/sample/sample.pptx 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null; then
+          if unzip -p decks/sample/sample.pptx 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null; then
             echo '::error::sample.pptx contains a literal "last-modified" date (#7)'
             exit 1
           fi
 
       - name: Build the sample HTML
-        run: timeout 600 make -C docs/sample html
+        run: timeout 600 make -C decks/sample html
 
       # the engine revealjs theme applied: its fonts/logos dependency is attached and the
       # Lua filter drew the waves (a stock revealjs render has neither)
       - name: Check sample.html carries the engine theme
         run: |
-          cd docs/sample
+          cd decks/sample
           grep -q 'livery.css' sample.html
           grep -q 'class="engine-waves"' sample.html
           ls sample_files/libs/quarto-contrib/engine-revealjs-*/Poppins-Bold.ttf
 
       - name: Build the sample PDF
-        run: timeout 600 make -C docs/sample pdf
+        run: timeout 600 make -C decks/sample pdf
 
       # the exemplar deck the README's screenshots come from, and the fixture decks (a photo
       # title, the light title, both, the deck-wide size step), in every format
       - name: Build the quickstart and fixture decks
         run: |
-          timeout 900 make -C docs/quickstart all
-          timeout 900 make -C docs/fixtures all
+          timeout 900 make -C decks/quickstart all
+          timeout 900 make -C decks/fixtures all
 
       - name: Upload the decks
         uses: actions/upload-artifact@v7
         with:
           name: sample-decks
           path: |
-            docs/sample/sample.pptx
-            docs/sample/sample.html
-            docs/sample/sample_files/
-            docs/sample/sample.pdf
-            docs/quickstart/quickstart.pptx
-            docs/quickstart/quickstart.html
-            docs/quickstart/quickstart.pdf
-            docs/fixtures/*.pdf
+            decks/sample/sample.pptx
+            decks/sample/sample.html
+            decks/sample/sample_files/
+            decks/sample/sample.pdf
+            decks/quickstart/quickstart.pptx
+            decks/quickstart/quickstart.html
+            decks/quickstart/quickstart.pdf
+            decks/fixtures/*.pdf
           if-no-files-found: error
           retention-days: 14
 
@@ -166,7 +166,7 @@ jobs:
       - name: Write the hello-world deck
         run: |
           mkdir -p "$DECK"
-          echo 'include ../framework/docs/Make.common' > "$DECK/Makefile"
+          echo 'include ../framework/Make.common' > "$DECK/Makefile"
           cat > "$DECK/hello.qmd" <<'QMD'
           ---
           title: "Hello"
@@ -226,7 +226,7 @@ jobs:
           retention-days: 14
 
   # -----------------------------------------------------------------------
-  # the engine's pure-LaTeX side (docs/latex) and its tests: what beamer-livery-theme's own
+  # the engine's pure-LaTeX side (latex) and its tests: what beamer-livery-theme's own
   # CI checked before it merged here (#57). The liveries' build/ freshness is the sample
   # job's, their checks and each one's Overleaf zip the livery jobs'.
   # -----------------------------------------------------------------------
@@ -257,11 +257,11 @@ jobs:
       # template.tex's brand, title, aspect-ratio, pdfTeX and math-font variants; the demo's
       # HTML too, the one deck on the brand= fallback (no livery: key)
       - name: Build the starter deck, the examples and their variants
-        run: timeout 1200 make -C docs/latex default examples variants html
+        run: timeout 1200 make -C latex default examples variants html
 
       - name: Check fonts are embedded
         run: |
-          cd docs/latex
+          cd latex
           for f in talk.pdf examples/template.pdf examples/quarto-demo.pdf; do
             pdffonts "$f" | tee /dev/stderr | grep -c Poppins-Bold >/dev/null
           done
@@ -270,7 +270,7 @@ jobs:
       # Poppins Italic (that is what mathfont=poppins is for)
       - name: Check the math font
         run: |
-          cd docs/latex/examples
+          cd latex/examples
           pdffonts -f 4 -l 4 template.pdf | tee /dev/stderr | grep -c 'CMMath\|LatinModernMath' >/dev/null
           if pdffonts -f 4 -l 4 template.pdf | grep -c Poppins-Italic >/dev/null; then exit 1; fi   # (a `!` line mid-script never fails under -e)
           pdffonts -f 4 -l 4 template-mathpoppins.pdf | grep -c Poppins-Italic >/dev/null
@@ -278,7 +278,7 @@ jobs:
       # the bundled liveries/ncar beside _extensions/ was found: its css attached, the waves drawn
       - name: Check the demo's HTML carries the theme
         run: |
-          cd docs/latex/examples
+          cd latex/examples
           grep -q 'livery.css' quarto-demo.html
           grep -q 'class="engine-waves"' quarto-demo.html
           ls quarto-demo_files/libs/quarto-contrib/engine-revealjs-*/Poppins-Bold.ttf
@@ -289,9 +289,9 @@ jobs:
         with:
           name: latex-examples
           path: |
-            docs/latex/talk.pdf
-            docs/latex/examples/*.pdf
-            docs/latex/examples/*.log
+            latex/talk.pdf
+            latex/examples/*.pdf
+            latex/examples/*.log
           retention-days: 14
 
   # -----------------------------------------------------------------------
@@ -306,7 +306,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - id: ls
-        run: echo "liveries=$(ls -d docs/common/liveries/*/ | xargs -n1 basename | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+        run: echo "liveries=$(ls -d liveries/*/ | xargs -n1 basename | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
 
   livery:
     name: Check livery ${{ matrix.livery }}
@@ -334,16 +334,16 @@ jobs:
       # quickstart deck's `make qa LIVERY=`: all three formats, overflow, slide-count parity,
       # short slides, contact sheets in _qa/ (deck_qa.py)
       - name: Check the livery, then build and QA the quickstart deck under it
-        run: timeout 1500 python3 docs/common/utils/livery_check.py --qa "docs/common/liveries/$LIVERY"
+        run: timeout 1500 python3 common/utils/livery_check.py --qa "liveries/$LIVERY"
 
       # the livery reached the output: Make's link and stamp, the template's primary slot in
       # the theme, the embedded typeface, the livery's css in the HTML
       - name: Check the livery was applied
         run: |
-          cd docs/quickstart
+          cd decks/quickstart
           test "$(basename "$(cat .livery)")" = "$LIVERY"   # the stamp holds the livery's directory
           test "$(basename "$(readlink _livery)")" = "$LIVERY"
-          json=../common/liveries/$LIVERY/build/livery.json
+          json=../../liveries/$LIVERY/build/livery.json
           primary=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['scheme']['dk2'].lstrip('#'))" "$json")
           typeface=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['pptx']['typeface'])" "$json")
           embeds=$(python3 -c "import json,sys; print('fonts' in json.load(open(sys.argv[1]))['pptx'])" "$json")
@@ -358,10 +358,10 @@ jobs:
       # theme, the livery's logos and its bundled fonts (never an installed one)
       - name: Pack and compile the Overleaf project
         run: |
-          make -C docs/quickstart overleaf LIVERY="$LIVERY"
-          rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q "docs/quickstart/$LIVERY-overleaf.zip" -d /tmp/overleaf
+          make -C decks/quickstart overleaf LIVERY="$LIVERY"
+          rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q "decks/quickstart/$LIVERY-overleaf.zip" -d /tmp/overleaf
           (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex)
-          family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "docs/common/liveries/$LIVERY/build/livery.json")
+          family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "liveries/$LIVERY/build/livery.json")
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -c "${family// /}" >/dev/null
           ! pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null
 
@@ -369,19 +369,19 @@ jobs:
       # compositions (comp_measure.py; pptx through the image's LibreOffice). Report-only
       # (MEASURE_FAIL empty) until the formats draw from the boxes; the sheet and table are uploaded
       - name: Measure the compositions
-        run: timeout 900 make -C docs/fixtures measure LIVERY="$LIVERY" MEASURE_FAIL=
+        run: timeout 900 make -C decks/fixtures measure LIVERY="$LIVERY" MEASURE_FAIL=
 
       - name: Upload the deck
         uses: actions/upload-artifact@v7
         with:
           name: quickstart-${{ matrix.livery }}
           path: |
-            docs/quickstart/quickstart.pptx
-            docs/quickstart/quickstart.html
-            docs/quickstart/quickstart.pdf
-            docs/quickstart/${{ matrix.livery }}-overleaf.zip
-            docs/quickstart/_qa/
-            docs/fixtures/_qa/measure.tsv
-            docs/fixtures/_qa/compositions-${{ matrix.livery }}.png
+            decks/quickstart/quickstart.pptx
+            decks/quickstart/quickstart.html
+            decks/quickstart/quickstart.pdf
+            decks/quickstart/${{ matrix.livery }}-overleaf.zip
+            decks/quickstart/_qa/
+            decks/fixtures/_qa/measure.tsv
+            decks/fixtures/_qa/compositions-${{ matrix.livery }}.png
           if-no-files-found: error
           retention-days: 14

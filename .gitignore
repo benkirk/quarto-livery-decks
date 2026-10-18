@@ -9,6 +9,22 @@ __pycache__/
 # Playwright MCP screenshots and page snapshots from browser sessions
 .playwright-mcp/
 
+# Quarto's caches and a deck's rendered files
+.quarto/
+**/*.quarto_ipynb
+**/*_files/
+~$*
+
+# Deck outputs (decks/<deck>/<name>.{pptx,html,pdf}) and the LaTeX starter's: anchored one
+# level deep, so tracked assets (liveries/*/template.pptx, latex/examples/diagrams/*.pdf)
+# are never matched.
+/decks/*/*.pptx
+/decks/*/*.pdf
+/decks/*/*.html
+/decks/*/*-overleaf.zip
+/latex/*.pdf
+/latex/*-overleaf.zip
+
 # a livery's reference deck and its extracted media stay out of the repo (reference/report.md is in)
-docs/common/liveries/*/reference/media/
-docs/common/liveries/*/reference/*.pptx
+liveries/*/reference/media/
+liveries/*/reference/*.pptx

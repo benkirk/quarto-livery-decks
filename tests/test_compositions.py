@@ -5,9 +5,9 @@
 
 today() restates, in slide fractions, what engine 3.4.0's revealjs theme drew for each
 composition (engine-revealjs.scss and .lua; beamer and pptx disagreed in places, recorded in
-EXPECTED_DELTAS). The resolved compositions of ncar, cu and nsi (docs/common/liveries, or the
+EXPECTED_DELTAS). The resolved compositions of ncar, cu and nsi (liveries/, or the
 argument) must equal today() with every EXPECTED_DELTAS row applied: one row per decision of
-docs/design/composition-handoff.md "Which value wins", so a changed number is either named there or a failure. Then the invariants: every
+design/composition-handoff.md "Which value wins", so a changed number is either named there or a failure. Then the invariants: every
 entry has every key, the band's arithmetic, the light variants' roles, overrides and extends.
 """
 
@@ -17,7 +17,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent / "docs" / "common"
+ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
 spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
 lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)

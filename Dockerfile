@@ -128,7 +128,7 @@ RUN <<'EOS'
 set -eo pipefail
 git config --system safe.directory '*'
 # the liveries' fonts (step 6): the system fontconfig must see them, the conda one should
-ln -s /opt/quarto-livery-decks/docs/common/liveries /usr/local/share/fonts/liveries
+ln -s /opt/quarto-livery-decks/liveries /usr/local/share/fonts/liveries
 /usr/bin/fc-cache -f
 fc-cache -f || true
 echo "system fontconfig: $(/usr/bin/fc-list : family | sort -u | wc -l) families, Poppins $(/usr/bin/fc-list : family | grep -c Poppins)"

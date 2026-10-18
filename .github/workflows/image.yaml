@@ -87,7 +87,7 @@ jobs:
           cache-to: ${{ env.CAN_PUSH == 'true' && format('type=registry,ref={0}:buildcache-{1},mode=max,image-manifest=true,oci-mediatypes=true', env.IMAGE, matrix.arch) || '' }}
 
       # The README's use case, as this runner's unprivileged user: a bare directory of .qmd
-      # files, then this repo's docs/ tree, bind-mounted; outputs owned by that user.
+      # files, then this repo's decks/quickstart, bind-mounted; outputs owned by that user.
       - name: Smoke test as a plain user
         run: .github/scripts/smoke-test.sh quarto-livery-decks:ci
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # The README's use case ("Building in the container"), run on this host as a plain user:
-# a bare directory of .qmd files, then this repo's docs/ tree (real Makefiles, committed
+# a bare directory of .qmd files, then this repo's decks/quickstart (real Makefiles, committed
 # relative links), both bind-mounted into the image given as $1. Run by image.yaml on each
 # native build leg, as the runner's own unprivileged user; also runs locally after
 # `make image`: .github/scripts/smoke-test.sh ghcr.io/benkirk/quarto-livery-decks:dev
@@ -65,15 +65,15 @@ unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image' >/dev/null       # the m
 grep -q 'livery.css' "$work/hello.html"
 
 echo "== 2. a tree with Makefiles (a submodule consumer's layout): the quickstart deck"
-# its Makefile includes ../Make.common, so the mounted framework's recipes drive the image's
+# its Makefile includes ../../Make.common, so the mounted framework's recipes drive the image's
 # toolchain; the deck has a {bash} cell (the kernel), mermaid and the committed relative links
-build -v "$PWD/docs:/work" -w /work/quickstart "$img" make pptx html pdf
+build -v "$PWD:/work" -w /work/decks/quickstart "$img" make pptx html pdf
 for f in quickstart.pptx quickstart.html quickstart.pdf; do
-  test -s "docs/quickstart/$f"
-  test "$(stat -c %u "docs/quickstart/$f")" = "$(id -u)"
+  test -s "decks/quickstart/$f"
+  test "$(stat -c %u "decks/quickstart/$f")" = "$(id -u)"
 done
 # the host can go on working there: no tracked file (the links) was re-pointed
-test -z "$(git -C docs status --short quickstart | grep -v '^??')"
+test -z "$(git status --short decks/quickstart | grep -v '^??')"
 
 echo "== 3. root works too (what GitHub container: jobs are)"
 docker run --rm -v "$work:/work" "$img" make clean

@@ -35,7 +35,7 @@ USAGE
 case "${1:-}" in ""|-h|--help|help) usage; exit 0 ;; esac
 
 # 2. `make` in a bare deck directory: supply the framework's Make.common and DECKS. It
-#    reads its own location from MAKEFILE_LIST, so -f is all it needs (docs/Make.common).
+#    reads its own location from MAKEFILE_LIST, so -f is all it needs (Make.common).
 if [ "$1" = make ] && [ ! -e Makefile ] && [ ! -e makefile ] && [ ! -e GNUmakefile ]; then
   explicit=0
   for a in "$@"; do
@@ -53,7 +53,7 @@ if [ "$1" = make ] && [ ! -e Makefile ] && [ ! -e makefile ] && [ ! -e GNUmakefi
       exit 2
     fi
     shift
-    set -- make -f "$FW/docs/Make.common" DECKS="${decks# }" "$@"
+    set -- make -f "$FW/Make.common" DECKS="${decks# }" "$@"
   fi
 fi
 exec "$@"
