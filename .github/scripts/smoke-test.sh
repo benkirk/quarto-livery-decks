@@ -58,7 +58,7 @@ for f in hello.pptx hello.html hello.pdf; do
   test "$(stat -c %u "$work/$f")" = "$(id -u)"
 done
 readlink "$work/_quarto.yml" | grep -c '^/opt/quarto-livery-decks/' >/dev/null
-test "$(cat "$work/.livery")" = cu
+case "$(cat "$work/.livery")" in */liveries/cu) ;; *) echo "stamp: $(cat "$work/.livery")"; exit 1;; esac   # the livery directory
 unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c 'engine-section-label' >/dev/null
 ! unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c '<a:t>last-modified</a:t>' >/dev/null
 unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image' >/dev/null       # the mermaid PNG

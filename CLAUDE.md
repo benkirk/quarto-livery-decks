@@ -251,7 +251,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
   rebuilds the decks. The `_livery` link is order-only (make stats a link's target, the
   directory, which would look stale forever after a switch); the `.livery` stamp is the
-  prerequisite. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`
+  prerequisite, and holds the livery's directory, so a `LIVERY_DIR` switch under one name rebuilds too. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`
   before rendering: that dependency is named for the engine version, and quarto keeps a
   copied file newer than its source, so a livery switch kept the old livery's css. A file included from anywhere else (e.g. `../other_deck/_x.qmd`) is invisible
   to make; `touch <deck>.qmd` after editing one.
