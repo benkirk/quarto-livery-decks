@@ -39,15 +39,22 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # ~4 GB of layers, built, loaded into docker for the smoke test and exported again:
-      # the runner's free disk is tight. Drop the toolchains nothing here uses.
-      - name: Free disk space
+      # ~5 GB of layers, built, loaded into docker for the smoke test and exported again:
+      # the runner's free disk is tight on a cold build. Drop the toolchains nothing here
+      # uses, in the background: the amd64 runner takes 2.5 min over the Android SDK's
+      # files, and a cached build neither needs the space nor should wait for it.
+      - name: Free disk space (background)
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup || true
-          docker image prune -af >/dev/null 2>&1 || true
+          sudo nohup sh -c 'rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup' >/dev/null 2>&1 &
           df -h /
 
       - uses: docker/setup-buildx-action@v4
+
+      # start the build once at least 15 GB is free, or the cleanup is done
+      - name: Wait for disk space
+        run: |
+          while [ "$(df --output=avail / | tail -1)" -lt 15000000 ] && pgrep -f 'rm -rf /usr/share/dotnet' >/dev/null; do sleep 5; done
+          df -h /
 
       - name: Log in to GitHub Container Registry
         if: env.CAN_PUSH == 'true'
