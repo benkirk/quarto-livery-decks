@@ -68,7 +68,7 @@ livery:
 
 | Slide | The Markdown behind it |
 |---|---|
-| [Title](docs/quickstart/screenshots/01-title.png) | the front matter: `title`, `subtitle`, `author`, `date` |
+| [Title](docs/quickstart/screenshots/01-title.png) | the front matter: `title`, `subtitle`, `author`, `date`, and `titlegraphic:` for the cover photo |
 | [Section divider](docs/quickstart/screenshots/02-divider.png) | `# Write Markdown`, then a paragraph: the subtitle |
 | [Bullets and a footnote](docs/quickstart/screenshots/03-text.png) | a list, then a paragraph starting with `†`; `{.vcenter scale="1.2"}` on the heading |
 | [Columns](docs/quickstart/screenshots/04-columns.png) | `:::: {.columns}` with a list in one `.column` and a table in the other |
@@ -803,6 +803,8 @@ license:
   public domain and its use is restricted by the
   [NASA brand guidelines](https://www.nasa.gov/nasa-brand-center/brand-guidelines/). The
   `nasa` liveries' photographs are NASA's (images.nasa.gov); see their `reference/notes.md`.
+- **The Mesa Lab photograph** (`docs/quickstart/images/mesa_lab.jpg`, the quickstart's cover) is
+  NCAR's, from the NCAR beamer template's example imagery.
 - **The Poppins font** (`docs/common/liveries/ncar/fonts/` and the vendored theme)
   is licensed under the [SIL Open Font License](https://openfontlicense.org); **TeX Gyre
   Heros** (`docs/common/liveries/cu/fonts/`) under the GUST Font License; **Inter, Public
