@@ -80,5 +80,5 @@ white footer band under the photo with a larger RIO lockup.
 
 ## Chart colors (2026-10-18)
 
-Inherited from cu through `extends` (generated from CU Gold and Sky Blue); see
-../cu/reference/notes.md.
+Inherited from cu through `extends` (generated from CU Gold and Sky Blue, with the campus's roof
+tile and sandstone, sampled from this livery's own `art/campus.jpg`); see ../cu/reference/notes.md.

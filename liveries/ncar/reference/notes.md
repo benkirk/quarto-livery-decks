@@ -28,6 +28,13 @@ here as they are made (design section 6, "the human steps").
   `#0057C2 #CE8200 #009BD7 #AA9100 #008D9D #883500 #881E70 #C14054` on white: the brand blue,
   orange, light blue, yellow and teal moved into the mark band (orange, yellow and teal darkened
   for 3:1), then a brown, a plum and a rose.
+- **The default color map, `ncar`** (2026-10-18, Ben: "more vibrant but compliant"): the koru
+  ladders alone end at their base color, so the old default (`ncar-blue`) ran only from a pale
+  lavender to NCAR Blue. `ramps.ncar` runs the brand's blues end to end, Light Blue's koru tints
+  `#BFE5F9` `#86D3FC`, Light Blue `#42C0FF`, NCAR Blue `#0057C2`, Dark Blue `#00357A`, Space
+  `#011837`: every step a 2026 guide color or its tint, lightness monotone in steps of at least 0.06.
+  `ramps.ucar` is the same along UCAR Aqua (`#C0F0F5 #34E1F4 #00A2B4 #00818F #00357A #011837`),
+  ucar's and ucp's default.
 - **Vermilion and the web grays are not in the 2026 guide** (checked 2026-10-18 against
   `Vermilion_NSFNCAR-UCAR-UCP_BrandGuide.pdf`, pp. 17-22): its palettes list exactly our ten
   colors, its only gray Light Gray `#F1F0EE` (Cool Gray 1, 37%); "Vermilion" names the edition,

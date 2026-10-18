@@ -362,7 +362,10 @@ jobs:
           unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -c "$primary" >/dev/null
           # a livery with font blobs (pptx.fonts) embeds them; one without names its typeface only
           test "$embeds" = False || unzip -p quickstart.pptx ppt/presentation.xml | grep -c "embeddedFontLst" >/dev/null
-          test "$embeds" = True || ! unzip -p quickstart.pptx ppt/presentation.xml | grep -c "embeddedFontLst" >/dev/null
+          # (a negated command never fails a `bash -e` step, so the absence is an explicit if)
+          if [ "$embeds" = False ] && unzip -p quickstart.pptx ppt/presentation.xml | grep -c "embeddedFontLst" >/dev/null; then
+            echo "::error::$LIVERY has no pptx.fonts but quickstart.pptx embeds fonts"; exit 1
+          fi
           unzip -p quickstart.pptx ppt/theme/theme1.xml | grep -c "typeface=\"$typeface\"" >/dev/null
           grep -q 'livery.css' quickstart.html
 
@@ -375,7 +378,9 @@ jobs:
           (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex)
           family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "liveries/$LIVERY/build/livery.json")
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -c "${family// /}" >/dev/null
-          ! pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null
+          if pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null; then
+            echo "::error::the Overleaf PDF uses an installed Helvetica Neue"; exit 1
+          fi
 
       # the charts bundle unpacked alone, no framework on the paths: a script beside it plots in the
       # livery's colors and embeds its bundled font, registered from the bundle

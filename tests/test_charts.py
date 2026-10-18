@@ -8,7 +8,7 @@ modes, no check fails, a generated palette passes every check, the build is dete
 published palettes come out as given (ncar's and ucar's sam-queries pins, nasa's HDS colors); then
 the rules on made-up liveries: one brand hue grows to eight that pass, an avoided hue range stays
 empty, a light pin is lifted for the dark surface, a ninth series never makes a family, unknown
-keys are refused; each livery's build/livery.mplstyle parses in matplotlib (the cycle is the
+keys are refused, an extra map joins the generated ones without touching the slots; each livery's build/livery.mplstyle parses in matplotlib (the cycle is the
 categorical slots, the sizes the type scale), and the Custom Colors names are plain.
 """
 
@@ -126,6 +126,16 @@ def rules():
             check(False, f"charts {bad} is accepted")
         except ValueError:
             pass
+    # maps: an extra color map beside the generated ones, nameable as the default, leaving the
+    # categorical selection as it was; reversed on dark like every map
+    warm = ["#F3F0E9", "#D2B39F", "#AE7858", "#9C3F29", "#76312B", "#412429"]
+    plain, mapped = C.charts(one, {}), C.charts(one, {"maps": {"warm": warm}, "sequential": "warm"})
+    check(mapped["light"]["sequential"]["warm"] == warm and mapped["dark"]["sequential"]["warm"] == warm[::-1],
+          "a map is not kept light to dark (reversed on dark)")
+    check(mapped["light"]["sequential-default"] == "warm" and mapped["dark"]["sequential-default"] == "warm",
+          "sequential: <map name> is not the default")
+    check(mapped["light"]["categorical"] == plain["light"]["categorical"], "a map changed the categorical slots")
+    check(set(mapped["light"]["sequential"]) == set(plain["light"]["sequential"]) | {"warm"}, "a map replaced the generated ramps")
     fs = C.figsize(fake({}, {}))
     check(fs["full"] == [11.73, 5.67] and fs["half"][0] < fs["full"][0] / 2, f"figsize {fs}")
 

@@ -226,9 +226,10 @@ charts:
   avoid: [{hue: 330, width: 40}]      # hue ranges never generated (OKLCH degrees)
   chroma: 0.12                        # chroma of generated hues (default: the anchors' median)
   ramps: {blue: ["#...", ...], ...}   # a brand's published ramps, light to dark
+  maps: {campus: ["#...", ...]}       # more color maps, light to dark, that leave the slots alone
   sets: {light: {3: [...], ...}}      # its curated small-series sets
   categorical: ["#0057c2", ...]       # pin the whole cycle; the checks still run
-  sequential: primary                 # the default colormap's hue
+  sequential: primary                 # the default colormap: a hue (its nearest ramp) or a map's name
   diverging: [primary, accent]        # the two poles
   status: {good: ..., warning: ..., serious: ..., critical: ...}
   dark: {categorical: [...], diverging: [...]}   # pinned dark selections win over derived ones
@@ -246,7 +247,7 @@ Per livery:
 | ucar | ncar's, with UCAR Aqua leading: sam-queries' set with slots 1 and 3 swapped, which passes the same checks |
 | ucp, ncarucar | their parents' (`extends`: ucar, ncar) |
 | nasa, nasa-dark | HDS's 12 categorical colors, its sets (option 1 for 2 to 5 series) and its 11 ramps, verbatim (CC0); HDS blue 70 and red 70 as diverging poles; never the brand red and blue |
-| cu, nsi | generated from the gold and the blues |
+| cu, nsi | generated from the gold and the blues, with the campus: the roof tile `#9C3F29` (sampled from the campus photo) as the third brand hue, a campus map (Light Gold, sandstone, tile) as the default, Sky Blue to the tile as diverging (2026-10-18) |
 
 ncar's notes record why sam-queries' set adds a pink, a purple and a darker gold (the brand
 colors alone failed the checks), and the generator's own ncar result for comparison. The checks
@@ -291,8 +292,14 @@ the reference document's theme into every deck: a test deck built with pandoc 3.
   black, gold, gold, dark gold. The contract ties accents to roles and the templates draw from
   `accent1` and `accent4`, so the accents can't simply become the chart palette.
 - **The fix is the Custom Colors row** (section 6, Ben: yes, every livery). It puts the plot
-  colors one click away for shapes and native charts without touching the slot contract; check
-  it in PowerPoint for Mac and Windows before relying on it.
+  colors one click away for shapes and native charts without touching the slot contract.
+  Checked 2026-10-18 in PowerPoint for Mac: the Shape Fill picker shows "Custom Colors" between
+  Theme Colors and Standard Colors, its eight swatches named "Data 1 · Gold" ... "Data 8 · Teal"
+  (cu; read through the accessibility tree, the popover opening off screen). Windows unchecked.
+- **Native charts keep the accents** (Ben, 2026-10-18: the Custom Colors row for now). A chart
+  inserted in PowerPoint takes accent1-6; a per-livery chart template (`.crtx`, installed once per
+  machine) is the next step if people ask for it, re-mapping the accents (unbinding the templates
+  and post-processors from `accent1`/`accent4`) the larger one.
 
 ## 8. Decks, the helper and the image
 
@@ -364,9 +371,12 @@ the reference document's theme into every deck: a test deck built with pandoc 3.
      insignia colors; `liveries/nasa/reference/notes.md`); the screen-color decision stays open.
    - CU: `styleguide.colorado.edu/colors`, the full named web colors; any for `extended`?
      **Read 2026-10-18**: a Material Design UI palette, no further brand hue; Brick `#AE5A39`
-     and Medium Blue `#4FC3F7` are the candidates (`liveries/cu/reference/notes.md`).
+     and Medium Blue `#4FC3F7` are the candidates (`liveries/cu/reference/notes.md`). **Done**:
+     the campus instead, the roof tile and sandstone sampled from the campus photo (cu's notes).
+   - NCAR's color map: more vivid but compliant. **Done**: `ramps.ncar`, the brand's blues end to
+     end, and `ramps.ucar` along UCAR Aqua.
    - PowerPoint for Mac: the Custom Colors row in a built deck's picker, a native chart per
-     livery.
+     livery. **Done**: the row is there (section 7); native charts stay on the accents.
 
    Each answer is a small livery change: regenerate `build/` and the templates, parity on the
    liveries it touches, swatch sheets and notes updated.

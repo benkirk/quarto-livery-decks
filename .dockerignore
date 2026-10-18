@@ -11,6 +11,20 @@ decks/*/*-overleaf.zip
 decks/*/*-charts.zip
 latex/*.pdf
 latex/*-overleaf.zip
+# latex/'s build products, as its .gitignores (examples/diagrams/*.pdf are sources and stay)
+latex/**/*.aux
+latex/**/*.fdb_latexmk
+latex/**/*.fls
+latex/**/*.log
+latex/**/*.nav
+latex/**/*.out
+latex/**/*.snm
+latex/**/*.toc
+latex/**/*.vrb
+latex/**/*.xdv
+latex/examples/*.pdf
+latex/examples/*.html
+latex/examples/quarto-demo.tex
 **/*_files/
 **/.quarto/
 **/*.quarto_ipynb
