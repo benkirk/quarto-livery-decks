@@ -57,8 +57,11 @@ jobs:
       - name: Build the zips, two per livery
         run: |
           python -m pip install --quiet pillow pyyaml
+          # DECKS_RUNTIME=native: these targets need only Python. The runner has Docker but no Quarto,
+          # so `auto` would build in the release's own image, which this tag is still publishing
+          # (v26.10.1's release failed on `manifest unknown` and was rerun once the image was out).
           for d in liveries/*/; do
-            make -C decks/quickstart overleaf charts-zip LIVERY="$(basename "$d")"
+            make -C decks/quickstart overleaf charts-zip LIVERY="$(basename "$d")" DECKS_RUNTIME=native
           done
           ls -l decks/quickstart/*-overleaf.zip decks/quickstart/*-charts.zip
 
