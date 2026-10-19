@@ -28,6 +28,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   summary and `liveries/README.md` the dark liveries.
 - A pptx with a table opens in PowerPoint without the "Repair?" prompt: the table rules'
   widths are whole EMUs (`style_tables.py` wrote `w="5715.0"`).
+- A deck's `make` builds in the published image when no toolchain is activated, so a host
+  needs only make and Docker, Podman or Apptainer. `DECKS_RUNTIME` (`auto`, `native`, `docker`,
+  `podman`, `apptainer`) picks where the toolchain comes from; `auto` is native when `quarto` is
+  on PATH. The deck's repository and the framework are mounted at their own paths, and
+  `DECKS_IMAGE_TAG` picks the image: the release the framework checkout carries by default, `sha`
+  for its own commit. docs/container.md "From your deck's Makefile".
 
 ### Liveries
 - `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the

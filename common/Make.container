@@ -1,0 +1,60 @@
+# Make.common in a container: DECKS_RUNTIME=docker, podman or apptainer (docs/container.md
+# "From your deck's Makefile"). The goals become ONE run of the same make in the published image:
+# this framework checkout's recipes (mounted, so a consumer's pinned framework is the one that
+# builds) on the image's toolchain. Host paths are mounted at their own (real) paths, so the deck
+# Makefile's relative include, the _quarto.yml/_extensions/_livery links and fragments included
+# from ../ resolve alike on both sides. The host needs make (3.81 does) and the runtime, nothing
+# else: no Python, no Quarto. Command-line variables (LIVERY=cu, DECKS="a b") reach the inner make
+# through MAKEFLAGS; its own DECKS_RUNTIME=native keeps it from dispatching again.
+
+# The image: the release this checkout carries (a release bumps _extension.yml's version), or any
+# published tag (26.10, latest, pr-95); `sha` is this checkout's own build (image.yaml's sha-<7>).
+# DECKS_CONTAINER_IMAGE replaces the whole reference (a digest too: the CI's runtimes.yaml).
+DECKS_IMAGE     ?= ghcr.io/benkirk/quarto-livery-decks
+DECKS_IMAGE_TAG ?= $(shell sed -n "s/^version:[ \"']*\([^ \"']*\).*/\1/p" $(FRAMEWORK_ROOT)_extensions/engine/_extension.yml)
+ifeq ($(DECKS_IMAGE_TAG),sha)
+override DECKS_IMAGE_TAG := sha-$(shell git -C $(FRAMEWORK_ROOT) rev-parse --short=7 HEAD)
+endif
+DECKS_CONTAINER_IMAGE ?= $(DECKS_IMAGE):$(DECKS_IMAGE_TAG)
+
+# What the container sees, at the same paths: the deck's repository (its git toplevel, else the
+# deck directory), this framework, a LIVERY_DIR outside both, FONTS_DIR on /opt/fonts. Real paths:
+# macOS's /tmp and an HPC system's linked project directories are symlinks the container lacks.
+DECKS_PWD    := $(realpath $(CURDIR))
+DECKS_MOUNTS := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
+                  $(FRAMEWORK_ROOT) $(LIVERY_DIR)))
+DECKS_FONTS  := $(if $(FONTS_DIR),$(realpath $(FONTS_DIR)))
+
+ifeq ($(DECKS_RUNTIME_USED),docker)
+# --user: the outputs are yours (the entrypoint gives that uid a HOME); --init: Ctrl-C stops make
+DECKS_RUN = docker run --rm --init --user $(shell id -u):$(shell id -g) -e MAKEFLAGS \
+  $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
+  -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
+else ifeq ($(DECKS_RUNTIME_USED),podman)
+# rootless: the container's root is you. label=disable rather than :Z, which would relabel the
+# whole repository and framework for SELinux.
+DECKS_RUN = podman run --rm --init --security-opt label=disable -e MAKEFLAGS \
+  $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
+  -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
+else ifeq ($(DECKS_RUNTIME_USED),apptainer)
+# runs as you with your HOME and environment (MAKEFLAGS included); `run`, not `exec`, so the
+# entrypoint seeds matplotlib's font cache. APPTAINER_SIF: a pulled image, skipping docker://.
+DECKS_RUN = apptainer run $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
+  $(if $(DECKS_FONTS),--bind $(DECKS_FONTS):/opt/fonts:ro) --pwd $(DECKS_PWD) \
+  $(or $(APPTAINER_SIF),docker://$(DECKS_CONTAINER_IMAGE))
+else
+$(error DECKS_RUNTIME=$(DECKS_RUNTIME): native, docker, podman, apptainer or auto)
+endif
+
+# Every goal waits on the one run. publish builds the site inside and pushes from here, where
+# your git credentials are.
+DECKS_GOALS := $(or $(MAKECMDGOALS),pptx)
+.PHONY: $(DECKS_GOALS) decks-container
+$(DECKS_GOALS): decks-container
+	@:
+decks-container:
+	@echo "DECKS_RUNTIME=$(DECKS_RUNTIME_USED): $(if $(APPTAINER_SIF),$(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE))" >&2
+	$(DECKS_RUN) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native
+ifneq ($(filter publish,$(MAKECMDGOALS)),)
+	$(publish_push)
+endif
