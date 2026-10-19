@@ -17,6 +17,16 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Liveries
+- `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the
+  container (`<framework>/bin/livery` from a consumer repository).
+- `livery check` prints warnings, failures and one summary line per livery; `-v` prints every
+  check. `livery all` no longer warns about the template it is about to build.
+- A color that is neither a palette name nor a hex names its key, as the schema's errors do:
+  `livery.yml: roles.accent: 'orang' is neither a palette name nor a hex value`.
+- `livery new` writes the editor's schema line by the schema's real path, so a livery outside
+  this repository is checked as you type too.
+
 ## [26.10.0] - 2026-10-18
 
 The first release: one Markdown file becomes a branded PowerPoint (`.pptx`, the first-class

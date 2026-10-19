@@ -10,8 +10,11 @@ sections 4 and 6.
 
 ## The `livery` command
 
-Everything a livery owner does is one command, `_extensions/engine/livery.py` (Python 3 in the
-framework's environment, README "Quick start"):
+Everything a livery owner does is one command, `livery`: `bin/livery`, on your PATH after
+`source etc/config_env.sh` (README "Quick start") and in the container. From a repository that
+has this framework as a submodule it is `<framework>/bin/livery`, which a link in `~/bin` can
+make plain `livery` too. `livery check` prints only warnings, failures and one summary line per
+livery; `-v` prints every check.
 
 | command | what it does |
 |---|---|

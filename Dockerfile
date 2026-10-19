@@ -124,7 +124,9 @@ RUN mkdir -p /opt/fonts /usr/local/share/fonts && ln -s /opt/fonts /usr/local/sh
 #    matplotlib's font cache is built here too, after the liveries' fonts are linked.
 COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
-ENV FRAMEWORK=/opt/quarto-livery-decks
+# the framework's own commands (bin/livery) on PATH, after the conda env's
+ENV FRAMEWORK=/opt/quarto-livery-decks \
+    PATH=/opt/quarto-livery-decks/bin:$PATH
 RUN <<'EOS'
 set -eo pipefail
 git config --system safe.directory '*'

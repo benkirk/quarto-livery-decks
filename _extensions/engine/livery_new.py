@@ -12,6 +12,7 @@ typefaces and its slide size as pptx.size. --extends makes a flavor of a livery 
 directory: a livery.yml naming only its parent, an empty _brand.yml, the notes.
 """
 
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -25,7 +26,19 @@ STAND_IN_FILES = [("PublicSans-Regular.ttf", 400, None), ("PublicSans-Italic.ttf
 DEFAULT_SLOTS = {"dk1": "1B2430", "lt1": "FFFFFF", "dk2": "1F4E8C", "lt2": "EEF1F5",
                  "accent1": "5AA9E6", "accent2": "A23B72", "accent3": "0E1A2B", "accent4": "E07A1F",
                  "accent5": "F2C230", "accent6": "1F4E8C"}
-HEADER = "# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json\n"
+
+
+def header(d: Path) -> str:
+    """The editor line: the schema by its path from the livery when the two share a project
+    (../../_extensions/... in liveries/<name>/, ../framework/... beside a submodule), else by its
+    absolute path (a livery in another tree)."""
+    schema, d = ENGINE / "livery.schema.json", d.resolve()
+    shared = Path(os.path.commonpath([schema, d]))
+    near = len(shared.parts) > 3   # more than /, a top directory and one below it (/Users/<name>)
+    path = Path(os.path.relpath(schema, d)).as_posix() if near else schema.as_posix()
+    return f"# yaml-language-server: $schema={path}\n"
+
+
 NOTES = """# {name}: onboarding notes
 
 The decisions taken while making this livery (liveries/README.md, "Adding a livery"): where each color, font
@@ -74,8 +87,8 @@ def _brand(name: str, slots: dict, family: str) -> str:
     return "\n".join(L)
 
 
-def _livery(name: str, aspect: float, typeface: str, heading: str | None, size: list | None) -> str:
-    L = [HEADER.rstrip(), "schema: 1", f"name: {name}", "extends: null", "",
+def _livery(d: Path, name: str, aspect: float, typeface: str, heading: str | None, size: list | None) -> str:
+    L = [header(d).rstrip(), "schema: 1", f"name: {name}", "extends: null", "",
          "# every key: liveries/REFERENCE.md", "roles:",
          "  primary-text: lt1", "  primary-contrast: dk2", "  accent: accent4", "  highlight: accent2",
          '  muted: "#6B7280"', "  surface: lt2", "  warning: accent5", "  dark: accent3", "",
@@ -98,7 +111,7 @@ def new(d: Path, deck: Path | None = None, extends: str | None = None):
         if not (parent / "livery.yml").exists():
             sys.exit(f"--extends {extends}: no livery at {parent} (a parent sits beside its flavor)")
         (d / "reference").mkdir(parents=True)
-        (d / "livery.yml").write_text(f"{HEADER}schema: 1\nname: {name}\nextends: {extends}\n")
+        (d / "livery.yml").write_text(f"{header(d)}schema: 1\nname: {name}\nextends: {extends}\n")
         (d / "_brand.yml").write_text(f"# {name}: a flavor of {extends}; name here only what differs from ../{extends}/_brand.yml\n")
         (d / "reference" / "notes.md").write_text(NOTES.format(name=name))
         print(f"new flavor {d} of {parent}: edit livery.yml, then `livery all {d}`")
@@ -121,6 +134,6 @@ def new(d: Path, deck: Path | None = None, extends: str | None = None):
     aspect = _mark(name, slots["dk2"], d / "logos" / "mark.png")
     _mark(name, "FFFFFF", d / "logos" / "mark-white.png")
     (d / "_brand.yml").write_text(_brand(name, slots, "Public Sans"))
-    (d / "livery.yml").write_text(_livery(name, aspect, typeface, heading, size))
+    (d / "livery.yml").write_text(_livery(d, name, aspect, typeface, heading, size))
     (d / "reference" / "notes.md").write_text(NOTES.format(name=name))
     print(f"new livery {d}{f' from {deck}' if deck else ''}: edit _brand.yml and livery.yml, then `livery all {d}`")
