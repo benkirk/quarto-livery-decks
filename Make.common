@@ -8,6 +8,10 @@
 # one static site and `publish` pushes it to a GitHub Pages branch (docs/other-repos.md
 # "Publishing the HTML decks"). With no Makefile at all, `make -f <framework>/Make.common
 # DECKS="a b"` works the same (the container's entrypoint does that, docs/container.md): this file reads its own location from MAKEFILE_LIST.
+# DECKS_RUNTIME picks where the toolchain comes from (docs/container.md "From your deck's Makefile"):
+# native, the activated conda env, runs the recipes below; docker, podman or apptainer run the same
+# make once in the published image (common/Make.container); auto, the default, is native when
+# quarto is on PATH, else the first of apptainer, docker, podman installed.
 
 .PHONY: pptx html pdf all qa measure site publish overleaf charts-zip clean distclean
 
@@ -17,6 +21,60 @@
 .DELETE_ON_ERROR:
 
 FRAMEWORK_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
+
+# Where the toolchain comes from. The image runs its make with DECKS_RUNTIME=native on the
+# command line (and in its ENV), so a build inside it never dispatches again.
+DECKS_RUNTIME ?= auto
+ifeq ($(DECKS_RUNTIME),auto)
+DECKS_RUNTIME_USED := $(if $(shell command -v quarto 2>/dev/null),native,$(firstword \
+  $(foreach r,apptainer docker podman,$(if $(shell command -v $(r) 2>/dev/null),$(r)))))
+ifeq ($(DECKS_RUNTIME_USED),)
+$(error no toolchain: activate the framework's conda env (docs/formats.md), or install Docker, Podman or Apptainer to build in its image (docs/container.md))
+endif
+else
+DECKS_RUNTIME_USED := $(DECKS_RUNTIME)
+endif
+
+OUT   ?= $(notdir $(CURDIR))
+DECKS ?= $(OUT)
+QFILE ?= $(OUT).qmd
+
+# The static site (`site`) and where `publish` pushes it. SITE_EXTRA lists
+# directories of hand-written pages to ship beside the decks; SITE_NOINDEX (any
+# value) marks every page noindex for search engines; PUBLISH_PREFIX is the
+# site's path under the Pages root (empty: the root itself).
+SITE           ?= _site
+SITE_EXTRA     ?=
+SITE_NOINDEX   ?=
+PUBLISH_BRANCH ?= gh-pages
+PUBLISH_REMOTE ?= origin
+PUBLISH_PREFIX ?=
+
+# Push the site as the ONE commit on PUBLISH_BRANCH. The branch is a build artifact,
+# not a record: every publish replaces it, so nothing accumulates. A parentless commit
+# gives git no edge to delta against, so each publish uploads the whole site (the
+# shared libs/ plus ~1 MB per deck); fetching the old tip first does not change that.
+# Shared by both runtimes: the push always runs on the host, with its git credentials.
+define publish_push
+	set -e; tmp=$$(mktemp -d); url=$$(git remote get-url $(PUBLISH_REMOTE)); \
+	git -C $$tmp init -q; \
+	mkdir -p $$tmp/$(PUBLISH_PREFIX); rsync -a $(SITE)/ $$tmp/$(PUBLISH_PREFIX)/; \
+	touch $$tmp/.nojekyll; \
+	git config user.email >/dev/null || ident="-c user.name=make-publish -c user.email=publish@localhost"; \
+	git -C $$tmp add -A; \
+	git -C $$tmp $$ident commit -q -m "Publish $(OUT) $$(date -u +%Y-%m-%dT%H:%MZ)"; \
+	git -C $$tmp push -q --force $$url HEAD:refs/heads/$(PUBLISH_BRANCH); \
+	rm -rf $$tmp; \
+	echo "pushed $(PUBLISH_BRANCH) to $$url"; \
+	echo "$$url" | sed -n -E -e 's#\.git$$##' \
+	  -e 's#^(git@github\.com:|https://github\.com/)([^/]+)/(.+)$$#https://\2.github.io/\3/$(if $(PUBLISH_PREFIX),$(PUBLISH_PREFIX)/)#p'
+endef
+
+ifneq ($(DECKS_RUNTIME_USED),native)
+include $(FRAMEWORK_ROOT)common/Make.container
+else
+# ---- native: the activated conda env (or the image itself) ----
+
 PPTX_POST          := $(FRAMEWORK_ROOT)_extensions/engine/pptx_post.py
 LIVERY_PY          := $(FRAMEWORK_ROOT)_extensions/engine/livery.py
 DECK_QA            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
@@ -39,21 +97,6 @@ ifeq ($(origin LIVERY),command line)
 override LIVERY_DIR := $(SHARED_LIVERIES)/$(LIVERY)
 endif
 export LIVERY_DIR
-
-OUT   ?= $(notdir $(CURDIR))
-DECKS ?= $(OUT)
-QFILE ?= $(OUT).qmd
-
-# The static site (`site`) and where `publish` pushes it. SITE_EXTRA lists
-# directories of hand-written pages to ship beside the decks; SITE_NOINDEX (any
-# value) marks every page noindex for search engines; PUBLISH_PREFIX is the
-# site's path under the Pages root (empty: the root itself).
-SITE           ?= _site
-SITE_EXTRA     ?=
-SITE_NOINDEX   ?=
-PUBLISH_BRANCH ?= gh-pages
-PUBLISH_REMOTE ?= origin
-PUBLISH_PREFIX ?=
 
 # Included fragments, frozen data, images, deck-local Lua filters and directory
 # metadata: {{< include >}}, ![](...), filters: and _metadata.yml are invisible to
@@ -125,23 +168,8 @@ site: html
 
 NOINDEX_SED = $(if $(SITE_NOINDEX),-e 's#<head>#<head><meta name="robots" content="noindex">#')
 
-# Push the site as the ONE commit on PUBLISH_BRANCH. The branch is a build artifact,
-# not a record: every publish replaces it, so nothing accumulates. A parentless commit
-# gives git no edge to delta against, so each publish uploads the whole site (the
-# shared libs/ plus ~1 MB per deck); fetching the old tip first does not change that.
 publish: site
-	set -e; tmp=$$(mktemp -d); url=$$(git remote get-url $(PUBLISH_REMOTE)); \
-	git -C $$tmp init -q; \
-	mkdir -p $$tmp/$(PUBLISH_PREFIX); rsync -a $(SITE)/ $$tmp/$(PUBLISH_PREFIX)/; \
-	touch $$tmp/.nojekyll; \
-	git config user.email >/dev/null || ident="-c user.name=make-publish -c user.email=publish@localhost"; \
-	git -C $$tmp add -A; \
-	git -C $$tmp $$ident commit -q -m "Publish $(OUT) $$(date -u +%Y-%m-%dT%H:%MZ)"; \
-	git -C $$tmp push -q --force $$url HEAD:refs/heads/$(PUBLISH_BRANCH); \
-	rm -rf $$tmp; \
-	echo "pushed $(PUBLISH_BRANCH) to $$url"; \
-	echo "$$url" | sed -n -E -e 's#\.git$$##' \
-	  -e 's#^(git@github\.com:|https://github\.com/)([^/]+)/(.+)$$#https://\2.github.io/\3/$(if $(PUBLISH_PREFIX),$(PUBLISH_PREFIX)/)#p'
+	$(publish_push)
 
 # Auto-symlink the shared _quarto.yml into the deck dir. A deck that
 # needs custom config can commit a real _quarto.yml; make will see the
@@ -221,3 +249,5 @@ clean:
 
 distclean:
 	git clean --exclude=.env -xdf .
+
+endif

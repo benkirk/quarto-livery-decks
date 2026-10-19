@@ -124,9 +124,19 @@ done
 # the host can go on working there: no tracked file (the links) was re-pointed
 test -z "$(git status --short decks/quickstart | grep -v '^??')"
 
+echo "== 3. the host's own make, no toolchain on the host: Make.common runs the image (DECKS_RUNTIME)"
+# a deck author with only a runtime installed: make in the deck directory, the repository and the
+# framework mounted at their own paths, one container run for clean and pptx
+case $RUNTIME in apptainer) pick=(APPTAINER_SIF="$img") ;; *) pick=(DECKS_CONTAINER_IMAGE="$img") ;; esac
+timeout 900 make -C decks/quickstart clean pptx DECKS_RUNTIME="$RUNTIME" "${pick[@]}" 2>&1 | tee "$tmp/dispatch.log"
+grep -q "^DECKS_RUNTIME=$RUNTIME: " "$tmp/dispatch.log"
+test -s decks/quickstart/quickstart.pptx
+test "$(stat -c %u decks/quickstart/quickstart.pptx 2>/dev/null || stat -f %u decks/quickstart/quickstart.pptx)" = "$(id -u)"
+test -z "$(git status --short decks/quickstart | grep -v '^??')"
+
 [ "$RUNTIME" = docker ] || { echo "smoke test passed ($RUNTIME)"; exit 0; }
 
-echo "== 3. root works too (what GitHub container: jobs are)"
+echo "== 4. root works too (what GitHub container: jobs are)"
 docker run --rm -v "$work:/work" "$img" make clean
 test ! -e "$work/hello.pptx"
 

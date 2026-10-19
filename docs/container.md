@@ -71,3 +71,37 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   as `ENV` (asserted against conda-forge's `activate.d` at build time), so the image also
   works as a GitHub Actions `container:`, which is how this repo's own CI (`ci.yaml`)
   builds its decks.
+
+## From your deck's Makefile
+
+A deck whose Makefile includes `Make.common` (this repository's decks, a submodule consumer's,
+a deck beside a framework checkout) runs the container itself. With no conda env on your PATH,
+`make` builds in the image, so the host needs only make (macOS's own will do) and a runtime:
+
+```bash
+cd my-repo/docs/talks/roadmap      # its Makefile: include ../framework/Make.common
+make qa                            # quarto is not on PATH: the image, through docker
+make pptx DECKS_RUNTIME=apptainer  # or name the runtime
+```
+
+- **`DECKS_RUNTIME`**: `auto`, the default, is `native` when `quarto` is on your PATH (the
+  activated env) and otherwise the first of `apptainer`, `docker`, `podman` installed; any of
+  the four names one. Set it on the command line, in your environment (a shell profile's
+  `export DECKS_RUNTIME=docker`), or in the deck Makefile before its `include`.
+- **One container run per make.** Your repository (its git toplevel), the framework checkout and
+  a `LIVERY_DIR` outside them are mounted at their own paths: the recipes are your checkout's,
+  the toolchain the image's, and the links the build makes resolve on both sides, so native and
+  container builds alternate in one directory. Variables on the command line pass through
+  (`make pptx LIVERY=cu DECKS="a b"`); ones only in your environment reach Apptainer alone.
+- **Which image**: `DECKS_IMAGE_TAG` defaults to the release your checkout carries (the
+  `version:` in `_extensions/engine/_extension.yml`). Set any published tag (`26.10`, `latest`,
+  `pr-95`), or `sha` for the image of your checkout's own commit. `DECKS_IMAGE` replaces the
+  repository (a fork, or a local `make image` build), `DECKS_CONTAINER_IMAGE` the whole reference
+  (a digest too), and `APPTAINER_SIF` runs a pulled SIF instead of converting `docker://` again.
+  The build prints the image it uses.
+- **Per runtime**: Docker runs as your uid; Podman rootless, with SELinux labelling off for the
+  run rather than relabelling your tree; Apptainer as you, with your HOME. `FONTS_DIR=path` mounts
+  your licensed fonts on `/opt/fonts`.
+- **`make publish`** builds the site in the container and pushes from the host, with your git
+  credentials.
+- **Paths** may not contain spaces (make splits on them), `%` or `#`.

@@ -28,7 +28,8 @@ make pptx                         # or: make pptx LIVERY=cu
   `_quarto.yml` in place of the link.
 - **Activate the framework's environment to build**, as in [README "Quick start"](../README.md#quick-start):
   `conda activate <path>/framework/conda-env`. It lives in the submodule and is
-  gitignored there.
+  gitignored there. Or install Docker, Podman or Apptainer instead: without the env, `make`
+  builds in the published image ([container.md "From your deck's Makefile"](container.md#from-your-decks-makefile)).
 - **A framework fix goes here first.** Merge it here, then move the
   consumer's pin (`git -C docs/presentations/framework pull`, then commit the
   new pointer). The engine is part of this repo, so the same holds for it.

@@ -52,10 +52,11 @@ texlive-xetex texlive-latex-extra texlive-fonts-extra`). If `quarto install
 chrome-headless-shell` cannot download, point Quarto at any Chromium with
 `export QUARTO_CHROMIUM=/path/to/chrome`, and `make qa` at it with `CHROME`.
 
-**No conda at hand?** The published image carries the whole environment:
-`docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" -w /work/decks/quickstart
-ghcr.io/benkirk/quarto-livery-decks make pptx` builds the quickstart deck, and any
-directory of `.qmd` files mounted on `/work` builds the same way
+**No conda at hand?** With Docker, Podman or Apptainer installed, the same `make pptx` builds in
+the published image, which carries the whole environment: a deck's make runs the container
+itself when `quarto` is not on your PATH, or when `DECKS_RUNTIME` says so
+([docs/container.md "From your deck's Makefile"](docs/container.md#from-your-decks-makefile)).
+A directory of `.qmd` files with no Makefile builds with `docker run` alone
 ([`docs/container.md`](docs/container.md)).
 
 ## What you get

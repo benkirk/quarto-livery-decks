@@ -124,9 +124,12 @@ RUN mkdir -p /opt/fonts /usr/local/share/fonts && ln -s /opt/fonts /usr/local/sh
 #    matplotlib's font cache is built here too, after the liveries' fonts are linked.
 COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
-# the framework's own commands (bin/livery) on PATH, after the conda env's
+# the framework's own commands (bin/livery) on PATH, after the conda env's; DECKS_RUNTIME: this
+# is the toolchain, so Make.common never dispatches to a container from inside one (Apptainer
+# passes the host's environment in, and an image ENV wins)
 ENV FRAMEWORK=/opt/quarto-livery-decks \
-    PATH=/opt/quarto-livery-decks/bin:$PATH
+    PATH=/opt/quarto-livery-decks/bin:$PATH \
+    DECKS_RUNTIME=native
 RUN <<'EOS'
 set -eo pipefail
 git config --system safe.directory '*'

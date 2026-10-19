@@ -113,6 +113,16 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   docker, as `image.yaml` calls it); its container calls go through one adapter (`argv`). The two
   `_quarto.yml`/`_extensions` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
+- **Runtime**: `DECKS_RUNTIME` (`auto` default: native when `quarto` is on PATH, else the first
+  of apptainer, docker, podman) at the top of `Make.common`; anything but native includes
+  `common/Make.container`, which runs the goals as ONE `make ... DECKS_RUNTIME=native` in the image,
+  the deck's git toplevel, the framework and an outside `LIVERY_DIR` mounted at their real paths
+  (command-line variables ride MAKEFLAGS; `publish` pushes from the host via the shared
+  `publish_push`). The header and `Make.container` must parse under GNU make 3.81, since macOS's
+  `/usr/bin/make` has to reach the dispatch; the native body runs under the env's make. Image:
+  `DECKS_IMAGE`:`DECKS_IMAGE_TAG` (default `_extension.yml`'s version; `sha` the checkout's), or
+  `DECKS_CONTAINER_IMAGE`, `APPTAINER_SIF`. The image's ENV says native. smoke-test.sh step 3
+  runs it per runtime.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
   `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
