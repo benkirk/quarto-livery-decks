@@ -31,13 +31,16 @@ DECKS_PWD    := $(realpath $(CURDIR))
 DECKS_BASE   := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
                   $(FRAMEWORK_ROOT) $(LIVERY_DIR) $(wildcard $(DECKS_BINDS))))
 # Symlinks in the deck directory (an image linked in): a target none of the above covers is mounted
-# too, a directory itself or a file's directory, so the link resolves inside. (The case pattern's
-# leading "(" keeps $(shell)'s parentheses balanced.)
+# too, a directory itself or a file's directory, so the link resolves inside. A target whose path
+# has a space is skipped with a warning: make splits words on it, so it cannot be a mount (find
+# -print0 would not help: make's /bin/sh, dash, has no read -d). (The case patterns' leading "("
+# keeps $(shell)'s parentheses balanced.)
 DECKS_LINKED := $(shell bases='$(DECKS_BASE)'; \
   find . -maxdepth 3 \( -name .quarto -o -name '*_files' -o -name _qa \) -prune -o -type l \
     ! -name _quarto.yml ! -name _extensions ! -name _livery -print 2>/dev/null | \
   while read -r l; do t=$$(realpath "$$l" 2>/dev/null) || continue; [ -e "$$t" ] || continue; \
     [ -d "$$t" ] || t=$$(dirname "$$t"); c=; \
+    case "$$t" in (*[[:space:]]*) echo "Make.container: not mounting $$t, $$l's target: a path with a space cannot be a mount" >&2; continue;; esac; \
     for m in $$bases; do case "$$t/" in ("$$m"/*) c=1;; esac; done; [ -n "$$c" ] || echo "$$t"; done)
 DECKS_MOUNTS := $(sort $(DECKS_BASE) $(DECKS_LINKED))
 DECKS_FONTS  := $(if $(FONTS_DIR),$(realpath $(FONTS_DIR)))
