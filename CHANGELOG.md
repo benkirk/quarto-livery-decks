@@ -17,6 +17,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.1] - 2026-10-19
+
 ### Decks
 - The README is a short front page for deck authors, the details in companion guides:
   `docs/authoring.md` (a new deck, the front matter and slide kinds, linked images, centering
@@ -120,5 +122,6 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.0...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.1...HEAD
+[26.10.1]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.1
 [26.10.0]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.0
