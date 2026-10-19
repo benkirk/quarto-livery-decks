@@ -164,7 +164,7 @@ jobs:
           RUNTIME=podman .github/scripts/smoke-test.sh "$IMAGE"
           echo "SMOKE_S=$((SECONDS - t))" >> "$GITHUB_ENV"
 
-      # the README's other form: the host uid inside too (its HOME, from the host's passwd,
+      # docs/container.md's other form: the host uid inside too (its HOME, from the host's passwd,
       # does not exist in the image; the entrypoint gives it one)
       - name: --userns=keep-id
         run: |

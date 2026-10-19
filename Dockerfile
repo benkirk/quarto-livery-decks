@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # The framework with its whole build environment: ghcr.io/benkirk/quarto-livery-decks
-# (README "Building in the container"). A deck directory bind-mounted on /work builds with
+# (docs/container.md). A deck directory bind-mounted on /work builds with
 # `make pptx|html|pdf`; a bare directory of .qmd files needs no Makefile (etc/entrypoint.sh).
 #
 # Runs as root by default and works as ANY uid (`--user "$(id -u):$(id -g)"`, rootless
@@ -24,7 +24,7 @@ RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
       poppler-utils libreoffice-impress \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Fonts, a rich but bounded set (~200 MB; CJK left out, README says how to add it). A
+# 2. Fonts, a rich but bounded set (~200 MB; CJK left out, docs/container.md says how to add it). A
 #    customer's livery may name an installed face (installed-fonts, PDF fonts=brand), mermaid
 #    labels fall back to whatever fontconfig has, LibreOffice renders the pptx for `make
 #    measure`. Metric-compatible stand-ins for the Office and PostScript families first.

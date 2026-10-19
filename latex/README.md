@@ -81,7 +81,7 @@ latexmk -xelatex my-talk.tex
 
 ## Writing slides in LaTeX
 
-A Quarto deck writes the same things in Markdown ([README "PDF (beamer)"](../README.md#pdf-beamer); the sample deck has every one).
+A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)"](../docs/formats.md#pdf-beamer); the sample deck has every one).
 
 | | LaTeX |
 |---|---|
@@ -120,7 +120,7 @@ A Quarto deck writes the same things in Markdown ([README "PDF (beamer)"](../REA
 | `mathfont` | `serif`, `lm`, `stix`, `pagella`, `sans`, `fira`, `poppins`, `keep`, or a font name | `serif` | the math font (next section) |
 | `autofit` | `true`, `false` | `true` | HTML only: shrink overflowing content slides to fit |
 
-A Quarto deck here sets them with `themeoptions:` ("PDF (beamer)"); its livery comes from
+A Quarto deck here sets them with `themeoptions:` ([docs/formats.md "PDF (beamer)"](../docs/formats.md#pdf-beamer)); its livery comes from
 `LIVERY=`. The HTML format reads `title`, `waves` and `autofit` (and the `livery:` key) and
 ignores the rest.
 

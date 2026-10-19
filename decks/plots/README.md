@@ -2,9 +2,9 @@
 
 `plots.qmd` is the cookbook for Python plots in a framework deck: matplotlib and seaborn in the
 livery's chart colors, its font and the slide's own type sizes, in all three formats, with no
-styling code. The design and the color science are in
-[`design/charts-and-plots.md`](../../design/charts-and-plots.md); the framework README's "Plots
-and chart colors" has the summary.
+styling code. It shows lines, a seaborn bar chart from pandas, a stacked area in hue families, a
+heatmap, a diverging field, two plots in columns, math in the labels, a dark slide. The design
+and the color science are in [`design/charts-and-plots.md`](../../design/charts-and-plots.md).
 
 ![The plots deck under every livery: lines, hue families, a heatmap, a dark slide](screenshots/liveries.png)
 
@@ -57,6 +57,17 @@ them is a *Plots* entry in [`CHANGELOG.md`](../../CHANGELOG.md).
 What breaks it: `sns.set_theme()` or `plt.style.use(...)` (they replace the livery's style), a
 hand-picked `figsize` (it changes the text size), a colormap by name such as `viridis`, more
 than eight series (fold the rest into "Other").
+
+## In each format
+
+pptx gets PNG at 200 dpi, HTML SVG with the text as paths (an `<img>` cannot see the page's
+fonts), PDF a vector PDF with the font embedded (Type 3 for a CFF `.otf` family such as cu's TeX
+Gyre Heros, which matplotlib would otherwise mislabel).
+
+The same colors are `--engine-data-1..8`, `--engine-data-muted` and `--engine-status-*` in the
+HTML deck, `EngineData1..8` (and a pgfplots `livery` cycle list, the default when a LaTeX document
+loads pgfplots) in the PDF, and a **Custom Colors** row in every PowerPoint color picker of a
+framework deck ("Data 1 · Blue", ...).
 
 ## The liveries' chart colors
 

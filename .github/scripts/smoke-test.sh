@@ -1,5 +1,5 @@
 #!/bin/bash
-# The README's use case ("Building in the container"), run on this host as a plain user:
+# docs/container.md's use case, run on this host as a plain user:
 # a bare directory of .qmd files, then this repo's decks/quickstart (real Makefiles, committed
 # relative links), both bind-mounted into the image given as $1. Run by image.yaml on each
 # native build leg, as the runner's own unprivileged user; also runs locally after

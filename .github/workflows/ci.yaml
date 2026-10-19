@@ -2,7 +2,7 @@
 # smoke-tested as a plain user with a bind-mounted deck directory, merged into one manifest
 # list), then the deck checks INSIDE that image, at its digest: the sample, quickstart,
 # fixture and plots decks; a hello-world deck in a consumer's layout (the framework one level down, as
-# a submodule would be: README "Using the framework from another repo"); and every livery
+# a submodule would be: docs/other-repos.md); and every livery
 # under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled and the charts bundle tried in a clean directory, the compositions measured). A new livery joins
 # by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.

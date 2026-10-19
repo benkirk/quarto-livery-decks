@@ -1,15 +1,13 @@
 # Shared recipes for decks (pptx, revealjs, beamer). A deck Makefile includes
 # this file by a path relative to the deck directory: `include ../../Make.common`
 # for decks/<deck>/ here, `include ../framework/Make.common` in a repo that
-# has this framework as a submodule (README "Using the framework from another
-# repo"). Include it; a symlink to it would point FRAMEWORK_ROOT at the
+# has this framework as a submodule (docs/other-repos.md). Include it; a symlink to it would point FRAMEWORK_ROOT at the
 # link's own directory. One deck per directory by default, named after the
 # directory (OUT); a directory holding several decks lists them in DECKS (each
 # <name>.qmd builds <name>.{pptx,html,pdf}). `site` gathers the HTML decks into
-# one static site and `publish` pushes it to a GitHub Pages branch (README
+# one static site and `publish` pushes it to a GitHub Pages branch (docs/other-repos.md
 # "Publishing the HTML decks"). With no Makefile at all, `make -f <framework>/Make.common
-# DECKS="a b"` works the same (the container's entrypoint does that, README "Building in the
-# container"): this file reads its own location from MAKEFILE_LIST.
+# DECKS="a b"` works the same (the container's entrypoint does that, docs/container.md): this file reads its own location from MAKEFILE_LIST.
 
 .PHONY: pptx html pdf all qa measure site publish overleaf charts-zip clean distclean
 
