@@ -1,12 +1,13 @@
 #!/bin/bash
 # The Apptainer forms smoke-test.sh does not cover, against the SIF given as $1 (runtimes.yaml,
-# after `RUNTIME=apptainer smoke-test.sh`): the native HPC form (cd and run, no bind, no --pwd),
-# `apptainer exec`, --cleanenv and --containall, the read-only image; then a "lived-in" HOME:
-# the things a long-used HPC account carries (a host matplotlib cache, Jupyter kernels and
-# pip --user packages from the host's Python, module-set TEXINPUTS and PYTHONPATH), one at a
-# time, each row OK or what broke, into $GITHUB_STEP_SUMMARY. A row that is not OK fails the
-# script when it is `gate` (it worked, or was fixed: the Dockerfile's host isolation); a new
-# row starts `report`, which never fails, until it is fixed.
+# after `RUNTIME=apptainer smoke-test.sh`), every one `--cleanenv` as docs/container.md documents:
+# the native HPC form (cd and run, no bind, no --pwd), `apptainer exec`, --containall, the
+# read-only image; then a "lived-in" HOME: the things a long-used HPC account carries (a host
+# matplotlib cache, Jupyter kernels and pip --user packages from the host's Python, a module's
+# TEXINPUTS and PYTHONPATH, a profile's TMPDIR and locale), one at a time, each row OK or what
+# broke, into $GITHUB_STEP_SUMMARY. A row that is not OK fails the script when it is `gate` (it
+# worked, or was fixed: --cleanenv, the Dockerfile's HOME guards); a new row starts `report`,
+# which never fails, until it is fixed.
 # SCRATCH: a directory outside HOME and /tmp (an HPC scratch or project space); default $tmp.
 set -euo pipefail
 sif=$1
@@ -65,18 +66,18 @@ QMD
 echo "== 1. the native HPC form: cd into the decks and run, no bind, no --pwd ($scratch)"
 work=$(mktemp -d "$scratch/native.XXXXXX")
 decks "$work"
-(cd "$work" && timeout 900 apptainer run "$sif" make pptx)
+(cd "$work" && timeout 900 apptainer run --cleanenv "$sif" make pptx)
 owned "$work"/plain.pptx "$work"/plot.pptx "$work"/shell.pptx
 readlink "$work/_quarto.yml" | grep -c '^/opt/quarto-livery-decks/' >/dev/null
 
 echo "== 2. apptainer exec: no entrypoint, so Make.common and DECKS by hand"
 work=$(mktemp -d "$tmp/exec.XXXXXX")
 decks "$work"
-timeout 900 apptainer exec --bind "$work:/work" --pwd /work "$sif" \
+timeout 900 apptainer exec --cleanenv --bind "$work:/work" --pwd /work "$sif" \
   make -f /opt/quarto-livery-decks/Make.common DECKS="plain plot" pptx
 owned "$work"/plain.pptx "$work"/plot.pptx
 
-for opt in --cleanenv --containall; do
+for opt in --containall; do   # --containall: --cleanenv, and an empty HOME, its own /tmp and IPC
   echo "== 3. apptainer run $opt"
   work=$(mktemp -d "$tmp/clean.XXXXXX")
   decks "$work"; rm "$work/shell.qmd"
@@ -102,7 +103,7 @@ row() {   # row gate|report LABEL DECK TARGET SETUP [VAR=value, @HOME@ the row's
   decks "$work"
   (cd "$home" && eval "$setup")
   for v; do vars+=("${v//@HOME@/$home}"); done
-  env ${vars[@]+"${vars[@]}"} timeout 900 apptainer run --home "$home" --bind "$work:/work" --pwd /work "$sif" \
+  env ${vars[@]+"${vars[@]}"} timeout 900 apptainer run --cleanenv --home "$home" --bind "$work:/work" --pwd /work "$sif" \
     make -f /opt/quarto-livery-decks/Make.common DECKS="$deck" "$target" >"$log" 2>&1
   rc=$?
   if [ "$rc" -ne 0 ] || [ ! -s "$work/$deck.$target" ]; then
@@ -143,5 +144,7 @@ row gate "a host bash kernel (bash_kernel install --user)"           shell pptx 
 row gate "pip install --user packages for python$pyver"              plot  pptx "shadow .local/lib/python$pyver/site-packages"
 row gate "PYTHONPATH from a module (host site-packages)"             plot  pptx 'shadow site' PYTHONPATH=@HOME@/site
 row gate "TEXINPUTS from a module, no trailing colon"                plain pdf  ':' TEXINPUTS=/glade/u/apps/tex/inputs
+row gate "TMPDIR from a profile, a directory the container lacks"   plot  pptx ':' TMPDIR=/glade/derecho/scratch/user/tmp
+row gate "LC_ALL a locale the image lacks (en_US.UTF-8)"            plot  pptx ':' LC_ALL=en_US.UTF-8
 echo "lived-in report written; gated rows $( [ "$gfail" = 0 ] && echo OK || echo FAILED)"
 exit "$gfail"

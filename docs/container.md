@@ -30,18 +30,17 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   makes the outputs yours, and the entrypoint gives that uid a HOME under `/tmp`.
   Rootless Podman needs no flag (`podman run --rm -v "$PWD:/work:Z" ...`; add
   `--userns=keep-id` if the files come out owned by a subuid).
-- **On an HPC system (Apptainer)**, change into the decks and run; Apptainer binds the
-  directory, scratch and project spaces included, and the outputs are yours:
-  `cd my-decks && apptainer run docker://ghcr.io/benkirk/quarto-livery-decks make pptx`.
+- **On an HPC system (Apptainer)**, change into the decks and run with `--cleanenv`; Apptainer
+  binds the directory, scratch and project spaces included, and the outputs are yours:
+  `cd my-decks && apptainer run --cleanenv docker://ghcr.io/benkirk/quarto-livery-decks make pptx`.
   The first run converts the image (a few minutes) and caches it; `apptainer pull qld.sif
   docker://ghcr.io/benkirk/quarto-livery-decks` keeps a SIF to run instead.
-  `apptainer exec` skips the entrypoint: pass
-  `make -f /opt/quarto-livery-decks/Make.common DECKS=roadmap pptx` yourself. Your real HOME
-  is used (the caches land in `~/.cache`), and your environment passes in, except what would
-  break the build: the image ignores a module's `PYTHONPATH` and `TEXINPUTS`, `pip --user`
-  packages, and Jupyter kernels registered with your own Python (set one deliberately with
-  `APPTAINERENV_<NAME>`). If a build still behaves differently than in Docker, try
-  `apptainer run --cleanenv` first.
+  `apptainer exec --cleanenv` skips the entrypoint: pass
+  `make -f /opt/quarto-livery-decks/Make.common DECKS=roadmap pptx` yourself. `--cleanenv` keeps
+  your profile's variables outside (a module's `PYTHONPATH` or `TEXINPUTS`, a `TMPDIR` the
+  container cannot see, a locale it lacks); set one deliberately with `APPTAINERENV_<NAME>`. Your
+  real HOME is used (the caches land in `~/.cache`), and the image ignores what it holds for your
+  own Python: `pip --user` packages and Jupyter kernels registered with it.
 - **What the build writes** into the directory: the `_quarto.yml`, `_extensions`
   and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
   outputs (gitignore them, as a submodule consumer does). The links point into

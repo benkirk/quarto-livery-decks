@@ -34,10 +34,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
   on PATH. The deck's repository and the framework are mounted at their own paths, and
   `DECKS_IMAGE_TAG` picks the image: the release the framework checkout carries by default, `sha`
   for its own commit. docs/container.md "From your deck's Makefile".
-- Under Apptainer the build runs with `--cleanenv`, the image's environment alone, as under
-  Docker and Podman: a profile's `TMPDIR=$SCRATCH/tmp` named a directory the container lacked and
-  stopped Quarto (`No such file or directory: tmpdir`). Only command-line variables reach the build,
-  under every runtime.
+- Apptainer runs with `--cleanenv`, the image's environment alone, as under Docker and Podman: in
+  a deck's make (`DECKS_RUNTIME=apptainer`) and in docs/container.md's `apptainer run` and `exec`
+  forms. A Casper profile's `TMPDIR=$SCRATCH/tmp` named a directory the container lacked and
+  stopped Quarto (`No such file or directory: tmpdir`). Only command-line variables reach a deck's
+  build, under every runtime. The image no longer blanks `PYTHONPATH`, `PYTHONHOME` and
+  `TEXINPUTS`, which `--cleanenv` keeps out; it still ignores `pip --user` packages and Jupyter
+  kernels in your HOME.
 
 ### Liveries
 - `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the

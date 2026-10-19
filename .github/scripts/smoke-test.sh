@@ -16,7 +16,7 @@ argv() {
   case $RUNTIME in
     docker) c=(docker run --rm --user "$u") ;;
     podman) c=(podman run --rm) ;;                       # rootless: the container's root is this user
-    apptainer) c=(apptainer run) ;;                      # runs as this user, HOME is this user's
+    apptainer) c=(apptainer run --cleanenv) ;;           # as this user, HOME this user's, no host env
     *) echo "RUNTIME=$RUNTIME: docker, podman or apptainer" >&2; exit 2 ;;
   esac
   while :; do
