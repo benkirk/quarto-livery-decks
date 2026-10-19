@@ -107,7 +107,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the conda env's (`fc-cache`/`fc-list` on PATH, its own `fonts.conf`) and the system's
   (`/usr/bin/fc-*`, `/etc/fonts`), which the apt XeLaTeX, Chromium and LibreOffice use; a file in
   `/etc/fonts/conf.d` reaches only the second, a directory under `/usr/local/share/fonts` both.
-  Everything under `/opt` must stay world-readable (asserted). Apptainer runs `--cleanenv` in every documented form (the
+  Everything under `/opt` must stay world-readable (asserted). Chromium (the headless shell) bundles
+  its own fontconfig, whose index format the system's 2.15 does not write: step 7 builds it into
+  `/var/cache/fontconfig` and asserts an empty HOME gets none. Without it a new HOME indexes every
+  font on its first diagram (~5 s on a busy login node), Quarto's `waitForServer` gives up after 3 s
+  and then awaits the healthy browser's exit forever. Apptainer runs `--cleanenv` in every documented form (the
   host's variables stay outside: a Casper profile's `TMPDIR` stopped Quarto), and it still binds
   HOME, so the last `ENV` guards against what HOME holds: `PYTHONNOUSERSITE=1` (`pip --user`) and
   `JUPYTER_PREFER_ENV_PATH=1` (the image's kernels over `~/.local/share/jupyter`). `smoke-test.sh` takes `RUNTIME=docker|podman|apptainer` (default

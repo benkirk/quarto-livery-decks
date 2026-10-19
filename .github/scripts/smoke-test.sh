@@ -44,6 +44,8 @@ run "$img" quarto --version
 run "$img" bash -c 'echo "QUARTO_CHROMIUM=$QUARTO_CHROMIUM"; "$QUARTO_CHROMIUM" --version'
 run "$img" bash -c 'echo "font families: $(/usr/bin/fc-list : family | sort -u | wc -l), the liveries'"'"' Poppins: $(/usr/bin/fc-list : family | grep -c Poppins)"'
 run "$img" bash -c 'test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0'   # LibreOffice's fontconfig sees them
+# Chromium's font index is the image's: an empty HOME gets none (else Quarto's first diagram can hang)
+run "$img" bash -c 'h=$(mktemp -d) && HOME=$h "$QUARTO_CHROMIUM" --headless --no-sandbox --disable-gpu --screenshot="$h/x.png" "data:text/html,<p>fonts</p>" >/dev/null 2>&1; test -s "$h/x.png" && test ! -e "$h/.cache/fontconfig"'
 run "$img" python -c "from matplotlib import font_manager as fm; print('matplotlib Poppins:', fm.findfont('Poppins', fallback_to_default=False))"
 
 echo "== 1. a bare directory: no Makefile; mermaid exercises QUARTO_CHROMIUM, the PDF XeLaTeX, a plot matplotlib"

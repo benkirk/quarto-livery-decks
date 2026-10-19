@@ -34,6 +34,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   on PATH. The deck's repository and the framework are mounted at their own paths, and
   `DECKS_IMAGE_TAG` picks the image: the release the framework checkout carries by default, `sha`
   for its own commit. docs/container.md "From your deck's Makefile".
+- The image carries Chromium's own font index: a new user's first build no longer hangs at its
+  first diagram. Chromium bundles a fontconfig whose index the system's does not write, so every new
+  HOME indexed all the image's fonts first; on a busy login node that outlasted Quarto's 3 s wait for
+  the browser, after which Quarto waits forever (a first build on Casper hung after `Cell 1/1 ...Done`).
 - One installation serves everyone on an HPC system (docs/container.md "Sharing an installation"):
   `make sif` pulls the SIF of the release a checkout carries into its `sif/`, an Apptainer build runs
   that SIF when it is there, and `bin/new-deck DIR` starts a deck from the quickstart, its Makefile

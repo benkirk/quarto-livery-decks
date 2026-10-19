@@ -140,6 +140,19 @@ fc-cache -f || true
 echo "system fontconfig: $(/usr/bin/fc-list : family | sort -u | wc -l) families, Poppins $(/usr/bin/fc-list : family | grep -c Poppins)"
 echo "conda fontconfig:  $(fc-list : family | sort -u | wc -l) families, Poppins $(fc-list : family | grep -c Poppins || true)"
 test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0 || { /usr/bin/fc-cache -fv 2>&1 | grep -E 'local/share|liveries' >&2; exit 1; }
+# Chromium's own font index. The headless shell (step 5) bundles a fontconfig whose index format
+# the system's does not write, so without this every new HOME indexes all the fonts above on its
+# first diagram. That takes ~5 s on a busy login node; Quarto gives up on the browser after 3 s and
+# then waits forever for it to exit (a new user's first build on Casper hung so). Built here, as
+# root, into /var/cache/fontconfig, beside the system's; then a fresh HOME must get no index.
+fonts_page='data:text/html,<p style="font-family:sans-serif">fonts</p><p style="font-family:serif">fonts</p>'
+"$QUARTO_CHROMIUM" --headless --no-sandbox --disable-gpu --screenshot=/tmp/fonts.png "$fonts_page" >/dev/null 2>&1
+rm -f /tmp/fonts.png
+probe=$(mktemp -d)
+HOME=$probe "$QUARTO_CHROMIUM" --headless --no-sandbox --disable-gpu --screenshot="$probe/fonts.png" "$fonts_page" >/dev/null 2>&1
+test ! -e "$probe/.cache/fontconfig" || { echo "Chromium still indexes fonts into HOME: $(ls "$probe/.cache/fontconfig" | wc -l) files" >&2; exit 1; }
+rm -rf "$probe"
+echo "font indexes in /var/cache/fontconfig: $(ls /var/cache/fontconfig | sed -E 's/^[0-9a-f]+-//' | sort | uniq -c | tr '\n' ' ')"
 # matplotlib's font cache, built once over every font above (the liveries' too) into /opt/matplotlib:
 # the entrypoint seeds it into a user's HOME, so a deck's first plot does not rescan them all
 MPLCONFIGDIR=/opt/matplotlib python - <<'PY'
