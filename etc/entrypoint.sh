@@ -35,7 +35,7 @@ ${GIT_SHA:+  framework commit $GIT_SHA}${BUILD_DATE:+, built $BUILD_DATE}
 A directory of .qmd files needs no Makefile: every <name>.qmd not starting with _ builds
 <name>.{pptx,html,pdf}. A directory with a Makefile runs plain make. Make variables pass
 through: make pptx LIVERY=cu, LIVERY_DIR=/work/mylivery, DECKS="a b"; also make qa, measure,
-overleaf, site. Your own fonts: -v "\$PWD/fonts:/opt/fonts:ro". README "Building in the container".
+overleaf, site. Your own fonts: -v "\$PWD/fonts:/opt/fonts:ro". docs/container.md in the framework.
 USAGE
 }
 

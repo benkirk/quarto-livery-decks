@@ -63,8 +63,9 @@ post-render utilities); `latex/`, `design/` and `tests/` beside them. No `_quart
 root: each deck is its own Quarto project through its linked one.
 `decks/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
 `decks/sample/sample.qmd` is the cookbook of every pattern, `decks/plots/plots.qmd` that of
-plots (`jupyter: python3`; README "Plots and chart colors"). The README covers
-layout, template constraints, and font embedding.
+plots (`jupyter: python3`; `decks/plots/README.md`). `docs/formats.md` covers the layout tree, the
+build pipeline, template constraints and font embedding; `docs/container.md` the image's use;
+`docs/other-repos.md` the submodule layout and publishing.
 
 - **README images** are `decks/quickstart/screenshots/*.png`, committed. After
   editing the quickstart deck run `make screenshots` there, look at them, and
@@ -76,7 +77,7 @@ layout, template constraints, and font embedding.
   or the equations shoot as raw TeX.
 
 Other repos can take the framework as a submodule and keep their decks in their
-own tree (README "Using the framework from another repo"); the deck Makefile
+own tree (`docs/other-repos.md`); the deck Makefile
 includes `../framework/Make.common`. So nothing may assume a deck sits in
 `decks/<deck>/`: the shared `_quarto.yml` and the engine (`_extensions`, whose formats carry
 their Lua filters) are links Make creates in each deck directory. `ci.yaml`'s `consumer` job builds a deck that way,
@@ -90,8 +91,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `activate.d` scripts export `QUARTO_DENO`, `QUARTO_PANDOC`, etc.; merely
   putting `conda-env/bin` on `PATH` fails with a missing-deno error.
 - **Container**: `ghcr.io/benkirk/quarto-livery-decks` (root `Dockerfile`; `make image` builds it
-  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, README "Building in the
-  container") carries the conda env, apt TeX Live, LibreOffice, a broad font set and ONE Playwright
+  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, `docs/container.md`) carries the conda env, apt TeX Live, LibreOffice, a broad font set and ONE Playwright
   headless Chromium that both Quarto (`QUARTO_CHROMIUM`) and `make qa` (`CHROME`) use, at
   `/opt/pw-browsers/headless_shell`; the framework is at `/opt/quarto-livery-decks`. The activation
   is baked as Dockerfile `ENV` and asserted against conda-forge's `activate.d/quarto.sh` at build
@@ -134,7 +134,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the livery's colors with its fonts copied to `fonts/`;
   `SITE_NOINDEX=1` marks every page noindex) and `make publish` force-pushes it
   as the one commit on `PUBLISH_BRANCH` (gh-pages) under `PUBLISH_PREFIX`.
-  README "Publishing the HTML decks".
+  docs/other-repos.md "Publishing the HTML decks".
 - **Overleaf**: `make overleaf LIVERY=<name>` (any deck directory; `LIVERY_DIR=` for a consumer's
   own livery) writes `<name>-overleaf.zip` with `livery zip`: the theme's `.sty`,
   the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
@@ -336,7 +336,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   Helvetica Neue) over its bundled stand-in. HTML lists it as `local()` sources in each
   `@font-face`; PDF uses it only under `themeoptions: [fonts=brand]` when the building
   machine has it (the shared `fonts=bundled` never does, so CI and parity are unaffected);
-  pptx already names `pptx.typeface`. README "Installed brand fonts".
+  pptx already names `pptx.typeface`. docs/formats.md "Installed brand fonts".
 - Executable ```{bash} cells run at render time via the jupyter `bash` kernel
   (deck frontmatter: `engine: jupyter`, `jupyter: bash`). Keep them
   deterministic — CI renders the sample deck.
@@ -448,7 +448,7 @@ it does, by area, beyond the format notes above:
   fractions of the slide height), chosen so the three formats fit
   alike and autofit rarely fires — don't bump them back up.
 - Template edits must stay pandoc-compliant (layout names, the five
-  `slideLayout1` placeholders) — see README "Template constraints" and its
+  `slideLayout1` placeholders) — see docs/formats.md "Template constraints" and its
   verification one-liner.
 - **Extra layouts ride along**: pandoc copies every layout of the reference doc into
   the deck but picks only by its seven names (two layouts of one name: pandoc 3.8.3
@@ -581,8 +581,7 @@ size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSID
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
 `livery build --check`, the sample deck in every format with its theme greps, quickstart and
-fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, README "Using the framework from another
-repo", plus `make site`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
+fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new
 livery joins by existing): `livery check --qa` (the engine's checks, then

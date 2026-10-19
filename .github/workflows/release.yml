@@ -69,7 +69,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           v=${GITHUB_REF_NAME#v}
-          printf '\nContainer image (the framework with its build environment, README "Building in the container"): `ghcr.io/%s:%s`, also `:%s` (the month'"'"'s newest release).\n' \
+          printf '\nContainer image (the framework with its build environment, docs/container.md): `ghcr.io/%s:%s`, also `:%s` (the month'"'"'s newest release).\n' \
             "$GITHUB_REPOSITORY" "$v" "${v%.*}" >> notes.md
           gh release create "$GITHUB_REF_NAME" decks/quickstart/*-overleaf.zip decks/quickstart/*-charts.zip \
             --title "$GITHUB_REF_NAME" --notes-file notes.md

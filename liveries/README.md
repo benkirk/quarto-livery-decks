@@ -45,7 +45,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      names the colors after the theme slots) and `primary`/`secondary`/`foreground`/`background`.
      `livery.yml` `roles`: `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`,
      `surface`, `warning`, `dark`, and `code-text` when code should not be the `dark` role. A
-     background darker than the foreground makes a dark livery (README "The liveries").
+     background darker than the foreground makes a dark livery ("Dark liveries" below).
    - **Fonts.** The brand's font files in `_brand.yml` in place of the stand-in (free,
      bundleable; a proprietary face is named in the pptx and stood in for elsewhere),
      `typography.monospace` for a code face, `installed-fonts` for a proprietary face to prefer
@@ -92,6 +92,14 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    attaches one Overleaf zip and one charts bundle per livery, with the entry as the notes, and
    the Overleaf links serve the latest.
 
-A livery outside this repository (README "Using the framework from another repo") is the same
+A livery outside this repository ([docs/other-repos.md](../docs/other-repos.md)) is the same
 directory anywhere: `livery new path/to/mybrand`, `make livery LIVERY_DIR=path/to/mybrand` in the
 framework, and `make pptx LIVERY_DIR=path/to/mybrand` in a deck.
+
+## Dark liveries
+
+A livery whose background role is darker than its foreground (`nasa-dark`)
+sets its content slides light on dark, and everything follows: code gets its own `code-text`
+role (the `dark` role stays a field color), tints mix toward the background, callouts and
+tables take dark shades, and the mermaid and Graphviz diagrams, which Quarto renders as dark
+on white, are turned to the dark with their hues kept (`diagram-dark.lua`).

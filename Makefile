@@ -51,7 +51,7 @@ livery: ## Build, template and check a livery: make livery LIVERY=<name> (or LIV
 	test -n "$(or $(LIVERY_DIR),$(LIVERY))" || { echo "usage: make livery LIVERY=<name> | LIVERY_DIR=<dir>"; exit 2; }
 	python3 _extensions/engine/livery.py all $(or $(LIVERY_DIR),liveries/$(LIVERY))
 
-# The build-environment image (README "Building in the container"); CI publishes it
+# The build-environment image (docs/container.md); CI publishes it
 # multi-platform as ghcr.io/benkirk/quarto-livery-decks (.github/workflows/image.yaml).
 IMAGE ?= ghcr.io/benkirk/quarto-livery-decks:dev
 image: ## Build the container image locally as $(IMAGE), then .github/scripts/smoke-test.sh $(IMAGE)

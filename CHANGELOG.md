@@ -20,7 +20,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 ### Decks
 - The README is becoming a short front page for deck authors, the details in companion guides:
   `latex/README.md` (LaTeX and Overleaf: the Overleaf projects, the starter and the examples,
-  writing slides in LaTeX, the theme options, math fonts, colors).
+  writing slides in LaTeX, the theme options, math fonts, colors); `docs/formats.md` (the
+  repository's layout, the build pipeline, the fonts, the template's constraints, the beamer and
+  revealjs formats); `docs/container.md` (building in the container); `docs/other-repos.md` (the
+  framework as a submodule, publishing the HTML decks); `decks/plots/README.md` takes the plots
+  summary and `liveries/README.md` the dark liveries.
 
 ### Liveries
 - `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the
@@ -51,8 +55,7 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   (`type-body:`, `type-scale:`).
 - `make qa` (overflow, slide counts, contact sheets), `make measure` (the composed slides against
   their boxes), `make site` and `make publish` (the HTML decks as a static site), and the
-  framework as a submodule of another repository (README "Using the framework from another
-  repo"); a multi-platform container image with the whole toolchain.
+  framework as a submodule of another repository (`docs/other-repos.md`); a multi-platform container image with the whole toolchain.
 
 ### Liveries
 - Eight: `ncar`, `ucar`, `ucp`, `ncarucar` (the NSF NCAR family), `cu` and its flavor `nsi`
