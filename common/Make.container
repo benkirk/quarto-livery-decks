@@ -37,9 +37,13 @@ DECKS_RUN = podman run --rm --init --security-opt label=disable -e MAKEFLAGS \
   $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
   -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
 else ifeq ($(DECKS_RUNTIME_USED),apptainer)
-# runs as you with your HOME and environment (MAKEFLAGS included); `run`, not `exec`, so the
-# entrypoint seeds matplotlib's font cache. APPTAINER_SIF: a pulled image, skipping docker://.
-DECKS_RUN = apptainer run $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
+# runs as you, with your HOME; `run`, not `exec`, so the entrypoint seeds matplotlib's font cache.
+# --cleanenv: the image's environment alone, as under Docker and Podman. Apptainer would pass yours
+# in, and what it names need not exist inside (a profile's TMPDIR=$SCRATCH/tmp stopped Quarto,
+# LC_ALL=en_US.UTF-8 warned); MAKEFLAGS crosses as APPTAINERENV_MAKEFLAGS, which --cleanenv keeps.
+# APPTAINER_SIF: a pulled image, skipping docker://.
+DECKS_RUN = APPTAINERENV_MAKEFLAGS="$$MAKEFLAGS" apptainer run --cleanenv \
+  $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
   $(if $(DECKS_FONTS),--bind $(DECKS_FONTS):/opt/fonts:ro) --pwd $(DECKS_PWD) \
   $(or $(APPTAINER_SIF),docker://$(DECKS_CONTAINER_IMAGE))
 else

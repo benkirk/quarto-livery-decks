@@ -125,8 +125,8 @@ RUN mkdir -p /opt/fonts /usr/local/share/fonts && ln -s /opt/fonts /usr/local/sh
 COPY . /opt/quarto-livery-decks
 COPY --chmod=755 etc/entrypoint.sh /usr/local/bin/entrypoint.sh
 # the framework's own commands (bin/livery) on PATH, after the conda env's; DECKS_RUNTIME: this
-# is the toolchain, so Make.common never dispatches to a container from inside one (Apptainer
-# passes the host's environment in, and an image ENV wins)
+# is the toolchain, so Make.common never dispatches to a container from inside one (the host's
+# make also says so on the inner command line)
 ENV FRAMEWORK=/opt/quarto-livery-decks \
     PATH=/opt/quarto-livery-decks/bin:$PATH \
     DECKS_RUNTIME=native
@@ -155,16 +155,13 @@ chmod -R a+rX /opt/matplotlib
 bad=$(find /opt -not -perm -o=r); test -z "$bad" || { echo "$bad"; exit 1; }
 EOS
 
-# 8. Host isolation. Apptainer passes the host's environment in, and an image ENV wins over a
-#    host variable of the same name: without these, a module's PYTHONPATH or TEXINPUTS, a
-#    `pip --user` tree or a kernel registered with the host's Python (~/.local/share/jupyter)
-#    reaches the image's tools and breaks the build (runtimes.yaml's lived-in HOME rows).
-#    Docker and Podman pass nothing in, so these change nothing there; set one deliberately
-#    with `docker run -e` or APPTAINERENV_<NAME>. Python reads an empty PYTHONPATH as unset;
-#    kpathsea reads TEXINPUTS ":" as its default path, extended by a leading or trailing ":".
-ENV PYTHONPATH= PYTHONHOME= PYTHONNOUSERSITE=1 \
-    JUPYTER_PREFER_ENV_PATH=1 \
-    TEXINPUTS=:
+# 8. Host isolation: the bound HOME. Apptainer runs `--cleanenv` (docs/container.md, Make.container),
+#    so no host variable reaches the image's tools, but it still binds your HOME, and with it a
+#    `pip --user` tree and kernels registered with the host's Python (~/.local/share/jupyter),
+#    which the image's Python and Jupyter would otherwise prefer (runtimes.yaml's lived-in HOME
+#    rows). Docker and Podman bind no HOME, so these change nothing there.
+ENV PYTHONNOUSERSITE=1 \
+    JUPYTER_PREFER_ENV_PATH=1
 
 # Provenance, set by CI (--build-arg); empty locally. After everything, so a new SHA
 # invalidates no layer above. The entrypoint's --help prints them.

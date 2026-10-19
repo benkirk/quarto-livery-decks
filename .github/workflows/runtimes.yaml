@@ -2,9 +2,9 @@
 # modern site, no setuid) on an amd64 and an arm64 runner, and rootless Podman on amd64. The
 # image does nothing special for either; this proves that is enough. Each job pulls
 # anonymously, as a customer does, then runs .github/scripts/smoke-test.sh under that runtime;
-# Apptainer also runs apptainer-extra.sh (the native cd-and-run form, exec, --cleanenv,
-# --containall, the read-only image, and a report-only "lived-in HOME" table in the step
-# summary). ci.yaml calls it with the run's own image digest; it also runs weekly and on
+# Apptainer also runs apptainer-extra.sh, every form --cleanenv as documented (the native
+# cd-and-run form, exec, --containall, the read-only image, and a "lived-in HOME" table in the
+# step summary). ci.yaml calls it with the run's own image digest; it also runs weekly and on
 # demand against :latest, so a new Apptainer or Podman release that breaks us shows up
 # without a PR.
 name: Container runtimes
