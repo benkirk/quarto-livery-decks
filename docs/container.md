@@ -92,7 +92,7 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   a `LIVERY_DIR` outside them are mounted at their own paths: the recipes are your checkout's,
   the toolchain the image's, and the links the build makes resolve on both sides, so native and
   container builds alternate in one directory. Variables on the command line pass through
-  (`make pptx LIVERY=cu DECKS="a b"`); ones only in your environment reach Apptainer alone.
+  (`make pptx LIVERY=cu DECKS="a b"`); ones only in your environment do not, under any runtime.
 - **Which image**: `DECKS_IMAGE_TAG` defaults to the release your checkout carries (the
   `version:` in `_extensions/engine/_extension.yml`). Set any published tag (`26.10`, `latest`,
   `pr-95`), or `sha` for the image of your checkout's own commit. `DECKS_IMAGE` replaces the
@@ -100,8 +100,8 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   (a digest too), and `APPTAINER_SIF` runs a pulled SIF instead of converting `docker://` again.
   The build prints the image it uses.
 - **Per runtime**: Docker runs as your uid; Podman rootless, with SELinux labelling off for the
-  run rather than relabelling your tree; Apptainer as you, with your HOME, your environment and
-  your `TMPDIR` (bound in), in the image's locale. `FONTS_DIR=path` mounts
+  run rather than relabelling your tree; Apptainer as you, with your HOME and `--cleanenv`, so
+  your profile's variables (a `TMPDIR`, a locale, a module's paths) stay outside. `FONTS_DIR=path` mounts
   your licensed fonts on `/opt/fonts`.
 - **`make publish`** builds the site in the container and pushes from the host, with your git
   credentials.

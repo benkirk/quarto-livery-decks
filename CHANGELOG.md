@@ -34,9 +34,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   on PATH. The deck's repository and the framework are mounted at their own paths, and
   `DECKS_IMAGE_TAG` picks the image: the release the framework checkout carries by default, `sha`
   for its own commit. docs/container.md "From your deck's Makefile".
-- Under Apptainer, a `TMPDIR` set in your environment is bound into the container (or replaced by
-  the container's `/tmp` when it does not exist), and `LC_ALL` is the image's: a profile's
-  `TMPDIR=$SCRATCH/tmp` stopped Quarto with `No such file or directory: tmpdir`.
+- Under Apptainer the build runs with `--cleanenv`, the image's environment alone, as under
+  Docker and Podman: a profile's `TMPDIR=$SCRATCH/tmp` named a directory the container lacked and
+  stopped Quarto (`No such file or directory: tmpdir`). Only command-line variables reach the build,
+  under every runtime.
 
 ### Liveries
 - `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the

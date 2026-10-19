@@ -117,7 +117,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   of apptainer, docker, podman) at the top of `Make.common`; anything but native includes
   `common/Make.container`, which runs the goals as ONE `make ... DECKS_RUNTIME=native` in the image,
   the deck's git toplevel, the framework and an outside `LIVERY_DIR` mounted at their real paths
-  (command-line variables ride MAKEFLAGS; `publish` pushes from the host via the shared
+  (command-line variables ride MAKEFLAGS, under Apptainer as APPTAINERENV_MAKEFLAGS since it runs
+  `--cleanenv`: a Casper profile's TMPDIR leaked in and stopped Quarto; `publish` pushes from the host via the shared
   `publish_push`). The header and `Make.container` must parse under GNU make 3.81, since macOS's
   `/usr/bin/make` has to reach the dispatch; the native body runs under the env's make. Image:
   `DECKS_IMAGE`:`DECKS_IMAGE_TAG` (default `_extension.yml`'s version; `sha` the checkout's), or

@@ -24,10 +24,6 @@ DECKS_PWD    := $(realpath $(CURDIR))
 DECKS_MOUNTS := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
                   $(FRAMEWORK_ROOT) $(LIVERY_DIR)))
 DECKS_FONTS  := $(if $(FONTS_DIR),$(realpath $(FONTS_DIR)))
-# Apptainer passes your environment in, so what it names must exist inside: TMPDIR (a profile's
-# TMPDIR=$SCRATCH/tmp broke every tool that writes a temporary file) is bound when it exists, else
-# the container's /tmp; LC_ALL is the image's, which has C.UTF-8 alone (en_US.UTF-8 warned).
-DECKS_TMPDIR := $(if $(TMPDIR),$(realpath $(TMPDIR)))
 
 ifeq ($(DECKS_RUNTIME_USED),docker)
 # --user: the outputs are yours (the entrypoint gives that uid a HOME); --init: Ctrl-C stops make
@@ -41,12 +37,14 @@ DECKS_RUN = podman run --rm --init --security-opt label=disable -e MAKEFLAGS \
   $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
   -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
 else ifeq ($(DECKS_RUNTIME_USED),apptainer)
-# runs as you with your HOME and environment (MAKEFLAGS included); `run`, not `exec`, so the
-# entrypoint seeds matplotlib's font cache. APPTAINER_SIF: a pulled image, skipping docker://.
-DECKS_RUN = apptainer run $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
+# runs as you, with your HOME; `run`, not `exec`, so the entrypoint seeds matplotlib's font cache.
+# --cleanenv: the image's environment alone, as under Docker and Podman. Apptainer would pass yours
+# in, and what it names need not exist inside (a profile's TMPDIR=$SCRATCH/tmp stopped Quarto,
+# LC_ALL=en_US.UTF-8 warned); MAKEFLAGS crosses as APPTAINERENV_MAKEFLAGS, which --cleanenv keeps.
+# APPTAINER_SIF: a pulled image, skipping docker://.
+DECKS_RUN = APPTAINERENV_MAKEFLAGS="$$MAKEFLAGS" apptainer run --cleanenv \
+  $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
   $(if $(DECKS_FONTS),--bind $(DECKS_FONTS):/opt/fonts:ro) --pwd $(DECKS_PWD) \
-  $(if $(DECKS_TMPDIR),--bind $(DECKS_TMPDIR) --env TMPDIR=$(DECKS_TMPDIR),$(if $(TMPDIR),--env TMPDIR=/tmp)) \
-  --env LC_ALL=C.UTF-8 \
   $(or $(APPTAINER_SIF),docker://$(DECKS_CONTAINER_IMAGE))
 else
 $(error DECKS_RUNTIME=$(DECKS_RUNTIME): native, docker, podman, apptainer or auto)
