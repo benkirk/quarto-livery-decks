@@ -34,6 +34,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   on PATH. The deck's repository and the framework are mounted at their own paths, and
   `DECKS_IMAGE_TAG` picks the image: the release the framework checkout carries by default, `sha`
   for its own commit. docs/container.md "From your deck's Makefile".
+- One installation serves everyone on an HPC system (docs/container.md "Sharing an installation"):
+  `make sif` pulls the SIF of the release a checkout carries into its `sif/`, an Apptainer build runs
+  that SIF when it is there, and `bin/new-deck DIR` starts a deck from the quickstart, its Makefile
+  including the installation's `Make.common` by absolute path. A user needs `module load apptainer`
+  and nothing else installed.
 - Apptainer runs with `--cleanenv`, the image's environment alone, as under Docker and Podman: in
   a deck's make (`DECKS_RUNTIME=apptainer`) and in docs/container.md's `apptainer run` and `exec`
   forms. A Casper profile's `TMPDIR=$SCRATCH/tmp` named a directory the container lacked and

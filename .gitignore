@@ -1,5 +1,7 @@
 *~
 conda-env/
+# an installation's SIFs (make sif)
+/sif/
 _qa/
 _site/
 _baseline/

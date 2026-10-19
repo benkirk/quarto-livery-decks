@@ -7,15 +7,13 @@
 # else: no Python, no Quarto. Command-line variables (LIVERY=cu, DECKS="a b") reach the inner make
 # through MAKEFLAGS; its own DECKS_RUNTIME=native keeps it from dispatching again.
 
-# The image: the release this checkout carries (a release bumps _extension.yml's version), or any
-# published tag (26.10, latest, pr-95); `sha` is this checkout's own build (image.yaml's sha-<7>).
-# DECKS_CONTAINER_IMAGE replaces the whole reference (a digest too: the CI's runtimes.yaml).
-DECKS_IMAGE     ?= ghcr.io/benkirk/quarto-livery-decks
-DECKS_IMAGE_TAG ?= $(shell sed -n "s/^version:[ \"']*\([^ \"']*\).*/\1/p" $(FRAMEWORK_ROOT)_extensions/engine/_extension.yml)
-ifeq ($(DECKS_IMAGE_TAG),sha)
-override DECKS_IMAGE_TAG := sha-$(shell git -C $(FRAMEWORK_ROOT) rev-parse --short=7 HEAD)
+# The image (DECKS_IMAGE, DECKS_IMAGE_TAG, DECKS_CONTAINER_IMAGE) and the installation's SIF of it.
+include $(FRAMEWORK_ROOT)common/image.mk
+# Apptainer runs that SIF when the installation has one (`make sif`) and nothing names another
+# image: a shared checkout's users need no setting. APPTAINER_SIF names any other.
+ifeq ($(origin APPTAINER_SIF)$(origin DECKS_IMAGE)$(origin DECKS_CONTAINER_IMAGE),undefinedfilefile)
+APPTAINER_SIF := $(wildcard $(DECKS_SIF))
 endif
-DECKS_CONTAINER_IMAGE ?= $(DECKS_IMAGE):$(DECKS_IMAGE_TAG)
 
 # What the container sees, at the same paths: the deck's repository (its git toplevel, else the
 # deck directory), this framework, a LIVERY_DIR outside both, FONTS_DIR on /opt/fonts. Real paths:
