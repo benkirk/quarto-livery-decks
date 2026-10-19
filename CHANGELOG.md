@@ -38,6 +38,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   first diagram. Chromium bundles a fontconfig whose index the system's does not write, so every new
   HOME indexed all the image's fonts first; on a busy login node that outlasted Quarto's 3 s wait for
   the browser, after which Quarto waits forever (a first build on Casper hung after `Cell 1/1 ...Done`).
+- A container build has its own HOME, `~/.cache/quarto-livery-decks/home-<release>` (`DECKS_HOME`),
+  under every runtime: what your own tools keep in your HOME (a conda env's Jupyter and IPython
+  settings, matplotlib's font list, TeX trees, personal fonts) no longer reaches the build, and its
+  caches persist between builds. `DECKS_BINDS` mounts more of the host, those directories that exist;
+  an installation sets its site's in an untracked `site.mk` beside `Make.common`. A symlink in the deck
+  directory resolves in the container: its target is mounted when nothing else covers it.
 - One installation serves everyone on an HPC system (docs/container.md "Sharing an installation"):
   `make sif` pulls the SIF of the release a checkout carries into its `sif/`, an Apptainer build runs
   that SIF when it is there, and `bin/new-deck DIR` starts a deck from the quickstart, its Makefile

@@ -21,6 +21,10 @@
 .DELETE_ON_ERROR:
 
 FRAMEWORK_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
+# An installation's own settings (untracked; docs/container.md "Sharing an installation"): its
+# site's file systems (DECKS_BINDS), a default runtime. Read before anything uses them, with `?=`
+# in it, so a user's environment or command line still wins.
+-include $(FRAMEWORK_ROOT)site.mk
 
 # Where the toolchain comes from. The image runs its make with DECKS_RUNTIME=native on the
 # command line (and in its ENV), so a build inside it never dispatches again.

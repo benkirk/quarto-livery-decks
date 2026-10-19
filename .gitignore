@@ -2,6 +2,8 @@
 conda-env/
 # an installation's SIFs (make sif)
 /sif/
+# an installation's own settings (docs/container.md "Sharing an installation")
+/site.mk
 _qa/
 _site/
 _baseline/

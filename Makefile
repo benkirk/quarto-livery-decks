@@ -63,6 +63,7 @@ image: ## Build the container image locally as $(IMAGE), then .github/scripts/sm
 # build never reads half a file; readable by everyone. Big pulls: APPTAINER_CACHEDIR and
 # APPTAINER_TMPDIR on scratch, in a batch job on an HPC system.
 FRAMEWORK_ROOT := ./
+-include site.mk
 include common/image.mk
 sif: ## Pull the release's image into sif/ for shared Apptainer builds (module load apptainer first)
 	@set -e   # .ONESHELL: the @ quiets the whole recipe
@@ -77,8 +78,8 @@ sif: ## Pull the release's image into sif/ for shared Apptainer builds (module l
 clean: ## Remove temporary files (*~)
 	rm *~
 
-clobber: ## Git clean except .env, conda-env/ and sif/
-	git clean -xdf --exclude ".env" --exclude "conda-env/" --exclude "sif/"
+clobber: ## Git clean except .env, conda-env/, sif/ and site.mk
+	git clean -xdf --exclude ".env" --exclude "conda-env/" --exclude "sif/" --exclude "site.mk"
 
 distclean: ## Clean everything including conda-env/
 	$(MAKE) clobber

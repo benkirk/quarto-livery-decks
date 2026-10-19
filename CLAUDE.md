@@ -121,7 +121,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Runtime**: `DECKS_RUNTIME` (`auto` default: native when `quarto` is on PATH, else the first
   of apptainer, docker, podman) at the top of `Make.common`; anything but native includes
   `common/Make.container`, which runs the goals as ONE `make ... DECKS_RUNTIME=native` in the image,
-  the deck's git toplevel, the framework and an outside `LIVERY_DIR` mounted at their real paths
+  the deck's git toplevel, the framework, an outside `LIVERY_DIR`, the existing `DECKS_BINDS` and
+  uncovered symlink targets in the deck directory mounted at their real paths, with its own HOME
+  (`DECKS_HOME`, `~/.cache/quarto-livery-decks/home-<tag>`: the user's HOME, an `npl` env's Jupyter
+  and IPython settings and the rest, never reaches the image's tools; a `$(shell)` with a `case`
+  needs `(pattern)`, or its `)` ends the function)
   (command-line variables ride MAKEFLAGS, under Apptainer as APPTAINERENV_MAKEFLAGS since it runs
   `--cleanenv`: a Casper profile's TMPDIR leaked in and stopped Quarto; `publish` pushes from the host via the shared
   `publish_push`). The header and `Make.container` must parse under GNU make 3.81, since macOS's
@@ -133,7 +137,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `/glade/work/benkirk/repos/quarto-livery-decks`): `make sif` pulls the checkout's release into
   `sif/quarto-livery-decks_<tag>.sif` (gitignored, kept by `clobber`), which Make.container runs
   when no image is named; `bin/new-deck DIR` starts a deck from the quickstart with an absolute
-  `include` of this checkout's Make.common. Lmod module support is deferred.
+  `include` of this checkout's Make.common. Its untracked `site.mk` (read by Make.common and the
+  top Makefile, kept by `clobber`) holds `DECKS_BINDS ?= /glade /lustre/desc1 /gpfs/csfs1
+  /local_scratch` (NCAR's file systems appear under two names). Lmod module support is deferred.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
   `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
