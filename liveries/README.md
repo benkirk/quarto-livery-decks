@@ -61,7 +61,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      `feature.style`; `compositions` to move any box of the composed slides.
    - **Art.** `art`: wave curves (`common/utils/fit-waves.py` fits them to the brand's cover
      art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo.
-   - **Type.** `type:` in points and `pptx.size`, the brand template's canvas (README "Text
+   - **Type.** `type:` in points and `pptx.size`, the brand template's canvas (docs/authoring.md "Text
      sizes and the slide size").
    - **Chart colors.** A brand guide's published data palette goes in `charts:` (`ramps`,
      `sets`, or `extended` for secondary colors), its source in `reference/notes.md`; with

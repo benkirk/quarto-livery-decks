@@ -69,7 +69,7 @@ Per deck, `make pptx` runs:
      demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text
      after a table or image);
    - `slide-layout.lua` carries a slide's layout classes over as a notes line for `slide_layout`;
-   - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [README "Linked images"](../README.md#linked-images));
+   - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [authoring.md "Linked images"](authoring.md#linked-images));
    - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too).
 2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
    (`_extensions/engine/pptx_steps/`). It opens the deck once, runs them in this order and
@@ -80,21 +80,21 @@ Per deck, `make pptx` runs:
      label, its tab, the block centered and measured in the livery's fonts. The field, logo
      and art come from the template's Section Header layout (see "Template constraints").
    - `enable_autofit`: flips every body placeholder from "Do not Autofit" to "Shrink text
-     on overflow" (see [README "About text autofit"](../README.md#about-text-autofit)).
+     on overflow" (see [authoring.md "About text autofit"](authoring.md#about-text-autofit)).
    - `embed_fonts`: re-injects the livery's font variants as `<p:embeddedFont>` entries,
      which pandoc strips, so the font travels with the file (see "About the fonts").
    - `style_footnotes`: restyles body paragraphs that start with `†` or `‡` as footnotes
      (smaller, the livery's muted color, the marker in its accent), since pandoc ignores
      inline size and color. HTML and PDF go further: the theme moves them to the slide's foot.
-   - `link_captions`: captions each linked picture (see [README "Linked images"](../README.md#linked-images)) with its URL,
+   - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,
      bottom center, muted; the caption box is itself the link.
-   - `slide_layout`: applies a slide's layout controls (see [README "Centering and scaling a short slide"](../README.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
+   - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
      title slides at the template's extra layouts; copies the slide number onto every slide.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in the primary color, thin rules between rows, every second row banded, the
      blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
      cell by cell, and evenly split columns are re-split by content.
-   - `type_step`: applies a deck's `type-body:` or `type-scale:` (see [README "Text sizes and the slide size"](../README.md#text-sizes-and-the-slide-size)).
+   - `type_step`: applies a deck's `type-body:` or `type-scale:` (see [authoring.md "Text sizes and the slide size"](authoring.md#text-sizes-and-the-slide-size)).
 
 `make html` (revealjs) and `make pdf` (beamer) run step 1 with the engine's own format and
 filters, which draw everything step 2 adds to the pptx.
@@ -231,7 +231,7 @@ beamer theme in `_extensions/engine/` (until 2026-10 its own repository,
   - `## Thank you! {.closing}` makes a closing slide.
   - `### Heading {.example}` / `{.alert}` give block variants.
   - `[text]{.alert}` emphasizes text.
-- **Dense slides**: beamer has no autofit; see [README "About text autofit"](../README.md#about-text-autofit).
+- **Dense slides**: beamer has no autofit; see [authoring.md "About text autofit"](authoring.md#about-text-autofit).
 
 ## HTML (revealjs)
 
@@ -249,7 +249,7 @@ and keep `<deck>_files/` beside it.
   - `## Title {.brand-dark}` puts a content slide on the livery's dark color with
     white text (under a dark livery, every content slide already is); pptx and PDF
     draw an ordinary slide.
-  - Overflowing content slides shrink to fit (see [README "About text autofit"](../README.md#about-text-autofit)).
+  - Overflowing content slides shrink to fit (see [authoring.md "About text autofit"](authoring.md#about-text-autofit)).
   - Mermaid and Graphviz draw live in the browser; mermaid uses the livery's
     colors and font where pptx and PDF carry a picture of it.
 - **One file to share:** in a deck's front matter,
