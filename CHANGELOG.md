@@ -17,6 +17,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- The README is becoming a short front page for deck authors, the details in companion guides:
+  `latex/README.md` (LaTeX and Overleaf: the Overleaf projects, the starter and the examples,
+  writing slides in LaTeX, the theme options, math fonts, colors).
+
 ### Liveries
 - `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the
   container (`<framework>/bin/livery` from a consumer repository).
@@ -78,7 +83,7 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
 ### LaTeX
 - Every livery is a pure-LaTeX beamer theme too, `\usetheme[livery=liveries/<name>]{Engine}`
   (`liveries/ncar` by default), with `fonts=brand|bundled|helvetica`, `mathfont=`, `title=`,
-  `footer=`, `typescale=` and the rest (README "Theme options"); each release attaches an
+  `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
 [Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.0...HEAD
