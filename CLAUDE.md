@@ -386,7 +386,9 @@ it does, by area, beyond the format notes above:
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
   livery, `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change of a
-  box, and `tests/test_type.py`). For anything that can move pixels, `tests/parity.sh baseline`
+  box, `tests/test_type.py`, and `tests/test_docs.py`: every relative link and `#anchor` in the
+  tracked `*.md` files resolves, and every `README "X"` or `<guide>.md "X"` pointer in a
+  tracked file names a heading that exists; `design/` is exempt). For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh

@@ -114,7 +114,7 @@ Open (deferred 2026-10-16, none blocking):
 - **Other CU lockups.** The one-line CU Boulder lockup is in; the lockup library (CU login)
   also has the stacked versions, should a layout want one.
 
-## Chart colors (2026-10-18)
+## Chart colors
 
 Generated from the brand (design/charts-and-plots.md), with the campus in it (Ben, 2026-10-18:
 "their campus is famously sandstone with red tile roofs and it would be awesome to work this into

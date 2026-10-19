@@ -33,7 +33,7 @@ help: ## Show this help message
 latex: ## Build latex/: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
 	$(MAKE) -C latex default examples variants
 
-test: ## Run the engine's tests: livery build --check, livery check, compositions, type, charts, schema
+test: ## Run the engine's tests: livery build --check, livery check, compositions, type, charts, schema, cli, docs
 	set -e
 	python3 _extensions/engine/livery.py build --check liveries/*/
 	python3 _extensions/engine/livery.py check liveries/*/
@@ -42,6 +42,7 @@ test: ## Run the engine's tests: livery build --check, livery check, composition
 	python3 tests/test_charts.py
 	python3 tests/test_schema.py
 	python3 tests/test_cli.py
+	python3 tests/test_docs.py
 	python3 _extensions/engine/livery.py schema --doc --check
 
 # A livery's onboarding loop (`livery all`, liveries/README.md): build/ from its yml files, its
