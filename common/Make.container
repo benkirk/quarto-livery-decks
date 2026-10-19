@@ -15,32 +15,54 @@ ifeq ($(origin APPTAINER_SIF)$(origin DECKS_IMAGE)$(origin DECKS_CONTAINER_IMAGE
 APPTAINER_SIF := $(wildcard $(DECKS_SIF))
 endif
 
+# The container's own HOME, on the host, one per release: what your own tools keep in your HOME (a
+# conda env's Jupyter and IPython settings, matplotlib's font list, TeX trees, personal fonts)
+# never reaches the image's, and the build's caches persist without touching yours. Every runtime
+# uses it; the entrypoint seeds matplotlib's font cache into it.
+DECKS_HOME ?= $(HOME)/.cache/quarto-livery-decks/home-$(DECKS_IMAGE_TAG)
+
 # What the container sees, at the same paths: the deck's repository (its git toplevel, else the
-# deck directory), this framework, a LIVERY_DIR outside both, FONTS_DIR on /opt/fonts. Real paths:
-# macOS's /tmp and an HPC system's linked project directories are symlinks the container lacks.
+# deck directory), this framework, a LIVERY_DIR outside both, and DECKS_BINDS, a site's file
+# systems (an installation's site.mk sets them; each only where it exists, so one list serves
+# hosts with different mounts); FONTS_DIR on /opt/fonts. Real paths: macOS's /tmp and an HPC
+# system's linked project directories are symlinks the container lacks.
+DECKS_BINDS  ?=
 DECKS_PWD    := $(realpath $(CURDIR))
-DECKS_MOUNTS := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
-                  $(FRAMEWORK_ROOT) $(LIVERY_DIR)))
+DECKS_BASE   := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
+                  $(FRAMEWORK_ROOT) $(LIVERY_DIR) $(wildcard $(DECKS_BINDS))))
+# Symlinks in the deck directory (an image linked in): a target none of the above covers is mounted
+# too, a directory itself or a file's directory, so the link resolves inside. (The case pattern's
+# leading "(" keeps $(shell)'s parentheses balanced.)
+DECKS_LINKED := $(shell bases='$(DECKS_BASE)'; \
+  find . -maxdepth 3 \( -name .quarto -o -name '*_files' -o -name _qa \) -prune -o -type l \
+    ! -name _quarto.yml ! -name _extensions ! -name _livery -print 2>/dev/null | \
+  while read -r l; do t=$$(realpath "$$l" 2>/dev/null) || continue; [ -e "$$t" ] || continue; \
+    [ -d "$$t" ] || t=$$(dirname "$$t"); c=; \
+    for m in $$bases; do case "$$t/" in ("$$m"/*) c=1;; esac; done; [ -n "$$c" ] || echo "$$t"; done)
+DECKS_MOUNTS := $(sort $(DECKS_BASE) $(DECKS_LINKED))
 DECKS_FONTS  := $(if $(FONTS_DIR),$(realpath $(FONTS_DIR)))
 
 ifeq ($(DECKS_RUNTIME_USED),docker)
-# --user: the outputs are yours (the entrypoint gives that uid a HOME); --init: Ctrl-C stops make
+# --user: the outputs are yours; --init: Ctrl-C stops make
 DECKS_RUN = docker run --rm --init --user $(shell id -u):$(shell id -g) -e MAKEFLAGS \
+  -v $(DECKS_HOME):$(DECKS_HOME) -e HOME=$(DECKS_HOME) \
   $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
   -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
 else ifeq ($(DECKS_RUNTIME_USED),podman)
 # rootless: the container's root is you. label=disable rather than :Z, which would relabel the
 # whole repository and framework for SELinux.
 DECKS_RUN = podman run --rm --init --security-opt label=disable -e MAKEFLAGS \
+  -v $(DECKS_HOME):$(DECKS_HOME) -e HOME=$(DECKS_HOME) \
   $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
   -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
 else ifeq ($(DECKS_RUNTIME_USED),apptainer)
-# runs as you, with your HOME; `run`, not `exec`, so the entrypoint seeds matplotlib's font cache.
+# runs as you, --home the container's own (your real HOME is not mounted); `run`, not `exec`, so
+# the entrypoint seeds matplotlib's font cache.
 # --cleanenv: the image's environment alone, as under Docker and Podman. Apptainer would pass yours
 # in, and what it names need not exist inside (a profile's TMPDIR=$SCRATCH/tmp stopped Quarto,
 # LC_ALL=en_US.UTF-8 warned); MAKEFLAGS crosses as APPTAINERENV_MAKEFLAGS, which --cleanenv keeps.
 # APPTAINER_SIF: a pulled image, skipping docker://.
-DECKS_RUN = APPTAINERENV_MAKEFLAGS="$$MAKEFLAGS" apptainer run --cleanenv \
+DECKS_RUN = APPTAINERENV_MAKEFLAGS="$$MAKEFLAGS" apptainer run --cleanenv --home $(DECKS_HOME) \
   $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
   $(if $(DECKS_FONTS),--bind $(DECKS_FONTS):/opt/fonts:ro) --pwd $(DECKS_PWD) \
   $(or $(APPTAINER_SIF),docker://$(DECKS_CONTAINER_IMAGE))
@@ -56,6 +78,7 @@ $(DECKS_GOALS): decks-container
 	@:
 decks-container:
 	@echo "DECKS_RUNTIME=$(DECKS_RUNTIME_USED): $(if $(APPTAINER_SIF),$(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE))" >&2
+	@mkdir -p $(DECKS_HOME)
 	$(DECKS_RUN) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native
 ifneq ($(filter publish,$(MAKECMDGOALS)),)
 	$(publish_push)

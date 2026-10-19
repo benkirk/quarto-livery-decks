@@ -136,6 +136,21 @@ test -s decks/quickstart/quickstart.pptx
 test "$(stat -c %u decks/quickstart/quickstart.pptx 2>/dev/null || stat -f %u decks/quickstart/quickstart.pptx)" = "$(id -u)"
 test -z "$(git status --short decks/quickstart | grep -v '^??')"
 
+echo "== 3b. a deck outside the repository, its images/ a symlink elsewhere, the container's own HOME"
+# bin/new-deck's deck, built through the dispatch: the link's target is mounted (nothing else covers
+# it), the picture reaches the pptx byte for byte, and the build's HOME is DECKS_HOME
+outside=$(mktemp -d "$tmp/outside.XXXXXX"); pics=$(mktemp -d "$tmp/pics.XXXXXX"); dh=$(mktemp -d "$tmp/dhome.XXXXXX")
+cp decks/quickstart/images/example.jpg "$pics/"
+bin/new-deck "$outside/linked"
+rm -r "$outside/linked/images"; ln -s "$pics" "$outside/linked/images"
+timeout 900 make -C "$outside/linked" pptx DECKS_RUNTIME="$RUNTIME" DECKS_HOME="$dh/home" "${pick[@]}"
+found=0
+for m in $(unzip -Z1 "$outside/linked/linked.pptx" 'ppt/media/*'); do
+  if unzip -p "$outside/linked/linked.pptx" "$m" | cmp -s - "$pics/example.jpg"; then found=1; fi
+done
+test "$found" = 1 || { echo "the linked picture is not in linked.pptx" >&2; exit 1; }
+test -d "$dh/home/.cache"
+
 [ "$RUNTIME" = docker ] || { echo "smoke test passed ($RUNTIME)"; exit 0; }
 
 echo "== 4. root works too (what GitHub container: jobs are)"

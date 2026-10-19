@@ -40,7 +40,9 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   your profile's variables outside (a module's `PYTHONPATH` or `TEXINPUTS`, a `TMPDIR` the
   container cannot see, a locale it lacks); set one deliberately with `APPTAINERENV_<NAME>`. Your
   real HOME is used (the caches land in `~/.cache`), and the image ignores what it holds for your
-  own Python: `pip --user` packages and Jupyter kernels registered with it.
+  own Python: `pip --user` packages and Jupyter kernels registered with it. To keep the rest of
+  your HOME out too (Jupyter and IPython settings, TeX trees, personal fonts), add `--home` and a
+  directory of the container's own, as a deck's make does.
 - **What the build writes** into the directory: the `_quarto.yml`, `_extensions`
   and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
   outputs (gitignore them, as a submodule consumer does). The links point into
@@ -92,6 +94,15 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   the toolchain the image's, and the links the build makes resolve on both sides, so native and
   container builds alternate in one directory. Variables on the command line pass through
   (`make pptx LIVERY=cu DECKS="a b"`); ones only in your environment do not, under any runtime.
+- **The container has its own HOME**, `~/.cache/quarto-livery-decks/home-<release>` on the host
+  (`DECKS_HOME`), a few MB. What your own tools keep in your HOME (a conda env's Jupyter and
+  IPython settings, matplotlib's font list, TeX trees, personal fonts) never reaches the build,
+  and the build's caches never touch yours; they persist there, so later builds are quicker.
+  Delete an old release's directory freely.
+- **More of the host**: `DECKS_BINDS` lists directories the container also sees at their own
+  paths, those that exist (a site's file systems; an installation's `site.mk` sets them, below).
+  A symlink in the deck directory, an image linked in from elsewhere, works too: its target is
+  mounted when nothing above already covers it. Anything else outside these is not visible.
 - **Which image**: `DECKS_IMAGE_TAG` defaults to the release your checkout carries (the
   `version:` in `_extensions/engine/_extension.yml`). Set any published tag (`26.10`, `latest`,
   `pr-95`), or `sha` for the image of your checkout's own commit. `DECKS_IMAGE` replaces the
@@ -99,8 +110,8 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   (a digest too), and `APPTAINER_SIF` runs a pulled SIF instead of converting `docker://` again.
   The build prints the image it uses.
 - **Per runtime**: Docker runs as your uid; Podman rootless, with SELinux labelling off for the
-  run rather than relabelling your tree; Apptainer as you, with your HOME and `--cleanenv`, so
-  your profile's variables (a `TMPDIR`, a locale, a module's paths) stay outside. `FONTS_DIR=path` mounts
+  run rather than relabelling your tree; Apptainer as you, with `--cleanenv`, so your profile's
+  variables (a `TMPDIR`, a locale, a module's paths) stay outside. `FONTS_DIR=path` mounts
   your licensed fonts on `/opt/fonts`.
 - **`make publish`** builds the site in the container and pushes from the host, with your git
   credentials.
@@ -137,6 +148,14 @@ cd ~/my-talk && make pptx                  # or html, pdf, all, qa
 
   To update: `git pull`, then `make sif` again. Until the new release's SIF is there, builds
   convert `docker://` as before, never running another release's toolchain. `make clobber`
-  leaves `sif/` alone; delete an old release's SIF when no one needs it.
+  leaves `sif/` and `site.mk` alone; delete an old release's SIF when no one needs it.
+- **The installation's `site.mk`** (beside `Make.common`, untracked) holds what every user of it
+  should get, with `?=`, so a user's own setting wins. Mostly the site's file systems, so that
+  decks and the images they link resolve; NCAR's, for Casper and Derecho, where the same file
+  systems also appear under `/lustre` and `/gpfs`:
+
+  ```make
+  DECKS_BINDS ?= /glade /lustre/desc1 /gpfs/csfs1 /local_scratch
+  ```
 - **Nothing is written into the installation** by a user's build: the links, `.quarto/` and the
   outputs land in the deck's own directory.
