@@ -26,6 +26,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   revealjs formats); `docs/container.md` (building in the container); `docs/other-repos.md` (the
   framework as a submodule, publishing the HTML decks); `decks/plots/README.md` takes the plots
   summary and `liveries/README.md` the dark liveries.
+- A pptx with a table opens in PowerPoint without the "Repair?" prompt: the table rules'
+  widths are whole EMUs (`style_tables.py` wrote `w="5715.0"`).
 
 ### Liveries
 - `livery` is a command on your PATH: `bin/livery`, after `source etc/config_env.sh` and in the

@@ -33,7 +33,7 @@ def _ln(tag, rule):
         etree.SubElement(ln, qn("a:noFill"))
         return ln
     width, color = rule
-    ln.set("w", str(width))
+    ln.set("w", str(round(width)))   # an integer: "5715.0" makes PowerPoint repair the deck
     fill = etree.SubElement(ln, qn("a:solidFill"))
     etree.SubElement(fill, qn("a:srgbClr"), val=color)
     return ln
