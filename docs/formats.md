@@ -29,7 +29,7 @@ quarto-livery-decks/
 │   ├── quickstart/        # the short exemplar deck: copy this one
 │   │   ├── quickstart.qmd
 │   │   ├── screenshots.py  (make screenshots: the README images)
-│   │   ├── gallery.py      (make gallery: the livery rows above)
+│   │   ├── gallery.py      (make gallery: the README's livery gallery)
 │   │   └── screenshots/    (those images, committed)
 │   ├── fixtures/          # small decks for the title variants and type steps,
 │   │                      #   for parity.sh and CI
@@ -106,8 +106,8 @@ free, a free stand-in otherwise), so there is nothing to install. The pptx templ
 scheme names the livery's typeface (`pptx.typeface`, and `pptx.heading-typeface` for a second
 headings face), so slide masters and layouts all dereference to it:
 
-- **ncar** names Poppins and embeds it (`pptx.fonts`, four `.fntdata` blobs), so the file
-  carries its font to any machine.
+- **ncar** and its family (`ucar`, `ucp`, `ncarucar`) name Poppins and embed it (`pptx.fonts`,
+  four `.fntdata` blobs), so the file carries its font to any machine.
 - **cu** and **nsi** name Helvetica Neue, a commercial face, and embed nothing: Macs have it,
   Windows substitutes Arial. HTML and PDF use it where it is installed (below).
 - **nasa** and **nasa-dark** name Public Sans and Inter. They embed once the livery carries
@@ -201,36 +201,8 @@ beamer theme in `_extensions/engine/` (until 2026-10 its own repository,
   system TeX Live. (Plain-LaTeX decks, not Quarto ones, can also be written
   on Overleaf: [`latex/README.md`](../latex/README.md).)
 - **No fonts to install** (see "About the fonts").
-- **Theme options** go in a deck's front matter:
-  `themeoptions: [title=light, fonts=bundled]`. A deck-level
-  list replaces the shared one, so keep `fonts=bundled` (from the shared
-  `_quarto.yml`): it pins the livery's bundled fonts and never probes for a
-  system copy (`fonts=brand` uses an installed brand face instead; see
-  "Installed brand fonts").
-  - `titlegraphic: images/photo.jpg` puts a photo on the title slide, in every
-    format, where the livery's title composition places it. Without one the livery's
-    default appears (`art.titlegraphic`: ncar's Mesa Lab, nsi's campus, nasa's Earth
-    limb); `titlegraphic: none` keeps the plain cover.
-  - `fineprint: "..."` adds small print under the title block.
-  - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
-    OpenType math font) changes the math font; the default is New Computer
-    Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key
-    also works. [latex/README.md "Math fonts"](../latex/README.md#math-fonts) shows every preset on one slide.
-  - `waves=false` removes the faint wave lines behind content slides of a
-    livery that has them (they are on the pptx master too).
-- **Markdown extras:**
-  - `## Title {.feature background-image="images/photo.jpg"}` makes a
-    full-bleed photo slide (`background=` also works; `background-image=`
-    doubles as the revealjs background). Its look is the livery's `feature.style`:
-    `bar` (the title on a dark bar, the text on a translucent panel; the default) or
-    `cover` (the title cover's field and waves, the photo beside them), in every format.
-  - `## Title {.full}` gives one diagram or image the whole slide: no title,
-    logo or rule, and the paragraph after it becomes a one-line caption. The
-    title stays in the source for navigation and `make qa`. pptx gets it
-    from `slide_layout.py`.
-  - `## Thank you! {.closing}` makes a closing slide.
-  - `### Heading {.example}` / `{.alert}` give block variants.
-  - `[text]{.alert}` emphasizes text.
+- **Theme options and slide kinds** are the deck's, in every format: [authoring.md "Front matter and
+  slide kinds"](authoring.md#front-matter-and-slide-kinds).
 - **Dense slides**: beamer has no autofit; see [authoring.md "About text autofit"](authoring.md#about-text-autofit).
 
 ## HTML (revealjs)
@@ -239,8 +211,8 @@ beamer theme in `_extensions/engine/` (until 2026-10 its own repository,
 extension. The deck looks like the PDF: title slide with the livery's
 art (or `titlegraphic:`), section dividers with subtitles, content slides
 with the livery's title and marks, `.feature` and `.closing` slides. The same
-`themeoptions:` apply (`title=`, `waves=`; math in the browser is
-MathJax's, so `mathfont=` does not). Open `<deck>.html` in a browser
+`themeoptions:` apply ([authoring.md "Front matter and slide kinds"](authoring.md#front-matter-and-slide-kinds):
+`title=`, `waves=`; math in the browser is MathJax's, so `mathfont=` does not). Open `<deck>.html` in a browser
 and keep `<deck>_files/` beside it.
 
 - **Presenting:** `s` speaker view (notes), `m` slide menu, `b`/`c`
