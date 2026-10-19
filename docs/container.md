@@ -100,7 +100,8 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   (a digest too), and `APPTAINER_SIF` runs a pulled SIF instead of converting `docker://` again.
   The build prints the image it uses.
 - **Per runtime**: Docker runs as your uid; Podman rootless, with SELinux labelling off for the
-  run rather than relabelling your tree; Apptainer as you, with your HOME. `FONTS_DIR=path` mounts
+  run rather than relabelling your tree; Apptainer as you, with your HOME, your environment and
+  your `TMPDIR` (bound in), in the image's locale. `FONTS_DIR=path` mounts
   your licensed fonts on `/opt/fonts`.
 - **`make publish`** builds the site in the container and pushes from the host, with your git
   credentials.
