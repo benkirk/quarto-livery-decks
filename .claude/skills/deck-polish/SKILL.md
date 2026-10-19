@@ -10,8 +10,8 @@ description: >-
 # Polish a deck
 
 `make qa` does the looking; this skill covers what to do with what it finds. The
-layout controls themselves are documented in README "Centering and scaling a short
-slide". Don't restate them; use them.
+layout controls themselves are documented in docs/authoring.md "Centering and scaling a
+short slide". Don't restate them; use them.
 
 ## Loop
 

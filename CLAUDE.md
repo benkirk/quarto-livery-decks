@@ -140,7 +140,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
   `latexmkrc` and a starter on `livery=liveries/<name>, fonts=bundled`; it compiles with
   `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
-  on a `v*` tag (cut by hand, asked first, never moved: the README's Overleaf links serve
+  on a `v*` tag (cut by hand, asked first, never moved: latex/README.md's Overleaf links serve
   `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, or `‡` for a second): the
   theme lifts every one on a slide, columns included, to the slide's
@@ -151,14 +151,14 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   format, and each shows the URL: the HTML footer and a PDF foot line come from
   the engine's `linked-images.lua`, the pptx caption box from `link_captions.py`
   (after pandoc, because anything after an image splits a pptx slide). A deck
-  should not hand-roll footers for this. README "Linked images".
+  should not hand-roll footers for this. docs/authoring.md "Linked images".
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
   `{.fill}`, each independent): the theme centers and scales the
   body in HTML and PDF. pptx drops slide classes, so the engine's `slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
   centers a table by its measured height (rows in PowerPoint's own sizing can still differ). `.center` is the theme's, not
-  Quarto's (which moves the title). README "Centering and scaling a short slide".
+  Quarto's (which moves the title). docs/authoring.md "Centering and scaling a short slide".
 - **Warning slides** (`{.caution}`): the body on a soft yellow
   field with a brand-yellow bar; footnotes stay below it in HTML and PDF. pptx:
   `slide_layout.py` fills the body text box, adds the bar, and cuts the box to its
@@ -499,7 +499,7 @@ bit while building it:
   percentage is proportionally smaller.
 - **`chalkboard` blocks `embed-resources`**, and `-M chalkboard:false` does
   not override a format option; set it in the deck's `format:` block.
-- **`make qa` first** (README "Checking a deck"): it does the screenshots,
+- **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
   overflow and slide-count checks below. Load the `deck-polish` skill for a
   format pass.
 - **Check it in a browser, not the source**: serve the deck directory
