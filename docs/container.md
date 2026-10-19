@@ -105,3 +105,38 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
 - **`make publish`** builds the site in the container and pushes from the host, with your git
   credentials.
 - **Paths** may not contain spaces (make splits on them), `%` or `#`.
+
+## Sharing an installation
+
+One framework checkout and one SIF serve everyone on an HPC system: users build with Apptainer
+and need no Quarto, conda env or image pull of their own. On NCAR's Casper and Derecho:
+
+```bash
+module load apptainer
+export QUARTO_DECKS=/glade/work/benkirk/repos/quarto-livery-decks   # the installation
+$QUARTO_DECKS/bin/new-deck ~/my-talk       # a deck started from the quickstart
+cd ~/my-talk && make pptx                  # or html, pdf, all, qa
+```
+
+- **`bin/new-deck DIR`** starts a deck from the installation's quickstart: `DIR/<name>.qmd` and
+  its `images/`, a `.gitignore`, and a Makefile that includes the installation's `Make.common` by
+  its absolute path, so `QUARTO_DECKS` is needed only to start a deck. It refuses a directory that
+  is not empty.
+- **The SIF is found by its name.** When the installation holds
+  `sif/quarto-livery-decks_<release>.sif`, the SIF of the release it carries, an Apptainer build
+  runs it rather than converting `docker://` again. `APPTAINER_SIF`, `DECKS_IMAGE` or
+  `DECKS_CONTAINER_IMAGE` set by a user names another image instead.
+- **Maintaining it**: clone the framework where everyone can read it, then pull the SIF, best in
+  a batch job, with Apptainer's cache and temporary directory on scratch:
+
+  ```bash
+  git clone https://github.com/benkirk/quarto-livery-decks.git && cd quarto-livery-decks
+  module load apptainer
+  make sif        # sif/quarto-livery-decks_<release>.sif, readable by everyone
+  ```
+
+  To update: `git pull`, then `make sif` again. Until the new release's SIF is there, builds
+  convert `docker://` as before, never running another release's toolchain. `make clobber`
+  leaves `sif/` alone; delete an old release's SIF when no one needs it.
+- **Nothing is written into the installation** by a user's build: the links, `.quarto/` and the
+  outputs land in the deck's own directory.

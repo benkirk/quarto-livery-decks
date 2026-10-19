@@ -5,7 +5,7 @@ CONDA_ROOT := $(shell conda info --base)
 # Common way to initialize environment across various types of systems
 config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/profile.d/conda.sh
 
-.PHONY: help latex test livery image clean clobber distclean
+.PHONY: help latex test livery image sif clean clobber distclean
 
 # -------------------------------------------------------------------
 # Default target: help
@@ -57,11 +57,28 @@ IMAGE ?= ghcr.io/benkirk/quarto-livery-decks:dev
 image: ## Build the container image locally as $(IMAGE), then .github/scripts/smoke-test.sh $(IMAGE)
 	docker build -t $(IMAGE) --build-arg GIT_SHA=$$(git rev-parse --short HEAD) --build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%MZ) .
 
+# The installation's SIF (docs/container.md "Sharing an installation"): the image of the release
+# this checkout carries, which an Apptainer build of any deck including this Make.common runs
+# instead of converting docker:// for each user. Pulled under a temporary name and moved, so a
+# build never reads half a file; readable by everyone. Big pulls: APPTAINER_CACHEDIR and
+# APPTAINER_TMPDIR on scratch, in a batch job on an HPC system.
+FRAMEWORK_ROOT := ./
+include common/image.mk
+sif: ## Pull the release's image into sif/ for shared Apptainer builds (module load apptainer first)
+	set -e
+	command -v apptainer >/dev/null || { echo "make sif: no apptainer on PATH (module load apptainer)" >&2; exit 1; }
+	if [ -s "$(DECKS_SIF)" ]; then echo "$(DECKS_SIF): already here"; exit 0; fi
+	mkdir -p sif && chmod a+rx sif
+	apptainer pull --force "$(DECKS_SIF).part" docker://$(DECKS_CONTAINER_IMAGE)
+	chmod a+r "$(DECKS_SIF).part"
+	mv "$(DECKS_SIF).part" "$(DECKS_SIF)"
+	ls -l "$(DECKS_SIF)"
+
 clean: ## Remove temporary files (*~)
 	rm *~
 
-clobber: ## Git clean except .env and conda-env/
-	git clean -xdf --exclude ".env" --exclude "conda-env/"
+clobber: ## Git clean except .env, conda-env/ and sif/
+	git clean -xdf --exclude ".env" --exclude "conda-env/" --exclude "sif/"
 
 distclean: ## Clean everything including conda-env/
 	$(MAKE) clobber

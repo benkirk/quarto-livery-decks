@@ -123,8 +123,13 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `publish_push`). The header and `Make.container` must parse under GNU make 3.81, since macOS's
   `/usr/bin/make` has to reach the dispatch; the native body runs under the env's make. Image:
   `DECKS_IMAGE`:`DECKS_IMAGE_TAG` (default `_extension.yml`'s version; `sha` the checkout's), or
-  `DECKS_CONTAINER_IMAGE`, `APPTAINER_SIF`. The image's ENV says native. smoke-test.sh step 3
-  runs it per runtime.
+  `DECKS_CONTAINER_IMAGE`, `APPTAINER_SIF` (all in `common/image.mk`, which the top Makefile's
+  `make sif` shares). The image's ENV says native. smoke-test.sh step 3 runs it per runtime.
+- **A shared installation** (docs/container.md "Sharing an installation"; NCAR HPC:
+  `/glade/work/benkirk/repos/quarto-livery-decks`): `make sif` pulls the checkout's release into
+  `sif/quarto-livery-decks_<tag>.sif` (gitignored, kept by `clobber`), which Make.container runs
+  when no image is named; `bin/new-deck DIR` starts a deck from the quickstart with an absolute
+  `include` of this checkout's Make.common. Lmod module support is deferred.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
   `toc` and the six pptx filters in order; a project's `reference-doc:` wins).

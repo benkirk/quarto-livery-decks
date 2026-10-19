@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# new-deck DIR: a deck directory started from this checkout's quickstart, building against this
+# checkout (docs/container.md "Sharing an installation"):
+#   DIR/<name>.qmd   the quickstart deck, renamed for DIR (make names the outputs after DIR)
+#   DIR/images/      its picture
+#   DIR/Makefile     include <this checkout>/Make.common, by its absolute path
+#   DIR/.gitignore   the links and outputs a build writes
+# Then: cd DIR && make pptx. Bash only, so it runs before any toolchain is set up; a link to it
+# anywhere finds this checkout, as bin/livery does.
+set -euo pipefail
+src=${BASH_SOURCE[0]}
+while [ -L "$src" ]; do   # follow links to this file
+  dir=$(cd "$(dirname "$src")" && pwd -P)
+  src=$(readlink "$src")
+  [[ $src == /* ]] || src=$dir/$src
+done
+fw=$(cd "$(dirname "$src")/.." && pwd -P)
+
+if [ $# -ne 1 ] || [[ $1 == -* ]]; then
+  echo "usage: new-deck DIR   (a new deck from $fw/decks/quickstart)" >&2
+  exit 2
+fi
+deck=$1
+name=$(basename "$deck")
+case $name in
+  ""|.|..|*[!A-Za-z0-9._-]*) echo "new-deck: '$name' names the deck's files: letters, digits, '.', '_' and '-' only" >&2; exit 2 ;;
+esac
+case $fw in
+  *[[:space:]%#]*) echo "new-deck: the framework's path '$fw' has a space, % or #, which make and LaTeX cannot take" >&2; exit 1 ;;
+esac
+if [ -e "$deck" ] && [ -n "$(ls -A "$deck")" ]; then
+  echo "new-deck: $deck exists and is not empty" >&2
+  exit 1
+fi
+
+mkdir -p "$deck"
+cp "$fw/decks/quickstart/quickstart.qmd" "$deck/$name.qmd"
+cp -R "$fw/decks/quickstart/images" "$deck/images"
+cat > "$deck/Makefile" <<EOF
+# A deck on the framework at $fw (docs/container.md "Sharing an installation").
+# make pptx | html | pdf | all | qa: natively in its conda env, else in its image (DECKS_RUNTIME).
+include $fw/Make.common
+EOF
+cat > "$deck/.gitignore" <<'EOF'
+# links Make.common creates, and its livery stamp
+_quarto.yml
+_extensions
+_livery
+.livery
+
+# Quarto's caches and the build outputs
+.quarto/
+*.quarto_ipynb
+*_files/
+_qa/
+*.pptx
+*.html
+*.pdf
+~$*
+EOF
+echo "new deck: $deck/$name.qmd, on $fw"
+echo "next:     cd $deck && make pptx      (or html, pdf, all, qa)"
