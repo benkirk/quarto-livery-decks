@@ -65,7 +65,7 @@ image: ## Build the container image locally as $(IMAGE), then .github/scripts/sm
 FRAMEWORK_ROOT := ./
 include common/image.mk
 sif: ## Pull the release's image into sif/ for shared Apptainer builds (module load apptainer first)
-	set -e
+	@set -e   # .ONESHELL: the @ quiets the whole recipe
 	command -v apptainer >/dev/null || { echo "make sif: no apptainer on PATH (module load apptainer)" >&2; exit 1; }
 	if [ -s "$(DECKS_SIF)" ]; then echo "$(DECKS_SIF): already here"; exit 0; fi
 	mkdir -p sif && chmod a+rx sif
