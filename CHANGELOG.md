@@ -19,8 +19,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ### Decks
 - The README is a short front page for deck authors, the details in companion guides:
-  `docs/authoring.md` (a new deck, linked images, centering and scaling a slide, shell chunks,
-  text sizes, autofit, `make qa`); `latex/README.md` (LaTeX and Overleaf: the Overleaf projects, the starter and the examples,
+  `docs/authoring.md` (a new deck, the front matter and slide kinds, linked images, centering
+  and scaling a slide, shell chunks, text sizes, autofit, `make qa`); `latex/README.md` (LaTeX and Overleaf: the Overleaf projects, the starter and the examples,
   writing slides in LaTeX, the theme options, math fonts, colors); `docs/formats.md` (the
   repository's layout, the build pipeline, the fonts, the template's constraints, the beamer and
   revealjs formats); `docs/container.md` (building in the container); `docs/other-repos.md` (the

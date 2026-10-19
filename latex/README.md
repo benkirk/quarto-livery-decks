@@ -45,7 +45,7 @@ in a clean directory on every push.
 
 ## The starter and the examples
 
-`latex/` holds the engine's own LaTeX decks. Build them there:
+This directory holds the engine's own LaTeX decks; build them here:
 
 | | `make` target | output |
 |---|---|---|

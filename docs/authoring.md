@@ -1,7 +1,7 @@
 # Writing a deck
 
-A new deck directory, the per-slide controls (linked images, centering and scaling, shell
-chunks), the text sizes and autofit, and `make qa`. The quickstart deck
+A new deck directory, the front matter and the slide kinds, the per-slide controls (linked
+images, centering and scaling, shell chunks), the text sizes and autofit, and `make qa`. The quickstart deck
 (`decks/quickstart/quickstart.qmd`) is the one to copy; `decks/sample/sample.qmd` shows every pattern.
 
 ## Adding a new deck
@@ -41,6 +41,41 @@ extra extensions, etc.) can replace the symlinked `_quarto.yml` with a
 real file: `make` sees the file already exists and skips the symlink
 recipe.
 
+## Front matter and slide kinds
+
+**Theme options** go in a deck's front matter: `themeoptions: [title=light, fonts=bundled]`. A
+deck-level list replaces the shared one, so keep `fonts=bundled` (from the shared
+`_quarto.yml`): it pins the livery's bundled fonts and never probes for a system copy
+(`fonts=brand` uses an installed brand face instead; see
+[formats.md "Installed brand fonts"](formats.md#installed-brand-fonts)).
+
+- `titlegraphic: images/photo.jpg` puts a photo on the title slide, in every
+  format, where the livery's title composition places it. Without one the livery's
+  default appears (`art.titlegraphic`: ncar's Mesa Lab, nsi's campus, nasa's Earth
+  limb); `titlegraphic: none` keeps the plain cover.
+- `fineprint: "..."` adds small print under the title block.
+- `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
+  OpenType math font) changes the math font; the default is New Computer
+  Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key
+  also works. [latex/README.md "Math fonts"](../latex/README.md#math-fonts) shows every preset on one slide.
+- `waves=false` removes the faint wave lines behind content slides of a
+  livery that has them (they are on the pptx master too).
+
+**Slide kinds**, by a class on the heading (the quickstart deck shows each):
+
+- `## Title {.feature background-image="images/photo.jpg"}` makes a
+  full-bleed photo slide (`background=` also works; `background-image=`
+  doubles as the revealjs background). Its look is the livery's `feature.style`:
+  `bar` (the title on a dark bar, the text on a translucent panel; the default) or
+  `cover` (the title cover's field and waves, the photo beside them), in every format.
+- `## Title {.full}` gives one diagram or image the whole slide: no title,
+  logo or rule, and the paragraph after it becomes a one-line caption. The
+  title stays in the source for navigation and `make qa`. pptx gets it
+  from `slide_layout.py`.
+- `## Thank you! {.closing}` makes a closing slide.
+- `### Heading {.example}` / `{.alert}` give block variants.
+- `[text]{.alert}` emphasizes text.
+
 ## Linked images
 
 Wrap an image in a link and the picture opens that page, in every format:
@@ -60,8 +95,8 @@ and fits all three.
 
 Six per-slide controls on the heading, each independent, act on the body
 (everything but the title, speaker notes and footnotes). The engine's themes draw them
-in HTML and PDF; pptx gets them through `slide_layout.py` (step 7 of
-[formats.md "Build pipeline"](formats.md#build-pipeline)).
+in HTML and PDF; pptx gets them through `slide_layout.py`, a step of the
+[build pipeline](formats.md#build-pipeline).
 
 ```markdown
 ## Who's still on legacy {.center scale="1.4"}
@@ -127,16 +162,10 @@ sizes live in its `livery.yml` (`type:`, `pptx.size`; `livery_build.py`'s `TYPE`
 
 ## About text autofit
 
-Pandoc's PPTX writer emits empty `<a:bodyPr/>` on every placeholder,
-which corresponds to PowerPoint's "Do not Autofit": long text overflows
-the placeholder visually. `enable_autofit.py` rewrites these to
-`<a:bodyPr><a:normAutofit/></a:bodyPr>`, which sets the dropdown to
-"Shrink text on overflow."
-
-PowerPoint computes the actual `fontScale` only on edit, not on load, so the file opens with
-overflowing text; a click into any overflowing cell triggers the recompute and the text
-shrinks permanently. Author-side discipline (split walls of text, use columns) beats driving
-PowerPoint externally, so nothing is wired up for that.
+Pandoc leaves every pptx text box on "Do not Autofit", so the post-render step
+`enable_autofit` sets "Shrink text on overflow". PowerPoint applies the shrink only on edit,
+not on load: the file opens with the text overflowing, and a click into the box shrinks it
+for good. Splitting a wall of text, or using columns, beats either.
 
 The HTML deck fits itself: a content slide that runs past the bottom margin
 shrinks its body text (down to 65%) until it fits, keeping the title size.
@@ -151,7 +180,6 @@ the HTML autofit with `{.no-autofit}` (or `{.scrollable}`), or a whole deck
 with `themeoptions: [autofit=false]`. Beamer never shrinks overflowing text: add
 `{.shrink}` to a dense slide's heading to scale that one slide down (pptx ignores the
 class), or check it with `make qa`.
-
 
 ## Checking a deck
 
