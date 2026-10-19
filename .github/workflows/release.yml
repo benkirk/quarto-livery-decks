@@ -1,6 +1,6 @@
 # Pushing a tag v* publishes a GitHub Release carrying, per livery under liveries/, one
 # Overleaf/pure-LaTeX project zip and one charts bundle (matplotlib in the livery), at the stable
-# URLs the README links:
+# URLs latex/README.md (the Overleaf table) and decks/plots/README.md link:
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-overleaf.zip
 #   https://github.com/benkirk/quarto-livery-decks/releases/latest/download/<name>-charts.zip
 # A v* tag also publishes the container image under its semver tags (ci.yaml -> image.yaml).

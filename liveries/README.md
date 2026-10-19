@@ -79,7 +79,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    `latexmk -xelatex talk.tex`: the pure-LaTeX path. Commit `build/`, `template.pptx`, the assets
    and the notes. CI builds the quickstart under every livery directory and compiles its
    Overleaf zip, so the new one is checked from its first push.
-5. **Release.** Add the livery's row to README "LaTeX and Overleaf" and "The liveries", `make
+5. **Release.** Add the livery's row to latex/README.md "Overleaf" and README "The liveries", `make
    gallery` it into the README, and its entry to [`CHANGELOG.md`](../CHANGELOG.md) under
    *Liveries*. A release is the engine's version, a calendar version `YY.MM.N` (the month
    unpadded, `N` the month's release count from 0, CHANGELOG.md's preamble): set `version:` in
