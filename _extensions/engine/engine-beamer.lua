@@ -7,7 +7,12 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
   ## Title {.full}
       one figure (a diagram cell or an image) fills the frame, with no title,
       logo, rule or waves (-> \begin{frame}[enginefull=image]); the paragraphs
-      after it become one caption line (\enginefullcaption)
+      after it (or a ::: note) become one caption line (\enginefullcaption)
+
+  ::: note
+  A remark under a figure or table.
+  :::
+      drawn as its caption: the caption size, muted, centred (\enginenote)
 
   ## Thank you! {.closing}
       closing frame on the brand field; the heading becomes the large
@@ -52,10 +57,11 @@ end
 local slide_level = 2
 
 -- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step,
--- the default livery, the slide-footnote markers and the one-figure test.
+-- the default livery, the slide-footnote markers, the one-figure test and the note test.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
 local has_class, deck_type_scale, default_livery = C.has_class, C.deck_type_scale, C.default_livery
 local footnote_marker, strip_marker, is_figure = C.footnote_marker, C.strip_marker, C.is_figure
+local is_note = C.is_note
 
 local function add_frameoption(el, opt)
   local cur = el.attributes["frameoptions"]
@@ -414,6 +420,8 @@ local function split_full(blocks)
       fig = b
     elseif fig and (b.t == "Para" or b.t == "Plain") then
       caption:insert(b)
+    elseif fig and is_note(b) then   -- a note is the caption here
+      caption:extend(b.content)
     else
       return nil
     end
@@ -462,6 +470,28 @@ local function full_frames(blocks)
     end
   end
   return out
+end
+
+-- ::: note: \enginenote{...} (beamerinnerthemeEngine.sty: the caption's look, under the
+-- figure), after the footnote hoist has lifted any † line out of it; a note left empty goes.
+-- Under a table it first takes back the skip longtable leaves (\LTpost, which a penalty
+-- follows, so \lastskip cannot see it).
+local function note_frames(blocks)
+  return blocks:walk({
+    Blocks = function(bs)
+      local out = pandoc.Blocks({})
+      for k, d in ipairs(bs) do
+        if not is_note(d) then
+          out:insert(d)
+        elseif #d.content > 0 then
+          local tex = pandoc.write(pandoc.Pandoc(d.content), "latex"):gsub("%s+$", "")
+          local back = (k > 1 and bs[k - 1].t == "Table") and "\\vskip-\\LTpost" or ""
+          out:insert(latex(back .. "\\enginenote{" .. tex .. "}"))
+        end
+      end
+      return out
+    end,
+  })
 end
 
 -- Images with an absolute size (e.g. mermaid diagrams, which Quarto includes
@@ -601,7 +631,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = unwrap_layout(hoist_footnotes(out))
+  doc.blocks = note_frames(unwrap_layout(hoist_footnotes(out)))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

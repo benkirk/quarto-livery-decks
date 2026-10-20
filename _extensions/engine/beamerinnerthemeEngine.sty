@@ -248,6 +248,16 @@
   \makebox[1.1em][l]{\textcolor{BrandAccent}{\bfseries #1}}#2\par\vskip0.4ex}
 
 % ---------------------------------------------------------------------------
+% note: a remark under a figure or table, in the caption's look (the full
+% frame's \enginefullcaption): the caption size, muted, centred.  The Quarto
+% filter writes it for a ::: note div (after a table, it first takes back the
+% skip longtable leaves, \LTpost).
+%   \enginenote{121 PiB used of 141 PiB.}
+% ---------------------------------------------------------------------------
+\newcommand\enginenote[1]{%
+  \par\vskip0.4ex{\centering\usebeamerfont{caption}\color{BrandMuted}#1\par}}
+
+% ---------------------------------------------------------------------------
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
 % bar at its left (the Quarto filter writes it for {.caution})
 % ---------------------------------------------------------------------------
