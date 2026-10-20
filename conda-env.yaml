@@ -9,6 +9,7 @@ dependencies:
   - make
   - pip
   - poppler      # pdftoppm / pdftotext, for `make qa`
+  - librsvg      # rsvg-convert: an SVG plot's PNG fallback in pptx (pptx_steps/svg_fallback.py)
   # Pure-python deps install much faster as wheels via pip than via the
   # conda solver, and don't add to the solve graph.
   - pip:

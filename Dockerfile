@@ -84,6 +84,7 @@ while IFS== read -r k v; do
 done <<<"$want"
 test "$bad" -eq 0
 quarto --version
+rsvg-convert --version   # pptx_steps/svg_fallback.py: an SVG plot's PNG fallback
 EOS
 
 # 5. The bash kernel (executable {bash} cells) and ONE headless Chromium, shared by Quarto
