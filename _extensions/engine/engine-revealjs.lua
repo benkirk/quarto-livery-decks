@@ -17,8 +17,14 @@ The same Markdown as the beamer theme (engine-beamer.lua):
 
   ## Title {.full}
       one figure (a diagram cell or an image) fills the slide: no title,
-      logo, rule or waves; the paragraphs after it are a one-line caption.
-      The title stays in the page, hidden, for navigation and tools.
+      logo, rule or waves; the paragraphs after it (or a ::: note) are a
+      one-line caption. The title stays in the page, hidden, for navigation
+      and tools.
+
+  ::: note
+  A remark under a figure or table.
+  :::
+      drawn as its caption: the caption size, muted, centred (.engine-note)
 
   ## Title {.brand-dark}
       content slide on Space, white text, the white-reversed logo (HTML only;
@@ -59,10 +65,11 @@ end
 local W, H = 1600, 900
 
 -- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step,
--- the default livery, the slide-footnote markers and the one-figure test.
+-- the default livery, the slide-footnote markers, the one-figure test and the note test.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
 local has_class, deck_type_scale, default_livery = C.has_class, C.deck_type_scale, C.default_livery
 local footnote_marker, strip_marker, is_figure = C.footnote_marker, C.strip_marker, C.is_figure
+local is_note = C.is_note
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
 -- project), else the bundled liveries/ncar beside _extensions/. Its
@@ -298,12 +305,28 @@ local function split_full(blocks)
       fig = b
     elseif fig and (b.t == "Para" or b.t == "Plain") then
       caption:insert(b)
+    elseif fig and is_note(b) then   -- a note is the caption here
+      caption:extend(b.content)
     else
       return nil
     end
   end
   if not fig then return nil end
   return fig, caption, rest
+end
+
+-- ::: note: the div as .engine-note (the scss: the caption's look, under the figure), after the
+-- footnote hoist has lifted any † line out of it; a note left empty goes
+local function mark_notes(blocks)
+  return blocks:walk({
+    Div = function(d)
+      if not is_note(d) then return nil end
+      if #d.content == 0 then return {} end
+      d.classes = d.classes:filter(function(c) return c ~= "note" end)
+      d.classes:insert("engine-note")
+      return d
+    end,
+  })
 end
 
 -- A percentage height resolves against the whole 900-px slide here, so the
@@ -680,6 +703,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = unwrap_layout(hoist_footnotes(add_signoff(out)))
+  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_signoff(out))))
   return doc
 end
