@@ -56,7 +56,7 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "26.10.2"
+local VERSION = "26.10.3"
 local W, H = 1600, 900
 
 -- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
