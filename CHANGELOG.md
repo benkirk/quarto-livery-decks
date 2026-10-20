@@ -17,6 +17,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- A pptx imports into Google Slides. The wave bands and cover fields marked their path
+  `stroke="0"`, which PowerPoint accepts and Google Slides' import refuses ("Upload failed") for
+  the whole file. Their outline is already off through `a:ln`, so the mark is gone, from the
+  templates (ncar, ncarucar, ucar, ucp regenerated) and the covers `slide_layout.py` draws;
+  nothing looks different. `livery check` fails a template that has it.
+
 ## [26.10.3] - 2026-10-20
 
 ### Decks
