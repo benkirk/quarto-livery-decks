@@ -395,6 +395,9 @@ it does, by area, beyond the format notes above:
   as `var(--engine-*)` (its `$engine-<role>` variables hold ncar's values as compile-time
   defaults for Quarto's own rules, restated with the roles at the end of the file); the
   highlight theme is generated per livery from `engine.theme`.
+- **Shared Lua**: `engine-common.lua` holds what both format filters read alike (`has_class`, the
+  deck's type step, the default livery, the slide-footnote markers, the one-figure test), `dofile`'d
+  by each like `engine-plots.lua`; what a format does with the result stays in its filter.
 - **Geometry**: margin, tab, logo box (height per slide kind, top, aspect, corner, `inset`), the
   page number's corner, divider block and full-figure lengths are the livery's `geometry`
   fractions: `engine@geom@*` in the `.sty`, `--engine-*` pixels in the css (ncar's are the
