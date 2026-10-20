@@ -18,7 +18,7 @@ by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`
 into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
 validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
 out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
-schema (`livery schema --doc`, `--check` in CI and `make test`). A key is renamed only with Ben's
+schema (`livery schema --doc`; `tests/test_schema.py` holds it current). A key is renamed only with Ben's
 agreement.
 
 **The `livery` command** is `_extensions/engine/livery.py` (argparse subcommands; README for
@@ -430,11 +430,18 @@ it does, by area, beyond the format notes above:
   `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
-  livery, then `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change
-  of a box, `test_type.py`, `test_svg_fallback.py`, `test_notes_clrmap.py`, `test_charts.py`, `test_schema.py`, `test_cli.py`, `test_new_deck.py`,
-  `test_docs.py`: every relative link and `#anchor` in the tracked `*.md` files resolves, and
-  every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a heading that exists;
-  `design/` is exempt; and `livery schema --doc --check`). For anything that can move pixels, `tests/parity.sh baseline`
+  livery, then pytest over `tests/`, `-n auto --dist loadfile`: `test_compositions.py`, whose
+  `EXPECTED_DELTAS` names every decided change of a box, `test_type.py`, `test_svg_fallback.py`,
+  `test_notes_clrmap.py`, `test_charts.py`, `test_schema.py` (the generated `REFERENCE.md`
+  current too), `test_cli.py`, `test_new_deck.py`, `test_docs.py`: every relative link and
+  `#anchor` in the tracked `*.md` files resolves, and every `README "X"` or `<guide>.md "X"`
+  pointer in a tracked file names a heading that exists; `design/` is exempt). pytest's
+  discovery is the one list of tests, and CI's latex job runs `make test`. One test:
+  `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under
+  `tmp_path`, never the tree, and never changes directory or the environment in-process
+  (`tests/conftest.py` has the harness: `ROOT`, the per-livery `livery` argument, `run` for the
+  livery command, `pandoc_deck`); expensive setup is a module-scoped fixture, which
+  `loadfile` keeps on one worker. For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh

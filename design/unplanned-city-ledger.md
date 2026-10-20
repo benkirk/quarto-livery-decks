@@ -20,6 +20,20 @@ Window mode starts from the newest entry's end commit.
 
 ## Entries
 
+## 2026-10-20: area tests
+
+- Mode: area
+- Range: `tests/`, `make test` and CI's engine-test step, read after #113 landed the ninth script
+- End commit: `4ab788f`
+- Done (#115): the nine scripts as pytest modules, discovery the one list of tests (the
+  Makefile's and CI's hand-kept lists had drifted: `test_charts.py` never ran in CI); CI's step
+  calls `make test`; the duplicated `livery schema --doc --check` dropped (test_schema holds the
+  reference current); the harness once in `tests/conftest.py` (ROOT, the per-livery argument, the
+  pandoc deck helper the two pptx-step tests each carried, the livery subprocess); pytest-xdist
+  from the start, `-n auto --dist loadfile`, with the rules that keep the suite parallel
+- Tried and dropped: none
+- Open: none
+
 ## 2026-10-20: window #95–#103
 
 - Mode: window
