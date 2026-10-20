@@ -17,6 +17,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.4] - 2026-10-20
+
 ### Decks
 - A pptx imports into Google Slides. The wave bands and cover fields marked their path
   `stroke="0"`, which PowerPoint accepts and Google Slides' import refuses ("Upload failed") for
