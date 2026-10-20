@@ -48,6 +48,7 @@ same as body text in every format.
 | `livery_mpl.shade_family(c, n)` | `n` tints of `c` toward the surface, as the families are built |
 | `livery_mpl.surface`, `livery_mpl.mix(a, b, t)` | the background the plot sits on; `a` moved toward `b` by `t` in OKLab (a color between two, a tint toward the surface) |
 | `with livery_mpl.dark():` | a `{.brand-dark}` slide: the dark chrome and colors where that slide is dark (HTML, a dark livery); `surface` is the dark one inside |
+| `with livery_mpl.raster():` | the figures shown inside as PNG (200 dpi unless given) where the deck draws vector: one heavy time series, the rest of the deck still SVG. `plt.show()` inside the block |
 | `with livery_mpl.dense():` | small multiples: every text size scaled together, by 0.65 unless given, to the half point (a 3 x 4 grid at the slide's sizes leaves no room for the data) |
 | colormaps | `livery` (the default, the livery's own map), `livery_r`, `livery_div` (diverging), `livery_seq_<ramp>`, each with a `_dark` twin |
 | `livery_mpl.use(path)` | another livery: a directory, or a charts bundle's |
@@ -65,7 +66,8 @@ such as `viridis`, more than eight series (fold the rest into "Other").
 pptx gets PNG at 200 dpi, HTML SVG with the text as paths (an `<img>` cannot see the page's
 fonts), PDF a vector PDF with the font embedded (Type 3 for a CFF `.otf` family such as cu's TeX
 Gyre Heros, which matplotlib would otherwise mislabel). A deck whose plots make heavy SVG can
-take PNG in HTML too ([docs/formats.md "HTML (revealjs)"](../../docs/formats.md#html-revealjs)).
+take PNG in HTML too ([docs/formats.md "HTML (revealjs)"](../../docs/formats.md#html-revealjs)),
+or one plot can, inside `with livery_mpl.raster():`.
 
 The same colors are `--engine-data-1..8`, `--engine-data-muted` and `--engine-status-*` in the
 HTML deck, `EngineData1..8` (and a pgfplots `livery` cycle list, the default when a LaTeX document

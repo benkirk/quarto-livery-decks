@@ -8,7 +8,7 @@ size reach the livery), and a flavor (`--extends`) each pass `livery all` (build
 as they stand; `new` refuses a non-empty directory and a parent that is not beside it; `zip` packs
 both bundles; every bundled build/livery.json records the engine's version and its schema, and
 `deps` warns when a build records another; `livery_mpl.__version__` is the engine's, in the engine
-and in an unpacked charts bundle, and its `dense()` halves the type and restores it; and the
+and in an unpacked charts bundle, and its `dense()` halves the type and restores it, `raster()` is a no-op outside a kernel; and the
 first-use fixes (#87): `bin/livery` runs the command (through a link too), `all` does not warn of
 the template it builds, `check` is quiet but for warnings, failures and a summary (`-v` for all), a
 bad palette name names its key, and a scaffold outside the repo points its editor at the real
@@ -87,7 +87,8 @@ with tempfile.TemporaryDirectory() as tmp:
     probe = ("import livery_mpl as m, matplotlib.pyplot as plt; print(m.__version__); "
              "assert all(hasattr(m, n) for n in m.__all__); f = plt.rcParams['font.size']\n"
              "with m.dense(0.5): assert plt.rcParams['font.size'] == round(f) / 2, 'dense'\n"
-             "assert plt.rcParams['font.size'] == f and m.surface and m.mix('#000000', '#FFFFFF', 0) == '#000000'")
+             "assert plt.rcParams['font.size'] == f and m.surface and m.mix('#000000', '#FFFFFF', 0) == '#000000'\n"
+             "with m.raster(): pass   # outside a kernel: nothing to switch")
     env = {k: v for k, v in __import__("os").environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
     for where, kw in (("engine", {"env": {**env, "LIVERY_DIR": str(ROOT / "liveries" / "ncar"),
                                           "PYTHONPATH": str(ROOT / "_extensions" / "engine" / "mpl")}}),

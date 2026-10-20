@@ -21,6 +21,9 @@ directory, else a livery.json beside this file (the charts bundle, mpl_zip.py).
     with livery_mpl.dense():   every text size scaled together (0.65 by default, to the half
                                point), for small multiples: a 3 x 4 grid at the slide's sizes
                                leaves no room for the data
+    with livery_mpl.raster():  the figures shown inside as PNG (200 dpi unless given) where the
+                               deck draws vector (HTML's SVG, the PDF's PDF): one plot with
+                               thousands of marks, the rest of the deck still vector
     with livery_mpl.dark():    the dark chrome, slots and maps, where the slide is dark: an HTML
                                .brand-dark slide, every slide of a dark livery; elsewhere (pptx
                                and PDF draw .brand-dark as an ordinary slide) it changes nothing
@@ -55,7 +58,7 @@ from matplotlib.colors import LinearSegmentedColormap
 HERE = Path(__file__).resolve().parent
 
 __all__ = ["__version__", "use", "colors", "cycle", "families", "status", "muted", "surface",
-           "figsize", "shade_family", "mix", "dark", "dense"]
+           "figsize", "shade_family", "mix", "dark", "dense", "raster"]
 
 
 def _engine_version() -> str:
@@ -264,6 +267,37 @@ def dense(scale: float = 0.65):
         rc[k] = max(0.5, round(pt * scale * 2) / 2)
     with plt.rc_context(rc):
         yield
+
+
+@contextmanager
+def raster(dpi: float = 200):
+    """Show the figures displayed inside the block as PNG at dpi, where the deck draws them as
+    vector (HTML's SVG, the PDF's PDF): a plot with thousands of marks makes a heavy SVG, and the
+    Jupyter engine does not honor a cell's `fig-format` (Quarto's setup cell picks the document's
+    format once). The rest of the deck stays vector; pptx, already PNG, and a run outside a kernel
+    are unchanged. Call plt.show() inside the block: the format is picked when the figure is shown.
+    The whole deck: `fig-format: png` in its front matter (docs/formats.md "HTML (revealjs)")."""
+    try:
+        from IPython.core.interactiveshell import InteractiveShell
+        from matplotlib.figure import Figure
+        from matplotlib_inline.backend_inline import set_matplotlib_formats
+    except ImportError:
+        yield
+        return
+    if not InteractiveShell.initialized():
+        yield
+        return
+    formatters = InteractiveShell.instance().display_formatter.formatters
+    mimes = {"image/png": "png", "image/svg+xml": "svg", "image/jpeg": "jpeg", "application/pdf": "pdf"}
+    was = [fmt for mime, fmt in mimes.items() if Figure in formatters[mime].type_printers]
+    if not was or was == ["png"]:   # no inline backend, or the deck draws PNG already
+        yield
+        return
+    set_matplotlib_formats("png", dpi=dpi)
+    try:
+        yield
+    finally:
+        set_matplotlib_formats(*was)
 
 
 use()

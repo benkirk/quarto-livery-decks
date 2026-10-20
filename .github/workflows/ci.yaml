@@ -134,6 +134,7 @@ jobs:
           timeout 900 make -C decks/plots qa
           cd decks/plots
           ls plots_files/figure-revealjs/*.svg
+          ls plots_files/figure-revealjs/*.png   # the raster() slide, the deck's one PNG in HTML
           if grep -l '<text' plots_files/figure-revealjs/*.svg; then echo '::error::SVG plot with <text>'; exit 1; fi
           grep -c 'class="engine-plot"' plots.html >/dev/null
           test "$(unzip -l plots.pptx | grep -c 'ppt/media/image')" -ge 10

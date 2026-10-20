@@ -41,6 +41,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   in OKLab, and the background the plot sits on, the dark one inside `dark()`.
 - `shade_family` tints toward the dark surface inside `dark()` on a light livery (it tinted toward
   white there).
+- `with livery_mpl.raster():` shows the figures inside as PNG where the deck draws vector (HTML's
+  SVG, the PDF's PDF): one heavy time series goes PNG, the rest of the deck stays vector. A cell's
+  own `fig-format` is not honored by the Jupyter engine, so this is the per-plot form.
 
 ## [26.10.2] - 2026-10-19
 

@@ -240,6 +240,8 @@ and keep `<deck>_files/` beside it.
       fig-format: png
       fig-dpi: 200          # pptx's
   ```
-  draws them as pptx's PNGs instead, at the same size on the slide.
+  draws them as pptx's PNGs instead, at the same size on the slide. For one plot rather than the
+  deck, draw it inside `with livery_mpl.raster():` (a cell's own `fig-format` is not honored by the
+  Jupyter engine; `decks/plots/README.md`).
 - **PDF from the browser:** open `<deck>.html?print-pdf` in Chrome and print
   with background graphics. `make pdf` is usually the better handout.
