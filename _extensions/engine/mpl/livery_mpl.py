@@ -193,12 +193,12 @@ def use(path=None) -> dict:
 
 
 def output_format() -> str:
-    """The format being rendered: $ENGINE_FORMAT (Make.common sets pptx, html or pdf), else read
-    from Quarto's figure format (svg is the HTML deck's), else ''."""
+    """The format being rendered: $ENGINE_FORMAT (Make.common sets pptx, html or pdf), else "pdf"
+    when Quarto's figure format is pdf (only beamer's is), else '' (svg is both pptx's and HTML's)."""
     f = os.environ.get("ENGINE_FORMAT")
     if f:
         return f
-    return {"svg": "html", "pdf": "pdf", "png": "pptx"}.get(os.environ.get("QUARTO_FIG_FORMAT", ""), "")
+    return "pdf" if os.environ.get("QUARTO_FIG_FORMAT") == "pdf" else ""
 
 
 def figsize(kind: str = "full", height: float = 1.0) -> tuple[float, float]:
@@ -272,10 +272,10 @@ def dense(scale: float = 0.65):
 @contextmanager
 def raster(dpi: float = 200):
     """Show the figures displayed inside the block as PNG at dpi, where the deck draws them as
-    vector (HTML's SVG, the PDF's PDF): a plot with thousands of marks makes a heavy SVG, and the
-    Jupyter engine does not honor a cell's `fig-format` (Quarto's setup cell picks the document's
-    format once). The rest of the deck stays vector; pptx, already PNG, and a run outside a kernel
-    are unchanged. Call plt.show() inside the block: the format is picked when the figure is shown.
+    vector (the SVG of HTML and pptx, the PDF's PDF): a plot with thousands of marks makes a heavy
+    SVG, and the Jupyter engine does not honor a cell's `fig-format` (Quarto's setup cell picks the
+    document's format once). The rest of the deck stays vector; a run outside a kernel is
+    unchanged. Call plt.show() inside the block: the format is picked when the figure is shown.
     The whole deck: `fig-format: png` in its front matter (docs/formats.md "HTML (revealjs)")."""
     try:
         from IPython.core.interactiveshell import InteractiveShell
