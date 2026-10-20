@@ -45,7 +45,7 @@ test: ## Run the engine's tests: livery build --check, livery check, composition
 	python3 -m pytest -q tests/test_schema.py
 	python3 -m pytest -q tests/test_cli.py
 	python3 -m pytest -q tests/test_new_deck.py
-	python3 tests/test_docs.py
+	python3 -m pytest -q tests/test_docs.py
 	python3 _extensions/engine/livery.py schema --doc --check
 
 # A livery's onboarding loop (`livery all`, liveries/README.md): build/ from its yml files, its

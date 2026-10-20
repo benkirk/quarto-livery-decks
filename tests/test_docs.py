@@ -1,31 +1,24 @@
-#!/usr/bin/env python3
 """Check the docs' links and section pointers (#84).
 
-    tests/test_docs.py
+    python3 -m pytest tests/test_docs.py
 
 Every relative link and image in the tracked Markdown files resolves to a tracked path, and every
 `#anchor` to a heading of its target by GitHub's rule (lower-case, spaces to `-`, punctuation
-dropped, `-1`, `-2` on a repeated heading). Every section pointer in a tracked text file, the
-word README or a `.md` path followed by a quoted section name, names a heading that exists in that
-file (README is the root README.md; a path is from the repository root, else relative to the file).
-Fenced and inline code are skipped. `design/` is exempt: its handoffs are dated records of the
-sections of their day.
+dropped, `-1`, `-2` on a repeated heading): one test per file. Every section pointer in a tracked
+text file, the word README or a `.md` path followed by a quoted section name, names a heading
+that exists in that file (README is the root README.md; a path is from the repository root, else
+relative to the file). Fenced and inline code are skipped. `design/` is exempt: its handoffs are
+dated records of the sections of their day.
 """
 
 import os
 import re
 import subprocess
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-fails = []
+import pytest
 
-
-def check(ok, what):
-    if not ok:
-        fails.append(what)
-
+from conftest import ROOT
 
 tracked = set(subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True,
                              check=True).stdout.split("\n")) - {""}
@@ -89,11 +82,15 @@ def relative(path):
 # 1. links and images: ](target) outside code; a scheme or a reference definition is skipped
 LINK = re.compile(r"\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 SCHEME = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*:")
+MARKDOWN = sorted(f for f in tracked if f.endswith(".md") and not f.startswith("design/"))
 
-for md in sorted(f for f in tracked if f.endswith(".md") and not f.startswith("design/")):
+
+@pytest.mark.parametrize("md", MARKDOWN)
+def test_links(md):
     text = text_of(md)
     if text is None:
-        continue
+        return
+    bad = []
     for m in LINK.finditer(prose(text)):
         target = m.group(1)
         line = text[: m.start()].count("\n") + 1
@@ -102,43 +99,42 @@ for md in sorted(f for f in tracked if f.endswith(".md") and not f.startswith("d
         path, _, anchor = target.partition("#")
         if path:
             resolved = os.path.normpath(relative(Path(md).parent / path))
-            check(resolved in tracked_paths, f"{md}:{line}: link to {target}: {resolved} is not tracked")
             if resolved not in tracked_paths:
+                bad.append(f"{md}:{line}: link to {target}: {resolved} is not tracked")
                 continue
         else:
             resolved = md
-        if anchor and resolved.endswith(".md"):
-            check(anchor in headings(resolved)[1],
-                  f"{md}:{line}: link to {target}: no heading #{anchor} in {resolved}")
+        if anchor and resolved.endswith(".md") and anchor not in headings(resolved)[1]:
+            bad.append(f"{md}:{line}: link to {target}: no heading #{anchor} in {resolved}")
+    assert not bad, "\n".join(bad)
+
 
 # 2. section pointers: README "X" or <path>.md "X" (the quote may wrap onto a commented line)
 POINTER = re.compile(r"(?<![\w/.-])((?:[\w.-]+/)*[\w.-]+\.md|README)(?:'s)? \"([^\"]{1,160})\"")
 CONTINUATION = re.compile(r"\s*\n[ \t]*(?:#|%|//|--)?[ \t]*")
 EXEMPT = ("design/",)
 
-for f in sorted(tracked):
-    if f.startswith(EXEMPT) or f == relative(Path(__file__).resolve()):
-        continue
-    text = text_of(f)
-    if text is None or "\0" in text:
-        continue
-    body = prose(text) if f.endswith(".md") else text
-    for m in POINTER.finditer(body):
-        where, section = m.group(1), CONTINUATION.sub(" ", m.group(2)).strip()
-        line = body[: m.start()].count("\n") + 1
-        if where == "README":
-            target = "README.md"
-        elif where in tracked:
-            target = where
-        else:
-            target = os.path.normpath(relative(Path(f).parent / where))
-        if target not in tracked:
-            check(False, f"{f}:{line}: pointer to {where} \"{section}\": {where} is not tracked")
-            continue
-        check(section in headings(target)[0],
-              f"{f}:{line}: pointer to {where} \"{section}\": no such heading in {target}")
 
-if fails:
-    print("docs:", *fails, sep="\n  ")
-    sys.exit(1)
-print("docs: every link resolves and every section pointer names a heading")
+def test_pointers():
+    bad = []
+    for f in sorted(tracked):
+        if f.startswith(EXEMPT) or f == relative(Path(__file__).resolve()):
+            continue
+        text = text_of(f)
+        if text is None or "\0" in text:
+            continue
+        body = prose(text) if f.endswith(".md") else text
+        for m in POINTER.finditer(body):
+            where, section = m.group(1), CONTINUATION.sub(" ", m.group(2)).strip()
+            line = body[: m.start()].count("\n") + 1
+            if where == "README":
+                target = "README.md"
+            elif where in tracked:
+                target = where
+            else:
+                target = os.path.normpath(relative(Path(f).parent / where))
+            if target not in tracked:
+                bad.append(f"{f}:{line}: pointer to {where} \"{section}\": {where} is not tracked")
+            elif section not in headings(target)[0]:
+                bad.append(f"{f}:{line}: pointer to {where} \"{section}\": no such heading in {target}")
+    assert not bad, "\n".join(bad)
