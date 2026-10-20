@@ -101,6 +101,9 @@ def check_template(r, livery, d):
                 if t not in CHROME and i is not None and i >= 20:
                     bad.append(f"{name}: content box at idx {i}")
         r.check(not bad, "chrome placeholders at idx 20-22, no content box there", "; ".join(bad))
+        stroked = [name for name, x in list(found.items()) + [("master", read("ppt/slideMasters/slideMaster1.xml"))]
+                   if re.search(r'<a:path [^>]*stroke="(0|false)"', x)]
+        r.check(not stroked, "no custom path with stroke=\"0\" (Google Slides refuses to import it)", ", ".join(stroked))
         theme = read("ppt/theme/theme1.xml")
         scheme = {s: v.upper() for s, v in re.findall(r"<a:(\w+)><a:srgbClr val=\"([0-9A-Fa-f]{6})\"/></a:\1>", theme)}
         want = {s: v.lstrip("#").upper() for s, v in livery["pptx"]["scheme"].items()}

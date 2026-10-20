@@ -34,9 +34,11 @@ def _line_to(x, y):
 DOWN, UP = list(range(7)), list(range(6, -1, -1))
 
 
-def geom(path_body, fill=True, stroke=True):
+def geom(path_body, fill=True):
+    """A path over the slide. A filled shape's outline is off by its a:ln, never by the path's
+    stroke="0": Google Slides cannot import a pptx whose filled custom path carries it."""
     return ('<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/><a:rect l="0" t="0" r="r" b="b"/>'
-            f'<a:pathLst><a:path w="{PW}" h="{PH}"{"" if fill else " fill=\"none\""}{"" if stroke else " stroke=\"0\""}>'
+            f'<a:pathLst><a:path w="{PW}" h="{PH}"{"" if fill else " fill=\"none\""}>'
             f'{path_body}</a:path></a:pathLst></a:custGeom>')
 
 
@@ -48,13 +50,13 @@ def line_geom(lines, k, shift):
 def band_geom(lines, k, m, shift):
     """The region between lines k and m."""
     return geom(_move(lines, k, 0, shift) + _cubics(lines, k, DOWN, shift)
-                + _line_to(*_pt(lines, m, 6, shift)) + _cubics(lines, m, UP, shift) + "<a:close/>", stroke=False)
+                + _line_to(*_pt(lines, m, 6, shift)) + _cubics(lines, m, UP, shift) + "<a:close/>")
 
 
 def field_geom(lines, k, shift):
     """The slide left of line k."""
     return geom(f'<a:moveTo><a:pt x="0" y="0"/></a:moveTo>' + _line_to(*_pt(lines, k, 0, shift))
-                + _cubics(lines, k, DOWN, shift) + _line_to(0, PH) + "<a:close/>", stroke=False)
+                + _cubics(lines, k, DOWN, shift) + _line_to(0, PH) + "<a:close/>")
 
 
 def shape_xml(sid, name, geometry, fill_xml, ln_xml, w_emu, h_emu):
