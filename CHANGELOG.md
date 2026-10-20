@@ -33,6 +33,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   no longer appends them on the first render.
 
 ### Plots
+- A deck can draw its HTML plots as PNG, `format: engine-revealjs: fig-format: png` in its front
+  matter, when its SVGs are heavy (`docs/formats.md` "HTML (revealjs)").
 - `livery_mpl.dense(scale=0.65)`: every text size scaled together inside the block, to the half
   point, for small multiples (a 3 x 4 grid at the slide's sizes crowds out its data).
 - `livery_mpl.mix` and `livery_mpl.surface` are public (`__all__`): a color moved toward another

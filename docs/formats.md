@@ -232,5 +232,14 @@ and keep `<deck>_files/` beside it.
       chalkboard: false     # the whiteboard can't be embedded
   ```
   gives a single self-contained `.html`.
+- **PNG plots:** HTML draws plots as SVG. A plot with many marks (thousands of bars, a dense
+  scatter) makes a heavy SVG that is slow to page through; in that deck's front matter,
+  ```yaml
+  format:
+    engine-revealjs:
+      fig-format: png
+      fig-dpi: 200          # pptx's
+  ```
+  draws them as pptx's PNGs instead, at the same size on the slide.
 - **PDF from the browser:** open `<deck>.html?print-pdf` in Chrome and print
   with background graphics. `make pdf` is usually the better handout.

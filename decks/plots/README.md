@@ -64,7 +64,8 @@ such as `viridis`, more than eight series (fold the rest into "Other").
 
 pptx gets PNG at 200 dpi, HTML SVG with the text as paths (an `<img>` cannot see the page's
 fonts), PDF a vector PDF with the font embedded (Type 3 for a CFF `.otf` family such as cu's TeX
-Gyre Heros, which matplotlib would otherwise mislabel).
+Gyre Heros, which matplotlib would otherwise mislabel). A deck whose plots make heavy SVG can
+take PNG in HTML too ([docs/formats.md "HTML (revealjs)"](../../docs/formats.md#html-revealjs)).
 
 The same colors are `--engine-data-1..8`, `--engine-data-muted` and `--engine-status-*` in the
 HTML deck, `EngineData1..8` (and a pgfplots `livery` cycle list, the default when a LaTeX document
