@@ -394,7 +394,10 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 
 ## 10. Log
 
-Newest first. The first unchecked item of section 7 is the next step.
+Newest first. The log closes at the first release, 26.10.0 (2026-10-18): since then
+`CHANGELOG.md` records what ships and `unplanned-city-ledger.md` what the sweeps find; the
+runtime sprint (#95–#103), the consumer-friction sprint (#105) and the releases 26.10.1–26.10.3
+are there, not here.
 
 - **2026-10-18, the `livery` command's first-use friction** (issue #87). Nine rough edges a new
   livery owner hits, as a checklist; the first five fixed in one PR: `bin/livery` (on PATH after

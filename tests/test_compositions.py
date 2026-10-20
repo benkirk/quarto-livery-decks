@@ -11,7 +11,6 @@ design/composition-handoff.md "Which value wins", so a changed number is either 
 entry has every key, the band's arithmetic, the light variants' roles, overrides and extends.
 """
 
-import importlib.util
 import json
 import sys
 import tempfile
@@ -19,8 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
-spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
-lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
+sys.path.insert(0, str(ENGINE))
+import livery_build as lb   # noqa: E402  (the engine's tools import each other by name)
 W, H = 1600, 900
 TOL = 1e-4   # compositions round to 4 places
 

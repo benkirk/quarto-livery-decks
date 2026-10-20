@@ -34,9 +34,9 @@ check; the root `make livery LIVERY=|LIVERY_DIR=`), `zip [--charts]` (`overleaf_
 `mpl_zip.py`), `schema --doc`, and `deps|mono|figsize` for `Make.common`. The modules have no
 entry points of their own; `livery.py` imports each only when its subcommand runs, so `zip`
 needs nothing beyond Python (the release job).
-`design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
-next step (#58, the customer surface: a `livery` command, a `livery.yml` schema, immutable
-releases and a changelog).
+`design/engine-and-liveries.md` is the roadmap; its section 10 logged progress up to the first
+release (26.10.0), since when `CHANGELOG.md` is the record of what ships and
+`design/unplanned-city-ledger.md` of what the sweeps find.
 
 The engine also holds the json reader (`livery.py`, also the command), the wave shapes
 (`pptx_waves.py`) and the pptx post-render steps (`pptx_post.py` over `pptx_steps/`);
@@ -395,6 +395,9 @@ it does, by area, beyond the format notes above:
   as `var(--engine-*)` (its `$engine-<role>` variables hold ncar's values as compile-time
   defaults for Quarto's own rules, restated with the roles at the end of the file); the
   highlight theme is generated per livery from `engine.theme`.
+- **Shared Lua**: `engine-common.lua` holds what both format filters read alike (`has_class`, the
+  deck's type step, the default livery, the slide-footnote markers, the one-figure test), `dofile`'d
+  by each like `engine-plots.lua`; what a format does with the result stays in its filter.
 - **Geometry**: margin, tab, logo box (height per slide kind, top, aspect, corner, `inset`), the
   page number's corner, divider block and full-figure lengths are the livery's `geometry`
   fractions: `engine@geom@*` in the `.sty`, `--engine-*` pixels in the css (ncar's are the
@@ -414,10 +417,11 @@ it does, by area, beyond the format notes above:
   `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
-  livery, `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change of a
-  box, `tests/test_type.py`, and `tests/test_docs.py`: every relative link and `#anchor` in the
-  tracked `*.md` files resolves, and every `README "X"` or `<guide>.md "X"` pointer in a
-  tracked file names a heading that exists; `design/` is exempt). For anything that can move pixels, `tests/parity.sh baseline`
+  livery, then `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change
+  of a box, `test_type.py`, `test_charts.py`, `test_schema.py`, `test_cli.py`, `test_new_deck.py`,
+  `test_docs.py`: every relative link and `#anchor` in the tracked `*.md` files resolves, and
+  every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a heading that exists;
+  `design/` is exempt; and `livery schema --doc --check`). For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
@@ -427,8 +431,8 @@ it does, by area, beyond the format notes above:
   month's release count from 0; the container image also gets `YY.MM`, the month's newest; the
   first release is 26.10.0, and v1.0.0/v1.1.0 were withdrawn), `version:` in `_extension.yml`;
   a `v*` tag must equal it
-  (`release.yml` checks). `VERSION` in `engine-revealjs.lua` names the HTML dependency
-  (`engine-revealjs-<VERSION>`), so changing it changes every HTML deck's paths. `livery build`
+  (`release.yml` checks). `engine-revealjs.lua` reads it from there and names the HTML dependency
+  by it (`engine-revealjs-<version>`), so a bump changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
   liveries/*/` in the same PR (CI's `--check`), and `livery deps` warns a deck build when a
   livery's stamp is another version. **Tags are immutable**: another release in the month is

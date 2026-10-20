@@ -57,6 +57,19 @@ def mix(a: str, b: str, share: float) -> str:
     return "#" + "".join(f"{round(x * share + y * (1 - share)):02X}" for x, y in pairs)
 
 
+def luminance(hexv: str) -> float:
+    """WCAG relative luminance of '#RRGGBB'."""
+    ch = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (ch(x / 255) for x in bytes.fromhex(hexv.lstrip("#")))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast(a: str, b: str) -> float:
+    """WCAG 2 contrast ratio of two '#RRGGBB' colors."""
+    la, lb = sorted((luminance(a), luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
 def color(livery: dict, role: str) -> str:
     """A role's hex without '#', as the pptx scripts write it."""
     return livery["roles"][role].lstrip("#").upper()

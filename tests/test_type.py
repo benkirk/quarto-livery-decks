@@ -9,7 +9,6 @@ the rules on made-up liveries: the defaults, a canvas alone scaling them, a body
 the body roles and the levels, an explicit size winning, a flavor inheriting.
 """
 
-import importlib.util
 import json
 import re
 import sys
@@ -19,8 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
-spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
-lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
+sys.path.insert(0, str(ENGINE))
+import livery_build as lb   # noqa: E402  (the engine's tools import each other by name)
 fails = []
 
 
