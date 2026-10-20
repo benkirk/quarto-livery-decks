@@ -43,7 +43,7 @@ test: ## Run the engine's tests: livery build --check, livery check, composition
 	python3 tests/test_notes_clrmap.py
 	python3 -m pytest -q tests/test_charts.py
 	python3 -m pytest -q tests/test_schema.py
-	python3 tests/test_cli.py
+	python3 -m pytest -q tests/test_cli.py
 	python3 tests/test_new_deck.py
 	python3 tests/test_docs.py
 	python3 _extensions/engine/livery.py schema --doc --check
