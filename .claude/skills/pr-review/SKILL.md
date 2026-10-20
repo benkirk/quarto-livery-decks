@@ -149,7 +149,9 @@ In this order, in the terminal:
 1. **In plain terms.** Four to eight sentences on what the PR does and what was checked, with
    no file paths, variable names or make targets. Ben relays this to people who do not read
    the code, and it comes before any question.
-2. **Verified sound.** Bullets, each with a `file:line`, one per trace in step 3 that held.
+2. **Verified sound.** Bullets, each with a `file:line`, one per trace in step 3 that held. A
+   suspicion that cleared is one of them, with the check that cleared it (#105: the `.gitignore`
+   merge's blank line, `grep -x` on BSD and GNU), so the comment carries the proof.
 3. **Findings.** Ranked `F1..Fn`. Each carries a tag, *fix now* / *note, no change* / *ops*,
    the mechanism in two or three sentences, and the fix with its size (files, lines, whether
    parity, a baseline or a screenshot moves). Recommend on merit; the cost is a separate fact
