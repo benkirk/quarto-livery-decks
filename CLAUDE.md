@@ -414,10 +414,11 @@ it does, by area, beyond the format notes above:
   `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
-  livery, `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change of a
-  box, `tests/test_type.py`, and `tests/test_docs.py`: every relative link and `#anchor` in the
-  tracked `*.md` files resolves, and every `README "X"` or `<guide>.md "X"` pointer in a
-  tracked file names a heading that exists; `design/` is exempt). For anything that can move pixels, `tests/parity.sh baseline`
+  livery, then `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change
+  of a box, `test_type.py`, `test_charts.py`, `test_schema.py`, `test_cli.py`, `test_new_deck.py`,
+  `test_docs.py`: every relative link and `#anchor` in the tracked `*.md` files resolves, and
+  every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a heading that exists;
+  `design/` is exempt; and `livery schema --doc --check`). For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
