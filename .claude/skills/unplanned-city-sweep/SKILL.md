@@ -91,7 +91,7 @@ Run each pass and collect findings. The examples are real.
   `--engine-cmp-*` properties, `field_layout()` and `slide_layout.py` read them). Three
   implementations of one look that have drifted are a finding even at real refactor cost.
 - **Convention drift.** Several idioms for one thing. The version's two homes
-  (`_extension.yml` and `VERSION` in `engine-revealjs.lua`); a size written in points in one
+  (`_extension.yml` and a hand-copied `VERSION` in `engine-revealjs.lua`, until #108); a size written in points in one
   place and inches in another; a path resolved relative to the deck in one recipe and the
   framework in the next. Pick the house idiom and move the others to it. Grep the idiom across
   the layer before proposing.

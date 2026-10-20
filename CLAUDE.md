@@ -431,8 +431,8 @@ it does, by area, beyond the format notes above:
   month's release count from 0; the container image also gets `YY.MM`, the month's newest; the
   first release is 26.10.0, and v1.0.0/v1.1.0 were withdrawn), `version:` in `_extension.yml`;
   a `v*` tag must equal it
-  (`release.yml` checks). `VERSION` in `engine-revealjs.lua` names the HTML dependency
-  (`engine-revealjs-<VERSION>`), so changing it changes every HTML deck's paths. `livery build`
+  (`release.yml` checks). `engine-revealjs.lua` reads it from there and names the HTML dependency
+  by it (`engine-revealjs-<version>`), so a bump changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
   liveries/*/` in the same PR (CI's `--check`), and `livery deps` warns a deck build when a
   livery's stamp is another version. **Tags are immutable**: another release in the month is

@@ -68,6 +68,8 @@ with tempfile.TemporaryDirectory() as tmp:
 # the version stamp: every bundled build names this engine and its schema; deps warns on another
 version = re.search(r"^version:\s*(\S+)", (ROOT / "_extensions" / "engine" / "_extension.yml").read_text(), re.M)[1]
 check(re.fullmatch(r"\d{2}\.([1-9]|1[0-2])\.(0|[1-9]\d*)", version), f"_extension.yml's version {version} is not YY.MM.N")
+lua = (ROOT / "_extensions" / "engine" / "engine-revealjs.lua").read_text()
+check('VERSION = "' not in lua and "_extension.yml" in lua, "engine-revealjs.lua carries a version of its own instead of reading _extension.yml")
 for j in sorted((ROOT / "liveries").glob("*/build/livery.json")):
     lv = json.loads(j.read_text())
     check(lv.get("engine") == version and lv.get("schema") == 1, f"{j.parent.parent.name}: livery.json engine/schema {lv.get('engine')}/{lv.get('schema')}")

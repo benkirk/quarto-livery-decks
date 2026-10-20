@@ -56,7 +56,6 @@ if not FORMAT:match("revealjs") then
   return {}
 end
 
-local VERSION = "26.10.3"
 local W, H = 1600, 900
 
 -- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step,
@@ -70,6 +69,16 @@ local footnote_marker, strip_marker, is_figure = C.footnote_marker, C.strip_mark
 -- build/livery.json carries the roles the waves and fields are drawn in; build/livery.css,
 -- attached with the font and logo files, the rest.
 local EXTDIR = pandoc.path.directory(quarto.utils.resolve_path("engine-revealjs.lua"))
+
+-- The engine's version, read from _extension.yml beside this file (its one home; a release bumps
+-- it there): it names the HTML dependency, engine-revealjs-<version>, so every deck's paths
+-- change with it.
+local VERSION = (function()
+  local f = assert(io.open(pandoc.path.join({ EXTDIR, "_extension.yml" })), "engine-revealjs.lua: no _extension.yml beside the filter")
+  local v = f:read("a"):match("\nversion:%s*([%w%.]+)")
+  f:close()
+  return assert(v, "engine-revealjs.lua: no version: in _extension.yml")
+end)()
 
 local PLOTS = dofile(pandoc.path.join({ EXTDIR, "engine-plots.lua" }))
 
