@@ -37,7 +37,7 @@ test: ## Run the engine's tests: livery build --check, livery check, composition
 	set -e
 	python3 _extensions/engine/livery.py build --check liveries/*/
 	python3 _extensions/engine/livery.py check liveries/*/
-	python3 tests/test_compositions.py
+	python3 -m pytest -q tests/test_compositions.py
 	python3 -m pytest -q tests/test_type.py
 	python3 tests/test_svg_fallback.py
 	python3 tests/test_notes_clrmap.py
