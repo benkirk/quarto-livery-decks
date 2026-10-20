@@ -127,7 +127,7 @@ jobs:
         run: |
           cd decks/sample
           grep -q 'class="engine-note"' sample.html
-          pdftotext sample.pdf - | grep -q 'One short label a box keeps'
+          pdftotext sample.pdf - | grep -c 'One short label a box keeps' >/dev/null   # -q: SIGPIPE under pipefail
           python3 - <<'EOF'
           import json
           from pptx import Presentation
