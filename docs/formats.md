@@ -46,7 +46,7 @@ quarto-livery-decks/
 ├── latex/                 # the engine's pure-LaTeX side: talk.tex (the starter),
 │                          #   examples/ and their variants (`make latex`)
 ├── design/                # the design (engine-and-liveries.md) and the sprint handoffs
-├── tests/                 # the engine's tests (`make test`) and the parity harnesses:
+├── tests/                 # the engine's tests (pytest, `make test`) and the parity harnesses:
 │                          #   parity.sh (every deck, every livery), parity-latex.sh (latex/)
 ├── Makefile               # top-level: `make conda-env`, env mgmt, `make latex`, `make test`
 ├── conda-env.yaml         # quarto + jupyter + bash_kernel + the scientific stack + helpers

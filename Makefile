@@ -29,24 +29,15 @@ help: ## Show this help message
 	@echo ""
 
 # The engine's pure-LaTeX side (latex/: the starter deck, the examples and their
-# variants) and the engine's tests (tests/: the compositions and the type scale).
+# variants) and the engine's tests (tests/, pytest; CI's latex job runs `make test` too).
 latex: ## Build latex/: the starter deck, examples and variants (XeLaTeX; quarto for the demo)
 	$(MAKE) -C latex default examples variants
 
-test: ## Run the engine's tests: livery build --check, livery check, compositions, type, svg fallback, notes color map, charts, schema, cli, new-deck, docs
+test: ## Run the engine's tests: livery build --check, livery check, pytest over tests/ (in parallel)
 	set -e
 	python3 _extensions/engine/livery.py build --check liveries/*/
 	python3 _extensions/engine/livery.py check liveries/*/
-	python3 tests/test_compositions.py
-	python3 tests/test_type.py
-	python3 tests/test_svg_fallback.py
-	python3 tests/test_notes_clrmap.py
-	python3 tests/test_charts.py
-	python3 tests/test_schema.py
-	python3 tests/test_cli.py
-	python3 tests/test_new_deck.py
-	python3 tests/test_docs.py
-	python3 _extensions/engine/livery.py schema --doc --check
+	python3 -m pytest -q -n auto --dist loadfile tests
 
 # A livery's onboarding loop (`livery all`, liveries/README.md): build/ from its yml files, its
 # template.pptx, then its checks. LIVERY names one under liveries/, LIVERY_DIR any directory.

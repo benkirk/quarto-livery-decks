@@ -302,24 +302,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # the resolved compositions against the decided numbers (a changed box is named in
-      # EXPECTED_DELTAS or fails); every livery's sizes in whole or half points on its canvas,
-      # and every size in its template a role's; an SVG picture's PNG fallback (svg_fallback.py); notes slides' color map (notes_clrmap.py);
-      # every livery.yml valid against the schema, the
-      # refusals with their paths, and liveries/REFERENCE.md generated from the schema; the
-      # livery command's scaffolds (new, with a deck, a flavor) passing build, template and check;
-      # bin/new-deck's decks, --bare too
-      - name: Test the compositions, the type scale, the schema, the livery command, new-deck and the docs
-        run: |
-          python3 tests/test_compositions.py
-          python3 tests/test_type.py
-          python3 tests/test_svg_fallback.py
-          python3 tests/test_notes_clrmap.py
-          python3 tests/test_schema.py
-          python3 tests/test_cli.py
-          python3 tests/test_new_deck.py
-          python3 tests/test_docs.py
-          python3 _extensions/engine/livery.py schema --doc --check
+      # `make test`: the committed liveries' build/ fresh and their checks, then pytest over
+      # tests/ (the resolved compositions against the decided numbers, every livery's type in
+      # whole or half points, the schema and its reference, the chart colors, the pptx steps on
+      # pandoc's decks, the livery command's scaffolds, bin/new-deck, the docs' links and
+      # section pointers); the one list of tests is pytest's discovery
+      - name: Test the engine (make test)
+        run: make test
 
       # the starter (talk.tex), the examples (template, paper, mathfonts, the Quarto demo) and
       # template.tex's brand, title, aspect-ratio, pdfTeX and math-font variants; the demo's

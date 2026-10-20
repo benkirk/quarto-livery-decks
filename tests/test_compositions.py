@@ -1,25 +1,24 @@
-#!/usr/bin/env python3
 """Check livery_build.py's compositions against the slides the formats drew before them.
 
-    tests/test_compositions.py [<liveries dir>]
+    python3 -m pytest tests/test_compositions.py
 
 today() restates, in slide fractions, what engine 3.4.0's revealjs theme drew for each
 composition (engine-revealjs.scss and .lua; beamer and pptx disagreed in places, recorded in
-EXPECTED_DELTAS). The resolved compositions of ncar, cu and nsi (liveries/, or the
-argument) must equal today() with every EXPECTED_DELTAS row applied: one row per decision of
-design/composition-handoff.md "Which value wins", so a changed number is either named there or a failure. Then the invariants: every
-entry has every key, the band's arithmetic, the light variants' roles, overrides and extends.
+EXPECTED_DELTAS). The resolved compositions of ncar, cu and nsi must equal today() with every
+EXPECTED_DELTAS row applied: one row per decision of design/composition-handoff.md "Which value
+wins", so a changed number is either named there or a failure. Then the invariants: every entry
+has every key, the band's arithmetic, the light variants' roles, overrides and extends.
 """
 
 import json
-import sys
-import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-ENGINE = ROOT / "_extensions" / "engine"
-sys.path.insert(0, str(ENGINE))
-import livery_build as lb   # noqa: E402  (the engine's tools import each other by name)
+import pytest
+
+import livery_build as lb
+
+from conftest import ROOT
+
 W, H = 1600, 900
 TOL = 1e-4   # compositions round to 4 places
 
@@ -192,7 +191,8 @@ def close(a, b, path=""):
     return [] if a == b else [f"{path}: {a!r} != {b!r}"]
 
 
-def check(name: str, L: dict) -> list[str]:
+def mismatches(name: str, L: dict) -> list[str]:
+    """Where a resolved livery's compositions differ from today() with EXPECTED_DELTAS applied."""
     errs, c = [], L["compositions"]
     expected = today(L)
     for row, (was, apply) in EXPECTED_DELTAS.items():
@@ -219,10 +219,14 @@ def check(name: str, L: dict) -> list[str]:
     return errs
 
 
-def flavor(tmp: Path, name: str, parent: Path, knobs: str) -> dict:
+@pytest.mark.parametrize("name", ["ncar", "cu", "nsi"])
+def test_livery_as_decided(name):
+    assert mismatches(name, lb.resolve(ROOT / "liveries" / name)[0]) == []
+
+
+def flavor(tmp: Path, name: str, knobs: str, parent: Path = ROOT / "liveries" / "ncar") -> dict:
     """A livery extending `parent` (linked beside it) with the given livery.yml body, resolved."""
-    if not (tmp / parent.name).exists():
-        (tmp / parent.name).symlink_to(parent)
+    (tmp / parent.name).symlink_to(parent)
     d = tmp / name; d.mkdir()
     (d / "_brand.yml").write_text("{}\n")
     (d / "livery.yml").write_text(f"schema: 1\nname: {name}\nextends: {parent.name}\n{knobs}")
@@ -230,41 +234,28 @@ def flavor(tmp: Path, name: str, parent: Path, knobs: str) -> dict:
     return lb.resolve(d)[0]
 
 
-def main():
-    fw = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "liveries"
-    liveries = {"ncar": fw / "ncar"}
-    for name in ("cu", "nsi"):
-        if (fw / name / "livery.yml").exists():
-            liveries[name] = fw / name
-        else:
-            print(f"skip {name}: no {fw / name}")
-    errs = []
-    for name, d in liveries.items():
-        errs += check(name, lb.resolve(d)[0])
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp, ncar = Path(tmp), fw / "ncar"
-        # overrides: title's reaches its variants, title-photo's only that one
-        L = flavor(tmp, "over", ncar, "compositions:\n  title: {column: {anchor: middle}}\n  title-photo: {fineprint: null}\n")
-        c = L["compositions"]
-        if [c[k]["column"]["anchor"] for k in ("title", "title-photo", "title-light", "title-photo-light")] != ["middle"] * 4:
-            errs.append("over: an override on title does not reach its variants")
-        if c["title-photo"]["fineprint"] is not None or c["title-photo-light"]["fineprint"] is None:
-            errs.append("over: an override on title-photo reaches beyond it")
-        # extends: a flavor's band from its own knobs over a parent without one
-        L = flavor(tmp, "banded", ncar, "title: {style: band, top: 0.30, bottom: 0.70, split: 0.60}\n")
-        errs += check("banded", L)
-        if close(L["compositions"]["title-band"]["band"]["box"], [0, 0.30, 1, 0.40]):
-            errs.append("banded: the flavor's band numbers did not reach title-band")
-        # feature.style cover: the title-photo composition with the body's column
-        L = flavor(tmp, "covered", ncar, "feature: {style: cover}\n")
-        f, tp = L["compositions"]["feature"], L["compositions"]["title-photo"]
-        if close({**f, "column": None}, {**tp, "column": None, "fineprint": None}) or close(f["column"]["box"], [0.06, 0.34, 0.44, 0.52]):
-            errs.append("covered: feature.style cover is not the title-photo composition with the body column")
-    for e in errs:
-        print("FAIL", e)
-    print(f"compositions: {len(liveries)} liveries and 3 flavors, {'%d failures' % len(errs) if errs else 'all as decided'}")
-    sys.exit(1 if errs else 0)
+def test_override_reaches_variants(tmp_path):
+    # overrides: title's reaches its variants, title-photo's only that one
+    L = flavor(tmp_path, "over", "compositions:\n  title: {column: {anchor: middle}}\n  title-photo: {fineprint: null}\n")
+    c = L["compositions"]
+    assert [c[k]["column"]["anchor"] for k in ("title", "title-photo", "title-light", "title-photo-light")] == ["middle"] * 4, \
+        "an override on title does not reach its variants"
+    assert c["title-photo"]["fineprint"] is None and c["title-photo-light"]["fineprint"] is not None, \
+        "an override on title-photo reaches beyond it"
 
 
-if __name__ == "__main__":
-    main()
+def test_flavor_band_from_own_knobs(tmp_path):
+    # extends: a flavor's band from its own knobs over a parent without one
+    L = flavor(tmp_path, "banded", "title: {style: band, top: 0.30, bottom: 0.70, split: 0.60}\n")
+    assert mismatches("banded", L) == []
+    assert not close(L["compositions"]["title-band"]["band"]["box"], [0, 0.30, 1, 0.40]), \
+        "the flavor's band numbers did not reach title-band"
+
+
+def test_feature_cover_is_title_photo(tmp_path):
+    # feature.style cover: the title-photo composition with the body's column
+    L = flavor(tmp_path, "covered", "feature: {style: cover}\n")
+    f, tp = L["compositions"]["feature"], L["compositions"]["title-photo"]
+    assert not close({**f, "column": None}, {**tp, "column": None, "fineprint": None}) \
+        and not close(f["column"]["box"], [0.06, 0.34, 0.44, 0.52]), \
+        "feature.style cover is not the title-photo composition with the body column"
