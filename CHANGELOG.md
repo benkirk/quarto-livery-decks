@@ -32,6 +32,14 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - new-deck's `.gitignore` uses Quarto's own spellings (`/.quarto/`, `**/*.quarto_ipynb`), so Quarto
   no longer appends them on the first render.
 
+### Plots
+- `livery_mpl.dense(scale=0.65)`: every text size scaled together inside the block, to the half
+  point, for small multiples (a 3 x 4 grid at the slide's sizes crowds out its data).
+- `livery_mpl.mix` and `livery_mpl.surface` are public (`__all__`): a color moved toward another
+  in OKLab, and the background the plot sits on, the dark one inside `dark()`.
+- `shade_family` tints toward the dark surface inside `dark()` on a light livery (it tinted toward
+  white there).
+
 ## [26.10.2] - 2026-10-19
 
 ### Decks

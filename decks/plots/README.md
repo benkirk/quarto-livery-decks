@@ -46,7 +46,9 @@ same as body text in every format.
 | `livery_mpl.status`, `.muted` | `good`, `warning`, `serious`, `critical`; the color for "Other" |
 | `livery_mpl.figsize("half")` | one of two columns; `figsize("full", height=0.6)` a wide, short plot |
 | `livery_mpl.shade_family(c, n)` | `n` tints of `c` toward the surface, as the families are built |
-| `with livery_mpl.dark():` | a `{.brand-dark}` slide: the dark chrome and colors where that slide is dark (HTML, a dark livery) |
+| `livery_mpl.surface`, `livery_mpl.mix(a, b, t)` | the background the plot sits on; `a` moved toward `b` by `t` in OKLab (a color between two, a tint toward the surface) |
+| `with livery_mpl.dark():` | a `{.brand-dark}` slide: the dark chrome and colors where that slide is dark (HTML, a dark livery); `surface` is the dark one inside |
+| `with livery_mpl.dense():` | small multiples: every text size scaled together, by 0.65 unless given, to the half point (a 3 x 4 grid at the slide's sizes leaves no room for the data) |
 | colormaps | `livery` (the default, the livery's own map), `livery_r`, `livery_div` (diverging), `livery_seq_<ramp>`, each with a `_dark` twin |
 | `livery_mpl.use(path)` | another livery: a directory, or a charts bundle's |
 | `livery_mpl.__version__` | the engine's version (a charts bundle's: the engine that packed it, also its `livery.json`'s `engine`) |
@@ -55,8 +57,8 @@ These are the helper's stable API (`livery_mpl.__all__` and the colormaps): a ch
 them is a *Plots* entry in [`CHANGELOG.md`](../../CHANGELOG.md).
 
 What breaks it: `sns.set_theme()` or `plt.style.use(...)` (they replace the livery's style), a
-hand-picked `figsize` (it changes the text size), a colormap by name such as `viridis`, more
-than eight series (fold the rest into "Other").
+hand-picked `figsize` (it changes the text size; for smaller type, `dense()`), a colormap by name
+such as `viridis`, more than eight series (fold the rest into "Other").
 
 ## In each format
 

@@ -15,7 +15,12 @@ directory, else a livery.json beside this file (the charts bundle, mpl_zip.py).
     livery_mpl.status, .muted  {good, warning, serious, critical}; the "Others" color
     livery_mpl.figsize("half") the content area (or a column of two) in canvas inches; height=0.6
                                takes that share of its height
+    livery_mpl.surface         the background the plots sit on (the dark one inside dark())
     livery_mpl.shade_family(c, n)  n tints of c toward the surface, as the families are built
+    livery_mpl.mix(a, b, t)    a moved toward b by t (0..1), in OKLab
+    with livery_mpl.dense():   every text size scaled together (0.65 by default, to the half
+                               point), for small multiples: a 3 x 4 grid at the slide's sizes
+                               leaves no room for the data
     with livery_mpl.dark():    the dark chrome, slots and maps, where the slide is dark: an HTML
                                .brand-dark slide, every slide of a dark livery; elsewhere (pptx
                                and PDF draw .brand-dark as an ordinary slide) it changes nothing
@@ -49,8 +54,8 @@ from matplotlib.colors import LinearSegmentedColormap
 
 HERE = Path(__file__).resolve().parent
 
-__all__ = ["__version__", "use", "colors", "cycle", "families", "status", "muted", "figsize",
-           "shade_family", "dark"]
+__all__ = ["__version__", "use", "colors", "cycle", "families", "status", "muted", "surface",
+           "figsize", "shade_family", "mix", "dark", "dense"]
 
 
 def _engine_version() -> str:
@@ -134,6 +139,7 @@ cycle = None
 families: list = []
 status: dict = {}
 muted = ""
+surface = ""
 style = None
 
 
@@ -146,7 +152,7 @@ def _register(name, cmap):
 def use(path=None) -> dict:
     """Load a livery (see the module's docstring), register its fonts and colormaps, apply its
     style; called on import. Returns livery.json."""
-    global livery, charts, mode, colors, cycle, families, status, muted, style
+    global livery, charts, mode, colors, cycle, families, status, muted, surface, style
     f = _find(path)
     livery = json.loads(f.read_text())
     base = f.parent.parent if f.parent.name == "build" else f.parent   # the livery dir, or the bundle
@@ -178,6 +184,7 @@ def use(path=None) -> dict:
     plt.rcParams["image.cmap"] = "livery"
     b = charts[mode]
     colors, families, status, muted = list(b["categorical"]), b["families"], b["status"], b["muted"]
+    surface = b["surface"]
     cycle = cycler(color=colors)
     return livery
 
@@ -199,12 +206,12 @@ def figsize(kind: str = "full", height: float = 1.0) -> tuple[float, float]:
 
 
 def shade_family(color: str, n: int = 3, surface: str | None = None) -> list[str]:
-    """n members of color's family: the color, then tints toward the surface, as far as two thirds
-    of the way on light (0.55 on dark, where the pale end would sink into the surface)."""
-    m = "dark" if surface is None and mode == "dark" else mode
-    surface = surface or charts[m]["surface"]
-    reach = 0.55 if m == "dark" else 2 / 3
-    return [color] + [mix(color, surface, reach * i / (n - 1)) for i in range(1, n)] if n > 1 else [color]
+    """n members of color's family: the color, then tints toward the surface (the module's, so the
+    dark one inside dark()), as far as two thirds of the way on light (0.55 on dark, where the pale
+    end would sink into the surface)."""
+    to = surface or globals()["surface"]
+    reach = 0.55 if to == charts["dark"]["surface"] else 2 / 3
+    return [color] + [mix(color, to, reach * i / (n - 1)) for i in range(1, n)] if n > 1 else [color]
 
 
 def _rc(m: str) -> dict:
@@ -221,20 +228,42 @@ def dark(force: bool = False):
     """Draw for a dark slide inside the block: the dark chrome, slots, families and maps. Applies on
     a dark livery and in the HTML deck (where .brand-dark is dark), or with force=True; pptx and PDF
     draw .brand-dark as an ordinary slide, so there it changes nothing."""
-    global colors, families, status, muted, cycle
+    global colors, families, status, muted, surface, cycle
     on = force or mode == "dark" or output_format() == "html"
     if not on:
         yield
         return
-    saved = (colors, families, status, muted, cycle)
+    saved = (colors, families, status, muted, surface, cycle)
     b = charts["dark"]
     colors, families, status, muted = list(b["categorical"]), b["families"], b["status"], b["muted"]
+    surface = b["surface"]
     cycle = cycler(color=colors)
     try:
         with plt.rc_context(_rc("dark")):
             yield
     finally:
-        colors, families, status, muted, cycle = saved
+        colors, families, status, muted, surface, cycle = saved
+
+
+SIZES = ("font.size", "axes.titlesize", "axes.labelsize", "xtick.labelsize", "ytick.labelsize",
+         "legend.fontsize", "legend.title_fontsize", "figure.titlesize", "figure.labelsize")
+
+
+@contextmanager
+def dense(scale: float = 0.65):
+    """Every text size scaled by scale inside the block, rounded to the half point, as a slide's
+    sizes are: for small multiples, where the slide's type would crowd out the data. Named sizes
+    ("large") resolve against font.size first."""
+    base = plt.rcParams["font.size"]
+    rc = {}
+    for k in SIZES:
+        v = plt.rcParams.get(k)
+        if v is None:
+            continue
+        pt = font_manager.font_scalings.get(v, 1.0) * base if isinstance(v, str) else float(v)
+        rc[k] = max(0.5, round(pt * scale * 2) / 2)
+    with plt.rc_context(rc):
+        yield
 
 
 use()
