@@ -17,6 +17,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- `pytest` is in the image and the conda env, for a deck's own Python tests.
+- A deck Makefile's own targets (an ingest step, its tests) are documented to go inside
+  `ifeq ($(DECKS_RUNTIME_USED),native)`: under a container runtime a recipe of the deck's replaced
+  Make.container's forwarding stub and ran a second time on the host, with the host's tools
+  (`docs/container.md` "From your deck's Makefile").
+
 ## [26.10.2] - 2026-10-19
 
 ### Decks

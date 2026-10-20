@@ -24,6 +24,7 @@ dependencies:
       - pillow        # `make qa` contact sheets
       - pipdeptree
       - playwright    # `make qa` HTML checks (Makefile installs its headless Chromium)
+      - pytest        # a deck's own Python tests (the framework's tests/ are plain scripts)
       - python-pptx
       - pyyaml
       - scipy

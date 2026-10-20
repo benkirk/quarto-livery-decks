@@ -99,6 +99,23 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   IPython settings, matplotlib's font list, TeX trees, personal fonts) never reaches the build,
   and the build's caches never touch yours; they persist there, so later builds are quicker.
   Delete an old release's directory freely.
+- **A deck's own targets**: a rule of your own in the deck Makefile (`make ingest`, `make test`)
+  must run only where the deck builds. Under a container runtime, Make.container forwards every
+  goal into the image and leaves the goal an empty recipe on the host; a recipe of yours replaces
+  it ("overriding recipe" warnings), so it runs again on the host after the image's run, with the
+  host's tools. Define your rules on the native side only:
+
+  ```make
+  include /path/to/framework/Make.common
+
+  ifeq ($(DECKS_RUNTIME_USED),native)   # in the image, or an activated env; never the host's
+  ingest:
+  	python3 -m mypackage.ingest
+  endif
+  ```
+
+  Extra prerequisites need no guard (`$(OUT).pptx: data.csv` only adds to Make.common's rules),
+  and `pytest` is in the image for a deck's own Python tests.
 - **More of the host**: `DECKS_BINDS` lists directories the container also sees at their own
   paths, those that exist (a site's file systems; an installation's `site.mk` sets them, below).
   A symlink in the deck directory, an image linked in from elsewhere, works too: its target is
