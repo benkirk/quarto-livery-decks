@@ -39,7 +39,7 @@ test: ## Run the engine's tests: livery build --check, livery check, composition
 	python3 _extensions/engine/livery.py check liveries/*/
 	python3 -m pytest -q tests/test_compositions.py
 	python3 -m pytest -q tests/test_type.py
-	python3 tests/test_svg_fallback.py
+	python3 -m pytest -q tests/test_svg_fallback.py
 	python3 -m pytest -q tests/test_notes_clrmap.py
 	python3 -m pytest -q tests/test_charts.py
 	python3 -m pytest -q tests/test_schema.py
