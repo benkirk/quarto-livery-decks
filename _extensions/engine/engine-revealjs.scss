@@ -241,10 +241,10 @@ $mermaid-label-fg-color: $engine-primary;
     padding: 0.3em 0.8em;
   }
   tbody tr:nth-child(even) { background: var(--engine-table-band); }
-  caption {
+  caption {   // the caption role, as figcaption: its share of the body over the table's em
     caption-side: bottom;
     color: var(--engine-muted);
-    font-size: 0.8em;
+    font-size: calc(var(--engine-type-caption, 0.7) / var(--engine-type-table, 0.85) * 1em);
     padding-top: 0.4em;
     text-align: left;
   }
