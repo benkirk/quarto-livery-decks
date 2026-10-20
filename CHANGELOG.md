@@ -17,6 +17,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.2] - 2026-10-19
+
 ### Decks
 - A first build can no longer hang at its first diagram, however slowly the browser starts: the
   image's Quarto waits 30 s for its headless Chromium instead of 3 s, after which it waited for good.
@@ -128,6 +130,7 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.1...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.2...HEAD
+[26.10.2]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.2
 [26.10.1]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.1
 [26.10.0]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.0
