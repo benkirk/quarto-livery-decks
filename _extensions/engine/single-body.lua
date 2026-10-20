@@ -8,7 +8,10 @@
 -- already holds a columns div is left alone. Runs after notes-last.lua.
 -- A `::: note` div of paragraphs folds the same way, and marks its slide with
 -- an `engine-layout: note` notes line: slide_layout.py then draws the caption
--- box as the note (the caption role, muted, centred, under the picture).
+-- box as the note (the caption role, muted, centred, under the picture). A
+-- figure with a caption of its own marks its slide the same way, note or not,
+-- so its caption looks as in HTML and PDF; a table's caption, or a figure's
+-- that is only folded paragraphs (a lone footnote), stays at the foot.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -82,6 +85,24 @@ local function caption_of(blk)
   return nil
 end
 
+-- true when blk is a figure (or a div holding one) with a caption of its own
+local function own_caption(blk)
+  if blk.t == "Figure" then
+    return pandoc.utils.stringify(blk.caption.long) ~= ""
+  end
+  if blk.t == "Div" then
+    local inner = nil
+    for _, b in ipairs(blk.content) do
+      if is_nontext(b) then
+        if inner then return false end
+        inner = b
+      end
+    end
+    return inner ~= nil and own_caption(inner)
+  end
+  return false
+end
+
 -- blk with paras appended to its caption; an image paragraph becomes a figure.
 -- A div holding exactly one table or figure is folded into that block.
 local function fold(blk, paras)
@@ -123,7 +144,8 @@ end
 
 -- The body with trailing paragraphs folded into the one table or image they
 -- follow, or the body unchanged when that is not its shape; true when a note
--- was folded.
+-- was folded or the figure has a caption of its own (slide_layout.py then draws
+-- the caption box in the caption's look, as HTML and PDF set a caption).
 local function fold_trailing(body)
   local at = nil
   for i, blk in ipairs(body) do
@@ -135,10 +157,14 @@ local function fold_trailing(body)
       at = i
     end
   end
-  if not at or at == #body then
+  if not at then
     return body
   end
-  local paras, noted = pandoc.Blocks({}), false
+  local captioned = own_caption(body[at])   -- before the fold extends the caption
+  if at == #body then
+    return body, captioned
+  end
+  local paras, noted = pandoc.Blocks({}), captioned
   for i = at + 1, #body do
     if is_text(body[i]) then
       paras:insert(body[i])

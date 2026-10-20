@@ -163,15 +163,22 @@ def table_overruns(lines, w, h):
     """Lines crossing a column edge, where an edge is an x that three or more lines start at.
 
     pdftotext keeps each table cell a line of its own, and merges two touching cells into one,
-    so a cell that overruns its column is a line spanning the next column's edge."""
+    so a cell that overruns its column is a line spanning the next column's edge. Only a cell
+    counts: a line that starts at a column edge itself (a merged cell starts at its own column's),
+    or sits within the rows of the column it crosses. A table's caption above it, or a note
+    under it, is wider than its columns but neither."""
     body = [ln for ln in lines if ln[1] > h * 0.16]          # below the frame title
     starts = {}
     for ln in body:
         starts.setdefault(round(ln[0]), []).append(ln)
     out = []
     for a in body:
+        in_column = len(starts[round(a[0])]) >= 3
         for x, col in starts.items():
             if len(col) < 3 or not a[0] + 5 < x < a[2] - 1:
+                continue
+            mid = (a[1] + a[3]) / 2
+            if not in_column and not min(b[1] for b in col) <= mid <= max(b[3] for b in col):
                 continue
             near = [b for b in col if abs(b[1] - a[1]) < 3 * (a[3] - a[1])]
             # a right-aligned column: shorter numbers start further right, same right edge

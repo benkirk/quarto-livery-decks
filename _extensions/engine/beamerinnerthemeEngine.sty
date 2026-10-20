@@ -158,8 +158,12 @@
 \AtBeginDocument{\providecommand\tightlist{}\renewcommand\tightlist{\parskip\z@\ifnum\@listdepth>1
   \itemsep0.15\engine@typebody\else\itemsep0.25\engine@typebody\fi}}
 \setbeamertemplate{sections/subsections in toc}[square]
-\setbeamertemplate{caption}[numbered]
-\setbeamertemplate{caption label separator}{:\enspace}
+% a caption is its text alone, centred (the caption font and color: beamer draws the template
+% with both), as HTML and pptx set it: no "Figure 1:" label
+\setbeamertemplate{caption}{{\centering\insertcaption\par}}
+% Quarto loads the caption package (before the theme), which draws its own label: none there either
+\AtBeginDocument{\@ifpackageloaded{caption}{\captionsetup{labelformat=empty,labelsep=none,
+  justification=centering}}{}}
 \setbeamertemplate{bibliography item}{\insertbiblabel}
 
 % ---------------------------------------------------------------------------
