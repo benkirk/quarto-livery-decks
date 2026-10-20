@@ -159,6 +159,8 @@ jobs:
           if grep -l '<text' plots_files/figure-revealjs/*.svg; then echo '::error::SVG plot with <text>'; exit 1; fi
           grep -c 'class="engine-plot"' plots.html >/dev/null
           test "$(unzip -l plots.pptx | grep -c 'ppt/media/image')" -ge 10
+          test "$(unzip -l plots.pptx | grep -c 'ppt/media/image.*\.svg')" -ge 9   # the plots, vector,
+          test "$(unzip -p plots.pptx 'ppt/slides/*.xml' | grep -o 'asvg:svgBlip' | wc -l)" -ge 9   # each with a PNG
           pdffonts plots.pdf | grep -q Poppins
 
       - name: Upload the decks
@@ -291,7 +293,8 @@ jobs:
 
       # the resolved compositions against the decided numbers (a changed box is named in
       # EXPECTED_DELTAS or fails); every livery's sizes in whole or half points on its canvas,
-      # and every size in its template a role's; every livery.yml valid against the schema, the
+      # and every size in its template a role's; an SVG picture's PNG fallback (svg_fallback.py);
+      # every livery.yml valid against the schema, the
       # refusals with their paths, and liveries/REFERENCE.md generated from the schema; the
       # livery command's scaffolds (new, with a deck, a flavor) passing build, template and check;
       # bin/new-deck's decks, --bare too
@@ -299,6 +302,7 @@ jobs:
         run: |
           python3 tests/test_compositions.py
           python3 tests/test_type.py
+          python3 tests/test_svg_fallback.py
           python3 tests/test_schema.py
           python3 tests/test_cli.py
           python3 tests/test_new_deck.py
