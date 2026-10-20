@@ -61,6 +61,23 @@ def _split_marker(para, start):
     return para.runs[start]
 
 
+def style(para) -> bool:
+    """The paragraph's footnote styled, if it holds one (slide_layout.py calls it again on a note
+    line it splits out of a caption: idempotent)."""
+    start = _footnote_start(para)
+    if start is None:
+        return False
+    if start == 0:
+        # a caption is centered; a footnote reads from the left, as in HTML and PDF
+        para.space_before = FOOT_BEFORE
+        para.alignment = PP_ALIGN.LEFT
+    mark = _split_marker(para, start)
+    for run in para.runs[start:]:  # every run — the code span too
+        run.font.size = FOOT_SIZE
+        run.font.color.rgb = MARK_COLOR if run._r is mark._r else FOOT_COLOR
+    return True
+
+
 def run(prs, name: str) -> None:
     """The open deck, changed in place; name for the message."""
     styled = 0
@@ -69,16 +86,5 @@ def run(prs, name: str) -> None:
             if not shape.has_text_frame:
                 continue
             for para in shape.text_frame.paragraphs:
-                start = _footnote_start(para)
-                if start is None:
-                    continue
-                if start == 0:
-                    # a caption is centered; a footnote reads from the left, as in HTML and PDF
-                    para.space_before = FOOT_BEFORE
-                    para.alignment = PP_ALIGN.LEFT
-                mark = _split_marker(para, start)
-                for run in para.runs[start:]:  # every run — the code span too
-                    run.font.size = FOOT_SIZE
-                    run.font.color.rgb = MARK_COLOR if run._r is mark._r else FOOT_COLOR
-                styled += 1
+                styled += style(para)
     print(f"style_footnotes: restyled {styled} footnote paragraph(s) → {name}")

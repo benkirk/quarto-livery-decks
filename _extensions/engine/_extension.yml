@@ -59,7 +59,8 @@ contributes:
       #   notes-last        speaker notes before a columns div split the slide; every slide's
       #                     notes move to its end, so any placement is safe
       #   single-body       content after a table or diagram splits the slide; the paragraphs
-      #                     after one move into its caption, at the slide's foot (after notes-last)
+      #                     after one, or a ::: note, move into its caption, at the slide's foot
+      #                     (after notes-last; slide_layout.py moves a note up under it)
       #   linked-images     [![](x.png)](url): link_captions.py draws the line (here a no-op)
       #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark
       reference-doc: ../../liveries/ncar/template.pptx

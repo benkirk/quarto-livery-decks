@@ -6,10 +6,15 @@
 -- (a list, code, a second table) is left to split: an extra slide is visible,
 -- where text in a 100% column wrapper was silently dropped. A slide that
 -- already holds a columns div is left alone. Runs after notes-last.lua.
+-- A `::: note` div of paragraphs folds the same way, and marks its slide with
+-- an `engine-layout: note` notes line: slide_layout.py then draws the caption
+-- box as the note (the caption role, muted, centred, under the picture).
 
 if not quarto.doc.is_format("pptx") then
   return {}
 end
+
+local is_note = dofile(quarto.utils.resolve_path("engine-common.lua")).is_note
 
 -- Speaker notes, and the hidden div quarto appends, stay outside the wrapper.
 local function is_aside(blk)
@@ -47,6 +52,28 @@ local function is_text(blk)
   return (blk.t == "Para" or blk.t == "Plain") and not is_image_para(blk)
 end
 
+-- a note of paragraphs only (anything else in it is left to split, as after a figure)
+local function is_text_note(blk)
+  if not is_note(blk) then return false end
+  for _, b in ipairs(blk.content) do
+    if not is_text(b) then return false end
+  end
+  return true
+end
+
+-- pandoc's pptx writer captions a figure from its image's text, so paragraphs
+-- go there too, one line each: the image's text and the paragraphs' inlines,
+-- joined by line breaks
+local function caption_lines(text, paras)
+  local out = pandoc.Inlines({})
+  out:extend(text)
+  for _, para in ipairs(paras) do
+    if #out > 0 then out:insert(pandoc.LineBreak()) end
+    out:extend(para.content)
+  end
+  return out
+end
+
 -- The caption of a table or figure, or nil when blk has neither.
 local function caption_of(blk)
   if blk.t == "Table" or blk.t == "Figure" then
@@ -61,18 +88,16 @@ local function fold(blk, paras)
   local cap = caption_of(blk)
   if cap then
     cap:extend(paras)
+    if blk.t == "Figure" then   -- a captioned figure: its image's text too, or they vanish
+      blk.content = blk.content:walk({
+        Image = function(il) il.caption = caption_lines(il.caption, paras); return il end,
+      })
+    end
     return blk
   end
   if is_image_para(blk) then
-    -- pandoc's pptx writer captions a figure from its image's text, so the
-    -- paragraphs go there too, one line each
-    local text = pandoc.Inlines({})
-    for k, para in ipairs(paras) do
-      if k > 1 then text:insert(pandoc.LineBreak()) end
-      text:extend(para.content)
-    end
     local content = blk.content:map(function(il)
-      if il.t == "Image" then il.caption = text end
+      if il.t == "Image" then il.caption = caption_lines(pandoc.Inlines({}), paras) end
       return il
     end)
     return pandoc.Figure({ pandoc.Plain(content) }, { long = paras })
@@ -97,7 +122,8 @@ local function fold(blk, paras)
 end
 
 -- The body with trailing paragraphs folded into the one table or image they
--- follow, or the body unchanged when that is not its shape.
+-- follow, or the body unchanged when that is not its shape; true when a note
+-- was folded.
 local function fold_trailing(body)
   local at = nil
   for i, blk in ipairs(body) do
@@ -112,17 +138,23 @@ local function fold_trailing(body)
   if not at or at == #body then
     return body
   end
-  local paras = pandoc.Blocks({})
+  local paras, noted = pandoc.Blocks({}), false
   for i = at + 1, #body do
-    if not is_text(body[i]) then return body end
-    paras:insert(body[i])
+    if is_text(body[i]) then
+      paras:insert(body[i])
+    elseif is_text_note(body[i]) then
+      paras:extend(body[i].content)
+      noted = true
+    else
+      return body
+    end
   end
   local folded = fold(body[at], paras)
   if not folded then return body end
   local out = pandoc.Blocks({})
   for i = 1, at - 1 do out:insert(body[i]) end
   out:insert(folded)
-  return out
+  return out, noted
 end
 
 function Pandoc(doc)
@@ -130,8 +162,14 @@ function Pandoc(doc)
   local out = pandoc.Blocks({})
   local body, notes, in_slide = pandoc.Blocks({}), pandoc.Blocks({}), false
   local function flush()
-    out:extend(in_slide and fold_trailing(body) or body)
+    local blocks, noted = body, false
+    if in_slide then blocks, noted = fold_trailing(body) end
+    out:extend(blocks)
     out:extend(notes)
+    if noted then   -- slide_layout.py reads it (slide-layout.lua writes the other words)
+      out:insert(pandoc.Div({ pandoc.Para({ pandoc.Str("engine-layout: note") }) },
+        pandoc.Attr("", { "notes" })))
+    end
     body, notes = pandoc.Blocks({}), pandoc.Blocks({})
   end
   for _, blk in ipairs(doc.blocks) do
