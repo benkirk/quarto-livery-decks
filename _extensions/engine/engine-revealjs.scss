@@ -290,6 +290,13 @@ $mermaid-label-fg-color: $engine-primary;
   font-size: calc(var(--engine-type-caption, 0.7) * 1em);
 }
 .reveal .slides section .quarto-figure-center figcaption { text-align: center; }
+// a lone image's caption: Quarto writes it as a p.caption after the stretched img, not a
+// figcaption; centred under it with a note's spacing, as the PDF and pptx set it
+.reveal .slides section img.quarto-figure-center + p.caption {
+  text-align: center;
+  line-height: 1.3;
+  margin: 0.4em 0 0;
+}
 // ::: note (engine-revealjs.lua's .engine-note): a remark under a figure or table, in the .full
 // caption's look
 .reveal .slides section .engine-note {
