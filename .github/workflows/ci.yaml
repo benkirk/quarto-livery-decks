@@ -148,6 +148,17 @@ jobs:
           timeout 900 make -C decks/quickstart all
           timeout 900 make -C decks/fixtures all
 
+      # every notes slide carries the color map PowerPoint writes; Keynote refuses a deck with
+      # one that lacks it (notes_clrmap.py)
+      - name: Check the decks' notes slides
+        run: |
+          for f in decks/sample/sample.pptx decks/quickstart/quickstart.pptx; do
+            n=$(unzip -Z1 "$f" | grep -c '^ppt/notesSlides/notesSlide[0-9]*\.xml$')
+            c=$(unzip -p "$f" 'ppt/notesSlides/notesSlide*.xml' | grep -o '<p:clrMapOvr>' | wc -l)
+            echo "$f: $n notes slides, $c with a color map"
+            test "$n" -gt 0 && test "$n" -eq "$c"
+          done
+
       # the plots cookbook (jupyter: python3, matplotlib and seaborn in the livery), every format
       # and its QA; the HTML's plots are SVG paths sized to the canvas, the PDF embeds the livery font
       - name: Build and QA the plots deck
@@ -293,7 +304,7 @@ jobs:
 
       # the resolved compositions against the decided numbers (a changed box is named in
       # EXPECTED_DELTAS or fails); every livery's sizes in whole or half points on its canvas,
-      # and every size in its template a role's; an SVG picture's PNG fallback (svg_fallback.py);
+      # and every size in its template a role's; an SVG picture's PNG fallback (svg_fallback.py); notes slides' color map (notes_clrmap.py);
       # every livery.yml valid against the schema, the
       # refusals with their paths, and liveries/REFERENCE.md generated from the schema; the
       # livery command's scaffolds (new, with a deck, a flavor) passing build, template and check;
@@ -303,6 +314,7 @@ jobs:
           python3 tests/test_compositions.py
           python3 tests/test_type.py
           python3 tests/test_svg_fallback.py
+          python3 tests/test_notes_clrmap.py
           python3 tests/test_schema.py
           python3 tests/test_cli.py
           python3 tests/test_new_deck.py

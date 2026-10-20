@@ -17,6 +17,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- A pptx opens in Keynote. pandoc writes speaker notes without the color map PowerPoint
+  gives every notes slide, and Keynote 15.4 refuses the whole file for it ("The file format is
+  invalid"), so any deck with notes, the quickstart included, failed to import. The new pptx
+  step `notes_clrmap` adds it, in PowerPoint's own form; PowerPoint opens the deck as before.
+
 ## [26.10.4] - 2026-10-20
 
 ### Decks

@@ -79,6 +79,9 @@ Per deck, `make pptx` runs:
      SVG rides on Office's `svgBlip` extension, so PowerPoint draws vector and an app that
      ignores the extension (Google Slides' import) the PNG. First, so every later step sees a
      PNG picture.
+   - `notes_clrmap`: gives each notes slide the `<p:clrMapOvr>` PowerPoint writes (the notes
+     master's colors), which pandoc leaves out. Keynote refuses a deck with one notes slide
+     that lacks it, as an invalid file; PowerPoint and Google Slides open it either way.
    - `section_subtitle`: merges the paragraph after a `#` section heading back onto the
      Section Header slide as its subtitle (pandoc drops it onto a separate untitled slide),
      then dresses every divider as the HTML and PDF decks draw it: the livery's "SECTION n"
