@@ -44,7 +44,10 @@ def font(family, weight, pt):
         path = livery_mod.font_file(LIVERY, family, weight)
     except FileNotFoundError:
         path = livery_mod.font_file(LIVERY, family, 400)
-    return ImageFont.truetype(str(path), round(pt / PT_PX))
+    # BASIC, always: Pillow shapes with Raqm (HarfBuzz) whenever it can load a FriBiDi library at
+    # run time, so the same text measured differently on a machine that had one (conda-forge
+    # librsvg brings it) and moved a wrap
+    return ImageFont.truetype(str(path), round(pt / PT_PX), layout_engine=ImageFont.Layout.BASIC)
 
 
 def face(name, family, weight, pt):
