@@ -17,6 +17,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.5] - 2026-10-20
+
 ### Decks
 - A pptx opens in Keynote. pandoc writes speaker notes without the color map PowerPoint
   gives every notes slide, and Keynote 15.4 refuses the whole file for it ("The file format is
