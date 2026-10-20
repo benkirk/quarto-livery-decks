@@ -122,12 +122,14 @@ jobs:
 
       # ::: note (docs/authoring.md "Notes under a figure"): HTML's .engine-note, the PDF's text,
       # and in pptx centred lines at the caption size; "Image embed" keeps its remark, which the
-      # fold into a captioned figure used to drop
-      - name: Check the sample's notes
+      # fold into a captioned figure used to drop, and its own caption takes the same look; the
+      # PDF labels no caption ("Figure 1:")
+      - name: Check the sample's notes and captions
         run: |
           cd decks/sample
           grep -q 'class="engine-note"' sample.html
           pdftotext sample.pdf - | grep -c 'One short label a box keeps' >/dev/null   # -q: SIGPIPE under pipefail
+          if pdftotext sample.pdf - | grep -c -E '(Figure|Table) [0-9]+:' >/dev/null; then exit 1; fi
           python3 - <<'EOF'
           import json
           from pptx import Presentation
@@ -135,11 +137,17 @@ jobs:
           cap = json.load(open("_livery/build/livery.json"))["type"]["roles"]["caption"]["pt"]
           notes = [p for s in Presentation("sample.pptx").slides for sh in s.shapes if sh.has_text_frame
                    for p in sh.text_frame.paragraphs
-                   if p.text.startswith(("One short label a box keeps", "Width can also be set"))]
-          assert len(notes) == 2, [p.text for p in notes]
+                   if p.text.startswith(("One short label a box keeps", "Width can also be set",
+                                         "A caption for the figure"))]
+          assert len(notes) == 3, [p.text for p in notes]
           for p in notes:
               assert p.alignment == PP_ALIGN.CENTER and all(r.font.size.pt == cap for r in p.runs), p.text
           EOF
+
+      # the sample's own make qa (docs/authoring.md "Checking a deck"): every slide of every
+      # format shot, overflow, slide counts, a note or a .full caption that wraps
+      - name: QA the sample deck
+        run: timeout 900 make -C decks/sample qa
 
       # the exemplar deck the README's screenshots come from, and the fixture decks (a photo
       # title, the light title, both, the deck-wide size step), in every format
