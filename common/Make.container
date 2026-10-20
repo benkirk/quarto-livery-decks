@@ -74,7 +74,9 @@ $(error DECKS_RUNTIME=$(DECKS_RUNTIME): native, docker, podman, apptainer or aut
 endif
 
 # Every goal waits on the one run. publish builds the site inside and pushes from here, where
-# your git credentials are.
+# your git credentials are. A QUARTO_DECKS from the environment (new-deck's Makefile reads it) is
+# passed on: the container's environment is the image's, and the deck must include the same
+# framework inside as here.
 DECKS_GOALS := $(or $(MAKECMDGOALS),pptx)
 .PHONY: $(DECKS_GOALS) decks-container
 $(DECKS_GOALS): decks-container
@@ -82,7 +84,8 @@ $(DECKS_GOALS): decks-container
 decks-container:
 	@echo "DECKS_RUNTIME=$(DECKS_RUNTIME_USED): $(if $(APPTAINER_SIF),$(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE))" >&2
 	@mkdir -p $(DECKS_HOME)
-	$(DECKS_RUN) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native
+	$(DECKS_RUN) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native \
+	  $(if $(filter environment,$(origin QUARTO_DECKS)),QUARTO_DECKS=$(QUARTO_DECKS))
 ifneq ($(filter publish,$(MAKECMDGOALS)),)
 	$(publish_push)
 endif

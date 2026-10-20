@@ -23,6 +23,14 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `ifeq ($(DECKS_RUNTIME_USED),native)`: under a container runtime a recipe of the deck's replaced
   Make.container's forwarding stub and ran a second time on the host, with the host's tools
   (`docs/container.md` "From your deck's Makefile").
+- `bin/new-deck`'s Makefile names the framework as a default, `QUARTO_DECKS ?= <checkout>`, and
+  includes `$(QUARTO_DECKS)/Make.common`, so `make QUARTO_DECKS=<checkout>` builds the deck on
+  another checkout; an environment `QUARTO_DECKS` reaches the container's make too. It shows the
+  native-side guard, commented.
+- `bin/new-deck --bare DIR`: only the Makefile and `.gitignore`, beside a repository's own decks.
+  It refuses an existing Makefile and adds only the `.gitignore` lines that are missing.
+- new-deck's `.gitignore` uses Quarto's own spellings (`/.quarto/`, `**/*.quarto_ipynb`), so Quarto
+  no longer appends them on the first render.
 
 ## [26.10.2] - 2026-10-19
 
