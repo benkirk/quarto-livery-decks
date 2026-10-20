@@ -1,7 +1,7 @@
 # Writing a deck
 
 A new deck directory, the front matter and the slide kinds, the per-slide controls (linked
-images, centering and scaling, shell chunks), the text sizes and autofit, and `make qa`. The quickstart deck
+images, notes under a figure, centering and scaling, shell chunks), the text sizes and autofit, and `make qa`. The quickstart deck
 (`decks/quickstart/quickstart.qmd`) is the one to copy; `decks/sample/sample.qmd` shows every pattern.
 
 ## Adding a new deck
@@ -69,7 +69,7 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   `bar` (the title on a dark bar, the text on a translucent panel; the default) or
   `cover` (the title cover's field and waves, the photo beside them), in every format.
 - `## Title {.full}` gives one diagram or image the whole slide: no title,
-  logo or rule, and the paragraph after it becomes a one-line caption. The
+  logo or rule, and the paragraph after it (or a `::: note`) becomes a one-line caption. The
   title stays in the source for navigation and `make qa`. pptx gets it
   from `slide_layout.py`.
 - `## Thank you! {.closing}` makes a closing slide.
@@ -90,6 +90,34 @@ picture is live: the slide footer in HTML, a line at the foot of the PDF page
 pandoc can't add one without splitting the slide). One line per slide, from
 its first linked image. `{height="72%"}` is the full-width screenshot recipe
 and fits all three.
+
+## Notes under a figure
+
+A remark that belongs to a figure or table, a summary line or where its numbers come from, goes
+in a `note` div right after it:
+
+```markdown
+## Campaign quotas and use
+
+![](images/capacity.png)
+
+::: note
+121 PiB used of 141 PiB; quotas total 166 PiB, 1.24x the 95% line.
+:::
+```
+
+Every format draws it as the figure's caption, as a `{.full}` slide draws its caption: the
+caption size, the livery's muted color, centred, just under the figure. In pptx the engine's
+`single-body.lua` folds it into pandoc's caption box, and `slide_layout.py` sets its look and
+moves the box up under the picture or table, shrinking a picture that would leave it no room. A
+note may hold several paragraphs. A `†` line in it or after it stays a footnote: HTML and PDF
+move it to the slide's foot, pptx sets it on the left under the note. A cell prints one with
+`#| output: asis`: `print("\n::: note\n" + summary + "\n:::\n")`.
+
+Put it after the slide's one figure or table: anywhere else pptx shows it as body text. Without
+the div, a paragraph after a figure is body text in HTML and PDF, and in pptx it joins the
+caption box at body size. On a pptx slide with a note, the whole caption box takes the note's
+look, a figure's own caption included (HTML and PDF set that caption the same way).
 
 ## Centering and scaling a short slide
 

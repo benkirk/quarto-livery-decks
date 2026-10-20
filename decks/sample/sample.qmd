@@ -92,10 +92,12 @@ mpirun -n 4 ./a.out
 
 ## Image embed
 
-![A caption for the figure](images/example.jpg){width=60%}
+![A caption for the figure](images/example.jpg){width=60% fig-align="center"}
 
+::: note
 Width can also be set in pixels (`{width=400}`) or with a `height=`
 attribute. PNG, JPG, and SVG all work for HTML/PDF; PPTX prefers PNG/JPG.
+:::
 
 ## A linked screenshot
 
@@ -208,9 +210,9 @@ is baked into the .pptx. Engine is `jupyter` with the `bash` kernel
 ::: {.notes}
 Mermaid blocks render to PNG automatically for PPTX (configured in
 `_quarto.yml`). Use `graph TD` for top-down, `sequenceDiagram` for
-sequence diagrams, etc. The explanation lives in these notes, before the
-diagram: text after an image would split the slide in pptx, and text before
-it demotes the layout.
+sequence diagrams, etc. A remark under the diagram goes in a `::: note`,
+which every format draws as its caption; text before a diagram demotes the
+pptx layout, so a longer explanation lives in these notes.
 :::
 
 ```{mermaid}
@@ -219,6 +221,12 @@ graph LR
     CMP --> EXE[Executable]
     EXE --> RUN[mpirun on Derecho]
 ```
+
+::: note
+One short label a box keeps a left-to-right flow near the slide's 2.4:1.
+:::
+
+† In pptx and PDF the labels are Trebuchet MS: the diagram is a picture, baked at build time.
 
 ## Graphviz diagram
 

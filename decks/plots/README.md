@@ -61,6 +61,26 @@ What breaks it: `sns.set_theme()` or `plt.style.use(...)` (they replace the live
 hand-picked `figsize` (it changes the text size; for smaller type, `dense()`), a colormap by name
 such as `viridis`, more than eight series (fold the rest into "Other").
 
+## A note under a plot
+
+A summary line under a chart goes in a `::: note` after the cell (the seaborn slide has one), or
+the cell prints it, which keeps the numbers live:
+
+````markdown
+```{python}
+#| output: asis
+fig, ax = plt.subplots(figsize=livery_mpl.figsize(height=0.9))   # room for the note
+...
+plt.show()
+print(f"\n::: note\n{used} used of {size}.\n:::\n")
+```
+````
+
+Every format sets it as the plot's caption: small, muted, centred, just under the plot
+([docs/authoring.md "Notes under a figure"](../../docs/authoring.md#notes-under-a-figure)). Draw
+the plot a little short of the content height (`height=0.9`) so the note fits the PDF, which has
+no autofit.
+
 ## In each format
 
 pptx gets PNG at 200 dpi, HTML SVG with the text as paths (an `<img>` cannot see the page's

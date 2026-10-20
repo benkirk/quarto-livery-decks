@@ -66,8 +66,8 @@ Per deck, `make pptx` runs:
    when it has one, and the format's Lua filters (in `_extensions/engine/`) prepare the
    document for pandoc's pptx writer:
    - `strip-raw-figure.lua`, `notes-last.lua` and `single-body.lua` keep pandoc from
-     demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text
-     after a table or image);
+     demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text or a
+     `::: note` after a table or image, which joins its caption box);
    - `slide-layout.lua` carries a slide's layout classes over as a notes line for `slide_layout`;
    - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [authoring.md "Linked images"](authoring.md#linked-images));
    - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too).
@@ -89,7 +89,8 @@ Per deck, `make pptx` runs:
    - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,
      bottom center, muted; the caption box is itself the link.
    - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
-     title slides at the template's extra layouts; copies the slide number onto every slide.
+     title slides at the template's extra layouts; sets a `::: note` in the caption's look
+     under its figure (see [authoring.md "Notes under a figure"](authoring.md#notes-under-a-figure)); copies the slide number onto every slide.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in the primary color, thin rules between rows, every second row banded, the
      blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
