@@ -17,6 +17,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- A first build can no longer hang at its first diagram, however slowly the browser starts: the
+  image's Quarto waits 30 s for its headless Chromium instead of 3 s, after which it waited for good.
+  26.10.1's font index removed the largest delay but not the race: a new account's first build on a
+  busy Casper login node still drew a 5 s start and hung.
+
 ## [26.10.1] - 2026-10-19
 
 ### Decks
