@@ -34,9 +34,9 @@ check; the root `make livery LIVERY=|LIVERY_DIR=`), `zip [--charts]` (`overleaf_
 `mpl_zip.py`), `schema --doc`, and `deps|mono|figsize` for `Make.common`. The modules have no
 entry points of their own; `livery.py` imports each only when its subcommand runs, so `zip`
 needs nothing beyond Python (the release job).
-`design/engine-and-liveries.md` is the roadmap; its section 10 logs progress and names the
-next step (#58, the customer surface: a `livery` command, a `livery.yml` schema, immutable
-releases and a changelog).
+`design/engine-and-liveries.md` is the roadmap; its section 10 logged progress up to the first
+release (26.10.0), since when `CHANGELOG.md` is the record of what ships and
+`design/unplanned-city-ledger.md` of what the sweeps find.
 
 The engine also holds the json reader (`livery.py`, also the command), the wave shapes
 (`pptx_waves.py`) and the pptx post-render steps (`pptx_post.py` over `pptx_steps/`);
