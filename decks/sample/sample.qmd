@@ -92,7 +92,7 @@ mpirun -n 4 ./a.out
 
 ## Image embed
 
-![A caption for the figure](images/example.jpg){width=60% fig-align="center"}
+![A caption for the figure](images/example.jpg){width=60%}
 
 ::: note
 Width can also be set in pixels (`{width=400}`) or with a `height=`
