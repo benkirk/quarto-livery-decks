@@ -7,7 +7,8 @@ Reads the already-built <deck>.{html,pdf,pptx} and writes to _qa/:
   names.txt         plain-text names from qa-names.txt (one per line), if the file exists
   <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png the same for the PDF
 Failures (exit 1): slide counts that differ between formats, PDF text past the right margin,
-into the footer band or overlapping other text, HTML content past the right edge, and a bare
+into the footer band or overlapping other text, HTML content past the right edge, a {.full}
+caption or a ::: note paragraph that wraps in HTML, and a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
 Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
@@ -78,10 +79,14 @@ MEASURE_JS = r"""
   const has = sel => kids.some(k => k.matches(sel) || k.querySelector(sel));
   const kind = has('table') ? 'table' : has('pre') ? 'code'
     : has('img, svg, .cell-output-display') ? 'figure' : has('.columns') ? 'columns' : 'text';
+  // a ::: note paragraph past one line (layout pixels: reveal's scaling leaves offsetHeight alone)
+  const noteWrap = [...s.querySelectorAll('.engine-note p')].some(
+    p => p.offsetHeight > 1.5 * parseFloat(getComputedStyle(p).lineHeight));
   return {level2: true, title: h.textContent.trim(), cls: cls.join(' '), kind,
           columns: has('.columns'),
           use: Math.max(0, (bot - shift - top) / (limit - top)), fit, scale,
-          overRight: right > sr.width - parseFloat(cs.paddingRight) + 16};  // inline-code padding overhangs
+          overRight: right > sr.width - parseFloat(cs.paddingRight) + 16,  // inline-code padding overhangs
+          noteWrap};
 }
 """
 
@@ -316,6 +321,9 @@ def html_findings(slides):
             fails.append("%s: content past the right edge" % tag)
         if s.get("capOver"):
             fails.append("%s: the {.full} caption runs past its line; shorten it" % tag)
+        if s.get("noteWrap"):
+            fails.append("%s: a ::: note paragraph wraps; shorten it, or split it into "
+                         "paragraphs (each a caption line)" % tag)
         if s.get("noFigure"):
             fails.append("%s: {.full} slide without a drawn figure" % tag)
         if "smaller" in cls and "engine-fill" not in cls:

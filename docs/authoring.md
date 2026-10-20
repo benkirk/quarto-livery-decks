@@ -217,7 +217,8 @@ class), or check it with `make qa`.
   - slide counts that differ between pptx, PDF and HTML;
   - PDF text past the right margin, into the footer, overlapping other text, or running into
     the next table column;
-  - HTML content past the right edge;
+  - HTML content past the right edge, a `{.full}` caption that wraps, and a `::: note`
+    paragraph that wraps (each is one caption line);
   - a bare `<word>` in the sources, outside code and backticks: revealjs reads it as a tag
     (reported as `file:line`).
 - **Hints:**

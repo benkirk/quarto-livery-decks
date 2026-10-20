@@ -120,6 +120,27 @@ jobs:
       - name: Build the sample PDF
         run: timeout 600 make -C decks/sample pdf
 
+      # ::: note (docs/authoring.md "Notes under a figure"): HTML's .engine-note, the PDF's text,
+      # and in pptx centred lines at the caption size; "Image embed" keeps its remark, which the
+      # fold into a captioned figure used to drop
+      - name: Check the sample's notes
+        run: |
+          cd decks/sample
+          grep -q 'class="engine-note"' sample.html
+          pdftotext sample.pdf - | grep -q 'One short label a box keeps'
+          python3 - <<'EOF'
+          import json
+          from pptx import Presentation
+          from pptx.enum.text import PP_ALIGN
+          cap = json.load(open("_livery/build/livery.json"))["type"]["roles"]["caption"]["pt"]
+          notes = [p for s in Presentation("sample.pptx").slides for sh in s.shapes if sh.has_text_frame
+                   for p in sh.text_frame.paragraphs
+                   if p.text.startswith(("One short label a box keeps", "Width can also be set"))]
+          assert len(notes) == 2, [p.text for p in notes]
+          for p in notes:
+              assert p.alignment == PP_ALIGN.CENTER and all(r.font.size.pt == cap for r in p.runs), p.text
+          EOF
+
       # the exemplar deck the README's screenshots come from, and the fixture decks (a photo
       # title, the light title, both, the deck-wide size step), in every format
       - name: Build the quickstart and fixture decks
