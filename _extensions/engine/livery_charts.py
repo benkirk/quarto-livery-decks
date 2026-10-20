@@ -18,6 +18,8 @@ import itertools
 import math
 import sys
 
+from livery import contrast, luminance   # the reader's WCAG math, one copy
+
 # -- color science -------------------------------------------------------------------------------
 
 def _s2lin(c):
@@ -91,17 +93,6 @@ def mix(a: str, b: str, t: float) -> str:
     """a moved toward b by t (0..1) in OKLab."""
     A, B = oklab(a), oklab(b)
     return hexof(_lab2lin(*(x + (y - x) * t for x, y in zip(A, B))))
-
-
-def luminance(h: str) -> float:
-    r, g, b = lin(h)
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b
-
-
-def contrast(a: str, b: str) -> float:
-    """WCAG 2 contrast ratio."""
-    la, lb = sorted((luminance(a), luminance(b)), reverse=True)
-    return (la + 0.05) / (lb + 0.05)
 
 
 # Machado, Oliveira and Fernandes (2009), severity 1.0, applied to linear RGB

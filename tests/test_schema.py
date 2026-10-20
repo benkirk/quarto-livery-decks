@@ -11,7 +11,6 @@ liveries/REFERENCE.md is the schema's.
 """
 
 import copy
-import importlib.util
 import shutil
 import subprocess
 import sys
@@ -22,8 +21,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
-spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
-lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
+sys.path.insert(0, str(ENGINE))
+import livery_build as lb   # noqa: E402  (the engine's tools import each other by name)
 S = lb.schema()
 fails = []
 

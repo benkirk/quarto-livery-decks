@@ -58,19 +58,6 @@ class Report:
             print(f"{self.name}: ok ({self.n} checks{warned})")
 
 
-def luminance(hexv):
-    def ch(c):
-        c /= 255
-        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
-    r, g, b = bytes.fromhex(hexv.lstrip("#"))
-    return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
-
-
-def contrast(a, b):
-    la, lb = sorted((luminance(a), luminance(b)), reverse=True)
-    return (la + 0.05) / (lb + 0.05)
-
-
 def check_template(r, livery, d):
     tmpl = d / livery["pptx"].get("template", "template.pptx")
     if not tmpl.exists():
@@ -139,7 +126,7 @@ def check_livery(d: Path, swatch: Path | None = None, verbose: bool = False) -> 
     roles = {**livery["roles"], **livery.get("blends", {})}
     for fg, bg in CONTRAST:
         if fg in roles and bg in roles:
-            ratio = contrast(roles[fg], roles[bg])
+            ratio = livery_mod.contrast(roles[fg], roles[bg])
             (r.ok if ratio >= 4.5 else r.warn)(f"contrast {fg} on {bg}: {ratio:.1f}:1")
     check_charts(r, livery, swatch)
     r.summary()

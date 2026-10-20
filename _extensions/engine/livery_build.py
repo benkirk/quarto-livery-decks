@@ -16,7 +16,6 @@ for each field by its role (MARK_ROLES); `installed-fonts` names installed faces
 `compositions` the title, closing, section and feature slides as boxes (compositions()).
 """
 
-import importlib.util
 import json
 import math
 import os
@@ -27,19 +26,11 @@ from pathlib import Path
 
 import yaml
 
-# the chart colors (livery_charts.py) and livery.yml's schema (livery_schema.py, loaded when a livery
-# is read: `livery mono` and the release's zips need no jsonschema), loaded by path: this module is
-# also loaded by path (the tests), where the engine directory is not on sys.path
-def _sibling(name: str):
-    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+import livery as livery_mod   # the reader: the version and the color math, one copy
+import livery_charts
 
-
-livery_charts = _sibling("livery_charts")
 # the engine's one version, _extension.yml's (a release's tag; build/livery.json records it)
-ENGINE_VERSION = re.search(r"^version:\s*(\S+)", (Path(__file__).resolve().parent / "_extension.yml").read_text(), re.M)[1]
+ENGINE_VERSION = livery_mod.engine_version()
 
 # (key, role a, role b, share of a): the theme's recipes, engine-revealjs.scss `table` and
 # `.engine-caution`, beamerinnerthemeEngine.sty `enginecautionfill`
@@ -102,19 +93,6 @@ FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", 
 FACE_KEYS = ("regular", "bold", "italic", "bolditalic", "semibold")
 
 
-def luminance(hexv: str) -> float:
-    """WCAG relative luminance of '#RRGGBB'."""
-    ch = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
-    r, g, b = (ch(x / 255) for x in bytes.fromhex(hexv.lstrip("#")))
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b
-
-
-def mix(a: str, b: str, share: float) -> str:
-    """Sass mix(): a's share of each channel plus b's remainder, rounded; '#RRGGBB' in and out."""
-    pairs = zip(bytes.fromhex(a.lstrip("#")), bytes.fromhex(b.lstrip("#")))
-    return "#" + "".join(f"{round(x * share + y * (1 - share)):02X}" for x, y in pairs)
-
-
 def merge(base, over):
     if isinstance(base, dict) and isinstance(over, dict):
         out = dict(base)
@@ -148,7 +126,7 @@ def schema():
     """livery_schema.py, loaded once, when a livery is first read."""
     global _schema
     if _schema is None:
-        _schema = _sibling("livery_schema")
+        import livery_schema as _schema   # when a livery is read: `livery mono` and the zips need no jsonschema
     return _schema
 
 
@@ -192,7 +170,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
             return ("livery.yml", f"roles.{k}")
         return ("_brand.yml", f"color.{k}") if k in color else ("livery.yml", "roles.dark")
     roles = {k: hex_of(v, role_key(k)) for k, v in sources.items()}
-    blends = {k: mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
+    blends = {k: livery_mod.mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
     blends.update({k: hex_of(v, ("livery.yml", f"blends.{k}")) for k, v in data.get("blends", {}).items()})
     out = {
         "engine": ENGINE_VERSION,   # the engine that wrote it (Make.common warns when it is another)
@@ -202,7 +180,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         "roles": roles,
         "blends": blends,
         # dark: light text on a dark background (content slides); the formats add what that needs
-        "mode": "dark" if luminance(roles["background"]) < luminance(roles["foreground"]) else "light",
+        "mode": "dark" if livery_mod.luminance(roles["background"]) < livery_mod.luminance(roles["foreground"]) else "light",
         "typography": data["brand"].get("typography", {}),
         "logo": data["brand"].get("logo", {}),
     }
@@ -614,7 +592,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% the blends")
     for key, hexv in livery["blends"].items():
         L.append(f"\\definecolor{{{tex_name('brand-' + key, {})}}}{{HTML}}{{{hexv[1:]}}}")
-    blends = {k: mix(livery["roles"][a], livery["roles"][b], s) for k, a, b, s in BLENDS if a in livery["roles"] and b in livery["roles"]}
+    blends = {k: livery_mod.mix(livery["roles"][a], livery["roles"][b], s) for k, a, b, s in BLENDS if a in livery["roles"] and b in livery["roles"]}
     for key, color in BEAMER_BLENDS.items():   # a livery's blends: override, which the theme would recompute
         if key in livery["blends"] and livery["blends"][key] != blends.get(key):
             L.append(f"\\colorlet{{{color}}}{{{tex_name('brand-' + key, {})}}}")

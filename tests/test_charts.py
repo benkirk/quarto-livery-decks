@@ -12,15 +12,14 @@ unknown color is refused (unknown keys are the schema's: test_schema.py), an ext
 categorical slots, the sizes the type scale), and the Custom Colors names are plain.
 """
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "_extensions" / "engine"
-spec = importlib.util.spec_from_file_location("livery_build", ENGINE / "livery_build.py")
-lb = importlib.util.module_from_spec(spec); spec.loader.exec_module(lb)
+sys.path.insert(0, str(ENGINE))
+import livery_build as lb   # noqa: E402  (the engine's tools import each other by name)
 C = lb.livery_charts
 fails = []
 
