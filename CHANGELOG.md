@@ -33,6 +33,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - HTML: a table's caption is set at the caption size, as a figure's is; it was 0.8 of the
   table's text, a little larger.
 
+### Plots
+- pptx plots are vector. Each is an SVG with a 200 dpi PNG beside it, as PowerPoint saves one:
+  PowerPoint draws the SVG, sharp at any zoom, and Google Slides' import shows the PNG. A deck
+  grows: this plots deck 1.9 to 2.2 MB, a 33-plot report 7.5 to 10.4 MB. `livery_mpl.raster()`
+  now makes a plot PNG in pptx too. The image and the conda env gain `librsvg` (`rsvg-convert`).
+
 ## [26.10.3] - 2026-10-20
 
 ### Decks

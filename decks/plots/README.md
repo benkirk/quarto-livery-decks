@@ -83,11 +83,14 @@ no autofit.
 
 ## In each format
 
-pptx gets PNG at 200 dpi, HTML SVG with the text as paths (an `<img>` cannot see the page's
-fonts), PDF a vector PDF with the font embedded (Type 3 for a CFF `.otf` family such as cu's TeX
-Gyre Heros, which matplotlib would otherwise mislabel). A deck whose plots make heavy SVG can
-take PNG in HTML too ([docs/formats.md "HTML (revealjs)"](../../docs/formats.md#html-revealjs)),
-or one plot can, inside `with livery_mpl.raster():`.
+pptx gets SVG with a 200 dpi PNG beside it, as PowerPoint itself saves one: PowerPoint draws the
+SVG, sharp at any zoom, and an app that ignores it shows the PNG (Google Slides' import). A deck
+grows: the plots deck by 16%, a 33-plot report by 39%. HTML gets SVG with the text as paths (an
+`<img>` cannot see the page's fonts), PDF a vector PDF with the font embedded (Type 3 for a CFF
+`.otf` family such as cu's TeX Gyre Heros, which matplotlib would otherwise mislabel). A deck whose
+plots make heavy SVG can take PNG in HTML too ([docs/formats.md "HTML
+(revealjs)"](../../docs/formats.md#html-revealjs)), or one plot can, inside `with
+livery_mpl.raster():`, which makes it PNG in pptx too.
 
 The same colors are `--engine-data-1..8`, `--engine-data-muted` and `--engine-status-*` in the
 HTML deck, `EngineData1..8` (and a pgfplots `livery` cycle list, the default when a LaTeX document

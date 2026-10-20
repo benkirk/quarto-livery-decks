@@ -14,8 +14,8 @@ format:
   engine-pptx:             # engine pptx format, same extension
     reference-doc: _livery/template.pptx
     highlight-style: _livery/build/livery.theme   # the livery's code colors, as HTML and PDF wear them
-    fig-format: png       # plots (beamer keeps Quarto's pdf at 300 dpi, which sizes its diagrams)
-    fig-dpi: 200
+    fig-format: svg       # plots: vector, each with a PNG fallback at fig-dpi (svg_fallback.py)
+    fig-dpi: 200          # (beamer keeps Quarto's pdf at 300 dpi, which sizes its diagrams)
   engine-beamer:           # engine beamer theme, in the repo's _extensions/engine
     highlight-style: _livery/build/livery.theme   # the livery's code colors (its default is ncar's)
     toc: false

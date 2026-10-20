@@ -6,7 +6,7 @@
 pandoc's pptx writer cannot draw what the engine's other formats draw (divider dress, slide
 numbers, footnotes, covers, tables in the livery's style), so Make.common's pptx recipe runs this
 after rendering. Each deck is read once, the steps in pptx_steps/ run in the order below, and it
-is saved once: the first three on the zip's parts (text and lxml), the rest on one python-pptx
+is saved once: the first four on the zip's parts (text and lxml), the rest on one python-pptx
 Presentation. The livery comes from $LIVERY_DIR (Make.common exports it), else a `_livery` link
 in the current directory (the engine's livery.py)."""
 
@@ -21,15 +21,18 @@ from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
     embed_fonts, enable_autofit, link_captions, section_subtitle, slide_layout, style_footnotes,
-    style_tables, type_step)
+    style_tables, svg_fallback, type_step)
 
 
 def post(path: Path) -> None:
     with zipfile.ZipFile(path) as z:
         parts = {i.filename: z.read(i.filename) for i in z.infolist()}
 
-    # The zip's parts. section_subtitle first: it merges each divider's orphaned subtitle and
-    # deletes the slide pandoc split it onto, before embed_fonts rewrites presentation.xml.
+    # The zip's parts. svg_fallback first: every later step, python-pptx's picture.image among
+    # them (slide_layout's full slides), then sees a PNG picture, never a bare SVG. section_subtitle
+    # next: it merges each divider's orphaned subtitle and deletes the slide pandoc split it onto,
+    # before embed_fonts rewrites presentation.xml.
+    svg_fallback.run(parts, path.name)      # an SVG plot's PNG fallback, PowerPoint's own shape
     section_subtitle.run(parts, path.name)
     enable_autofit.run(parts, path.name)    # pandoc's bodies: shrink text on overflow
     embed_fonts.run(parts, path.name)       # the livery's typeface, which pandoc drops

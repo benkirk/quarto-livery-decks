@@ -99,7 +99,9 @@ ls -la "$work"
 if grep -q 'building the font cache' "$tmp/hello.log"; then echo "matplotlib rebuilt its font cache" >&2; exit 1; fi
 if grep -q 'findfont: Font family' "$tmp/hello.log"; then grep 'findfont' "$tmp/hello.log" >&2; exit 1; fi
 ls "$work"/hello_files/figure-revealjs/*.svg
-test "$(unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image')" -ge 2   # mermaid and the plot
+test "$(unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image')" -ge 3   # mermaid, the plot's SVG and its PNG
+unzip -l "$work/hello.pptx" | grep -c 'ppt/media/image.*\.svg' >/dev/null    # the plot, vector
+unzip -p "$work/hello.pptx" 'ppt/slides/*.xml' | grep -c 'svgBlip' >/dev/null # its PNG fallback (the image's rsvg-convert)
 run -v "$work:/work" "$img" pdffonts /work/hello.pdf | grep -c TeXGyreHeros >/dev/null   # poppler is in the image, not on the host
 for f in hello.pptx hello.html hello.pdf; do
   test -s "$work/$f"

@@ -148,7 +148,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
   which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
-  `section_subtitle`, `enable_autofit`, `embed_fonts` (on the zip's parts), then
+  `svg_fallback` (a PNG for each SVG plot, the SVG on Office's `svgBlip` extension, by
+  `rsvg-convert`: conda-forge librsvg), `section_subtitle`, `enable_autofit`, `embed_fonts` (on
+  the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
   HTML theme) and `type_step` (a deck's `type-body:`/`type-scale:`) on one python-pptx
   Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
@@ -289,7 +291,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   cell's own wins; not to beamer, whose fig-width is paper inches and sizes its baked diagrams:
   4.25 in pushed the sample's Graphviz off the frame; `livery_mpl` sets PDF plots' size)
   and `ENGINE_FORMAT` per recipe (`dark()` applies only where the slide is dark: HTML, a dark
-  livery). `common/_quarto.yml`: pptx png at 200 dpi, revealjs svg; beamer keeps Quarto's pdf at 300.
+  livery). `common/_quarto.yml`: pptx svg (with `svg_fallback`'s PNG at its 200 dpi; PowerPoint
+  draws the SVG, Google Slides' import the PNG), revealjs svg; beamer keeps Quarto's pdf at 300.
+  Keynote refuses the framework's pptx, PNG or SVG (2026-10-20): a follow-up.
   `engine-plots.lua` (dofile'd by both filters) shows a figure in Quarto's `figure-<format>/` at
   its natural inches over the canvas width: HTML `width: calc(<px> * var(--engine-fit))` with
   `.engine-plot` (out of reveal's auto-stretch, which sized a lone plot to the free height and
@@ -426,7 +430,7 @@ it does, by area, beyond the format notes above:
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
   livery, then `tests/test_compositions.py`, whose `EXPECTED_DELTAS` names every decided change
-  of a box, `test_type.py`, `test_charts.py`, `test_schema.py`, `test_cli.py`, `test_new_deck.py`,
+  of a box, `test_type.py`, `test_svg_fallback.py`, `test_charts.py`, `test_schema.py`, `test_cli.py`, `test_new_deck.py`,
   `test_docs.py`: every relative link and `#anchor` in the tracked `*.md` files resolves, and
   every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a heading that exists;
   `design/` is exempt; and `livery schema --doc --check`). For anything that can move pixels, `tests/parity.sh baseline`
