@@ -530,7 +530,9 @@ bit while building it:
   not override a format option; set it in the deck's `format:` block.
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
   overflow and slide-count checks below. Load the `deck-polish` skill for a
-  format pass.
+  format pass, `pr-review` to review a PR by number (`/pr-review N`), and
+  `unplanned-city-sweep` after a run of merges or for one area of the tree (its ledger is
+  `design/unplanned-city-ledger.md`).
 - **Check it in a browser, not the source**: serve the deck directory
   (`python3 -m http.server`; Playwright blocks `file://`) and screenshot each
   slide type, at 16:9 and a letterboxed size, plus `?print-pdf`. Run
