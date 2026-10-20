@@ -116,7 +116,8 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   ```
 
   Extra prerequisites need no guard (`$(OUT).pptx: data.csv` only adds to Make.common's rules),
-  and `pytest` is in the image for a deck's own Python tests.
+  but a goal's dependency on your rule does: `pptx: ingest` outside it leaves the host's make with
+  no rule for `ingest`. `pytest` is in the image for a deck's own Python tests.
 - **More of the host**: `DECKS_BINDS` lists directories the container also sees at their own
   paths, those that exist (a site's file systems; an installation's `site.mk` sets them, below).
   A symlink in the deck directory, an image linked in from elsewhere, works too: its target is

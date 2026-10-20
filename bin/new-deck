@@ -54,9 +54,10 @@ cat > "$deck/Makefile" <<EOF
 QUARTO_DECKS ?= $fw
 include \$(QUARTO_DECKS)/Make.common
 
-# Rules of the deck's own run where the deck builds, never again on the host (docs/container.md
-# "From your deck's Makefile"):
+# Rules of the deck's own, and a goal's dependency on one, run where the deck builds, never again
+# on the host (docs/container.md "From your deck's Makefile"):
 # ifeq (\$(DECKS_RUNTIME_USED),native)
+# pptx: ingest
 # ingest:
 # 	python3 -m mypackage.ingest
 # endif
