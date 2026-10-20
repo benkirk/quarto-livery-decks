@@ -25,7 +25,9 @@ make pptx                         # or: make pptx LIVERY=cu
   Overleaf zip, which the consumer releases itself.
 - **Everything else works as it does here:** `DECKS`, `_*.qmd` fragments,
   `make qa` (with the deck's own `qa-names.txt`), `make site`, and a deck's own
-  `_quarto.yml` in place of the link.
+  `_quarto.yml` in place of the link. A deck's own make targets (an ingest step, its tests) go
+  inside `ifeq ($(DECKS_RUNTIME_USED),native)`, or a container build runs them twice
+  ([container.md "From your deck's Makefile"](container.md#from-your-decks-makefile)).
 - **Activate the framework's environment to build**, as in [README "Quick start"](../README.md#quick-start):
   `conda activate <path>/framework/conda-env`. It lives in the submodule and is
   gitignored there. Or install Docker, Podman or Apptainer instead: without the env, `make`

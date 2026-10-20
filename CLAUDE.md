@@ -276,7 +276,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   loaded); `template.pptx` the mode's slots as a named `<a:custClrLst>` (PowerPoint's Custom
   Colors row, at most eight; `livery check` checks it). `Make.common` exports `MATPLOTLIBRC`
   (the style), prepends `_extensions/engine/mpl` to `PYTHONPATH` (`livery_mpl.py`: fonts by
-  `addfont()`, colormaps with `_dark` twins, `figsize()`, `shade_family()`, `dark()`), passes
+  `addfont()`, colormaps with `_dark` twins, `figsize()`, `shade_family()`, `mix()`, `dark()`, `dense()`, `raster()`), passes
   `charts.figsize.full` as `-M fig-width/fig-height` to pptx and HTML (`livery.py figsize`; a
   cell's own wins; not to beamer, whose fig-width is paper inches and sizes its baked diagrams:
   4.25 in pushed the sample's Graphviz off the frame; `livery_mpl` sets PDF plots' size)

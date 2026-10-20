@@ -166,6 +166,24 @@ with livery_mpl.dark():
     plt.show()
 ```
 
+## A heavy plot as PNG
+
+```{python}
+# livery_mpl.raster(): the figures shown inside the block are PNG where the deck draws vector (the
+# HTML's SVG, the PDF's PDF): a plot with thousands of marks makes a heavy SVG. The rest of the
+# deck stays vector; pptx, already PNG, is unchanged. plt.show() inside the block: the format is
+# picked when the figure is shown
+with livery_mpl.raster():
+    fig, ax = plt.subplots()
+    t = np.arange(4000)
+    ax.plot(t, np.cumsum(rng.standard_normal(4000)), linewidth=0.8, label="Walk")
+    ax.fill_between(t, 0, rng.random(4000) * 20 - 40, linewidth=0, alpha=0.6, label="Noise")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Value")
+    ax.legend(ncols=2, loc="lower center", bbox_to_anchor=(0.5, 1))
+    plt.show()
+```
+
 ## ⚠︎ What breaks the style {.caution}
 
 - `sns.set_theme()` or `plt.style.use(...)` replaces the livery's style: leave both out
@@ -183,6 +201,8 @@ ax.plot(x, y)                              # the livery's categorical slots, in 
 ax.imshow(z)                               # the livery's sequential map
 fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))   # one of two columns
 with livery_mpl.dark():                    # a {.brand-dark} slide
+    ...
+with livery_mpl.raster():                  # this figure as PNG, the deck's others vector
     ...
 ```
 

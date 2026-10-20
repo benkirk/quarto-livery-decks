@@ -93,12 +93,31 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   a `LIVERY_DIR` outside them are mounted at their own paths: the recipes are your checkout's,
   the toolchain the image's, and the links the build makes resolve on both sides, so native and
   container builds alternate in one directory. Variables on the command line pass through
-  (`make pptx LIVERY=cu DECKS="a b"`); ones only in your environment do not, under any runtime.
+  (`make pptx LIVERY=cu DECKS="a b"`); ones only in your environment do not, under any runtime,
+  but for `QUARTO_DECKS`, which new-deck's Makefile reads ("Sharing an installation").
 - **The container has its own HOME**, `~/.cache/quarto-livery-decks/home-<release>` on the host
   (`DECKS_HOME`), a few MB. What your own tools keep in your HOME (a conda env's Jupyter and
   IPython settings, matplotlib's font list, TeX trees, personal fonts) never reaches the build,
   and the build's caches never touch yours; they persist there, so later builds are quicker.
   Delete an old release's directory freely.
+- **A deck's own targets**: a rule of your own in the deck Makefile (`make ingest`, `make test`)
+  must run only where the deck builds. Under a container runtime, Make.container forwards every
+  goal into the image and leaves the goal an empty recipe on the host; a recipe of yours replaces
+  it ("overriding recipe" warnings), so it runs again on the host after the image's run, with the
+  host's tools. Define your rules on the native side only:
+
+  ```make
+  include $(QUARTO_DECKS)/Make.common
+
+  ifeq ($(DECKS_RUNTIME_USED),native)   # in the image, or an activated env; never the host's
+  ingest:
+  	python3 -m mypackage.ingest
+  endif
+  ```
+
+  Extra prerequisites need no guard (`$(OUT).pptx: data.csv` only adds to Make.common's rules),
+  but a goal's dependency on your rule does: `pptx: ingest` outside it leaves the host's make with
+  no rule for `ingest`. `pytest` is in the image for a deck's own Python tests.
 - **More of the host**: `DECKS_BINDS` lists directories the container also sees at their own
   paths, those that exist (a site's file systems; an installation's `site.mk` sets them, below).
   A symlink in the deck directory, an image linked in from elsewhere, works too: its target is
@@ -130,9 +149,14 @@ cd ~/my-talk && make pptx                  # or html, pdf, all, qa
 ```
 
 - **`bin/new-deck DIR`** starts a deck from the installation's quickstart: `DIR/<name>.qmd` and
-  its `images/`, a `.gitignore`, and a Makefile that includes the installation's `Make.common` by
-  its absolute path, so `QUARTO_DECKS` is needed only to start a deck. It refuses a directory that
-  is not empty.
+  its `images/`, a `.gitignore`, and a Makefile that names the installation as a default,
+  `QUARTO_DECKS ?= <its path>`, then includes `$(QUARTO_DECKS)/Make.common`. So the deck needs no
+  setting to build, and `make QUARTO_DECKS=<checkout>` (or the variable in your environment) builds
+  it on another framework checkout, such as one on your laptop. It refuses a directory that is not
+  empty.
+- **`bin/new-deck --bare DIR`** adds only the Makefile and `.gitignore`, for decks a repository
+  already holds (`DIR/<DIR's name>.qmd`, or `DECKS := a b` above the include for several). It
+  refuses an existing Makefile, and adds to an existing `.gitignore` only the lines it lacks.
 - **The SIF is found by its name.** When the installation holds
   `sif/quarto-livery-decks_<release>.sif`, the SIF of the release it carries, an Apptainer build
   runs it rather than converting `docker://` again. `APPTAINER_SIF`, `DECKS_IMAGE` or

@@ -17,6 +17,34 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- `pytest` is in the image and the conda env, for a deck's own Python tests.
+- A deck Makefile's own targets (an ingest step, its tests) are documented to go inside
+  `ifeq ($(DECKS_RUNTIME_USED),native)`: under a container runtime a recipe of the deck's replaced
+  Make.container's forwarding stub and ran a second time on the host, with the host's tools
+  (`docs/container.md` "From your deck's Makefile").
+- `bin/new-deck`'s Makefile names the framework as a default, `QUARTO_DECKS ?= <checkout>`, and
+  includes `$(QUARTO_DECKS)/Make.common`, so `make QUARTO_DECKS=<checkout>` builds the deck on
+  another checkout; an environment `QUARTO_DECKS` reaches the container's make too. It shows the
+  native-side guard, commented.
+- `bin/new-deck --bare DIR`: only the Makefile and `.gitignore`, beside a repository's own decks.
+  It refuses an existing Makefile and adds only the `.gitignore` lines that are missing.
+- new-deck's `.gitignore` uses Quarto's own spellings (`/.quarto/`, `**/*.quarto_ipynb`), so Quarto
+  no longer appends them on the first render.
+
+### Plots
+- A deck can draw its HTML plots as PNG, `format: engine-revealjs: fig-format: png` in its front
+  matter, when its SVGs are heavy (`docs/formats.md` "HTML (revealjs)").
+- `livery_mpl.dense(scale=0.65)`: every text size scaled together inside the block, to the half
+  point, for small multiples (a 3 x 4 grid at the slide's sizes crowds out its data).
+- `livery_mpl.mix` and `livery_mpl.surface` are public (`__all__`): a color moved toward another
+  in OKLab, and the background the plot sits on, the dark one inside `dark()`.
+- `shade_family` tints toward the dark surface inside `dark()` on a light livery (it tinted toward
+  white there).
+- `with livery_mpl.raster():` shows the figures inside as PNG where the deck draws vector (HTML's
+  SVG, the PDF's PDF): one heavy time series goes PNG, the rest of the deck stays vector. A cell's
+  own `fig-format` is not honored by the Jupyter engine, so this is the per-plot form.
+
 ## [26.10.2] - 2026-10-19
 
 ### Decks
