@@ -74,6 +74,11 @@ Per deck, `make pptx` runs:
 2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
    (`_extensions/engine/pptx_steps/`). It opens the deck once, runs them in this order and
    saves once:
+   - `svg_fallback`: gives each SVG picture (the plots, `fig-format: svg`) a PNG at the deck's
+     `fig-dpi`, by `rsvg-convert`, the way PowerPoint saves one: the picture is the PNG and the
+     SVG rides on Office's `svgBlip` extension, so PowerPoint draws vector and an app that
+     ignores the extension (Google Slides' import) the PNG. First, so every later step sees a
+     PNG picture.
    - `section_subtitle`: merges the paragraph after a `#` section heading back onto the
      Section Header slide as its subtitle (pandoc drops it onto a separate untitled slide),
      then dresses every divider as the HTML and PDF decks draw it: the livery's "SECTION n"

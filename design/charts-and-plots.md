@@ -324,7 +324,8 @@ the reference document's theme into every deck: a test deck built with pandoc 3.
   `charts.figsize.full` as the deck's `fig-width`/`fig-height` (to verify: that `-M` reaches
   Quarto's Python setup cell, which sets `figure.figsize` at the document level only).
 - **`common/_quarto.yml`**: per-format `fig-format`/`fig-dpi` (pptx png at 200 dpi, revealjs
-  svg, beamer pdf). `common/diagram-dark.lua` recolors only mermaid and dot PNGs and is left
+  svg, beamer pdf; since 2026-10-20 pptx svg, each with a PNG fallback at 200 dpi by
+  `pptx_steps/svg_fallback.py`, after a spike Ben checked in PowerPoint and Google Slides). `common/diagram-dark.lua` recolors only mermaid and dot PNGs and is left
   alone.
 - **`decks/plots/plots.qmd`**, `jupyter: python3` (a deck runs one kernel, so it can't share the
   bash sample deck), deterministic: lines in the cycle, a seaborn bar chart from pandas, a
