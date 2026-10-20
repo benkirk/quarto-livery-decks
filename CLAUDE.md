@@ -53,7 +53,8 @@ the deck alone); a livery without `art.waves` gets straight-edged title fields i
 
 `latex/` is the engine's pure-LaTeX side (the starter `talk.tex`, a link to the
 extension's copy; `examples/` and their variants; `make latex`), and `tests/` holds the
-engine's tests (`make test`) and both parity harnesses ("The engine" below).
+engine's tests (`make test`), both parity harnesses ("The engine" below) and `app-open.sh`,
+the release's check in Keynote and PowerPoint ("Version" below).
 
 Decks live under `decks/<deck>/` as a `.qmd` plus a 1-line Makefile
 (`include ../../Make.common`). The shared machinery sits at the top since the flatten
@@ -460,7 +461,12 @@ it does, by area, beyond the format notes above:
   month is still to come. `CHANGELOG.md` (Decks, Liveries, Plots,
   LaTeX; Keep a Changelog) gets every user-visible change under `[Unreleased]` in the PR that
   makes it; a release renames that section to `[x.y.z] - date` before its tag, and the entry
-  becomes the release's notes. Ask Ben before any tag.
+  becomes the release's notes. Ask Ben before any tag. Before it, on a Mac with Keynote and
+  PowerPoint, build the decks (`make all` in quickstart, sample, fixtures and plots) and run
+  `tests/app-open.sh`: it opens each `decks/*/*.pptx` in both apps by their own AppleScript
+  (no keystrokes; a refused import or a Repair? prompt is a FAIL), after controls that show its
+  verdicts are real. No CI runner has either app (GitHub's macOS images: neither), so it is a
+  manual step; it would have caught the notes slides Keynote refused (26.10.5).
 
 ## pandoc pptx gotchas (hard-won — read before restructuring slides)
 
