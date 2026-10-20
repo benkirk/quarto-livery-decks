@@ -107,6 +107,16 @@ echo "headless shell: $shell"
 ln -s "$shell" "$QUARTO_CHROMIUM"
 chmod -R a+rX "$PLAYWRIGHT_BROWSERS_PATH"   # the zip carries 600 on a few files (deb.deps); any uid runs this
 "$QUARTO_CHROMIUM" --version
+# Quarto's wait for that browser. It gives the browser 3 s to answer, then waits for it to exit,
+# which a healthy browser never does: the render hangs for good (quarto src/core/cri/cri.ts,
+# waitForServer). A first start on a busy login node, through Apptainer's FUSE, took 5 s (a new
+# user's first build on Casper hung so). 30 s here. The exact line must be there, or the build
+# stops: a new Quarto has changed it, and this needs another look.
+q="$(dirname "$(readlink -f "$(command -v quarto)")")/quarto.js"
+n=$(grep -c -F 'async function waitForServer(port, timeout = 3e3)' "$q" || true)
+test "$n" = 1 || { echo "Quarto's waitForServer is not the one patched here: $(grep -n -o 'async function waitForServer([^)]*)' "$q")" >&2; exit 1; }
+sed -i 's/async function waitForServer(port, timeout = 3e3)/async function waitForServer(port, timeout = 3e4)/' "$q"
+echo "quarto $(quarto --version): $(grep -o 'async function waitForServer([^)]*)' "$q")"
 EOS
 
 # 6. Fonts beyond the system's: /opt/fonts, an empty mount point for the host's own (a
@@ -142,9 +152,9 @@ echo "conda fontconfig:  $(fc-list : family | sort -u | wc -l) families, Poppins
 test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0 || { /usr/bin/fc-cache -fv 2>&1 | grep -E 'local/share|liveries' >&2; exit 1; }
 # Chromium's own font index. The headless shell (step 5) bundles a fontconfig whose index format
 # the system's does not write, so without this every new HOME indexes all the fonts above on its
-# first diagram. That takes ~5 s on a busy login node; Quarto gives up on the browser after 3 s and
-# then waits forever for it to exit (a new user's first build on Casper hung so). Built here, as
-# root, into /var/cache/fontconfig, beside the system's; then a fresh HOME must get no index.
+# first diagram: ~5 s on a busy login node, and an index of 88 files in every HOME. Before step 5
+# lengthened Quarto's wait, that alone lost the race and hung a new user's first build. Built here,
+# as root, into /var/cache/fontconfig, beside the system's; then a fresh HOME must get no index.
 fonts_page='data:text/html,<p style="font-family:sans-serif">fonts</p><p style="font-family:serif">fonts</p>'
 "$QUARTO_CHROMIUM" --headless --no-sandbox --disable-gpu --screenshot=/tmp/fonts.png "$fonts_page" >/dev/null 2>&1
 rm -f /tmp/fonts.png
