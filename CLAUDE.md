@@ -185,8 +185,13 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   table the filter writes `\vskip-\LTpost` first). pptx: `single-body.lua` folds it into the
   caption box and writes `engine-layout: note`; `slide_layout.py` splits the box at its line
   breaks (a † line keeps `style_footnotes.style()`'s left alignment), styles it and moves it up
-  under the picture or measured table. `make qa` fails a note paragraph that wraps in HTML;
-  CI checks the sample's notes in every format. docs/authoring.md "Notes under a figure".
+  under the picture or measured table. A figure's own caption takes the same look, note or not:
+  HTML centres a lone image's `p.caption`, the PDF's caption is its text alone (no "Figure 1:",
+  the theme's caption template and, since Quarto loads it first, the caption package's
+  `labelformat=empty`), and `single-body.lua` marks a captioned figure's slide `note` too (a
+  table's caption is left as it was). `make qa` fails a note paragraph that wraps in HTML; CI
+  checks the sample's notes and captions in every format, and runs its `make qa`.
+  docs/authoring.md "Notes under a figure".
 - **Linked images** (`[![](x.png)](url)`): the picture is the link in every
   format, and each shows the URL: the HTML footer and a PDF foot line come from
   the engine's `linked-images.lua`, the pptx caption box from `link_captions.py`

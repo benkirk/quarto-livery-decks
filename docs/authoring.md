@@ -116,8 +116,11 @@ move it to the slide's foot, pptx sets it on the left under the note. A cell pri
 
 Put it after the slide's one figure or table: anywhere else pptx shows it as body text. Without
 the div, a paragraph after a figure is body text in HTML and PDF, and in pptx it joins the
-caption box at body size. On a pptx slide with a note, the whole caption box takes the note's
-look, a figure's own caption included (HTML and PDF set that caption the same way).
+caption box at body size.
+
+A figure's own caption (`![A caption](x.png)`) has the same look in every format, note or not:
+the caption size, muted, centred, just under the picture, with no "Figure 1:" label in the PDF.
+A note follows it in the same look, so the two read as one block.
 
 ## Centering and scaling a short slide
 

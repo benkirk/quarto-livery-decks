@@ -17,6 +17,18 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- A figure's caption looks the same in every format: the caption size, the livery's muted
+  color, centred, just under the picture. HTML centred a lone image's caption (it sat at the
+  left); the PDF drops its "Figure 1:" / "Table 1:" label and sets the caption muted; pptx gives a
+  figure's own caption that look without a `::: note` too (it kept the layout's size and the body
+  color).
+- `make qa` no longer reads a table's caption (or a note under it) as a cell running into the
+  next column; the sample deck's qa passes, and CI runs it.
+
+### LaTeX
+- A beamer caption is its text alone, muted and centred: no "Figure n:" / "Table n:" label.
+
 ## [26.10.5] - 2026-10-20
 
 ### Decks
