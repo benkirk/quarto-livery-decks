@@ -241,10 +241,10 @@ $mermaid-label-fg-color: $engine-primary;
     padding: 0.3em 0.8em;
   }
   tbody tr:nth-child(even) { background: var(--engine-table-band); }
-  caption {
+  caption {   // the caption role, as figcaption: its share of the body over the table's em
     caption-side: bottom;
     color: var(--engine-muted);
-    font-size: 0.8em;
+    font-size: calc(var(--engine-type-caption, 0.7) / var(--engine-type-table, 0.85) * 1em);
     padding-top: 0.4em;
     text-align: left;
   }
@@ -290,6 +290,16 @@ $mermaid-label-fg-color: $engine-primary;
   font-size: calc(var(--engine-type-caption, 0.7) * 1em);
 }
 .reveal .slides section .quarto-figure-center figcaption { text-align: center; }
+// ::: note (engine-revealjs.lua's .engine-note): a remark under a figure or table, in the .full
+// caption's look
+.reveal .slides section .engine-note {
+  color: var(--engine-muted);
+  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
+  line-height: 1.3;
+  text-align: center;
+  margin-top: 0.4em;
+  p { margin: 0; }
+}
 
 // a plot (.engine-plot): engine-revealjs.lua sets its width to the canvas scale, times the
 // autofit's --engine-fit; it may take the whole column (reveal's own cap is 95%), no more, and

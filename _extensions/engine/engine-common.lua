@@ -1,7 +1,8 @@
--- engine-common.lua -- what both format filters share (engine-revealjs.lua, engine-beamer.lua):
--- loaded with dofile(quarto.utils.resolve_path("engine-common.lua")), returning a table. A
--- function here reads the same in HTML and PDF; what a format does with the result stays in its
--- filter (take_layout, hoist_footnotes and split_full differ by format and are not here).
+-- engine-common.lua -- what the format filters share (engine-revealjs.lua, engine-beamer.lua, and
+-- pptx's single-body.lua): loaded with dofile(quarto.utils.resolve_path("engine-common.lua")),
+-- returning a table. A function here reads the same in every format; what a format does with the
+-- result stays in its filter (take_layout, hoist_footnotes and split_full differ by format and are
+-- not here).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do
@@ -87,7 +88,14 @@ local function is_figure(blk)
   return n == 1
 end
 
+-- ::: note: a remark under a figure or table, drawn as its caption (the caption role, muted,
+-- centred) in every format
+local function is_note(blk)
+  return blk.t == "Div" and has_class(blk, "note")
+end
+
 return {
   has_class = has_class, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
+  is_note = is_note,
 }

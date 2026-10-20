@@ -23,6 +23,15 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the whole file. Their outline is already off through `a:ln`, so the mark is gone, from the
   templates (ncar, ncarucar, ucar, ucp regenerated) and the covers `slide_layout.py` draws;
   nothing looks different. `livery check` fails a template that has it.
+- `::: note` after a slide's figure or table: a remark drawn as its caption in every format, the
+  caption size in the livery's muted color, centred, just under the figure (as a `{.full}`
+  slide's caption). In pptx it joins pandoc's caption box, which moves up under the picture or
+  table; a `†` line in it stays a footnote. Opt-in: a paragraph without the div looks as before.
+  `make qa` fails a note paragraph that wraps in HTML. docs/authoring.md "Notes under a figure".
+- pptx: a paragraph after a captioned figure is kept. It vanished (the sample's "Image embed"
+  lost its remark): pandoc captions a picture from its image's text, which the fold now fills.
+- HTML: a table's caption is set at the caption size, as a figure's is; it was 0.8 of the
+  table's text, a little larger.
 
 ## [26.10.3] - 2026-10-20
 

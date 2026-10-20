@@ -176,6 +176,14 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   foot in HTML and PDF, under a short muted rule with the marker in the accent
   orange; pptx can't move content, so `style_footnotes.py` mutes them in place
   in the same colors. `*† text*` works too.
+- **Notes under a figure** (`::: note` right after a slide's figure or table): its
+  caption, as the `.full` caption looks (caption role, muted, centred, just under it). HTML
+  `.engine-note`, PDF `\enginenote` (both after the † lift, which reaches into it; after a
+  table the filter writes `\vskip-\LTpost` first). pptx: `single-body.lua` folds it into the
+  caption box and writes `engine-layout: note`; `slide_layout.py` splits the box at its line
+  breaks (a † line keeps `style_footnotes.style()`'s left alignment), styles it and moves it up
+  under the picture or measured table. `make qa` fails a note paragraph that wraps in HTML;
+  CI checks the sample's notes in every format. docs/authoring.md "Notes under a figure".
 - **Linked images** (`[![](x.png)](url)`): the picture is the link in every
   format, and each shows the URL: the HTML footer and a PDF foot line come from
   the engine's `linked-images.lua`, the pptx caption box from `link_captions.py`
@@ -195,8 +203,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   a placeholder's left/top/width/height together: it inherits its frame, and
   setting one leaves the others at 0 (the text vanishes).
 - **Full-slide figures** (`{.full}`): one diagram or image fills
-  the slide, the paragraph after it is a one-line caption. HTML and PDF are the
-  theme's (PDF frame key `ncarfull=`). pptx: `slide-layout.lua` writes
+  the slide, the paragraph (or `::: note`) after it is a one-line caption. HTML and PDF are the
+  theme's (PDF frame key `enginefull=`). pptx: `slide-layout.lua` writes
   `engine-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
   one picture to the slide and centers pandoc's caption box under it. Any other
@@ -447,8 +455,10 @@ it does, by area, beyond the format notes above:
 - **Content after a table or image splits the slide** into an untitled
   continuation. `single-body.lua` (the engine-pptx
   format's) moves the paragraphs after one table or image (a † footnote, a
-  remark) into its caption, which pandoc draws at the slide's foot;
-  `style_footnotes.py` then styles a footnote there, left-aligned. Anything
+  remark, a `::: note`'s) into its caption, which pandoc draws at the slide's foot;
+  `style_footnotes.py` then styles a footnote there, left-aligned. pandoc captions
+  a figure from its image's text, not the Figure's caption, so the fold writes both
+  (extending only the Figure's caption dropped the text silently). Anything
   else after it (a list, code, a second table) still splits, on purpose. Never
   wrap such a body in a 100% column: pandoc gives the table the whole
   placeholder and silently drops the text after it (the slide count doesn't

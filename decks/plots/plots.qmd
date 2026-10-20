@@ -48,13 +48,18 @@ df = pd.DataFrame({
     "year": np.tile(["2024", "2025", "2026"], 4),
     "hours": [61, 72, 80, 18, 24, 31, 4, 9, 15, 40, 22, 6],
 })
-fig, ax = plt.subplots()
+# a little short of the content height, for the note under it
+fig, ax = plt.subplots(figsize=livery_mpl.figsize(height=0.9))
 sns.barplot(df, x="facility", y="hours", hue="year", ax=ax)
 ax.set_xlabel("")
 ax.set_ylabel("Core-hours (M)")
 ax.legend(title="Year", ncols=3)
 plt.show()
 ```
+
+::: note
+Cheyenne's hours fall each year as Derecho's grow.
+:::
 
 ## A stacked area in hue families
 

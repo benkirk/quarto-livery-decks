@@ -9,6 +9,9 @@ table run at S times its inherited size. hcenter, fill: nothing (a text box cann
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
 art, pandoc's caption box centered under it in the muted color, the slide number kept.
+note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
+paragraph, the note's in the caption size and muted color, centred, a footnote's left as
+style_footnotes styled it, and the box moved up to just under the picture or table.
 closing: the slide moves onto the template's Closing layout (Closing (light) under themeoptions
 title=light, which slide-layout.lua records as `engine-title: light` and which also moves the
 title slide onto Title Slide (light); a band title ignores it), its placeholders dropping pandoc's
@@ -38,7 +41,7 @@ from pptx.util import Pt
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
-from . import measure
+from . import measure, style_footnotes, style_tables
 
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
@@ -53,6 +56,7 @@ FULL_FLOOR = LIVERY["geometry"]["full"]["footline"]  # the footline (slide numbe
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
 CAP_SIZE   = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the themes' caption size, the muted color
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
+NOTE_GAP   = Pt(6 * K)    # note: between the picture or table and the note under it
 CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
@@ -64,20 +68,22 @@ COMP         = LIVERY["compositions"]   # the title, closing, section and featur
 
 
 def _take_marker(slide):
-    """The slide's layout words, with their notes paragraph removed."""
+    """The slide's layout words, with their notes paragraphs removed (slide-layout.lua writes one,
+    single-body.lua another for a note)."""
     if not slide.has_notes_slide:
         return None
     tf = slide.notes_slide.notes_text_frame
     if tf is None:
         return None
+    words = None
     for p in tf.paragraphs:
         if p.text.strip().startswith(MARKER):
-            words = p.text.strip()[len(MARKER):].split()
+            words = (words or []) + p.text.strip()[len(MARKER):].split()
             body = p._p.getparent()
             body.remove(p._p)
             if body.find(qn("a:p")) is None:
                 etree.SubElement(body, qn("a:p"))
-            return words
+    return words
     return None
 
 
@@ -168,9 +174,10 @@ def _text_height(shape, slide, family=measure.BODY, weight=None):
     return total
 
 
-def _table_height(table, other, biggest):
+def _table_height(table, other, biggest, pad=CELL_PAD):
     """A table's height: each row as tall as its cell of most lines, measured in the livery's base
-    face in its column's width (less the cell's margins), at the table's biggest size."""
+    face in its column's width (less the cell's margins), at the table's biggest size, plus pad
+    (the cell's top and bottom margins) a row."""
     widths = [col.width for col in table.columns]
     total = 0
     for row in table.rows:
@@ -183,8 +190,13 @@ def _table_height(table, other, biggest):
                 sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
                 n += _lines(p, measure.BODY, Pt(sz / 100), inner)
             most = max(most, n)
-        total += int(most * Pt(biggest / 100) * LINE + CELL_PAD)
+        total += int(most * Pt(biggest / 100) * LINE + pad)
     return total
+
+
+def _biggest(table, other):
+    """The size (hundredths of a point) of a table's biggest run, at least other."""
+    return max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
 
 
 def caution_box(slide, shape, vcenter):
@@ -254,6 +266,78 @@ def lay_out(slide, words):
     if "caution" in words:
         for shape in [sh for sh in slide.shapes if _is_body(sh)]:
             caution_box(slide, shape, vcenter)
+
+
+def _note_parts(slide):
+    """A note slide's caption box and the one picture or table it is under, or None."""
+    texts = [sh for sh in slide.shapes if _is_body(sh)]
+    figs = [sh for sh in slide.shapes
+            if sh.shape_type == MSO_SHAPE_TYPE.PICTURE or getattr(sh, "has_table", False)]
+    return (texts[0], figs[0]) if len(texts) == 1 and len(figs) == 1 else None
+
+
+def _split_lines(tf):
+    """Each paragraph cut at its line breaks into paragraphs of their own (pandoc writes the
+    caption single-body.lua folded as one paragraph, its lines joined by a:br), so each line keeps
+    its own alignment: a footnote reads from the left under a centred note."""
+    for p in list(tf._txBody.iterchildren(qn("a:p"))):
+        ppr, cur = p.find(qn("a:pPr")), p
+        for el in list(p):
+            if el.tag == qn("a:br"):
+                new = etree.Element(qn("a:p"))
+                if ppr is not None:
+                    new.append(copy.deepcopy(ppr))
+                cur.addnext(new)
+                p.remove(el)
+                cur = new
+            elif cur is not p and el.tag != qn("a:pPr"):
+                cur.append(el)   # moves it, the end-of-paragraph properties too
+
+
+def note_style(slide):
+    """note (a `::: note` single-body.lua folded into the caption box): each line a paragraph, the
+    note's in the caption size and muted color, centred, as full_slide draws its caption; a
+    footnote line keeps style_footnotes' look. Before lay_out, whose scale= then sizes the note
+    with the body; False (slide untouched) when the slide is not one picture or table and its
+    caption."""
+    parts = _note_parts(slide)
+    if parts is None:
+        return False
+    tf = parts[0].text_frame
+    _split_lines(tf)
+    for p in tf.paragraphs:
+        if style_footnotes.style(p):
+            continue
+        p.alignment = PP_ALIGN.CENTER
+        for r in p.runs:
+            r.font.size, r.font.color.rgb = CAP_SIZE, CAP_COLOR
+    return True
+
+
+def note_place(slide):
+    """The note's box moved from the content area's foot (where pandoc puts a caption) to just
+    under the picture or table, cut to its text, measured; a picture too tall to leave the note
+    room on the slide shrinks (a table cannot, and the note then stays at the foot)."""
+    caption, fig = _note_parts(slide)
+    floor = caption.top + caption.height
+    tf = caption.text_frame
+    tf.vertical_anchor = MSO_ANCHOR.TOP
+    est = int(_text_height(caption, slide) * 1.1)   # 10% slack keeps autofit idle, as caution_box
+    if getattr(fig, "has_table", False):
+        other = _other_size(slide)
+        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other),
+                                         2 * style_tables.CELL_MAR)
+    else:
+        bottom = fig.top + fig.height
+        room = floor - est - NOTE_GAP
+        if bottom > room and room > fig.top:
+            k, middle = (room - fig.top) / fig.height, fig.left + fig.width // 2
+            fig.width, fig.height = int(fig.width * k), room - fig.top
+            fig.left = middle - fig.width // 2
+            bottom = room
+    # all four: a placeholder inherits its frame, and setting one leaves the rest at 0
+    caption.left, caption.top, caption.width, caption.height = (
+        caption.left, min(bottom + NOTE_GAP, floor - est), caption.width, est)
 
 
 def full_slide(slide, width, height):
@@ -607,14 +691,17 @@ def run(prs, pptx: Path) -> None:
                       file=sys.stderr)
             else:
                 draw_feature(slide, w, h, photo)
-        elif "full" in words:
+        elif "full" in words:   # its caption, a note's lines too, is the full caption
             if not full_slide(slide, w, h):
                 title = slide.shapes.title
                 print("slide_layout: WARNING: {.full} slide %r needs one picture and at most a "
                       "caption; left as it is" % (title.text_frame.text if title else ""),
                       file=sys.stderr)
         else:
+            note = "note" in words and note_style(slide)
             lay_out(slide, words)
+            if note:   # after scale=: the box is cut to the note at the size it is set in
+                note_place(slide)
         done += 1
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
         band_stack(prs.slides[0], w, h)
