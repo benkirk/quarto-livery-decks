@@ -24,7 +24,7 @@ from pptx.util import Emu
 
 import livery as livery_mod
 
-from .common import BOXES, GEOM, LIVERY, fit_table, is_picture, is_table, rect, take_marker
+from .common import BOXES, GEOM, LIVERY, column_frames, fit_table, is_picture, is_table, rect, take_marker
 from .measure import text_height
 
 RULE = livery_mod.blend(LIVERY, "rule")   # HTML's --engine-rule, beamer's BrandRule
@@ -33,13 +33,10 @@ KEY = "engine-columns:"
 
 
 def frames(shares, width, wide=False):
-    """(left, width) in EMU of each column, for shares of the content box less its gaps."""
-    m, g = GEOM["wide-margin" if wide else "margin"], BOXES["columns"]["gap"]
-    room, x, out = 1 - 2 * m - g * (len(shares) - 1), m, []
-    for s in shares:
-        out.append((Emu(round(x * width)), Emu(round(room * s * width))))
-        x += room * s + g
-    return out
+    """(left, width) in EMU of each column, for shares of the content box less its gaps
+    (common.column_frames, grid.py's too)."""
+    m = GEOM["wide-margin" if wide else "margin"]
+    return column_frames(round(m * width), round((1 - 2 * m) * width), shares, width)
 
 
 def rules(slide, frames, top, height, slide_width, slide_height):
@@ -55,9 +52,8 @@ def rules(slide, frames, top, height, slide_width, slide_height):
 
 
 def _old(width):
-    """The template's two half frames (livery_template.py's Two Content), (left, width) in EMU."""
-    m, g = GEOM["margin"], BOXES["columns"]["gap"]
-    half = (1 - 2 * m - g) / 2
+    """The template's two half frames (livery_template.py's Two Content: geometry.half), (left, width) in EMU."""
+    m, g, half = GEOM["margin"], BOXES["columns"]["gap"], GEOM["half"]
     return [(round(m * width), round(half * width)), (round((m + half + g) * width), round(half * width))]
 
 

@@ -144,3 +144,15 @@ def test_bullets(livery, tmp_path):
     want = [glyphs[min(i, len(glyphs) - 1)] for i in range(5)]
     assert chars[:5] == want, f"the master's bullets {chars[:5]}, want {want}"
     assert f'<a:buClr><a:srgbClr val="{j["bullets"]["color"][1:]}"/></a:buClr>' in master, "their color"
+
+
+def test_geometry_derived(livery):
+    """livery.json carries the content body's box and the Two Content half (geometry.body, geometry.half),
+    derived once by livery build from the margin, frametitle.body, body-bottom and the column gap; the
+    template, the plots' figsize and columns.py read them."""
+    import json
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    g, m = j["geometry"], j["geometry"]["margin"]
+    top = j["frametitle"]["body"]
+    assert g["body"] == [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)], f"{livery.name}: geometry.body"
+    assert g["half"] == round((1 - 2 * m - j["boxes"]["columns"]["gap"]) / 2, 4), f"{livery.name}: geometry.half"

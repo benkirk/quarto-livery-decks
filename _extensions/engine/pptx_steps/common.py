@@ -107,6 +107,18 @@ def take_marker(slide, key):
     return words
 
 
+def column_frames(left, width, shares, slide_width):
+    """(left, width) in EMU of each column in a box (left, width EMU): its share of the box less
+    the gaps (boxes.columns.gap of the slide's width); columns.py's and grid.py's one formula."""
+    g = round(BOXES["columns"]["gap"] * slide_width)
+    room, x, out = width - g * (len(shares) - 1), left, []
+    for s in shares:
+        w = round(room * s)
+        out.append((x, w))
+        x += w + g
+    return out
+
+
 def pads(box, key="pad"):
     """A box's pads, (vertical, horizontal) in EMU: its em times the body type."""
     v, h = BOXES[box][key]

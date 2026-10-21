@@ -166,8 +166,9 @@ class Builder:
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab-width"]
-        title_top, rule_y, body_bottom = 0.049, 0.1444, g["body-bottom"]
-        body_top = self.L.get("frametitle", {}).get("body", 0.1667)   # below a taller mark
+        title_top, rule_y = 0.049, 0.1444
+        _, body_top, _, body_h = g["body"]   # the content body (geometry.body: below a taller mark, to body-bottom)
+        body_bottom = body_top + body_h
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
         corner = self.logo_corner
         inset = g["logo"].get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
@@ -355,12 +356,11 @@ class Builder:
 
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
-        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), g["body-bottom"]
-        h = body_bottom - body_top
+        _, body_top, _, h = g["body"]   # the content body's box (geometry.body)
+        body_bottom = body_top + h
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
-        gap = self.L["boxes"]["columns"]["gap"]   # every format's column gap (livery.json boxes)
-        half = (1 - 2 * m - gap) / 2
+        gap, half = self.L["boxes"]["columns"]["gap"], g["half"]   # the column gap and the Two Content half (livery.json)
         if name == "Title and Content":
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, body_top, 1 - 2 * m, h), 'vert="horz"', "", "Click to edit Master text styles"))
         elif name == "Two Content":

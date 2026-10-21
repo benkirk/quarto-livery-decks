@@ -1300,12 +1300,19 @@
     "tab": false
   },
   "geometry": {
+    "body": [
+      0.028,
+      0.1852,
+      0.944,
+      0.737
+    ],
     "body-bottom": 0.9222,
     "full": {
       "caption": 0.06,
       "footline": 0.075,
       "pad": 0.025
     },
+    "half": 0.457,
     "logo": {
       "aspect": 1.2146,
       "closing-height": 0.129,

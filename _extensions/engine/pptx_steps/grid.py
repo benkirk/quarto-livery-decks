@@ -32,7 +32,7 @@ from pptx.util import Emu, Pt
 import livery as livery_mod
 
 from .columns import rules
-from .common import BODY_PT, BOXES, GEOM, LIVERY, SLACK, is_body, pads, ppr_place, rect, rpr, set_fill
+from .common import BODY_PT, BOXES, GEOM, LIVERY, SLACK, column_frames, is_body, pads, ppr_place, rect, rpr, set_fill
 from .measure import text_height
 
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
@@ -94,17 +94,6 @@ def parse(paragraphs):
         elif kind == "end" and stack:
             stack.pop()
     return segs if any(s[0] != "text" for s in segs) else None
-
-
-def column_frames(left, width, shares, slide_width):
-    """(left, width) in EMU of each column in a box: its share of the box less the gaps."""
-    g = round(BOXES["columns"]["gap"] * slide_width)
-    room, x, out = width - g * (len(shares) - 1), left, []
-    for s in shares:
-        w = round(room * s)
-        out.append((x, w))
-        x += w + g
-    return out
 
 
 def body_box(slide, x, y, w, h, paragraphs, name):
