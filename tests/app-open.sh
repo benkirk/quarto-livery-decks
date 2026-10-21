@@ -8,7 +8,9 @@
 # to click) and closed unsaved; a file the app refuses is a FAIL. Keynote's "can't be imported"
 # alert and PowerPoint's "Repair?" prompt are modal and hold the Apple Event, so a 60 s timeout
 # with no document showing 90 s later is the FAIL, and the app is then quit by its process
-# before the next file (a slow open, the first after the app starts, shows its document). Each
+# before the next file (a slow open, the first after the app starts, counts once this file's
+# document shows). An app left with a window after the document closes (Keynote's import
+# warnings, which AppleScript cannot close and the next open waits behind) is quit first. Each
 # file is opened as a copy in a temporary directory: a sandboxed app asks before reading
 # ~/Documents, modally too. It stops rather than quit an app that holds a document of its own.
 # Controls come first and show the verdicts are real: the ncar template (opens in both) and,
@@ -20,7 +22,7 @@ set -uo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 apps=both
 while getopts "a:" o; do
-  case $o in a) apps=$OPTARG ;; *) sed -n '2,17p' "$0"; exit 2 ;; esac
+  case $o in a) apps=$OPTARG ;; *) sed -n '2,19p' "$0"; exit 2 ;; esac
 done
 shift $((OPTIND - 1))
 case $apps in keynote|powerpoint|both) ;; *) echo "app-open: -a keynote|powerpoint|both" >&2; exit 2 ;; esac
@@ -53,8 +55,19 @@ quit_app() {   # <app>: quit by its process (a modal alert ignores a polite quit
   while pgrep -x "$(app_proc "$1")" >/dev/null; do sleep 1; done
 }
 
+settle() {   # <app>, after an OK: quit it if a window outlived the document (Keynote's "may look
+  # different" warnings stay open, AppleScript cannot close them, and the next open then waits
+  # behind them); politely, since it holds no document of ours or anyone's by now
+  local w; w=$(osascript -e 'with timeout of 5 seconds' -e "tell application \"$(app_name "$1")\" to count windows" \
+    -e 'end timeout' 2>/dev/null)
+  [ -n "$w" ] && [ "$w" != 0 ] || return 0
+  osascript -e 'with timeout of 20 seconds' -e "tell application \"$(app_name "$1")\" to quit" -e 'end timeout' >/dev/null 2>&1
+  for _ in $(seq 1 20); do pgrep -x "$(app_proc "$1")" >/dev/null || return 0; sleep 1; done
+  quit_app "$1"
+}
+
 try() {   # <app> <file>: prints OK (n slides) or FAIL (why)
-  local app=$1 r n f
+  local app=$1 r n f names stem
   # a copy in a temporary directory: the apps are sandboxed, and a file under ~/Documents (or
   # ~/Downloads) raises macOS's folder-access prompt, modal like a refusal
   f=$(mktemp -d "$tmp/open.XXXX")/$(basename "$2"); cp "$2" "$f"
@@ -114,15 +127,22 @@ AS
     r="FAIL (a modal alert: import refused or Repair?)"   # within 90 s more; an app may answer
     for _ in $(seq 1 45); do                              # "0" while it is still loading
       n=$(docs_open "$app")
-      if [ -n "$n" ] && [ "$n" != 0 ]; then
-        r="OK (slow)"
+      if [ -n "$n" ] && [ "$n" != 0 ]; then   # this file's document, not one left over
+        names=$(osascript -e 'with timeout of 5 seconds' \
+          -e "tell application \"$(app_name "$app")\" to get name of every $(app_docs "$app" | sed 's/s$//')" \
+          -e 'end timeout' 2>/dev/null)
+        stem=$(basename "$f" .pptx)
+        case ", $names," in
+          *", $stem,"*|*", $stem.pptx,"*) r="OK (slow)" ;;
+          *) r="FAIL (another document showed: $names)" ;;
+        esac
         osascript -e "tell application \"$(app_name "$app")\" to close every $(app_docs "$app" | sed 's/s$//') saving no" >/dev/null 2>&1
         break
       fi
       sleep 2
     done
   fi
-  case $r in OK*) ;; *) quit_app "$app" ;; esac
+  case $r in OK*) settle "$app" ;; *) quit_app "$app" ;; esac
   echo "$r"
 }
 
