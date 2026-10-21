@@ -79,13 +79,18 @@ jobs:
         run: |
           probe() { command -v apptainer >/dev/null && apptainer --version && apptainer exec docker://busybox true; }
           arch=$(dpkg --print-architecture)
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          for i in 1 2 3; do   # Launchpad answers 503 at times: retry its index before giving up on it
-            sudo apt-get install -y -q apptainer && break
-            echo "::notice::no apptainer from the PPA for $arch (try $i of 3)"; sleep 30; sudo apt-get update -q || true
-          done
+          # the add is inside the `if`: under `bash -e` a Launchpad 503 there would end the step
+          # before the retry and the .deb below
+          if sudo add-apt-repository -y ppa:apptainer/ppa; then
+            for i in 1 2 3; do   # Launchpad answers 503 at times: retry its index before giving up on it
+              sudo apt-get install -y -q apptainer && break
+              echo "::notice::no apptainer from the PPA for $arch (try $i of 3)"; sleep 30; sudo apt-get update -q || true
+            done
+          else
+            echo "::notice::ppa:apptainer/ppa could not be added for $arch (Launchpad unreachable)"
+          fi
           if probe; then echo "INSTALLED=ppa" >> "$GITHUB_ENV"; exit 0; fi
-          echo "::warning::the PPA's apptainer cannot run unprivileged here; trying the release .deb"
+          echo "::warning::no apptainer from the PPA that runs unprivileged here; trying the release .deb"
           sysctl kernel.apparmor_restrict_unprivileged_userns kernel.unprivileged_userns_clone 2>/dev/null || true
           ls /etc/apparmor.d | grep -i apptainer || echo "no apptainer AppArmor profile"
           sudo apt-get remove -y -q apptainer || true
