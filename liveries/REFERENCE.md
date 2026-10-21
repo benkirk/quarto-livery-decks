@@ -249,6 +249,114 @@ The parts of one composed slide; a part not named keeps the engine's value, null
 | `fineprint` | null or object |  | The cover's small print. (null: none) |
 | `eyebrow` | null or object |  | The "SECTION n" label. (null: none) |
 
+### `compositions.<name>.field`
+
+The colored field behind everything.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.photo`
+
+The deck's photo.
+
+| key | type | default | |
+|---|---|---|---|
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.band`
+
+The band across a band cover's field.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.waves`
+
+The wave lines drawn over the field.
+
+| key | type | default | |
+|---|---|---|---|
+| `style` | `bands` \| `lines` \| `cover` |  | Translucent bands between the lines, the lines alone, or the cover's field edge. |
+| `shift` | number |  | How far right of the cover art's position they are drawn, of the width. |
+| `role` | role |  | Their color. |
+| `opacity` | list of fractions |  | The bands' opacities, outer first. |
+| `line` | fraction |  | The lines' thickness, of the height. |
+
+### `compositions.<name>.bar`
+
+The feature slide's title bar.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `opacity` | fraction |  | How opaque it is over the photo. |
+
+### `compositions.<name>.panel`
+
+The feature slide's body panel.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `opacity` | fraction |  | How opaque it is over the photo. |
+
+### `compositions.<name>.mark`
+
+The brand mark.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.signoff`
+
+The sign-off lockup.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.column`
+
+The text column: title, subtitle, date and the rest.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `anchor` | `top` \| `middle` |  | Whether the text hangs from the column's top or is centered in it. |
+| `align` | `left` \| `center` |  | The text's alignment in the column (default left); a centered column centers its rule too. |
+| `tab` | boolean |  | The accent tab beside the heading. |
+| `rule` | null or list of 2 fractions |  | The short rule under the title, [width of the slide's width, thickness of its height], or null for none. |
+
+### `compositions.<name>.fineprint`
+
+The cover's small print.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `anchor` | `top` \| `bottom` |  | Whether the text hangs from the box's top or stands on its bottom. |
+
+### `compositions.<name>.eyebrow`
+
+The "SECTION n" label.
+
+| key | type | default | |
+|---|---|---|---|
+| `label` | string |  | Its word. |
+| `color` | role or hex |  | Its color. |
+
 ### `feature`
 
 Feature (photo) slides.

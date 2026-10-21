@@ -178,6 +178,9 @@ EXPECTED_DELTAS = {
                                 "decided": "ncar and its flavors: pptx's 0.375 (Ben, 2026-10-17); others under the mark"},
                                lambda c, L: L["name"] in NCAR_FAMILY and each(COVERS, lambda x, L: x["column"].update(
                                    box=[0.06, 0.375, 0.44 if x["photo"] else 0.50, 0.485]))(c, L)),
+    "column align": ({"pdf": "left", "html": "left", "pptx": "left",
+                      "decided": "left; column.align: center centers the text and its rule (2026-10-21)"},
+                     lambda c, L: [x["column"].setdefault("align", "left") for x in c.values() if x["column"]]),
 }
 
 
@@ -252,6 +255,14 @@ def test_section_label_null(tmp_path):
     (tmp_path / "word").mkdir()   # flavor() links the parent into its directory: a fresh one
     L = flavor(tmp_path / "word", "word", "section: {label: Part}\n")
     assert L["compositions"]["section"]["eyebrow"]["label"] == "Part"
+
+
+def test_column_align(tmp_path):
+    # column.align: center on closing reaches closing-light; every other column stays left
+    L = flavor(tmp_path, "centered", "compositions:\n  closing: {column: {align: center}}\n")
+    c = L["compositions"]
+    assert c["closing"]["column"]["align"] == c["closing-light"]["column"]["align"] == "center"
+    assert all(x["column"]["align"] == "left" for k, x in c.items() if x["column"] and not k.startswith("closing-") and k != "closing")
 
 
 def test_flavor_band_from_own_knobs(tmp_path):

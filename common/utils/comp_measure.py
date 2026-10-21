@@ -336,7 +336,10 @@ def measure(im, comp, L, fmt):
         e = comp["eyebrow"]["color"]
         mask = ImageChops.lighter(mask, mask_of(im, g, rgb(e if e.startswith("#") else roles[e]), near=True, cut=cut))
     b = bbox(mask, g, 2)
-    add("column", "left", x, b and b[0], TOL)
+    if col.get("align") == "center":   # column.align: the ink centred across the box, not at its left
+        add("column", "centre-x", x + w / 2, b and (b[0] + b[2]) / 2, TOL)
+    else:
+        add("column", "left", x, b and b[0], TOL)
     middle = col["anchor"] == "middle"
     tol = TOL_MIDDLE if middle and fmt == "pptx" else TOL
     if middle:

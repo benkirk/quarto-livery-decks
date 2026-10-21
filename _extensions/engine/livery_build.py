@@ -489,6 +489,9 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     for k in COMPOSITIONS:   # every override last; a base's already reached its variants
         if k not in ("title", "closing"):
             res[k] = merge(res[k], over.get(k) or {})
+    for c in res.values():   # the column's text alignment, left unless a livery centers it
+        if c["column"]:
+            c["column"].setdefault("align", "left")
     for k, c in res.items():
         for role in [c[b]["role"] for b in COMP_KEYS if isinstance(c[b], dict) and "role" in c[b]]:
             if role not in out["roles"]:
@@ -750,6 +753,7 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
                 d(f"{k}@opacity", c[k]["opacity"])
         col = c["column"]
         d("column@anchor", col["anchor"]); d("column@tab", "true" if col["tab"] else "false")
+        d("column@align", col["align"])
         if col["rule"]:
             d("column@rule@w", col["rule"][0]); d("column@rule@h", col["rule"][1])
         if c["fineprint"]:
@@ -1039,6 +1043,8 @@ def emit_css_compositions(livery: dict) -> list[str]:
         props.append(f"--engine-cmp-text: {role(col['role'])};")
         props.append(f"--engine-cmp-column-justify: {'center' if col['anchor'] == 'middle' else 'flex-start'};")
         props.append(f"--engine-cmp-column-tab: {'block' if col['tab'] else 'none'};")
+        props.append(f"--engine-cmp-column-align: {col['align']};")
+        props.append(f"--engine-cmp-rule-mx: {'auto' if col['align'] == 'center' else '0'};")   # a centered rule
         rule = col["rule"] or [0, 0]
         props.append(f"--engine-cmp-rule-display: {'block' if col['rule'] else 'none'};")
         props += [f"--engine-cmp-rule-w: {px(rule[0], W)};", f"--engine-cmp-rule-h: {px(rule[1], H)};"]

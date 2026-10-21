@@ -456,7 +456,7 @@ div.reveal div.slides section.engine-title.quarto-title-block,
   z-index: -1;
 }
 div.reveal div.slides section.engine-title.quarto-title-block {
-  text-align: left;
+  text-align: var(--engine-cmp-column-align, left);   // column.align
   padding: 0;
   // the text column: its stack from the top or centred, by the column's anchor
   .engine-title-text {
@@ -504,9 +504,9 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     width: var(--engine-cmp-rule-w);
     height: var(--engine-cmp-rule-h);
     background: var(--engine-secondary);
-    margin: 0.9em 0;
+    margin: 0.9em var(--engine-cmp-rule-mx, 0);   // auto: a centered column's rule
   }
-  &.engine-band .engine-title-rule { margin: 0.6em 0; }
+  &.engine-band .engine-title-rule { margin: 0.6em var(--engine-cmp-rule-mx, 0); }
   .author { font-weight: 700; margin: 0; font-size: calc(var(--engine-type-author, 0.8) * 1em); }
   .institute { margin: 0; font-size: calc(var(--engine-type-institute, 0.7) * 1em); }
   .engine-fineprint {
@@ -535,7 +535,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   flex-direction: column;
   justify-content: var(--engine-cmp-column-justify);
   padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
-  text-align: left;
+  text-align: var(--engine-cmp-column-align, left);
   &[data-engine-section]::before {
     content: var(--engine-cmp-eyebrow-label) attr(data-engine-section);
     display: var(--engine-cmp-eyebrow-display, block);   // none: section.label is null
@@ -551,7 +551,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     font-size: calc(var(--engine-type-section, 2.6) * 1em);
     line-height: 1.08;
     margin: 0;
-    text-align: left;
+    text-align: var(--engine-cmp-column-align, left);
     &::before {
       content: "";
       display: var(--engine-cmp-column-tab);
@@ -579,6 +579,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   display: flex !important;
   flex-direction: column;
   justify-content: var(--engine-cmp-column-justify);
+  text-align: var(--engine-cmp-column-align, left);
   padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
   > h2 {
     position: relative;
@@ -589,6 +590,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     line-height: 1.08;
     margin: 0 0 0.4em;
     color: var(--engine-cmp-text);
+    text-align: var(--engine-cmp-column-align, left);   // not the content titles' frametitle.align
     &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); top: 0.08em; bottom: 0.08em; }
   }
   &, p, li, strong { color: var(--engine-cmp-text); }   // the light closing's too: its column's role
@@ -612,8 +614,8 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     min-height: 0;
     box-sizing: border-box;
     align-items: var(--engine-cmp-column-justify);
-    justify-content: flex-start;   // the composition's column, not frametitle.align
-    text-align: left;
+    justify-content: var(--engine-cmp-column-align, left);   // the composition's column, not frametitle.align
+    text-align: var(--engine-cmp-column-align, left);
     color: var(--engine-cmp-text);
     &::before { display: var(--engine-cmp-column-tab); left: calc(-1 * var(--engine-cmp-column-x)); }
   }
@@ -645,7 +647,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
       display: var(--engine-cmp-rule-display);
       width: var(--engine-cmp-rule-w);
       height: var(--engine-cmp-rule-h);
-      margin-top: 0.4em;
+      margin: 0.4em var(--engine-cmp-rule-mx, 0) 0;
       background: var(--engine-secondary);
     }
   }

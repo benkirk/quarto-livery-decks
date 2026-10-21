@@ -40,7 +40,8 @@ def test_sets_are_the_engines():
     assert set(P["type"]["properties"]) == set(lb.TYPE) | {"levels"}, "type roles differ from TYPE"
     assert set(P["compositions"]["properties"]) == set(lb.COMPOSITIONS), "compositions differ from COMPOSITIONS"
     for name, c in P["compositions"]["properties"].items():
-        assert set(c["properties"]) == set(lb.COMP_KEYS), f"compositions.{name} parts differ from COMP_KEYS"
+        assert c["$ref"] == "#/$defs/composition", f"compositions.{name} is not a $defs.composition"
+    assert set(S.load()["$defs"]["composition"]["properties"]) == set(lb.COMP_KEYS), "composition parts differ from COMP_KEYS"
     assert set(P["pptx"]["properties"]["scheme"]["properties"]) == set(lb.SLOT_ROLES), "pptx.scheme slots differ from SLOT_ROLES"
     assert set(P["blends"]["properties"]) == {k for k, *_ in lb.BLENDS}, "blends differ from BLENDS"
     assert set(P["roles"]["properties"]) >= set(lb.ROLE_TEX), "a ROLE_TEX role is missing from roles"

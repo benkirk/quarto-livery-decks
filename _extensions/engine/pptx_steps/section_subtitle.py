@@ -43,6 +43,7 @@ BLOCK_TOP = round(COLUMN["box"][1] * 900)                 # the block is centred
 BLOCK_BOTTOM = round((COLUMN["box"][1] + COLUMN["box"][3]) * 900)   # and bottom (120 ... 820 px)
 TAB_W = round(GEOM["tab-width"] * 1600)     # the divider's tab, geometry.tab-width of the width
 TAB = COLUMN["tab"]
+LABEL_ALIGN = '<a:pPr algn="ctr"/>' if COLUMN.get("align") == "center" else ""   # column.align
 EYEBROW = LIVERY["compositions"]["section"]["eyebrow"]   # {label, color}: "Section", cap="all"
                                             # sets it in capitals; None: no eyebrow (section.label: null)
 LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
@@ -214,7 +215,7 @@ def _dress(root, layout_root, number):
     label = _decor(DECOR[0], sid, t_style[0], y, t_style[1], label_h,
                    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>'
                    '<p:txBody><a:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t">'
-                   '<a:noAutofit/></a:bodyPr><a:lstStyle/><a:p>'
+                   f'<a:noAutofit/></a:bodyPr><a:lstStyle/><a:p>{LABEL_ALIGN}'
                    f'<a:r><a:rPr lang="en-US" sz="{round(LABEL_PT * 100)}" b="1" cap="all" spc="{round(LABEL_PT * 10)}">'
                    f'<a:solidFill><a:srgbClr val="{_eyebrow_hex()}"/></a:solidFill>'
                    f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>{EYEBROW["label"] if EYEBROW else ""} {number}</a:t>'

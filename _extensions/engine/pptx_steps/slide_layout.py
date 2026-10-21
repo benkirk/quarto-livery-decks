@@ -552,11 +552,12 @@ def title_cover(slide, width, height, photo):
 
 
 def _left(shape):
-    """A feature title sits at the left of its composition's column, whatever frametitle.align
-    gives the content titles (the layout's title style); a no-op for a left-aligned livery."""
-    if LIVERY.get("frametitle", {}).get("align") == "center":
+    """A feature title takes its composition column's alignment (column.align), whatever
+    frametitle.align gives the content titles (the layout's title style); a no-op when they agree."""
+    want = COMP["feature"]["column"].get("align", "left")
+    if LIVERY.get("frametitle", {}).get("align", "left") != want:
         for p in shape.text_frame.paragraphs:
-            p.alignment = PP_ALIGN.LEFT
+            p.alignment = PP_ALIGN.CENTER if want == "center" else PP_ALIGN.LEFT
 
 
 def _text(shape, color, pt=None):

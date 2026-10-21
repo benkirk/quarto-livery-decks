@@ -26,6 +26,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   label word (it always said "Section"), and the pptx its label color.
 
 ### Liveries
+- `compositions.<name>.column.align: center` centers a composed slide's text (the closing's
+  "Thank you!", a divider, the cover, the feature title) and its rule, in every format. Each
+  composition part's keys now have their own table in `liveries/REFERENCE.md`.
 - `section.label: null` drops the divider's eyebrow in every format;
   `section.label-color` now reaches the pptx too.
 - `nasa-jsc-eg`: the NASA JSC Aeroscience and Flight Mechanics Division's template, dark, a

@@ -179,6 +179,8 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
@@ -256,6 +258,8 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
@@ -333,6 +337,8 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
@@ -410,6 +416,8 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
@@ -487,6 +495,8 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
@@ -565,6 +575,8 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band::
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
@@ -640,6 +652,8 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
@@ -715,6 +729,8 @@ html .reveal .slides section.slide.level2.closing.engine-band {
   --engine-cmp-text: var(--engine-background);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
@@ -790,6 +806,8 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
@@ -867,6 +885,8 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   --engine-cmp-text: var(--engine-background);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: none;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;

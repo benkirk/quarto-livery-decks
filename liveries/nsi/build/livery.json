@@ -386,6 +386,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -435,6 +436,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -484,6 +486,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -542,6 +545,7 @@
         "role": "dark"
       },
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -583,6 +587,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -635,6 +640,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
@@ -704,6 +710,7 @@
       },
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -772,6 +779,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
@@ -833,6 +841,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
@@ -901,6 +910,7 @@
       "band": null,
       "bar": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,

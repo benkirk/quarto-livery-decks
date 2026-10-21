@@ -143,6 +143,10 @@ def _tables(path: str, node: dict, schema: dict, out: list):
         rows.append(f"| `{k}` | {_type(v, schema)} | {_default(v, schema)} | {desc} |")
         if "properties" in r or isinstance(r.get("additionalProperties"), dict):
             nested.append((f"{path}.{k}" if path else k, v))
+        elif path == "compositions.<name>":   # a part, null or an object: the object's keys get a table
+            obj = next((o for o in r.get("oneOf", []) if "properties" in o), None)
+            if obj:
+                nested.append((f"{path}.{k}", obj))
     if isinstance(extra, dict):
         key = node.get("x-key", "<name>")
         r = _resolve(extra, schema)
