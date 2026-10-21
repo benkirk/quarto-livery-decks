@@ -245,7 +245,13 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   template builder's `field_layout()` (Title Slide, Title Slide (light), Section Header, Closing,
   Closing (light)), and `slide_layout.py`'s `draw_cover()` (the title photo, cropped into its
   box under the field and waves) and `draw_feature()`. Slide shapes always draw above layout
-  shapes, so a pptx cover redraws its field, waves and marks on the slide. **`make measure`**
+  shapes, so a pptx cover redraws its field, waves and marks on the slide. A cover's text is
+  parts, each a stack in a box: the column (`column.elements`, the title always its) and an
+  optional `byline` (`role`, `box`, `anchor`, `align`, `elements`: author, institute, date by
+  default), drawn by beamer's `\engine@textstack` in `\engine@pnode`, `title-slide.html`'s second
+  stack shown by the `--engine-cmp-<element>-*` properties, and `slide_layout.py`'s
+  `cover_byline()` (the institute's first appearance in the pptx); `column.align: center` centers
+  a composed slide's text and rule in all three. **`make measure`**
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
@@ -371,8 +377,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   In pptx the blue field, logo and waves are the template's Section Header
   layout, which `livery template` generates with the rest of the
   template from the livery's data (`make livery` after a livery change, never edit
-  `template.pptx` by hand); `section_subtitle.py` adds "SECTION n", the tab and
-  placement.
+  `template.pptx` by hand); `section_subtitle.py` adds "SECTION n" (none under
+  `section.label: null`), the tab and placement.
 - **Front matter must be line 1** of every deck `.qmd`: anything above the
   opening `---` (an editor mode-line, a comment) hides it from Quarto, and
   `date: last-modified` renders literally (#7). CI checks this; set editor

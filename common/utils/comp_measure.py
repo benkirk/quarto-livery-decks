@@ -6,9 +6,9 @@
 Shoots the four slides of each built deck at 1600x900 (HTML: Playwright; PDF: pdftoppm; pptx:
 soffice to PDF, skipped without it), picks the composition the formats pick (band, photo, light
 from the front matter and the livery) and measures its boxes: filled edges (band, bar, panel, a
-straight field edge) by the strongest colour step near them; marks and sign-offs by the bbox of
+straight field edge) by the strongest color step near them; marks and sign-offs by the bbox of
 non-field pixels in the box grown by 0.03; the text column by the bbox of its role's pixels down
-the slide (left vs x, top or centre by anchor, right within x + w). Writes _qa/measure.tsv,
+the slide (left vs x, top or center by anchor, right within x + w). Writes _qa/measure.tsv,
 _qa/compositions-<livery>.png (rows compositions, columns HTML | PDF | pptx, boxes in magenta)
 and a table; exits 1 when a --fail-on format is over tolerance.
 """
@@ -190,7 +190,7 @@ def flat(im):
 
 
 def profile(im, box, axis):
-    """Mean colour per pixel along `axis` ('x' or 'y') of the box's region."""
+    """Mean color per pixel along `axis` ('x' or 'y') of the box's region."""
     from PIL import Image
     r = im.crop(px(box))
     r = r.resize((r.width, 1) if axis == "x" else (1, r.height), Image.BOX)
@@ -198,7 +198,7 @@ def profile(im, box, axis):
 
 
 def edge(im, pos, axis, lo, hi):
-    """The strongest colour step within 0.05 of `pos` (a fraction along `axis`), the step
+    """The strongest color step within 0.05 of `pos` (a fraction along `axis`), the step
     averaged over [lo, hi] of the other axis; None when there is no clear step."""
     a, b = max(0.0, pos - 0.05), min(1.0, pos + 0.05)
     box = [a, lo, b - a, hi - lo] if axis == "x" else [lo, a, hi - lo, b - a]
@@ -262,8 +262,8 @@ def widened(mask, box, core, minimum, gap=0.006):
     return [(x0 + lo) / W, core[1], (x0 + hi + 1) / W, core[3]]
 
 
-def ring_colour(im, box):
-    """The median colour of the box's 4 px border: what an image in it sits on."""
+def ring_color(im, box):
+    """The median color of the box's 4 px border: what an image in it sits on."""
     x0, y0, x1, y1 = px(box)
     pts = [im.getpixel((x, y)) for x in range(x0, x1, 3) for y in (y0, y0 + 3, y1 - 4, y1 - 1)]
     pts += [im.getpixel((x, y)) for y in range(y0, y1, 3) for x in (x0, x0 + 3, x1 - 4, x1 - 1)]
@@ -305,7 +305,7 @@ def measure(im, comp, L, fmt):
         if not c:
             continue
         g = grown(c["box"])   # a mark contrasts with its field more than art's lines and stars do
-        mask = mask_of(im, g, ring_colour(im, g), near=False, dist=110)
+        mask = mask_of(im, g, ring_color(im, g), near=False, dist=110)
         least = max(3, 0.03 * c["box"][3] * H)
         if comp["art"]:   # a picture under the field: drop its 1-2 px lines (a lockup's strokes are wider)
             raw, mask = mask, mask.filter(ImageFilter.MinFilter(3))
@@ -321,7 +321,7 @@ def measure(im, comp, L, fmt):
     x, y, w, h = col["box"]
     g = grown(col["box"])   # across, the grown box; down, the slide above the footer (a stack may be far off)
     g = [g[0], 0, g[2], 0.93]
-    for k in ("band", "bar"):   # the text sits on it: the field beyond it may be the text's colour
+    for k in ("band", "bar"):   # the text sits on it: the field beyond it may be the text's color
         if comp[k]:
             by, bh = comp[k]["box"][1], comp[k]["box"][3]
             g = [g[0], by, g[2], bh]
@@ -332,21 +332,21 @@ def measure(im, comp, L, fmt):
     if by and by["box"]:   # a cover's byline in a box of its own: its ink is not the column's
         cut.append(grown(by["box"]))
     f = comp["field"]
-    if f and f["box"][2] < 1:   # beyond a field narrower than the slide: the photo, whose darks may be the text's colour
+    if f and f["box"][2] < 1:   # beyond a field narrower than the slide: the photo, whose darks may be the text's color
         cut.append([f["box"][0] + f["box"][2], 0, 1 - f["box"][0] - f["box"][2], 1])
     mask = mask_of(im, g, rgb(roles[col["role"]]), near=True, cut=cut)
-    if comp["eyebrow"]:   # the divider's stack starts with its eyebrow, in a colour of its own
+    if comp["eyebrow"]:   # the divider's stack starts with its eyebrow, in a color of its own
         e = comp["eyebrow"]["color"]
         mask = ImageChops.lighter(mask, mask_of(im, g, rgb(e if e.startswith("#") else roles[e]), near=True, cut=cut))
     b = bbox(mask, g, 2)
-    if col.get("align") == "center":   # column.align: the ink centred across the box, not at its left
-        add("column", "centre-x", x + w / 2, b and (b[0] + b[2]) / 2, TOL)
+    if col.get("align") == "center":   # column.align: the ink centered across the box, not at its left
+        add("column", "center-x", x + w / 2, b and (b[0] + b[2]) / 2, TOL)
     else:
         add("column", "left", x, b and b[0], TOL)
     middle = col["anchor"] == "middle"
     tol = TOL_MIDDLE if middle and fmt == "pptx" else TOL
     if middle:
-        add("column", "centre", y + h / 2, b and (b[1] + b[3]) / 2, tol)
+        add("column", "center", y + h / 2, b and (b[1] + b[3]) / 2, tol)
     else:
         add("column", "top", y, b and b[1], tol)
     add("column", "right<=", x + w, b and b[2], TOL)   # text may end short of the box, not past it
@@ -356,11 +356,11 @@ def measure(im, comp, L, fmt):
         b = bbox(mask_of(im, gb, rgb(roles[by["role"]]), near=True,
                          cut=[grown(comp[k]["box"]) for k in ("mark", "signoff") if comp[k]]), gb, 2)
         if by["align"] == "center":
-            add("byline", "centre-x", bx + bw / 2, b and (b[0] + b[2]) / 2, TOL)
+            add("byline", "center-x", bx + bw / 2, b and (b[0] + b[2]) / 2, TOL)
         else:
             add("byline", "left", bx, b and b[0], TOL)
         if by["anchor"] == "middle":
-            add("byline", "centre", byy + bh / 2, b and (b[1] + b[3]) / 2, TOL_MIDDLE if fmt == "pptx" else TOL)
+            add("byline", "center", byy + bh / 2, b and (b[1] + b[3]) / 2, TOL_MIDDLE if fmt == "pptx" else TOL)
         else:
             add("byline", "top", byy, b and b[1], TOL)
     return out
