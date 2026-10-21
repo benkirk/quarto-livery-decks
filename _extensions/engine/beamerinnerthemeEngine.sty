@@ -175,6 +175,12 @@
   \tikz[baseline=-0.62ex]\draw[BrandPrimaryContrast,line width=0.9pt] (0,0) circle (0.36ex);}
 \setbeamertemplate{itemize subsubitem}{%
   \tikz[baseline=-0.62ex]\fill[BrandPrimaryContrast] (-0.35ex,-0.1ex) rectangle (0.35ex,0.1ex);}
+% a livery's own glyphs per level (bullets:; livery.sty), in place of the shapes
+\ifdefined\engine@bullet@i
+  \setbeamertemplate{itemize item}{{\color{EngineBullet}\engine@bullet@i}}
+  \setbeamertemplate{itemize subitem}{{\color{EngineBullet}\engine@bullet@ii}}
+  \setbeamertemplate{itemize subsubitem}{{\color{EngineBullet}\engine@bullet@iii}}
+\fi
 \setbeamertemplate{enumerate item}{\textbf{\insertenumlabel.}}
 \setbeamertemplate{enumerate subitem}{\textbf{\insertenumlabel.\insertsubenumlabel}}
 \setbeamertemplate{enumerate subsubitem}{%

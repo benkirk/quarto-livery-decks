@@ -69,6 +69,7 @@
       "tint": 0.18
     }
   },
+  "bullets": null,
   "charts": {
     "brand": [
       "#E42E25",

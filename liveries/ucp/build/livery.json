@@ -167,6 +167,7 @@
       "tint": 0.18
     }
   },
+  "bullets": null,
   "charts": {
     "brand": [
       "#00A2B4",

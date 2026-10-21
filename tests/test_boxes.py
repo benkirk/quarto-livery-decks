@@ -120,3 +120,26 @@ def test_pptx_caution(pandoc_deck, tmp_path, name):
     tf = next(sh for sh in slide.placeholders if sh.has_text_frame and "warning" in sh.text_frame.text).text_frame
     assert (tf.margin_top, tf.margin_left) == (round(c["pad"][0] * body * 12700), round(c["pad"][1] * body * 12700)), \
         "pads in em of the body"
+
+
+def test_bullets(livery, tmp_path):
+    """bullets: null where a livery sets none (each format keeps its shapes); where one does
+    (nasa-jsc-eg), its glyphs and color in the json, the css, the sty and the template's master."""
+    import zipfile
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    knobs = (livery / "livery.yml").read_text()
+    css, sty = (livery / "build" / "livery.css").read_text(), (livery / "build" / "livery.sty").read_text()
+    if j["bullets"] is None:
+        assert "\nbullets:" not in knobs and "EngineBullet" not in sty and "li::before { content:" not in css
+        return
+    glyphs = j["bullets"]["glyphs"]
+    assert HEX.match(j["bullets"]["color"]), "the bullets' color as hex"
+    assert f'content: "{glyphs[0]}"' in css and f"\\def\\engine@bullet@i{{{glyphs[0]}}}" in sty
+    r = run("template", livery, "-o", tmp_path / "t.pptx")
+    assert r.returncode == 0, r.stderr
+    with zipfile.ZipFile(tmp_path / "t.pptx") as z:
+        master = z.read("ppt/slideMasters/slideMaster1.xml").decode()
+    chars = re.findall(r'<a:buChar char="([^"]*)"/>', master)
+    want = [glyphs[min(i, len(glyphs) - 1)] for i in range(5)]
+    assert chars[:5] == want, f"the master's bullets {chars[:5]}, want {want}"
+    assert f'<a:buClr><a:srgbClr val="{j["bullets"]["color"][1:]}"/></a:buClr>' in master, "their color"

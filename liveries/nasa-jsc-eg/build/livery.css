@@ -154,6 +154,9 @@ html:root {
 .reveal .slides section.engine-field .engine-signoff,
 .reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("eg-footer.png"); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("title.jpg") center / cover no-repeat; }
+html .reveal .slides section ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
+html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
+html .reveal .slides section ul ul ul > li::before { content: "•"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;

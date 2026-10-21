@@ -34,6 +34,7 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `frametitle` | object |  | Content slides' titles. |
 | `marking` | object |  | A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here. |
 | `boxes` | object |  | The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default. |
+| `bullets` | object |  | List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface. |
 | `installed-fonts` | object |  | A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}. |
 | `latex` | object |  | The LaTeX side. |
 | `pptx` | object |  | The PowerPoint template. |
@@ -492,6 +493,15 @@ The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors.
 | `done` | color or role | `"highlight"` | ✓, a role, a palette name or a hex. |
 | `warn` | color or role | `"warning"` | ⚠, a role, a palette name or a hex. |
 | `fail` | color or role | `"accent"` | ✗, a role, a palette name or a hex. |
+
+### `bullets`
+
+List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface.
+
+| key | type | default | |
+|---|---|---|---|
+| `glyphs` | list of strings |  | A glyph per level, the first the top level's; the last repeats. |
+| `color` | color or role | `"primary-contrast"` | Their color, a role, a palette name or a hex. |
 
 ### `installed-fonts`
 

@@ -72,6 +72,14 @@
       "tint": 0.3
     }
   },
+  "bullets": {
+    "color": "#FFFFFF",
+    "glyphs": [
+      "\u25aa",
+      "\u2013",
+      "\u2022"
+    ]
+  },
   "charts": {
     "brand": [
       "#E42E25",

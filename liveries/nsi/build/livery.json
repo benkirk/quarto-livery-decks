@@ -70,6 +70,7 @@
       "tint": 0.18
     }
   },
+  "bullets": null,
   "charts": {
     "brand": [
       "#CFB87C",

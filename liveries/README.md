@@ -67,6 +67,8 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
      hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover (nsi);
      `feature.style`; `compositions` to move any box of the composed slides.
+   - **Bullets.** `bullets:` (`glyphs` per level, `color`) when the brand's template draws its own
+     list glyphs; the glyphs must exist in `pptx.typeface`.
    - **Art.** `art`: wave curves (`common/utils/fit-waves.py` fits them to the brand's cover
      art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo.
    - **Type.** `type:` in points and `pptx.size`, the brand template's canvas (docs/authoring.md "Text

@@ -609,6 +609,16 @@
         }
       }
     },
+    "bullets": {
+      "type": "object",
+      "description": "List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface.",
+      "additionalProperties": false,
+      "required": ["glyphs"],
+      "properties": {
+        "glyphs": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2}, "minItems": 1, "description": "A glyph per level, the first the top level's; the last repeats."},
+        "color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "Their color, a role, a palette name or a hex."}
+      }
+    },
     "installed-fonts": {
       "type": "object",
       "description": "A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}.",

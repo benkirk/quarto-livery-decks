@@ -238,6 +238,10 @@ def resolve(d: Path) -> tuple[dict, dict]:
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's
                          lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
+    b = data.get("bullets")   # list glyphs per level; null keeps each format's own shapes
+    out["bullets"] = None if not b else {
+        "glyphs": list(b["glyphs"]),
+        "color": roles.get(b.get("color", "primary-contrast")) or hex_of(b["color"], ("livery.yml", "bullets.color"))}
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
@@ -768,6 +772,12 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append("\\def\\engine@marking@bold{}")
         L.append(f"\\def\\engine@marking@default{{{tex_escape(mk['text'] or '')}}}")
     L += emit_sty_boxes(livery)
+    bu = livery.get("bullets")
+    if bu:   # the list glyphs per level (bullets:), the last repeating; beamer has three levels
+        L.append("% the list glyphs per level (bullets:), in their color")
+        L.append(f"\\definecolor{{EngineBullet}}{{HTML}}{{{bu['color'][1:]}}}")
+        for i, n in enumerate(("i", "ii", "iii")):
+            L.append(f"\\def\\engine@bullet@{n}{{{bu['glyphs'][min(i, len(bu['glyphs']) - 1)]}}}")
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
     for k, v in geom.items():
@@ -1047,6 +1057,13 @@ def emit_css(livery: dict, extra: str = "") -> str:
     art = livery.get("art", {})
     if isinstance(art.get("titlegraphic"), str):   # the title photo when a deck sets none
         L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')
+    bu = livery.get("bullets")
+    if bu:   # the list glyphs per level (bullets:) in place of the theme's shapes, the last repeating
+        for i in range(3):
+            sel = ".reveal .slides section " + "ul " * (i + 1) + "> li::before"
+            glyph = bu["glyphs"][min(i, len(bu["glyphs"]) - 1)]
+            L.append(f'html {sel} {{ content: "{glyph}"; background: none; border: 0; border-radius: 0; width: auto; '
+                     f'height: auto; top: 0; left: -1em; color: {bu["color"]}; line-height: inherit; }}')
     L += emit_css_compositions(livery)
     if livery.get("mode") == "dark":
         L += emit_css_dark()

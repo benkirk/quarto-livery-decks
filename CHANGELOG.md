@@ -101,6 +101,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   livery sets only what differs (`liveries/REFERENCE.md`); ncar rounds its cards' corners and
   keeps its status glyphs off yellow, nasa-jsc-eg rules its columns. `type.display`: the size of
   a card's big number (default as the closing's headline).
+- `bullets:` (`glyphs`, one per list level, the last repeating; `color`, a role, a palette name or
+  a hex): a livery's own list glyphs in every format, in place of the dot, ring and bar. Without
+  it nothing changes. nasa-jsc-eg uses its template's white square, dash and dot.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 

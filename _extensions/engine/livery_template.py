@@ -177,13 +177,18 @@ class Builder:
         sizes = self.levels
         ind, tabsz, ins = (round(v * self.k) for v in (228600, 457200, 45720))   # 0.25, 0.5, 0.05 in on 7.5 in
         bullets = [("Arial", "•"), ("Wingdings", "§"), ("Courier New", "o"), ("Arial", "–"), ("Arial", "»")]
+        bu, buclr = self.L.get("bullets"), ""
+        if bu:   # the livery's glyphs (bullets:), the last repeating, in the pptx typeface and their color
+            face = self.L["pptx"].get("typeface", "Arial")
+            bullets = [(face, bu["glyphs"][min(i, len(bu["glyphs"]) - 1)]) for i in range(len(sizes))]
+            buclr = f'<a:buClr><a:srgbClr val="{bu["color"][1:]}"/></a:buClr>'
         body_lvls = ""
         for i, (sz, (bfont, bchar)) in enumerate(zip(sizes, bullets), 1):
             mar = ind * i
             # the space before an item, as HTML's list-item margins: a share of the body
             spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * (0.5 if i == 1 else 0.3))}"/></a:spcBef>'
             body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-{ind}" algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
-                          f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}'
+                          f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}{buclr}'
                           f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz}" kern="1200">'
                           f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                           f'</a:defRPr></a:lvl{i}pPr>')
