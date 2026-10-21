@@ -249,10 +249,13 @@
   \engine@by=\dimexpr\paperheight-\engine@cv{#1@y}\paperheight-\engine@bh\relax}
 \def\engine@rect#1{\fill[#1] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}
 % \engine@drawcomp{<comp>}{<kind>}: the composition, then its text by kind (title | section |
-% closing | feature); a cover's photo goes under its field, a band's on the band
+% closing | feature); a cover's photo goes under its field (a partial field over the photo's edge),
+% a band's on the band; a field the slide's full width is the background under the photo, as HTML
+% and the pptx draw it (they test the width only, not the height: the same blind spot, kept)
+\def\engine@iffullfield{\engine@ifc{field@x}{\ifdim\engine@cv{field@w}pt<\p@
+  \expandafter\@secondoftwo\else\expandafter\@firstoftwo\fi}{\@secondoftwo}}
 \def\engine@drawcomp#1#2{\def\engine@comp{#1}%
-  \engine@ifc{band@x}{}{\engine@cphoto}%
-  \engine@cfield
+  \engine@ifc{band@x}{\engine@cfield}{\engine@iffullfield{\engine@cfield\engine@cphoto}{\engine@cphoto\engine@cfield}}%
   \engine@ifc{art}{\node[anchor=south west,inner sep=0pt] at (0,0)
     {\includegraphics[width=\paperwidth,height=\paperheight]{\engine@cv{art}}};}{}%
   \engine@ifc{band@x}{\engine@box{band}\engine@rect{\engine@ccolor{Band}}\engine@cphoto}{}%

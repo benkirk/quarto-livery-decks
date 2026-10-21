@@ -50,6 +50,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   (`geometry.wide-margin`), in every format: room for three or four columns, or a wide table.
 - A rule between columns where the livery sets `boxes.columns.rule` (nasa-jsc-eg's hairline), in
   every format, centered in each gap and as tall as the row's tallest column.
+- PDF: a cover whose field is the whole slide shows its photo, as HTML and pptx do; the field was
+  painted over it (#125). Covers with a partial field (ncar, cu, nsi) are unchanged.
 - PDF: a slide's body starts at the top, under its title, as in HTML and pptx; beamer centered
   it vertically. `{.vcenter}` (or `{.center}`) still centers a slide in every format.
 - A lead box, `::: {.lead}`, before a slide's columns or alone: its lines on the livery's lead
