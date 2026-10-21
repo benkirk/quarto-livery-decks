@@ -311,8 +311,9 @@
 % pads are explicit, the vertical and the horizontal apart. The caution box and the lead are on it.
 \newsavebox\engine@barboxbox
 \newdimen\engine@padx \newdimen\engine@pady \newdimen\engine@barw
+\def\engine@barboxin{}   % after \noindent: a strip in a card moves out to the card's edge
 \def\engine@barbox#1{%
-  \par\noindent\engine@padx=\csname engine@boxes@#1@padx\endcsname em%
+  \par\noindent\engine@barboxin\engine@padx=\csname engine@boxes@#1@padx\endcsname em%
   \engine@pady=\csname engine@boxes@#1@pady\endcsname em%
   \ifcsname engine@boxes@#1@bar\endcsname\engine@barw=\csname engine@boxes@#1@bar\endcsname\paperheight
   \else\engine@barw=\z@\fi
@@ -351,6 +352,22 @@
 \newenvironment{enginewide}{\par\vskip-\parskip\noindent\hspace*{-\engine@wideout}%   % at the body's top
   \begin{minipage}[t]{\dimexpr\paperwidth-2\dimexpr\engine@geom@widemargin\paperwidth\relax\relax}}%
   {\end{minipage}\hspace*{-\engine@wideout}\par}
+
+% ---------------------------------------------------------------------------
+% strip: ::: {.strip role=...} in a card or on its own (the Quarto filter writes
+% \begin{enginestrip}{<role color>}): a band the strip tint of its role over the background, no
+% bar; in a card as wide as the card (its pads taken back), on a solid card the role itself
+% ---------------------------------------------------------------------------
+\newif\ifengine@incard \newif\ifengine@solidcard
+\newenvironment{enginestrip}[1]{%
+  \ifengine@solidcard\colorlet{engine@strip}{#1}\color{BrandPrimaryText}%
+  \else\colorlet{engine@strip}{#1!\fpeval{round(100*\engine@boxes@strip@tint)}!BrandBackground}\fi
+  \ifengine@incard
+    \advance\linewidth by 2\dimexpr\engine@boxes@card@padx em\relax
+    \edef\engine@barboxin{\noexpand\hspace*{-\the\dimexpr\engine@boxes@card@padx em\relax}}%
+  \fi
+  \engine@barbox{strip}}%
+  {\endengine@barbox{engine@strip}{engine@strip}}
 
 % ---------------------------------------------------------------------------
 % cards: a row of \begin{enginecard}[pick,solid|plain]{<role color>}{<share>}{<n>}{<title>}{<sub>}
@@ -397,6 +414,7 @@
   \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
     \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
     \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax
+    \engine@incardtrue\in@{solid}{#1}\ifin@\engine@solidcardtrue\else\engine@solidcardfalse\fi
     \raggedright\usebeamerfont{normal text}%
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put
     % \parskip over the first paragraph, which an empty list does not get)

@@ -61,6 +61,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   caps label and a big number. A row's cards are one height, in every format; pptx draws them as
   native shapes and text boxes, editable in PowerPoint. A picture or table in a card is not drawn
   in it yet (a warning; the PDF draws a row with a table as plain columns).
+- A strip, `::: {.strip role="accent"}`, in a card or on its own: a band tinted in its role
+  (`boxes.strip.tint` over the background) at the card's full width; on a solid card the role
+  itself. Every format.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends

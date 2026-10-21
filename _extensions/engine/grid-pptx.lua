@@ -21,7 +21,8 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   its source lines each a paragraph (engine-common.lua's split_lines()). A card column's marker is
   `⟦engine:column card role=primary pick solid⟧` (card_attrs()), its band's title and sub and its
   label and big lines paragraphs led by `⟦engine:title⟧`, `⟦engine:sub⟧`, `⟦engine:label⟧`,
-  `⟦engine:big⟧`. First-cut limit: a picture or table in a flattened column is not
+  `⟦engine:big⟧`; a `.strip` (in a card or on its own) is `⟦engine:strip role=accent⟧` ...
+  `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
   drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
 
 Plain pandoc, no Quarto API, so a test can run it.
@@ -84,6 +85,10 @@ local function flow(blocks, title, out)
     local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
     if label or big then
       out:insert(prefixed(label and "label" or "big", label or big))
+    elseif b.t == "Div" and C.has_class(b, "strip") then   -- a strip keeps its box: grid.py draws it
+      out:insert(marker("strip role=" .. (b.attributes["role"] or "accent")))
+      flow(C.split_lines(b.content), title, out)
+      out:insert(marker("end"))
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
@@ -122,7 +127,9 @@ end
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and C.has_class(b, "lead") then
+    if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
+      flow({ b }, title, out)
+    elseif b.t == "Div" and C.has_class(b, "lead") then
       out:insert(marker("lead"))
       flow(C.split_lines(b.content), title, out)
       out:insert(marker("end"))

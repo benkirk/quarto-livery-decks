@@ -105,8 +105,10 @@
   --engine-card-outline-color: #00BC71;
   --engine-card-pad: 0.5em 0.8em;
   --engine-card-head-pad: 0.35em 0.8em;
+  --engine-card-pad-x: 0.8em;
   --engine-strip-tint: 30%;
   --engine-strip-pad: 0.3em 0.8em;
+  --engine-strip-gap: 0.3em;
   --engine-status-done: #00BC71;
   --engine-status-warn: #FEA20B;
   --engine-status-fail: #F93A1D;

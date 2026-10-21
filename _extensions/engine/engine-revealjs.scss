@@ -461,6 +461,23 @@ $mermaid-label-fg-color: $engine-primary;
     &, p, li, strong, .engine-label, .engine-big { color: var(--engine-primary-text); }
   }
 }
+// ::: {.strip role=...}: a band tinted in its role (boxes.strip.tint over the background), at a
+// card's full width in a card; on a solid card the role itself, its text primary-text
+.reveal .slides section .engine-strip {
+  background: color-mix(in srgb, var(--engine-strip-role) var(--engine-strip-tint), var(--engine-background));
+  padding: var(--engine-strip-pad);
+  margin: var(--engine-strip-gap) 0;
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+}
+.reveal .slides section .engine-card .engine-strip {
+  margin-left: calc(-1 * var(--engine-card-pad-x));
+  margin-right: calc(-1 * var(--engine-card-pad-x));
+}
+.reveal .slides section .engine-card.engine-solid .engine-strip {
+  background: var(--engine-strip-role);
+  &, p, li, strong { color: var(--engine-primary-text); }
+}
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;

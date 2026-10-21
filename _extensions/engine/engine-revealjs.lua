@@ -248,6 +248,19 @@ local function flex_columns(blocks)
   end })
 end
 
+-- A .strip (in a card or on its own): raw tags round its blocks, its role a custom property
+-- (role= is ARIA's attribute), its source lines each a paragraph; the scss tints it
+local function strips(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "strip") then return nil end
+    local out = pandoc.Blocks({ html(string.format('<div class="engine-strip" style="--engine-strip-role: var(--engine-%s)">',
+      d.attributes["role"] or "accent")) })
+    out:extend(C.split_lines(d.content))
+    out:insert(html("</div>"))
+    return out
+  end })
+end
+
 -- A .lead box: raw tags round its blocks (a Div whose first block is a heading becomes a <section>),
 -- its source lines each a paragraph (C.split_lines()); the scss draws it from livery.css's boxes
 local function lead_boxes(blocks)
@@ -681,7 +694,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(flex_columns(doc.blocks)))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(doc.blocks))))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

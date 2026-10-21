@@ -27,7 +27,8 @@ ENGINE = ROOT / "_extensions" / "engine"
 IMAGE = ROOT / "decks" / "quickstart" / "images" / "example.jpg"
 CARDS = ('## Cards\n\n:::: {.columns}\n'
          '::: {.column .card .pick role="primary"}\n### OPTION 1\n[Procure a system]{.sub}\n\n'
-         '**Total**\n[LOCAL INVESTMENT]{.label}\n[$20M]{.big}\n\n- one\n- two\n- three\n:::\n'
+         '**Total**\n[LOCAL INVESTMENT]{.label}\n[$20M]{.big}\n\n::: {.strip role="accent"}\nTo the consortium\n:::\n\n'
+         '- one\n- two\n- three\n:::\n'
          '::: {.column .card role="secondary"}\n### OPTION 2\nShort.\n:::\n'
          '::: {.column .card .solid role="accent"}\n### OPTION 3\nSolid.\n:::\n::::\n')
 WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
@@ -220,3 +221,19 @@ def test_card_type_step(pandoc_deck, tmp_path):
     big = next(p for p in body if p.text == "$20M")
     want = livery_mod.half_pt(j["type"]["roles"]["display"]["pt"] * 10 / j["type"]["roles"]["body"]["pt"])
     assert big.runs[0].font.size.pt == want, f"the big number at {big.runs[0].font.size.pt}, want {want}"
+
+
+def test_strip(deck):
+    """A strip in a card: its rectangle the strip.tint of its role over the background, at the card's
+    full width, between the body's text above and below it, its text in its own box."""
+    import livery as livery_mod
+    livery, prs, _ = deck
+    by = {sh.name: sh for sh in prs.slides[6].shapes}
+    strip, card = by["Card 1 strip 1"], by["Card 1"]
+    want = livery_mod.mix(livery["roles"]["accent"], livery["roles"]["background"], livery["boxes"]["strip"]["tint"])
+    assert "#" + str(strip.fill.fore_color.rgb) == want, f"the strip's fill {strip.fill.fore_color.rgb}, want {want}"
+    assert (strip.left, strip.width) == (card.left, card.width), "the strip at the card's full width"
+    assert by["Card 1 strip 1 text"].text_frame.text == "To the consortium"
+    above, below = by["Card 1 body"], by["Card 1 body 3"]
+    assert above.top + above.height <= strip.top and strip.top + strip.height <= below.top, "the strip between the body's text"
+    assert "one" in below.text_frame.text and "$20M" in above.text_frame.text, "the text on each side"

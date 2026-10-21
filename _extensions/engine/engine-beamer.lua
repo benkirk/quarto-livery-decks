@@ -342,6 +342,17 @@ local function card_rows(blocks)
   return out
 end
 
+-- A .strip: \begin{enginestrip}{<role color>} round its blocks, its source lines each a paragraph
+local function strips(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "strip") then return nil end
+    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. role_tex(d.attributes["role"] or "accent") .. "}") })
+    out:extend(C.split_lines(d.content))
+    out:insert(latex("\\end{enginestrip}"))
+    return out
+  end })
+end
+
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
 -- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
 local function lead_boxes(blocks)
@@ -795,7 +806,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(beamer_columns(card_rows(note_frames(unwrap_layout(hoist_footnotes(out)))))))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(note_frames(unwrap_layout(hoist_footnotes(out))))))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

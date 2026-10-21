@@ -82,6 +82,13 @@ def parse(paragraphs):
         elif kind == "lead" and not stack:
             seg = ("lead", attrs, [])
             segs.append(seg); stack.append(seg)
+        elif kind == "strip":   # in a column, an item of its flow; else a segment of its own
+            seg = ("strip", attrs, [])
+            if stack and stack[-1][0] == "column":
+                stack[-1][2].append(seg)
+            elif not stack:
+                segs.append(seg)
+            stack.append(seg)
         elif kind == "end" and stack:
             stack.pop()
     return segs if any(s[0] != "text" for s in segs) else None
@@ -235,6 +242,9 @@ def _card_text(paras, solid):
     head, body = [], []
     on_role = _hex("primary-text")
     for p in paras:
+        if isinstance(p, tuple):   # a strip: its own lines styled as a card's body
+            body.append((p[0], p[1], _card_text(p[2], solid)[1]))
+            continue
         kind = _prefix(p)
         if kind == "title":
             _style(p, livery_mod.type_pt(LIVERY, "subhead"), True, on_role); head.append(p)
@@ -251,47 +261,104 @@ def _card_text(paras, solid):
     return head, body
 
 
+def _flat(items):
+    """A column's flow without its strips' boxes (a plain column draws no strip): paragraphs."""
+    out = []
+    for it in items:
+        out.extend(it[2] if isinstance(it, tuple) else [it])
+    return out
+
+
+def draw_strip(slide, x, y, w, room, paras, role, solid, name):
+    """A strip: its text box padded by boxes.strip.pad over a rectangle the strip.tint of its role
+    over the background (on a solid card the role itself, its text primary-text), cut to its text.
+    (text box, rectangle) at y, its measured height."""
+    vpad, hpad = pads("strip")
+    tb = body_box(slide, x, y, w, room, paras, f"{name} text")
+    tf = tb.text_frame
+    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    if solid:
+        for p in paras:
+            _style(p, color=_hex("primary-text"))
+    tb.height = min(int(_text_height(tb, slide)), room)
+    fill = _hex(role) if solid else livery_mod.mix(_hex(role), _hex("background"), BOXES["strip"]["tint"])
+    return tb, rect(slide, x, y, w, tb.height, fill, name, behind=tb)
+
+
+def _role(attrs, default="primary"):
+    r = attrs.get("role", default)
+    return r if r in LIVERY["roles"] else default
+
+
 def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     """A row of cards (and plain columns beside them): each card a head band in its role over a
     body on boxes.card.fill (all of it the role's on a .solid card), rounded by card.radius, a
-    .pick outlined in outline-color; each head its own text's height (as HTML's) and the cards one height, the row's
+    .pick outlined in outline-color; its body a stack of text and strips (each at the card's full
+    width); each head its own text's height (as HTML's) and the cards one height, the row's
     tallest, capped at the room left. Returns the row's height and the column boxes' count."""
     card = BOXES["card"]
     radius = round(card["radius"] * slide_height)
     hv, hh = pads("card", "head-pad")
     bv, bh = pads("card", "pad")
-    parts = []
+    cards = []
     for (_, attrs, paras), (x, w) in zip(columns, frames):
         n_col += 1
         if not attrs.get("card"):
-            parts.append((None, body_box(slide, x, y, w, room, paras, f"Column {n_col}"), attrs, x, w, n_col))
+            cards.append(dict(plain=body_box(slide, x, y, w, room, _flat(paras), f"Column {n_col}"), attrs=attrs))
             continue
-        head, body = _card_text(paras, attrs.get("solid"))
-        hb = body_box(slide, x, y, w, room, head, f"Card {n_col} title") if head else None
-        bb = body_box(slide, x, y, w, room, body, f"Card {n_col} body")
-        for tb, (v, h) in ((hb, (hv, hh)), (bb, (bv, bh))):
-            if tb is not None:
-                tf = tb.text_frame
-                tf.margin_top = tf.margin_bottom = v; tf.margin_left = tf.margin_right = h
-        parts.append((hb, bb, attrs, x, w, n_col))
-    heads = [int(_text_height(hb, slide)) if hb is not None else 0 for hb, *_ in parts]   # each its own, as HTML's
-    total = min(max(int((h + _text_height(bb, slide)) * SLACK) for h, (_, bb, *_) in zip(heads, parts)), room)
-    for head_h, (hb, bb, attrs, x, w, n) in zip(heads, parts):
-        if not attrs.get("card"):
-            bb.top, bb.height = y, total
-            continue
-        role = _hex(attrs.get("role", "primary")) if attrs.get("role", "primary") in LIVERY["roles"] else _hex("primary")
         solid = attrs.get("solid")
-        under = hb if hb is not None else bb
-        _shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n}", behind=under)
+        head, items = _card_text(paras, solid)
+        hb = body_box(slide, x, y, w, room, head, f"Card {n_col} title") if head else None
+        if hb is not None:
+            hb.text_frame.margin_top = hb.text_frame.margin_bottom = hv
+            hb.text_frame.margin_left = hb.text_frame.margin_right = hh
+        parts, run, k = [], [], 0   # the body: text boxes and strips, in order
+        def text_part():
+            nonlocal run
+            if run or not parts:
+                tb = body_box(slide, x, y, w, room, run, f"Card {n_col} body" + (f" {len(parts) + 1}" if parts else ""))
+                tb.text_frame.margin_top = tb.text_frame.margin_bottom = bv
+                tb.text_frame.margin_left = tb.text_frame.margin_right = bh
+                parts.append(("text", tb, None, int(_text_height(tb, slide))))
+            run = []
+        for it in items:
+            if isinstance(it, tuple):
+                text_part() if run else None
+                k += 1
+                tb, r = draw_strip(slide, x, y, w, room, it[2], _role(it[1], "accent"), solid, f"Card {n_col} strip {k}")
+                parts.append(("strip", tb, r, tb.height))
+            else:
+                run.append(it)
+        if run or not parts or parts[-1][0] == "strip":
+            text_part()
+        first = hb if hb is not None else parts[0][1]
+        head_h = int(_text_height(hb, slide)) if hb is not None else 0
+        body_h = sum(int(h * (SLACK if kind == "text" else 1)) for kind, _, _, h in parts)
+        cards.append(dict(attrs=attrs, x=x, w=w, n=n_col, hb=hb, parts=parts, first=first, head_h=head_h, h=head_h + body_h))
+    total = min(max(c["h"] for c in cards if "plain" not in c), room)
+    for c in cards:
+        if "plain" in c:
+            c["plain"].top, c["plain"].height = y, total
+            continue
+        attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
+        role, solid = _hex(_role(attrs)), attrs.get("solid")
+        _shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n}", behind=c["first"])
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
-            _shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=under, top_only=True)
+            _shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"])
         if attrs.get("pick"):
             _shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
                    line=(card["outline-color"], round(card["outline"] * slide_height)))
         if hb is not None:
             hb.top, hb.height = y, head_h
-        bb.top, bb.height = y + head_h, total - head_h
+        cy = y + head_h
+        for i, (kind, tb, r, h) in enumerate(c["parts"]):
+            h = int(h * SLACK) if kind == "text" else h
+            if i == len(c["parts"]) - 1 and kind == "text":   # the last text runs to the card's foot
+                h = max(y + total - cy, 0)
+            tb.top, tb.height = cy, h
+            if r is not None:
+                r.top = cy
+            cy += h
     return total, n_col
 
 
@@ -319,6 +386,10 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
         if seg[0] == "lead":
             y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
             continue
+        if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
+            tb, _ = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _role(seg[1], "accent"), False, "Strip")
+            y += tb.height + pads("strip")[0]
+            continue
         _, shares, columns = seg
         frames = column_frames(left, width, shares[:len(columns)] or [1 / len(columns)] * len(columns), slide_width)
         room = max(bottom - y, 0)
@@ -330,7 +401,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
         boxes = []
         for (_, attrs, paras), (x, w) in zip(columns, frames):
             n_col += 1
-            boxes.append(body_box(slide, x, y, w, room, paras, f"Column {n_col}"))
+            boxes.append(body_box(slide, x, y, w, room, _flat(paras), f"Column {n_col}"))
         h = room
         tallest = min(max(int(_text_height(b, slide)) for b in boxes), room)
         if any(s[0] == "text" for s in later):   # text below: the row as tall as its tallest column
