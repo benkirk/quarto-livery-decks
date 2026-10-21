@@ -1,8 +1,10 @@
 -- engine-common.lua -- what the format filters share (engine-revealjs.lua, engine-beamer.lua, and
--- pptx's single-body.lua and grid-pptx.lua): loaded with dofile(quarto.utils.resolve_path("engine-common.lua")),
--- returning a table. A function here reads the same in every format; what a format does with the
--- result stays in its filter (take_layout, hoist_footnotes and split_full differ by format and are
--- not here).
+-- pptx's slide-layout.lua, single-body.lua and grid-pptx.lua): loaded with
+-- dofile(quarto.utils.resolve_path("engine-common.lua")), or under plain pandoc beside
+-- PANDOC_SCRIPT_FILE, returning a table. A function here reads the same in every format (the slide
+-- breaks and kinds, the layout classes, the footnotes, a .full slide's parts, the theme options,
+-- the livery); what a format does with the result stays in its filter (wrap_layout,
+-- hoist_footnotes, size_plots, the cards and strips).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do
@@ -38,6 +40,74 @@ local function default_livery(extdir)
   return pandoc.path.join({ root, "liveries", "ncar" })
 end
 
+-- A slide boundary: a heading at or above the slide level, or a rule.
+local function is_slide_break(blk, level)
+  return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
+end
+
+-- The slide kinds a composition draws (their classes on the slide's heading; not content slides), and
+-- the per-slide layout classes of a content slide (take_layout()).
+local SLIDE_KINDS = { feature = true, closing = true, full = true }
+local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, caution = true, wide = true }
+
+-- A content slide's heading: at the slide level, with none of the kinds' classes (SLIDE_KINDS by
+-- default; a format that treats a kind as content passes its own set).
+local function content_heading(blk, level, kinds)
+  if not (blk.t == "Header" and blk.level == level) then return false end
+  for _, c in ipairs(blk.classes) do
+    if (kinds or SLIDE_KINDS)[c] then return false end
+  end
+  return true
+end
+
+-- The per-slide layout controls on a heading (.hcenter, .vcenter, .center, .fill, .caution, .wide,
+-- scale="S"), taken off it: { h, v, fill, caution, wide, scale } (scale the string, or nil), or nil
+-- when it has none. A scale that is not a number is dropped with a warning (who: the filter).
+local function take_layout(blk, who)
+  local h, v, fill, caution, wide, found = false, false, false, false, false, false
+  local kept = pandoc.List({})
+  for _, c in ipairs(blk.classes) do
+    if LAYOUT_CLASSES[c] then
+      found = true
+      h = h or c == "hcenter" or c == "center"
+      v = v or c == "vcenter" or c == "center"
+      fill = fill or c == "fill"
+      caution = caution or c == "caution"
+      wide = wide or c == "wide"
+    else
+      kept:insert(c)
+    end
+  end
+  local scale = blk.attributes["scale"]
+  if scale then
+    blk.attributes["scale"] = nil
+    found = true
+    if not tonumber(scale) then
+      quarto.log.warning(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
+      scale = nil
+    end
+  end
+  if not found then return nil end
+  blk.classes = kept
+  return { h = h, v = v, fill = fill, caution = caution, wide = wide, scale = scale }
+end
+
+-- themeoptions: a list or a comma-separated string of key=value (a bare key is "true"). Returns
+-- the options as a table and the items as written (beamer's \usetheme takes them as they are).
+local function theme_options(meta)
+  local opts, items, to = {}, {}, meta["themeoptions"]
+  if not to then return opts, items end
+  for _, it in ipairs(pandoc.utils.type(to) == "List" and to or { to }) do
+    local s = pandoc.utils.stringify(it)
+    table.insert(items, s)
+    for kv in s:gmatch("[^,%s]+") do
+      local k, v = kv:match("^([^=]+)=(.*)$")
+      if k then opts[k] = v else opts[kv] = "true" end
+    end
+  end
+  return opts, items
+end
+
 local MARKERS = { ["†"] = true, ["‡"] = true }
 
 local function footnote_marker(blk)
@@ -68,6 +138,24 @@ local function strip_marker(inlines)
   return out
 end
 
+-- The slide footnotes of one slide's blocks (a † or ‡ paragraph, in a column or a div too),
+-- removed from where they stood: the blocks kept (notes divs untouched), the footnotes found.
+local function take_footnotes(blocks)
+  local found = pandoc.List({})
+  local kept = pandoc.Blocks({})
+  local filter = { Para = function(p) if footnote_marker(p) then found:insert(p); return {} end end }
+  for _, b in ipairs(blocks) do
+    if b.t == "Div" and has_class(b, "notes") then
+      kept:insert(b)
+    elseif footnote_marker(b) then
+      found:insert(b)
+    else
+      kept:insert(pandoc.walk_block(b, filter))
+    end
+  end
+  return kept, found
+end
+
 -- .full: the slide's one figure, the caption paragraphs after it, and its
 -- notes; nil when the body is anything else.  A † paragraph is caption too.
 local function is_figure(blk)
@@ -92,6 +180,49 @@ end
 -- centred) in every format
 local function is_note(blk)
   return blk.t == "Div" and has_class(blk, "note")
+end
+
+-- A .full slide's blocks as (figure, caption paragraphs, the notes and hidden divs), or nil when the
+-- body holds anything else; a ::: note after the figure is caption.
+local function split_full(blocks)
+  local fig, caption, rest = nil, pandoc.Blocks({}), pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    if b.t == "Div" and (has_class(b, "notes") or has_class(b, "hidden")) then
+      rest:insert(b)
+    elseif not fig and is_figure(b) then
+      fig = b
+    elseif fig and (b.t == "Para" or b.t == "Plain") then
+      caption:insert(b)
+    elseif fig and is_note(b) then
+      caption:extend(b.content)
+    else
+      return nil
+    end
+  end
+  if not fig then return nil end
+  return fig, caption, rest
+end
+
+-- The livery (design section 5): `livery:` in the metadata (a directory, relative to the project),
+-- else the bundled liveries/ncar beside the _extensions/ that holds the extension (extdir: the
+-- filter's own directory). Its build/livery.json, with `dir` the physical directory: a flavor's
+-- inherited files are `../<parent>/...`, and joined onto a link (a deck's `_livery`) the path is
+-- normalized as text, `_livery/..` becoming the deck. A missing build/ is an error naming the fix.
+local function load_livery(meta, extdir, who)
+  local dir = meta["livery"] and pandoc.utils.stringify(meta["livery"])
+  if dir and not pandoc.path.is_absolute(dir) then
+    dir = pandoc.path.join({ pandoc.system.get_working_directory(), dir })
+  end
+  dir = dir or default_livery(extdir)
+  local f = io.open(pandoc.path.join({ dir, "build", "livery.json" }))
+  if not f then
+    error(who .. ": no livery at " .. dir .. " (build/livery.json is missing): set `livery:` "
+      .. "to a livery directory (a bundled one is liveries/<name>)")
+  end
+  local livery = quarto.json.decode(f:read("a")); f:close()
+  local ok, real = pcall(pandoc.system.with_working_directory, dir, pandoc.system.get_working_directory)
+  livery.dir = ok and real or dir
+  return livery
 end
 
 -- A .columns div's columns and their shares of the row, the gaps taken out first, as every format
@@ -266,6 +397,8 @@ end
 return {
   has_class = has_class, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
-  footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
-  is_note = is_note,
+  footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, is_figure = is_figure,
+  is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
+  theme_options = theme_options, load_livery = load_livery,
 }

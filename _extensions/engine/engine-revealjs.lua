@@ -64,17 +64,15 @@ end
 
 local W, H = 1600, 900
 
--- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step,
--- the default livery, the slide-footnote markers, the one-figure test and the note test.
+-- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step, the
+-- livery, the slide breaks and kinds, the layout classes, the footnotes, a .full slide's parts,
+-- the theme options, the cards' and strips' reading.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
-local has_class, deck_type_scale, default_livery = C.has_class, C.deck_type_scale, C.default_livery
-local footnote_marker, strip_marker, is_figure = C.footnote_marker, C.strip_marker, C.is_figure
-local is_note = C.is_note
+local has_class, deck_type_scale = C.has_class, C.deck_type_scale
+local footnote_marker, strip_marker, is_note = C.footnote_marker, C.strip_marker, C.is_note
 
--- The livery (design section 5): `livery:` in the metadata (a directory, relative to the
--- project), else the bundled liveries/ncar beside _extensions/. Its
--- build/livery.json carries the roles the waves and fields are drawn in; build/livery.css,
--- attached with the font and logo files, the rest.
+-- The livery (C.load_livery): its build/livery.json carries the roles the waves and fields are drawn
+-- in; build/livery.css, attached with the font and logo files, the rest.
 local EXTDIR = pandoc.path.directory(quarto.utils.resolve_path("engine-revealjs.lua"))
 
 -- The engine's version, read from _extension.yml beside this file (its one home; a release bumps
@@ -112,53 +110,15 @@ local function size_plots(doc, livery)
   })
 end
 
-local function load_livery(meta)
-  local dir = meta["livery"] and pandoc.utils.stringify(meta["livery"])
-  if dir and not pandoc.path.is_absolute(dir) then
-    dir = pandoc.path.join({ pandoc.system.get_working_directory(), dir })
-  end
-  dir = dir or default_livery(EXTDIR)
-  local f = io.open(pandoc.path.join({ dir, "build", "livery.json" }))
-  if not f then
-    error("engine-revealjs: no livery at " .. dir .. " (build/livery.json is missing): set `livery:` "
-      .. "to a livery directory (a bundled one is liveries/<name>)")
-  end
-  local livery = quarto.json.decode(f:read("a")); f:close()
-  -- the physical directory: a flavor's inherited files are `../<parent>/...`, and joined onto a
-  -- link (a deck's `_livery`) the path is normalized as text, `_livery/..` becoming the deck
-  local ok, real = pcall(pandoc.system.with_working_directory, dir, pandoc.system.get_working_directory)
-  livery.dir = ok and real or dir
-  return livery
-end
-
 local slide_level = 2
 
 local function html(s) return pandoc.RawBlock("html", s) end
 
-local function is_slide_break(blk)
-  return (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule"
-end
+local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
 
 -- Slide footnotes: a paragraph that starts with † (or ‡) is an aside.  Every
 -- one on a content slide, columns included, moves to the slide's foot, in order, under
 -- one short rule (scss); its marker hangs in the margin in the accent color.
-
--- the footnote paragraphs of one slide's blocks, removed from where they stood
-local function take_footnotes(blocks)
-  local found = pandoc.List({})
-  local kept = pandoc.Blocks({})
-  local filter = { Para = function(p) if footnote_marker(p) then found:insert(p); return {} end end }
-  for _, b in ipairs(blocks) do
-    if b.t == "Div" and has_class(b, "notes") then
-      kept:insert(b)
-    elseif footnote_marker(b) then
-      found:insert(b)
-    else
-      kept:insert(pandoc.walk_block(b, filter))
-    end
-  end
-  return kept, found
-end
 
 local function dagger(p)
   local inl = pandoc.Inlines({ pandoc.RawInline("html",
@@ -167,51 +127,17 @@ local function dagger(p)
   return pandoc.Para(inl)
 end
 
--- Per-slide layout controls.  The body is wrapped in a Div here, before the
--- footnote hoist (which reaches into it), and becomes raw tags afterwards
+-- Per-slide layout controls (C.take_layout, C.LAYOUT_CLASSES).  The body is wrapped in a Div here,
+-- before the footnote hoist (which reaches into it), and becomes raw tags afterwards
 -- (unwrap_layout), since pandoc turns a Div that starts with a heading into a
 -- <section>.  The classes go on the slide; the script and the scss act on them.
-local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true,
-                         caution = true, wide = true }
-
-local function take_layout(blk)
-  local h, v, fill, caution, wide, found = false, false, false, false, false, false
-  local kept = pandoc.List({})
-  for _, c in ipairs(blk.classes) do
-    if LAYOUT_CLASSES[c] then
-      found = true
-      h = h or c == "hcenter" or c == "center"
-      v = v or c == "vcenter" or c == "center"
-      fill = fill or c == "fill"
-      caution = caution or c == "caution"
-      wide = wide or c == "wide"
-    else
-      kept:insert(c)
-    end
-  end
-  local scale = blk.attributes["scale"]
-  if scale then
-    blk.attributes["scale"] = nil
-    found = true
-    if not tonumber(scale) then
-      quarto.log.warning("engine-revealjs: scale=\"" .. scale .. "\" is not a number; ignored")
-      scale = nil
-    end
-  end
-  if not found then return nil end
-  blk.classes = kept
-  return { h = h, v = v, fill = fill, caution = caution, wide = wide, scale = scale }
-end
-
 local function wrap_layout(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
     local blk = blocks[i]
     out:insert(blk)
     i = i + 1
-    local lay = blk.t == "Header" and blk.level == slide_level
-      and not has_class(blk, "feature") and not has_class(blk, "closing")
-      and not has_class(blk, "full") and take_layout(blk)
+    local lay = C.content_heading(blk, slide_level) and C.take_layout(blk, "engine-revealjs")
     if lay then
       blk.classes:insert("engine-layout")
       if lay.h then blk.classes:insert("engine-hcenter") end
@@ -355,12 +281,13 @@ end
 -- the sign-off lockup's box on every content, section and closing slide (the title slide's is
 -- in title-slide.html); livery.css shows and places it when the livery has one. Raw tags, not
 -- a Div (the <section> trap).
+local SIGNOFF_SKIP = { feature = true, full = true }   -- a closing slide wears it
+
 local function add_signoff(blocks)
   local out = pandoc.Blocks({})
   for _, blk in ipairs(blocks) do
     out:insert(blk)
-    if blk.t == "Header" and (blk.level == 1 or blk.level == slide_level)
-        and not has_class(blk, "feature") and not has_class(blk, "full") then
+    if (blk.t == "Header" and blk.level == 1) or C.content_heading(blk, slide_level, SIGNOFF_SKIP) then
       out:insert(html('<div class="engine-signoff"></div>'))
     end
   end
@@ -387,15 +314,13 @@ local function hoist_footnotes(blocks)
     local blk = blocks[i]
     out:insert(blk)
     i = i + 1
-    if blk.t == "Header" and blk.level == slide_level
-        and not has_class(blk, "feature") and not has_class(blk, "closing")
-        and not has_class(blk, "full") then
+    if C.content_heading(blk, slide_level) then
       local slide = pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do
         slide:insert(blocks[i])
         i = i + 1
       end
-      local kept, notes = take_footnotes(slide)
+      local kept, notes = C.take_footnotes(slide)
       if #notes > 0 then
         local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
         for _, b in ipairs(kept) do
@@ -412,25 +337,6 @@ local function hoist_footnotes(blocks)
     end
   end
   return out
-end
-
-local function split_full(blocks)
-  local fig, caption, rest = nil, pandoc.Blocks({}), pandoc.Blocks({})
-  for _, b in ipairs(blocks) do
-    if b.t == "Div" and (has_class(b, "notes") or has_class(b, "hidden")) then
-      rest:insert(b)
-    elseif not fig and is_figure(b) then
-      fig = b
-    elseif fig and (b.t == "Para" or b.t == "Plain") then
-      caption:insert(b)
-    elseif fig and is_note(b) then   -- a note is the caption here
-      caption:extend(b.content)
-    else
-      return nil
-    end
-  end
-  if not fig then return nil end
-  return fig, caption, rest
 end
 
 -- ::: note: the div as .engine-note (the scss: the caption's look, under the figure), after the
@@ -463,20 +369,6 @@ function Image(el)
   el.attributes.style = string.format(
     "%s max-height: calc(%.0fpx * var(--engine-fit, 1)); width: auto;", style, px):gsub("^ ", "")
   return el
-end
-
--- themeoptions: a list or a comma-separated string of key=value
-local function theme_options(meta)
-  local opts, to = {}, meta["themeoptions"]
-  if not to then return opts end
-  local items = pandoc.utils.type(to) == "List" and to or { to }
-  for _, it in ipairs(items) do
-    for kv in pandoc.utils.stringify(it):gmatch("[^,%s]+") do
-      local k, v = kv:match("^([^=]+)=(.*)$")
-      if k then opts[k] = v else opts[kv] = "true" end
-    end
-  end
-  return opts
 end
 
 ---------------------------------------------------------------------------
@@ -666,12 +558,12 @@ function Pandoc(doc)
     slide_level = PANDOC_WRITER_OPTIONS.slide_level
   end
   local meta = doc.meta
-  local opts = theme_options(meta)
+  local opts = C.theme_options(meta)
 
-  local livery = load_livery(meta)
+  local livery = C.load_livery(meta, EXTDIR, "engine-revealjs")
   -- the filters after this one (linked-images, diagram-dark) read the livery it resolved
   if not meta["livery"] then meta["livery"] = livery.dir end
-  if livery.type and livery.type.canvas then doc = size_plots(doc, livery); meta = doc.meta end
+  doc = size_plots(doc, livery); meta = doc.meta
   if livery.art and livery.art.waves then
     WAVES, SHIFT = livery.art.waves.lines, livery.art.waves.shift
   end
@@ -806,7 +698,7 @@ function Pandoc(doc)
         slide:insert(blocks[i])
         i = i + 1
       end
-      local fig, caption, rest = split_full(slide)
+      local fig, caption, rest = C.split_full(slide)
       if fig then
         if #caption > 0 then blk.classes:insert("engine-captioned") end
         out:insert(blk)
