@@ -167,8 +167,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
-  HTML theme), `type_step` (a deck's `type-body:`/`type-scale:`) and `marking` (the marking
-  strip, after the size step) on one python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
+  HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
+  as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
+  python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
   that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a

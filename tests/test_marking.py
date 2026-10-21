@@ -14,6 +14,7 @@ import sys
 
 import pytest
 
+import livery as livery_mod
 import livery_build as lb
 
 from conftest import ROOT
@@ -22,10 +23,11 @@ ENGINE = ROOT / "_extensions" / "engine"
 DEMO = "This presentation contains no sensitive information"
 STEP = """
 import sys
+from pathlib import Path
 from pptx import Presentation
-from pptx_steps import marking
-prs = Presentation(sys.argv[1]); marking.run(prs, "t.pptx"); prs.save(sys.argv[1])
-"""
+from pptx_steps import marking, type_step
+prs = Presentation(sys.argv[1]); marking.run(prs, "t.pptx"); type_step.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
+"""   # the driver's order: the strip before the size step, which scales it as HTML and PDF do
 
 
 def test_box():
@@ -39,14 +41,16 @@ def test_box():
 
 
 def strips(pandoc_deck, tmp, name, front):
-    """The marking texts on each slide of a two-slide deck after the step, under the livery name."""
+    """The marking (text, size in pt) on each slide of a two-slide deck after the steps, under the
+    livery name."""
     md = (f"---\n{front}---\n\n" if front else "") + "## a\n\nOne.\n\n## b\n\nTwo.\n"
     pandoc_deck(tmp, md, "t.pptx")
     env = {**os.environ, "LIVERY_DIR": str(ROOT / "liveries" / name), "PYTHONPATH": str(ENGINE)}
     subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, check=True, capture_output=True)
     from pptx import Presentation
     prs = Presentation(str(tmp / "t.pptx"))
-    return [[sh.text_frame.text for sh in s.shapes if sh.name == "Marking"] for s in prs.slides]
+    return [[(sh.text_frame.text, sh.text_frame.paragraphs[0].runs[0].font.size.pt)
+             for sh in s.shapes if sh.name == "Marking"] for s in prs.slides]
 
 
 @pytest.mark.parametrize("name, front, want", [
@@ -61,4 +65,12 @@ def test_pptx_step(pandoc_deck, tmp_path, name, front, want):   # not `livery`: 
     if want is None:
         assert got == [[], []], f"a strip where none belongs: {got}"
     else:
-        assert all(len(s) == 1 and s[0].startswith(want) for s in got), f"not {want!r} on every slide: {got}"
+        assert all(len(s) == 1 and s[0][0].startswith(want) for s in got), f"not {want!r} on every slide: {got}"
+
+
+def test_type_step_scales_it(pandoc_deck, tmp_path):
+    # a deck's type step scales the strip, as HTML's --engine-type-scale and beamer's typescale do:
+    # ncar's 7 pt marking role under type-body: 10 (its body is 12), to the half point
+    got = strips(pandoc_deck, tmp_path, "ncar", "marking: CUI\ntype-body: 10\n")
+    want = livery_mod.half_pt(7 * 10 / 12)
+    assert all(s == [("CUI", want)] for s in got), f"not {want} pt on every slide: {got}"

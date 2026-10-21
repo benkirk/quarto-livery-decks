@@ -103,10 +103,10 @@ Per deck, `make pptx` runs:
      over a rule in the primary color, thin rules between rows, every second row banded, the
      blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
      cell by cell, and evenly split columns are re-split by content.
-   - `type_step`: applies a deck's `type-body:` or `type-scale:` (see [authoring.md "Text sizes and the slide size"](authoring.md#text-sizes-and-the-slide-size)).
    - `marking`: the marking strip on every slide (a deck's `marking:`, else the livery's
-     default text; see [authoring.md "Front matter and slide kinds"](authoring.md#front-matter-and-slide-kinds)), after
-     `type_step`, at its own size.
+     default text; see [authoring.md "Front matter and slide kinds"](authoring.md#front-matter-and-slide-kinds)).
+   - `type_step`: applies a deck's `type-body:` or `type-scale:` (see [authoring.md "Text sizes and the slide size"](authoring.md#text-sizes-and-the-slide-size)),
+     last, to every size the steps before it set (the strip's too, as HTML and PDF scale it).
 
 `make html` (revealjs) and `make pdf` (beamer) run step 1 with the engine's own format and
 filters, which draw everything step 2 adds to the pptx.

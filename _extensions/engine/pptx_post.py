@@ -45,14 +45,15 @@ def post(path: Path) -> None:
     prs = Presentation(buf)
 
     # One Presentation. Footnotes are styled before slide_layout, whose scale= leaves them at
-    # their size; tables after it has scaled the runs; type_step after them, since it multiplies
-    # every size the steps before it set; the marking strip after it, at its own fixed size.
+    # their size; tables after it has scaled the runs; the marking strip before type_step, so a
+    # deck's type step scales it as HTML and PDF do; type_step last, since it multiplies every
+    # size the steps before it set.
     style_footnotes.run(prs, path.name)
     link_captions.run(prs, path.name)       # a linked picture's URL, a box pandoc cannot add
     slide_layout.run(prs, path.resolve())   # layout classes, covers, closings, slide numbers
     style_tables.run(prs, path.name)
-    type_step.run(prs, path)                # a deck's type-body:/type-scale:
     marking.run(prs, path.name)             # the marking strip, on every slide
+    type_step.run(prs, path)                # a deck's type-body:/type-scale:
     prs.save(str(path))
 
 
