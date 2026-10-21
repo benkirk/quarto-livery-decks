@@ -29,7 +29,10 @@ WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
-      '## Three\n\n:::: {.columns}\n::: {.column}\n- AAA\n- aaa\n:::\n::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n')
+      '## Three\n\n:::: {.columns}\n::: {.column}\n- AAA\n- aaa\n:::\n::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
+      '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
+      ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
+      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n')
 STEP = """
 import sys
 from pathlib import Path
@@ -130,12 +133,33 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0, 0, 0, 0], f"rules under a livery without one: {counts}"
+        assert counts == [0] * 6, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
         mid = (a.left + a.width + b.left) / 2
         assert rule.width == w and abs(rule.left + rule.width / 2 - mid) <= 1, f"a rule at {rule.left}, {rule.width}; the gap's middle {mid}"
         assert rule.height > 0 and rule.top == a.top, "the rule runs down the row from its top"
+
+
+def test_lead(deck):
+    """A lead over two columns: its text box on the lead fill with a bar of bar-color at its left,
+    cut to its text, its source lines two paragraphs; the columns below it, the slide a grid slide
+    (two text boxes, no placeholder). A lead alone is drawn the same way."""
+    livery, prs, _ = deck
+    lead = livery["boxes"]["lead"]
+    for n, text in ((4, ["The headline", "A plain line under it."]), (5, ["Only a lead."])):
+        slide = prs.slides[n]
+        by = {sh.name: sh for sh in slide.shapes}
+        assert {"Lead", "Lead bar", "Lead text"} <= set(by), f"slide {n + 1}: {sorted(by)}"
+        assert str(by["Lead"].fill.fore_color.rgb) == lead["fill"][1:], "the lead's fill"
+        assert str(by["Lead bar"].fill.fore_color.rgb) == lead["bar-color"][1:], "the bar's color"
+        assert by["Lead bar"].width == round(lead["bar"] * prs.slide_height), "the bar's width"
+        assert by["Lead"].height == by["Lead text"].height < prs.slide_height / 3, "the lead cut to its text"
+        assert [p.text for p in by["Lead text"].text_frame.paragraphs] == text, "a source line a paragraph"
+        assert "⟦" not in slide._element.xml, "a marker left"
+    by = {sh.name: sh for sh in prs.slides[4].shapes}
+    assert by["Column 1"].top >= by["Lead"].top + by["Lead"].height, "the columns under the lead"
+    assert not body_placeholders(prs.slides[4]), "the emptied placeholder left"

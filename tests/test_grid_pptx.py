@@ -24,6 +24,7 @@ from conftest import ROOT
 FILTER = ROOT / "_extensions" / "engine" / "grid-pptx.lua"
 COL = "::: {{.column{}}}\n{}\n:::\n"
 NOTES = "::: notes\nengine-layout: wide\n:::\n"   # slide-layout.lua's line, as it writes it
+LEAD = "## Lead\n\n::: {.lead}\n**Head**\nline\n:::\n\n"
 PIC = "## Picture\n\n:::: {.columns}\n" + "".join(COL.format("", w) for w in ("![](p.png)", "HHH", "III")) + "::::\n\n"
 MD = ("## Three\n\n:::: {.columns}\n" + "".join(COL.format("", w) for w in ("AAA", "BBB", "CCC")) + "::::\n\n"
       "## Two\n\n:::: {.columns}\n" + COL.format(' width="55%"', "DDD") + COL.format("", "EEE") + "::::\n\n"
@@ -44,7 +45,7 @@ def rendered(tmp_path_factory):
         with zipfile.ZipFile(out) as z:
             parts = {n: z.read(n).decode() for n in z.namelist() if re.match(r"ppt/(slides|notesSlides)/(_rels/)?\w+\d+\.xml(\.rels)?$", n)}
         return r.stderr, parts
-    err, slides = render(MD + "\n" + PIC, "--lua-filter", str(FILTER))
+    err, slides = render(MD + "\n" + PIC + LEAD, "--lua-filter", str(FILTER))
     _, plain = render(MD)
     return err, slides, plain
 
@@ -88,3 +89,12 @@ def test_two_columns_marked(rendered):
     assert "engine-columns" not in notes(slides, 1), "a shares line on a three-column slide"
     assert not any("engine-columns" in text(slides, n) for n in slides if re.match(r"ppt/slides/slide", n)), "the line in a body"
     assert "⟦" not in text(slides, "ppt/slides/slide2.xml"), "a marker on a plain columns slide"
+
+
+def test_lead_marked(rendered):
+    _, slides, _ = rendered
+    part = next(n for n in slides if re.match(r"ppt/slides/slide\d+\.xml$", n) and "Head" in text(slides, n))
+    t = text(slides, part).removeprefix("Lead")
+    assert t.startswith("⟦engine:lead⟧Head") and "line⟦engine:end⟧" in t, f"lead markers: {t!r}"
+    paras = ["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", slides[part])]
+    assert "Head" in paras and "line" in paras, f"the lead's two lines not two paragraphs: {paras}"

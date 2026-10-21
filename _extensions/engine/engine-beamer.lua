@@ -268,18 +268,43 @@ local function beamer_columns(blocks)
   end })
 end
 
+-- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
+-- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
+local function lead_boxes(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "lead") then return nil end
+    local out = pandoc.Blocks({ latex("\\begin{enginelead}") })
+    out:extend(C.split_lines(d.content))
+    out:insert(latex("\\end{enginelead}"))
+    return out
+  end })
+end
+
 -- A frame whose body opens with a paragraph: \vskip-\parskip before it, so it starts at the body's
 -- top as HTML's and the pptx's do (TeX puts \parskip, the parskip package's half line, before every
 -- paragraph; a list opens at its own \topsep, which already matches). Frames are top-aligned
--- (beamerthemeEngine.sty), so the space showed. Past the footnote spring, which leads a frame.
+-- (beamerthemeEngine.sty), so the space showed. A caution or lead box opens a paragraph too; the
+-- footnote spring and a scale group are looked past; a wide body cancels its own.
+local function opens_paragraph(b)   -- true, false, or nil: look at the next block
+  if b.t == "Para" or b.t == "Plain" then return true end
+  if b.t ~= "RawBlock" then return false end
+  local t = b.text
+  if t == "\\enginefootnotespring" or t:match("^\\enginescalebegin{[^}]*}$") then return nil end
+  if t:find("\\begin{enginewide}", 1, true) or t:find("\\begin{varwidth}", 1, true) then return false end
+  return t:find("\\begin{enginecaution}", 1, true) ~= nil or t:find("\\begin{enginelead}", 1, true) ~= nil
+end
+
 local function first_paragraph(blocks)
   local out, fresh = pandoc.Blocks({}), false
   for _, b in ipairs(blocks) do
     if b.t == "Header" and b.level == slide_level then
       fresh = true
-    elseif fresh and not (b.t == "RawBlock" and b.text == "\\enginefootnotespring") then
-      if b.t == "Para" or b.t == "Plain" then out:insert(latex("\\vskip-\\parskip")) end
-      fresh = false
+    elseif fresh then
+      local opens = opens_paragraph(b)
+      if opens ~= nil then
+        if opens then out:insert(latex("\\vskip-\\parskip")) end
+        fresh = false
+      end
     end
     out:insert(b)
   end
@@ -696,7 +721,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(beamer_columns(note_frames(unwrap_layout(hoist_footnotes(out)))))
+  doc.blocks = first_paragraph(lead_boxes(beamer_columns(note_frames(unwrap_layout(hoist_footnotes(out))))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

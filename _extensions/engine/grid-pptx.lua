@@ -17,7 +17,8 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   pptx_steps/grid.py to redraw and delete: `⟦engine:columns widths=0.3333,0.3333,0.3333⟧`, a
   `⟦engine:column⟧` opening each column and a `⟦engine:end⟧` closing it, a last `⟦engine:end⟧`
   closing the columns (a slide with a lead before its columns already gets one flat
-  placeholder from pandoc). First-cut limit: a picture or table in a flattened column is not
+  placeholder from pandoc); a `.lead` (with columns or alone) is `⟦engine:lead⟧` ... `⟦engine:end⟧`,
+  its source lines each a paragraph (engine-common.lua's split_lines()). First-cut limit: a picture or table in a flattened column is not
   drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
 
 Plain pandoc, no Quarto API, so a test can run it.
@@ -100,7 +101,11 @@ end
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and C.has_class(b, "columns") and C.is_grid(b, blocks) then
+    if b.t == "Div" and C.has_class(b, "lead") then
+      out:insert(marker("lead"))
+      flow(C.split_lines(b.content), title, out)
+      out:insert(marker("end"))
+    elseif b.t == "Div" and C.has_class(b, "columns") and C.is_grid(b, blocks) then
       out:extend(flatten(b, title))
     else
       out:insert(b)

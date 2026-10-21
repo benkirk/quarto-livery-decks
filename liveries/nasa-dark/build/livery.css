@@ -102,6 +102,7 @@
   --engine-lead-bar: 8px;
   --engine-lead-bar-color: #E4002B;
   --engine-lead-pad: 0.55em 0.9em;
+  --engine-lead-gap: 0.55em;
   --engine-card-fill: #000000;
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;

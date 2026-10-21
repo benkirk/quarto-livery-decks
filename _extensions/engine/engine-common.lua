@@ -138,8 +138,32 @@ local function is_grid(div, blocks)
   return false
 end
 
+-- In a .lead or a .card a source line is a line: each Para cut at its soft and hard line breaks
+-- into Paras of their own, so a bold headline over a plain line needs no blank line between them.
+-- Lists and other blocks are left alone.
+local function split_lines(blocks)
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    if b.t == "Para" then
+      local cur = pandoc.Inlines({})
+      for _, il in ipairs(b.content) do
+        if il.t == "SoftBreak" or il.t == "LineBreak" then
+          if #cur > 0 then out:insert(pandoc.Para(cur)) end
+          cur = pandoc.Inlines({})
+        else
+          cur:insert(il)
+        end
+      end
+      if #cur > 0 then out:insert(pandoc.Para(cur)) end
+    else
+      out:insert(b)
+    end
+  end
+  return out
+end
+
 return {
-  has_class = has_class, column_shares = column_shares, is_grid = is_grid, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  has_class = has_class, column_shares = column_shares, is_grid = is_grid, split_lines = split_lines, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
   is_note = is_note,
 }

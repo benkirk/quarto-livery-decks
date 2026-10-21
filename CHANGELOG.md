@@ -52,6 +52,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   every format, centered in each gap and as tall as the row's tallest column.
 - PDF: a slide's body starts at the top, under its title, as in HTML and pptx; beamer centered
   it vertically. `{.vcenter}` (or `{.center}`) still centers a slide in every format.
+- A lead box, `::: {.lead}`, before a slide's columns or alone: its lines on the livery's lead
+  fill with an accent bar at its left, in every format (pptx: native shapes and a text box). In a
+  lead each source line is a line: a bold headline over a plain line needs no blank line.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends

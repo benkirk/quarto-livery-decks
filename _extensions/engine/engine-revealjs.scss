@@ -406,6 +406,16 @@ $mermaid-label-fg-color: $engine-primary;
   width: var(--engine-column-rule);
   background: var(--engine-rule);
 }
+// ::: {.lead}: a box on the lead fill with a bar at its left (livery.css: the livery's boxes.lead)
+.reveal .slides section .engine-lead {
+  box-sizing: border-box;
+  background: var(--engine-lead-fill);
+  border-left: var(--engine-lead-bar) solid var(--engine-lead-bar-color);
+  padding: var(--engine-lead-pad);
+  margin: 0 0 var(--engine-lead-gap);
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+}
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;
