@@ -34,8 +34,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - PDF: a `{.full}` slide's caption is set at the caption size; it was the body's (the node's
   font never selected the size).
 
-- pptx: a slide of more than two columns warns at render time, naming the slide: pandoc's pptx
-  keeps the first two and dropped the rest without a word (HTML and PDF show them all).
+- pptx: a slide of three or more columns shows them all, at the same widths and gap as HTML and
+  PDF (pandoc's pptx kept the first two and dropped the rest without a word). A picture or table
+  in such a column is not drawn in it yet: the render warns, naming the slide.
 - A `{.caution}` slide's bar and pads, and a feature slide's panel pads, are the same in every
   format: the livery's `boxes:`, HTML's numbers. The pptx bar is a little thinner (ncar 4.5 to
   3.6 pt) and its pads follow the body type; the PDF bar is thinner (3 to 2.3 pt) and its text

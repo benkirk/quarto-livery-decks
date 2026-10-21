@@ -2,16 +2,24 @@
 grid-pptx.lua: a slide's columns, carried to the engine's pptx steps (engine-pptx).
 
 pandoc's pptx writer lays a `.columns` div out on the Two Content layout, two placeholders of the
-template's half width each, and drops the columns' `width=`. On a two-column slide this leaves a
-notes line, `engine-columns: 0.55 0.45` (the shares, engine-common.lua's column_shares(), as HTML
-and PDF lay them out; `wide` added on a `{.wide}` slide, which slide-layout.lua has written on its
-own notes line), after the columns div, so the body still starts with it and pandoc still picks
-Two Content; notes-last.lua then moves it to the slide's end, and pptx_steps/columns.py frames the
-columns and deletes the line. Never a marker paragraph in the body: beside a picture or a table
-it demotes the slide to a Comparison-style layout.
+template's half width each, keeps the first two `.column`s (dropping the rest, silently: pandoc
+3.8.3) and drops their `width=`. Two tiers:
 
-pandoc keeps the first two `.column`s and drops the rest, with no message (pandoc 3.8.3), while
-HTML and PDF lay out any number; a slide of more than two warns, naming it, once per columns div.
+- A plain columns slide (two columns, no card, no lead; engine-common.lua's is_grid() false)
+  stays pandoc's: this leaves a notes line, `engine-columns: 0.55 0.45` (the shares,
+  column_shares(), as HTML and PDF lay them out; `wide` added on a `{.wide}` slide, which
+  slide-layout.lua has written on its own notes line), after the columns div, so the body still
+  starts with it and pandoc still picks Two Content; notes-last.lua moves it to the slide's end,
+  and pptx_steps/columns.py frames the columns and deletes the line. Never a marker paragraph
+  here: beside a picture or a table it demotes the slide to a Comparison-style layout.
+- A grid slide (more than two columns, a card, a lead) is flattened on purpose into one text flow
+  with marker paragraphs, a Para of one Str in ⟦ ⟧ (which never occur in prose), for
+  pptx_steps/grid.py to redraw and delete: `⟦engine:columns widths=0.3333,0.3333,0.3333⟧`, a
+  `⟦engine:column⟧` opening each column and a `⟦engine:end⟧` closing it, a last `⟦engine:end⟧`
+  closing the columns (a slide with a lead before its columns already gets one flat
+  placeholder from pandoc). First-cut limit: a picture or table in a flattened column is not
+  drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
+
 Plain pandoc, no Quarto API, so a test can run it.
 ]]
 
@@ -26,21 +34,15 @@ end
 local C = dofile(here("engine-common.lua"))
 local MARK = "engine-columns:"
 
-local function warn_many(d, title)
-  if not C.has_class(d, "columns") then return end
-  local cols = C.column_shares(d)
-  if #cols > 2 then
-    io.stderr:write(string.format("grid-pptx.lua: WARNING: slide %q has %d columns; "
-      .. "the pptx keeps the first 2 (pandoc drops the rest; HTML and PDF show all)\n", title, #cols))
-  end
+local function warn(title, msg)
+  io.stderr:write(string.format("grid-pptx.lua: WARNING: slide %q: %s\n", title, msg))
 end
 
 -- slide-layout.lua's notes line on this slide says `wide`
 local function is_wide(blocks)
   for _, b in ipairs(blocks) do
     if b.t == "Div" and C.has_class(b, "notes") then
-      local text = pandoc.utils.stringify(b)
-      local words = text:match("engine%-layout:([^\n]*)")
+      local words = pandoc.utils.stringify(b):match("engine%-layout:([^\n]*)")
       if words and (" " .. words .. " "):find("%swide%s") then return true end
     end
   end
@@ -51,14 +53,59 @@ local function share(v)
   return (string.format("%.4f", v):gsub("0+$", ""):gsub("%.$", ""))
 end
 
--- one slide's blocks, its columns slide marked
+local function marker(s)
+  return pandoc.Para({ pandoc.Str("⟦engine:" .. s .. "⟧") })
+end
+
+-- a picture or table: pandoc draws it as a shape of its own, outside any column's text
+local function is_shape(b)
+  if b.t == "Table" or C.is_figure(b) then return true end
+  local found = false
+  if b.t == "Div" then
+    b:walk({ Image = function() found = true end, Table = function() found = true end })
+  end
+  return found
+end
+
+-- a column's blocks, its divs unwrapped (the flow has no divs), its pictures and tables warned of
+local function flow(blocks, title, out)
+  for _, b in ipairs(blocks) do
+    if is_shape(b) then
+      warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
+      out:insert(b)
+    elseif b.t == "Div" and not C.has_class(b, "notes") then
+      flow(b.content, title, out)
+    else
+      out:insert(b)
+    end
+  end
+  return out
+end
+
+local function flatten(d, title)
+  local cols, shares = C.column_shares(d)
+  local widths = {}
+  for k = 1, #cols do widths[k] = share(shares[k]) end
+  local out = pandoc.Blocks({ marker("columns widths=" .. table.concat(widths, ",")) })
+  for _, col in ipairs(cols) do
+    out:insert(marker("column"))
+    flow(col.content, title, out)
+    out:insert(marker("end"))
+  end
+  out:insert(marker("end"))
+  return out
+end
+
+-- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
   for _, b in ipairs(blocks) do
-    out:insert(b)
-    if b.t == "Div" and C.has_class(b, "columns") then
-      local cols, shares = C.column_shares(b)
-      if #cols == 2 then
+    if b.t == "Div" and C.has_class(b, "columns") and C.is_grid(b, blocks) then
+      out:extend(flatten(b, title))
+    else
+      out:insert(b)
+      if b.t == "Div" and C.has_class(b, "columns") then
+        local _, shares = C.column_shares(b)
         local words = { MARK, share(shares[1]), share(shares[2]) }
         if wide then table.insert(words, "wide") end
         out:insert(pandoc.Div({ pandoc.Para({ pandoc.Str(table.concat(words, " ")) }) }, pandoc.Attr("", { "notes" })))
@@ -78,8 +125,6 @@ function Pandoc(doc)
       slide = pandoc.Blocks({})
       if blk.t == "Header" then title = pandoc.utils.stringify(blk.content) end
     end
-    if blk.t == "Div" then warn_many(blk, title) end   -- walk() visits a block's children, not the block
-    blk:walk({ Div = function(d) warn_many(d, title) end })
     slide:insert(blk)
   end
   out:extend(mark(slide, title))

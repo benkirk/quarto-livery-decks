@@ -28,14 +28,15 @@ IMAGE = ROOT / "decks" / "quickstart" / "images" / "example.jpg"
 WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
-      '## Wide text\n\nA paragraph.\n' + WIDE)
+      '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
+      '## Three\n\n:::: {.columns}\n::: {.column}\n- AAA\n- aaa\n:::\n::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n')
 STEP = """
 import sys
 from pathlib import Path
 from pptx import Presentation
-from pptx_steps import columns, slide_layout
+from pptx_steps import columns, grid, slide_layout
 p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); columns.run(prs, p.name); prs.save(p)
+slide_layout.run(prs, p); columns.run(prs, p.name); grid.run(prs, p.name); prs.save(p)
 """   # the driver's order
 
 
@@ -104,3 +105,19 @@ def test_integers(deck):
         xml = "".join(z.read(n).decode() for n in z.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", n))
     floats = re.findall(r'\b(x|y|cx|cy|w|h|sz|marL|indent|adj)="-?[0-9]+\.[0-9]+"', xml)
     assert not floats, f"non-integer EMUs: {floats[:5]}"
+
+
+def test_three_columns(deck):
+    """A three-column slide: three text boxes at the formula's frames, the placeholder gone, its
+    list keeping the template's bullet (the box's list style is the master's body style)."""
+    livery, prs, _ = deck
+    slide = prs.slides[3]
+    cols = sorted((sh for sh in slide.shapes if sh.name.startswith("Column ")), key=lambda sh: sh.name)
+    assert [c.name for c in cols] == ["Column 1", "Column 2", "Column 3"], [sh.name for sh in slide.shapes]
+    for c, (x, w) in zip(cols, boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])):
+        assert abs(c.left - x) <= 2 * len(cols) and abs(c.width - w) <= 2 * len(cols), f"{c.name} {c.left, c.width}, want {x, w}"
+    assert [c.text_frame.text.split("\n")[0] for c in cols] == ["AAA", "BBB", "CCC"], "the columns' text"
+    assert not body_placeholders(slide), "the emptied placeholder left on the slide"
+    xml = slide._element.xml
+    assert "⟦" not in xml, "a marker left"
+    assert cols[0]._element.find(".//{*}lstStyle/{*}lvl1pPr") is not None, "no list style in the box"

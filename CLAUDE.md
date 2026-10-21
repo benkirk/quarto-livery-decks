@@ -167,7 +167,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
-  widths and the livery's gap, from `grid-pptx.lua`'s notes line), `style_tables` (tables drawn as in the
+  widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
+  marker paragraphs), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
@@ -511,12 +512,18 @@ it does, by area, beyond the format notes above:
   placeholder and silently drops the text after it (the slide count doesn't
   change, so `make qa` can't see it). Content *after* `.columns` still splits,
   so put it inside the last column. Code blocks are text and never split.
-- **Two columns at most.** pandoc keeps the first two `.column`s of a pptx slide and drops the
-  rest, silently (HTML and PDF show them all); `grid-pptx.lua` warns with the slide's title. Two
-  columns take their `width=` shares of the content box less `boxes.columns.gap` in every format:
-  `grid-pptx.lua` writes the shares on a notes line (`engine-columns: 0.55 0.45`, never a marker
-  paragraph in the body, which beside a picture or table demotes the slide) and `columns.py`
-  frames the placeholders and moves a column's picture or table with them.
+- **Columns: two tiers.** pandoc keeps the first two `.column`s of a pptx slide and drops the
+  rest, silently. Columns take their `width=` shares of the content box less `boxes.columns.gap`
+  in every format. A *plain* slide (two columns, no card or lead) stays pandoc's Two Content:
+  `grid-pptx.lua` writes the shares on a notes line (`engine-columns: 0.55 0.45`) and `columns.py`
+  frames the placeholders, moving a column's picture or table with them. Never a marker paragraph
+  there: beside a picture or table it demotes the slide. A *grid* slide (`is_grid()`: more than
+  two columns, a `.card`, a `.lead`) is flattened on purpose into one placeholder with marker
+  paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`, `⟦engine:end⟧`), which `grid.py`
+  redraws as text boxes carrying the master's body list style and deletes. First-cut limit: a
+  picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits the
+  slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
+  pandoc, silently, in either tier.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves

@@ -123,8 +123,23 @@ local function column_shares(div)
   return cols, shares
 end
 
+-- A grid slide: the columns div has a .card column or more than two columns, or the slide (its
+-- blocks) has a .lead. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py);
+-- pandoc's two placeholders cannot hold it.
+local function is_grid(div, blocks)
+  local cols = column_shares(div)
+  if #cols > 2 then return true end
+  for _, c in ipairs(cols) do
+    if has_class(c, "card") then return true end
+  end
+  for _, b in ipairs(blocks or {}) do
+    if b.t == "Div" and has_class(b, "lead") then return true end
+  end
+  return false
+end
+
 return {
-  has_class = has_class, column_shares = column_shares, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  has_class = has_class, column_shares = column_shares, is_grid = is_grid, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
   is_note = is_note,
 }

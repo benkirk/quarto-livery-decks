@@ -1,13 +1,14 @@
-"""Check grid-pptx.lua: a two-column slide's shares on a notes line, a third column warned about.
+"""Check grid-pptx.lua: a two-column slide's shares on a notes line, a grid slide flattened.
 
     python3 -m pytest tests/test_grid_pptx.py
 
 A two-column slide keeps the Two Content layout (pandoc's placeholders idx 1 and 2) and its notes
 carry `engine-columns: <share> <share>` (engine-common.lua's column_shares(): width= or an equal
-share of what is left), with `wide` when slide-layout.lua's line says so. pandoc's pptx writer keeps
-the first two `.column`s and drops the rest, silently; the filter says so at render time. The
-premise is checked too: if pandoc ever writes the third column, the warning (and this test) can
-go. Needs pandoc ($QUARTO_PANDOC).
+share of what is left), with `wide` when slide-layout.lua's line says so, and no marker paragraph.
+A three-column slide is flattened into one placeholder with its markers, every column's text kept;
+a picture in it is warned of. pandoc's pptx writer itself keeps only the first two `.column`s: the
+premise is checked without the filter, and when pandoc writes the third, the flattening's reason
+for three columns is gone. Needs pandoc ($QUARTO_PANDOC).
 """
 
 import os
@@ -23,6 +24,7 @@ from conftest import ROOT
 FILTER = ROOT / "_extensions" / "engine" / "grid-pptx.lua"
 COL = "::: {{.column{}}}\n{}\n:::\n"
 NOTES = "::: notes\nengine-layout: wide\n:::\n"   # slide-layout.lua's line, as it writes it
+PIC = "## Picture\n\n:::: {.columns}\n" + "".join(COL.format("", w) for w in ("![](p.png)", "HHH", "III")) + "::::\n\n"
 MD = ("## Three\n\n:::: {.columns}\n" + "".join(COL.format("", w) for w in ("AAA", "BBB", "CCC")) + "::::\n\n"
       "## Two\n\n:::: {.columns}\n" + COL.format(' width="55%"', "DDD") + COL.format("", "EEE") + "::::\n\n"
       "## Wide\n\n:::: {.columns}\n" + COL.format("", "FFF") + COL.format("", "GGG") + "::::\n\n" + NOTES)
@@ -33,12 +35,18 @@ def rendered(tmp_path_factory):
     pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
     if not pandoc:
         pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
-    out = tmp_path_factory.mktemp("cols") / "t.pptx"
-    r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=MD, text=True,
-                       capture_output=True, check=True)
-    with zipfile.ZipFile(out) as z:
-        slides = {n: z.read(n).decode() for n in z.namelist() if re.match(r"ppt/(slides|notesSlides)/(_rels/)?\w+\d+\.xml(\.rels)?$", n)}
-    return r.stderr, slides
+    tmp = tmp_path_factory.mktemp("cols")
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp / "p.png")
+
+    def render(md, *args):
+        out = tmp / "t.pptx"
+        r = subprocess.run([pandoc, *args, "-o", str(out)], input=md, text=True, cwd=tmp, capture_output=True, check=True)
+        with zipfile.ZipFile(out) as z:
+            parts = {n: z.read(n).decode() for n in z.namelist() if re.match(r"ppt/(slides|notesSlides)/(_rels/)?\w+\d+\.xml(\.rels)?$", n)}
+        return r.stderr, parts
+    err, slides = render(MD + "\n" + PIC, "--lua-filter", str(FILTER))
+    _, plain = render(MD)
+    return err, slides, plain
 
 
 def text(slides, part):
@@ -51,21 +59,27 @@ def notes(slides, n):
     return text(slides, f"ppt/notesSlides/{m.group(1)}") if m else ""
 
 
-def test_warns_for_three(rendered):
-    err, _ = rendered
-    assert 'slide "Three" has 3 columns' in err, f"no warning for the three-column slide: {err!r}"
-    assert '"Two"' not in err, "a warning for a two-column slide"
+def test_three_flattened(rendered):
+    err, slides, _ = rendered
+    one = slides["ppt/slides/slide1.xml"]
+    assert one.count("<p:ph idx=") == 1 and 'idx="2"' not in one, "a three-column slide not in one placeholder"
+    t = text(slides, "ppt/slides/slide1.xml")
+    assert "⟦engine:columns widths=0.3333,0.3333,0.3333⟧" in t, "no columns marker"
+    assert t.count("⟦engine:column⟧") == 3 and t.count("⟦engine:end⟧") == 4, "column markers"
+    assert all(w in t for w in ("AAA", "BBB", "CCC")), "a column's text lost"
+    assert '"Three"' not in err, "a warning for a text grid"
+    assert 'slide "Picture": a picture/table in a card or a 3+ column slide is not drawn' in err, f"no picture warning: {err!r}"
 
 
 def test_pandoc_still_drops_the_third(rendered):
-    _, slides = rendered
-    body = "".join(text(slides, n) for n in slides if "/slides/" in n)
+    *_, plain = rendered
+    body = "".join(text(plain, n) for n in plain if re.match(r"ppt/slides/slide", n))
     assert "AAA" in body and "BBB" in body, "pandoc lost a column it keeps"
-    assert "CCC" not in body, "pandoc now writes a third column: the warning may go"
+    assert "CCC" not in body, "pandoc now writes a third column: grid-pptx.lua need not flatten for it"
 
 
 def test_two_columns_marked(rendered):
-    _, slides = rendered
+    _, slides, _ = rendered
     two = slides["ppt/slides/slide2.xml"]
     assert 'idx="1"' in two and 'idx="2"' in two, "the 55/45 slide is not on Two Content's placeholders"
     assert "DDD" in text(slides, "ppt/slides/slide2.xml"), "the body is not its columns"
@@ -73,3 +87,4 @@ def test_two_columns_marked(rendered):
     assert "engine-columns: 0.5 0.5 wide" in notes(slides, 3), "no wide on the shares line"
     assert "engine-columns" not in notes(slides, 1), "a shares line on a three-column slide"
     assert not any("engine-columns" in text(slides, n) for n in slides if re.match(r"ppt/slides/slide", n)), "the line in a body"
+    assert "⟦" not in text(slides, "ppt/slides/slide2.xml"), "a marker on a plain columns slide"

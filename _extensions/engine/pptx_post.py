@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # livery, pptx_waves,
 from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
-    columns, embed_fonts, enable_autofit, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
+    columns, embed_fonts, enable_autofit, grid, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
     style_footnotes, style_tables, svg_fallback, type_step)
 
 
@@ -53,6 +53,7 @@ def post(path: Path) -> None:
     link_captions.run(prs, path.name)       # a linked picture's URL, a box pandoc cannot add
     slide_layout.run(prs, path.resolve())   # layout classes, covers, closings, slide numbers
     columns.run(prs, path.name)             # a two-column slide's widths and gap (grid-pptx.lua's line)
+    grid.run(prs, path.name)                # a grid slide (3+ columns) drawn from grid-pptx.lua's markers
     style_tables.run(prs, path.name)
     marking.run(prs, path.name)             # the marking strip, on every slide
     type_step.run(prs, path)                # a deck's type-body:/type-scale:
