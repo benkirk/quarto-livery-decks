@@ -11,10 +11,14 @@ take the frame (all four fields: a placeholder inherits its frame, and setting o
 others at 0). A picture or table pandoc placed in a column moves with it: a picture as wide as the
 old column scales to the new one (its aspect kept, no taller than the column), a narrower one only
 shrinks if it no longer fits, centered either way; a table takes the column's width, its grid
-columns scaled to it (style_tables then re-splits them inside it). Idempotent: the line is gone
+columns scaled to it (style_tables then re-splits them inside it). A columns slide pandoc laid out
+on another layout (Comparison: text above a picture or table in a column) keeps the template's
+halves, with a warning naming the slide. Idempotent: the line is gone
 after one pass. After slide_layout (which leaves a columns slide's frames to this), before
 style_tables and type_step.
 """
+
+import sys
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -114,7 +118,12 @@ def run(prs, name: str) -> None:
     done = 0
     for slide in prs.slides:
         words = take_marker(slide, KEY)
-        if words is not None and slide.slide_layout.name == "Two Content":
+        if words is None:
+            continue
+        if slide.slide_layout.name == "Two Content":
             done += frame_slide(slide, words, prs.slide_width, prs.slide_height)
+        else:   # pandoc chose another layout (Comparison): its frames are not the two placeholders'
+            print(f"columns: WARNING: slide {prs.slides.index(slide) + 1}: columns laid out on "
+                  f"{slide.slide_layout.name!r}, not Two Content; their widths are not applied", file=sys.stderr)
     if done:
         print(f"columns: framed {done} two-column slide(s) → {name}")

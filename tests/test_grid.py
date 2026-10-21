@@ -267,3 +267,22 @@ def test_default_roles(deck):
     roles = livery["boxes"]["card"]["roles"]
     want = [livery["roles"][roles[k % len(roles)]][1:] for k in range(4)]
     assert [str(by[f"Card {n} head"].fill.fore_color.rgb) for n in (1, 2, 3, 4)] == want, "the heads' roles by place"
+
+
+def test_comparison_warns(tmp_path):
+    """A two-column slide pandoc lays out on Comparison (text above a picture in a column) is not
+    framed: columns.py warns, naming the slide and the layout, and the notes line is still gone."""
+    md = '## Compare\n\n:::: {.columns}\n::: {.column width="60%"}\nText\n\n![](p.jpg)\n:::\n::: {.column}\nRight\n:::\n::::\n'
+    shutil.copy(IMAGE, tmp_path / "p.jpg")
+    d = ROOT / "liveries" / "ncar"
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "t.pptx"
+    subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(d / "template.pptx"),
+                    "-o", str(out)], input=md, text=True, cwd=tmp_path, check=True, capture_output=True)
+    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
+    r = subprocess.run([sys.executable, "-c", STEP, str(out)], env=env, check=True, capture_output=True, text=True)
+    assert "columns: WARNING: slide 1: columns laid out on 'Comparison'" in r.stderr, r.stderr
+    from pptx import Presentation
+    slide = Presentation(str(out)).slides[0]
+    assert slide.slide_layout.name == "Comparison", "the premise: pandoc's layout for text over a picture"
+    assert "engine-columns" not in slide.notes_slide.notes_text_frame.text, "the line left in the notes"
