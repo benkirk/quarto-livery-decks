@@ -21,6 +21,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A `{.shrink}` slide keeps its text color in the PDF. Beamer's shrink box reset it to black,
   so a dark livery's shrunk slide (the quickstart's equations) was black on black, and a light
   livery's shrunk text black instead of the brand's.
+- pptx: a closing slide or divider whose column hangs from its top (`anchor: top`) does so, as in
+  HTML and PDF: the closing's body follows its measured headline, a divider's block starts at the
+  column's top. Both were centered on the column before, whatever the anchor.
 - A section divider can go without its "SECTION n" label (`section.label: null`) in every
   format; the PDF stopped on it before, and the pptx ignored it. The PDF now sets the livery's
   label word (it always said "Section"), and the pptx its label color.

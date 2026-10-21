@@ -208,7 +208,7 @@ def _dress(root, layout_root, number):
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
     body_h = height(b_style, body, measure.BODY, 400) + 4 if body_text else 0
     total = label_h + label_gap + title_h + (BODY_GAP + body_h if body_text else 0)
-    y = (BLOCK_TOP + BLOCK_BOTTOM - total) / 2
+    y = BLOCK_TOP if COLUMN["anchor"] == "top" else (BLOCK_TOP + BLOCK_BOTTOM - total) / 2   # column.anchor
 
     ids = [int(e.get("id")) for e in tree.iter("{%s}cNvPr" % P) if (e.get("id") or "").isdigit()]
     sid = max(ids, default=1) + 1

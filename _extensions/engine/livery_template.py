@@ -284,11 +284,12 @@ class Builder:
             out.append(self.ph("Subtitle", "subTitle", 1, xfrm(x, sub_y, w, sub_h),
                                no_inset.format("t") + self.field_text("subtitle", role=role, align=al) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
-        elif kind == "closing":   # split at the middle: a short headline and body sit on the column's centre
-            hh = 0.5 * h
-            out += tab(y + hh - 0.09, 0.075)
+        elif kind == "closing":   # split at the middle: a short headline and body sit on the column's centre;
+            top = col["anchor"] == "top"   # from the top, the headline hangs from it (slide_layout's closing_top()
+            hh = 0.5 * h                   # sets the body under the measured headline on each slide)
+            out += tab(y + 0.012 if top else y + hh - 0.09, 0.075)
             out.append(self.ph("Title 1", "title", None, xfrm(x, y, w, hh),
-                               no_inset.format("b") + f'<a:lvl1pPr algn="{al}"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("closing")}" b="1">{srgb(self.roles[role])}'
+                               no_inset.format("t" if top else "b") + f'<a:lvl1pPr algn="{al}"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("closing")}" b="1">{srgb(self.roles[role])}'
                                '<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
                                '<a:t>Thank you</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
             centered = ' algn="ctr" marL="0" indent="0"' if al == "ctr" else ""   # a centered body: no bullet indent

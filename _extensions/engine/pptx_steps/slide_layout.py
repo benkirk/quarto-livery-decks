@@ -551,6 +551,27 @@ def title_cover(slide, width, height, photo):
         tree.append(copy.deepcopy(sp._element))
 
 
+def closing_top(slide, width, height, comp):
+    """A closing column anchored at its top (column.anchor: top): the headline hangs from the
+    column's top at its measured height, the body right under it, as HTML and PDF flow them (the
+    layout can only split the column at a fixed place). A middle-anchored column is left alone."""
+    col = comp["column"]
+    if BAND or col["anchor"] != "top":
+        return
+    title = slide.shapes.title
+    body = next((s for s in slide.placeholders if s.placeholder_format.idx == 1), None)
+    if title is None:
+        return
+    x, y, w, h = col["box"]
+    X, Y, W, Hh = int(x * width), int(y * height), int(w * width), int(h * height)
+    title.left, title.top, title.width, title.height = X, Y, W, Hh   # all four: a placeholder inherits its frame
+    size = _size(title.text_frame.paragraphs[0], title, slide) if title.text_frame.paragraphs else Pt(36)
+    title.height = min(Hh, _text_height(title, slide, measure.TITLE, 700))
+    if body is not None:
+        top = title.top + title.height + int(0.4 * size)   # the h2's margin-bottom, 0.4em
+        body.left, body.top, body.width, body.height = X, top, W, max(Pt(12), Y + Hh - top)
+
+
 def _left(shape):
     """A feature title takes its composition column's alignment (column.align), whatever
     frametitle.align gives the content titles (the layout's title style); a no-op when they agree."""
@@ -676,6 +697,7 @@ def run(prs, pptx: Path) -> None:
         if words and "closing" in words:
             if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
                 words.remove("closing")
+                closing_top(slide, w, h, COMP["closing-light" if light else "closing"])
             else:
                 print("slide_layout: WARNING: {.closing} slide, but the template has no Closing layout", file=sys.stderr)
     numbered = sum(add_slide_number(slide) for slide in prs.slides)
