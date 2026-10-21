@@ -1,5 +1,7 @@
 # Handoff: the post-NSI refactor
 
+**State:** done (engine 3.3.0, this repo #27).
+
 Written 2026-10-16 after the retrospective on the two very different liveries (`cu`, then its
 `nsi` flavor), for a fresh session. Read this, `CLAUDE.md`, and the newest entries of
 `docs/design/engine-and-liveries.md` section 10. The repos, environment, conventions (one step

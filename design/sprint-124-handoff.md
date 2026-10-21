@@ -1,5 +1,11 @@
 # Sprint handoff: #124's open items, the card framework, and the liveries off their workarounds
 
+**State (2026-10-21):** landed as #126, squash `ba36ec5`. Open in #124: the 2×2 quadrant layout, a
+picture or table in a grid column, the deck-level mark-swap key. Its three follow-ups below (a
+status-color contrast warning in `livery check`, `a:latin` on the ⚠ run if PowerPoint draws an
+emoji, the pptx box pads `type_step` does not scale) are on `unplanned-city-ledger.md`'s
+Untriaged list.
+
 **For a fresh session.** One PR against `main` (branch `sprint/124`), a commit per item in the
 order below, squash-merged once, no version bump (the release is its own small PR after; ask
 before any tag). Start by reading `CLAUDE.md` whole ("pandoc pptx gotchas" and "revealjs"

@@ -325,7 +325,7 @@ the reference document's theme into every deck: a test deck built with pandoc 3.
   Quarto's Python setup cell, which sets `figure.figsize` at the document level only).
 - **`common/_quarto.yml`**: per-format `fig-format`/`fig-dpi` (pptx png at 200 dpi, revealjs
   svg, beamer pdf; since 2026-10-20 pptx svg, each with a PNG fallback at 200 dpi by
-  `pptx_steps/svg_fallback.py`, after a spike Ben checked in PowerPoint and Google Slides). `common/diagram-dark.lua` recolors only mermaid and dot PNGs and is left
+  `pptx_steps/svg_fallback.py`, after a spike Ben checked in PowerPoint and Google Slides). The engine's `diagram-dark.lua` recolors only mermaid and dot PNGs and is left
   alone.
 - **`decks/plots/plots.qmd`**, `jupyter: python3` (a deck runs one kernel, so it can't share the
   bash sample deck), deterministic: lines in the cycle, a seaborn bar chart from pandas, a
@@ -391,7 +391,7 @@ the reference document's theme into every deck: a test deck built with pandoc 3.
 - `make -C decks/plots all qa` under ncar, cu, nsi, nasa, nasa-dark, every format looked at: plot
   text matches the slide's body text in size and face, series distinct, no white boxes on dark,
   the stacked area reads by family, the column plots fit.
-- Fonts: `pdffonts` shows the livery family; the pptx PNGs viewed; the HTML svg has no `<text>`.
+- Fonts: `pdffonts` shows the livery family; the pptx SVGs (and their PNG fallbacks) viewed; the HTML svg has no `<text>`.
 - The image: `findfont()` resolves each livery's family; a `--user` run does no font-cache
   rebuild; the smoke test passes on both architectures; the size summary in the PR.
 - The bundle: `nasa-charts.zip` unzipped in a clean directory, a script with only `import

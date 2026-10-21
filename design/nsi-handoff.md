@@ -1,5 +1,8 @@
 # Handoff: the `nsi` livery (CU Center for National Security Initiatives)
 
+**State:** done; `liveries/nsi` is the livery, and the refactor it prompted is
+`refactor-handoff.md`.
+
 Written 2026-10-16 at the end of the cleanup sprint, for a fresh session. Everything below is
 on `main` of both repos unless marked otherwise. Read this, then `docs/design/engine-and-liveries.md`
 section 10 (the log, newest first) and `docs/common/liveries/cu/reference/notes.md`.
