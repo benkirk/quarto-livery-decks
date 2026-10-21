@@ -119,6 +119,7 @@ boxes:                    # the engine's (livery_build.py BOXES) but for these
 
 pptx:
   template: template.pptx
+  code-typeface: Courier New   # the template's code font, installed with PowerPoint (HTML and PDF: Liberation Mono)
   typeface: Arial
   heading-typeface: Arial
   size: [13.333, 7.5]       # the template's canvas

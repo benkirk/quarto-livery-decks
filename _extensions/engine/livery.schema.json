@@ -763,6 +763,7 @@
           "description": "The font PowerPoint sets body text in (the theme's minor font)."
         },
         "heading-typeface": {"type": "string", "description": "The font PowerPoint sets titles in (default: typeface)."},
+        "code-typeface": {"type": "string", "minLength": 1, "description": "The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace."},
         "fonts": {
           "$ref": "#/$defs/path",
           "description": "A directory of .fntdata files to embed in each deck; without it, the deck embeds no fonts."

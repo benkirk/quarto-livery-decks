@@ -1478,6 +1478,7 @@
     "yellow": "#FFC72C"
   },
   "pptx": {
+    "code-typeface": "Courier New",
     "heading-typeface": "Arial",
     "scheme": {
       "accent1": "#FCDB00",

@@ -49,7 +49,8 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Fonts.** The brand's font files in `_brand.yml` in place of the stand-in (free,
      bundleable; a proprietary face is named in the pptx and stood in for elsewhere),
      `typography.monospace` for a code face, `installed-fonts` for a proprietary face to prefer
-     where installed, and `pptx.typeface` (and `heading-typeface`).
+     where installed, and `pptx.typeface` (and `heading-typeface`, and `code-typeface` for the
+     pptx's code when the brand template names an installed one).
    - **Marks.** The brand's logos in `_brand.yml` in place of the placeholder (an RGB PNG for
      the web, the same name as `.pdf` for LaTeX), a `signoff` lockup if the brand wants one at
      the foot, and `marks` when a field needs another mark than the defaults (`background` wears

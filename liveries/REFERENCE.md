@@ -539,6 +539,7 @@ The PowerPoint template.
 | `template` | path | `"template.pptx"` | The template file. |
 | `typeface` | string |  | The font PowerPoint sets body text in (the theme's minor font). |
 | `heading-typeface` | string |  | The font PowerPoint sets titles in (default: typeface). |
+| `code-typeface` | string |  | The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace. |
 | `fonts` | path |  | A directory of .fntdata files to embed in each deck; without it, the deck embeds no fonts. |
 | `size` | list of 2 numbers | `[13.333, 7.5]` | The slide in inches, [width, height]; type: sizes are points on it. |
 | `scheme` | object |  | Theme color slots set outright (default: each slot's role). A value is a palette name or a hex. |

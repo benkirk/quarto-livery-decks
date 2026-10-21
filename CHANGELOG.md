@@ -111,6 +111,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A flavor unsets an inherited `art` picture (`art: {titlegraphic: null}`) or code face
   (`typography: {monospace: null}` in its `_brand.yml`) with `null`. nasa-jsc-eg's cover no
   longer doubles as its default title photo: it is the title composition's art.
+- `pptx.code-typeface`: the font the pptx sets code in, an installed face as a brand template
+  names it (nasa-jsc-eg: Courier New); HTML and PDF keep `typography.monospace`.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 
