@@ -193,6 +193,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-rule-h: 0px;
   --engine-cmp-fineprint-color: var(--engine-foreground);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: url("title.jpg") center / cover no-repeat;
 }
 div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("meatball.png"); }
@@ -270,6 +271,7 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo
   --engine-cmp-rule-h: 0px;
   --engine-cmp-fineprint-color: var(--engine-foreground);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo::after { background-image: url("meatball.png"); }
@@ -347,6 +349,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-rule-h: 0px;
   --engine-cmp-fineprint-color: var(--engine-foreground);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("meatball.png"); }
@@ -424,6 +427,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-rule-h: 0px;
   --engine-cmp-fineprint-color: var(--engine-foreground);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo::after { background-image: url("meatball.png"); }
@@ -502,6 +506,7 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   --engine-cmp-fineprint-color: var(--engine-background);
   --engine-cmp-fineprint-justify: flex-start;
   --engine-cmp-band-fill: var(--engine-primary);
+  --engine-cmp-eyebrow-display: none;
   background: url("title.jpg") center / cover no-repeat;
 }
 html div.reveal div.slides section.engine-title.quarto-title-block.engine-band::after { background-image: url("meatball.png"); }
@@ -577,6 +582,7 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
+  --engine-cmp-eyebrow-display: none;
   background: url("closing.jpg") center / cover no-repeat;
 }
 .reveal .slides section.slide.level2.closing::after { background-image: url("meatball.png"); }
@@ -652,6 +658,7 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 html.engine-title-light .reveal .slides section.slide.level2.closing::after { background-image: url("meatball.png"); }
@@ -727,6 +734,7 @@ html .reveal .slides section.slide.level2.closing.engine-band {
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
+  --engine-cmp-eyebrow-display: none;
   background: url("closing.jpg") center / cover no-repeat;
 }
 html .reveal .slides section.slide.level2.closing.engine-band::after { background-image: url("meatball.png"); }
@@ -804,6 +812,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-rule-h: 0px;
   --engine-cmp-eyebrow: var(--engine-muted);
   --engine-cmp-eyebrow-label: "Section ";
+  --engine-cmp-eyebrow-display: block;
   background: url("closing.jpg") center / cover no-repeat;
 }
 .reveal .slides section.slide.engine-section::after { background-image: url("meatball.png"); }
@@ -881,6 +890,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-rule-h: 0px;
   --engine-cmp-bar-fill: color-mix(in srgb, var(--engine-dark) 72%, transparent);
   --engine-cmp-panel-fill: color-mix(in srgb, var(--engine-dark) 72%, transparent);
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 /* mode: dark */

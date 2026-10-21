@@ -94,7 +94,8 @@ def today(L: dict) -> dict:
                "mark": mark(72 / H, logo["section-height"], "primary"), "signoff": signoff("primary"),
                "column": {"box": box(m, dv["top"], 0.62 * pad, 1 - dv["top"] - dv["bottom"]), "anchor": "middle",
                           "role": "primary-text", "tab": d.get("tab", True), "rule": None},
-               "eyebrow": {"label": d.get("label", "Section"), "color": d.get("label-color", "secondary")}}
+               "eyebrow": {"label": d.get("label", "Section"), "color": d.get("label-color", "secondary")}
+                          if d.get("label", "Section") else None}
     # feature: the h2 a 180px bar (flex-centred, padding 0 m), the body a 52% panel from 230px to the 70px padding
     feature = {**empty, "photo": {"box": box(0, 0, 1, 1)},
                "bar": {"role": "dark", "opacity": 0.72, "box": box(0, 0, 1, 180 / H)},
@@ -242,6 +243,15 @@ def test_override_reaches_variants(tmp_path):
         "an override on title does not reach its variants"
     assert c["title-photo"]["fineprint"] is None and c["title-photo-light"]["fineprint"] is not None, \
         "an override on title-photo reaches beyond it"
+
+
+def test_section_label_null(tmp_path):
+    # section.label: null drops the eyebrow (each format then draws none); the label word is the livery's
+    L = flavor(tmp_path, "nolabel", "section: {label: null}\n")
+    assert L["compositions"]["section"]["eyebrow"] is None, "section.label: null keeps an eyebrow"
+    (tmp_path / "word").mkdir()   # flavor() links the parent into its directory: a fresh one
+    L = flavor(tmp_path / "word", "word", "section: {label: Part}\n")
+    assert L["compositions"]["section"]["eyebrow"]["label"] == "Part"
 
 
 def test_flavor_band_from_own_knobs(tmp_path):

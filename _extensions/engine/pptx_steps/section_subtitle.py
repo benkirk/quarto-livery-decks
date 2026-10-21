@@ -43,7 +43,8 @@ BLOCK_TOP = round(COLUMN["box"][1] * 900)                 # the block is centred
 BLOCK_BOTTOM = round((COLUMN["box"][1] + COLUMN["box"][3]) * 900)   # and bottom (120 ... 820 px)
 TAB_W = round(GEOM["tab-width"] * 1600)     # the divider's tab, geometry.tab-width of the width
 TAB = COLUMN["tab"]
-LABEL = LIVERY["section"]["label"]          # "Section"; cap="all" sets it in capitals
+EYEBROW = LIVERY["compositions"]["section"]["eyebrow"]   # {label, color}: "Section", cap="all"
+                                            # sets it in capitals; None: no eyebrow (section.label: null)
 LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
 LABEL_GAP = 10                              # margin-bottom 0.5em
 BODY_GAP = 22                               # .engine-subtitle margin-top 0.7em
@@ -172,6 +173,12 @@ def _decor(name, sid, x, y, w, h, inner):
         f'<a:ext cx="{round(w * PX)}" cy="{round(h * PX)}"/></a:xfrm>{inner}</p:sp>')
 
 
+def _eyebrow_hex():
+    """The eyebrow's color (section.label-color: a role or a hex), as HTML and PDF draw it."""
+    c = EYEBROW["color"] if EYEBROW else "secondary"
+    return c.lstrip("#").upper() if c.startswith("#") else livery_mod.color(LIVERY, c)
+
+
 def _dress(root, layout_root, number):
     """Label, tab and a centered title block on one divider slide."""
     tree = root.find("p:cSld/p:spTree", NS)
@@ -194,11 +201,12 @@ def _dress(root, layout_root, number):
         _x, w, pt, spacing = style
         return measure.lines(_paragraphs(sp), measure.font(family, weight, pt), w) * LINE * spacing * pt / PT_PX
 
-    label_h = LINE * LABEL_PT / PT_PX
+    label_h = LINE * LABEL_PT / PT_PX if EYEBROW else 0
+    label_gap = LABEL_GAP if EYEBROW else 0
     title_h = height(t_style, title, measure.TITLE, 700) + 4   # the face the pptx sets titles in
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
     body_h = height(b_style, body, measure.BODY, 400) + 4 if body_text else 0
-    total = label_h + LABEL_GAP + title_h + (BODY_GAP + body_h if body_text else 0)
+    total = label_h + label_gap + title_h + (BODY_GAP + body_h if body_text else 0)
     y = (BLOCK_TOP + BLOCK_BOTTOM - total) / 2
 
     ids = [int(e.get("id")) for e in tree.iter("{%s}cNvPr" % P) if (e.get("id") or "").isdigit()]
@@ -208,15 +216,17 @@ def _dress(root, layout_root, number):
                    '<p:txBody><a:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t">'
                    '<a:noAutofit/></a:bodyPr><a:lstStyle/><a:p>'
                    f'<a:r><a:rPr lang="en-US" sz="{round(LABEL_PT * 100)}" b="1" cap="all" spc="{round(LABEL_PT * 10)}">'
-                   '<a:solidFill><a:schemeClr val="accent1"/></a:solidFill>'
-                   f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>{LABEL} {number}</a:t></a:r></a:p></p:txBody>')
-    y += label_h + LABEL_GAP
+                   f'<a:solidFill><a:srgbClr val="{_eyebrow_hex()}"/></a:solidFill>'
+                   f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>{EYEBROW["label"] if EYEBROW else ""} {number}</a:t>'
+                   '</a:r></a:p></p:txBody>')
+    y += label_h + label_gap
     _set_xfrm(title, t_style[0], y, t_style[1], title_h)
     inset = 0.08 * t_style[2] / PT_PX
     tab = _decor(DECOR[1], sid + 1, 0, y + inset, TAB_W, title_h - 2 * inset,
                  '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill>'
                  '<a:schemeClr val="accent4"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>')
-    tree.append(label)
+    if EYEBROW:
+        tree.append(label)
     if TAB:
         tree.append(tab)
     if body_text:

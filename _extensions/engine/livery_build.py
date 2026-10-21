@@ -463,7 +463,8 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                "signoff": signoff("primary"),
                "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
                           "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
-               "eyebrow": {"label": dv.get("label", "Section"), "color": dv.get("label-color", "secondary")}}
+               "eyebrow": {"label": dv.get("label", "Section"), "color": dv.get("label-color", "secondary")}
+                          if dv.get("label", "Section") else None}   # section.label: null, no eyebrow
     feature = {**empty,
                "photo": {"box": _box(0, 0, 1, 1)},
                "bar": {"role": "dark", "opacity": 0.72, "box": _box(0, 0, 1, 180 / H)},
@@ -660,7 +661,6 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
                 L.append(f"\\def\\engine@geom@{k}{k2.replace('-', '')}{{{v2}}}")
         elif not isinstance(v, list):
             L.append(f"\\def\\engine@geom@{k.replace('-', '')}{{{v}}}")
-    L.append(f"\\def\\engine@section@label{{{livery.get('section', {}).get('label', 'Section')}}}")
     art = livery.get("art", {})
     waves = art.get("waves")
     if waves:
@@ -1053,6 +1053,7 @@ def emit_css_compositions(livery: dict) -> list[str]:
         if c["eyebrow"]:
             props.append(f"--engine-cmp-eyebrow: {role(c['eyebrow']['color'])};")
             props.append(f'--engine-cmp-eyebrow-label: "{c["eyebrow"]["label"]} ";')
+        props.append(f"--engine-cmp-eyebrow-display: {'block' if c['eyebrow'] else 'none'};")
         art = livery.get("art", {}).get(c["art"]) if c["art"] else None   # the art under the field, or none
         props.append(f'background: {"url(%s) center / cover no-repeat" % json.dumps(Path(art).name) if art else "none"};')
         L.append(f"{sel} {{\n  " + "\n  ".join(props) + "\n}")

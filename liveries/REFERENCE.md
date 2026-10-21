@@ -131,9 +131,9 @@ Section slides.
 
 | key | type | default | |
 |---|---|---|---|
-| `label` | string | `"Section"` | The eyebrow's word over the heading, as "SECTION n" (each format sets it in capitals). |
+| `label` | string or null | `"Section"` | The eyebrow's word over the heading, as "SECTION n" (each format sets it in capitals); null: no eyebrow. |
 | `tab` | boolean | `true` | The accent tab beside the heading. |
-| `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex (HTML and PDF). |
+| `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex. |
 
 ### `art`
 

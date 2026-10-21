@@ -21,8 +21,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A `{.shrink}` slide keeps its text color in the PDF. Beamer's shrink box reset it to black,
   so a dark livery's shrunk slide (the quickstart's equations) was black on black, and a light
   livery's shrunk text black instead of the brand's.
+- A section divider can go without its "SECTION n" label (`section.label: null`) in every
+  format; the PDF stopped on it before, and the pptx ignored it. The PDF now sets the livery's
+  label word (it always said "Section"), and the pptx its label color.
 
 ### Liveries
+- `section.label: null` drops the divider's eyebrow in every format;
+  `section.label-color` now reaches the pptx too.
 - `nasa-jsc-eg`: the NASA JSC Aeroscience and Flight Mechanics Division's template, dark, a
   flavor of `nasa-dark`: a starfield behind every slide, the division bar along the foot, the
   cover's yellow band, lab photo and the division's and a group's patches, the closing's centered

@@ -237,14 +237,14 @@
       "additionalProperties": false,
       "properties": {
         "label": {
-          "type": "string",
+          "type": ["string", "null"],
           "default": "Section",
-          "description": "The eyebrow's word over the heading, as \"SECTION n\" (each format sets it in capitals)."
+          "description": "The eyebrow's word over the heading, as \"SECTION n\" (each format sets it in capitals); null: no eyebrow."
         },
         "tab": {"type": "boolean", "description": "The accent tab beside the heading.", "default": true},
         "label-color": {
           "$ref": "#/$defs/role-or-hex",
-          "description": "The eyebrow's color, a role or a hex (HTML and PDF).",
+          "description": "The eyebrow's color, a role or a hex.",
           "default": "secondary"
         }
       }

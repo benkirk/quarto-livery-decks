@@ -82,21 +82,22 @@
 \defbeamertemplate*{section page}{Engine}{%
   \gdef\engine@bodystyle{section}%
   \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
-% the divider's stack, in its column: the eyebrow, the heading and its subtitle, with the tab
+% the divider's stack, in its column: the eyebrow (none when section.label is null), the heading
+% and its subtitle, with the tab
 \def\engine@sectionstack{%
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
-    \ifnum\thesection>0
+    \engine@ifc{eyebrow@label}{\ifnum\thesection>0
       {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
         \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
-    \fi
+    \fi}{}%
     {\usebeamerfont{section title}\insertsectionhead\par}%
     \ifx\engine@sectionsubtitle\@empty\else
       \vskip1.2ex
       {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
     \fi}%
   \engine@ctab\@tempboxa}
-\def\insertsectionnumberlabel{\sectionname~\insertsectionnumber}
-\providecommand\sectionname{Section}
+% the livery's word (section.label), as HTML and pptx set it
+\def\insertsectionnumberlabel{\engine@cv{eyebrow@label}~\insertsectionnumber}
 \defbeamertemplate*{subsection page}{Engine}{%
   \vbox{\raggedright
     {\usebeamerfont{section number}\usebeamercolor[fg]{structure}%
