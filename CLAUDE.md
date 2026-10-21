@@ -487,8 +487,9 @@ it does, by area, beyond the format notes above:
   (`release.yml` checks). `engine-revealjs.lua` reads it from there and names the HTML dependency
   by it (`engine-revealjs-<version>`), so a bump changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
-  liveries/*/` in the same PR (CI's `--check`), and `livery deps` warns a deck build when a
-  livery's stamp is another version. **Tags are immutable**: another release in the month is
+  liveries/*/` in the same PR (CI's `--check`) and the consumer example's `@v<version>` and
+  image tag in docs/other-repos.md (`tests/test_docs.py` holds them to it), and `livery deps`
+  warns a deck build when a livery's stamp is another version. **Tags are immutable**: another release in the month is
   the next `N`; `release.yml` refuses a tag whose release exists, that is not `YY.MM.N`, or whose
   month is still to come. `CHANGELOG.md` (Decks, Liveries, Plots,
   LaTeX; Keep a Changelog) gets every user-visible change under `[Unreleased]` in the PR that

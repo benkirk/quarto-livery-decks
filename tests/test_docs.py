@@ -8,7 +8,8 @@ dropped, `-1`, `-2` on a repeated heading): one test per file. Every section poi
 text file, the word README or a `.md` path followed by a quoted section name, names a heading
 that exists in that file (README is the root README.md; a path is from the repository root, else
 relative to the file). Fenced and inline code are skipped. `design/` is exempt: its handoffs are
-dated records of the sections of their day.
+dated records of the sections of their day. The consumer workflow example in docs/other-repos.md
+pins the engine's version (`@v<version>`, the image tag), so a release bumps it with the rest.
 """
 
 import os
@@ -138,3 +139,16 @@ def test_pointers():
             elif section not in headings(target)[0]:
                 bad.append(f"{f}:{line}: pointer to {where} \"{section}\": no such heading in {target}")
     assert not bad, "\n".join(bad)
+
+
+# 3. the consumer example's release pins: every `@vX.Y.Z` and image tag in docs/other-repos.md is
+# the engine's version, so the release PR that bumps `_extension.yml` bumps the example too
+PIN = re.compile(r"@v(\d+\.\d+\.\d+)\b|quarto-livery-decks:(\d+\.\d+\.\d+)\b")
+
+
+def test_consumer_pins():
+    import livery
+    version = livery.engine_version()
+    pins = [m.group(1) or m.group(2) for m in PIN.finditer(text_of("docs/other-repos.md"))]
+    assert pins, "docs/other-repos.md: no release pin in the consumer workflow example"
+    assert set(pins) == {version}, f"docs/other-repos.md pins {sorted(set(pins))}; the engine is {version}"
