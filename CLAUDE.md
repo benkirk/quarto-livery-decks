@@ -533,8 +533,9 @@ it does, by area, beyond the format notes above:
   number is `livery.json` `boxes` (`livery.yml` `boxes:`, merged box by box over `BOXES`). pptx:
   a grid slide; `grid-pptx.lua` writes `⟦engine:lead⟧`, `⟦engine:column card role=... pick
   solid⟧`, `⟦engine:strip role=...⟧` (each closed by `⟦engine:end⟧`) and prefix markers
-  `⟦engine:title⟧`/`sub`/`label`/`big`; `grid.py` draws native shapes ("Card n", "Card n head",
-  "Lead", "Card n strip k"...) under text boxes whose `lstStyle` is the master's body style
+  `⟦engine:title⟧`/`sub`/`label`/`big`; `grid.py` draws native shapes ("Card n fill", "Card n head",
+  "Lead fill", "Card n strip k"...), one group per card, lead or strip ("Card n", "Lead", "Strip": a
+  click selects it whole; tests look inside groups), under text boxes whose `lstStyle` is the master's body style
   (bullets and sizes as the placeholder's), each head its own height, a row's cards one height;
   `status_glyphs.py` makes a glyph the bullet (`a:buChar`). HTML: raw tags (a Div opening with a
   heading would become a `<section>`), the role a custom property (`role` is ARIA's attribute).

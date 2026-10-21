@@ -172,7 +172,8 @@ Each trades local capacity against a share of the consortium system.
 - **Status items.** In a card or a `::: {.status}` list, `- [x]`, `- [!]` and `- [-]` show ✓, ⚠
   and ✗ in the livery's status colors where the bullet was, a failed item's text muted. A
   literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays an unchecked task box.
-- pptx draws cards, leads and strips as native shapes and text boxes, editable in PowerPoint.
+- pptx draws cards, leads and strips as native shapes and text boxes, editable in PowerPoint:
+  each is one group ("Card 1", "Lead"), so a click selects it whole and a second click its text.
   The first-cut limit of three columns holds for cards: no picture or table in a card (the PDF
   draws a row with a table as plain columns). A lead beside a table goes in the title or the
   notes: a lead makes the slide a card slide, and the table would split it. A card slide's

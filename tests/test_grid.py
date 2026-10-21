@@ -79,6 +79,14 @@ def boxes(livery, width, shares, wide=False):
     return out
 
 
+def flat(shapes):
+    """Every shape, the ones in groups too (a card, a lead, a strip is a group of its shapes)."""
+    for sh in shapes:
+        yield sh
+        if sh.shape_type == 6:   # a group
+            yield from flat(sh.shapes)
+
+
 def body_placeholders(slide):
     return {sh.placeholder_format.idx: sh for sh in slide.placeholders if sh.placeholder_format.idx in (1, 2)}
 
@@ -160,16 +168,17 @@ def test_lead(deck):
     lead = livery["boxes"]["lead"]
     for n, text in ((4, ["The headline", "A plain line under it."]), (5, ["Only a lead."])):
         slide = prs.slides[n]
-        by = {sh.name: sh for sh in slide.shapes}
-        assert {"Lead", "Lead bar", "Lead text"} <= set(by), f"slide {n + 1}: {sorted(by)}"
-        assert str(by["Lead"].fill.fore_color.rgb) == lead["fill"][1:], "the lead's fill"
+        by = {sh.name: sh for sh in flat(slide.shapes)}
+        assert {"Lead", "Lead fill", "Lead bar", "Lead text"} <= set(by), f"slide {n + 1}: {sorted(by)}"
+        assert by["Lead"].shape_type == 6 and len(by["Lead"].shapes) == 3, "the lead one group of its three shapes"
+        assert str(by["Lead fill"].fill.fore_color.rgb) == lead["fill"][1:], "the lead's fill"
         assert str(by["Lead bar"].fill.fore_color.rgb) == lead["bar-color"][1:], "the bar's color"
         assert by["Lead bar"].width == round(lead["bar"] * prs.slide_height), "the bar's width"
-        assert by["Lead"].height == by["Lead text"].height < prs.slide_height / 3, "the lead cut to its text"
+        assert by["Lead fill"].height == by["Lead text"].height < prs.slide_height / 3, "the lead cut to its text"
         assert [p.text for p in by["Lead text"].text_frame.paragraphs] == text, "a source line a paragraph"
         assert "⟦" not in slide._element.xml, "a marker left"
-    by = {sh.name: sh for sh in prs.slides[4].shapes}
-    assert by["Column 1"].top >= by["Lead"].top + by["Lead"].height, "the columns under the lead"
+    by = {sh.name: sh for sh in flat(prs.slides[4].shapes)}
+    assert by["Column 1"].top >= by["Lead fill"].top + by["Lead fill"].height, "the columns under the lead"
     assert not body_placeholders(prs.slides[4]), "the emptied placeholder left"
 
 
@@ -180,15 +189,18 @@ def test_cards(deck):
     import livery as livery_mod
     livery, prs, _ = deck
     slide = prs.slides[6]
-    by = {sh.name: sh for sh in slide.shapes}
-    cards = [by[f"Card {n}"] for n in (1, 2, 3)]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    cards = [by[f"Card {n} fill"] for n in (1, 2, 3)]
+    for n in (1, 2, 3):   # each card one group: its fill, head or outline, text and strips inside
+        g = by[f"Card {n}"]
+        assert g.shape_type == 6 and f"Card {n} fill" in {sh.name for sh in flat(g.shapes)}, f"Card {n} is not a group of its shapes"
     for c, (x, w) in zip(cards, boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])):
         assert abs(c.left - x) <= 6 and abs(c.width - w) <= 6, f"{c.name} {c.left, c.width}, want {x, w}"
     assert len({c.height for c in cards}) == 1 and len({c.top for c in cards}) == 1, "the cards one height"
     role = lambda r: livery["roles"][r][1:]
     assert str(by["Card 1 head"].fill.fore_color.rgb) == role("primary"), "the head band in its role"
     assert str(by["Card 2 head"].fill.fore_color.rgb) == role("secondary")
-    assert "Card 3 head" not in by and str(by["Card 3"].fill.fore_color.rgb) == role("accent"), "a solid card is its role"
+    assert "Card 3 head" not in by and str(by["Card 3 fill"].fill.fore_color.rgb) == role("accent"), "a solid card is its role"
     ol = by["Card 1 outline"]
     assert str(ol.line.color.rgb) == livery["boxes"]["card"]["outline-color"][1:], "the pick's outline color"
     assert ol.line.width == round(livery["boxes"]["card"]["outline"] * prs.slide_height), "the outline's width"
@@ -219,7 +231,7 @@ def test_card_type_step(pandoc_deck, tmp_path):
     subprocess.run([sys.executable, "-c", step, str(out)], env=env, check=True, capture_output=True)
     from pptx import Presentation
     j = json.loads((d / "build" / "livery.json").read_text())
-    body = {sh.name: sh for sh in Presentation(str(out)).slides[0].shapes}["Card 1 body"].text_frame.paragraphs
+    body = {sh.name: sh for sh in flat(Presentation(str(out)).slides[0].shapes)}["Card 1 body"].text_frame.paragraphs
     big = next(p for p in body if p.text == "$20M")
     want = livery_mod.half_pt(j["type"]["roles"]["display"]["pt"] * 10 / j["type"]["roles"]["body"]["pt"])
     assert big.runs[0].font.size.pt == want, f"the big number at {big.runs[0].font.size.pt}, want {want}"
@@ -230,8 +242,8 @@ def test_strip(deck):
     full width, between the body's text above and below it, its text in its own box."""
     import livery as livery_mod
     livery, prs, _ = deck
-    by = {sh.name: sh for sh in prs.slides[6].shapes}
-    strip, card = by["Card 1 strip 1"], by["Card 1"]
+    by = {sh.name: sh for sh in flat(prs.slides[6].shapes)}
+    strip, card = by["Card 1 strip 1"], by["Card 1 fill"]
     want = livery_mod.mix(livery["roles"]["accent"], livery["roles"]["background"], livery["boxes"]["strip"]["tint"])
     assert "#" + str(strip.fill.fore_color.rgb) == want, f"the strip's fill {strip.fill.fore_color.rgb}, want {want}"
     assert (strip.left, strip.width) == (card.left, card.width), "the strip at the card's full width"
@@ -245,7 +257,7 @@ def test_default_roles(deck):
     """Cards without role= take boxes.card.roles in turn by their place in the row, the fourth the
     first again: no two neighbors alike."""
     livery, prs, _ = deck
-    by = {sh.name: sh for sh in prs.slides[7].shapes}
+    by = {sh.name: sh for sh in flat(prs.slides[7].shapes)}
     roles = livery["boxes"]["card"]["roles"]
     want = [livery["roles"][roles[k % len(roles)]][1:] for k in range(4)]
     assert [str(by[f"Card {n} head"].fill.fore_color.rgb) for n in (1, 2, 3, 4)] == want, "the heads' roles by place"

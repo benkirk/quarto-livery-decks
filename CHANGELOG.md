@@ -62,7 +62,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   (primary, secondary, accent), so a row's cards differ; `.pick` outlines the chosen card, `.solid`
   fills the whole card with the role; `[LOCAL INVESTMENT]{.label}` and `[$20M]{.big}` are a small
   caps label and a big number. A row's cards are one height, in every format; pptx draws them as
-  native shapes and text boxes, editable in PowerPoint. A picture or table in a card is not drawn
+  native shapes and text boxes, editable in PowerPoint, each card (and a lead box, a strip) one
+  group: a click selects the card, a second its text. A picture or table in a card is not drawn
   in it yet (a warning; the PDF draws a row with a table as plain columns).
 - A strip, `::: {.strip role="accent"}`, in a card or on its own: a band tinted in its role
   (`boxes.strip.tint` over the background) at the card's full width; on a solid card the role

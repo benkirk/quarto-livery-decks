@@ -7,7 +7,8 @@ Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:
 placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
-placeholder, cut to its measured height; the columns are free text boxes (Column 1, Column 2, ...)
+placeholder, cut to its measured height; the columns are free text boxes (Column 1, Column 2, ...; a card, a lead or a strip is one group of
+its shapes, "Card n", "Lead", "Strip", so a click in PowerPoint selects it whole)
 at columns.py's frames (each its share of the box less boxes.columns.gap, a livery's
 boxes.columns.rule in each gap), their list style the master's body style, so pandoc's paragraphs,
 moved into them with their own properties, keep the template's bullets and sizes; a lead is its
@@ -144,6 +145,19 @@ def body_box(slide, x, y, w, h, paragraphs, name):
     return tb
 
 
+def group(slide, shapes, name):
+    """The shapes as one PowerPoint group, named: a click selects the whole box (a card, a lead),
+    a second click a part. At the first shape's place in the stacking (python-pptx appends a
+    group on top); its child coordinates are the slide's (recalculate_extents)."""
+    tree = slide.shapes._spTree
+    shapes = sorted((sh for sh in shapes if sh is not None), key=lambda sh: list(tree).index(sh._element))
+    at = list(tree).index(shapes[0]._element)
+    g = slide.shapes.add_group_shape(shapes)
+    tree.remove(g._element); tree.insert(at, g._element)
+    g.name = name
+    return g
+
+
 def rect(slide, x, y, w, h, hexv, name, behind=None):
     """A filled rectangle (EMU, a #RRGGBB fill), no line or shadow; behind: a shape it goes under."""
     r = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
@@ -167,8 +181,9 @@ def draw_lead(slide, x, y, w, room, paras, slide_height):
     tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
     h = min(int(_text_height(tb, slide) * SLACK), room)
     tb.height = h
-    rect(slide, x, y, w, h, lead["fill"], "Lead", behind=tb)
-    rect(slide, x, y, bar, h, lead["bar-color"], "Lead bar", behind=tb)
+    fill = rect(slide, x, y, w, h, lead["fill"], "Lead fill", behind=tb)
+    bar_shape = rect(slide, x, y, bar, h, lead["bar-color"], "Lead bar", behind=tb)
+    group(slide, [fill, bar_shape, tb], "Lead")
     return h + vpad
 
 
@@ -366,12 +381,12 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             continue
         attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
         role, solid = _hex(_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)])), attrs.get("solid")
-        _shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n}", behind=c["first"])
+        mine = [_shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n} fill", behind=c["first"])]
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
-            _shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"])
+            mine.append(_shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"]))
         if attrs.get("pick"):
-            _shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
-                   line=(card["outline-color"], round(card["outline"] * slide_height)))
+            mine.append(_shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
+                               line=(card["outline-color"], round(card["outline"] * slide_height))))
         if hb is not None:
             hb.top, hb.height = y, head_h
         cy = y + head_h
@@ -382,6 +397,8 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             if r is not None:
                 r.top = cy
             cy += h
+        mine += [hb] + [part for _, tb, r, _ in c["parts"] for part in (tb, r)]
+        group(slide, mine, f"Card {n}")   # one object to move or copy in PowerPoint
     return total, n_col
 
 
@@ -410,7 +427,9 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
             continue
         if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
-            tb, _ = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _role(seg[1], "accent"), False, "Strip")
+            tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _role(seg[1], "accent"), False, "Strip fill")
+            tb.name = "Strip text"
+            group(slide, [r, tb], "Strip")
             y += tb.height + pads("strip")[0]
             continue
         _, shares, columns = seg
