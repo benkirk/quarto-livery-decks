@@ -17,6 +17,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.6] - 2026-10-20
+
 ### Decks
 - A figure's caption looks the same in every format: the caption size, the livery's muted
   color, centered, just under the picture. HTML centered a lone image's caption (it sat at the
