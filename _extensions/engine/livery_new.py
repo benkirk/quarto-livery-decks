@@ -9,7 +9,8 @@ stand-in face with its license, a placeholder mark drawn from the livery's name 
 dark version, the engine's default geometry, and reference/notes.md for the decisions. --from
 also writes reference/report.md (`livery inspect`) and takes the deck's fonts as the pptx
 typefaces and its slide size as pptx.size. --extends makes a flavor of a livery beside the new
-directory: a livery.yml naming only its parent, an empty _brand.yml, the notes.
+directory: a livery.yml naming only its parent, an empty _brand.yml, the notes (with --from,
+its reference/report.md too; the colors and fonts stay the parent's).
 """
 
 import os
@@ -114,6 +115,9 @@ def new(d: Path, deck: Path | None = None, extends: str | None = None):
         (d / "livery.yml").write_text(f"{header(d)}schema: 1\nname: {name}\nextends: {extends}\n")
         (d / "_brand.yml").write_text(f"# {name}: a flavor of {extends}; name here only what differs from ../{extends}/_brand.yml\n")
         (d / "reference" / "notes.md").write_text(NOTES.format(name=name))
+        if deck:   # a flavor takes its parent's colors and fonts; the deck's reading is still worth keeping
+            import livery_inspect
+            livery_inspect.inspect(deck, d / "reference" / "report.md")
         print(f"new flavor {d} of {parent}: edit livery.yml, then `livery all {d}`")
         return
     if not STAND_IN.is_dir():

@@ -38,6 +38,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   keeps the first two and dropped the rest without a word (HTML and PDF show them all).
 
 ### Liveries
+- The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
+  <parent>` keeps the deck's report too; a new flavor's first `all` passes its checks (its build
+  had named the parent's template).
 - `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill`, `text-role`, `text`) and
   `type.marking`: the marking strip's look and a default text.
 - A cover's text in two parts: `compositions.title.byline` (`role`, `box`, `anchor`, `align`,

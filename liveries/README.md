@@ -18,8 +18,8 @@ livery; `-v` prints every check.
 
 | command | what it does |
 |---|---|
-| `livery new <dir> [--from <deck.pptx>] [--extends <name>]` | scaffolds a livery that builds as it stands: a palette on PowerPoint's theme slots, the roles on them, Public Sans as a stand-in face, a placeholder mark from the livery's name, the default geometry, `reference/notes.md`. `--from` takes the reference deck's colors, fonts and slide size and writes `reference/report.md`; `--extends` makes a flavor of a livery beside it |
-| `livery inspect <deck.pptx> [-o report.md] [--media DIR]` | reports on a reference deck: slide size, theme slots, fonts, layouts and placeholders, colors by frequency, media |
+| `livery new <dir> [--from <deck.pptx>] [--extends <name>]` | scaffolds a livery that builds as it stands: a palette on PowerPoint's theme slots, the roles on them, Public Sans as a stand-in face, a placeholder mark from the livery's name, the default geometry, `reference/notes.md`. `--from` takes the reference deck's colors, fonts and slide size and writes `reference/report.md`; `--extends` makes a flavor of a livery beside it (with `--from`, the report only) |
+| `livery inspect <deck.pptx> [-o report.md] [--media DIR]` | reports on a reference deck (to the terminal, or to `-o`'s file): slide size, theme slots, fonts, layouts and placeholders, colors by frequency, media |
 | `livery build <dir>... [--check]` | validates `livery.yml` and `_brand.yml` against the schema and resolves them into `build/livery.{json,sty,css,theme,mplstyle}`; `--check` fails on a stale `build/` |
 | `livery template <dir> [-o FILE]` | generates `template.pptx` from `build/livery.json` (never edit it by hand) |
 | `livery check <dir>... [--swatch DIR] [--qa]` | build freshness, every file the data names, the template's pandoc compliance and that it rebuilds from the data, contrast warnings, the chart colors' checks (`--swatch`: their contact sheet `DIR/charts-<name>.png`); `--qa` then runs the quickstart deck's `make qa` under the livery |
