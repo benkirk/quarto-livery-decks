@@ -12,6 +12,8 @@ art, pandoc's caption box centered under it in the muted color, the slide number
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
 paragraph, the note's in the caption size and muted color, centred, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
+wide: the body placeholders take the slide less geometry.wide-margin a side (a columns slide's
+are columns.py's).
 closing: the slide moves onto the template's Closing layout (Closing (light) under themeoptions
 title=light, which slide-layout.lua records as `engine-title: light` and which also moves the
 title slide onto Title Slide (light); a band title ignores it), its placeholders dropping pandoc's
@@ -71,9 +73,10 @@ BAND         = (LIVERY.get("title") or {}).get("style") == "band"
 COMP         = LIVERY["compositions"]   # the title, closing, section and feature slides as boxes
 
 
-def _take_marker(slide):
-    """The slide's layout words, with their notes paragraphs removed (slide-layout.lua writes one,
-    single-body.lua another for a note)."""
+def take_marker(slide, key=MARKER):
+    """The words of the slide's notes lines that start with key, those paragraphs removed (for
+    engine-layout:, slide-layout.lua writes one, single-body.lua another for a note; columns.py
+    reads grid-pptx.lua's engine-columns:)."""
     if not slide.has_notes_slide:
         return None
     tf = slide.notes_slide.notes_text_frame
@@ -81,14 +84,13 @@ def _take_marker(slide):
         return None
     words = None
     for p in tf.paragraphs:
-        if p.text.strip().startswith(MARKER):
-            words = (words or []) + p.text.strip()[len(MARKER):].split()
+        if p.text.strip().startswith(key):
+            words = (words or []) + p.text.strip()[len(key):].split()
             body = p._p.getparent()
             body.remove(p._p)
             if body.find(qn("a:p")) is None:
                 etree.SubElement(body, qn("a:p"))
     return words
-    return None
 
 
 def _lvl_size(txstyle, level):
@@ -232,7 +234,11 @@ def caution_box(slide, shape, vcenter):
     bar.shadow.inherit = False
 
 
-def lay_out(slide, words):
+def lay_out(slide, words, width):
+    if "wide" in words and slide.slide_layout.name != "Two Content":   # columns.py frames a columns slide
+        m = GEOM["wide-margin"]
+        for shape in [sh for sh in slide.shapes if _is_body(sh)]:   # all four: a placeholder inherits its frame
+            shape.left, shape.top, shape.width, shape.height = round(m * width), shape.top, round((1 - 2 * m) * width), shape.height
     scale = 1.0
     for w in words:
         if w.startswith("scale="):
@@ -770,7 +776,7 @@ def run(prs, pptx: Path) -> None:
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
-    markers = [_take_marker(slide) for slide in prs.slides]
+    markers = [take_marker(slide) for slide in prs.slides]
     for slide, words in zip(prs.slides, markers):   # before numbering: the number is the new layout's
         if words and "closing" in words:
             if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
@@ -800,7 +806,7 @@ def run(prs, pptx: Path) -> None:
                       file=sys.stderr)
         else:
             note = "note" in words and note_style(slide)
-            lay_out(slide, words)
+            lay_out(slide, words, w)
             if note:   # after scale=: the box is cut to the note at the size it is set in
                 note_place(slide)
         done += 1

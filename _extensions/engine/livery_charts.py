@@ -568,9 +568,9 @@ def figsize(livery: dict) -> dict:
     w, h = livery["type"]["canvas"]["w"] / 72, livery["type"]["canvas"]["h"] / 72
     m = (livery.get("geometry") or {}).get("margin", 0.06)
     top = (livery.get("frametitle") or {}).get("body", 0.1667)
-    height = (1 - 0.0778 - top) * h
+    height = (livery["geometry"]["body-bottom"] - top) * h
     full = (1 - 2 * m) * w
-    half = (1 - 2 * m - 0.03) / 2 * w
+    half = (1 - 2 * m - livery["boxes"]["columns"]["gap"]) / 2 * w
     return {"full": [round(full, 2), round(height, 2)], "half": [round(half, 2), round(height, 2)]}
 
 

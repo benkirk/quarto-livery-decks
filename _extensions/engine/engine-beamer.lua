@@ -36,7 +36,13 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       frame option c, .hcenter centers prose and lists as a block (tables
       and captioned figures center on their own; with one of those or
       columns it does nothing), .center is both, and .fill does nothing;
-      .caution boxes the body on a soft yellow field (enginecaution)
+      .caution boxes the body on a soft yellow field (enginecaution), .wide
+      widens it to the paper less geometry.wide-margin a side (enginewide)
+
+  :::: {.columns} / ::: {.column width="55%"}
+      columns each its share of the text width less the livery's gaps
+      (boxes.columns.gap), as HTML and pptx lay them out (onlytextwidth: no
+      overhang into the margins; \enginecolshare)
 
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
@@ -128,11 +134,11 @@ end
 -- Per-slide layout controls: the body goes in a Div before the footnote hoist
 -- (which reaches into it) and becomes raw LaTeX afterwards (unwrap_layout).
 local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true,
-                         caution = true }
+                         caution = true, wide = true }
 local used = { scale = false, hcenter = false }
 
 local function take_layout(blk)
-  local h, v, caution, found = false, false, false, false
+  local h, v, caution, wide, found = false, false, false, false, false
   local kept = pandoc.List({})
   for _, c in ipairs(blk.classes) do
     if LAYOUT_CLASSES[c] then
@@ -140,6 +146,7 @@ local function take_layout(blk)
       h = h or c == "hcenter" or c == "center"
       v = v or c == "vcenter" or c == "center"
       caution = caution or c == "caution"
+      wide = wide or c == "wide"
     else
       kept:insert(c)
     end
@@ -155,7 +162,7 @@ local function take_layout(blk)
   end
   if not found then return nil end
   blk.classes = kept
-  return { h = h, v = v, caution = caution, scale = scale }
+  return { h = h, v = v, caution = caution, wide = wide, scale = scale }
 end
 
 local function wrap_layout(blocks)
@@ -178,6 +185,7 @@ local function wrap_layout(blocks)
       if lay.scale then attr["scale"] = lay.scale end
       if lay.h then attr["hcenter"] = "1" end
       if lay.caution then attr["caution"] = "1" end
+      if lay.wide then attr["wide"] = "1" end
       out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-body" }, attr)))
       out:extend(notes)
     end
@@ -212,6 +220,10 @@ local function unwrap_layout(blocks)
         used.scale = true
         open, close = "\\enginescalebegin{" .. scale .. "}", "\\enginescaleend"
       end
+      if b.attributes["wide"] then
+        open = open .. "\\begin{enginewide}"
+        close = "\\end{enginewide}" .. close
+      end
       if b.attributes["caution"] then
         open = open .. "\\begin{enginecaution}"
         close = "\\end{enginecaution}" .. close
@@ -229,6 +241,30 @@ local function unwrap_layout(blocks)
     end
   end
   return out
+end
+
+-- A .columns div at the text width (onlytextwidth: pandoc's spread the columns into the margins),
+-- each column its share (C.column_shares()) of the width less the gaps, a factor pandoc's writer
+-- puts before \linewidth (\enginecolshare), so beamer's \hfill between them is the livery's gap,
+-- The Div stays a Div: pandoc's
+-- writer scopes a heading's block to its column. Last, after the footnote hoist and the layout
+-- boxes, which read the Div.
+local function beamer_columns(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "columns") then return nil end
+    local cols, shares = C.column_shares(d)
+    if not has_class(d, "onlytextwidth") then d.classes:insert("onlytextwidth") end
+    local content, k = pandoc.Blocks({}), 0
+    for _, b in ipairs(d.content) do
+      if b.t == "Div" and has_class(b, "column") then
+        k = k + 1
+        b.attributes["width"] = string.format("\\enginecolshare{%.4f}{%d}", shares[k], #cols)
+      end
+      content:insert(b)
+    end
+    d.content = content
+    return d
+  end })
 end
 
 -- \enginescalebegin{S}: the body at S times the current size. Under the engine's font theme
@@ -641,7 +677,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = note_frames(unwrap_layout(hoist_footnotes(out)))
+  doc.blocks = beamer_columns(note_frames(unwrap_layout(hoist_footnotes(out))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

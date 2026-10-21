@@ -109,6 +109,19 @@
           "description": "The side margin of every slide, of the width.",
           "default": 0.06
         },
+        "wide-margin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The side margin of a `{.wide}` slide, of the width (default: half the margin)."
+        },
+        "body-bottom": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The foot of a content slide's body, of the height.",
+          "default": 0.9222
+        },
         "tab-width": {
           "type": "number",
           "minimum": 0,

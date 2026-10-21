@@ -86,7 +86,8 @@ def test_livery_charts(livery: Path):
 def fake(palette: dict, roles: dict, mode="light") -> dict:
     roles = {"background": "#FFFFFF", "foreground": "#111111", "dark": "#0B1B33", "muted": "#666A70", **roles}
     return {"name": "x", "palette": palette, "roles": roles, "mode": mode,
-            "type": {"canvas": {"w": 960, "h": 540}}, "geometry": {"margin": 0.06}, "frametitle": {"body": 0.1667}}
+            "type": {"canvas": {"w": 960, "h": 540}}, "geometry": {"margin": 0.06, "body-bottom": 0.9222},
+            "frametitle": {"body": 0.1667}, "boxes": {"columns": {"gap": 0.03}}}
 
 
 ONE = fake({"teal": "#00818F"}, {"primary": "#00818F"})

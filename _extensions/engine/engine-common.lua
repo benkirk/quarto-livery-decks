@@ -1,5 +1,5 @@
 -- engine-common.lua -- what the format filters share (engine-revealjs.lua, engine-beamer.lua, and
--- pptx's single-body.lua): loaded with dofile(quarto.utils.resolve_path("engine-common.lua")),
+-- pptx's single-body.lua and grid-pptx.lua): loaded with dofile(quarto.utils.resolve_path("engine-common.lua")),
 -- returning a table. A function here reads the same in every format; what a format does with the
 -- result stays in its filter (take_layout, hoist_footnotes and split_full differ by format and are
 -- not here).
@@ -94,8 +94,37 @@ local function is_note(blk)
   return blk.t == "Div" and has_class(blk, "note")
 end
 
+-- A .columns div's columns and their shares of the row, the gaps taken out first, as every format
+-- lays them out: a column's width= ("55%" or "0.55") is its share, the columns without one share
+-- what is left equally, and shares that add to more than 1 are scaled down to 1 (less than 1
+-- leaves the rest of the row empty, at the right).
+local function column_shares(div)
+  local cols, shares, given, missing = {}, {}, 0, 0
+  for _, c in ipairs(div.content) do
+    if c.t == "Div" and has_class(c, "column") then
+      table.insert(cols, c)
+      local w = c.attributes["width"]
+      local v = w and tonumber((w:gsub("%%$", "")))
+      if v and w:find("%%$") then v = v / 100 end
+      if v and v <= 0 then v = nil end
+      shares[#cols] = v or false
+      if v then given = given + v else missing = missing + 1 end
+    end
+  end
+  local rest = missing > 0 and (given < 1 and (1 - given) / missing or 1 / #cols) or 0
+  local total = 0
+  for i = 1, #cols do
+    shares[i] = shares[i] or rest
+    total = total + shares[i]
+  end
+  if total > 1 then
+    for i = 1, #cols do shares[i] = shares[i] / total end
+  end
+  return cols, shares
+end
+
 return {
-  has_class = has_class, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  has_class = has_class, column_shares = column_shares, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
   is_note = is_note,
 }

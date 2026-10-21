@@ -166,7 +166,7 @@ class Builder:
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab-width"]
-        title_top, rule_y, body_bottom = 0.049, 0.1444, 1 - 0.0778
+        title_top, rule_y, body_bottom = 0.049, 0.1444, g["body-bottom"]
         body_top = self.L.get("frametitle", {}).get("body", 0.1667)   # below a taller mark
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
         corner = self.logo_corner
@@ -349,7 +349,7 @@ class Builder:
 
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
-        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), 1 - 0.0778
+        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), g["body-bottom"]
         h = body_bottom - body_top
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]

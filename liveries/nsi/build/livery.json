@@ -1082,6 +1082,7 @@
     "tab": false
   },
   "geometry": {
+    "body-bottom": 0.9222,
     "full": {
       "caption": 0.06,
       "footline": 0.075,
@@ -1105,7 +1106,8 @@
       "bottom": 0.0889,
       "top": 0.1333
     },
-    "tab-width": 0.018
+    "tab-width": 0.018,
+    "wide-margin": 0.03
   },
   "installed-fonts": {
     "base": {

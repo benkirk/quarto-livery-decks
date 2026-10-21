@@ -40,6 +40,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
   format: the livery's `boxes:`, HTML's numbers. The pptx bar is a little thinner (ncar 4.5 to
   3.6 pt) and its pads follow the body type; the PDF bar is thinner (3 to 2.3 pt) and its text
   sits 0.9 em from the sides, as HTML's (0.55 em before), so a long caution line can wrap sooner.
+- Columns are laid out alike in every format: each its `width=` share of the text width less the
+  livery's gap (a column without a width shares what is left equally). pptx two-column slides
+  take their widths (pandoc wrote two halves), a picture or table in a column moving with it;
+  HTML columns get the gap in place of Quarto's small side margins; PDF columns keep to the text
+  width (they reached into the margins).
+- `{.wide}` on a slide's heading widens its body to the slide less a narrower margin
+  (`geometry.wide-margin`), in every format: room for three or four columns, or a wide table.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
@@ -70,6 +77,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   livery sets only what differs (`liveries/REFERENCE.md`); ncar rounds its cards' corners and
   keeps its status glyphs off yellow, nasa-jsc-eg rules its columns. `type.display`: the size of
   a card's big number (default as the closing's headline).
+- `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
+  `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 
 ## [26.10.6] - 2026-10-20
 

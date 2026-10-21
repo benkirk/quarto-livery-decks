@@ -68,8 +68,8 @@ short slide". Don't restate them; use them.
 - **The table-column rule is heuristic.** It needs three lines starting at the same x, and it
   skips right-aligned number columns. It was tuned on this theme's longtable output. A
   different table style may need the threshold raised, or its own rule.
-- **The PDF right edge** is 0.94 W for full-width pages and 0.97 W for column pages, which
-  overhang the margin. A theme margin change moves both (`EDGE` / `COLS_EDGE`).
+- **The PDF right edge** is 1 − margin (0.94 W on ncar), columns included (they keep to the
+  text width), and 1 − `geometry.wide-margin` on a `{.wide}` slide (`EDGE` / `WIDE_EDGE`).
 - **Overlays:** incremental pages map to one frame by the printed frame number. An
   unnumbered frame with overlays would miscount.
 - **Diagrams are invisible to the PDF text checks** when they are mermaid PNGs. Only the

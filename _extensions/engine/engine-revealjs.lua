@@ -172,10 +172,10 @@ end
 -- (unwrap_layout), since pandoc turns a Div that starts with a heading into a
 -- <section>.  The classes go on the slide; the script and the scss act on them.
 local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true,
-                         caution = true }
+                         caution = true, wide = true }
 
 local function take_layout(blk)
-  local h, v, fill, caution, found = false, false, false, false, false
+  local h, v, fill, caution, wide, found = false, false, false, false, false, false
   local kept = pandoc.List({})
   for _, c in ipairs(blk.classes) do
     if LAYOUT_CLASSES[c] then
@@ -184,6 +184,7 @@ local function take_layout(blk)
       v = v or c == "vcenter" or c == "center"
       fill = fill or c == "fill"
       caution = caution or c == "caution"
+      wide = wide or c == "wide"
     else
       kept:insert(c)
     end
@@ -199,7 +200,7 @@ local function take_layout(blk)
   end
   if not found then return nil end
   blk.classes = kept
-  return { h = h, v = v, fill = fill, caution = caution, scale = scale }
+  return { h = h, v = v, fill = fill, caution = caution, wide = wide, scale = scale }
 end
 
 local function wrap_layout(blocks)
@@ -217,6 +218,7 @@ local function wrap_layout(blocks)
       if lay.v then blk.classes:insert("engine-vcenter") end
       if lay.fill then blk.classes:insert("engine-fill") end
       if lay.caution then blk.classes:insert("engine-caution") end
+      if lay.wide then blk.classes:insert("engine-wide") end
       if lay.scale then blk.attributes["data-engine-scale"] = lay.scale end
       local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do
@@ -229,6 +231,21 @@ local function wrap_layout(blocks)
     end
   end
   return out
+end
+
+-- A .columns div's columns at their shares of the row less its gaps (C.column_shares(), as the pptx
+-- and PDF lay them out): flex-grow by the share from a zero basis, Quarto's width= dropped (the
+-- scss gives the row its gap)
+local function flex_columns(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "columns") then return nil end
+    local cols, shares = C.column_shares(d)
+    for k, col in ipairs(cols) do
+      col.attributes["width"] = nil
+      col.attributes["style"] = string.format("flex: %.4f 1 0%%;", shares[k]) .. (col.attributes["style"] or "")
+    end
+    return d
+  end })
 end
 
 local function unwrap_layout(blocks)
@@ -617,7 +634,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(doc.blocks), 0
+  local i, blocks, section = 1, wrap_layout(flex_columns(doc.blocks)), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

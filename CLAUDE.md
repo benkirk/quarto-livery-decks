@@ -166,7 +166,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rsvg-convert`: conda-forge librsvg), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
-  `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
+  `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
+  widths and the livery's gap, from `grid-pptx.lua`'s notes line), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
@@ -215,8 +216,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   (after pandoc, because anything after an image splits a pptx slide). A deck
   should not hand-roll footers for this. docs/authoring.md "Linked images".
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
-  `{.fill}`, each independent): the theme centers and scales the
-  body in HTML and PDF. pptx drops slide classes, so the engine's `slide-layout.lua`
+  `{.fill}`, `{.wide}`, each independent): the theme centers and scales the
+  body in HTML and PDF; `.wide` widens it to the slide less `geometry.wide-margin` a side in every
+  format (pptx: the body placeholders, a columns slide's columns). pptx drops slide classes, so the engine's `slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
   centers a table by its measured height (rows in PowerPoint's own sizing can still differ). `.center` is the theme's, not
@@ -510,7 +512,11 @@ it does, by area, beyond the format notes above:
   change, so `make qa` can't see it). Content *after* `.columns` still splits,
   so put it inside the last column. Code blocks are text and never split.
 - **Two columns at most.** pandoc keeps the first two `.column`s of a pptx slide and drops the
-  rest, silently (HTML and PDF show them all); `columns-pptx.lua` warns with the slide's title.
+  rest, silently (HTML and PDF show them all); `grid-pptx.lua` warns with the slide's title. Two
+  columns take their `width=` shares of the content box less `boxes.columns.gap` in every format:
+  `grid-pptx.lua` writes the shares on a notes line (`engine-columns: 0.55 0.45`, never a marker
+  paragraph in the body, which beside a picture or table demotes the slide) and `columns.py`
+  frames the placeholders and moves a column's picture or table with them.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves

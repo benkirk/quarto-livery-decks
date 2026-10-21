@@ -63,6 +63,7 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
 # paper's edge, the hairline under it
 FRAMETITLE = {"align": "left", "tab": True, "rule": True}
 BODY_TOP = 0.1667   # the content body's top, a fraction of the height (150 px of 900)
+BODY_BOTTOM = 0.9222   # its foot (the pptx body placeholder's; 70 px of 900 above the edge, as HTML pads)
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
 MARK_ROLES = ("background", "primary")
@@ -207,6 +208,9 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
+    g = out.setdefault("geometry", {})   # a {.wide} slide's side margin, and the body's foot
+    g.setdefault("wide-margin", round(g.get("margin", 0.06) / 2, 4))
+    g.setdefault("body-bottom", BODY_BOTTOM)
     out["frametitle"] = {**FRAMETITLE, **(data.get("frametitle") or {})}
     if out["frametitle"]["align"] not in ("left", "center"):
         sys.exit(f"{d.name}: frametitle.align {out['frametitle']['align']!r} is not left or center")
@@ -939,7 +943,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-logo-aspect: {logo['aspect']};")
     if "top" in logo:   # the content mark's top (the field slides' marks are their compositions')
         props.append(f"--engine-logo-top: {px(logo['top'])};")
-    for k in ("margin", "tab-width"):
+    for k in ("margin", "tab-width", "wide-margin"):
         if k in geom:
             props.append(f"--engine-{k}: {px(geom[k], W)};")
     for k, v in geom.get("full", {}).items():

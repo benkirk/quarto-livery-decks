@@ -69,6 +69,8 @@ Per deck, `make pptx` runs:
      demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text or a
      `::: note` after a table or image, which joins its caption box);
    - `slide-layout.lua` carries a slide's layout classes over as a notes line for `slide_layout`;
+   - `grid-pptx.lua` carries a two-column slide's widths over as a notes line for `columns`, and
+     warns about a slide of more than two (pandoc's pptx keeps the first two);
    - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [authoring.md "Linked images"](authoring.md#linked-images));
    - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too).
 2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
@@ -99,6 +101,9 @@ Per deck, `make pptx` runs:
    - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
      title slides at the template's extra layouts; sets a `::: note` in the caption's look
      under its figure (see [authoring.md "Notes under a figure"](authoring.md#notes-under-a-figure)); copies the slide number onto every slide.
+   - `columns`: sets a two-column slide's columns at their widths, the livery's gap between them
+     (`boxes.columns.gap`), as HTML and PDF lay them out; pandoc's are the template's two halves.
+     A picture or table in a column moves and scales with it.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in the primary color, thin rules between rows, every second row banded, the
      blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set

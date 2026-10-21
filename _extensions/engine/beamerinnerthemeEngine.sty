@@ -317,6 +317,18 @@
       \hbox{\hskip\engine@padx\usebox\engine@cautionbox\hskip\engine@padx}\vskip\engine@pady}}}}\par}
 
 % ---------------------------------------------------------------------------
+% columns: \enginecolshare{<share>}{<n columns>}\linewidth is a column's width, its share of the line
+% width less the n - 1 gaps (livery.sty's boxes.columns.gap); the Quarto filter has pandoc write
+% \begin{columns}[T,onlytextwidth], whose \hfill between columns is then the gap
+% {.wide}: \begin{enginewide} sets the body \paperwidth less geometry.wide-margin a side
+% ---------------------------------------------------------------------------
+\newcommand\enginecolshare[2]{\fpeval{#1*(1-(#2-1)*\engine@boxes@columns@gap*\paperwidth/\linewidth)}}
+\def\engine@wideout{\dimexpr\engine@geom@margin\paperwidth-\engine@geom@widemargin\paperwidth\relax}
+\newenvironment{enginewide}{\par\noindent\hspace*{-\engine@wideout}%
+  \begin{minipage}[t]{\dimexpr\paperwidth-2\dimexpr\engine@geom@widemargin\paperwidth\relax\relax}}%
+  {\end{minipage}\hspace*{-\engine@wideout}\par}
+
+% ---------------------------------------------------------------------------
 % tables: pandoc's longtable, drawn as the HTML theme draws them -- no top
 % rule, a heavy rule in the brand color under the header, a light one at the
 % foot, and every second body row on Light Gray.  The Quarto filter wraps

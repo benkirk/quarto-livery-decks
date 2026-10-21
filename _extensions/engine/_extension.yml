@@ -56,6 +56,8 @@ contributes:
       #   strip-raw-figure  quarto's raw-HTML <figure> wrappers: pandoc counts them as text when
       #                     choosing a layout, demoting a columns slide with a diagram to Comparison
       #   slide-layout      the theme's .center/scale= etc. as a notes line, for slide_layout.py
+      #   grid-pptx         a two-column slide's shares as a notes line, for columns.py; a warning
+      #                     for more than two: pandoc's pptx keeps the first two, drops the rest
       #   notes-last        speaker notes before a columns div split the slide; every slide's
       #                     notes move to its end, so any placement is safe
       #   single-body       content after a table or diagram splits the slide; the paragraphs
@@ -63,8 +65,6 @@ contributes:
       #                     (after notes-last; slide_layout.py moves a note up under it)
       #   linked-images     [![](x.png)](url): link_captions.py draws the line (here a no-op)
       #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark
-      #   columns-pptx      a warning for a slide of more than two columns: pandoc's pptx keeps
-      #                     the first two and drops the rest, silently
       reference-doc: ../../liveries/ncar/template.pptx
       highlight-style: ../../liveries/ncar/build/livery.theme
       slide-level: 2
@@ -72,8 +72,8 @@ contributes:
       filters:
         - strip-raw-figure.lua
         - slide-layout.lua
+        - grid-pptx.lua
         - notes-last.lua
         - single-body.lua
         - linked-images.lua
         - diagram-dark.lua
-        - columns-pptx.lua

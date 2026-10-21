@@ -79,6 +79,8 @@ The slides' furniture, in fractions of the slide.
 | key | type | default | |
 |---|---|---|---|
 | `margin` | fraction | `0.06` | The side margin of every slide, of the width. |
+| `wide-margin` | fraction |  | The side margin of a `{.wide}` slide, of the width (default: half the margin). |
+| `body-bottom` | fraction | `0.9222` | The foot of a content slide's body, of the height. |
 | `tab-width` | fraction |  | The width of the accent tab at the paper's edge beside titles, of the width. |
 | `logo` | object |  | The brand mark. |
 | `pagenumber` | object |  | The page number. |

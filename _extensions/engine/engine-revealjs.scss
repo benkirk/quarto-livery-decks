@@ -374,6 +374,27 @@ $mermaid-label-fg-color: $engine-primary;
   background: var(--engine-caution-fill);
   border-left: var(--engine-caution-bar) solid var(--engine-warning);
 }
+// .wide: the body takes the slide less geometry.wide-margin a side, not the margin
+.reveal .slides section.engine-wide > .engine-body {
+  margin-left: calc(var(--engine-wide-margin) - var(--engine-margin));
+  margin-right: calc(var(--engine-wide-margin) - var(--engine-margin));
+}
+// columns: each its share of the row less the gaps (engine-revealjs.lua sets the flex-grow from
+// the column's width=), the livery's gap between them (boxes.columns.gap), as the pptx and PDF
+// lay them out; the gap replaces Quarto's 0.25/0.5rem side margins
+.reveal .slides section .columns {
+  display: flex;
+  gap: var(--engine-column-gap);
+  align-items: stretch;
+}
+.reveal .slides section .columns > .column {
+  min-width: 0;
+  position: relative;
+}
+.reveal .slides section .columns > .column > :not(ul, ol) {
+  margin-left: 0;
+  margin-right: 0;
+}
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;
