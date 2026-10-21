@@ -88,7 +88,7 @@ class Builder:
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]
         t = livery["type"]   # type sizes in points on the livery's canvas (hundredths in the xml)
-        self.sz = lambda role, scale=1: round(t["roles"][role]["pt"] * scale * 2) * 50
+        self.sz = lambda role: round(t["roles"][role]["pt"] * 2) * 50   # a role's size, to the half point
         self.levels = [round(p * 100) for p in t["levels"]]
         # absolute lengths drawn for the 540 pt canvas (indents, insets), scaled onto this one
         self.k = H_EMU / 6858000

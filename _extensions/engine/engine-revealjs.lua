@@ -221,12 +221,13 @@ end
 
 -- A card column (C.card_attrs()): the Div kept (its flex share), its content raw tags round a head
 -- band (the title and sub) and a body, the role a custom property (role= is ARIA's attribute in
--- HTML); [..]{.label}, [..]{.big} and [..]{.sub} spans as engine- classes. The scss draws it.
+-- HTML); [..]{.label} and [..]{.big} spans as engine- classes (a .sub is the band's, read by
+-- card_attrs; one in a body is left alone, as the other formats leave it). The scss draws it.
 local function inline_html(inlines)
   return (pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "html"):gsub("%s+$", ""))
 end
 
-local SPANS = { label = "engine-label", big = "engine-big", sub = "engine-sub" }
+local SPANS = { label = "engine-label", big = "engine-big" }
 
 local function card_columns(blocks, livery)
   local roles = livery.boxes.card.roles

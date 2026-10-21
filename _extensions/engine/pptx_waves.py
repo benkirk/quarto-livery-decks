@@ -97,8 +97,8 @@ def comp_shapes(lines, comp, first_id, w_emu, h_emu, field_slot="tx2", line_slot
     return out
 
 
-def wave_shapes(lines, first_id, w_emu, h_emu, shift, slot, bands=True, line_px=2.4):
-    """The lines alone, the content slides' (the master's): not a composition."""
+def wave_shapes(lines, first_id, w_emu, h_emu, shift, slot):
+    """The lines alone, the content slides' (the master's), 2.4 px wide: not a composition."""
     emu_px = w_emu / 1600
     return [shape_xml(first_id + k, f"Wave line {k + 1}", line_geom(lines, k, shift), "<a:noFill/>",
-                      f'<a:ln w="{round(line_px * emu_px)}">{scheme_fill(slot)}</a:ln>', w_emu, h_emu) for k in range(len(lines))]
+                      f'<a:ln w="{round(2.4 * emu_px)}">{scheme_fill(slot)}</a:ln>', w_emu, h_emu) for k in range(len(lines))]
