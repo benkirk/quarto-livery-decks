@@ -109,9 +109,9 @@
   --engine-strip-tint: 18%;
   --engine-strip-pad: 0.3em 0.8em;
   --engine-strip-gap: 0.3em;
-  --engine-status-done: #096FAE;
-  --engine-status-warn: #CFB87C;
-  --engine-status-fail: #CFB87C;
+  --engine-glyph-done: #096FAE;
+  --engine-glyph-warn: #CFB87C;
+  --engine-glyph-fail: #CFB87C;
 }
 /* chart colors (livery.json charts) */
 :root {

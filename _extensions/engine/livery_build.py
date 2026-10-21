@@ -854,7 +854,8 @@ def tex_camel(key: str) -> str:
 def emit_sty_boxes(livery: dict) -> list[str]:
     """The boxes (livery.json boxes): \\engine@boxes@<box>@<key> for each number (fractions of the paper,
     tint a share), @pady and @padx for each pad (em, so the factor goes before `em`), and a color per
-    color key, EngineBoxes<Box><Key> (the status glyphs' EngineStatus<Key>), as hex."""
+    color key, EngineBoxes<Box><Key> (the status glyphs' EngineGlyph<Key>: EngineStatus* are the
+    charts'), as hex."""
     L = ["% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),",
          "% its pads (@pady, @padx: em of the body type) and colors"]
     for box, v in livery["boxes"].items():
@@ -863,7 +864,7 @@ def emit_sty_boxes(livery: dict) -> list[str]:
             if k == "roles":   # role names, read from livery.json by the filters
                 continue
             if k in BOX_COLORS.get(box, ()):
-                tex = f"EngineStatus{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
+                tex = f"EngineGlyph{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
                 L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{val[1:]}}}")
             elif isinstance(val, list):   # [vertical, horizontal]
                 L.append(f"\\def\\engine@boxes@{box}@{name}y{{{val[0]}}}\\def\\engine@boxes@{box}@{name}x{{{val[1]}}}")
@@ -1112,7 +1113,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-card-pad-x: {card['pad'][1]:g}em;"]   # a strip reaches the card's edges by it
     p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};",
           f"--engine-strip-gap: {strip['pad'][0]:g}em;"]   # above and below it: its vertical pad
-    p += [f"--engine-status-{k}: {c};" for k, c in b["status"].items()]
+    p += [f"--engine-glyph-{k}: {c};" for k, c in b["status"].items()]   # the ✓ ⚠ ✗ glyphs (--engine-status-* are the charts')
     return p
 
 

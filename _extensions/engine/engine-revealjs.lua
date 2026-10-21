@@ -196,10 +196,10 @@ local function status_items(blocks)
       if kind then
         local first = item[1]
         local glyph = first.content[1].text .. (kind == "warn" and "\u{FE0E}" or "")
-        local il = pandoc.Inlines({ pandoc.Span({ pandoc.Str(glyph) }, pandoc.Attr("", { "engine-status-" .. kind })) })
+        local il = pandoc.Inlines({ pandoc.Span({ pandoc.Str(glyph) }, pandoc.Attr("", { "engine-glyph-" .. kind })) })
         local rest = pandoc.Inlines({})
         for j = 3, #first.content do rest:insert(first.content[j]) end
-        if kind == "fail" then il:insert(pandoc.Span(rest, pandoc.Attr("", { "engine-status-text" }))) else il:extend(rest) end
+        if kind == "fail" then il:insert(pandoc.Span(rest, pandoc.Attr("", { "engine-glyph-text" }))) else il:extend(rest) end
         first.content = il
       end
     end

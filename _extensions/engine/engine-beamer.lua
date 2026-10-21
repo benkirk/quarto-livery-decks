@@ -309,8 +309,8 @@ end
 
 -- Status items (C.status_lists()): a list holding one becomes beamer's itemize, each status item's
 -- glyph its \item[...] label (where the bullet is, as HTML's and the pptx's), bold in its status
--- color (livery.sty's EngineStatus*), a failed item's text muted; the other items keep the bullet.
-local STATUS_TEX = { done = "EngineStatusDone", warn = "EngineStatusWarn", fail = "EngineStatusFail" }
+-- color (livery.sty's EngineGlyph*), a failed item's text muted; the other items keep the bullet.
+local STATUS_TEX = { done = "EngineGlyphDone", warn = "EngineGlyphWarn", fail = "EngineGlyphFail" }
 
 local function status_items(blocks)
   return C.status_lists(blocks, function(l, kinds)

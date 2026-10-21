@@ -46,7 +46,8 @@ def test_every_key(livery):
     css = (livery / "build" / "livery.css").read_text()
     sty = (livery / "build" / "livery.sty").read_text()
     assert f"--engine-caution-pad: {b['caution']['pad'][0]:g}em {b['caution']['pad'][1]:g}em;" in css
-    assert f"--engine-status-done: {b['status']['done']};" in css
+    assert f"--engine-glyph-done: {b['status']['done']};" in css   # the glyphs'; --engine-status-* are the charts'
+    assert f"\\definecolor{{EngineGlyphDone}}{{HTML}}{{{b['status']['done'][1:]}}}" in sty
     assert f"\\def\\engine@boxes@caution@padx{{{b['caution']['pad'][1]}}}" in sty
     assert f"\\definecolor{{EngineBoxesCardOutlineColor}}{{HTML}}{{{b['card']['outline-color'][1:]}}}" in sty
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
