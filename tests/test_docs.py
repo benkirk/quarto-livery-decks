@@ -152,3 +152,17 @@ def test_consumer_pins():
     pins = [m.group(1) or m.group(2) for m in PIN.finditer(text_of("docs/other-repos.md"))]
     assert pins, "docs/other-repos.md: no release pin in the consumer workflow example"
     assert set(pins) == {version}, f"docs/other-repos.md pins {sorted(set(pins))}; the engine is {version}"
+
+
+# 4. the changelog's link block: every `## [x.y.z]` section has its release link, and
+# `[Unreleased]` compares from the newest one (a release renames the section and adds the link)
+def test_changelog_links():
+    text = text_of("CHANGELOG.md")
+    versions = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", text, re.M)
+    links = dict(re.findall(r"^\[(\d+\.\d+\.\d+)\]: (\S+)$", text, re.M))
+    assert versions, "CHANGELOG.md: no release section"
+    missing = [v for v in versions if links.get(v) != f"https://github.com/benkirk/quarto-livery-decks/releases/tag/v{v}"]
+    assert not missing, f"CHANGELOG.md: no release link for {missing}"
+    unreleased = re.search(r"^\[Unreleased\]: \S+/compare/v(\d+\.\d+\.\d+)\.\.\.HEAD$", text, re.M)
+    assert unreleased and unreleased.group(1) == versions[0], \
+        f"CHANGELOG.md: [Unreleased] compares from {unreleased and unreleased.group(1)}; the newest section is {versions[0]}"

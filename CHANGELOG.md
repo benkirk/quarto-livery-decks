@@ -74,6 +74,7 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - The sample deck shows each of these (a 2/3 and 1/3 split, three plain columns, four on a wide
   slide, option cards with a lead, a strip and status items, solid cards), and the quickstart a
   card slide, in the README. docs/authoring.md "Columns" and "Cards and lead boxes".
+- `make measure` skips a composition's empty box instead of stopping on it.
 - pptx: a card's head band is square at its foot on a livery with rounded cards (ncar and its
   family); it was rounded all round, so the card's fill showed at the band's lower corners.
 
@@ -124,6 +125,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   band, lab photo and patches on white, the text black.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
+- A photo cover may have `field: null` (no field under the text); it stopped the pptx and HTML
+  renders before.
 
 ### LaTeX
 - Frames are top-aligned (the class option `t`, without beamer's 0.2 cm under the title); give a
@@ -331,7 +334,10 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.3...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.6...HEAD
+[26.10.6]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.6
+[26.10.5]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.5
+[26.10.4]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.4
 [26.10.3]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.3
 [26.10.2]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.2
 [26.10.1]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.1
