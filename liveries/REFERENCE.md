@@ -146,11 +146,11 @@ Pictures and curves behind the fields. A path is relative to the livery.
 
 | key | type | default | |
 |---|---|---|---|
-| `title` | path |  | A picture covering the cover's field. |
-| `section` | path |  | A picture covering section slides' field. |
-| `closing` | path |  | A picture covering the closing slide's field (a band livery's default: title's). |
-| `content` | path |  | A picture behind every content slide. |
-| `titlegraphic` | path |  | The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover). |
+| `title` | null or path |  | A picture covering the cover's field. (null: none: a flavor unsetting its parent's) |
+| `section` | null or path |  | A picture covering section slides' field. (null: none: a flavor unsetting its parent's) |
+| `closing` | null or path |  | A picture covering the closing slide's field (a band livery's default: title's). (null: none: a flavor unsetting its parent's) |
+| `content` | null or path |  | A picture behind every content slide. (null: none: a flavor unsetting its parent's) |
+| `titlegraphic` | null or path |  | The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover). (null: none: a flavor unsetting its parent's) |
 | `waves` | object |  | The brand's wave lines, drawn by the engine in the roles' colors: bands on the cover, section and closing slides, faint lines behind content slides. |
 
 ### `art.waves`

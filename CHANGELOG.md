@@ -108,6 +108,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   image on one composed slide, in place of its field role's; a light variant keeps it. nasa-jsc-eg
   names its group patch and the NASA wordmark this way; its light title and closing showed the
   division bar in the patch's box.
+- A flavor unsets an inherited `art` picture (`art: {titlegraphic: null}`) or code face
+  (`typography: {monospace: null}` in its `_brand.yml`) with `null`. nasa-jsc-eg's cover no
+  longer doubles as its default title photo: it is the title composition's art.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 

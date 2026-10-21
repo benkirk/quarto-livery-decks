@@ -267,16 +267,16 @@
       "description": "Pictures and curves behind the fields. A path is relative to the livery.",
       "additionalProperties": false,
       "properties": {
-        "title": {"$ref": "#/$defs/path", "description": "A picture covering the cover's field."},
-        "section": {"$ref": "#/$defs/path", "description": "A picture covering section slides' field."},
+        "title": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering the cover's field. (null: none: a flavor unsetting its parent's)"},
+        "section": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering section slides' field. (null: none: a flavor unsetting its parent's)"},
         "closing": {
-          "$ref": "#/$defs/path",
-          "description": "A picture covering the closing slide's field (a band livery's default: title's)."
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}],
+          "description": "A picture covering the closing slide's field (a band livery's default: title's). (null: none: a flavor unsetting its parent's)"
         },
-        "content": {"$ref": "#/$defs/path", "description": "A picture behind every content slide."},
+        "content": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture behind every content slide. (null: none: a flavor unsetting its parent's)"},
         "titlegraphic": {
-          "$ref": "#/$defs/path",
-          "description": "The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover)."
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}],
+          "description": "The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover). (null: none: a flavor unsetting its parent's)"
         },
         "waves": {
           "type": "object",
@@ -1116,6 +1116,7 @@
             "headings": {"type": "string"},
             "monospace": {
               "oneOf": [
+                {"type": "null"},
                 {"type": "string"},
                 {
                   "type": "object",

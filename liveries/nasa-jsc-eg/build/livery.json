@@ -4,7 +4,7 @@
     "content": "art/content.jpg",
     "section": "art/closing.jpg",
     "title": "art/title.jpg",
-    "titlegraphic": "art/title.jpg"
+    "titlegraphic": null
   },
   "blends": {
     "alert-text": "#FF4458",

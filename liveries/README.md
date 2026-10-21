@@ -78,7 +78,10 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      nothing, the engine generates one from the brand's own colors. Look at the swatch sheet
      (step 3) and record the result in the notes.
    - **Flavors.** `extends:` makes a livery a flavor of another, naming only what differs
-     (`livery new liveries/<name> --extends <parent>`).
+     (`livery new liveries/<name> --extends <parent>`). `null` unsets what the parent sets: an
+     `art` picture (`art: {titlegraphic: null}`), or the code face in the flavor's `_brand.yml`
+     (`typography: {monospace: null}`; the parent's font list still comes whole, its code-face
+     files with it).
 3. **Build and check.** `make livery LIVERY=<name>` after every change; `livery check
    liveries/<name> --qa` adds the quickstart deck's `make qa` and the chart colors' contact sheet
    in `decks/quickstart/_qa/`. `make -C decks/plots qa LIVERY=<name>` shows the plots in it,
