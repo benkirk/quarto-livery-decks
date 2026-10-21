@@ -383,7 +383,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         role, solid = _hex(_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)])), attrs.get("solid")
         mine = [_shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n} fill", behind=c["first"])]
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
-            mine.append(_shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"]))
+            mine.append(_shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"], top_only=True))
         if attrs.get("pick"):
             mine.append(_shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
                                line=(card["outline-color"], round(card["outline"] * slide_height))))

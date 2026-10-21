@@ -74,6 +74,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - The sample deck shows each of these (a 2/3 and 1/3 split, three plain columns, four on a wide
   slide, option cards with a lead, a strip and status items, solid cards), and the quickstart a
   card slide, in the README. docs/authoring.md "Columns" and "Cards and lead boxes".
+- pptx: a card's head band is square at its foot on a livery with rounded cards (ncar and its
+  family); it was rounded all round, so the card's fill showed at the band's lower corners.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
