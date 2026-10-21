@@ -62,4 +62,14 @@
 
 \setbeamertemplate{navigation symbols}{}
 
+% frames from the top, as HTML and the pptx anchor a body (beamer centers by default; a frame's own
+% c, which {.vcenter} writes, still centers it), and from the body's top itself: beamer's t puts
+% 0.2 cm under the title, which the frame title's own band already holds (beamerouterthemeEngine.sty)
+\beamer@centeredfalse
+\define@key{beamerframe}{t}[true]{%
+  \beamer@frametopskip=0pt plus .5\paperheight\relax
+  \beamer@framebottomskip=0pt plus 1fill\relax
+  \beamer@frametopskipautobreak=\beamer@frametopskip\relax
+  \beamer@framebottomskipautobreak=\beamer@framebottomskip\relax}
+
 \mode<all>

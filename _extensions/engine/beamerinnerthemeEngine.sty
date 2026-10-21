@@ -332,7 +332,7 @@
   {\color{BrandRule}\vrule width\engine@boxes@columns@rule\paperheight height 1ex}%
   \kern.5\dimexpr\engine@boxes@columns@gap\paperwidth-\engine@boxes@columns@rule\paperheight\relax\fi}
 \def\engine@wideout{\dimexpr\engine@geom@margin\paperwidth-\engine@geom@widemargin\paperwidth\relax}
-\newenvironment{enginewide}{\par\noindent\hspace*{-\engine@wideout}%
+\newenvironment{enginewide}{\par\vskip-\parskip\noindent\hspace*{-\engine@wideout}%   % at the body's top
   \begin{minipage}[t]{\dimexpr\paperwidth-2\dimexpr\engine@geom@widemargin\paperwidth\relax\relax}}%
   {\end{minipage}\hspace*{-\engine@wideout}\par}
 

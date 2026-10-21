@@ -50,6 +50,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   (`geometry.wide-margin`), in every format: room for three or four columns, or a wide table.
 - A rule between columns where the livery sets `boxes.columns.rule` (nasa-jsc-eg's hairline), in
   every format, centered in each gap and as tall as the row's tallest column.
+- PDF: a slide's body starts at the top, under its title, as in HTML and pptx; beamer centered
+  it vertically. `{.vcenter}` (or `{.center}`) still centers a slide in every format.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
@@ -82,6 +84,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   a card's big number (default as the closing's headline).
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
+
+### LaTeX
+- Frames are top-aligned (the class option `t`, without beamer's 0.2 cm under the title); give a
+  frame `[c]` to center it.
 
 ## [26.10.6] - 2026-10-20
 

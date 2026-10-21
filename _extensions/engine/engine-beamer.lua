@@ -268,6 +268,24 @@ local function beamer_columns(blocks)
   end })
 end
 
+-- A frame whose body opens with a paragraph: \vskip-\parskip before it, so it starts at the body's
+-- top as HTML's and the pptx's do (TeX puts \parskip, the parskip package's half line, before every
+-- paragraph; a list opens at its own \topsep, which already matches). Frames are top-aligned
+-- (beamerthemeEngine.sty), so the space showed. Past the footnote spring, which leads a frame.
+local function first_paragraph(blocks)
+  local out, fresh = pandoc.Blocks({}), false
+  for _, b in ipairs(blocks) do
+    if b.t == "Header" and b.level == slide_level then
+      fresh = true
+    elseif fresh and not (b.t == "RawBlock" and b.text == "\\enginefootnotespring") then
+      if b.t == "Para" or b.t == "Plain" then out:insert(latex("\\vskip-\\parskip")) end
+      fresh = false
+    end
+    out:insert(b)
+  end
+  return out
+end
+
 -- \enginescalebegin{S}: the body at S times the current size. Under the engine's font theme
 -- every role (tables, code, captions, the sub-item levels, list spacing) is a share of
 -- \engine@typebody, read when it is used, so scaling that scales them all; without it, the
@@ -678,7 +696,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = beamer_columns(note_frames(unwrap_layout(hoist_footnotes(out))))
+  doc.blocks = first_paragraph(beamer_columns(note_frames(unwrap_layout(hoist_footnotes(out)))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end
