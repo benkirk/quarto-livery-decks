@@ -34,6 +34,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - PDF: a `{.full}` slide's caption is set at the caption size; it was the body's (the node's
   font never selected the size).
 
+- pptx: a slide of more than two columns warns at render time, naming the slide: pandoc's pptx
+  keeps the first two and dropped the rest without a word (HTML and PDF show them all).
+
 ### Liveries
 - `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill`, `text-role`, `text`) and
   `type.marking`: the marking strip's look and a default text.

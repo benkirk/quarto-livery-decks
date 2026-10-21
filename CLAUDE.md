@@ -158,7 +158,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   docs/other-repos.md "Building in GitHub Actions". Phase 2, a template repository, is #118.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
-  `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
+  `toc` and the seven pptx filters in order; a project's `reference-doc:` wins).
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
   which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
@@ -502,6 +502,8 @@ it does, by area, beyond the format notes above:
   placeholder and silently drops the text after it (the slide count doesn't
   change, so `make qa` can't see it). Content *after* `.columns` still splits,
   so put it inside the last column. Code blocks are text and never split.
+- **Two columns at most.** pandoc keeps the first two `.column`s of a pptx slide and drops the
+  rest, silently (HTML and PDF show them all); `columns-pptx.lua` warns with the slide's title.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves

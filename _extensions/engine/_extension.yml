@@ -63,6 +63,8 @@ contributes:
       #                     (after notes-last; slide_layout.py moves a note up under it)
       #   linked-images     [![](x.png)](url): link_captions.py draws the line (here a no-op)
       #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark
+      #   columns-pptx      a warning for a slide of more than two columns: pandoc's pptx keeps
+      #                     the first two and drops the rest, silently
       reference-doc: ../../liveries/ncar/template.pptx
       highlight-style: ../../liveries/ncar/build/livery.theme
       slide-level: 2
@@ -74,3 +76,4 @@ contributes:
         - single-body.lua
         - linked-images.lua
         - diagram-dark.lua
+        - columns-pptx.lua
