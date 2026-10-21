@@ -2,7 +2,7 @@
 # smoke-tested as a plain user with a bind-mounted deck directory, merged into one manifest
 # list), then the deck checks INSIDE that image, at its digest: the sample, quickstart,
 # fixture and plots decks; a hello-world deck in a consumer's layout (the framework one level down, as
-# a submodule would be: docs/other-repos.md); and every livery
+# a submodule would be: docs/other-repos.md) and the consumer build workflow on the quickstart; and every livery
 # under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled and the charts bundle tried in a clean directory, the compositions measured). A new livery joins
 # by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.
@@ -289,6 +289,17 @@ jobs:
             ${{ env.DECK }}/hello.pdf
           if-no-files-found: error
           retention-days: 14
+
+  # the consumer's cloud build, build-decks.yaml (docs/other-repos.md "Building in GitHub
+  # Actions"), on the quickstart at the PR's image
+  reusable:
+    name: Build decks with the reusable workflow
+    needs: image
+    if: needs.image.outputs.digest != ''
+    uses: ./.github/workflows/build-decks.yaml
+    with:
+      decks: decks/quickstart
+      image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
 
   # -----------------------------------------------------------------------
   # the engine's pure-LaTeX side (latex) and its tests: what beamer-livery-theme's own

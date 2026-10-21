@@ -1,0 +1,113 @@
+# A consumer's cloud build. A repository that keeps its decks in its own tree
+# (docs/other-repos.md) calls this workflow and gets them built in the published image on
+# every push: `make` in each deck directory, the pptx, PDF and HTML attached to the run as
+# the `decks` artifact, and, with `pages:`, one directory's `make site` deployed to GitHub
+# Pages. The caller's file is a dozen lines (docs/other-repos.md "Building in GitHub Actions").
+# The image runs as a `container:` with its entrypoint bypassed, as this repo's own CI builds
+# its decks; ci.yaml's `reusable` job calls this on the quickstart at the PR's image.
+name: Build decks
+
+on:
+  workflow_call:
+    inputs:
+      decks:
+        description: deck directories, whitespace-separated, relative to the repository
+        type: string
+        required: true
+      goals:
+        description: the make goals for each deck directory
+        type: string
+        default: pptx html pdf
+      livery:
+        description: a LIVERY= for every deck (empty means each Makefile's own)
+        type: string
+        default: ''
+      image:
+        description: the framework image (latest is the newest release)
+        type: string
+        default: ghcr.io/benkirk/quarto-livery-decks:latest
+      pages:
+        description: one deck directory whose `make site` is deployed to GitHub Pages (empty means none)
+        type: string
+        default: ''
+      retention-days:
+        description: how long the run keeps the outputs
+        type: number
+        default: 14
+
+jobs:
+  decks:
+    name: Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    container:
+      image: ${{ inputs.image }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      # `container:` bypasses the entrypoint: seed matplotlib's font cache as it would
+      - name: Seed the font cache
+        run: /usr/local/bin/entrypoint.sh true
+
+      # not DECKS / LIVERY: make would take those from the environment over Make.common's `?=`
+      - name: Build the decks
+        env:
+          DECK_DIRS: ${{ inputs.decks }}
+          GOALS: ${{ inputs.goals }}
+          DECK_LIVERY: ${{ inputs.livery }}
+        run: |
+          for d in $DECK_DIRS; do
+            make -C "$d" $GOALS ${DECK_LIVERY:+LIVERY=$DECK_LIVERY}
+          done
+
+      - name: List the outputs
+        id: outputs
+        env:
+          DECK_DIRS: ${{ inputs.decks }}
+        run: |
+          { echo 'paths<<EOF'
+            for d in $DECK_DIRS; do
+              for p in '*.pptx' '*.pdf' '*.html' '*_files/'; do echo "$d/$p"; done
+            done
+            echo EOF; } >> "$GITHUB_OUTPUT"
+
+      - name: Attach the outputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: decks
+          path: ${{ steps.outputs.outputs.paths }}
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+      - name: Build the site
+        if: inputs.pages != ''
+        run: make -C "${{ inputs.pages }}" site
+
+      - name: Attach the site
+        if: inputs.pages != ''
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ inputs.pages }}/_site
+
+  # the caller grants `pages: write` and `id-token: write`, and sets the repository's Pages
+  # source to "GitHub Actions"
+  pages:
+    name: Deploy to GitHub Pages
+    if: inputs.pages != ''
+    needs: decks
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
