@@ -107,9 +107,10 @@ local function flatten(d, title)
   for k = 1, #cols do widths[k] = share(shares[k]) end
   local out = pandoc.Blocks({ marker("columns widths=" .. table.concat(widths, ",")) })
   for _, col in ipairs(cols) do
-    local card = C.card_attrs(col)
+    local card = C.card_attrs(col, "")   -- "": no role= (grid.py takes the livery's by place)
     if card then   -- its band's title and sub led by their prefix markers (no heading: no spcBef)
-      out:insert(marker("column card role=" .. card.role .. (card.pick and " pick" or "") .. (card.solid and " solid" or "")))
+      local role = card.role ~= "" and (" role=" .. card.role) or ""   -- none: grid.py's, by place
+      out:insert(marker("column card" .. role .. (card.pick and " pick" or "") .. (card.solid and " solid" or "")))
       if card.title then out:insert(prefixed("title", card.title)) end
       if card.sub then out:insert(prefixed("sub", card.sub)) end
       flow(card.body, title, out)

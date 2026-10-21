@@ -135,7 +135,7 @@ Each trades local capacity against a share of the consortium system.
 :::
 
 :::: {.columns}
-::: {.column .card .pick role="primary"}
+::: {.column .card .pick}
 ### OPTION 1
 [A modern GPU system]{.sub}
 
@@ -151,7 +151,7 @@ Each trades local capacity against a share of the consortium system.
 - [!] High-resolution runs
 - [-] Interactive analysis
 :::
-::: {.column .card role="secondary"}
+::: {.column .card}
 ...
 :::
 ::::
@@ -160,8 +160,9 @@ Each trades local capacity against a share of the consortium system.
 - **`::: {.lead}`** sets its lines on the livery's lead fill with an accent bar at its left.
   In a lead and in a card each source line is a line: no blank line between the bold headline
   and the line under it.
-- **`.card`** on a column draws a head band in its `role=` (any livery role; default `primary`)
-  over a body. The `###` is the band's title, a `[...]{.sub}` paragraph right after it the band's
+- **`.card`** on a column draws a head band in its `role=` (any livery role) over a body. A card
+  without one takes the livery's `boxes.card.roles` in turn by its place in the row (by default
+  primary, secondary, accent), so a row's cards differ. The `###` is the band's title, a `[...]{.sub}` paragraph right after it the band's
   second line. `.pick` outlines the chosen card; `.solid` makes the whole card the role's color,
   its text white. A row's cards are one height.
 - **`[...]{.label}`** is a small capitals label, **`[...]{.big}`** a big number, each on a line

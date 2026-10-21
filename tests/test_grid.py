@@ -31,6 +31,8 @@ CARDS = ('## Cards\n\n:::: {.columns}\n'
          '- one\n- two\n- three\n:::\n'
          '::: {.column .card role="secondary"}\n### OPTION 2\nShort.\n:::\n'
          '::: {.column .card .solid role="accent"}\n### OPTION 3\nSolid.\n:::\n::::\n')
+DEFAULTS = ('## Default roles\n\n:::: {.columns}\n' + ''.join(f'::: {{.column .card}}\n### {t}\nText.\n:::\n' for t in 'ABCD')
+            + '::::\n')
 WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
@@ -38,7 +40,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Three\n\n:::: {.columns}\n::: {.column}\n- AAA\n- aaa\n:::\n::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
-      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS)
+      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS)
 STEP = """
 import sys
 from pathlib import Path
@@ -139,9 +141,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 7, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 8, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -237,3 +239,13 @@ def test_strip(deck):
     above, below = by["Card 1 body"], by["Card 1 body 3"]
     assert above.top + above.height <= strip.top and strip.top + strip.height <= below.top, "the strip between the body's text"
     assert "one" in below.text_frame.text and "$20M" in above.text_frame.text, "the text on each side"
+
+
+def test_default_roles(deck):
+    """Cards without role= take boxes.card.roles in turn by their place in the row, the fourth the
+    first again: no two neighbors alike."""
+    livery, prs, _ = deck
+    by = {sh.name: sh for sh in prs.slides[7].shapes}
+    roles = livery["boxes"]["card"]["roles"]
+    want = [livery["roles"][roles[k % len(roles)]][1:] for k in range(4)]
+    assert [str(by[f"Card {n} head"].fill.fore_color.rgb) for n in (1, 2, 3, 4)] == want, "the heads' roles by place"

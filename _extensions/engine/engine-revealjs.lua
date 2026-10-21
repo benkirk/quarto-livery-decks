@@ -302,10 +302,9 @@ end
 
 local SPANS = { label = "engine-label", big = "engine-big", sub = "engine-sub" }
 
-local function card_columns(blocks)
-  return blocks:walk({ Div = function(d)
-    if not has_class(d, "column") then return nil end
-    local c = C.card_attrs(d)
+local function card_columns(blocks, roles)
+  local function card(d, k)
+    local c = C.card_attrs(d, roles[(k - 1) % #roles + 1])
     if not c then return nil end
     local cls = "engine-card" .. (c.pick and " engine-pick" or "") .. (c.solid and " engine-solid" or "")
     local out = pandoc.Blocks({ html(string.format('<div class="%s" style="--engine-card-role: var(--engine-%s)">', cls, c.role)) })
@@ -324,6 +323,11 @@ local function card_columns(blocks)
     end }))
     out:insert(html("</div></div>"))
     d.content = out
+    return d
+  end
+  return blocks:walk({ Div = function(d)   -- a card's default role is by its place in the row
+    if not has_class(d, "columns") then return nil end
+    for k, col in ipairs(C.column_shares(d)) do card(col, k) end
     return d
   end })
 end
@@ -714,7 +718,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks)))))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks))), livery.boxes.card.roles))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

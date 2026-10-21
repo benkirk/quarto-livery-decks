@@ -35,7 +35,9 @@ def test_every_key(livery):
         assert set(b[box]) == set(keys), f"{livery.name}: boxes.{box} keys {sorted(b[box])}"
         for k, v in b[box].items():
             where = f"{livery.name}: boxes.{box}.{k} = {v!r}"
-            if k in lb.BOX_COLORS.get(box, ()):
+            if k == "roles":
+                assert v and all(r in json.loads((livery / "build" / "livery.json").read_text())["roles"] for r in v), f"{where}: not roles"
+            elif k in lb.BOX_COLORS.get(box, ()):
                 assert HEX.match(v), f"{where} is not #RRGGBB"
             elif k in FRACTIONS:
                 assert isinstance(v, (int, float)) and 0 <= v <= 1, f"{where} is not a fraction"
@@ -85,6 +87,7 @@ def test_colors_resolve(tmp_path):
     ("  lead: {fill: nope}\n", "boxes.lead.fill: 'nope' is neither a palette name nor a hex value"),
     ("  columns: {gap: 1.5}\n", "boxes.columns.gap: 1.5 is greater than the maximum of 1"),
     ("  caution: {pad: [0.5]}\n", "boxes.caution.pad: "),
+    ("  card: {roles: [primary, nope]}\n", "boxes.card.roles[1]: 'nope' is neither"),
 ])
 def test_refused_with_path(tmp_path, boxes, expect):
     rc, err, _ = tmp_livery(tmp_path, boxes)

@@ -311,6 +311,9 @@ def _role(attrs, default="primary"):
     return r if r in LIVERY["roles"] else default
 
 
+ROLES = BOXES["card"]["roles"]   # a card without role=: by its place in the row
+
+
 def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     """A row of cards (and plain columns beside them): each card a head band in its role over a
     body on boxes.card.fill (all of it the role's on a .solid card), rounded by card.radius, a
@@ -322,7 +325,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     hv, hh = pads("card", "head-pad")
     bv, bh = pads("card", "pad")
     cards = []
-    for (_, attrs, paras), (x, w) in zip(columns, frames):
+    for k, ((_, attrs, paras), (x, w)) in enumerate(zip(columns, frames), 1):
         n_col += 1
         if not attrs.get("card"):
             cards.append(dict(plain=body_box(slide, x, y, w, room, _flat(paras), f"Column {n_col}"), attrs=attrs))
@@ -333,7 +336,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         if hb is not None:
             hb.text_frame.margin_top = hb.text_frame.margin_bottom = hv
             hb.text_frame.margin_left = hb.text_frame.margin_right = hh
-        parts, run, k = [], [], 0   # the body: text boxes and strips, in order
+        parts, run, n_strip = [], [], 0   # the body: text boxes and strips, in order
         def text_part():
             nonlocal run
             if run or not parts:
@@ -345,8 +348,8 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         for it in items:
             if isinstance(it, tuple):
                 text_part() if run else None
-                k += 1
-                tb, r = draw_strip(slide, x, y, w, room, it[2], _role(it[1], "accent"), solid, f"Card {n_col} strip {k}")
+                n_strip += 1
+                tb, r = draw_strip(slide, x, y, w, room, it[2], _role(it[1], "accent"), solid, f"Card {n_col} strip {n_strip}")
                 parts.append(("strip", tb, r, tb.height))
             else:
                 run.append(it)
@@ -355,14 +358,14 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         first = hb if hb is not None else parts[0][1]
         head_h = _card_height(hb, slide) if hb is not None else 0
         body_h = sum(h for _, _, _, h in parts)   # measured, no slack: the last part runs to the foot
-        cards.append(dict(attrs=attrs, x=x, w=w, n=n_col, hb=hb, parts=parts, first=first, head_h=head_h, h=head_h + body_h))
+        cards.append(dict(attrs=attrs, k=k, x=x, w=w, n=n_col, hb=hb, parts=parts, first=first, head_h=head_h, h=head_h + body_h))
     total = min(int(max(c["h"] for c in cards if "plain" not in c) * SLACK), room)   # the slack once, at the foot
     for c in cards:
         if "plain" in c:
             c["plain"].top, c["plain"].height = y, total
             continue
         attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
-        role, solid = _hex(_role(attrs)), attrs.get("solid")
+        role, solid = _hex(_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)])), attrs.get("solid")
         _shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n}", behind=c["first"])
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
             _shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"])

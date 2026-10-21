@@ -472,6 +472,7 @@ A card (`::: {.column .card}`): a colored head band over a body.
 | `outline-color` | color or role | `"highlight"` | That outline's color, a role, a palette name or a hex. |
 | `pad` | [vertical, horizontal] em | `[0.5, 0.8]` | Its body's text from the card's edges, in em of the body type. |
 | `head-pad` | [vertical, horizontal] em | `[0.35, 0.8]` | The head band's text from its edges, in em of the body type. |
+| `roles` | list of roles | `["primary", "secondary", "accent"]` | The roles a card without role= takes by its place in the row, in turn: the first card the first role. |
 
 ### `boxes.strip`
 

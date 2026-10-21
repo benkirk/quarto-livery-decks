@@ -103,7 +103,8 @@ BOXES = {
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
-             "pad": [0.5, 0.8], "head-pad": [0.35, 0.8]},
+             "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
+             "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
     "strip": {"tint": 0.18, "pad": [0.3, 0.8]},   # 0.18: caution-fill's share (BLENDS), one tint recipe
     "status": {"done": "highlight", "warn": "warning", "fail": "accent"},   # the ✓ ⚠ ✗ glyphs
 }
@@ -236,7 +237,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["marking"] = marking(data.get("marking") or {}, out,   # its colors as hex: a role, a palette name or a hex
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's
-                         lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")))
+                         lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
@@ -270,7 +271,7 @@ def marking(m: dict, out: dict, hexof) -> dict:
     return m
 
 
-def boxes(b: dict, hexof) -> dict:
+def boxes(b: dict, hexof, roles=()) -> dict:
     """The boxes: block resolved: BOXES with the livery's keys over them, box by box, the colors as hex
     (hexof: a role, a palette name or a hex to its hex, given the key's path under boxes)."""
     out = {}
@@ -278,6 +279,10 @@ def boxes(b: dict, hexof) -> dict:
         v = {**defaults, **(b.get(box) or {})}
         for k in BOX_COLORS.get(box, ()):
             v[k] = hexof(v[k], f"{box}.{k}")
+        for i, r in enumerate(v.get("roles", [])):   # role names: every format names the role's own color
+            hexof(r, f"{box}.roles[{i}]")
+            if roles and (r.startswith("#") or r not in roles):
+                sys.exit(f"livery.yml: boxes.{box}.roles[{i}]: {r!r} is not a role")
         out[box] = v
     return out
 
@@ -822,6 +827,8 @@ def emit_sty_boxes(livery: dict) -> list[str]:
     for box, v in livery["boxes"].items():
         for k, val in v.items():
             name = k.replace("-", "")
+            if k == "roles":   # role names, read from livery.json by the filters
+                continue
             if k in BOX_COLORS.get(box, ()):
                 tex = f"EngineStatus{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
                 L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{val[1:]}}}")

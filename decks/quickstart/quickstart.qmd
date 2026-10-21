@@ -46,7 +46,7 @@ revealjs speaker view (`s`), never on the slide itself.
 ## Cards: options side by side
 
 :::: {.columns}
-::: {.column .card .pick role="primary"}
+::: {.column .card .pick}
 ### Option A
 [Run it here]{.sub}
 
@@ -55,7 +55,7 @@ revealjs speaker view (`s`), never on the slide itself.
 
 - [x] Local control
 :::
-::: {.column .card role="primary-contrast"}
+::: {.column .card}
 ### Option B
 [Share a system]{.sub}
 
@@ -64,7 +64,7 @@ revealjs speaker view (`s`), never on the slide itself.
 
 - [-] Local control
 :::
-::: {.column .card role="secondary"}
+::: {.column .card}
 ### Option C
 [A hybrid]{.sub}
 

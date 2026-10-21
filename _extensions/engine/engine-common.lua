@@ -173,13 +173,14 @@ end
 
 -- A card column (`::: {.column .card .pick .solid role="primary"}`), as every format draws it:
 -- { role, pick, solid, title (inlines or nil), sub (inlines or nil), body (blocks) }. role names the
--- head band's fill (with .solid, the card's), default primary; .pick draws the outline; a first
+-- head band's fill (with .solid, the card's), else default (the livery's boxes.card.roles by the
+-- card's place in its row, which the caller picks), else primary; .pick draws the outline; a first
 -- heading is the band's title, and a paragraph that is one [...]{.sub} right after it the band's
 -- second line; the body's source lines are lines (split_lines()). The column's role= is taken off
 -- (HTML's ARIA attribute). nil for a column that is not a card.
-local function card_attrs(col)
+local function card_attrs(col, default)
   if not has_class(col, "card") then return nil end
-  local c = { role = col.attributes["role"] or "primary", pick = has_class(col, "pick"),
+  local c = { role = col.attributes["role"] or default or "primary", pick = has_class(col, "pick"),
               solid = has_class(col, "solid") }
   col.attributes["role"] = nil
   local blocks, i = col.content, 1

@@ -294,7 +294,7 @@ local function card_body(blocks)
   return out
 end
 
-local function card_rows(blocks)
+local function card_rows(blocks, roles)
   local title = ""
   local function row(d)
     if not has_class(d, "columns") then return nil end
@@ -311,7 +311,7 @@ local function card_rows(blocks)
     end
     local out = pandoc.Blocks({ latex("\\begin{enginecards}") })
     for k, col in ipairs(cols) do
-      local c = C.card_attrs(col)
+      local c = C.card_attrs(col, roles[(k - 1) % #roles + 1])   -- by its place in the row
       local opts, role, head, sub, body = "plain", "BrandBackground", "", "", col.content
       if c then
         local o = {}
@@ -842,7 +842,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))))))))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY.boxes.card.roles)))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

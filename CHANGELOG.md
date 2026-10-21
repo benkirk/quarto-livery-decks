@@ -55,8 +55,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A lead box, `::: {.lead}`, before a slide's columns or alone: its lines on the livery's lead
   fill with an accent bar at its left, in every format (pptx: native shapes and a text box). In a
   lead each source line is a line: a bold headline over a plain line needs no blank line.
-- Cards: `::: {.column .card role="primary"}` with a `###` title and an optional `[...]{.sub}`
-  line draws a head band in the role over a body; `.pick` outlines the chosen card, `.solid`
+- Cards: `::: {.column .card}` with a `###` title and an optional `[...]{.sub}` line draws a head
+  band over a body, in its `role=` or else the livery's `boxes.card.roles` by its place in the row
+  (primary, secondary, accent), so a row's cards differ; `.pick` outlines the chosen card, `.solid`
   fills the whole card with the role; `[LOCAL INVESTMENT]{.label}` and `[$20M]{.big}` are a small
   caps label and a big number. A row's cards are one height, in every format; pptx draws them as
   native shapes and text boxes, editable in PowerPoint. A picture or table in a card is not drawn

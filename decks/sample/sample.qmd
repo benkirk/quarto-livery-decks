@@ -151,7 +151,7 @@ Each trades local capacity against a share of the consortium system.
 :::
 
 :::: {.columns}
-::: {.column .card .pick role="primary"}
+::: {.column .card .pick}
 ### OPTION 1
 [A modern GPU system]{.sub}
 
@@ -166,7 +166,7 @@ Each trades local capacity against a share of the consortium system.
 - [x] Data archive expansion
 - [!] High-resolution runs
 :::
-::: {.column .card role="primary-contrast"}
+::: {.column .card}
 ### OPTION 2
 [Join the consortium]{.sub}
 
@@ -177,7 +177,7 @@ Each trades local capacity against a share of the consortium system.
 - [x] Shared capacity
 - [-] Local control
 :::
-::: {.column .card role="secondary"}
+::: {.column .card}
 ### OPTION 3
 [A hybrid of both]{.sub}
 
@@ -192,15 +192,15 @@ Each trades local capacity against a share of the consortium system.
 ## Solid cards
 
 :::: {.columns}
-::: {.column .card .solid role="primary"}
+::: {.column .card .solid}
 ### Plan
 Write the slides in Markdown, one file.
 :::
-::: {.column .card .solid role="secondary"}
+::: {.column .card .solid}
 ### Build
 `make` renders pptx, HTML and PDF from it.
 :::
-::: {.column .card .solid role="accent"}
+::: {.column .card .solid}
 ### Share
 Publish the HTML; hand out the pptx and PDF.
 :::

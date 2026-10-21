@@ -584,7 +584,8 @@
             "outline": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0033, "description": "The outline of a picked card (`.pick`), its width (of the slide's height)."},
             "outline-color": {"$ref": "#/$defs/color-or-role", "default": "highlight", "description": "That outline's color, a role, a palette name or a hex."},
             "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.5, 0.8], "description": "Its body's text from the card's edges, in em of the body type."},
-            "head-pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.35, 0.8], "description": "The head band's text from its edges, in em of the body type."}
+            "head-pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.35, 0.8], "description": "The head band's text from its edges, in em of the body type."},
+            "roles": {"type": "array", "items": {"$ref": "#/$defs/role"}, "minItems": 1, "default": ["primary", "secondary", "accent"], "description": "The roles a card without role= takes by its place in the row, in turn: the first card the first role."}
           }
         },
         "strip": {
