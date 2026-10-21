@@ -94,17 +94,14 @@ jobs:
         with:
           path: ${{ inputs.pages }}/_site
 
-  # the caller grants `pages: write` and `id-token: write`, and sets the repository's Pages
-  # source to "GitHub Actions"
+  # the caller's workflow-level `permissions:` grants `pages: write` and `id-token: write`
+  # (a job here may not ask for more than the caller allows, even one that is skipped), and
+  # the repository's Pages source is set to "GitHub Actions"
   pages:
     name: Deploy to GitHub Pages
     if: inputs.pages != ''
     needs: decks
     runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
