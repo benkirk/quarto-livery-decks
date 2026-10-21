@@ -10,6 +10,14 @@
 \mode<presentation>
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
+\RequirePackage{etoolbox}
+% beamer's [shrink] ({.shrink}) sets the frame body in a pgf \pgftext, which under XeLaTeX
+% (pgfsys-dvipdfmx.def) resets the color to black: put the body's color back, or a dark livery's
+% shrunk slide is black on black (and a light one's text black, not the brand's)
+\patchcmd\beamer@shrinkframebox
+  {\pgftext[left,top]{\box\beamer@framebox}}
+  {\pgftext[left,top]{\usebeamercolor[fg]{normal text}\box\beamer@framebox}}
+  {}{\PackageWarning{beamerinnerthemeEngine}{could not patch \string\beamer@shrinkframebox}}
 \providecommand\engine@titlestyle{dark}
 \@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
 

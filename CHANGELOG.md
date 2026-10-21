@@ -17,6 +17,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- A `{.shrink}` slide keeps its text color in the PDF. Beamer's shrink box reset it to black,
+  so a dark livery's shrunk slide (the quickstart's equations) was black on black, and a light
+  livery's shrunk text black instead of the brand's.
+
 ### Liveries
 - `nasa-jsc-eg`: the NASA JSC Aeroscience and Flight Mechanics Division's template, dark, a
   flavor of `nasa-dark`: a starfield behind every slide, the division bar along the foot, the
