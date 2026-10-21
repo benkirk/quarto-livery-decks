@@ -540,7 +540,8 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                "signoff": signoff("primary"),
                "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
                           "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
-               "eyebrow": {"label": dv.get("label", "Section"), "color": dv.get("label-color", "secondary")}
+               "eyebrow": {"label": dv.get("label", "Section"),   # section.label-color, a role or a hex, as hex
+                           "color": (lambda c: c if c.startswith("#") else out["roles"][c])(dv.get("label-color", "secondary"))}
                           if dv.get("label", "Section") else None}   # section.label: null, no eyebrow
     feature = {**empty,
                "photo": {"box": _box(0, 0, 1, 1)},
@@ -940,10 +941,7 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
         if c["eyebrow"]:
             e = c["eyebrow"]
             d("eyebrow@label", e["label"])
-            if str(e["color"]).startswith("#"):
-                L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")
-            else:
-                L.append(f"\\colorlet{{EngineC{n}Eyebrow}}{{{tex(e['color'])}}}")
+            L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")   # hex: compositions() resolved it
         for k in ("mark", "signoff"):   # its files, the composition's own (compositions())
             if c[k] and c[k].get("img"):
                 d(f"{k}@img", stem(c[k].get("img-print", c[k]["img"])))
@@ -1293,7 +1291,7 @@ def emit_css_compositions(livery: dict) -> list[str]:
                 op = c[k].get("opacity", 1)
                 props.append(f"--engine-cmp-{k}-fill: " + (fill if op == 1 else f"color-mix(in srgb, {fill} {op * 100:g}%, transparent)") + ";")
         if c["eyebrow"]:
-            props.append(f"--engine-cmp-eyebrow: {role(c['eyebrow']['color'])};")
+            props.append(f"--engine-cmp-eyebrow: {c['eyebrow']['color']};")   # hex: compositions() resolved it
             props.append(f'--engine-cmp-eyebrow-label: "{c["eyebrow"]["label"]} ";')
         props.append(f"--engine-cmp-eyebrow-display: {'block' if c['eyebrow'] else 'none'};")
         art = livery.get("art", {}).get(c["art"]) if c["art"] else None   # the art under the field, or none

@@ -172,8 +172,8 @@ def _decor(name, sid, x, y, w, h, inner):
 
 
 def _eyebrow_hex():
-    """The eyebrow's color (section.label-color: a role or a hex), as HTML and PDF draw it."""
-    return livery_mod.hex(LIVERY, EYEBROW["color"] if EYEBROW else "secondary")
+    """The eyebrow's color (section.label-color, a hex since livery_build resolved it), as HTML and PDF draw it."""
+    return livery_mod.hex(LIVERY, EYEBROW["color"]) if EYEBROW else livery_mod.color(LIVERY, "secondary")
 
 
 def _dress(root, layout_root, number):
