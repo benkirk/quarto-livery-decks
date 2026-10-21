@@ -84,8 +84,9 @@
   --engine-marking-h: 25.2px;
   --engine-marking-justify: center;
   --engine-marking-align: center;
-  --engine-marking-fill: transparent;
-  --engine-marking-text: var(--engine-foreground);
+  --engine-marking-fill: #6840F0;
+  --engine-marking-text: #FFFFFF;
+  --engine-marking-weight: 700;
 }
 /* chart colors (livery.json charts) */
 :root {

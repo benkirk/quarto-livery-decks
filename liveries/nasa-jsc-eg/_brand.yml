@@ -13,6 +13,7 @@ color:
     eg-gray: "#959595"       # dk2 (7.4:1 on black): muted text
     eg-light-gray: "#E1E1E1" # lt2
     eg-purple: "#BD92DE"     # folHlink
+    eg-violet: "#6840F0"     # the cover photo's regolith, its dominant lit tone: the marking strip (5.9:1 under white)
   primary: eg-navy
   secondary: eg-yellow
 

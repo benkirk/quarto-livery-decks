@@ -50,12 +50,14 @@ section:
   tab: false
   label: null             # the template's dividers have no "SECTION n"
 
-marking:                  # the template's marking placeholder: a strip at the top edge, no fill. A deck's
+marking:                  # the template's marking placeholder: a strip at the top edge. A deck's
   text: "This presentation contains no sensitive information; but if it did, here's where the disclaimer would go"
   width: 0.777            # own `marking:` replaces this demo text (CUI and the like), `marking: none` drops it
   height: 0.028
   offset: 0.004
-  text-role: foreground
+  fill: eg-violet         # the cover photo's regolith, so the strip stands out on the starfield
+  color: white
+  bold: true
 
 frametitle:
   align: left
