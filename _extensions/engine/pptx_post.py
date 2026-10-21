@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # livery, pptx_waves,
 from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
-    embed_fonts, enable_autofit, link_captions, notes_clrmap, section_subtitle, slide_layout,
+    embed_fonts, enable_autofit, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
     style_footnotes, style_tables, svg_fallback, type_step)
 
 
@@ -45,13 +45,14 @@ def post(path: Path) -> None:
     prs = Presentation(buf)
 
     # One Presentation. Footnotes are styled before slide_layout, whose scale= leaves them at
-    # their size; tables after it has scaled the runs; type_step last, since it multiplies every
-    # size the steps before it set.
+    # their size; tables after it has scaled the runs; type_step after them, since it multiplies
+    # every size the steps before it set; the marking strip after it, at its own fixed size.
     style_footnotes.run(prs, path.name)
     link_captions.run(prs, path.name)       # a linked picture's URL, a box pandoc cannot add
     slide_layout.run(prs, path.resolve())   # layout classes, covers, closings, slide numbers
     style_tables.run(prs, path.name)
     type_step.run(prs, path)                # a deck's type-body:/type-scale:
+    marking.run(prs, path.name)             # the marking strip, on every slide
     prs.save(str(path))
 
 

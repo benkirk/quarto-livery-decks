@@ -167,8 +167,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
-  HTML theme) and `type_step` (a deck's `type-body:`/`type-scale:`) on one python-pptx
-  Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
+  HTML theme), `type_step` (a deck's `type-body:`/`type-scale:`) and `marking` (the marking
+  strip, after the size step) on one python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
   that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a
@@ -262,8 +262,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the formats fit and overflow alike; the post-processors read `livery.type_pt()` and scale their
   absolute pads by `livery.canvas_scale()`; `scale=` rounds a pptx size to the half point.
   A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>`
-  (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
-  reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
+  (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, after every step that
+  sets a size, reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
   since a dark livery's `dark` stays a field color; beamer mixes its tints toward

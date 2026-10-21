@@ -32,6 +32,7 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `compositions` | object |  | Overrides of the composed slides' boxes and colors, by slide; every slide takes the parts of compositions.<name> below. |
 | `feature` | object |  | Feature (photo) slides. |
 | `frametitle` | object |  | Content slides' titles. |
+| `marking` | object |  | A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here. |
 | `installed-fonts` | object |  | A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}. |
 | `latex` | object |  | The LaTeX side. |
 | `pptx` | object |  | The PowerPoint template. |
@@ -389,6 +390,21 @@ Content slides' titles.
 | `tab` | boolean | `true` | The accent tab at the paper's edge beside the title. |
 | `rule` | boolean | `true` | The hairline under the title. |
 
+### `marking`
+
+A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here.
+
+| key | type | default | |
+|---|---|---|---|
+| `text` | string or null |  | The default text every deck under the livery shows (default: none, no strip). |
+| `edge` | `top` \| `bottom` | `"top"` | The edge it sits at. |
+| `offset` | fraction | `0.004` | Its distance from that edge. |
+| `width` | fraction | `0.8` | Its width, of the slide's width. |
+| `height` | fraction | `0.03` | Its height. |
+| `align` | `center` \| `left` \| `right` | `"center"` | Where it sits along the edge (left and right at the margin) and how its text aligns. |
+| `fill` | null or role or hex |  | A fill behind it, a role or a hex, to make it stand out (default: none). |
+| `text-role` | role |  | Its text's color (default: muted, or primary-text over a fill). |
+
 ### `installed-fonts`
 
 A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}.
@@ -470,6 +486,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `eyebrow` | number | `11` | The "SECTION n" label over a section slide's heading. |
 | `closing` | number | `40` | The closing slide's headline. |
 | `pagenumber` | number | `9` | The page number. |
+| `marking` | number | `9` | The marking strip's text. |
 | `footer` | number | `9` | The footer line (footer=full). |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 

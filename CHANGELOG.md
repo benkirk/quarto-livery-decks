@@ -21,6 +21,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A `{.shrink}` slide keeps its text color in the PDF. Beamer's shrink box reset it to black,
   so a dark livery's shrunk slide (the quickstart's equations) was black on black, and a light
   livery's shrunk text black instead of the brand's.
+- A marking strip on every slide (`marking: "CUI"` in the front matter), in every format, for a
+  restriction or distribution marking: the livery places and colors it, and may set default text
+  (`marking: none` turns that off). nasa-jsc-eg shows a demo where its template has the strip.
 - pptx: a closing slide or divider whose column hangs from its top (`anchor: top`) does so, as in
   HTML and PDF: the closing's body follows its measured headline, a divider's block starts at the
   column's top. Both were centered on the column before, whatever the anchor.
@@ -29,6 +32,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   label word (it always said "Section"), and the pptx its label color.
 
 ### Liveries
+- `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill`, `text-role`, `text`) and
+  `type.marking`: the marking strip's look and a default text.
 - A cover's text in two parts: `compositions.title.byline` (`role`, `box`, `anchor`, `align`,
   `elements`) takes the author, institute and date (by default) apart from the title and subtitle,
   in its own color and, with a box, its own stack; `column.elements` orders the column's. Without a

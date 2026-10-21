@@ -41,6 +41,7 @@
   --engine-type-frametitle: calc(53.33px * var(--engine-type-scale, 1));
   --engine-type-pagenumber: calc(15px * var(--engine-type-scale, 1));
   --engine-type-footer: calc(15px * var(--engine-type-scale, 1));
+  --engine-type-marking: calc(15px * var(--engine-type-scale, 1));
   --engine-type-subhead: 1.25;
   --engine-type-table: 0.8125;
   --engine-type-code: 0.875;
@@ -82,6 +83,14 @@
   --engine-signoff-left: var(--engine-margin);
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
+  --engine-marking-x: 160px;
+  --engine-marking-y: 3.6px;
+  --engine-marking-w: 1280px;
+  --engine-marking-h: 27px;
+  --engine-marking-justify: center;
+  --engine-marking-align: center;
+  --engine-marking-fill: transparent;
+  --engine-marking-text: var(--engine-muted);
 }
 /* chart colors (livery.json charts) */
 :root {

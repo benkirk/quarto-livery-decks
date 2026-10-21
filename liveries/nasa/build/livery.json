@@ -1236,6 +1236,22 @@
       "light": "meatball"
     }
   },
+  "marking": {
+    "align": "center",
+    "box": [
+      0.1,
+      0.004,
+      0.8,
+      0.03
+    ],
+    "edge": "top",
+    "fill": null,
+    "height": 0.03,
+    "offset": 0.004,
+    "text": null,
+    "text-role": "muted",
+    "width": 0.8
+  },
   "marks": {
     "background": {
       "logo": "logos/meatball.png",
@@ -1382,6 +1398,11 @@
         "leading": 1.3,
         "pt": 12,
         "size": 1.0
+      },
+      "marking": {
+        "leading": 1.2,
+        "pt": 7,
+        "size": 0.5833
       },
       "pagenumber": {
         "leading": 1.2,

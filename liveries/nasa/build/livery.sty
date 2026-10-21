@@ -67,6 +67,14 @@
 \def\engine@monofont@regular{DMMono-Regular}
 \def\engine@monofont@italic{DMMono-Italic}
 \def\engine@monofont@bold{DMMono-Medium}
+% the marking strip (marking:); its text is the deck's \enginemarking, else this default
+\def\engine@marking@x{0.1}
+\def\engine@marking@y{0.004}
+\def\engine@marking@w{0.8}
+\def\engine@marking@h{0.03}
+\def\engine@marking@align{center}
+\colorlet{EngineMarkingText}{BrandMuted}
+\def\engine@marking@default{}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
@@ -106,6 +114,7 @@
 \def\engine@type@closing{{2.6667}{1.08}}
 \def\engine@type@pagenumber{{0.6667}{1.2}}
 \def\engine@type@footer{{0.6667}{1.2}}
+\def\engine@type@marking{{0.5833}{1.2}}
 \def\engine@type@levelii{{0.9167}{1.4}}
 \def\engine@type@leveliii{{0.8333}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}

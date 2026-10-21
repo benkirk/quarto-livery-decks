@@ -132,6 +132,26 @@ $mermaid-label-fg-color: $engine-primary;
 // no logo on busy photos (Brand Guide p11); a feature's marks are its composition's (none on the bar)
 .reveal .slides section.slide.full .engine-signoff { display: none; }
 
+// the marking strip (livery.yml marking:): on every slide, over everything, in slide pixels
+.reveal .slides section .engine-marking {
+  position: absolute;
+  left: var(--engine-marking-x);
+  top: var(--engine-marking-y);
+  width: var(--engine-marking-w);
+  height: var(--engine-marking-h);
+  display: flex;
+  align-items: center;
+  justify-content: var(--engine-marking-justify, center);
+  text-align: var(--engine-marking-align, center);
+  background: var(--engine-marking-fill, transparent);
+  color: var(--engine-marking-text);
+  font-size: var(--engine-type-marking, 15px);
+  line-height: 1.2;
+  margin: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
 // ---------------------------------------------------------------------------
 // content slides: accent tab beside the title, hairline rule, logo
 // ---------------------------------------------------------------------------

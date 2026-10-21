@@ -361,7 +361,21 @@
     \engine@ifstyle{section}{\engine@drawcomp{section}{section}}{}%
     \engine@ifstyle{feature}{\engine@drawcomp{feature}{feature}}{}%
     \engine@ifstyle{full}{\engine@drawfullbg}{}%
+    \engine@drawmarking
   \end{tikzpicture}}
+
+% the marking strip (livery.yml marking:), on every frame, over everything: the deck's text
+% (\enginemarkingtext, from engine-beamer.lua's marking:; empty for `none`), else the livery's default
+\providecommand\engine@marking@default{}
+\def\engine@drawmarking{%
+  \ifdefined\enginemarkingtext\let\engine@mk\enginemarkingtext\else\let\engine@mk\engine@marking@default\fi
+  \ifx\engine@mk\@empty\else\@ifundefined{engine@marking@x}{}{%
+    \engine@bw=\engine@marking@w\paperwidth \engine@bh=\engine@marking@h\paperheight
+    \engine@bx=\engine@marking@x\paperwidth
+    \engine@by=\dimexpr\paperheight-\engine@marking@y\paperheight-\engine@bh\relax
+    \@ifundefined{engine@marking@fill}{}{\fill[EngineMarkingFill] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}%
+    \node[anchor=center,inner sep=0pt,text width=\engine@bw,align=\engine@marking@align,
+      font={\engine@fs{marking}\selectfont},text=EngineMarkingText] at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};}\fi}
 
 % full frame: the image contained (never cropped) between a thin margin and
 % the footline, with the caption line, if any, just above the footline

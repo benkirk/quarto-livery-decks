@@ -472,6 +472,52 @@
         "rule": {"type": "boolean", "description": "The hairline under the title.", "default": true}
       }
     },
+    "marking": {
+      "type": "object",
+      "description": "A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here.",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": ["string", "null"],
+          "description": "The default text every deck under the livery shows (default: none, no strip)."
+        },
+        "edge": {"enum": ["top", "bottom"], "default": "top", "description": "The edge it sits at."},
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.004,
+          "description": "Its distance from that edge."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8,
+          "description": "Its width, of the slide's width."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.03,
+          "description": "Its height."
+        },
+        "align": {
+          "enum": ["center", "left", "right"],
+          "default": "center",
+          "description": "Where it sits along the edge (left and right at the margin) and how its text aligns."
+        },
+        "fill": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/role-or-hex"}],
+          "description": "A fill behind it, a role or a hex, to make it stand out (default: none)."
+        },
+        "text-role": {
+          "$ref": "#/$defs/role",
+          "description": "Its text's color (default: muted, or primary-text over a fill)."
+        }
+      }
+    },
     "installed-fonts": {
       "type": "object",
       "description": "A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}.",
@@ -742,6 +788,7 @@
           "description": "The closing slide's headline."
         },
         "pagenumber": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The page number."},
+        "marking": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The marking strip's text."},
         "footer": {
           "type": "number",
           "exclusiveMinimum": 0,
