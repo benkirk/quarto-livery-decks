@@ -78,6 +78,16 @@ subtitle, author) goes on the band with it, at 18/16/12 pt, and a two-line title
 template's white title with its byline below the band on black is one edit: the title and
 title-photo columns from y 0.426, `anchor: top`, `role: foreground`.
 
+## Chart colors
+
+nasa-dark's, NASA's Horizon Design System palette (`../nasa/reference/notes.md`), with one change
+on dark slides (Ben, 2026-10-21): the template's yellow `#FCDB00` takes the HDS orange's place,
+as the third series and the second of every small set. The orange moves to the tenth slot, in
+place of HDS's own yellow, so the palette holds one yellow. The checks give the same warnings as
+nasa-dark (the yellow, like the orange, is lighter than the band). Light slides keep HDS's
+palette: the yellow reads 1.4:1 on white. seaborn's bars desaturate it toward mustard, and in a
+stacked area the yellow family's darker shades go olive.
+
 ## Type and fonts
 
 Arial throughout in the template; Liberation Sans stands in for it (Arial's metrics, so lines

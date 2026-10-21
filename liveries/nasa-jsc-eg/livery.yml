@@ -120,3 +120,13 @@ type:                     # points on that canvas
   sectionsubtitle: 24
   pagenumber: 12
   footer: 12
+
+charts:                   # nasa-dark's (HDS) on black, with the template's yellow for the orange: the
+  dark:                   # third series and the second of every small set; the orange takes HDS's
+    categorical: ["#256EE4", "#EF483F", eg-yellow, "#487682", "#C2B47C", "#609AF6", "#FA8C87", "#79A3AD", "#794BE4", "#F29D49", "#4B9609", "#0CC9AC"]
+  sets:                   # own yellow's slot (10th), so no two yellows. Light slides keep HDS's: the
+    dark:                 # yellow reads 1.4:1 on white
+      2: ["#256EE4", eg-yellow]
+      3: ["#256EE4", eg-yellow, "#0CC9AC"]
+      4: ["#256EE4", eg-yellow, "#0CC9AC", "#4B9609"]
+      5: ["#256EE4", eg-yellow, "#0CC9AC", "#4B9609", "#C2B47C"]
