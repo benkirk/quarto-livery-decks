@@ -38,7 +38,7 @@ from .measure import text_height
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big)⟧")   # a card's lines (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
-BODY_GAP = 0.5 * BODY_PT * CARD_GAP   # pt: the template's space before a body paragraph is half the body
+BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
 
 
 def _para_text(p):

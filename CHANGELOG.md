@@ -77,6 +77,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `make measure` skips a composition's empty box instead of stopping on it.
 - pptx: a card's head band is square at its foot on a livery with rounded cards (ncar and its
   family); it was rounded all round, so the card's fill showed at the band's lower corners.
+- pptx: a box cut to its text (caution, lead, the feature panel, a note under a figure) is sized
+  with the template's own paragraph spacing; it was a little short, and the slack covered it.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends

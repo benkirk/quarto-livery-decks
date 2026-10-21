@@ -186,8 +186,8 @@ class Builder:
         body_lvls = ""
         for i, (sz, (bfont, bchar)) in enumerate(zip(sizes, bullets), 1):
             mar = ind * i
-            # the space before an item, as HTML's list-item margins: a share of the body
-            spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * (0.5 if i == 1 else 0.3))}"/></a:spcBef>'
+            # the space before an item, as HTML's list-item margins: a share of the body (livery.SPC_BEFORE)
+            spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * livery_mod.SPC_BEFORE[0 if i == 1 else 1])}"/></a:spcBef>'
             body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-{ind}" algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
                           f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}{buclr}'
                           f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz}" kern="1200">'

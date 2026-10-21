@@ -20,7 +20,7 @@ from pptx.util import Pt
 
 import livery as livery_mod
 
-from .common import K, LIVERY
+from .common import BODY_PT, K, LIVERY
 
 CANVAS = LIVERY["type"]["canvas"]
 PX = CANVAS["w"] * 12700 / 1600             # EMU per slide pixel
@@ -190,12 +190,13 @@ def para_lines(p, family, size, width, weight=None):
 
 def text_height(shape, slide, family=None, weight=None, gap=None):
     """The text's height (EMU): each paragraph's lines measured in the livery's face (family, the
-    body's by default), one LINE per line, plus a little paragraph spacing (gap, EMU; the body's
-    6 pt on the default canvas)."""
+    body's by default), one LINE per line, plus the template's space before the paragraph
+    (livery.SPC_BEFORE of the body type, by its level), or gap (EMU) when given."""
     tf = shape.text_frame
     width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
         size = para_size(p, shape, slide)
-        total += int(para_lines(p, family or BODY, size, width, weight) * size * LINE) + (Pt(6 * K) if gap is None else gap)
+        before = Pt(BODY_PT * livery_mod.SPC_BEFORE[0 if p.level == 0 else 1]) if gap is None else gap
+        total += int(para_lines(p, family or BODY, size, width, weight) * size * LINE) + before
     return total

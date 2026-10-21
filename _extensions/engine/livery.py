@@ -34,6 +34,12 @@ import sys
 from pathlib import Path
 
 
+# the pptx template's space before a body paragraph, as a share of the body type: the first list
+# level, then the deeper ones (livery_template.py writes it as a:spcBef; the steps that cut a box
+# to its measured text add the same, pptx_steps/measure.py)
+SPC_BEFORE = (0.5, 0.3)
+
+
 def livery_dir(path: str | os.PathLike | None = None) -> Path:
     for candidate in (path, os.environ.get("LIVERY_DIR"), "_livery"):
         if candidate and Path(candidate).is_dir():
