@@ -55,7 +55,7 @@ logo:
 ```
 
 and `make livery LIVERY=nasa-jsc-eg-<group>`, twice the first time (a new flavor's first build
-reads its parent's template, so its first check finds `build/` stale; friction 12). The patch fills its box's height (0.344 of the
+reads its parent's template, so its first check finds `build/` stale; #125). The patch fills its box's height (0.344 of the
 slide) at its own aspect. A group with no patch of its own sets `compositions: {title:
 {signoff: null}}` instead.
 
@@ -90,39 +90,19 @@ its own sample slides shrink to fit.
 
 ## What the engine cannot do yet
 
-Frictions met on the way, for a later engine change; the livery works around each:
+Onboarding this livery turned up engine improvements, filed as #124, and bugs, filed as #125.
+The workarounds this livery uses until they land:
 
-1. **The cover's byline is one stack with its title**: one box, one color. The template pins its
-   byline below the band (a one-line title would pull it onto the yellow), and black on the
-   band can't run on below it. Wanted: a `byline` part of the compositions, with its role.
-2. **No centered column text** on the closing and section slides ("Questions?" is centered under
-   the patch in the template). Wanted: `column.align`.
-3. **Bullet glyphs are fixed** (`livery_template.py`'s list and the themes'); the template uses
-   ▪ – •. Wanted: a `bullets` knob.
-4. **No art for the light cover**: the template's "EG - Title Slide- Light" has no counterpart
-   (the art kinds are title, section, closing, content).
-5. **One code face for every format**: the pptx names Liberation Mono, which Office lacks; the
-   template's Courier New cannot be named while Liberation Mono is bundled (nasa's DM Mono too).
-6. **No rule between columns**: the template's 2- and 3-column layouts draw one.
-7. **A flavor can't unset what it inherits** (`art.titlegraphic`): the cover art doubles as the
-   title photo instead. And `field: null` on a photo cover breaks the pptx (`draw_cover`), while
-   beamer draws a full field over the photo where the pptx draws none, so the full-bleed photo
-   needs a field box too small to see (an empty one passes the schema but crashes `make measure`).
-8. **Marks go by field role**, not by slide: the closing takes another role (`surface`, hidden
-   under its art) to wear other marks than the cover, and only a flavor, never a deck, can swap a
-   mark.
-9. **`eyebrow: null` on a section breaks beamer** (`EngineCsectionEyebrow` undefined); the
-   template has no eyebrow, so a muted one stays.
-10. `livery inspect` without `-o` writes `report.md` into the current directory, not stdout.
-11. The template's marking line (a centered placeholder at the top edge, for markings such as
-    classification) has no counterpart.
-12. **A new flavor's first `livery all` fails two checks** (`build/` stale, the template not
-    rebuilding): the build runs before the flavor has a `template.pptx` of its own and records
-    the parent's; the second run passes. Any flavor (`--extends nasa-dark` too).
-
-Found here but not this livery's: the quickstart's MPAS-A slide (an `aligned` display on a
-`{.shrink}` frame) comes out black on black in a dark livery's PDF, nasa-dark's too; the sample's
-plain display math is white.
+- **Cover byline** (#124): the whole stack sits on the band, in black, at smaller sizes.
+- **Closing and divider marks** (#124): their fields take the `surface` role, which the art hides,
+  so they wear the agency name while the cover wears the group patch.
+- **Inherited title photo** (#124): the cover art doubles as `art.titlegraphic`, full-bleed, so a
+  deck's own `titlegraphic:` replaces the whole cover. Its field box is `[0, 0, 0.001, 0.001]`:
+  `null` crashes the pptx and an empty box `make measure` (#125).
+- **Divider eyebrow** (#125): a muted "SECTION n" stays, since `eyebrow: null` breaks the PDF.
+- **Bullets, centered closing text, the column rule, the light cover, the marking line, Courier
+  New in the pptx** (#124): not reproduced.
+- **A group's flavor**: run `make livery` twice the first time (#125).
 
 `make measure` reports its boxes "over" on the cover, closing and dividers: the measurer reads the
 art's own ink (the starfield, the patches, the rule beside the insignia) as content. The deltas are
@@ -137,8 +117,8 @@ and Title Slide (light). How the rest map:
 - **Title & Content, Title & 2 Column, Title Only, Closing, Title Slide**: the engine's own.
 - **Title & Image**: a figure slide (one picture, pandoc fits it to the content area) or `{.full}`.
 - **Title, Content & Image**: two columns, text and picture, but the pptx can't give the text
-  two-thirds: pandoc ignores `.column` widths in pptx (equal halves; HTML and PDF honor them).
+  two-thirds: pandoc ignores `.column` widths in pptx (equal halves; HTML and PDF honor them; #124).
 - **Title & 3 Column, 3 Image Column, 4 Quadrants**: nothing reaches them, and **pandoc 3.8.3
-  drops every column after the second in pptx, silently** (HTML and PDF lay out any number). These
-  are the layouts worth an engine step: `slide_layout.py` re-pointing a three-column slide to a
-  three-content layout, as it already re-points Closing.
+  drops every column after the second in pptx, silently** (HTML and PDF lay out any number; #125).
+  These are the layouts worth an engine step: `slide_layout.py` re-pointing a three-column slide to
+  a three-content layout, as it already re-points Closing (#124).
