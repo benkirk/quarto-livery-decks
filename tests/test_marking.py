@@ -32,12 +32,15 @@ prs = Presentation(sys.argv[1]); marking.run(prs, "t.pptx"); type_step.run(prs, 
 
 def test_box():
     out = {"geometry": {"margin": 0.05}}
-    assert lb.marking({}, out)["box"] == [0.1, 0.004, 0.8, 0.03], "the default: top, centered, 0.8 wide"
-    m = lb.marking({"edge": "bottom", "align": "left", "width": 0.5, "height": 0.04, "offset": 0.01}, out)
+    hexof = lambda c, k: {"primary": "#001122", "primary-text": "#FFFFFF", "muted": "#808080"}.get(c, c)
+    mk = lambda m: lb.marking(m, out, hexof)
+    assert mk({})["box"] == [0.1, 0.004, 0.8, 0.03], "the default: top, centered, 0.8 wide"
+    m = mk({"edge": "bottom", "align": "left", "width": 0.5, "height": 0.04, "offset": 0.01})
     assert m["box"] == [0.05, 0.95, 0.5, 0.04], "bottom-left at the margin"
-    assert lb.marking({"align": "right", "width": 0.5}, out)["box"][0] == 0.45
-    assert lb.marking({"fill": "primary"}, out)["color"] == "primary-text", "text over a fill"
-    assert lb.marking({"fill": "#6840F0", "color": "#FFFFFF"}, out)["color"] == "#FFFFFF", "a hex color"
+    assert mk({"align": "right", "width": 0.5})["box"][0] == 0.45
+    assert mk({})["color"] == "#808080" and mk({})["fill"] is None, "muted text, no fill, as hex"
+    assert mk({"fill": "primary"})["color"] == "#FFFFFF", "text over a fill: primary-text, as hex"
+    assert mk({"fill": "#6840F0", "color": "#FFFFFF"})["color"] == "#FFFFFF", "a hex color"
 
 
 def strips(pandoc_deck, tmp, name, front):

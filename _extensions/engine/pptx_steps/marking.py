@@ -20,8 +20,8 @@ ALIGN = {"center": PP_ALIGN.CENTER, "left": PP_ALIGN.LEFT, "right": PP_ALIGN.RIG
 
 
 def _hex(value: str) -> str:
-    """A role's or a hex's six digits."""
-    return value.lstrip("#").upper() if value.startswith("#") else livery_mod.color(LIVERY, value)
+    """A hex's six digits (livery_build.marking() resolved the roles)."""
+    return value.lstrip("#").upper()
 
 
 def run(prs, name: str) -> None:

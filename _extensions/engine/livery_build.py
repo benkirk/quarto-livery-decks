@@ -231,10 +231,10 @@ def resolve(d: Path) -> tuple[dict, dict]:
     return out, sources
 
 
-def marking(m: dict, out: dict, hexof=lambda c, k: c) -> dict:
+def marking(m: dict, out: dict, hexof) -> dict:
     """The marking strip's look (livery.yml marking:), resolved with its box and its fill and text
-    color as hex (hexof: a role, a palette name or a hex to its hex); its text is the deck's
-    marking:, else this default (None: no strip)."""
+    color as hex (hexof: a role, a palette name or a hex to its hex; every drawer then reads a
+    hex); its text is the deck's marking:, else this default (None: no strip)."""
     m = {"text": None, "edge": "top", "offset": 0.004, "width": 0.8, "height": 0.03, "align": "center",
          "fill": None, "bold": False, **m}
     m.setdefault("color", "primary-text" if m["fill"] else "muted")   # fill and color: two knobs
@@ -720,10 +720,9 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for axis, v in zip("xywh", mk["box"]):
             L.append(f"\\def\\engine@marking@{axis}{{{v}}}")
         L.append(f"\\def\\engine@marking@align{{{mk['align']}}}")
-        for name, c in (("Text", mk["color"]), ("Fill", mk["fill"])):
+        for name, c in (("Text", mk["color"]), ("Fill", mk["fill"])):   # hex: marking() resolved them
             if c:
-                L.append(f"\\definecolor{{EngineMarking{name}}}{{HTML}}{{{c[1:].upper()}}}" if c.startswith("#")
-                         else f"\\colorlet{{EngineMarking{name}}}{{{ROLE_TEX.get(c, 'BrandDark')}}}")
+                L.append(f"\\definecolor{{EngineMarking{name}}}{{HTML}}{{{c[1:].upper()}}}")
         if mk["fill"]:
             L.append("\\def\\engine@marking@fill{}")
         if mk["bold"]:
@@ -945,14 +944,12 @@ def emit_css(livery: dict, extra: str = "") -> str:
     mk = livery.get("marking")
     if mk:   # the marking strip, in slide pixels (its text: engine-revealjs.lua, the deck's or the default)
         x, y, w, h = mk["box"]
-        css = lambda c: c if c.startswith("#") or c == "transparent" else f"var(--engine-{c})"   # a hex or a role
-        fill = css(mk["fill"] or "transparent")
         props += [f"--engine-marking-x: {px(x, W)};", f"--engine-marking-y: {px(y)};",
                   f"--engine-marking-w: {px(w, W)};", f"--engine-marking-h: {px(h)};",
                   f"--engine-marking-justify: {dict(center='center', left='flex-start', right='flex-end')[mk['align']]};",
                   f"--engine-marking-align: {mk['align']};",
-                  f"--engine-marking-fill: {fill};",
-                  f"--engine-marking-text: {css(mk['color'])};",
+                  f"--engine-marking-fill: {mk['fill'] or 'transparent'};",   # hex: marking() resolved them
+                  f"--engine-marking-text: {mk['color']};",
                   f"--engine-marking-weight: {700 if mk['bold'] else 400};"]
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     L += emit_css_charts(livery)
