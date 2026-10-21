@@ -107,7 +107,7 @@ in a `note` div right after it:
 ```
 
 Every format draws it as the figure's caption, as a `{.full}` slide draws its caption: the
-caption size, the livery's muted color, centred, just under the figure. In pptx the engine's
+caption size, the livery's muted color, centered, just under the figure. In pptx the engine's
 `single-body.lua` folds it into pandoc's caption box, and `slide_layout.py` sets its look and
 moves the box up under the picture or table, shrinking a picture that would leave it no room. A
 note may hold several paragraphs. A `†` line in it or after it stays a footnote: HTML and PDF
@@ -119,8 +119,10 @@ the div, a paragraph after a figure is body text in HTML and PDF, and in pptx it
 caption box at body size.
 
 A figure's own caption (`![A caption](x.png)`) has the same look in every format, note or not:
-the caption size, muted, centred, just under the picture, with no "Figure 1:" label in the PDF.
-A note follows it in the same look, so the two read as one block.
+the caption size, muted, centered, just under the picture, with no "Figure 1:" label in the PDF.
+A note follows it in the same look, so the two read as one block. A table and its caption
+(`: A caption` after the table) are centered in every format too, the caption in the same look:
+under the table in HTML and pptx, above it in the PDF, where beamer puts a table's caption.
 
 ## Centering and scaling a short slide
 
