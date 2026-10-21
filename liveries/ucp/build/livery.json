@@ -1106,18 +1106,19 @@
   },
   "marking": {
     "align": "center",
+    "bold": false,
     "box": [
       0.1,
       0.004,
       0.8,
       0.03
     ],
+    "color": "#6B7C99",
     "edge": "top",
     "fill": null,
     "height": 0.03,
     "offset": 0.004,
     "text": null,
-    "text-role": "muted",
     "width": 0.8
   },
   "marks": {

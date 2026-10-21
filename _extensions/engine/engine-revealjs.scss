@@ -145,6 +145,7 @@ $mermaid-label-fg-color: $engine-primary;
   text-align: var(--engine-marking-align, center);
   background: var(--engine-marking-fill, transparent);
   color: var(--engine-marking-text);
+  font-weight: var(--engine-marking-weight, 400);
   font-size: var(--engine-type-marking, 15px);
   line-height: 1.2;
   margin: 0;

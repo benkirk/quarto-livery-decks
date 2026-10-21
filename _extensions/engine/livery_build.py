@@ -213,7 +213,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     if "title" in data:   # only when set, so a livery without it keeps its build/ unchanged
         out["title"] = band(d.name, data["title"], out)
     out["marks"] = marks(d.name, data, out)
-    out["marking"] = marking(data.get("marking") or {}, out)
+    out["marking"] = marking(data.get("marking") or {}, out,   # its colors as hex: a role, a palette name or a hex
+                             lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
@@ -230,12 +231,16 @@ def resolve(d: Path) -> tuple[dict, dict]:
     return out, sources
 
 
-def marking(m: dict, out: dict) -> dict:
-    """The marking strip's look (livery.yml marking:), resolved with its box; its text is the
-    deck's marking:, else this default (None: no strip)."""
+def marking(m: dict, out: dict, hexof=lambda c, k: c) -> dict:
+    """The marking strip's look (livery.yml marking:), resolved with its box and its fill and text
+    color as hex (hexof: a role, a palette name or a hex to its hex); its text is the deck's
+    marking:, else this default (None: no strip)."""
     m = {"text": None, "edge": "top", "offset": 0.004, "width": 0.8, "height": 0.03, "align": "center",
-         "fill": None, **m}
-    m.setdefault("text-role", "primary-text" if m["fill"] else "muted")
+         "fill": None, "bold": False, **m}
+    m.setdefault("color", "primary-text" if m["fill"] else "muted")   # fill and color: two knobs
+    m["color"] = hexof(m["color"], "color")
+    if m["fill"]:
+        m["fill"] = hexof(m["fill"], "fill")
     margin = out.get("geometry", {}).get("margin", 0.06)
     x = {"center": (1 - m["width"]) / 2, "left": margin, "right": 1 - margin - m["width"]}[m["align"]]
     y = m["offset"] if m["edge"] == "top" else 1 - m["offset"] - m["height"]
@@ -715,12 +720,14 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for axis, v in zip("xywh", mk["box"]):
             L.append(f"\\def\\engine@marking@{axis}{{{v}}}")
         L.append(f"\\def\\engine@marking@align{{{mk['align']}}}")
-        L.append(f"\\colorlet{{EngineMarkingText}}{{{ROLE_TEX.get(mk['text-role'], 'BrandDark')}}}")
+        for name, c in (("Text", mk["color"]), ("Fill", mk["fill"])):
+            if c:
+                L.append(f"\\definecolor{{EngineMarking{name}}}{{HTML}}{{{c[1:].upper()}}}" if c.startswith("#")
+                         else f"\\colorlet{{EngineMarking{name}}}{{{ROLE_TEX.get(c, 'BrandDark')}}}")
         if mk["fill"]:
-            f = mk["fill"]
-            L.append(f"\\definecolor{{EngineMarkingFill}}{{HTML}}{{{f[1:].upper()}}}" if f.startswith("#")
-                     else f"\\colorlet{{EngineMarkingFill}}{{{ROLE_TEX.get(f, 'BrandDark')}}}")
             L.append("\\def\\engine@marking@fill{}")
+        if mk["bold"]:
+            L.append("\\def\\engine@marking@bold{}")
         L.append(f"\\def\\engine@marking@default{{{tex_escape(mk['text'] or '')}}}")
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
@@ -938,14 +945,15 @@ def emit_css(livery: dict, extra: str = "") -> str:
     mk = livery.get("marking")
     if mk:   # the marking strip, in slide pixels (its text: engine-revealjs.lua, the deck's or the default)
         x, y, w, h = mk["box"]
-        fill = mk["fill"] or "transparent"
-        fill = fill if fill.startswith("#") or fill == "transparent" else f"var(--engine-{fill})"
+        css = lambda c: c if c.startswith("#") or c == "transparent" else f"var(--engine-{c})"   # a hex or a role
+        fill = css(mk["fill"] or "transparent")
         props += [f"--engine-marking-x: {px(x, W)};", f"--engine-marking-y: {px(y)};",
                   f"--engine-marking-w: {px(w, W)};", f"--engine-marking-h: {px(h)};",
                   f"--engine-marking-justify: {dict(center='center', left='flex-start', right='flex-end')[mk['align']]};",
                   f"--engine-marking-align: {mk['align']};",
                   f"--engine-marking-fill: {fill};",
-                  f"--engine-marking-text: var(--engine-{mk['text-role']});"]
+                  f"--engine-marking-text: {css(mk['color'])};",
+                  f"--engine-marking-weight: {700 if mk['bold'] else 400};"]
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     L += emit_css_charts(livery)
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles

@@ -41,7 +41,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
   <parent>` keeps the deck's report too; a new flavor's first `all` passes its checks (its build
   had named the parent's template).
-- `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill`, `text-role`, `text`) and
+- `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill` and `color`, each a role or a
+  hex, `bold`, `text`) and
   `type.marking`: the marking strip's look and a default text.
 - A cover's text in two parts: `compositions.title.byline` (`role`, `box`, `anchor`, `align`,
   `elements`) takes the author, institute and date (by default) apart from the title and subtitle,

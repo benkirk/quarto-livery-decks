@@ -89,7 +89,8 @@
   --engine-marking-justify: center;
   --engine-marking-align: center;
   --engine-marking-fill: transparent;
-  --engine-marking-text: var(--engine-muted);
+  --engine-marking-text: #5C5E62;
+  --engine-marking-weight: 400;
 }
 /* chart colors (livery.json charts) */
 :root {

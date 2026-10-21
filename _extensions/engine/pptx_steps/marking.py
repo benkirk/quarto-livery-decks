@@ -3,7 +3,7 @@
 Its text is the deck's `marking:` (pandoc records the string in docProps/custom.xml; `none` turns
 the livery's default off), else the livery's `marking.text`; none, no strip. A text box in the
 livery's box, over everything on the slide: no insets, the text centered on its height in the
-type role's size and the text role's color, a solid fill behind it when the livery names one. The
+type role's size, its color and weight, a solid fill behind it when the livery names one. The
 template has no placeholder for it (pandoc fills none it does not know)."""
 
 from pptx.dml.color import RGBColor
@@ -46,5 +46,6 @@ def run(prs, name: str) -> None:
         r = p.add_run()
         r.text = text
         r.font.size = Pt(livery_mod.type_pt(LIVERY, "marking"))
-        r.font.color.rgb = RGBColor.from_string(_hex(MARKING.get("text-role", "muted")))
+        r.font.color.rgb = RGBColor.from_string(_hex(MARKING.get("color", "muted")))
+        r.font.bold = bool(MARKING.get("bold"))
     print(f"marking: the marking strip on {len(prs.slides)} slide(s) → {name}")

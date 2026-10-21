@@ -402,8 +402,9 @@ A marking strip on every slide (a restriction or distribution marking, CUI and t
 | `width` | fraction | `0.8` | Its width, of the slide's width. |
 | `height` | fraction | `0.03` | Its height. |
 | `align` | `center` \| `left` \| `right` | `"center"` | Where it sits along the edge (left and right at the margin) and how its text aligns. |
-| `fill` | null or role or hex |  | A fill behind it, a role or a hex, to make it stand out (default: none). |
-| `text-role` | role |  | Its text's color (default: muted, or primary-text over a fill). |
+| `fill` | null or color or role |  | A fill behind it, a role, a palette name or a hex, to make it stand out (default: none). |
+| `color` | color or role |  | Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill). |
+| `bold` | boolean | `false` | Its text in bold. |
 
 ### `installed-fonts`
 

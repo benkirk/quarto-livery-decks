@@ -34,7 +34,8 @@ def test_box():
     m = lb.marking({"edge": "bottom", "align": "left", "width": 0.5, "height": 0.04, "offset": 0.01}, out)
     assert m["box"] == [0.05, 0.95, 0.5, 0.04], "bottom-left at the margin"
     assert lb.marking({"align": "right", "width": 0.5}, out)["box"][0] == 0.45
-    assert lb.marking({"fill": "primary"}, out)["text-role"] == "primary-text", "text over a fill"
+    assert lb.marking({"fill": "primary"}, out)["color"] == "primary-text", "text over a fill"
+    assert lb.marking({"fill": "#6840F0", "color": "#FFFFFF"}, out)["color"] == "#FFFFFF", "a hex color"
 
 
 def strips(pandoc_deck, tmp, name, front):

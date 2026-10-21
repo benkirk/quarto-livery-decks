@@ -509,13 +509,14 @@
           "description": "Where it sits along the edge (left and right at the margin) and how its text aligns."
         },
         "fill": {
-          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/role-or-hex"}],
-          "description": "A fill behind it, a role or a hex, to make it stand out (default: none)."
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/color-or-role"}],
+          "description": "A fill behind it, a role, a palette name or a hex, to make it stand out (default: none)."
         },
-        "text-role": {
-          "$ref": "#/$defs/role",
-          "description": "Its text's color (default: muted, or primary-text over a fill)."
-        }
+        "color": {
+          "$ref": "#/$defs/color-or-role",
+          "description": "Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill)."
+        },
+        "bold": {"type": "boolean", "default": false, "description": "Its text in bold."}
       }
     },
     "installed-fonts": {
