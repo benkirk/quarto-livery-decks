@@ -168,7 +168,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
-  marker paragraphs), `style_tables` (tables drawn as in the
+  marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
@@ -524,6 +524,21 @@ it does, by area, beyond the format notes above:
   picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits the
   slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
   pandoc, silently, in either tier.
+- **Cards and boxes** (`::: {.lead}`, `::: {.column .card role= .pick .solid}` with `###`,
+  `[..]{.sub}`, `[..]{.label}`, `[..]{.big}`, `::: {.strip role=}`, status items `- [x]`/`[!]`/`[-]`
+  in a card or `::: {.status}`): `engine-common.lua` reads them once (`card_attrs()`,
+  `split_lines()`: in a lead or card a source line is a line, `status_lists()`), and every
+  number is `livery.json` `boxes` (`livery.yml` `boxes:`, merged box by box over `BOXES`). pptx:
+  a grid slide; `grid-pptx.lua` writes `⟦engine:lead⟧`, `⟦engine:column card role=... pick
+  solid⟧`, `⟦engine:strip role=...⟧` (each closed by `⟦engine:end⟧`) and prefix markers
+  `⟦engine:title⟧`/`sub`/`label`/`big`; `grid.py` draws native shapes ("Card n", "Card n head",
+  "Lead", "Card n strip k"...) under text boxes whose `lstStyle` is the master's body style
+  (bullets and sizes as the placeholder's), each head its own height, a row's cards one height;
+  `status_glyphs.py` makes a glyph the bullet (`a:buChar`). HTML: raw tags (a Div opening with a
+  heading would become a `<section>`), the role a custom property (`role` is ARIA's attribute).
+  PDF: `\engine@barbox` (caution, lead, strip), tcolorbox cards set in one run (bodies boxed
+  first, the feature panel's pattern), a status list beamer's itemize with `\item[✓]`. PDF frames
+  are top-aligned (`t`, without beamer's 0.2 cm; a paragraph-first body cancels its `\parskip`).
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves

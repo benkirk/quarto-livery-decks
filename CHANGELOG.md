@@ -67,6 +67,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - Status items: in a card or a `::: {.status}` list, `- [x]`, `- [!]` and `- [-]` show ✓, ⚠ and ✗
   in the livery's status colors (`boxes.status`), where the bullet was, a failed item's text
   muted; a literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays a task list's box.
+- The sample deck shows each of these (a 2/3 and 1/3 split, three plain columns, four on a wide
+  slide, option cards with a lead, a strip and status items, solid cards), and the quickstart a
+  card slide, in the README. docs/authoring.md "Columns" and "Cards and lead boxes".
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends

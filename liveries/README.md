@@ -56,6 +56,14 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      `logo.medium.light`, `primary` the dark one, every other field primary's).
    - **Geometry.** The scaffold's fractions are ncar's; set the lockup's `geometry.logo.aspect`,
      the marks' corners, and `logo.inset` to put the content mark nearer the paper's edge.
+     `geometry.wide-margin` is a `{.wide}` slide's side margin (default half the margin),
+     `geometry.body-bottom` the content body's foot.
+   - **Boxes.** `boxes:` holds the numbers every format draws its columns and boxes with: the
+     column gap and an optional rule between columns, the caution box's bar and pads, the
+     feature panel's pads, the lead box, cards (fill, corner radius, a picked card's outline),
+     strips (their tint) and the status glyphs' colors. Set only what differs from the engine's
+     (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
+     its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
      hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover (nsi);
      `feature.style`; `compositions` to move any box of the composed slides.

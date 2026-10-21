@@ -90,6 +90,122 @@ mpirun -n 4 ./a.out
 :::
 ::::
 
+## Two-thirds and one-third
+
+:::: {.columns}
+::: {.column width="67%"}
+- `width=` on a `.column` sets its share of the row, in every format
+- The gap between columns is the livery's (`boxes.columns.gap`)
+- A column without a width takes an equal share of what is left
+:::
+::: {.column}
+![](images/example.jpg)
+:::
+::::
+
+## Three plain columns
+
+:::: {.columns}
+::: {.column}
+**Compute**
+
+- CPU nodes
+- GPU nodes
+:::
+::: {.column}
+**Storage**
+
+- Scratch
+- Campaign
+:::
+::: {.column}
+**Analysis**
+
+- JupyterHub
+- Visualization
+:::
+::::
+
+## Four columns on a wide slide {.wide}
+
+:::: {.columns}
+::: {.column}
+**Plan.** `{.wide}` on the heading widens the body to the slide less a narrower margin.
+:::
+::: {.column}
+**Build.** Room for three or four columns, or a wide table.
+:::
+::: {.column}
+**Run.** A livery's `boxes.columns.rule` draws a rule in each gap.
+:::
+::: {.column}
+**Check.** `make qa` reads a wide slide's edge from the livery.
+:::
+::::
+
+## Options side by side
+
+::: {.lead}
+**Three ways to spend the next allocation**
+Each trades local capacity against a share of the consortium system.
+:::
+
+:::: {.columns}
+::: {.column .card .pick role="primary"}
+### OPTION 1
+[A modern GPU system]{.sub}
+
+**Total cost $30M**
+[Local investment]{.label}
+[$20M]{.big}
+
+::: {.strip role="accent"}
+→ **$10M** to the consortium
+:::
+
+- [x] Data archive expansion
+- [!] High-resolution runs
+:::
+::: {.column .card role="primary-contrast"}
+### OPTION 2
+[Join the consortium]{.sub}
+
+**Total cost $15M**
+[Local investment]{.label}
+[$5M]{.big}
+
+- [x] Shared capacity
+- [-] Local control
+:::
+::: {.column .card role="secondary"}
+### OPTION 3
+[A hybrid of both]{.sub}
+
+**Total cost $25M**
+[Local investment]{.label}
+[$15M]{.big}
+
+- [!] Two systems to run
+:::
+::::
+
+## Solid cards
+
+:::: {.columns}
+::: {.column .card .solid role="primary"}
+### Plan
+Write the slides in Markdown, one file.
+:::
+::: {.column .card .solid role="secondary"}
+### Build
+`make` renders pptx, HTML and PDF from it.
+:::
+::: {.column .card .solid role="accent"}
+### Share
+Publish the HTML; hand out the pptx and PDF.
+:::
+::::
+
 ## Image embed
 
 ![A caption for the figure](images/example.jpg){width=60%}

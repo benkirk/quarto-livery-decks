@@ -43,6 +43,38 @@ revealjs speaker view (`s`), never on the slide itself.
 :::
 ::::
 
+## Cards: options side by side
+
+:::: {.columns}
+::: {.column .card .pick role="primary"}
+### Option A
+[Run it here]{.sub}
+
+[Local cost]{.label}
+[$20M]{.big}
+
+- [x] Local control
+:::
+::: {.column .card role="primary-contrast"}
+### Option B
+[Share a system]{.sub}
+
+[Local cost]{.label}
+[$5M]{.big}
+
+- [-] Local control
+:::
+::: {.column .card role="secondary"}
+### Option C
+[A hybrid]{.sub}
+
+[Local cost]{.label}
+[$12M]{.big}
+
+- [!] Two systems to run
+:::
+::::
+
 ## The MPAS-A dynamical core {.shrink}
 
 $$
