@@ -25,6 +25,11 @@ from conftest import ROOT
 
 ENGINE = ROOT / "_extensions" / "engine"
 IMAGE = ROOT / "decks" / "quickstart" / "images" / "example.jpg"
+CARDS = ('## Cards\n\n:::: {.columns}\n'
+         '::: {.column .card .pick role="primary"}\n### OPTION 1\n[Procure a system]{.sub}\n\n'
+         '**Total**\n[LOCAL INVESTMENT]{.label}\n[$20M]{.big}\n\n- one\n- two\n- three\n:::\n'
+         '::: {.column .card role="secondary"}\n### OPTION 2\nShort.\n:::\n'
+         '::: {.column .card .solid role="accent"}\n### OPTION 3\nSolid.\n:::\n::::\n')
 WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
@@ -32,7 +37,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Three\n\n:::: {.columns}\n::: {.column}\n- AAA\n- aaa\n:::\n::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
-      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n')
+      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS)
 STEP = """
 import sys
 from pathlib import Path
@@ -133,9 +138,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 6, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 7, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -163,3 +168,55 @@ def test_lead(deck):
     by = {sh.name: sh for sh in prs.slides[4].shapes}
     assert by["Column 1"].top >= by["Lead"].top + by["Lead"].height, "the columns under the lead"
     assert not body_placeholders(prs.slides[4]), "the emptied placeholder left"
+
+
+def test_cards(deck):
+    """Three cards: at the formula's frames, one height; each head band in its role, the title
+    run bold in the subhead size and primary-text; the pick outlined in outline-color; the solid
+    card's fill its role; the label in caps, the big number in the display size; no marker left."""
+    import livery as livery_mod
+    livery, prs, _ = deck
+    slide = prs.slides[6]
+    by = {sh.name: sh for sh in slide.shapes}
+    cards = [by[f"Card {n}"] for n in (1, 2, 3)]
+    for c, (x, w) in zip(cards, boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])):
+        assert abs(c.left - x) <= 6 and abs(c.width - w) <= 6, f"{c.name} {c.left, c.width}, want {x, w}"
+    assert len({c.height for c in cards}) == 1 and len({c.top for c in cards}) == 1, "the cards one height"
+    role = lambda r: livery["roles"][r][1:]
+    assert str(by["Card 1 head"].fill.fore_color.rgb) == role("primary"), "the head band in its role"
+    assert str(by["Card 2 head"].fill.fore_color.rgb) == role("secondary")
+    assert "Card 3 head" not in by and str(by["Card 3"].fill.fore_color.rgb) == role("accent"), "a solid card is its role"
+    ol = by["Card 1 outline"]
+    assert str(ol.line.color.rgb) == livery["boxes"]["card"]["outline-color"][1:], "the pick's outline color"
+    assert ol.line.width == round(livery["boxes"]["card"]["outline"] * prs.slide_height), "the outline's width"
+    assert "Card 2 outline" not in by, "an outline on a card not picked"
+    title = by["Card 1 title"].text_frame.paragraphs[0].runs[0].font
+    assert title.bold and title.size.pt == livery_mod.half_pt(livery["type"]["roles"]["subhead"]["pt"]), "the title's look"
+    assert str(title.color.rgb) == role("primary-text"), "the title on the role in primary-text"
+    body = by["Card 1 body"].text_frame.paragraphs
+    label = next(p for p in body if p.text == "LOCAL INVESTMENT")
+    big = next(p for p in body if p.text == "$20M")
+    assert label.runs[0]._r.find("{*}rPr").get("cap") == "all", "the label in caps"
+    assert big.runs[0].font.size.pt == livery_mod.half_pt(livery["type"]["roles"]["display"]["pt"]), "the big number's size"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_card_type_step(pandoc_deck, tmp_path):
+    """A deck's type-body: 10 scales a card's big number as the rest (type_step runs after grid):
+    ncar's display role (30 pt on its 12 pt body) to half_pt(30 x 10 / 12)."""
+    import livery as livery_mod
+    md = "---\ntype-body: 10\n---\n\n" + CARDS
+    d = ROOT / "liveries" / "ncar"
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "t.pptx"
+    subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(d / "template.pptx"),
+                    "-o", str(out)], input=md, text=True, cwd=tmp_path, check=True, capture_output=True)
+    step = STEP.replace("prs.save(p)", "from pptx_steps import type_step; type_step.run(prs, p); prs.save(p)")
+    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
+    subprocess.run([sys.executable, "-c", step, str(out)], env=env, check=True, capture_output=True)
+    from pptx import Presentation
+    j = json.loads((d / "build" / "livery.json").read_text())
+    body = {sh.name: sh for sh in Presentation(str(out)).slides[0].shapes}["Card 1 body"].text_frame.paragraphs
+    big = next(p for p in body if p.text == "$20M")
+    want = livery_mod.half_pt(j["type"]["roles"]["display"]["pt"] * 10 / j["type"]["roles"]["body"]["pt"])
+    assert big.runs[0].font.size.pt == want, f"the big number at {big.runs[0].font.size.pt}, want {want}"

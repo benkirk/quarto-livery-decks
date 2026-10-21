@@ -416,6 +416,51 @@ $mermaid-label-fg-color: $engine-primary;
   > :first-child { margin-top: 0; }
   > :last-child { margin-bottom: 0; }
 }
+// cards (::: {.column .card role=...}): a head band in the card's role over a body on the card
+// fill, the row's cards one height (the columns' flex stretch); .pick outlined (inset: no layout
+// shift, and it follows the radius); .solid all of it the role's (livery.css: boxes.card)
+.reveal .slides section .engine-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  background: var(--engine-card-fill);
+  border-radius: var(--engine-card-radius);
+  overflow: hidden;
+  &.engine-pick { box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color); }
+  .engine-card-head {
+    background: var(--engine-card-role);
+    color: var(--engine-primary-text);
+    padding: var(--engine-card-head-pad);
+  }
+  .engine-card-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
+  .engine-card-body {
+    flex: 1;
+    padding: var(--engine-card-pad);
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+  }
+  .engine-label {
+    display: block;
+    font-size: calc(var(--engine-type-eyebrow) * 1em);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--engine-muted);
+  }
+  .engine-big {
+    display: block;
+    font-size: calc(var(--engine-type-display) * 1em);
+    font-weight: 700;
+    line-height: 1.08;
+    color: var(--engine-primary-contrast);
+  }
+  &.engine-solid {
+    background: var(--engine-card-role);
+    .engine-card-head { background: none; }
+    &, p, li, strong, .engine-label, .engine-big { color: var(--engine-primary-text); }
+  }
+}
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;

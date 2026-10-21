@@ -353,6 +353,100 @@
   {\end{minipage}\hspace*{-\engine@wideout}\par}
 
 % ---------------------------------------------------------------------------
+% cards: a row of \begin{enginecard}[pick,solid|plain]{<role color>}{<share>}{<n>}{<title>}{<sub>}
+% ... \end{enginecard} inside \begin{enginecards} ... \end{enginecards} (the Quarto filter writes
+% them for ::: {.column .card}). Each body is set first into a box (as the feature panel's: verbatim
+% works), its width the card's share of the line less the gaps, its pads and outline; the row then
+% draws every card as a tcolorbox one height, the tallest body and head (one run, no aux; each
+% head its own text's height, as HTML's and the pptx's): a head
+% band in the role (the title in the block title font, bold, its sub in the body's) over the body
+% on the card fill, rounded by boxes.card.radius, a pick outlined in outline-color, a solid card all
+% the role's with its text in primary-text; plain (a column beside cards) has no fill or band.
+% \enginelabel and \enginebig are a card's small-caps label and big number.
+% ---------------------------------------------------------------------------
+\RequirePackage{tcolorbox}\tcbuselibrary{skins,breakable}   % breakable: Quarto's callouts, which load it after this
+\newcount\engine@ncards
+\newdimen\engine@cardbody \newdimen\engine@cardhead \newdimen\engine@cardw \newdimen\engine@cardrule
+\newbox\engine@cardboxi \newbox\engine@cardboxii \newbox\engine@cardboxiii
+\newbox\engine@cardboxiv \newbox\engine@cardboxv \newbox\engine@cardboxvi
+\def\engine@cardbox#1{\csname engine@cardbox\romannumeral#1\endcsname}
+\def\engine@labelcolor{BrandMuted}\def\engine@bigcolor{BrandPrimaryContrast}
+\newcommand\enginelabel[1]{{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}}}
+\newcommand\enginebig[1]{{\usebeamerfont{display}\color{\engine@bigcolor}#1}}
+\newenvironment{enginecards}{\par\global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
+  {\engine@drawcards\par}
+\def\engine@cardval#1{\csname engine@card@#1@\the\engine@ncards\endcsname}
+\newcommand\enginecard[6][]{%
+  \global\advance\engine@ncards\@ne
+  \expandafter\xdef\csname engine@card@opts@\the\engine@ncards\endcsname{#1}%
+  \expandafter\xdef\csname engine@card@role@\the\engine@ncards\endcsname{#2}%
+  \expandafter\gdef\csname engine@card@title@\the\engine@ncards\endcsname{#5}%
+  \expandafter\gdef\csname engine@card@sub@\the\engine@ncards\endcsname{#6}%
+  \engine@cardw=\dimexpr#3\dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(#4-1)\relax\relax
+  \expandafter\xdef\csname engine@card@w@\the\engine@ncards\endcsname{\the\engine@cardw}%
+  \engine@cardrule=\z@ \in@{pick}{#1}\ifin@\engine@cardrule=\engine@boxes@card@outline\paperheight\fi
+  \expandafter\xdef\csname engine@card@rule@\the\engine@ncards\endcsname{\the\engine@cardrule}%
+  \def\engine@tmpa{#5#6}\ifx\engine@tmpa\@empty\else   % the head's height, the row's tallest
+    \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@headpadx em\relax\relax
+      \raggedright{\usebeamerfont{block title}\bfseries\strut#5\par}%
+      \def\engine@tmpa{#6}\ifx\engine@tmpa\@empty\else{\normalsize\mdseries\strut#6\par}\fi}%
+    \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\engine@cardhead
+      \global\engine@cardhead=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax\fi
+  \fi
+  \edef\engine@outerparskip{\the\parskip}%
+  \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
+    \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax
+    \raggedright\usebeamerfont{normal text}%
+    % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put
+    % \parskip over the first paragraph, which an empty list does not get)
+    \in@{solid}{#1}\ifin@\setbeamercolor{normal text}{fg=BrandPrimaryText}%
+      \def\engine@labelcolor{BrandPrimaryText}\def\engine@bigcolor{BrandPrimaryText}\fi}
+\def\endenginecard{\par\egroup
+  \ifdim\dimexpr\ht\engine@cardbox{\engine@ncards}+\dp\engine@cardbox{\engine@ncards}\relax>\engine@cardbody
+    \global\engine@cardbody=\dimexpr\ht\engine@cardbox{\engine@ncards}+\dp\engine@cardbox{\engine@ncards}\relax\fi}
+% the row: each card a tcolorbox, the gap between them; its height the tallest body and head
+\def\engine@drawcards{\hbox{\@tempcnta=\z@   % a box in the vertical list: no paragraph, no \parskip
+  \loop\advance\@tempcnta\@ne
+    \ifnum\@tempcnta>\@ne\hskip\engine@boxes@columns@gap\paperwidth\fi
+    \engine@drawcard{\the\@tempcnta}%
+  \ifnum\@tempcnta<\engine@ncards\repeat}}
+\def\engine@add#1{\expandafter\def\expandafter\engine@ckeys\expandafter{\engine@ckeys,#1}}
+\def\engine@cardtitle{\raggedright\strut\engine@ctitle\par
+  \ifx\engine@csub\@empty\else{\normalsize\mdseries\strut\engine@csub\par}\fi}
+\def\engine@begincard#1{\begin{tcolorbox}[enhanced,nobeforeafter,box align=top,valign=top,boxsep=0pt,
+  before skip=0pt,after skip=0pt,coltitle=BrandPrimaryText,fonttitle=\usebeamerfont{block title}\bfseries#1]}
+% \engine@hasopt{<word>}: \ifin@ for the card's options (\in@ does not expand its arguments)
+\def\engine@hasopt#1{\edef\engine@tmpc{\noexpand\in@{#1}{\engine@copts}}\engine@tmpc}
+\def\engine@drawcard#1{%
+  \edef\engine@copts{\csname engine@card@opts@#1\endcsname}%
+  \edef\engine@crole{\csname engine@card@role@#1\endcsname}%
+  \expandafter\let\expandafter\engine@ctitle\csname engine@card@title@#1\endcsname
+  \expandafter\let\expandafter\engine@csub\csname engine@card@sub@#1\endcsname
+  \edef\engine@ckeys{,width=\csname engine@card@w@#1\endcsname,
+    height=\the\dimexpr\engine@cardbody+\engine@cardhead
+      +2\dimexpr\engine@boxes@card@pady em\relax+2\dimexpr\engine@boxes@card@headpady em\relax
+      +2\dimexpr\csname engine@card@rule@#1\endcsname\relax\relax,
+    boxrule=\csname engine@card@rule@#1\endcsname,
+    left=\the\dimexpr\engine@boxes@card@padx em\relax,right=\the\dimexpr\engine@boxes@card@padx em\relax,
+    top=\the\dimexpr\engine@boxes@card@pady em\relax,bottom=\the\dimexpr\engine@boxes@card@pady em\relax,
+    lefttitle=\the\dimexpr\engine@boxes@card@headpadx em\relax,righttitle=\the\dimexpr\engine@boxes@card@headpadx em\relax,
+    toptitle=\the\dimexpr\engine@boxes@card@headpady em\relax,bottomtitle=\the\dimexpr\engine@boxes@card@headpady em\relax,
+    colbacktitle=\engine@crole,
+    \ifdim\engine@boxes@card@radius\paperheight=\z@ sharp corners\else arc=\the\dimexpr\engine@boxes@card@radius\paperheight\relax\fi}%
+  \engine@hasopt{plain}%
+  \ifin@\engine@add{opacityback=0,opacityframe=0}%
+  \else
+    \engine@hasopt{solid}%
+    \ifin@\edef\engine@tmpb{colback=\engine@crole,coltext=BrandPrimaryText,colframe=\engine@crole}%
+    \else\def\engine@tmpb{colback=EngineBoxesCardFill,colframe=EngineBoxesCardFill}\fi
+    \expandafter\engine@add\expandafter{\engine@tmpb}%
+    \ifx\engine@ctitle\@empty\else\engine@add{title={\engine@cardtitle}}\fi
+  \fi
+  \engine@hasopt{pick}\ifin@\engine@add{colframe=EngineBoxesCardOutlineColor}\fi
+  \expandafter\engine@begincard\expandafter{\engine@ckeys}\box\engine@cardbox{#1}\end{tcolorbox}}
+
+% ---------------------------------------------------------------------------
 % tables: pandoc's longtable, drawn as the HTML theme draws them -- no top
 % rule, a heavy rule in the brand color under the header, a light one at the
 % foot, and every second body row on Light Gray.  The Quarto filter wraps

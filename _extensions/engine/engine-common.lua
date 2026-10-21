@@ -162,8 +162,41 @@ local function split_lines(blocks)
   return out
 end
 
+-- A paragraph that is one span of the class (`[$20M]{.big}`): its inlines, else nil.
+local function lone_span(b, cls)
+  if (b.t == "Para" or b.t == "Plain") and #b.content == 1 and b.content[1].t == "Span"
+      and has_class(b.content[1], cls) then
+    return b.content[1].content
+  end
+  return nil
+end
+
+-- A card column (`::: {.column .card .pick .solid role="primary"}`), as every format draws it:
+-- { role, pick, solid, title (inlines or nil), sub (inlines or nil), body (blocks) }. role names the
+-- head band's fill (with .solid, the card's), default primary; .pick draws the outline; a first
+-- heading is the band's title, and a paragraph that is one [...]{.sub} right after it the band's
+-- second line; the body's source lines are lines (split_lines()). The column's role= is taken off
+-- (HTML's ARIA attribute). nil for a column that is not a card.
+local function card_attrs(col)
+  if not has_class(col, "card") then return nil end
+  local c = { role = col.attributes["role"] or "primary", pick = has_class(col, "pick"),
+              solid = has_class(col, "solid") }
+  col.attributes["role"] = nil
+  local blocks, i = col.content, 1
+  if blocks[1] and blocks[1].t == "Header" then
+    c.title, i = blocks[1].content, 2
+    local sub = blocks[2] and lone_span(blocks[2], "sub")
+    if sub then c.sub, i = sub, 3 end
+  end
+  local rest = pandoc.Blocks({})
+  for k = i, #blocks do rest:insert(blocks[k]) end
+  c.body = split_lines(rest)
+  return c
+end
+
 return {
-  has_class = has_class, column_shares = column_shares, is_grid = is_grid, split_lines = split_lines, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  has_class = has_class, column_shares = column_shares, is_grid = is_grid, split_lines = split_lines,
+  lone_span = lone_span, card_attrs = card_attrs, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
   is_note = is_note,
 }

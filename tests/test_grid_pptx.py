@@ -98,3 +98,19 @@ def test_lead_marked(rendered):
     assert t.startswith("⟦engine:lead⟧Head") and "line⟦engine:end⟧" in t, f"lead markers: {t!r}"
     paras = ["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", slides[part])]
     assert "Head" in paras and "line" in paras, f"the lead's two lines not two paragraphs: {paras}"
+
+
+def test_card_marked(pandoc_deck, tmp_path):
+    """A card column: its marker carries the role and flags, its heading is a ⟦engine:title⟧
+    paragraph (no heading: pandoc would add spcBef), its sub, label and big lines theirs."""
+    md = ('## Cards\n\n:::: {.columns}\n::: {.column .card .pick role="secondary"}\n### OPTION 1\n'
+          '[The sub]{.sub}\n\n[LABEL]{.label}\n[$20M]{.big}\n:::\n::: {.column}\nPlain\n:::\n::::\n')
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "c.pptx"
+    subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
+    with zipfile.ZipFile(out) as z:
+        xml = z.read("ppt/slides/slide1.xml").decode()
+    paras = ["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", xml)]
+    for want in ("⟦engine:column card role=secondary pick⟧", "⟦engine:title⟧OPTION 1", "⟦engine:sub⟧The sub",
+                 "⟦engine:label⟧LABEL", "⟦engine:big⟧$20M", "⟦engine:column⟧"):
+        assert want in paras, f"{want!r} not a paragraph: {paras}"

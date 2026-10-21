@@ -18,7 +18,10 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:column⟧` opening each column and a `⟦engine:end⟧` closing it, a last `⟦engine:end⟧`
   closing the columns (a slide with a lead before its columns already gets one flat
   placeholder from pandoc); a `.lead` (with columns or alone) is `⟦engine:lead⟧` ... `⟦engine:end⟧`,
-  its source lines each a paragraph (engine-common.lua's split_lines()). First-cut limit: a picture or table in a flattened column is not
+  its source lines each a paragraph (engine-common.lua's split_lines()). A card column's marker is
+  `⟦engine:column card role=primary pick solid⟧` (card_attrs()), its band's title and sub and its
+  label and big lines paragraphs led by `⟦engine:title⟧`, `⟦engine:sub⟧`, `⟦engine:label⟧`,
+  `⟦engine:big⟧`. First-cut limit: a picture or table in a flattened column is not
   drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
 
 Plain pandoc, no Quarto API, so a test can run it.
@@ -68,10 +71,20 @@ local function is_shape(b)
   return found
 end
 
--- a column's blocks, its divs unwrapped (the flow has no divs), its pictures and tables warned of
+local function prefixed(word, inlines)   -- a paragraph led by a prefix marker, for grid.py
+  local il = pandoc.Inlines({ pandoc.Str("⟦engine:" .. word .. "⟧") })
+  il:extend(inlines)
+  return pandoc.Para(il)
+end
+
+-- a column's blocks, its divs unwrapped (the flow has no divs), a [..]{.label} or [..]{.big} line
+-- led by its prefix marker, its pictures and tables warned of
 local function flow(blocks, title, out)
   for _, b in ipairs(blocks) do
-    if is_shape(b) then
+    local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
+    if label or big then
+      out:insert(prefixed(label and "label" or "big", label or big))
+    elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
     elseif b.t == "Div" and not C.has_class(b, "notes") then
@@ -89,8 +102,16 @@ local function flatten(d, title)
   for k = 1, #cols do widths[k] = share(shares[k]) end
   local out = pandoc.Blocks({ marker("columns widths=" .. table.concat(widths, ",")) })
   for _, col in ipairs(cols) do
-    out:insert(marker("column"))
-    flow(col.content, title, out)
+    local card = C.card_attrs(col)
+    if card then   -- its band's title and sub led by their prefix markers (no heading: no spcBef)
+      out:insert(marker("column card role=" .. card.role .. (card.pick and " pick" or "") .. (card.solid and " solid" or "")))
+      if card.title then out:insert(prefixed("title", card.title)) end
+      if card.sub then out:insert(prefixed("sub", card.sub)) end
+      flow(card.body, title, out)
+    else
+      out:insert(marker("column"))
+      flow(col.content, title, out)
+    end
     out:insert(marker("end"))
   end
   out:insert(marker("end"))

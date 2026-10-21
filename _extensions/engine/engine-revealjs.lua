@@ -260,6 +260,41 @@ local function lead_boxes(blocks)
   end })
 end
 
+-- A card column (C.card_attrs()): the Div kept (its flex share), its content raw tags round a head
+-- band (the title and sub) and a body, the role a custom property (role= is ARIA's attribute in
+-- HTML); [..]{.label}, [..]{.big} and [..]{.sub} spans as engine- classes. The scss draws it.
+local function inline_html(inlines)
+  return (pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "html"):gsub("%s+$", ""))
+end
+
+local SPANS = { label = "engine-label", big = "engine-big", sub = "engine-sub" }
+
+local function card_columns(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "column") then return nil end
+    local c = C.card_attrs(d)
+    if not c then return nil end
+    local cls = "engine-card" .. (c.pick and " engine-pick" or "") .. (c.solid and " engine-solid" or "")
+    local out = pandoc.Blocks({ html(string.format('<div class="%s" style="--engine-card-role: var(--engine-%s)">', cls, c.role)) })
+    if c.title or c.sub then
+      local head = '<div class="engine-card-head">'
+      if c.title then head = head .. '<div class="engine-card-title">' .. inline_html(c.title) .. "</div>" end
+      if c.sub then head = head .. '<div class="engine-card-sub">' .. inline_html(c.sub) .. "</div>" end
+      out:insert(html(head .. "</div>"))
+    end
+    out:insert(html('<div class="engine-card-body">'))
+    out:extend(c.body:walk({ Span = function(sp)
+      for k, v in pairs(SPANS) do
+        if has_class(sp, k) then sp.classes = sp.classes:filter(function(x) return x ~= k end); sp.classes:insert(v) end
+      end
+      return sp
+    end }))
+    out:insert(html("</div></div>"))
+    d.content = out
+    return d
+  end })
+end
+
 local function unwrap_layout(blocks)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
@@ -646,7 +681,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(flex_columns(doc.blocks))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(flex_columns(doc.blocks)))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then
