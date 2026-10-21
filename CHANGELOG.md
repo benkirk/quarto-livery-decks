@@ -3,8 +3,9 @@
 What each release changes for the people who use it, newest first, in the
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) shape: **Decks** (what a deck author
 sees), **Liveries** (what a livery owner must do), **Plots** (what a plot author sees) and
-**LaTeX** (the theme's options and commands). The engineering narrative is
-`design/engine-and-liveries.md`, section 10.
+**LaTeX** (the theme's options and commands). The engineering narrative up to the first release
+is `design/engine-and-liveries.md`, section 10; since then the PR bodies and
+`design/unplanned-city-ledger.md`.
 
 **Versions are calendar versions, `YY.MM.N`**: the year and month of the release, the month
 unpadded, and `N`, from 0, the month's release count (`26.10.0`, `26.10.1`, ..., `26.11.0`). The

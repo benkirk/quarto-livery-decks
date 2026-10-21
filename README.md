@@ -126,7 +126,7 @@ walks through it; [`liveries/REFERENCE.md`](liveries/REFERENCE.md) is every `liv
 
 | You want to | Read |
 |---|---|
-| write a deck: a new directory, the front matter and slide kinds, linked images, centering and scaling a slide, shell chunks, text sizes, `make qa` | [`docs/authoring.md`](docs/authoring.md) |
+| write a deck: a new directory, the front matter and slide kinds, linked images, centering and scaling a slide, columns, cards and lead boxes, shell chunks, text sizes, `make qa` | [`docs/authoring.md`](docs/authoring.md) |
 | know what each format does: the layout tree, the build pipeline, the fonts, the template's constraints, what is beamer's and what is revealjs's | [`docs/formats.md`](docs/formats.md) |
 | put a plot on a slide in the livery's colors | [`decks/plots/README.md`](decks/plots/README.md) |
 | make or change a livery | [`liveries/README.md`](liveries/README.md), [`liveries/REFERENCE.md`](liveries/REFERENCE.md) |

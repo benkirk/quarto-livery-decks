@@ -44,8 +44,15 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       (boxes.columns.gap), as HTML and pptx lay them out (onlytextwidth: no
       overhang into the margins; \enginecolshare)
 
+  ::: {.lead}, ::: {.column .card}, ::: {.strip role=}, status items
+      the lead box (\engine@barbox), cards (tcolorbox, \begin{enginecard}),
+      strips and ✓ ⚠ ✗ items as HTML and pptx draw them, from livery.sty's boxes
+
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
+
+  metadata `marking: "CUI"`
+      the marking strip on every frame (\enginemarkingtext; the livery places it)
 
   metadata `themeoptions: [title=light, footer=full, ...]`
       options for \usetheme{Engine} (see beamerthemeEngine.sty)

@@ -187,7 +187,7 @@ cd ~/my-talk && make pptx                  # or html, pdf, all, qa
 ## In GitHub Codespaces
 
 No install at all, not even Docker: `.devcontainer/devcontainer.json` names the image (`:main`,
-the one CI built for the checkout it opens), and GitHub Codespaces runs it on a cloud VM with
+the one CI built from main's head, whatever branch the codespace opens), and GitHub Codespaces runs it on a cloud VM with
 the repository checked out at `/workspaces/quarto-livery-decks` and `quarto` on PATH, so
 `make` builds natively there. Two ways in.
 

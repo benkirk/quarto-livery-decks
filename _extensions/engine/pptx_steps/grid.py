@@ -1,4 +1,4 @@
-"""A grid slide (three or more columns, a lead box; cards later) redrawn from grid-pptx.lua's markers.
+"""A grid slide (three or more columns, a lead box, cards, strips) redrawn from grid-pptx.lua's markers.
 
 grid-pptx.lua flattens a grid slide's columns into one text flow, which pandoc writes into the
 Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:...⟧`):
@@ -223,8 +223,8 @@ def _shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_on
 
 
 def _close(p):
-    """A card paragraph's space before: CARD_GAP of the master body's (a:spcBef), as HTML's card lines
-    and beamer's sit close; type_step scales it with the sizes."""
+    """A card paragraph's space before: CARD_GAP of the master body's (a:spcBef), as beamer's card
+    lines sit close (HTML uses reveal's block margin); type_step scales it with the sizes."""
     ppr = p.find(qn("a:pPr"))
     if ppr is None:
         ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)

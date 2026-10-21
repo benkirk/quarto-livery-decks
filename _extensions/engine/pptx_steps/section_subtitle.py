@@ -5,9 +5,10 @@ pandoc renders a `#` heading (with `slide-level: 2`) as a title-only "Section He
 drops the markdown after it onto a separate, untitled slide; the template's Section Header
 layout has a subtitle placeholder (idx=1) pandoc never fills, so this moves the orphan's body
 there and deletes the orphan. It then dresses every divider as HTML and PDF do: the livery's
-divider label ("Section n") in accent1, the tab beside the title, and label, title and subtitle
-stacked and centered as one block, line counts measured in the livery's heading and body fonts.
-Zip surgery via lxml, first in pptx_post.py, before embed_fonts rewrites
+divider label ("Section n"; none under section.label: null) in section.label-color (secondary
+by default), the tab beside the title, and label, title and subtitle stacked and centered as
+one block, line counts measured in the livery's heading and body fonts. Zip surgery via lxml,
+third in pptx_post.py (after svg_fallback and notes_clrmap), before embed_fonts rewrites
 presentation.xml. Idempotent: merged dividers stay merged; label and tab are replaced."""
 
 import copy

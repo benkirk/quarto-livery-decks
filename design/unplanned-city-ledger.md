@@ -3,7 +3,8 @@
 The record of the `unplanned-city-sweep` skill (`.claude/skills/unplanned-city-sweep/SKILL.md`):
 each sweep over a window of merged PRs or an area of the tree adds an entry, newest first, and
 the findings nobody picked wait in **Untriaged** until a later sweep takes them up or drops them.
-Window mode starts from the newest entry's end commit.
+Window mode starts from the newest window entry's end commit (an area entry records where it
+branched from, not a window read).
 
 ## Entry format
 

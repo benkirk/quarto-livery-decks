@@ -409,7 +409,7 @@
   \edef\engine@outerparskip{\the\parskip}%
   \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
     \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
-    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % HTML's card lines sit close
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % card lines sit close, as the pptx's (grid.py CARD_GAP); HTML uses reveal's block margin
     \engine@incardtrue\in@{solid}{#1}\ifin@\engine@solidcardtrue\else\engine@solidcardfalse\fi
     \raggedright\usebeamerfont{normal text}%
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put

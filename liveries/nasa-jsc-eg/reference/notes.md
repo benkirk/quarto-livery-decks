@@ -125,6 +125,9 @@ cover (`art.title-light`). Still open:
 
 - **Pictures and tables in cards and in slides of three or more columns** are not drawn in their
   column in the pptx yet (the render warns).
+- **The template's 2×2 quadrant layout** (#124), four panels under one title.
+- **A deck-level key to swap the group's patch** (#124): today a group is its own flavor of this
+  livery (`compositions.<name>.mark.image`).
 
 `make measure` reports its boxes "over" on the cover, closing and dividers: the measurer reads the
 art's own ink (the starfield, the patches, the rule beside the insignia) as content. The deltas are

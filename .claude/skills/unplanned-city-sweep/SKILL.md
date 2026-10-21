@@ -22,7 +22,8 @@ doing" is an acceptable report.
 
 ## 1. Pick the mode
 
-- **Window.** Read everything merged since the ledger's newest end commit, or the PRs Ben names.
+- **Window.** Read everything merged since the ledger's newest *window* entry's end commit (an
+  area entry's is where it branched, not where the reading stopped), or the PRs Ben names.
   `main` takes squash merges, so each commit is one PR: find the range with
   `git log --oneline <end>..origin/main`, then read each PR body (`gh pr view N --json body`)
   and the combined diff (`git diff <end>..origin/main`).

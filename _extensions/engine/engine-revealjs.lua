@@ -44,7 +44,18 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
       which moves the title too), scale="S" sizes its text, tables and code
       by S, and .fill grows it until it just fits (HTML only)
       .caution sets the body on a soft yellow field with a brand-yellow bar
-      at its left: the warning slides (footnotes stay below it)
+      at its left: the warning slides (footnotes stay below it); .wide widens
+      the body to the slide less geometry.wide-margin a side
+
+  :::: {.columns} / ::: {.column width="55%"}
+      each column its share of the row less the livery's gap (boxes.columns),
+      as PDF and pptx lay them out; ::: {.lead}, ::: {.column .card} (with
+      .pick, .solid, role=, a ### title, [..]{.sub}, [..]{.label}, [..]{.big}),
+      ::: {.strip role=} and status items (- [x] ✓, - [!] ⚠, - [-] ✗) are drawn
+      from livery.css's boxes (engine-common.lua reads them for every format)
+
+  metadata `marking: "CUI"`
+      the marking strip on every slide (the livery places and colors it)
 
 Layout lives in engine-revealjs.scss; colors, fonts and logos come from the livery
 (`livery:` in the metadata, else the bundled liveries/ncar): its build/livery.css,
@@ -276,9 +287,6 @@ local function unwrap_layout(blocks)
   return out
 end
 
--- raw tags, not a Div (see the feature body); before the notes, after the body.
--- Content slides only, as in engine-beamer.lua: a feature slide's text sits on
--- its panel, and the floor of a closing slide is the brand field.
 -- the sign-off lockup's box on every content, section and closing slide (the title slide's is
 -- in title-slide.html); livery.css shows and places it when the livery has one. Raw tags, not
 -- a Div (the <section> trap).

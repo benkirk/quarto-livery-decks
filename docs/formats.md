@@ -17,7 +17,7 @@ quarto-livery-decks/
 │   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
 │   ├── ucp/  ncarucar/    #     template.pptx and build/ (both generated, committed),
 │   ├── cu/  nsi/          #     reference/notes.md
-│   └── nasa/  nasa-dark/
+│   └── nasa/  nasa-dark/  nasa-jsc-eg/
 ├── common/                # what decks share:
 │   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
 │   └── utils/
@@ -137,14 +137,17 @@ headings face), so slide masters and layouts all dereference to it:
 - **nasa** and **nasa-dark** name Public Sans and Inter. They embed once the livery carries
   PowerPoint's `.fntdata` blobs (made by one PowerPoint save with "Embed fonts" on); until
   then a viewer without the faces sees PowerPoint's substitute.
+- **nasa-jsc-eg** names Arial, its template's face, and embeds nothing (every Office has it);
+  HTML and PDF set Liberation Sans, its metric twin, where Arial is not installed.
 
 A livery's code face (`typography.monospace` in `_brand.yml`, with files of its own: nasa's
 DM Mono) sets code in all three formats: pandoc's `monofont` in pptx, the code font in HTML
-and the PDF. The other liveries use each format's default code fonts.
+and the PDF. `pptx.code-typeface` names an installed face for the pptx alone, as a brand
+template does (nasa-jsc-eg: Courier New). The other liveries use each format's default code fonts.
 
 Embedding is only needed when the `.pptx` will be opened on a machine without the font;
 without it, PowerPoint substitutes (typically Calibri). If every viewer has the font, drop
-the `embed_fonts.py` step from `Make.common`.
+the livery's `pptx.fonts` (`embed_fonts.py` then leaves the deck alone).
 
 ## Installed brand fonts
 
@@ -264,7 +267,8 @@ and keep `<deck>_files/` beside it.
       fig-format: png
       fig-dpi: 200          # pptx's
   ```
-  draws them as pptx's PNGs instead, at the same size on the slide. For one plot rather than the
+  draws them as PNGs instead (pptx carries an SVG with a PNG fallback at that dpi), at the same
+  size on the slide. For one plot rather than the
   deck, draw it inside `with livery_mpl.raster():` (a cell's own `fig-format` is not honored by the
   Jupyter engine; `decks/plots/README.md`).
 - **PDF from the browser:** open `<deck>.html?print-pdf` in Chrome and print
