@@ -59,7 +59,7 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   `-v "$PWD/fonts:/opt/fonts:ro"`. matplotlib's font cache is built into the image and
   copied into HOME, so a deck's first plot does not rescan every font; with `/opt/fonts`
   mounted, matplotlib builds its own cache once instead, so that it sees your faces.
-- **Tags**: `latest` and `main` (the main branch), `sha-<short>` (every commit), `26.10.0` (a
+- **Tags**: `latest` (the newest release) and `main` (the main branch), `sha-<short>` (every commit), `26.10.0` (a
   release, `YY.MM.N`) and `26.10` (the month's newest release), `pr-N` (a pull request). The mount path may not contain
   spaces, `%` or `#` (LaTeX's `\input@path`).
 - **The image itself**: `Dockerfile` at the repo root; `make image` builds it locally and
@@ -68,7 +68,7 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   own unprivileged user, and merges one manifest list. `.github/workflows/runtimes.yaml` runs the same smoke
   test under Apptainer (both architectures, unprivileged) and rootless Podman, plus the
   Apptainer forms above and a "lived-in" HOME, on every pull request and weekly against
-  `latest`. Quarto's conda activation is baked
+  `latest`, the newest release. Quarto's conda activation is baked
   as `ENV` (asserted against conda-forge's `activate.d` at build time), so the image also
   works as a GitHub Actions `container:`, which is how this repo's own CI (`ci.yaml`)
   builds its decks.
@@ -183,3 +183,52 @@ cd ~/my-talk && make pptx                  # or html, pdf, all, qa
   ```
 - **Nothing is written into the installation** by a user's build: the links, `.quarto/` and the
   outputs land in the deck's own directory.
+
+## In GitHub Codespaces
+
+No install at all, not even Docker: `.devcontainer/devcontainer.json` names the image (`:main`,
+the one CI built for the checkout it opens), and GitHub Codespaces runs it on a cloud VM with
+the repository checked out at `/workspaces/quarto-livery-decks` and `quarto` on PATH, so
+`make` builds natively there. Two ways in.
+
+**From your laptop, with `gh`**, a throwaway Linux box with the whole toolchain and no VS Code:
+
+```bash
+gh auth refresh -h github.com -s codespace        # once: the codespace scope
+gh codespace create -R benkirk/quarto-livery-decks --retention-period 24h
+gh codespace ssh                                  # a shell in it (it asks which codespace)
+  make -C decks/quickstart all                    # inside: pptx, html, pdf
+  exit
+gh codespace cp -e 'remote:/workspaces/quarto-livery-decks/decks/quickstart/quickstart.*' .   # -e: the remote expands the path
+gh codespace delete                               # when done: a stopped codespace still bills storage
+```
+
+`gh codespace ssh -- make -C decks/quickstart pptx` runs one command. `ssh` needs an SSH
+server, which the `sshd` dev container feature adds on top of the image when the codespace is
+created; the image itself carries nothing for it. The shell's PATH starts with the checkout's `bin/`,
+so `livery` is the checkout's, not the image's copy.
+
+**In the browser**: the README's badge, or "Code" > "Codespaces" on the repository page, opens
+VS Code on it. In its terminal, `make -C decks/quickstart all`; the pptx and PDF download from
+the file tree (right-click), and the HTML deck is served on the forwarded port:
+`python3 -m http.server -d decks/quickstart 8000`, then the link in the Ports tab (private to
+you). The Quarto extension is installed, but its preview renders Quarto's default format,
+not the engine's, so build with make.
+
+**What it costs.** A personal account gets 120 core-hours and 15 GB-month of storage a month
+free (GitHub Free; Pro 180 h and 20 GB-month), so about 60 hours on the default 2-core
+machine (8 GB RAM, 32 GB disk). The storage counts this image, about 8 GB, for every
+codespace kept, running or stopped, until it is deleted (30 days after it stops, unless
+`--retention-period` or your Codespaces settings say less): one codespace at a time, deleted
+when done, stays inside the free quota; two kept for a month do not. The first start takes
+about five minutes, four of them the image pull; a resume takes seconds. The 32 GB disk has
+about 6 GB free once the image is on it, enough for decks, not for much else. The quickstart's
+`make qa`, all three formats and their screenshots, takes a bit over a minute on the 2 cores. A codespace on an organization's
+repository bills the organization only where it allows that; this repository is a personal
+one, so your own quota applies.
+
+**Locally, without Codespaces**: VS Code's "Reopen in Container" with Docker, or the dev
+container CLI, `npx @devcontainers/cli up --workspace-folder .` then `npx @devcontainers/cli
+exec --workspace-folder . make -C decks/quickstart all`, runs the same configuration on your
+machine. It runs as root, as CI does, so on a Linux host the outputs come out root's; the
+`--user` forms above are the better fit there.

@@ -1,0 +1,24 @@
+{
+  "name": "quarto-livery-decks",
+  "image": "ghcr.io/benkirk/quarto-livery-decks:main",
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {}
+  },
+  "postCreateCommand": "/usr/local/bin/entrypoint.sh true && printf 'export PATH=%s/bin:$PATH\\n' \"$PWD\" > /etc/profile.d/quarto-livery-decks.sh",
+  "forwardPorts": [
+    8000
+  ],
+  "portsAttributes": {
+    "8000": {
+      "label": "decks (python3 -m http.server)",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "quarto.quarto"
+      ]
+    }
+  }
+}

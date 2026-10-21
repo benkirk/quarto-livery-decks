@@ -143,6 +143,17 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `include` of this checkout's Make.common. Its untracked `site.mk` (read by Make.common and the
   top Makefile, kept by `clobber`) holds `DECKS_BINDS ?= /glade /lustre/desc1 /gpfs/csfs1
   /local_scratch` (NCAR's file systems appear under two names). Lmod module support is deferred.
+- **Cloud**: `.devcontainer/devcontainer.json` runs the image in GitHub Codespaces (`:main`, the
+  checkout's own image; the `sshd` feature layered at creation for `gh codespace ssh`, nothing
+  added to the Dockerfile; `postCreateCommand` calls the entrypoint with `true` for the matplotlib
+  seed, since dev containers replace the entrypoint, and writes a `profile.d` line putting the
+  checkout's `bin/` first on PATH (`remoteEnv` reaches VS Code's shells, not an ssh login); docs/container.md "In GitHub Codespaces":
+  the custom image counts against the free storage quota, so one codespace at a time). The
+  reusable `build-decks.yaml` (`workflow_call`) is a consumer's cloud build: `make` per deck
+  directory in the image (`:latest`, the newest release), the outputs as the `decks` artifact,
+  `pages:` one directory's site to GitHub Pages; its env names avoid `DECKS`/`LIVERY`, which
+  make would take over `?=`; ci.yaml's `reusable` job calls it on the quickstart;
+  docs/other-repos.md "Building in GitHub Actions". Phase 2, a template repository, is #118.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
   `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
@@ -646,14 +657,15 @@ job calls `image.yaml` (reusable): the image is built natively on `ubuntu-24.04`
 `ubuntu-24.04-arm` (no QEMU), each leg smoke-tested on its host as the runner's own
 unprivileged user (`.github/scripts/smoke-test.sh`: a bare directory of `.qmd` files with a
 mermaid block, then `decks/quickstart` through its real Makefile, both bind-mounted, outputs
-owned by that user), pushed by digest, merged into one tagged manifest list (`main`, `latest`,
-`sha-`, `pr-N`, `YY.MM.N` and `YY.MM` on a tag) and pulled again on both platforms. Build cache: a registry
+owned by that user), pushed by digest, merged into one tagged manifest list (`main`,
+`sha-`, `pr-N`; `YY.MM.N`, `YY.MM` and `latest`, the newest release, on a tag) and pulled again on both platforms. Build cache: a registry
 cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries the per-platform
 size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSIDE that image at
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
 `livery build --check`, the sample deck in every format with its theme greps, quickstart and
-fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
+fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `reusable`
+(`build-decks.yaml` on the quickstart), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new
 livery joins by existing): `livery check --qa` (the engine's checks, then
@@ -663,7 +675,7 @@ livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's 
 fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
 the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
 more; a tool the decks need goes into the Dockerfile. `runtimes` (`runtimes.yaml`, reusable, also weekly and on
-demand against `:latest`) runs the image as HPC users do, pulled anonymously and doing nothing
+demand against `:latest`, the newest release) runs the image as HPC users do, pulled anonymously and doing nothing
 special for them: Apptainer in unprivileged user-namespace mode (no setuid) on both
 architectures, from the PPA or else the release .deb (the runner's userns sysctl is never
 weakened), and rootless Podman on amd64, each through `smoke-test.sh` with `RUNTIME=apptainer`

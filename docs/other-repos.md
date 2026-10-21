@@ -79,3 +79,46 @@ include ../framework/Make.common
 Two things to know: branch-based Pages is soft-limited to 10 builds an hour, and each push
 shows in the repo's Actions tab as GitHub's own `pages-build-deployment` run. A public repo
 publishes to a public URL; `SITE_NOINDEX` keeps it out of search engines, nothing more.
+
+## Building in GitHub Actions
+
+The decks build in the cloud on every push, with nothing installed anywhere: the framework's
+reusable workflow runs `make` in the published image and attaches the pptx, PDF and HTML
+decks to the run, and can deploy the HTML site to GitHub Pages. Your workflow,
+`.github/workflows/decks.yaml`, is a dozen lines:
+
+```yaml
+name: decks
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write       # these two only with `pages:` below
+  id-token: write
+jobs:
+  decks:
+    uses: benkirk/quarto-livery-decks/.github/workflows/build-decks.yaml@v26.10.5
+    with:
+      decks: docs/presentations/roadmap docs/presentations/samuel   # deck directories
+      pages: docs/presentations/samuel                              # optional: its `make site`
+```
+
+Inputs: `decks` (the deck directories, each with its Makefile), `goals` (the make goals,
+default `pptx html pdf`), `livery` (a `LIVERY=` for every deck; default each Makefile's own),
+`image` (default `ghcr.io/benkirk/quarto-livery-decks:latest`, the newest release), `pages`
+(one deck directory whose `make site` is deployed) and `retention-days` (the outputs' life on
+the run, 14). The outputs are the run's `decks` artifact: the Actions tab, or `gh run download`.
+A submodule consumer pins the workflow (`@v26.10.5`; `@main` follows the framework's main) and
+`image:` to the version its submodule carries, so the workflow, the image and the deck
+Makefile's framework agree.
+
+Pages: set the repository's Pages source to "GitHub Actions" (Settings > Pages) once; the
+workflow deploys the site itself, with no `gh-pages` branch. `make publish` (above) stays the
+form from your laptop. Actions is free on public repositories; a private one has 2000 minutes
+a month on GitHub Free (a deck in three formats takes about three) and 500 MB of artifact
+storage (one HTML deck's artifact is some 10 MB; lower `retention-days` if that adds up).
+
+CI exercises the workflow on every pull request (`ci.yaml`'s `reusable` job): the quickstart
+deck at the pull request's image.
