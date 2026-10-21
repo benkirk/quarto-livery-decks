@@ -195,6 +195,16 @@ local function card_attrs(col, default)
   return c
 end
 
+-- A card's or strip's role= as every format draws it: a role or a blend of livery.json, else default
+-- (the card's place in its row, a strip's accent); a name that is neither warns and takes the
+-- default, as pptx_steps/grid.py does for the pptx.
+local function box_role(livery, role, default, who)
+  if role == nil or role == default then return default end
+  if livery.roles[role] or (livery.blends and livery.blends[role]) then return role end
+  quarto.log.warning(who .. ": role=\"" .. role .. "\" is not a role or a blend of the livery; " .. default)
+  return default
+end
+
 -- Status items: in a .card or a ::: {.status} list, `- [x]` (pandoc's ☒), `- [!]` and `- [-]` are
 -- done, warn and fail; a literal ✓ ⚠ ✗ first in an item is one anywhere. `- [ ]` (☐) stays a task
 -- list's unchecked box: an unchecked task is not a failure.
@@ -255,7 +265,7 @@ end
 
 return {
   has_class = has_class, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
-  lone_span = lone_span, card_attrs = card_attrs, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
   is_note = is_note,
 }

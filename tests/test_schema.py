@@ -119,3 +119,14 @@ def test_flavor_unsets_with_null(tmp_path):
     j = json.loads((d / "build" / "livery.json").read_text())
     assert j["art"]["titlegraphic"] is None and j["typography"]["monospace"] is None, "null did not reach the json"
     assert "--r-code-font" not in (d / "build" / "livery.css").read_text(), "the parent's code face kept"
+
+
+def test_latex_roles(livery: Path):
+    """build/livery.json `latex.roles` names the TeX color of every role and blend (the beamer filter's
+    one table for a card's or strip's role=): ROLE_TEX for the roles the livery has, Brand<Camel> for
+    its blends."""
+    import json
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    want = {**{r: t for r, t in lb.ROLE_TEX.items() if r in j["roles"]},
+            **{b: lb.tex_name("brand-" + b, {}) for b in j["blends"]}}
+    assert j["latex"]["roles"] == want, f"{livery.name}: latex.roles differ from ROLE_TEX and the blends"

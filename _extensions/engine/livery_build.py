@@ -43,7 +43,8 @@ BLENDS = [
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
-# livery role -> the LaTeX color the themes read (engine_livery.sty's six, plus the four new)
+# livery role -> the LaTeX color the themes read (the 13 roles; livery.json latex.roles carries them
+# and the blends' names to the beamer filter)
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "primary-contrast": "BrandPrimaryContrast", "secondary": "BrandSecondary",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
@@ -210,6 +211,10 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
+    # the TeX name of each role and blend (livery.sty defines them), the one table the beamer filter
+    # reads for a card's or strip's role=
+    out.setdefault("latex", {})["roles"] = {**{r: t for r, t in ROLE_TEX.items() if r in roles},
+                                            **{b: tex_name("brand-" + b, {}) for b in blends}}
     g = out.setdefault("geometry", {})   # a {.wide} slide's side margin, and the body's foot
     g.setdefault("wide-margin", round(g.get("margin", 0.06) / 2, 4))
     g.setdefault("body-bottom", BODY_BOTTOM)

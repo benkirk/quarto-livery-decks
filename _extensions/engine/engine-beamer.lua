@@ -273,10 +273,7 @@ end
 -- column beside cards is a card with no fill, `plain`), [..]{.label} and [..]{.big} lines as
 -- \enginelabel and \enginebig; beamerinnerthemeEngine.sty sets the bodies first, so the row's cards
 -- take one height. A table cannot sit in a box (longtable): the row stays plain columns, warned of.
-local function role_tex(role)
-  if role == "foreground" then return "BrandText" end
-  return "Brand" .. (role:gsub("(%a)([%w]*)", function(a, b) return a:upper() .. b end):gsub("%-", ""))
-end
+-- A role's TeX color is livery.json's latex.roles (livery.sty defines them), through C.box_role().
 
 local function card_body(blocks)
   local out = pandoc.Blocks({})
@@ -294,7 +291,8 @@ local function card_body(blocks)
   return out
 end
 
-local function card_rows(blocks, roles)
+local function card_rows(blocks, livery)
+  local roles, tex = livery.boxes.card.roles, livery.latex.roles
   local title = ""
   local function row(d)
     if not has_class(d, "columns") then return nil end
@@ -311,14 +309,15 @@ local function card_rows(blocks, roles)
     end
     local out = pandoc.Blocks({ latex("\\begin{enginecards}") })
     for k, col in ipairs(cols) do
-      local c = C.card_attrs(col, roles[(k - 1) % #roles + 1])   -- by its place in the row
-      local opts, role, head, sub, body = "plain", "BrandBackground", "", "", col.content
+      local default = roles[(k - 1) % #roles + 1]   -- by its place in the row
+      local c = C.card_attrs(col, default)
+      local opts, role, head, sub, body = "plain", tex.background, "", "", col.content
       if c then
         local o = {}
         if c.pick then table.insert(o, "pick") end
         if c.solid then table.insert(o, "solid") end
         opts = table.concat(o, ",")
-        role, body = role_tex(c.role), c.body
+        role, body = tex[C.box_role(livery, c.role, default, "engine-beamer")], c.body
         head = c.title and inlines_to_latex(c.title) or ""
         sub = c.sub and inlines_to_latex(c.sub) or ""
       end
@@ -379,10 +378,11 @@ local function status_items(blocks)
 end
 
 -- A .strip: \begin{enginestrip}{<role color>} round its blocks, its source lines each a paragraph
-local function strips(blocks)
+local function strips(blocks, livery)
   return blocks:walk({ Div = function(d)
     if not has_class(d, "strip") then return nil end
-    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. role_tex(d.attributes["role"] or "accent") .. "}") })
+    local role = C.box_role(livery, d.attributes["role"], "accent", "engine-beamer")
+    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. livery.latex.roles[role] .. "}") })
     out:extend(C.split_lines(d.content))
     out:insert(latex("\\end{enginestrip}"))
     return out
@@ -842,7 +842,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY.boxes.card.roles)))))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY)), LIVERY)))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

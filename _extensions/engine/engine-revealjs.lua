@@ -250,11 +250,11 @@ end
 
 -- A .strip (in a card or on its own): raw tags round its blocks, its role a custom property
 -- (role= is ARIA's attribute), its source lines each a paragraph; the scss tints it
-local function strips(blocks)
+local function strips(blocks, livery)
   return blocks:walk({ Div = function(d)
     if not has_class(d, "strip") then return nil end
     local out = pandoc.Blocks({ html(string.format('<div class="engine-strip" style="--engine-strip-role: var(--engine-%s)">',
-      d.attributes["role"] or "accent")) })
+      C.box_role(livery, d.attributes["role"], "accent", "engine-revealjs"))) })
     out:extend(C.split_lines(d.content))
     out:insert(html("</div>"))
     return out
@@ -302,10 +302,13 @@ end
 
 local SPANS = { label = "engine-label", big = "engine-big", sub = "engine-sub" }
 
-local function card_columns(blocks, roles)
+local function card_columns(blocks, livery)
+  local roles = livery.boxes.card.roles
   local function card(d, k)
-    local c = C.card_attrs(d, roles[(k - 1) % #roles + 1])
+    local default = roles[(k - 1) % #roles + 1]
+    local c = C.card_attrs(d, default)
     if not c then return nil end
+    c.role = C.box_role(livery, c.role, default, "engine-revealjs")
     local cls = "engine-card" .. (c.pick and " engine-pick" or "") .. (c.solid and " engine-solid" or "")
     local out = pandoc.Blocks({ html(string.format('<div class="%s" style="--engine-card-role: var(--engine-%s)">', cls, c.role)) })
     if c.title or c.sub then
@@ -727,7 +730,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks))), livery.boxes.card.roles))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks)), livery), livery))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

@@ -76,9 +76,11 @@ def color(livery: dict, role: str) -> str:
 
 
 def hex(livery: dict, value: str) -> str:
-    """A role's, or a '#RRGGBB' value's, six digits upper: the one color form the pptx steps write
-    (a box's color in livery.json is a hex, a role= attribute a role)."""
-    return (value if value.startswith("#") else livery["roles"][value]).lstrip("#").upper()
+    """A role's or a blend's, or a '#RRGGBB' value's, six digits upper: the one color form the pptx
+    steps write (a box's color in livery.json is a hex, a role= attribute a role)."""
+    if not value.startswith("#"):
+        value = livery["roles"].get(value) or livery["blends"][value]
+    return value.lstrip("#").upper()
 
 
 def scheme(livery: dict, slot: str) -> str:

@@ -1383,6 +1383,26 @@
       "sky": "NASASky",
       "white": "NASAWhite",
       "yellow": "NASAYellow"
+    },
+    "roles": {
+      "accent": "BrandAccent",
+      "alert-text": "BrandAlertText",
+      "background": "BrandBackground",
+      "caution-fill": "BrandCautionFill",
+      "code-text": "BrandCodeText",
+      "dark": "BrandDark",
+      "foreground": "BrandText",
+      "highlight": "BrandHighlight",
+      "muted": "BrandMuted",
+      "primary": "BrandPrimary",
+      "primary-contrast": "BrandPrimaryContrast",
+      "primary-text": "BrandPrimaryText",
+      "rule": "BrandRule",
+      "secondary": "BrandSecondary",
+      "surface": "BrandSurface",
+      "table-band": "BrandTableBand",
+      "table-rule": "BrandTableRule",
+      "warning": "BrandWarning"
     }
   },
   "logo": {

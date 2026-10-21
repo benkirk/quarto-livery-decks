@@ -302,10 +302,16 @@ def draw_strip(slide, x, y, w, room, paras, role, solid, name):
     return tb, rect(slide, x, y, w, tb.height, fill, name, behind=tb)
 
 
-def _pick_role(attrs, default="primary"):
-    """A marker's role= when it is a role, else the default."""
+def _pick_role(attrs, default, slide):
+    """A marker's role= when it is a role or a blend of the livery, else the default, warned of
+    (engine-common.lua's box_role, for HTML and PDF)."""
     r = attrs.get("role", default)
-    return r if r in LIVERY["roles"] else default
+    if r == default or r in LIVERY["roles"] or r in LIVERY["blends"]:
+        return r
+    title = slide.shapes.title
+    print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: role={r!r} is not a role or a blend "
+          f"of the livery; {default}", file=sys.stderr)
+    return default
 
 
 ROLES = BOXES["card"]["roles"]   # a card without role=: by its place in the row
@@ -346,7 +352,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             if isinstance(it, tuple):
                 text_part() if run else None
                 n_strip += 1
-                tb, r = draw_strip(slide, x, y, w, room, it[2], _pick_role(it[1], "accent"), solid, f"Card {n_col} strip {n_strip}")
+                tb, r = draw_strip(slide, x, y, w, room, it[2], _pick_role(it[1], "accent", slide), solid, f"Card {n_col} strip {n_strip}")
                 parts.append(("strip", tb, r, tb.height))
             else:
                 run.append(it)
@@ -362,7 +368,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             c["plain"].top, c["plain"].height = y, total
             continue
         attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
-        role, solid = _hex(_pick_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)])), attrs.get("solid")
+        role, solid = _hex(_pick_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)], slide)), attrs.get("solid")
         mine = [_shape(slide, x, y, w, total, radius, role if solid else _hex(card["fill"]), f"Card {n} fill", behind=c["first"])]
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
             mine.append(_shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"], top_only=True))
@@ -409,7 +415,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
             continue
         if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
-            tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _pick_role(seg[1], "accent"), False, "Strip fill")
+            tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _pick_role(seg[1], "accent", slide), False, "Strip fill")
             tb.name = "Strip text"
             group(slide, [r, tb], "Strip")
             y += tb.height + pads("strip")[0]
