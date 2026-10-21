@@ -31,6 +31,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   format; the PDF stopped on it before, and the pptx ignored it. The PDF now sets the livery's
   label word (it always said "Section"), and the pptx its label color.
 
+- PDF: a `{.full}` slide's caption is set at the caption size; it was the body's (the node's
+  font never selected the size).
+
 ### Liveries
 - `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill`, `text-role`, `text`) and
   `type.marking`: the marking strip's look and a default text.
