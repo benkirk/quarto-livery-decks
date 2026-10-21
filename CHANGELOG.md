@@ -19,10 +19,14 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ### Decks
 - A figure's caption looks the same in every format: the caption size, the livery's muted
-  color, centred, just under the picture. HTML centred a lone image's caption (it sat at the
+  color, centered, just under the picture. HTML centered a lone image's caption (it sat at the
   left); the PDF drops its "Figure 1:" / "Table 1:" label and sets the caption muted; pptx gives a
   figure's own caption that look without a `::: note` too (it kept the layout's size and the body
   color).
+- Tables and their captions are centered in every format. HTML centers a table in the body (or
+  its column) with its caption under it (both sat at the left); pptx sets a table's caption in
+  the caption look just under the table (it sat at the slide's foot, in body size); the PDF
+  already centered both, the caption above the table.
 - `make qa` no longer reads a table's caption (or a note under it) as a cell running into the
   next column; the sample deck's qa passes, and CI runs it.
 - Decks in the cloud, nothing installed. `.devcontainer/` opens the repository in GitHub
@@ -36,7 +40,7 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the main branch's head as before.
 
 ### LaTeX
-- A beamer caption is its text alone, muted and centred: no "Figure n:" / "Table n:" label.
+- A beamer caption is its text alone, muted and centered: no "Figure n:" / "Table n:" label.
 
 ## [26.10.5] - 2026-10-20
 

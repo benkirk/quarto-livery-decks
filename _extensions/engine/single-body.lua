@@ -8,10 +8,10 @@
 -- already holds a columns div is left alone. Runs after notes-last.lua.
 -- A `::: note` div of paragraphs folds the same way, and marks its slide with
 -- an `engine-layout: note` notes line: slide_layout.py then draws the caption
--- box as the note (the caption role, muted, centred, under the picture). A
--- figure with a caption of its own marks its slide the same way, note or not,
--- so its caption looks as in HTML and PDF; a table's caption, or a figure's
--- that is only folded paragraphs (a lone footnote), stays at the foot.
+-- box as the note (the caption role, muted, centered, under the picture or
+-- table). A figure or table with a caption of its own marks its slide the same
+-- way, note or not, so its caption looks as in HTML and PDF; a figure's caption
+-- that is only folded paragraphs (a lone footnote) stays at the foot.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -85,9 +85,9 @@ local function caption_of(blk)
   return nil
 end
 
--- true when blk is a figure (or a div holding one) with a caption of its own
+-- true when blk is a figure or table (or a div holding one) with a caption of its own
 local function own_caption(blk)
-  if blk.t == "Figure" then
+  if blk.t == "Figure" or blk.t == "Table" then
     return pandoc.utils.stringify(blk.caption.long) ~= ""
   end
   if blk.t == "Div" then
@@ -144,7 +144,7 @@ end
 
 -- The body with trailing paragraphs folded into the one table or image they
 -- follow, or the body unchanged when that is not its shape; true when a note
--- was folded or the figure has a caption of its own (slide_layout.py then draws
+-- was folded or the block has a caption of its own (slide_layout.py then draws
 -- the caption box in the caption's look, as HTML and PDF set a caption).
 local function fold_trailing(body)
   local at = nil

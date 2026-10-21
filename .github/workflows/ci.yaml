@@ -121,9 +121,9 @@ jobs:
         run: timeout 600 make -C decks/sample pdf
 
       # ::: note (docs/authoring.md "Notes under a figure"): HTML's .engine-note, the PDF's text,
-      # and in pptx centred lines at the caption size; "Image embed" keeps its remark, which the
-      # fold into a captioned figure used to drop, and its own caption takes the same look; the
-      # PDF labels no caption ("Figure 1:")
+      # and in pptx centered lines at the caption size; "Image embed" keeps its remark, which the
+      # fold into a captioned figure used to drop, and its own caption takes the same look, as
+      # does the "Tables" caption; the PDF labels no caption ("Figure 1:")
       - name: Check the sample's notes and captions
         run: |
           cd decks/sample
@@ -138,8 +138,8 @@ jobs:
           notes = [p for s in Presentation("sample.pptx").slides for sh in s.shapes if sh.has_text_frame
                    for p in sh.text_frame.paragraphs
                    if p.text.startswith(("One short label a box keeps", "Width can also be set",
-                                         "A caption for the figure"))]
-          assert len(notes) == 3, [p.text for p in notes]
+                                         "A caption for the figure", "Sample HPC resources"))]
+          assert len(notes) == 4, [p.text for p in notes]
           for p in notes:
               assert p.alignment == PP_ALIGN.CENTER and all(r.font.size.pt == cap for r in p.runs), p.text
           EOF

@@ -222,11 +222,12 @@ $mermaid-label-fg-color: $engine-primary;
 // quarto's task lists / checkboxes keep their own markers
 .reveal .slides section ul.task-list > li::before { content: none; }
 
-// tables: bold uppercase header over a primary-color rule, hairline rows
+// tables: bold uppercase header over a primary-color rule, hairline rows; centered in the body
+// (or its column), as the PDF centers its longtable and pptx spans the slide
 .reveal .slides section table {
   border-collapse: collapse;
   font-size: calc(var(--engine-type-table, 0.85) * 1em);
-  margin: 0.4em 0;
+  margin: 0.4em auto;
   th {
     color: var(--engine-foreground);
     font-weight: 700;
@@ -246,7 +247,7 @@ $mermaid-label-fg-color: $engine-primary;
     color: var(--engine-muted);
     font-size: calc(var(--engine-type-caption, 0.7) / var(--engine-type-table, 0.85) * 1em);
     padding-top: 0.4em;
-    text-align: left;
+    text-align: center;
   }
 }
 
