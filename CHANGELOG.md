@@ -69,6 +69,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A strip, `::: {.strip role="accent"}`, in a card or on its own: a band tinted in its role
   (`boxes.strip.tint` over the background) at the card's full width; on a solid card the role
   itself. Every format.
+- A card's or strip's `role=` may be a role or a blend of the livery (`table-band`, `rule`); a
+  name that is neither warns once per format, naming the slide, and takes the default (the
+  card's place in its row, a strip's accent). Before, HTML drew the name as given, the PDF
+  failed on an undefined color, and the pptx fell to primary without a word.
 - Status items: in a card or a `::: {.status}` list, `- [x]`, `- [!]` and `- [-]` show ✓, ⚠ and ✗
   in the livery's status colors (`boxes.status`), where the bullet was, a failed item's text
   muted; a literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays a task list's box.
