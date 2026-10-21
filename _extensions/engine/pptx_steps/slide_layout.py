@@ -37,7 +37,7 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
 from pptx.text.text import _Run
-from pptx.util import Pt
+from pptx.util import Emu, Pt
 
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
@@ -61,7 +61,10 @@ NOTE_GAP   = Pt(6 * K)    # note: between the picture or table and the note unde
 CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
-CAUTION_W    = Pt(6 * K)
+BOXES        = LIVERY["boxes"]   # the boxes' numbers, every format's (livery.json boxes)
+SLIDE_H      = Pt(LIVERY["type"]["canvas"]["h"])   # the canvas height: bars are fractions of it
+BODY_PT      = livery_mod.type_pt(LIVERY, "body")  # pads are em of the body type
+CAUTION_W    = Emu(round(BOXES["caution"]["bar"] * SLIDE_H))
 GEOM         = LIVERY["geometry"]
 WAVES        = LIVERY.get("art", {}).get("waves")
 BAND         = (LIVERY.get("title") or {}).get("style") == "band"
@@ -200,12 +203,18 @@ def _biggest(table, other):
     return max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
 
 
+def pads(box, key="pad"):
+    """A box's pads, (vertical, horizontal) in EMU: its em times the body type."""
+    v, h = BOXES[box][key]
+    return Emu(round(v * BODY_PT * 12700)), Emu(round(h * BODY_PT * 12700))   # round: Pt() truncates 91439.99
+
+
 def caution_box(slide, shape, vcenter):
     """The body text box on the soft yellow field, a brand-yellow bar at its left, cut down to
     about its text (pandoc gives it the whole content area); 10% slack keeps autofit idle."""
     tf = shape.text_frame
-    tf.margin_left = tf.margin_right = Pt(14 * K)
-    tf.margin_top = tf.margin_bottom = Pt(8 * K)
+    vpad, hpad = pads("caution")
+    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
     left, top, width, height = shape.left, shape.top, shape.width, shape.height
     est = int(_text_height(shape, slide) * 1.1)
     if est < height:
@@ -698,7 +707,8 @@ def draw_feature(slide, width, height, photo):
         for shape in body:
             _frame(shape, px, py, pw, ph, width, height)
             tf = shape.text_frame
-            tf.margin_left = tf.margin_right = Pt(14 * K); tf.margin_top = tf.margin_bottom = Pt(10 * K)
+            vpad, hpad = pads("panel")
+            tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
             est = min(int(_text_height(shape, slide) * 1.1), int(ph * height))
             panel = _rect(slide, [px, py, pw, est / height], width, height, _role(c["panel"]["role"]), c["panel"]["opacity"], "Feature panel")
             tree = slide.shapes._spTree

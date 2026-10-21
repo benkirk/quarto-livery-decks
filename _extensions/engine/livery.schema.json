@@ -519,6 +519,82 @@
         "bold": {"type": "boolean", "default": false, "description": "Its text in bold."}
       }
     },
+    "boxes": {
+      "type": "object",
+      "description": "The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default.",
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "type": "object",
+          "description": "A slide's columns.",
+          "additionalProperties": false,
+          "properties": {
+            "gap": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.03, "description": "The gap between two columns, of the slide's width."},
+            "rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "A rule centered in each gap, its width (of the slide's height); 0 draws none."}
+          }
+        },
+        "caution": {
+          "type": "object",
+          "description": "A `{.caution}` slide's body.",
+          "additionalProperties": false,
+          "properties": {
+            "bar": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0089, "description": "The warning-colored bar at its left, its width (of the slide's height)."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.55, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "panel": {
+          "type": "object",
+          "description": "A feature slide's panel.",
+          "additionalProperties": false,
+          "properties": {
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.6, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "lead": {
+          "type": "object",
+          "description": "A lead box (`::: {.lead}`) over a slide's columns.",
+          "additionalProperties": false,
+          "properties": {
+            "fill": {"$ref": "#/$defs/color-or-role", "default": "surface", "description": "Its fill, a role, a palette name or a hex."},
+            "bar": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0089, "description": "The bar at its left, its width (of the slide's height)."},
+            "bar-color": {"$ref": "#/$defs/color-or-role", "default": "accent", "description": "The bar's color, a role, a palette name or a hex."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.55, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "card": {
+          "type": "object",
+          "description": "A card (`::: {.column .card}`): a colored head band over a body.",
+          "additionalProperties": false,
+          "properties": {
+            "fill": {"$ref": "#/$defs/color-or-role", "default": "background", "description": "Its body's fill, a role, a palette name or a hex."},
+            "radius": {"type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "Its corners' radius (of the slide's height); 0 for square corners."},
+            "outline": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0033, "description": "The outline of a picked card (`.pick`), its width (of the slide's height)."},
+            "outline-color": {"$ref": "#/$defs/color-or-role", "default": "highlight", "description": "That outline's color, a role, a palette name or a hex."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.5, 0.8], "description": "Its body's text from the card's edges, in em of the body type."},
+            "head-pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.35, 0.8], "description": "The head band's text from its edges, in em of the body type."}
+          }
+        },
+        "strip": {
+          "type": "object",
+          "description": "A strip (`::: {.strip}`): a band tinted in its role across a card.",
+          "additionalProperties": false,
+          "properties": {
+            "tint": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.18, "description": "The role's share in its fill, over the background."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 0.8], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "status": {
+          "type": "object",
+          "description": "The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors.",
+          "additionalProperties": false,
+          "properties": {
+            "done": {"$ref": "#/$defs/color-or-role", "default": "highlight", "description": "✓, a role, a palette name or a hex."},
+            "warn": {"$ref": "#/$defs/color-or-role", "default": "warning", "description": "⚠, a role, a palette name or a hex."},
+            "fail": {"$ref": "#/$defs/color-or-role", "default": "accent", "description": "✗, a role, a palette name or a hex."}
+          }
+        }
+      }
+    },
     "installed-fonts": {
       "type": "object",
       "description": "A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}.",
@@ -790,6 +866,7 @@
         },
         "pagenumber": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The page number."},
         "marking": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The marking strip's text."},
+        "display": {"type": "number", "exclusiveMinimum": 0, "default": 40, "description": "A card's big number (`[$20M]{.big}`)."},
         "footer": {
           "type": "number",
           "exclusiveMinimum": 0,

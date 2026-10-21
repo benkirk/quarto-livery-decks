@@ -80,6 +80,28 @@
 \def\engine@marking@align{center}
 \definecolor{EngineMarkingText}{HTML}{565A5C}
 \def\engine@marking@default{}
+% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
+% its pads (@pady, @padx: em of the body type) and colors
+\def\engine@boxes@columns@gap{0.03}
+\def\engine@boxes@columns@rule{0}
+\def\engine@boxes@caution@bar{0.0089}
+\def\engine@boxes@caution@pady{0.55}\def\engine@boxes@caution@padx{0.9}
+\def\engine@boxes@panel@pady{0.6}\def\engine@boxes@panel@padx{0.9}
+\definecolor{EngineBoxesLeadFill}{HTML}{F3F0E9}
+\def\engine@boxes@lead@bar{0.0089}
+\definecolor{EngineBoxesLeadBarColor}{HTML}{CFB87C}
+\def\engine@boxes@lead@pady{0.55}\def\engine@boxes@lead@padx{0.9}
+\definecolor{EngineBoxesCardFill}{HTML}{FFFFFF}
+\def\engine@boxes@card@radius{0}
+\def\engine@boxes@card@outline{0.0033}
+\definecolor{EngineBoxesCardOutlineColor}{HTML}{096FAE}
+\def\engine@boxes@card@pady{0.5}\def\engine@boxes@card@padx{0.8}
+\def\engine@boxes@card@headpady{0.35}\def\engine@boxes@card@headpadx{0.8}
+\def\engine@boxes@strip@tint{0.18}
+\def\engine@boxes@strip@pady{0.3}\def\engine@boxes@strip@padx{0.8}
+\definecolor{EngineStatusDone}{HTML}{096FAE}
+\definecolor{EngineStatusWarn}{HTML}{CFB87C}
+\definecolor{EngineStatusFail}{HTML}{CFB87C}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
@@ -124,6 +146,7 @@
 \def\engine@type@pagenumber{{0.5625}{1.2}}
 \def\engine@type@footer{{0.5625}{1.2}}
 \def\engine@type@marking{{0.5625}{1.2}}
+\def\engine@type@display{{2.5}{1.08}}
 \def\engine@type@levelii{{0.875}{1.4}}
 \def\engine@type@leveliii{{0.8125}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}

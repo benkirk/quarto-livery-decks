@@ -223,11 +223,13 @@
 % ---------------------------------------------------------------------------
 \newsavebox\engine@panelbox
 \newif\ifengine@haspanel
-\newdimen\engine@panelpad \engine@panelpad=0.6em
+% its pads (livery.sty \engine@boxes@panel@pad*, em, set here as before: in the em of the theme's load)
+\newdimen\engine@panelpady \engine@panelpady=\engine@boxes@panel@pady em
+\newdimen\engine@panelpadx \engine@panelpadx=\engine@boxes@panel@padx em
 \def\enginefeaturepanel{\global\engine@haspaneltrue
   \global\setbox\engine@panelbox=\vbox\bgroup
     \ifcsname engine@c@feature@panel@w\endcsname
-      \hsize=\dimexpr\engine@c@feature@panel@w\paperwidth-3\engine@panelpad\relax\colorlet{EngineFeatureText}{white}%
+      \hsize=\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax\colorlet{EngineFeatureText}{white}%
     \else
       \hsize=\engine@c@feature@column@w\paperwidth\colorlet{EngineFeatureText}{EngineCfeatureText}%
     \fi
@@ -298,17 +300,21 @@
 
 % ---------------------------------------------------------------------------
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
-% bar at its left (the Quarto filter writes it for {.caution})
+% bar at its left (the Quarto filter writes it for {.caution}); the bar's width
+% (of the paper height) and the pads (em of the body) are livery.sty's boxes
 % ---------------------------------------------------------------------------
 % (livery.sty defines it first when the livery's blends: overrides caution-fill)
 \@ifundefined{\string\color@enginecautionfill}{\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}}{}
 \newsavebox\engine@cautionbox
+\newdimen\engine@padx \newdimen\engine@pady
 \newenvironment{enginecaution}{%
-  \par\noindent\begin{lrbox}{\engine@cautionbox}%
-  \begin{minipage}{\dimexpr\linewidth-3pt-1.1em\relax}}%
+  \par\noindent\engine@padx=\engine@boxes@caution@padx em\engine@pady=\engine@boxes@caution@pady em
+  \begin{lrbox}{\engine@cautionbox}%
+  \begin{minipage}{\dimexpr\linewidth-\engine@boxes@caution@bar\paperheight-2\engine@padx\relax}}%
   {\end{minipage}\end{lrbox}%
-  \hbox{{\color{BrandWarning}\vrule width 3pt}%
-    {\setlength\fboxsep{0.55em}\colorbox{enginecautionfill}{\usebox\engine@cautionbox}}}\par}
+  \hbox{{\color{BrandWarning}\vrule width \engine@boxes@caution@bar\paperheight}%
+    {\setlength\fboxsep{0pt}\colorbox{enginecautionfill}{\vbox{\vskip\engine@pady
+      \hbox{\hskip\engine@padx\usebox\engine@cautionbox\hskip\engine@padx}\vskip\engine@pady}}}}\par}
 
 % ---------------------------------------------------------------------------
 % tables: pandoc's longtable, drawn as the HTML theme draws them -- no top

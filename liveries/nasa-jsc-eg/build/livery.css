@@ -56,6 +56,7 @@
   --engine-type-sectionsubtitle: 1.5;
   --engine-type-eyebrow: 0.5625;
   --engine-type-closing: 2.25;
+  --engine-type-display: 2.25;
   --engine-type-level2: 0.9375;
   --engine-type-level3: 0.8667;
   --engine-type-level4: 0.9231;
@@ -87,6 +88,26 @@
   --engine-marking-fill: #6840F0;
   --engine-marking-text: #FFFFFF;
   --engine-marking-weight: 700;
+  --engine-column-gap: 48px;
+  --engine-column-rule: 2px;
+  --engine-caution-bar: 8px;
+  --engine-caution-pad: 0.55em 0.9em;
+  --engine-panel-pad: 0.6em 0.9em;
+  --engine-lead-fill: #1C2026;
+  --engine-lead-bar: 8px;
+  --engine-lead-bar-color: #F93A1D;
+  --engine-lead-pad: 0.55em 0.9em;
+  --engine-card-fill: #1C2026;
+  --engine-card-radius: 0px;
+  --engine-card-outline: 3px;
+  --engine-card-outline-color: #00BC71;
+  --engine-card-pad: 0.5em 0.8em;
+  --engine-card-head-pad: 0.35em 0.8em;
+  --engine-strip-tint: 30%;
+  --engine-strip-pad: 0.3em 0.8em;
+  --engine-status-done: #00BC71;
+  --engine-status-warn: #FEA20B;
+  --engine-status-fail: #F93A1D;
 }
 /* chart colors (livery.json charts) */
 :root {

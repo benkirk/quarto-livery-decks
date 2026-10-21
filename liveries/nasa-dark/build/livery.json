@@ -10,6 +10,60 @@
     "table-band": "#111317",
     "table-rule": "#494D51"
   },
+  "boxes": {
+    "card": {
+      "fill": "#000000",
+      "head-pad": [
+        0.35,
+        0.8
+      ],
+      "outline": 0.0033,
+      "outline-color": "#00B0F0",
+      "pad": [
+        0.5,
+        0.8
+      ],
+      "radius": 0
+    },
+    "caution": {
+      "bar": 0.0089,
+      "pad": [
+        0.55,
+        0.9
+      ]
+    },
+    "columns": {
+      "gap": 0.03,
+      "rule": 0
+    },
+    "lead": {
+      "bar": 0.0089,
+      "bar-color": "#E4002B",
+      "fill": "#1C2026",
+      "pad": [
+        0.55,
+        0.9
+      ]
+    },
+    "panel": {
+      "pad": [
+        0.6,
+        0.9
+      ]
+    },
+    "status": {
+      "done": "#00B0F0",
+      "fail": "#E4002B",
+      "warn": "#FFC72C"
+    },
+    "strip": {
+      "pad": [
+        0.3,
+        0.8
+      ],
+      "tint": 0.18
+    }
+  },
   "charts": {
     "brand": [
       "#E42E25",
@@ -1380,6 +1434,11 @@
         "leading": 1.2,
         "pt": 10,
         "size": 0.8333
+      },
+      "display": {
+        "leading": 1.08,
+        "pt": 30,
+        "size": 2.5
       },
       "eyebrow": {
         "leading": 1.2,

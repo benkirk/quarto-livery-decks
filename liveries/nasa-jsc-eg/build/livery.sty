@@ -99,6 +99,28 @@
 \def\engine@marking@fill{}
 \def\engine@marking@bold{}
 \def\engine@marking@default{This presentation contains no sensitive information; but if it did, here's where the disclaimer would go}
+% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
+% its pads (@pady, @padx: em of the body type) and colors
+\def\engine@boxes@columns@gap{0.03}
+\def\engine@boxes@columns@rule{0.0022}
+\def\engine@boxes@caution@bar{0.0089}
+\def\engine@boxes@caution@pady{0.55}\def\engine@boxes@caution@padx{0.9}
+\def\engine@boxes@panel@pady{0.6}\def\engine@boxes@panel@padx{0.9}
+\definecolor{EngineBoxesLeadFill}{HTML}{1C2026}
+\def\engine@boxes@lead@bar{0.0089}
+\definecolor{EngineBoxesLeadBarColor}{HTML}{F93A1D}
+\def\engine@boxes@lead@pady{0.55}\def\engine@boxes@lead@padx{0.9}
+\definecolor{EngineBoxesCardFill}{HTML}{1C2026}
+\def\engine@boxes@card@radius{0}
+\def\engine@boxes@card@outline{0.0033}
+\definecolor{EngineBoxesCardOutlineColor}{HTML}{00BC71}
+\def\engine@boxes@card@pady{0.5}\def\engine@boxes@card@padx{0.8}
+\def\engine@boxes@card@headpady{0.35}\def\engine@boxes@card@headpadx{0.8}
+\def\engine@boxes@strip@tint{0.3}
+\def\engine@boxes@strip@pady{0.3}\def\engine@boxes@strip@padx{0.8}
+\definecolor{EngineStatusDone}{HTML}{00BC71}
+\definecolor{EngineStatusWarn}{HTML}{FEA20B}
+\definecolor{EngineStatusFail}{HTML}{F93A1D}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.028}
 \def\engine@geom@tabwidth{0.018}
@@ -144,6 +166,7 @@
 \def\engine@type@pagenumber{{0.75}{1.2}}
 \def\engine@type@footer{{0.75}{1.2}}
 \def\engine@type@marking{{0.8125}{1.2}}
+\def\engine@type@display{{2.25}{1.08}}
 \def\engine@type@levelii{{0.9375}{1.4}}
 \def\engine@type@leveliii{{0.8125}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}

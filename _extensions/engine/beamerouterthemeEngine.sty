@@ -322,8 +322,8 @@
   \ifengine@haspanel\engine@ifc{panel@x}{\engine@box{panel}%
     \@tempdima=\dimexpr\engine@by+\engine@bh\relax
     \fill[\engine@ccolor{Panel},opacity=\engine@cv{panel@opacity}] (\engine@bx,\@tempdima) rectangle
-      ++(\engine@bw,-\dimexpr\ht\engine@panelbox+\dp\engine@panelbox+2\engine@panelpad\relax);
-    \node[anchor=north west,inner sep=0pt] at (\engine@bx+1.5\engine@panelpad,\@tempdima-\engine@panelpad)
+      ++(\engine@bw,-\dimexpr\ht\engine@panelbox+\dp\engine@panelbox+2\engine@panelpady\relax);
+    \node[anchor=north west,inner sep=0pt] at (\engine@bx+\engine@panelpadx,\@tempdima-\engine@panelpady)
       {\copy\engine@panelbox};}{}\fi}
 \def\engine@cfineprint{\ifx\engine@fineprint\@empty\else\engine@ifc{fineprint@x}{\engine@box{fineprint}%
   \engine@ifcorner{\engine@cv{fineprint@anchor}}{bottom}%

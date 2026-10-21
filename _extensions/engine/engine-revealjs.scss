@@ -367,11 +367,12 @@ $mermaid-label-fg-color: $engine-primary;
 .reveal .slides section .engine-body { margin-top: var(--engine-shift, 0px); }
 .reveal .slides section.engine-fill > .engine-body :is(pre, pre code) { white-space: pre; }
 // .caution: the warning slides' body on a soft yellow field, a brand-yellow bar at its left
+// (the bar and pads: livery.css, the livery's boxes)
 .reveal .slides section.engine-caution > .engine-body {
   box-sizing: border-box;
-  padding: 0.55em 0.9em;
+  padding: var(--engine-caution-pad);
   background: var(--engine-caution-fill);
-  border-left: 8px solid var(--engine-warning);
+  border-left: var(--engine-caution-bar) solid var(--engine-warning);
 }
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
@@ -723,7 +724,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   width: var(--engine-cmp-panel-w);
   max-height: var(--engine-cmp-panel-h);
   box-sizing: border-box;
-  padding: 0.6em 0.9em;
+  padding: var(--engine-panel-pad);
   background: var(--engine-cmp-panel-fill);
   &, p, li, strong { color: #fff; }
   h3, .alert, a { color: var(--engine-secondary); }

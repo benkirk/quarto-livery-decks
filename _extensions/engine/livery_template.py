@@ -353,16 +353,17 @@ class Builder:
         h = body_bottom - body_top
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
-        half = (1 - 2 * m - 0.03) / 2
+        gap = self.L["boxes"]["columns"]["gap"]   # every format's column gap (livery.json boxes)
+        half = (1 - 2 * m - gap) / 2
         if name == "Title and Content":
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, body_top, 1 - 2 * m, h), 'vert="horz"', "", "Click to edit Master text styles"))
         elif name == "Two Content":
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, body_top, half, h), 'vert="horz"', "", "Left", sz="half"))
-            shapes.append(self.ph("Content Placeholder 3", None, 2, xfrm(m + half + 0.03, body_top, half, h), 'vert="horz"', "", "Right", sz="half"))
+            shapes.append(self.ph("Content Placeholder 3", None, 2, xfrm(m + half + gap, body_top, half, h), 'vert="horz"', "", "Right", sz="half"))
         elif name == "Comparison":
             head_h = 0.09
             head_lst = f'<a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="{self.sz("subhead")}" b="1">{fill("tx2")}</a:defRPr></a:lvl1pPr>'
-            for i, (idx_head, idx_body, x) in enumerate(((1, 11, m), (3, 2, m + half + 0.03))):
+            for i, (idx_head, idx_body, x) in enumerate(((1, 11, m), (3, 2, m + half + gap))):
                 shapes.append(self.ph(f"Text Placeholder {i + 2}", "body", idx_head, xfrm(x, body_top, half, head_h),
                                       'vert="horz" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>' + head_lst +
                                       '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Heading</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "", sz="quarter" if i else None).split("<!--")[0])

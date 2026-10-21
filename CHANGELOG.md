@@ -36,6 +36,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 - pptx: a slide of more than two columns warns at render time, naming the slide: pandoc's pptx
   keeps the first two and dropped the rest without a word (HTML and PDF show them all).
+- A `{.caution}` slide's bar and pads, and a feature slide's panel pads, are the same in every
+  format: the livery's `boxes:`, HTML's numbers. The pptx bar is a little thinner (ncar 4.5 to
+  3.6 pt) and its pads follow the body type; the PDF bar is thinner (3 to 2.3 pt) and its text
+  sits 0.9 em from the sides, as HTML's (0.55 em before), so a long caution line can wrap sooner.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
@@ -60,6 +64,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the byline below it), the closing's centered patch and text, the template's marking strip with
   demo text, Arial (Liberation Sans standing in). A group in the division puts its own patch on
   the cover with a one-key flavor (`liveries/nasa-jsc-eg/reference/notes.md`).
+- `boxes:`: one set of numbers for the columns and boxes every format draws (`columns`,
+  `caution`, `panel`, `lead`, `card`, `strip`, `status`): gaps, bars, outlines and radii as
+  fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A
+  livery sets only what differs (`liveries/REFERENCE.md`); ncar rounds its cards' corners and
+  keeps its status glyphs off yellow, nasa-jsc-eg rules its columns. `type.display`: the size of
+  a card's big number (default as the closing's headline).
 
 ## [26.10.6] - 2026-10-20
 

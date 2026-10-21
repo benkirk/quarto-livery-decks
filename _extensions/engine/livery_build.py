@@ -78,7 +78,8 @@ TYPE = {"body": (16, 1.4), "subhead": (20, 1.2), "frametitle": (27, 1.15), "tabl
         "code": (11, 1.3), "caption": (11, 1.3), "footnote": (11, 1.35), "title": (29, 1.12),
         "subtitle": (20, 1.3), "date": (11, 1.2), "author": (16, 1.3), "institute": (16, 1.3),
         "fineprint": (7, 1.4), "section": (40, 1.08), "sectionsubtitle": (20, 1.3), "eyebrow": (11, 1.2),
-        "closing": (40, 1.08), "pagenumber": (9, 1.2), "footer": (9, 1.2), "marking": (9, 1.2)}
+        "closing": (40, 1.08), "pagenumber": (9, 1.2), "footer": (9, 1.2), "marking": (9, 1.2),
+        "display": (40, 1.08)}   # display: a card's big number ([$20M]{.big})
 LEVELS = (16, 15, 13, 12, 11)   # the body's five list levels, the first the body itself
 # the roles that scale with the body when a livery leaves them out (the rest scale with the canvas)
 BODY_ROLES = ("subhead", "table", "code", "caption", "footnote")
@@ -91,6 +92,21 @@ COMP_KEYS = ("field", "art", "photo", "band", "waves", "bar", "panel", "mark", "
 COVERS = ("title", "title-photo", "title-light", "title-photo-light", "title-band")   # the compositions with a byline
 ELEMENTS = ("date", "title", "subtitle", "author", "institute")   # a cover's text, in the column's default order
 BYLINE = ("author", "institute", "date")   # a byline's default elements
+# Boxes (livery.yml boxes:): one set of numbers for every format's columns and boxes. Units: gap of the
+# slide's width; bar, rule, outline and radius of its height; pad [vertical, horizontal] in em of the
+# body type; tint a share of the role over the background; the colors a role, a palette name or a hex
+# (hex in livery.json, as marking's). A livery's block merges over these one box at a time.
+BOXES = {
+    "columns": {"gap": 0.03, "rule": 0},   # rule: its width, 0 for none
+    "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
+    "panel": {"pad": [0.6, 0.9]},   # the feature panel
+    "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
+    "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
+             "pad": [0.5, 0.8], "head-pad": [0.35, 0.8]},
+    "strip": {"tint": 0.18, "pad": [0.3, 0.8]},   # 0.18: caution-fill's share (BLENDS), one tint recipe
+    "status": {"done": "highlight", "warn": "warning", "fail": "accent"},   # the ✓ ⚠ ✗ glyphs
+}
+BOX_COLORS = {"lead": ("fill", "bar-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail")}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -215,6 +231,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["marks"] = marks(d.name, data, out)
     out["marking"] = marking(data.get("marking") or {}, out,   # its colors as hex: a role, a palette name or a hex
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
+    out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's
+                         lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")))
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
@@ -246,6 +264,18 @@ def marking(m: dict, out: dict, hexof) -> dict:
     y = m["offset"] if m["edge"] == "top" else 1 - m["offset"] - m["height"]
     m["box"] = [round(x, 4), round(y, 4), m["width"], m["height"]]
     return m
+
+
+def boxes(b: dict, hexof) -> dict:
+    """The boxes: block resolved: BOXES with the livery's keys over them, box by box, the colors as hex
+    (hexof: a role, a palette name or a hex to its hex, given the key's path under boxes)."""
+    out = {}
+    for box, defaults in BOXES.items():
+        v = {**defaults, **(b.get(box) or {})}
+        for k in BOX_COLORS.get(box, ()):
+            v[k] = hexof(v[k], f"{box}.{k}")
+        out[box] = v
+    return out
 
 
 def half(v: float) -> float:
@@ -728,6 +758,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         if mk["bold"]:
             L.append("\\def\\engine@marking@bold{}")
         L.append(f"\\def\\engine@marking@default{{{tex_escape(mk['text'] or '')}}}")
+    L += emit_sty_boxes(livery)
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
     for k, v in geom.items():
@@ -771,6 +802,30 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append(extra.rstrip("\n"))
     L.append(r"\liveryrestoreat")
     return "\n".join(L) + "\n"
+
+
+def tex_camel(key: str) -> str:
+    """bar-color -> BarColor, a key's part of a LaTeX color name."""
+    return "".join(w.capitalize() for w in key.split("-"))
+
+
+def emit_sty_boxes(livery: dict) -> list[str]:
+    """The boxes (livery.json boxes): \\engine@boxes@<box>@<key> for each number (fractions of the paper,
+    tint a share), @pady and @padx for each pad (em, so the factor goes before `em`), and a color per
+    color key, EngineBoxes<Box><Key> (the status glyphs' EngineStatus<Key>), as hex."""
+    L = ["% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),",
+         "% its pads (@pady, @padx: em of the body type) and colors"]
+    for box, v in livery["boxes"].items():
+        for k, val in v.items():
+            name = k.replace("-", "")
+            if k in BOX_COLORS.get(box, ()):
+                tex = f"EngineStatus{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
+                L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{val[1:]}}}")
+            elif isinstance(val, list):   # [vertical, horizontal]
+                L.append(f"\\def\\engine@boxes@{box}@{name}y{{{val[0]}}}\\def\\engine@boxes@{box}@{name}x{{{val[1]}}}")
+            else:
+                L.append(f"\\def\\engine@boxes@{box}@{name}{{{val}}}")
+    return L
 
 
 def emit_sty_charts(livery: dict) -> list[str]:
@@ -951,6 +1006,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
                   f"--engine-marking-fill: {mk['fill'] or 'transparent'};",   # hex: marking() resolved them
                   f"--engine-marking-text: {mk['color']};",
                   f"--engine-marking-weight: {700 if mk['bold'] else 400};"]
+    props += emit_css_boxes(livery, px)
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     L += emit_css_charts(livery)
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
@@ -985,6 +1041,28 @@ def emit_css(livery: dict, extra: str = "") -> str:
         L += emit_css_dark()
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
+
+
+def emit_css_boxes(livery: dict, px) -> list[str]:
+    """The boxes (livery.json boxes) as properties: the gap in slide pixels of the width, bars, rules,
+    outlines and radii of the height, pads as `<v>em <h>em` (padding takes them as they are), the
+    strip's tint a percentage (color-mix takes it), the colors hex."""
+    b, p = livery["boxes"], []
+    pad = lambda v: f"{v[0]:g}em {v[1]:g}em"
+    p.append(f"--engine-column-gap: {px(b['columns']['gap'], W)};")
+    p.append(f"--engine-column-rule: {px(b['columns']['rule'])};")
+    p.append(f"--engine-caution-bar: {px(b['caution']['bar'])};")
+    p.append(f"--engine-caution-pad: {pad(b['caution']['pad'])};")
+    p.append(f"--engine-panel-pad: {pad(b['panel']['pad'])};")
+    lead, card, strip = b["lead"], b["card"], b["strip"]
+    p += [f"--engine-lead-fill: {lead['fill']};", f"--engine-lead-bar: {px(lead['bar'])};",
+          f"--engine-lead-bar-color: {lead['bar-color']};", f"--engine-lead-pad: {pad(lead['pad'])};"]
+    p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
+          f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
+          f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};"]
+    p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};"]
+    p += [f"--engine-status-{k}: {c};" for k, c in b["status"].items()]
+    return p
 
 
 def emit_css_charts(livery: dict) -> list[str]:

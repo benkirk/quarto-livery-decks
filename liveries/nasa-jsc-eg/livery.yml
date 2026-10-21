@@ -108,6 +108,12 @@ installed-fonts:          # Arial itself where the machine has it (HTML; PDF und
       bolditalic: [Arial Bold Italic, Arial-BoldItalicMT]
   headings: *arial
 
+boxes:                    # the engine's (livery_build.py BOXES) but for these
+  columns: {rule: 0.0022} # the template's hairline between columns
+  card: {fill: surface, outline-color: eg-green}
+  strip: {tint: 0.3}      # a tint needs more of its role on black
+  status: {done: eg-green, warn: warning, fail: accent}
+
 pptx:
   template: template.pptx
   typeface: Arial
@@ -127,6 +133,7 @@ type:                     # points on that canvas
   institute: 20
   date: 16
   closing: 36
+  display: 36             # a card's big number, as the closing's
   section: 36
   sectionsubtitle: 24
   pagenumber: 12
