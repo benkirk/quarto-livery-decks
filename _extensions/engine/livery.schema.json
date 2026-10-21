@@ -1305,8 +1305,9 @@
               "description": "The brand mark.",
               "additionalProperties": false,
               "properties": {
-                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in: its image is the role's marks entry, else primary's."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "image": {"$ref": "#/$defs/image", "description": "Its image (a logo.images name), in place of its role's; a light variant keeps it."}
               }
             }
           ],
@@ -1320,8 +1321,9 @@
               "description": "The sign-off lockup.",
               "additionalProperties": false,
               "properties": {
-                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in: its image is the role's marks entry, else primary's."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "image": {"$ref": "#/$defs/image", "description": "Its image (a logo.images name), in place of its role's; a light variant keeps it."}
               }
             }
           ],

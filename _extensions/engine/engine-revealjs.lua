@@ -628,6 +628,15 @@ local function add_dependency(livery)
     add(livery.marks[role].logo)
     if livery.marks[role].signoff then add(livery.marks[role].signoff) end
   end
+  local comps = {}   -- every composition's own mark and sign-off files (an image: of its own)
+  for k in pairs(livery.compositions or {}) do table.insert(comps, k) end
+  table.sort(comps)
+  for _, k in ipairs(comps) do
+    for _, part in ipairs({ "mark", "signoff" }) do
+      local p = livery.compositions[k][part]
+      if type(p) == "table" and type(p.img) == "string" then add(p.img) end
+    end
+  end
   for _, kind in ipairs({ "title", "section", "closing", "content", "titlegraphic" }) do   -- static art files
     if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
   end

@@ -28,10 +28,9 @@ signoff:                  # the division bar along the foot of content slides (1
   bottom: 0.009
   corner: bottom-left
 
-marks:                    # by field role: content slides, the cover (dark), the closing and dividers
-  background: {logo: meatball, signoff: eg-footer}          # (surface, under their art)
-  dark: {logo: meatball, signoff: group-patch}
-  surface: {logo: meatball, signoff: nasa-name-2line}
+marks:                    # by field role: content slides; the cover, closing and dividers name theirs (image:)
+  background: {logo: meatball, signoff: eg-footer}
+  dark: {logo: meatball, signoff: eg-footer}
 
 geometry:
   margin: 0.028           # the template's text inset from the slide's edge
@@ -76,7 +75,7 @@ compositions:             # boxes [x, y, w, h], fractions of the slide, from the
     art: title
     field: {role: dark}
     mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
-    signoff: {role: dark, box: [0.2717, 0.086, 0.2578, 0.3437]}   # the group patch, slide 1's box
+    signoff: {role: dark, image: group-patch, box: [0.2717, 0.086, 0.2578, 0.3437]}   # slide 1's box
     column: {role: dark, box: [0.039, 0.43, 0.77, 0.21], anchor: middle, tab: false, rule: null}   # title and
     byline: {role: foreground, box: [0.039, 0.68, 0.70, 0.27]}   # subtitle on the band under the patches;
     fineprint: {role: foreground}                                # author, institute, date below it
@@ -87,15 +86,15 @@ compositions:             # boxes [x, y, w, h], fractions of the slide, from the
     byline: {box: [0.039, 0.68, 0.70, 0.27]}   # as wide as on the plain cover (a photo cover narrows it)
   closing:
     art: closing
-    field: {role: surface}
-    mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
-    signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
+    field: {role: dark}
+    mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: dark, image: nasa-name-2line, box: [0.736, 0.081, 0.142, 0.0437]}
     column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
   section:
     art: section
-    field: {role: surface}
-    mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
-    signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
+    field: {role: dark}
+    mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: dark, image: nasa-name-2line, box: [0.736, 0.081, 0.142, 0.0437]}
     column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
 
 installed-fonts:          # Arial itself where the machine has it (HTML; PDF under fonts=brand)

@@ -628,7 +628,7 @@
           1,
           1
         ],
-        "role": "surface"
+        "role": "dark"
       },
       "fineprint": null,
       "mark": {
@@ -638,7 +638,8 @@
           0.0881,
           0.129
         ],
-        "role": "surface"
+        "img": "../nasa/logos/meatball.png",
+        "role": "dark"
       },
       "panel": null,
       "photo": null,
@@ -649,7 +650,9 @@
           0.142,
           0.0437
         ],
-        "role": "surface"
+        "image": "nasa-name-2line",
+        "img": "logos/nasa-name-2line.png",
+        "role": "dark"
       },
       "waves": null
     },
@@ -689,6 +692,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "dark"
       },
       "panel": null,
@@ -700,6 +704,7 @@
           0.7923,
           0.054
         ],
+        "img": "logos/eg-footer.png",
         "role": "dark"
       },
       "waves": null
@@ -740,6 +745,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "background"
       },
       "panel": null,
@@ -751,6 +757,8 @@
           0.142,
           0.0437
         ],
+        "image": "nasa-name-2line",
+        "img": "logos/nasa-name-2line.png",
         "role": "background"
       },
       "waves": null
@@ -833,7 +841,7 @@
           1,
           1
         ],
-        "role": "surface"
+        "role": "dark"
       },
       "fineprint": null,
       "mark": {
@@ -843,7 +851,8 @@
           0.0881,
           0.129
         ],
-        "role": "surface"
+        "img": "../nasa/logos/meatball.png",
+        "role": "dark"
       },
       "panel": null,
       "photo": null,
@@ -854,7 +863,9 @@
           0.142,
           0.0437
         ],
-        "role": "surface"
+        "image": "nasa-name-2line",
+        "img": "logos/nasa-name-2line.png",
+        "role": "dark"
       },
       "waves": null
     },
@@ -922,6 +933,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "dark"
       },
       "panel": null,
@@ -933,6 +945,8 @@
           0.2578,
           0.3437
         ],
+        "image": "group-patch",
+        "img": "logos/group-patch.png",
         "role": "dark"
       },
       "waves": null
@@ -1000,6 +1014,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "dark"
       },
       "panel": null,
@@ -1018,6 +1033,7 @@
           0.7923,
           0.054
         ],
+        "img": "logos/eg-footer.png",
         "role": "dark"
       },
       "waves": null
@@ -1086,6 +1102,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "background"
       },
       "panel": null,
@@ -1097,6 +1114,8 @@
           0.2578,
           0.3437
         ],
+        "image": "group-patch",
+        "img": "logos/group-patch.png",
         "role": "background"
       },
       "waves": null
@@ -1157,6 +1176,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "dark"
       },
       "panel": null,
@@ -1175,6 +1195,8 @@
           0.2578,
           0.3437
         ],
+        "image": "group-patch",
+        "img": "logos/group-patch.png",
         "role": "dark"
       },
       "waves": null
@@ -1243,6 +1265,7 @@
           0.0881,
           0.129
         ],
+        "img": "../nasa/logos/meatball.png",
         "role": "background"
       },
       "panel": null,
@@ -1261,6 +1284,8 @@
           0.2578,
           0.3437
         ],
+        "image": "group-patch",
+        "img": "logos/group-patch.png",
         "role": "background"
       },
       "waves": null
@@ -1415,15 +1440,11 @@
     },
     "dark": {
       "logo": "../nasa/logos/meatball.png",
-      "signoff": "logos/group-patch.png"
+      "signoff": "logos/eg-footer.png"
     },
     "primary": {
       "logo": "../nasa/logos/meatball.png",
       "signoff": "logos/eg-footer.png"
-    },
-    "surface": {
-      "logo": "../nasa/logos/meatball.png",
-      "signoff": "logos/nasa-name-2line.png"
     }
   },
   "mode": "dark",

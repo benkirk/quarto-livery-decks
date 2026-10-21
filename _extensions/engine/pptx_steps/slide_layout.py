@@ -538,9 +538,9 @@ def draw_cover(slide, width, height, photo, comp):
     for i, xml in enumerate(shapes):
         tree.insert(3 + i, etree.fromstring(xml))
         sid += 1
-    for key, kind, name in (("mark", "logo", "Logo"), ("signoff", "signoff", "Sign-off")):
-        if comp[key]:
-            _box_picture(slide, Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, comp[key]["role"], kind),
+    for key, name in (("mark", "Logo"), ("signoff", "Sign-off")):
+        if comp[key] and comp[key].get("img"):   # its file, the composition's own (livery.json)
+            _box_picture(slide, Path(LIVERY["dir"]) / comp[key]["img"],
                          comp[key]["box"], width, height, f"{name} ({comp[key]['role']})")
     return sid
 

@@ -319,8 +319,9 @@ The brand mark.
 
 | key | type | default | |
 |---|---|---|---|
-| `role` | role |  | The role it is drawn in. |
+| `role` | role |  | The role it is drawn in: its image is the role's marks entry, else primary's. |
 | `box` | box |  | Where it sits. |
+| `image` | image |  | Its image (a logo.images name), in place of its role's; a light variant keeps it. |
 
 ### `compositions.<name>.signoff`
 
@@ -328,8 +329,9 @@ The sign-off lockup.
 
 | key | type | default | |
 |---|---|---|---|
-| `role` | role |  | The role it is drawn in. |
+| `role` | role |  | The role it is drawn in: its image is the role's marks entry, else primary's. |
 | `box` | box |  | Where it sits. |
+| `image` | image |  | Its image (a logo.images name), in place of its role's; a light variant keeps it. |
 
 ### `compositions.<name>.column`
 

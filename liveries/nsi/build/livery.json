@@ -477,6 +477,7 @@
           0.1029,
           0.1
         ],
+        "img": "logos/nsi-lockup-black.png",
         "role": "primary"
       },
       "panel": null,
@@ -488,6 +489,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "primary"
       },
       "waves": null
@@ -528,6 +530,7 @@
           0.1956,
           0.19
         ],
+        "img": "logos/nsi-lockup-white.png",
         "role": "dark"
       },
       "panel": null,
@@ -539,6 +542,7 @@
           0.3909,
           0.11
         ],
+        "img": "logos/rio-lockup-white.png",
         "role": "dark"
       },
       "waves": null
@@ -579,6 +583,7 @@
           0.1029,
           0.1
         ],
+        "img": "logos/nsi-lockup.png",
         "role": "background"
       },
       "panel": null,
@@ -590,6 +595,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "background"
       },
       "waves": null
@@ -685,6 +691,7 @@
           0.0824,
           0.08
         ],
+        "img": "logos/nsi-lockup-black.png",
         "role": "primary"
       },
       "panel": null,
@@ -696,6 +703,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "primary"
       },
       "waves": null
@@ -755,6 +763,7 @@
           0.0926,
           0.09
         ],
+        "img": "logos/nsi-lockup-black.png",
         "role": "primary"
       },
       "panel": null,
@@ -766,6 +775,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "primary"
       },
       "waves": null
@@ -833,6 +843,7 @@
           0.1956,
           0.19
         ],
+        "img": "logos/nsi-lockup-white.png",
         "role": "dark"
       },
       "panel": null,
@@ -851,6 +862,7 @@
           0.3909,
           0.11
         ],
+        "img": "logos/rio-lockup-white.png",
         "role": "dark"
       },
       "waves": null
@@ -910,6 +922,7 @@
           0.0926,
           0.09
         ],
+        "img": "logos/nsi-lockup.png",
         "role": "background"
       },
       "panel": null,
@@ -921,6 +934,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "background"
       },
       "waves": null
@@ -980,6 +994,7 @@
           0.0926,
           0.09
         ],
+        "img": "logos/nsi-lockup-black.png",
         "role": "primary"
       },
       "panel": null,
@@ -998,6 +1013,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "primary"
       },
       "waves": null
@@ -1057,6 +1073,7 @@
           0.0926,
           0.09
         ],
+        "img": "logos/nsi-lockup.png",
         "role": "background"
       },
       "panel": null,
@@ -1075,6 +1092,7 @@
           0.1777,
           0.05
         ],
+        "img": "logos/rio-lockup.png",
         "role": "background"
       },
       "waves": null

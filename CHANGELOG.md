@@ -104,6 +104,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `bullets:` (`glyphs`, one per list level, the last repeating; `color`, a role, a palette name or
   a hex): a livery's own list glyphs in every format, in place of the dot, ring and bar. Without
   it nothing changes. nasa-jsc-eg uses its template's white square, dash and dot.
+- `compositions.<name>.mark.image` and `.signoff.image` (a `logo.images` name) put a given
+  image on one composed slide, in place of its field role's; a light variant keeps it. nasa-jsc-eg
+  names its group patch and the NASA wordmark this way; its light title and closing showed the
+  division bar in the patch's box.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 

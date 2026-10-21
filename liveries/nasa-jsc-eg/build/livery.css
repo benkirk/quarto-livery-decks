@@ -487,7 +487,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("meatball.png"); }
-html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block .engine-signoff { background-image: url("eg-footer.png"); }
+html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block .engine-signoff { background-image: url("group-patch.png"); }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -597,7 +597,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo::after { background-image: url("meatball.png"); }
-html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo .engine-signoff { background-image: url("eg-footer.png"); }
+html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo .engine-signoff { background-image: url("group-patch.png"); }
 html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -706,7 +706,7 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   background: url("title.jpg") center / cover no-repeat;
 }
 html div.reveal div.slides section.engine-title.quarto-title-block.engine-band::after { background-image: url("meatball.png"); }
-html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .engine-signoff { background-image: url("group-patch.png"); }
+html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .engine-signoff { background-image: url("eg-footer.png"); }
 .reveal .slides section.slide.level2.closing {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -778,7 +778,7 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .
   --engine-cmp-fineprint-h: 0px;
   --engine-cmp-fineprint-r: 1600px;
   --engine-cmp-fineprint-b: 900px;
-  --engine-cmp-field: var(--engine-surface);
+  --engine-cmp-field: var(--engine-dark);
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: none;
@@ -876,7 +876,7 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   background: none;
 }
 html.engine-title-light .reveal .slides section.slide.level2.closing::after { background-image: url("meatball.png"); }
-html.engine-title-light .reveal .slides section.slide.level2.closing .engine-signoff { background-image: url("eg-footer.png"); }
+html.engine-title-light .reveal .slides section.slide.level2.closing .engine-signoff { background-image: url("nasa-name-2line.png"); }
 html .reveal .slides section.slide.level2.closing.engine-band {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -961,7 +961,7 @@ html .reveal .slides section.slide.level2.closing.engine-band {
   background: url("closing.jpg") center / cover no-repeat;
 }
 html .reveal .slides section.slide.level2.closing.engine-band::after { background-image: url("meatball.png"); }
-html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { background-image: url("group-patch.png"); }
+html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { background-image: url("eg-footer.png"); }
 .reveal .slides section.slide.engine-section {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -1033,7 +1033,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-fineprint-h: 0px;
   --engine-cmp-fineprint-r: 1600px;
   --engine-cmp-fineprint-b: 900px;
-  --engine-cmp-field: var(--engine-surface);
+  --engine-cmp-field: var(--engine-dark);
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: none;

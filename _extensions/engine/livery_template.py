@@ -342,10 +342,11 @@ class Builder:
     def media_for(self, name):
         """{rId: media name} a field layout's composition wears: its mark, sign-off, art and photo."""
         c, out = self.comps[self.comp_name(name)], {}
+        comp = self.comp_name(name)
         if c["mark"]:
-            out["rId2"] = f"mark-{c['mark']['role']}"
+            out["rId2"] = f"mark-{comp}"       # its file, the composition's own (livery.json img)
         if c["signoff"]:
-            out["rId3"] = f"signoff-{c['signoff']['role']}"
+            out["rId3"] = f"signoff-{comp}"
         if c["art"]:
             out["rId4"] = f"art-{c['art']}"
         if c["band"] and c["photo"] and "titlegraphic" in self.art:
@@ -418,6 +419,8 @@ class Builder:
         names += [n for lay in FIELD_LAYOUTS for n in self.media_for(lay).values()]
         def path_of(n):
             kind, _, key = n.partition("-")
+            if kind in ("mark", "signoff") and key in self.comps:   # a composition's own file
+                return self.comps[key][kind]["img"]
             return (mark(key) if kind == "mark" else mark(key, "signoff") if kind == "signoff"
                     else self.art[key] if kind == "art" else self.art["titlegraphic"])
         part_of, by_path = {}, {}   # one media part per file: a lockup serving two roles is stored once

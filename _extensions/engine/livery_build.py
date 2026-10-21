@@ -569,6 +569,23 @@ def compositions(name: str, data: dict, out: dict) -> dict:
         for role in [c[b]["role"] for b in COMP_KEYS if isinstance(c[b], dict) and "role" in c[b]]:
             if role not in out["roles"]:
                 sys.exit(f"{name}: compositions.{k}: role {role!r} is not a role")
+    images = out["logo"].get("images", {})
+    for k, c in res.items():   # each mark's and sign-off's files: by image when set, else its role's
+        for part, kind in (("mark", "logo"), ("signoff", "signoff")):
+            p = c[part]
+            if not p:
+                continue
+            if p.get("image"):
+                if p["image"] not in images:
+                    sys.exit(f"{name}: compositions.{k}.{part}.image: {p['image']!r} is not a logo.images name")
+                p["img"] = images[p["image"]]["path"]
+                if p["image"] + "-print" in images:   # LaTeX takes the print (CMYK) lockup when there is one
+                    p["img-print"] = images[p["image"] + "-print"]["path"]
+            else:
+                m = out["marks"].get(p.get("role"), out["marks"]["primary"])
+                p["img"] = m.get(kind)
+                if kind == "logo" and "logo-print" in m:
+                    p["img-print"] = m["logo-print"]
     return res
 
 
@@ -920,12 +937,9 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
                 L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")
             else:
                 L.append(f"\\colorlet{{EngineC{n}Eyebrow}}{{{tex(e['color'])}}}")
-        for k, kind in (("mark", "logo"), ("signoff", "signoff")):
-            if c[k]:
-                m = livery["marks"].get(c[k]["role"], livery["marks"]["primary"])   # as livery.mark()
-                img = m.get("logo-print", m["logo"]) if kind == "logo" else m.get("signoff")
-                if img:
-                    d(f"{k}@img", stem(img))
+        for k in ("mark", "signoff"):   # its files, the composition's own (compositions())
+            if c[k] and c[k].get("img"):
+                d(f"{k}@img", stem(c[k].get("img-print", c[k]["img"])))
         if c["art"]:
             d("art", stem(livery["art"][c["art"]]))
     return L
@@ -1278,11 +1292,9 @@ def emit_css_compositions(livery: dict) -> list[str]:
         art = livery.get("art", {}).get(c["art"]) if c["art"] else None   # the art under the field, or none
         props.append(f'background: {"url(%s) center / cover no-repeat" % json.dumps(Path(art).name) if art else "none"};')
         L.append(f"{sel} {{\n  " + "\n  ".join(props) + "\n}")
-        for k, kind, rule in (("mark", "logo", "::after"), ("signoff", "signoff", " .engine-signoff")):
-            if c[k]:   # the image its role wears (marks; a role without its own wears primary's)
-                img = livery["marks"].get(c[k]["role"], livery["marks"]["primary"]).get(kind)
-                if img:
-                    L.append(f'{sel}{rule} {{ background-image: url("{Path(img).name}"); }}')
+        for k, rule in (("mark", "::after"), ("signoff", " .engine-signoff")):
+            if c[k] and c[k].get("img"):   # its file, the composition's own (compositions())
+                L.append(f'{sel}{rule} {{ background-image: url("{Path(c[k]["img"]).name}"); }}')
     return L
 
 
