@@ -12,7 +12,7 @@ from pptx.util import Pt
 
 import livery as livery_mod
 
-from .slide_layout import _custom_prop
+from . import docprops
 
 LIVERY = livery_mod.load()
 MARKING = LIVERY.get("marking") or {}
@@ -25,7 +25,7 @@ def _hex(value: str) -> str:
 
 
 def run(prs, name: str) -> None:
-    deck = _custom_prop(prs, "marking")
+    deck = docprops.prop(prs, "marking")
     text = None if deck == "none" else deck or MARKING.get("text")
     if not text or not MARKING.get("box"):
         return

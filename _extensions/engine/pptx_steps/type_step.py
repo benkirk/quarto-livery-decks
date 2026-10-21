@@ -16,24 +16,13 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
+from . import docprops
+
 LIVERY = livery_mod.load()
-CUSTOM = "/docProps/custom.xml"
 SIZED = (qn("a:rPr"), qn("a:defRPr"), qn("a:endParaRPr"))
 CP = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"
 VT = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"
 FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"   # a user-defined property's, as pandoc writes them
-
-
-def _custom(prs):
-    for part in prs.part.package.iter_parts():
-        if str(part.partname) == CUSTOM:
-            return part
-    return None
-
-
-def _props(part):
-    root = etree.fromstring(part.blob)
-    return root, {p.get("name"): "".join(p.itertext()).strip() for p in root}
 
 
 def factor(props):
@@ -64,10 +53,10 @@ def scale(root, f):
 
 def run(prs, path) -> None:
     """The open deck, changed in place; path for the messages."""
-    part = _custom(prs)
+    part = docprops.part(prs)
     if part is None:
         return
-    root, props = _props(part)
+    root, props = docprops.props(part)
     f = factor(props)
     if f is None or abs(f - 1) < 1e-6:
         return

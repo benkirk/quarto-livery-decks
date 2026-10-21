@@ -42,7 +42,7 @@ from pptx.util import Pt
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
-from . import measure, style_footnotes, style_tables
+from . import docprops, measure, style_footnotes, style_tables
 
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
@@ -373,20 +373,10 @@ def full_slide(slide, width, height):
     return True
 
 
-def _custom_prop(prs, name):
-    """A metadata string pandoc recorded in docProps/custom.xml, or None."""
-    for part in prs.part.package.iter_parts():
-        if str(part.partname) == "/docProps/custom.xml":
-            for prop in etree.fromstring(part.blob):
-                if prop.get("name") == name:
-                    return "".join(prop.itertext()).strip() or None
-    return None
-
-
 def _title_graphic(prs, deck_dir):
     """The deck's `titlegraphic:` path from docProps/custom.xml, None without one, or "none"
     when the deck asks for the plain cover (`titlegraphic: none`)."""
-    value = _custom_prop(prs, "titlegraphic")
+    value = docprops.prop(prs, "titlegraphic")
     return "none" if value == "none" else deck_dir / value if value else None
 
 
@@ -564,16 +554,16 @@ def cover_byline(prs, slide, comp, width, height):
         return
     ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
     date, sub = ph.get(PP_PLACEHOLDER.DATE), ph.get(PP_PLACEHOLDER.SUBTITLE)
-    subtitle = _custom_prop(prs, "subtitle") or ""
+    subtitle = docprops.prop(prs, "subtitle") or ""
     color = RGBColor.from_string(livery_mod.color(LIVERY, by["role"]))
     if not by["box"]:
         _recolor_byline(date, sub, by["elements"], bool(subtitle), color)
         return
-    authors = _custom_prop(prs, "engine-author") or prs.core_properties.author or ""
+    authors = docprops.prop(prs, "engine-author") or prs.core_properties.author or ""
     lines = {"date": [date.text_frame.text.strip()] if date is not None and date.text_frame.text.strip() else [],
              "subtitle": [subtitle] if subtitle else [],
              "author": [a for a in authors.split("\n") if a.strip()],
-             "institute": [i for i in (_custom_prop(prs, "engine-institute") or "").split("\n") if i.strip()]}
+             "institute": [i for i in (docprops.prop(prs, "engine-institute") or "").split("\n") if i.strip()]}
     x, y, w, h = by["box"]
     box = slide.shapes.add_textbox(int(x * width), int(y * height), int(w * width), int(h * height))
     box.name = "Byline"
@@ -751,7 +741,7 @@ def run(prs, pptx: Path) -> None:
     """The open deck, changed in place; pptx its path (a titlegraphic: is relative to its directory)."""
     w, h = prs.slide_width, prs.slide_height
     done = 0
-    light = _custom_prop(prs, "engine-title") == "light"
+    light = docprops.prop(prs, "engine-title") == "light"
     if light and BAND:
         print("slide_layout: WARNING: themeoptions title=light is ignored under the livery's band title", file=sys.stderr)
         light = False
