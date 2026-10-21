@@ -16,26 +16,26 @@ the marks the engine draws itself; LibreOffice renders; 1920 x 1080 JPEG):
   title, the soft dark glow behind the insignia, the short rule left of the page number. The title
   hairline is the engine's (`frametitle.rule`, `blends.rule`), not the art's.
 - `art/title.jpg` (EG - Title Slide): the starfield, the orange-to-yellow band with its contour
-  lines, the lab photo behind the arc, the division patch top left. It is also
-  `art.titlegraphic`, drawn full-bleed with no field over it (`compositions.title-photo`: the
-  photo's box the slide, `field: null`), so a deck's own `titlegraphic:` replaces the whole
-  cover art, and nasa's Earth limb is never drawn.
+  lines, the lab photo behind the arc, the division patch top left: the cover's art (the `title`
+  composition). `art.titlegraphic` is `null`, unsetting nasa's Earth limb; a deck's own
+  `titlegraphic:` is drawn full-bleed with no field over it (`compositions.title-photo`: the
+  photo's box the slide, `field: null`), replacing the whole cover art.
 - `art/closing.jpg` (EG - Closing): the starfield, the division patch centered, the rule between
   the agency name and the insignia. Section slides wear it too: the template's divider ("Backup")
   is its closing layout.
 
-The marks, by field role (`marks`):
+The marks: content slides by their field role (`marks`), the composed slides by name
+(`compositions.<name>.signoff.image`):
 
-| field | slides | mark | sign-off |
+| slides | field | mark | sign-off |
 |---|---|---|---|
-| `background` | content | the full-color insignia (nasa's) | `eg-footer`, the division bar |
-| `dark` | cover | the insignia | `group-patch`, beside the division's |
-| `surface` | closing, sections | the insignia | `nasa-name-2line` |
+| content | `background` | the full-color insignia (nasa's) | `eg-footer`, the division bar |
+| cover (and its light variant) | `dark` | the insignia | `group-patch`, beside the division's (`image:`) |
+| closing, sections | `dark` | the insignia | `nasa-name-2line` (`image:`) |
 
-The closing and section fields are `surface` only so that they get their own marks; the art
-covers the field. `nasa-name-2line` is the agency name in two right-aligned lines of Liberation
-Sans Bold (Arial's metrics) as outlines, built by `eg_art.py`. The division bar and the patches are
-the template's PNGs.
+The art covers the fields. `nasa-name-2line` is the agency name in two right-aligned lines of
+Liberation Sans Bold (Arial's metrics) as outlines, built by `eg_art.py`. The division bar and the
+patches are the template's PNGs.
 
 ## The group patch: swapping in another group's
 
@@ -102,7 +102,8 @@ the strip's height on one line; 13 does (`type.marking`).
 
 Arial throughout in the template; Liberation Sans stands in for it (Arial's metrics, so lines
 break where PowerPoint breaks them; SIL OFL 1.1, liberation-fonts 2.1.5), and Liberation Mono for
-its Courier New code. The pptx names Arial (`pptx.typeface`), HTML prefers an installed Arial
+its Courier New code. The pptx names Arial (`pptx.typeface`) and Courier New for code
+(`pptx.code-typeface`, installed with PowerPoint), HTML prefers an installed Arial
 (`installed-fonts`). Sizes are the template's on its canvas: titles 32, the cover title and the
 closing 36. The body is 16 with levels 16/15/13/12/11, the share every livery takes, so a deck
 moves between liveries without overflowing; the template's master says 20 for every level, and
@@ -110,16 +111,18 @@ its own sample slides shrink to fit.
 
 ## What the engine cannot do yet
 
-Onboarding this livery filed engine improvements (#124) and bugs (#125). Its first sprint added
-what this livery now uses: the cover's byline (its own color and box), centered closing and
-divider text (`column.align`), dividers without a label (`section.label: null`), `field: null` on
-a photo cover, and the marking strip. Still worked around:
+Onboarding this livery filed engine improvements (#124) and bugs (#125). Two sprints added what it
+uses now: the cover's byline, centered closing and divider text (`column.align`), dividers without
+a label, `field: null` on a photo cover, the marking strip; then marks by image per composition,
+`art.titlegraphic: null`, the template's square, dash and dot bullets (`bullets:`), Courier New for
+the pptx's code (`pptx.code-typeface`), the hairline between columns (`boxes.columns.rule`),
+column widths in the pptx and three or more columns there, and the template's card look
+(`boxes.card`: the surface fill, an eg-green outline on a picked card). Still open:
 
-- **Closing and divider marks** (#124): their fields take the `surface` role, which the art hides,
-  so they wear the agency name while the cover wears the group patch (marks go by field role).
-- **Inherited title photo** (#124): the cover art doubles as `art.titlegraphic` (a flavor cannot
-  unset nasa's).
-- **Bullets, the column rule, the light cover, Courier New in the pptx** (#124): not reproduced.
+- **The light cover's art**: the engine takes `art.title-light` now; rendering the template's
+  "EG - Title Slide- Light" with `eg_art.py` needs the reference deck (on Ben's laptop).
+- **Pictures and tables in cards and in slides of three or more columns** are not drawn in their
+  column in the pptx yet (the render warns).
 
 `make measure` reports its boxes "over" on the cover, closing and dividers: the measurer reads the
 art's own ink (the starfield, the patches, the rule beside the insignia) as content. The deltas are
@@ -132,9 +135,8 @@ and Title Slide (light). How the rest map:
 
 - **Title & Content, Title & 2 Column, Title Only, Closing, Title Slide**: the engine's own.
 - **Title & Image**: a figure slide (one picture, pandoc fits it to the content area) or `{.full}`.
-- **Title, Content & Image**: two columns, text and picture, but the pptx can't give the text
-  two-thirds: pandoc ignores `.column` widths in pptx (equal halves; HTML and PDF honor them; #124).
-- **Title & 3 Column, 3 Image Column, 4 Quadrants**: nothing reaches them, and **pandoc 3.8.3
-  drops every column after the second in pptx, silently** (HTML and PDF lay out any number; #125).
-  These are the layouts worth an engine step: `slide_layout.py` re-pointing a three-column slide to
-  a three-content layout, as it already re-points Closing (#124).
+- **Title, Content & Image**: two columns, text and picture, `width="67%"` on the text's: the
+  engine sets the pptx's columns at their widths, as HTML and PDF.
+- **Title & 3 Column, 3 Image Column, 4 Quadrants**: nothing reaches the layouts; three or four
+  `.column`s are drawn as text boxes at their widths (`{.wide}` for four), but not yet with a
+  picture in a column.

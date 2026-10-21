@@ -340,7 +340,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   its role (`marks:`; `livery.json` always has `marks`, read with
   `livery.mark(livery, role, "logo"|"signoff")`): content slides `background`,
   dividers, covers and the cover closing `primary`, the band title and closing
-  `title.field`. Defaults: background `logo.medium.light`/`signoff.light`, primary the
+  `title.field`. A composed slide's are its composition's: `compositions.<name>.mark|signoff`
+  resolve to files (`img`, `img-print`), by `image:` (a `logo.images` name; a light variant keeps
+  it) else the role's, and every drawer reads those (nasa-jsc-eg names its patches so). Defaults: background `logo.medium.light`/`signoff.light`, primary the
   dark ones, any other role primary's (nsi: black mark on gold, white on the band). pandoc writes no slide-number box, so
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).

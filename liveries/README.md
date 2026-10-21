@@ -54,7 +54,9 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Marks.** The brand's logos in `_brand.yml` in place of the placeholder (an RGB PNG for
      the web, the same name as `.pdf` for LaTeX), a `signoff` lockup if the brand wants one at
      the foot, and `marks` when a field needs another mark than the defaults (`background` wears
-     `logo.medium.light`, `primary` the dark one, every other field primary's).
+     `logo.medium.light`, `primary` the dark one, every other field primary's). One composed slide
+     wears a given image with `compositions.<name>.mark.image` or `.signoff.image` (a
+     `logo.images` name); its light variant keeps it.
    - **Geometry.** The scaffold's fractions are ncar's; set the lockup's `geometry.logo.aspect`,
      the marks' corners, and `logo.inset` to put the content mark nearer the paper's edge.
      `geometry.wide-margin` is a `{.wide}` slide's side margin (default half the margin),
@@ -71,7 +73,8 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Bullets.** `bullets:` (`glyphs` per level, `color`) when the brand's template draws its own
      list glyphs; the glyphs must exist in `pptx.typeface`.
    - **Art.** `art`: wave curves (`common/utils/fit-waves.py` fits them to the brand's cover
-     art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo.
+     art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo,
+     `title-light` for the light cover's own picture.
    - **Type.** `type:` in points and `pptx.size`, the brand template's canvas (docs/authoring.md "Text
      sizes and the slide size").
    - **Chart colors.** A brand guide's published data palette goes in `charts:` (`ramps`,
