@@ -359,7 +359,7 @@ def overlay(path, comp):
     for key in ("field", "photo", "band", "bar", "panel", "mark", "signoff", "column", "fineprint"):
         c = comp[key]
         nominal = key == "field" and comp["waves"]   # with waves the field's edge is line 2, not its box
-        if c and not nominal and c["box"] != [0, 0, 1, 1]:
+        if c and not nominal and c["box"] != [0, 0, 1, 1] and c["box"][2] > 0 and c["box"][3] > 0:   # not an empty box
             x0, y0, x1, y1 = px(c["box"])
             d.rectangle((x0, y0, x1 - 1, y1 - 1), outline=(255, 0, 255), width=3)
             d.text((x0 + 5, y0 + 4), key, fill=(255, 0, 255))

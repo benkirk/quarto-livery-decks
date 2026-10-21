@@ -559,7 +559,9 @@ function Pandoc(doc)
     light = false
   end
   -- a composition's field: the slide's background color, and .engine-field unless it is the page
+  -- (field: null, a photo cover's with no field over the photo, is the page)
   local function field_of(comp)
+    if not comp.field then return r.background, "" end
     return r[comp.field.role], comp.field.role ~= "background" and " engine-field" or ""
   end
   local content_art = opts.waves ~= "false" and content_waves(c) or nil

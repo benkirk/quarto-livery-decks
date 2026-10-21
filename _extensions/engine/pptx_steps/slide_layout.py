@@ -526,7 +526,7 @@ def draw_cover(slide, width, height, photo, comp):
     x, y, w, h = comp["photo"]["box"]
     _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Photo"
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
-    slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]]
+    slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]] if comp["field"] else "tx2"   # field: null draws none
     shapes = pptx_waves.comp_shapes(WAVES and WAVES["lines"], comp, sid, width, height, field_slot=slot,
                                     line_slot=pptx_waves.ROLE_SLOT[comp["waves"]["role"]] if comp["waves"] else "accent1")
     for i, xml in enumerate(shapes):
