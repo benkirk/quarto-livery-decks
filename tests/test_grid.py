@@ -112,7 +112,7 @@ def test_three_columns(deck):
     list keeping the template's bullet (the box's list style is the master's body style)."""
     livery, prs, _ = deck
     slide = prs.slides[3]
-    cols = sorted((sh for sh in slide.shapes if sh.name.startswith("Column ")), key=lambda sh: sh.name)
+    cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     assert [c.name for c in cols] == ["Column 1", "Column 2", "Column 3"], [sh.name for sh in slide.shapes]
     for c, (x, w) in zip(cols, boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])):
         assert abs(c.left - x) <= 2 * len(cols) and abs(c.width - w) <= 2 * len(cols), f"{c.name} {c.left, c.width}, want {x, w}"
@@ -121,3 +121,21 @@ def test_three_columns(deck):
     xml = slide._element.xml
     assert "⟦" not in xml, "a marker left"
     assert cols[0]._element.find(".//{*}lstStyle/{*}lvl1pPr") is not None, "no list style in the box"
+
+
+def test_column_rules(deck):
+    """boxes.columns.rule: one rule in each gap where the livery sets one (nasa-jsc-eg), none where
+    it is 0 (ncar); centered in the gap, its width the fraction of the slide's height."""
+    livery, prs, _ = deck
+    w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
+    counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
+    if w == 0:
+        assert counts == [0, 0, 0, 0], f"rules under a livery without one: {counts}"
+        return
+    assert counts == [1, 1, 0, 2], f"rules per slide {counts}, want one per gap"
+    slide = prs.slides[3]
+    cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
+    for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
+        mid = (a.left + a.width + b.left) / 2
+        assert rule.width == w and abs(rule.left + rule.width / 2 - mid) <= 1, f"a rule at {rule.left}, {rule.width}; the gap's middle {mid}"
+        assert rule.height > 0 and rule.top == a.top, "the rule runs down the row from its top"

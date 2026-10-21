@@ -48,6 +48,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   width (they reached into the margins).
 - `{.wide}` on a slide's heading widens its body to the slide less a narrower margin
   (`geometry.wide-margin`), in every format: room for three or four columns, or a wide table.
+- A rule between columns where the livery sets `boxes.columns.rule` (nasa-jsc-eg's hairline), in
+  every format, centered in each gap and as tall as the row's tallest column.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends

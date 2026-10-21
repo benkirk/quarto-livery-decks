@@ -246,7 +246,7 @@ end
 -- A .columns div at the text width (onlytextwidth: pandoc's spread the columns into the margins),
 -- each column its share (C.column_shares()) of the width less the gaps, a factor pandoc's writer
 -- puts before \linewidth (\enginecolshare), so beamer's \hfill between them is the livery's gap,
--- The Div stays a Div: pandoc's
+-- with \enginecolrule (boxes.columns.rule) between the columns. The Div stays a Div: pandoc's
 -- writer scopes a heading's block to its column. Last, after the footnote hoist and the layout
 -- boxes, which read the Div.
 local function beamer_columns(blocks)
@@ -258,6 +258,7 @@ local function beamer_columns(blocks)
     for _, b in ipairs(d.content) do
       if b.t == "Div" and has_class(b, "column") then
         k = k + 1
+        if k > 1 then content:insert(latex("\\enginecolrule")) end
         b.attributes["width"] = string.format("\\enginecolshare{%.4f}{%d}", shares[k], #cols)
       end
       content:insert(b)

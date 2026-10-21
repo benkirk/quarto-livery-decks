@@ -7,8 +7,8 @@ Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:
 and columns, and lays them top down from the placeholder's frame (its top below the title, its
 foot geometry.body-bottom; its left and width, so a {.wide} slide's widening by slide_layout
 carries over): text before the columns stays in the placeholder, cut to its measured height; the
-columns are free text boxes (Column 1, Column 2, ...) at commit 2's frames (each its share of the
-box less boxes.columns.gap), their list style the master's body style, so pandoc's paragraphs,
+columns are free text boxes (Column 1, Column 2, ...) at columns.py's frames (each its share of
+the box less boxes.columns.gap, a livery's boxes.columns.rule in each gap), their list style the master's body style, so pandoc's paragraphs,
 moved into them with their own properties, keep the template's bullets and sizes; text after the
 columns is a box of its own. Marker paragraphs are deleted; a placeholder left with no text goes.
 After columns, before style_tables and type_step (which scales the boxes' sizes with the rest).
@@ -23,6 +23,7 @@ from lxml import etree
 from pptx.oxml.ns import qn
 from pptx.util import Emu
 
+from .columns import rules
 from .slide_layout import BOXES, GEOM, _is_body, _text_height
 
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
@@ -148,10 +149,12 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             n_col += 1
             boxes.append(body_box(slide, x, y, w, room, paras, f"Column {n_col}"))
         h = room
+        tallest = min(max(int(_text_height(b, slide)) for b in boxes), room)
         if any(s[0] == "text" for s in later):   # text below: the row as tall as its tallest column
-            h = min(max(int(_text_height(b, slide) * SLACK) for b in boxes), room)
+            h = min(int(tallest * SLACK), room)
             for b in boxes:
                 b.height = h
+        rules(slide, frames, y, tallest, slide_width, slide_height)
         y += h
     if not keep:
         ph._element.getparent().remove(ph._element)

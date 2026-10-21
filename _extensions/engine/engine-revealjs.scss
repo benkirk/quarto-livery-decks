@@ -395,6 +395,17 @@ $mermaid-label-fg-color: $engine-primary;
   margin-left: 0;
   margin-right: 0;
 }
+// boxes.columns.rule: a rule centered in each gap, the row's height (0px: none)
+.reveal .slides section .columns > .column + .column::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-0.5 * var(--engine-column-gap));
+  transform: translateX(-50%);
+  width: var(--engine-column-rule);
+  background: var(--engine-rule);
+}
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;
