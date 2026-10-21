@@ -41,6 +41,7 @@
   --engine-type-frametitle: calc(53.33px * var(--engine-type-scale, 1));
   --engine-type-pagenumber: calc(15px * var(--engine-type-scale, 1));
   --engine-type-footer: calc(15px * var(--engine-type-scale, 1));
+  --engine-type-marking: calc(15px * var(--engine-type-scale, 1));
   --engine-type-subhead: 1.25;
   --engine-type-table: 0.8125;
   --engine-type-code: 0.875;
@@ -82,6 +83,15 @@
   --engine-signoff-left: var(--engine-margin);
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
+  --engine-marking-x: 160px;
+  --engine-marking-y: 3.6px;
+  --engine-marking-w: 1280px;
+  --engine-marking-h: 27px;
+  --engine-marking-justify: center;
+  --engine-marking-align: center;
+  --engine-marking-fill: transparent;
+  --engine-marking-text: #565A5C;
+  --engine-marking-weight: 400;
 }
 /* chart colors (livery.json charts) */
 :root {
@@ -192,6 +202,13 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-column-h: 594px;
   --engine-cmp-column-r: 704px;
   --engine-cmp-column-b: 126px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: block;
   --engine-cmp-fineprint-x: 96px;
   --engine-cmp-fineprint-y: 774px;
@@ -203,11 +220,35 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
+  --engine-cmp-date-col: block;
+  --engine-cmp-date-byl: none;
+  --engine-cmp-date-order: 0;
+  --engine-cmp-date-color: var(--engine-primary-text);
+  --engine-cmp-title-col: block;
+  --engine-cmp-title-byl: none;
+  --engine-cmp-title-order: 1;
+  --engine-cmp-title-color: var(--engine-primary-text);
+  --engine-cmp-subtitle-col: block;
+  --engine-cmp-subtitle-byl: none;
+  --engine-cmp-subtitle-order: 2;
+  --engine-cmp-subtitle-color: var(--engine-primary-text);
+  --engine-cmp-author-col: block;
+  --engine-cmp-author-byl: none;
+  --engine-cmp-author-order: 3;
+  --engine-cmp-author-color: var(--engine-primary-text);
+  --engine-cmp-institute-col: block;
+  --engine-cmp-institute-byl: none;
+  --engine-cmp-institute-order: 3;
+  --engine-cmp-institute-color: var(--engine-primary-text);
+  --engine-cmp-rule-order: 2;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
   --engine-cmp-fineprint-color: var(--engine-primary-text);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: url("constellation.jpg") center / cover no-repeat;
 }
 div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("nsi-lockup-black.png"); }
@@ -269,6 +310,13 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo
   --engine-cmp-column-h: 594px;
   --engine-cmp-column-r: 800px;
   --engine-cmp-column-b: 126px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: block;
   --engine-cmp-fineprint-x: 96px;
   --engine-cmp-fineprint-y: 774px;
@@ -280,11 +328,35 @@ div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
+  --engine-cmp-date-col: block;
+  --engine-cmp-date-byl: none;
+  --engine-cmp-date-order: 0;
+  --engine-cmp-date-color: var(--engine-primary-text);
+  --engine-cmp-title-col: block;
+  --engine-cmp-title-byl: none;
+  --engine-cmp-title-order: 1;
+  --engine-cmp-title-color: var(--engine-primary-text);
+  --engine-cmp-subtitle-col: block;
+  --engine-cmp-subtitle-byl: none;
+  --engine-cmp-subtitle-order: 2;
+  --engine-cmp-subtitle-color: var(--engine-primary-text);
+  --engine-cmp-author-col: block;
+  --engine-cmp-author-byl: none;
+  --engine-cmp-author-order: 3;
+  --engine-cmp-author-color: var(--engine-primary-text);
+  --engine-cmp-institute-col: block;
+  --engine-cmp-institute-byl: none;
+  --engine-cmp-institute-order: 3;
+  --engine-cmp-institute-color: var(--engine-primary-text);
+  --engine-cmp-rule-order: 2;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
   --engine-cmp-fineprint-color: var(--engine-primary-text);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo::after { background-image: url("nsi-lockup-black.png"); }
@@ -346,6 +418,13 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-column-h: 594px;
   --engine-cmp-column-r: 704px;
   --engine-cmp-column-b: 126px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: block;
   --engine-cmp-fineprint-x: 96px;
   --engine-cmp-fineprint-y: 774px;
@@ -357,11 +436,35 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
+  --engine-cmp-date-col: block;
+  --engine-cmp-date-byl: none;
+  --engine-cmp-date-order: 0;
+  --engine-cmp-date-color: var(--engine-foreground);
+  --engine-cmp-title-col: block;
+  --engine-cmp-title-byl: none;
+  --engine-cmp-title-order: 1;
+  --engine-cmp-title-color: var(--engine-foreground);
+  --engine-cmp-subtitle-col: block;
+  --engine-cmp-subtitle-byl: none;
+  --engine-cmp-subtitle-order: 2;
+  --engine-cmp-subtitle-color: var(--engine-foreground);
+  --engine-cmp-author-col: block;
+  --engine-cmp-author-byl: none;
+  --engine-cmp-author-order: 3;
+  --engine-cmp-author-color: var(--engine-foreground);
+  --engine-cmp-institute-col: block;
+  --engine-cmp-institute-byl: none;
+  --engine-cmp-institute-order: 3;
+  --engine-cmp-institute-color: var(--engine-foreground);
+  --engine-cmp-rule-order: 2;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
   --engine-cmp-fineprint-color: var(--engine-foreground);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("nsi-lockup.png"); }
@@ -423,6 +526,13 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-column-h: 594px;
   --engine-cmp-column-r: 800px;
   --engine-cmp-column-b: 126px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: block;
   --engine-cmp-fineprint-x: 96px;
   --engine-cmp-fineprint-y: 774px;
@@ -434,11 +544,35 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
+  --engine-cmp-date-col: block;
+  --engine-cmp-date-byl: none;
+  --engine-cmp-date-order: 0;
+  --engine-cmp-date-color: var(--engine-foreground);
+  --engine-cmp-title-col: block;
+  --engine-cmp-title-byl: none;
+  --engine-cmp-title-order: 1;
+  --engine-cmp-title-color: var(--engine-foreground);
+  --engine-cmp-subtitle-col: block;
+  --engine-cmp-subtitle-byl: none;
+  --engine-cmp-subtitle-order: 2;
+  --engine-cmp-subtitle-color: var(--engine-foreground);
+  --engine-cmp-author-col: block;
+  --engine-cmp-author-byl: none;
+  --engine-cmp-author-order: 3;
+  --engine-cmp-author-color: var(--engine-foreground);
+  --engine-cmp-institute-col: block;
+  --engine-cmp-institute-byl: none;
+  --engine-cmp-institute-order: 3;
+  --engine-cmp-institute-color: var(--engine-foreground);
+  --engine-cmp-rule-order: 2;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
   --engine-cmp-fineprint-color: var(--engine-foreground);
   --engine-cmp-fineprint-justify: flex-end;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo::after { background-image: url("nsi-lockup.png"); }
@@ -500,6 +634,13 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   --engine-cmp-column-h: 403.2px;
   --engine-cmp-column-r: 672px;
   --engine-cmp-column-b: 248.4px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: block;
   --engine-cmp-fineprint-x: 96px;
   --engine-cmp-fineprint-y: 667.8px;
@@ -511,12 +652,36 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
+  --engine-cmp-date-col: block;
+  --engine-cmp-date-byl: none;
+  --engine-cmp-date-order: 0;
+  --engine-cmp-date-color: var(--engine-primary-text);
+  --engine-cmp-title-col: block;
+  --engine-cmp-title-byl: none;
+  --engine-cmp-title-order: 1;
+  --engine-cmp-title-color: var(--engine-primary-text);
+  --engine-cmp-subtitle-col: block;
+  --engine-cmp-subtitle-byl: none;
+  --engine-cmp-subtitle-order: 2;
+  --engine-cmp-subtitle-color: var(--engine-primary-text);
+  --engine-cmp-author-col: block;
+  --engine-cmp-author-byl: none;
+  --engine-cmp-author-order: 3;
+  --engine-cmp-author-color: var(--engine-primary-text);
+  --engine-cmp-institute-col: block;
+  --engine-cmp-institute-byl: none;
+  --engine-cmp-institute-order: 3;
+  --engine-cmp-institute-color: var(--engine-primary-text);
+  --engine-cmp-rule-order: 2;
   --engine-cmp-rule-display: block;
   --engine-cmp-rule-w: 208px;
   --engine-cmp-rule-h: 3px;
   --engine-cmp-fineprint-color: var(--engine-background);
   --engine-cmp-fineprint-justify: flex-start;
   --engine-cmp-band-fill: var(--engine-primary);
+  --engine-cmp-eyebrow-display: none;
   background: url("constellation.jpg") center / cover no-repeat;
 }
 html div.reveal div.slides section.engine-title.quarto-title-block.engine-band::after { background-image: url("nsi-lockup-white.png"); }
@@ -578,6 +743,13 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .
   --engine-cmp-column-h: 594px;
   --engine-cmp-column-r: 512px;
   --engine-cmp-column-b: 108px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: none;
   --engine-cmp-fineprint-x: 0px;
   --engine-cmp-fineprint-y: 0px;
@@ -589,9 +761,12 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 .reveal .slides section.slide.level2.closing::after { background-image: url("nsi-lockup-black.png"); }
@@ -653,6 +828,13 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   --engine-cmp-column-h: 594px;
   --engine-cmp-column-r: 512px;
   --engine-cmp-column-b: 108px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: none;
   --engine-cmp-fineprint-x: 0px;
   --engine-cmp-fineprint-y: 0px;
@@ -664,9 +846,12 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }
 html.engine-title-light .reveal .slides section.slide.level2.closing::after { background-image: url("nsi-lockup.png"); }
@@ -728,6 +913,13 @@ html .reveal .slides section.slide.level2.closing.engine-band {
   --engine-cmp-column-h: 534.6px;
   --engine-cmp-column-r: 512px;
   --engine-cmp-column-b: 275.4px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: none;
   --engine-cmp-fineprint-x: 0px;
   --engine-cmp-fineprint-y: 0px;
@@ -739,9 +931,12 @@ html .reveal .slides section.slide.level2.closing.engine-band {
   --engine-cmp-text: var(--engine-background);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
+  --engine-cmp-eyebrow-display: none;
   background: url("constellation.jpg") center / cover no-repeat;
 }
 html .reveal .slides section.slide.level2.closing.engine-band::after { background-image: url("nsi-lockup-white.png"); }
@@ -803,6 +998,13 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-column-h: 700px;
   --engine-cmp-column-r: 512px;
   --engine-cmp-column-b: 80px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: none;
   --engine-cmp-fineprint-x: 0px;
   --engine-cmp-fineprint-y: 0px;
@@ -814,11 +1016,14 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-text: var(--engine-primary-text);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: block;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
   --engine-cmp-eyebrow: var(--engine-secondary);
   --engine-cmp-eyebrow-label: "Section ";
+  --engine-cmp-eyebrow-display: block;
   background: none;
 }
 .reveal .slides section.slide.engine-section::after { background-image: url("nsi-lockup-black.png"); }
@@ -880,6 +1085,13 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-column-h: 180px;
   --engine-cmp-column-r: 96px;
   --engine-cmp-column-b: 720px;
+  --engine-cmp-byline-display: none;
+  --engine-cmp-byline-x: 0px;
+  --engine-cmp-byline-y: 0px;
+  --engine-cmp-byline-w: 0px;
+  --engine-cmp-byline-h: 0px;
+  --engine-cmp-byline-r: 1600px;
+  --engine-cmp-byline-b: 900px;
   --engine-cmp-fineprint-display: none;
   --engine-cmp-fineprint-x: 0px;
   --engine-cmp-fineprint-y: 0px;
@@ -891,10 +1103,13 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-text: var(--engine-background);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: none;
+  --engine-cmp-column-align: left;
+  --engine-cmp-rule-mx: 0;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
   --engine-cmp-bar-fill: color-mix(in srgb, var(--engine-dark) 72%, transparent);
   --engine-cmp-panel-fill: color-mix(in srgb, var(--engine-dark) 72%, transparent);
+  --engine-cmp-eyebrow-display: none;
   background: none;
 }

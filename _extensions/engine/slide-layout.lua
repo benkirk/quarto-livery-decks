@@ -58,8 +58,32 @@ local function light_title(meta)
   return false
 end
 
+-- the cover's author and institute lines as strings (one per line): pandoc's pptx writer joins the
+-- authors into the subtitle placeholder and drops the institute, and records lists in
+-- docProps/custom.xml as empty strings; slide_layout.py's cover_byline() reads these
+local function lines_of(v)
+  local out = {}
+  if not v then return out end
+  for _, it in ipairs(pandoc.utils.type(v) == "List" and v or { v }) do
+    local s = pandoc.utils.stringify(type(it) == "table" and (it.name and (it.name.literal or it.name)) or it)
+    if s ~= "" then table.insert(out, s) end
+  end
+  return out
+end
+
+local function byline_meta(meta)
+  local authors, institutes = lines_of(meta["by-author"] or meta["author"]), {}
+  for _, it in ipairs(meta["by-author"] and meta["by-author"] or {}) do
+    for _, s in ipairs(lines_of(it.affiliations)) do table.insert(institutes, s) end
+  end
+  if #institutes == 0 then institutes = lines_of(meta["institute"]) end
+  if #authors > 0 then meta["engine-author"] = pandoc.MetaString(table.concat(authors, "\n")) end
+  if #institutes > 0 then meta["engine-institute"] = pandoc.MetaString(table.concat(institutes, "\n")) end
+end
+
 function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
+  byline_meta(doc.meta)
   local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
   local out, pending = pandoc.Blocks({}), nil
   local function flush()

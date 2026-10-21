@@ -263,6 +263,20 @@ local function add_signoff(blocks)
   return out
 end
 
+-- the marking strip (livery.json marking; its text the deck's marking:, else the livery's default)
+-- on every slide, feature and full ones too: a raw div livery.css places and colors
+local function add_marking(blocks, text)
+  if not text then return blocks end
+  local out = pandoc.Blocks({})
+  for _, blk in ipairs(blocks) do
+    out:insert(blk)
+    if blk.t == "Header" and (blk.level == 1 or blk.level == slide_level) then
+      out:insert(html('<div class="engine-marking">' .. text .. '</div>'))
+    end
+  end
+  return out
+end
+
 local function hoist_footnotes(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
@@ -559,7 +573,9 @@ function Pandoc(doc)
     light = false
   end
   -- a composition's field: the slide's background color, and .engine-field unless it is the page
+  -- (field: null, a photo cover's with no field over the photo, is the page)
   local function field_of(comp)
+    if not comp.field then return r.background, "" end
     return r[comp.field.role], comp.field.role ~= "background" and " engine-field" or ""
   end
   local content_art = opts.waves ~= "false" and content_waves(c) or nil
@@ -585,6 +601,19 @@ function Pandoc(doc)
   title_slide_attributes(meta, { ["data-background-color"] = bg })
   meta["engine-title-art"] = pandoc.RawInline("html", comp_art(tcomp, r, (tg or default_photo) and photo_img(tg) or nil))
   meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
+  -- a cover's byline with a box of its own (livery.json compositions): title-slide.html's second stack
+  if tcomp.byline and tcomp.byline.box then meta["engine-byline"] = true end
+  -- the marking strip's text, as HTML: the deck's marking: (none: off), else the livery's default
+  local mk, marking = meta["marking"], nil
+  if mk then
+    if pandoc.utils.stringify(mk) ~= "none" then
+      marking = pandoc.write(pandoc.Pandoc({ pandoc.Plain(pandoc.utils.type(mk) == "Inlines" and mk
+        or pandoc.Inlines(pandoc.utils.stringify(mk))) }), "html"):gsub("%s+$", "")
+    end
+  elseif livery.marking and type(livery.marking.text) == "string" then
+    marking = pandoc.write(pandoc.Pandoc({ pandoc.Plain(pandoc.Inlines(livery.marking.text)) }), "html"):gsub("%s+$", "")
+  end
+  if marking then meta["engine-marking"] = pandoc.RawInline("html", marking) end
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
@@ -703,6 +732,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_signoff(out))))
+  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_signoff(out), marking))))
   return doc
 end

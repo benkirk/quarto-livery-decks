@@ -67,6 +67,14 @@
 \def\engine@installed@base@bolditalic{Helvetica Neue Bold Italic}
 \def\engine@installed@head@bold{Helvetica Neue Condensed Bold}
 \def\engine@installed@head@regular{Helvetica Neue Condensed Bold}
+% the marking strip (marking:); its text is the deck's \enginemarking, else this default
+\def\engine@marking@x{0.1}
+\def\engine@marking@y{0.004}
+\def\engine@marking@w{0.8}
+\def\engine@marking@h{0.03}
+\def\engine@marking@align{center}
+\definecolor{EngineMarkingText}{HTML}{565A5C}
+\def\engine@marking@default{}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
@@ -83,7 +91,6 @@
 \def\engine@geom@fullpad{0.025}
 \def\engine@geom@fullfootline{0.075}
 \def\engine@geom@fullcaption{0.06}
-\def\engine@section@label{Section}
 \def\engine@art@content{\engineliverydir art/content-flatirons}
 % type: the body as a fraction of the paper height, each role's size and leading as ratios to it,
 % the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)
@@ -107,6 +114,7 @@
 \def\engine@type@closing{{3.0}{1.08}}
 \def\engine@type@pagenumber{{0.5625}{1.2}}
 \def\engine@type@footer{{0.5625}{1.2}}
+\def\engine@type@marking{{0.5625}{1.2}}
 \def\engine@type@levelii{{0.875}{1.4}}
 \def\engine@type@leveliii{{0.8125}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}
@@ -158,6 +166,8 @@
 \colorlet{EngineCtitleFineprint}{BrandPrimaryText}
 \def\engine@c@title@column@anchor{top}
 \def\engine@c@title@column@tab{true}
+\def\engine@c@title@column@align{left}
+\def\engine@c@title@column@elements{date,title,subtitle,author,institute}
 \def\engine@c@title@column@rule@w{0.13}
 \def\engine@c@title@column@rule@h{0.0033}
 \def\engine@c@title@fineprint@anchor{bottom}
@@ -187,6 +197,8 @@
 \colorlet{EngineCtitlephotoFineprint}{BrandPrimaryText}
 \def\engine@c@titlephoto@column@anchor{top}
 \def\engine@c@titlephoto@column@tab{true}
+\def\engine@c@titlephoto@column@align{left}
+\def\engine@c@titlephoto@column@elements{date,title,subtitle,author,institute}
 \def\engine@c@titlephoto@column@rule@w{0.13}
 \def\engine@c@titlephoto@column@rule@h{0.0033}
 \def\engine@c@titlephoto@fineprint@anchor{bottom}
@@ -212,6 +224,8 @@
 \colorlet{EngineCtitlelightFineprint}{BrandText}
 \def\engine@c@titlelight@column@anchor{top}
 \def\engine@c@titlelight@column@tab{true}
+\def\engine@c@titlelight@column@align{left}
+\def\engine@c@titlelight@column@elements{date,title,subtitle,author,institute}
 \def\engine@c@titlelight@column@rule@w{0.13}
 \def\engine@c@titlelight@column@rule@h{0.0033}
 \def\engine@c@titlelight@fineprint@anchor{bottom}
@@ -241,6 +255,8 @@
 \colorlet{EngineCtitlephotolightFineprint}{BrandText}
 \def\engine@c@titlephotolight@column@anchor{top}
 \def\engine@c@titlephotolight@column@tab{true}
+\def\engine@c@titlephotolight@column@align{left}
+\def\engine@c@titlephotolight@column@elements{date,title,subtitle,author,institute}
 \def\engine@c@titlephotolight@column@rule@w{0.13}
 \def\engine@c@titlephotolight@column@rule@h{0.0033}
 \def\engine@c@titlephotolight@fineprint@anchor{bottom}
@@ -275,6 +291,8 @@
 \colorlet{EngineCtitlebandFineprint}{BrandBackground}
 \def\engine@c@titleband@column@anchor{middle}
 \def\engine@c@titleband@column@tab{true}
+\def\engine@c@titleband@column@align{left}
+\def\engine@c@titleband@column@elements{date,title,subtitle,author,institute}
 \def\engine@c@titleband@column@rule@w{0.13}
 \def\engine@c@titleband@column@rule@h{0.0033}
 \def\engine@c@titleband@fineprint@anchor{top}
@@ -295,6 +313,7 @@
 \colorlet{EngineCclosingText}{BrandPrimaryText}
 \def\engine@c@closing@column@anchor{middle}
 \def\engine@c@closing@column@tab{true}
+\def\engine@c@closing@column@align{left}
 \def\engine@c@closing@signoff@img{\engineliverydir logos/cu-boulder-lockup}
 \def\engine@c@closinglight@field@x{0}
 \def\engine@c@closinglight@field@y{0}
@@ -312,6 +331,7 @@
 \colorlet{EngineCclosinglightText}{BrandText}
 \def\engine@c@closinglight@column@anchor{middle}
 \def\engine@c@closinglight@column@tab{true}
+\def\engine@c@closinglight@column@align{left}
 \def\engine@c@closinglight@signoff@img{\engineliverydir logos/cu-boulder-lockup}
 \def\engine@c@closingband@field@x{0}
 \def\engine@c@closingband@field@y{0}
@@ -329,6 +349,7 @@
 \colorlet{EngineCclosingbandText}{BrandBackground}
 \def\engine@c@closingband@column@anchor{middle}
 \def\engine@c@closingband@column@tab{true}
+\def\engine@c@closingband@column@align{left}
 \def\engine@c@closingband@signoff@img{\engineliverydir logos/cu-boulder-lockup}
 \def\engine@c@section@field@x{0}
 \def\engine@c@section@field@y{0}
@@ -346,6 +367,7 @@
 \colorlet{EngineCsectionText}{BrandPrimaryText}
 \def\engine@c@section@column@anchor{middle}
 \def\engine@c@section@column@tab{true}
+\def\engine@c@section@column@align{left}
 \def\engine@c@section@eyebrow@label{Section}
 \colorlet{EngineCsectionEyebrow}{BrandSecondary}
 \def\engine@c@section@signoff@img{\engineliverydir logos/cu-boulder-lockup}
@@ -372,5 +394,6 @@
 \def\engine@c@feature@panel@opacity{0.72}
 \def\engine@c@feature@column@anchor{middle}
 \def\engine@c@feature@column@tab{false}
+\def\engine@c@feature@column@align{left}
 
 \liveryrestoreat

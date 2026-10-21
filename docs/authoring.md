@@ -54,6 +54,10 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   default appears (`art.titlegraphic`: ncar's Mesa Lab, nsi's campus, nasa's Earth
   limb); `titlegraphic: none` keeps the plain cover.
 - `fineprint: "..."` adds small print under the title block.
+- `marking: "CUI"` (any text) puts a marking strip on every slide, in every format: a
+  restriction or distribution marking. Where it sits, how wide, its fill and its colors are
+  the livery's `marking:`, and a livery may set default text every deck under it shows
+  (nasa-jsc-eg does); `marking: none` turns a livery's default off.
 - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
   OpenType math font) changes the math font; the default is New Computer
   Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key

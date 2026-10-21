@@ -546,6 +546,16 @@ function Pandoc(doc)
     doc.meta["header-includes"] = hi
   end
 
+  -- the marking strip's text (marking:; `none` turns the livery's default off): the theme draws it
+  local mk = doc.meta["marking"]
+  if mk then
+    local text = pandoc.utils.stringify(mk) == "none" and "" or
+      (pandoc.utils.type(mk) == "Inlines" and inlines_to_latex(mk) or pandoc.utils.stringify(mk))
+    local hi = header_includes(doc)
+    hi:insert(pandoc.Blocks({ latex("\\gdef\\enginemarkingtext{" .. text .. "}") }))
+    doc.meta["header-includes"] = hi
+  end
+
   local out = pandoc.Blocks({})
   local i, blocks = 1, wrap_layout(doc.blocks)
   local section, subtitles = 0, pandoc.List({})

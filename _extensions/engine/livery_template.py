@@ -247,9 +247,9 @@ class Builder:
                 f'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/>'
                 f'</a:xfrm></p:grpSpPr>{"".join(shapes)}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>')
 
-    def field_text(self, size, bold=False, caps=False, role="primary-text"):
+    def field_text(self, size, bold=False, caps=False, role="primary-text", align="l"):
         """A lstStyle for text on the brand field, in the primary-text role (or another)."""
-        return (f'<a:lvl1pPr algn="l" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
+        return (f'<a:lvl1pPr algn="{align}" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
                 f'<a:defRPr sz="{self.sz(size)}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
                 f'{srgb(self.roles[role])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
 
@@ -259,6 +259,7 @@ class Builder:
         closing's headline (bottom-anchored) over its body; a section's title and subtitle about
         the column's middle (section_subtitle.py places them on each slide)."""
         col = c["column"]; x, y, w, h = col["box"]; role = col["role"]
+        al = "ctr" if col.get("align") == "center" else "l"   # column.align
         no_inset = 'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="{}"><a:normAutofit/></a:bodyPr><a:lstStyle>'
         tab = lambda ty, th: [self.rect("Title tab", 0, ty, self.geom["tab-width"], th, "accent4")] if col["tab"] else []
         out = []
@@ -270,40 +271,42 @@ class Builder:
                 t_y, t_h, rule_y, sub_y, t_anchor = y + 0.055, 0.16, y + 0.24, y + 0.265, "t"
                 dt = (x, y, w, 0.045); sub_h = y + h - sub_y
             out += tab(t_y, t_h)
-            out.append(self.ph("Date", "dt", 20, xfrm(*dt), no_inset.format("t") + self.field_text("date", bold=True, caps=True, role=role)
+            out.append(self.ph("Date", "dt", 20, xfrm(*dt), no_inset.format("t") + self.field_text("date", bold=True, caps=True, role=role, align=al)
                                + "</a:lstStyle><a:p><a:fld id=\"{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}\" type=\"datetime1\"><a:rPr lang=\"en-US\"/><a:t>Date</a:t></a:fld></a:p></p:txBody></p:sp><!--",
                                "", "").split("<!--")[0])
             out.append(self.ph("Title", "ctrTitle", None, xfrm(x, t_y, w, t_h),
-                               f'{no_inset.format(t_anchor)}{self.field_text("title", bold=True, role=role)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                               f'{no_inset.format(t_anchor)}{self.field_text("title", bold=True, role=role, align=al)}</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
             if col["rule"]:
                 out.append(f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/><p:nvPr userDrawn="1"/>'
-                           f'</p:nvCxnSpPr><p:spPr>{xfrm(x, rule_y, col["rule"][0], 0)}<a:prstGeom prst="line"><a:avLst/></a:prstGeom>'
+                           f'</p:nvCxnSpPr><p:spPr>{xfrm(x + (w - col["rule"][0]) / 2 if al == "ctr" else x, rule_y, col["rule"][0], 0)}<a:prstGeom prst="line"><a:avLst/></a:prstGeom>'
                            f'<a:ln w="{round(col["rule"][1] * H_EMU)}">{fill("accent1")}</a:ln></p:spPr></p:cxnSp>')
             out.append(self.ph("Subtitle", "subTitle", 1, xfrm(x, sub_y, w, sub_h),
-                               no_inset.format("t") + self.field_text("subtitle", role=role) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
+                               no_inset.format("t") + self.field_text("subtitle", role=role, align=al) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
-        elif kind == "closing":   # split at the middle: a short headline and body sit on the column's centre
-            hh = 0.5 * h
-            out += tab(y + hh - 0.09, 0.075)
+        elif kind == "closing":   # split at the middle: a short headline and body sit on the column's centre;
+            top = col["anchor"] == "top"   # from the top, the headline hangs from it (slide_layout's closing_top()
+            hh = 0.5 * h                   # sets the body under the measured headline on each slide)
+            out += tab(y + 0.012 if top else y + hh - 0.09, 0.075)
             out.append(self.ph("Title 1", "title", None, xfrm(x, y, w, hh),
-                               no_inset.format("b") + f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("closing")}" b="1">{srgb(self.roles[role])}'
+                               no_inset.format("t" if top else "b") + f'<a:lvl1pPr algn="{al}"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("closing")}" b="1">{srgb(self.roles[role])}'
                                '<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr></a:lstStyle><a:p><a:r><a:rPr lang="en-US"/>'
                                '<a:t>Thank you</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
-            lvls = "".join(f'<a:lvl{i}pPr><a:defRPr sz="{self.levels[i - 1]}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
+            centered = ' algn="ctr" marL="0" indent="0"' if al == "ctr" else ""   # a centered body: no bullet indent
+            lvls = "".join(f'<a:lvl{i}pPr{centered}><a:defRPr sz="{self.levels[i - 1]}">{srgb(self.roles[role])}</a:defRPr></a:lvl{i}pPr>'
                            for i in (1, 2, 3))
             out.append(self.ph("Content Placeholder 2", None, 1, xfrm(x, y + hh + 0.03, w, h - hh - 0.03),
                                no_inset.format("t") + lvls + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Contact details</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
         else:   # section
             mid = y + h / 2
-            title_lst = (f'<a:lvl1pPr algn="l"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("section")}" b="1" cap="none" baseline="0">'
+            title_lst = (f'<a:lvl1pPr algn="{al}"><a:lnSpc><a:spcPct val="90000"/></a:lnSpc><a:defRPr sz="{self.sz("section")}" b="1" cap="none" baseline="0">'
                          f'{srgb(self.roles[role])}<a:latin typeface="+mj-lt"/></a:defRPr></a:lvl1pPr>')
             out.append(self.ph("Title 1", "title", None, xfrm(x, mid - 0.12, w, 0.12),
                                'lIns="0" tIns="0" rIns="0" bIns="0" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>' + title_lst +
                                '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Section title</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
             out.append(self.ph("Text Placeholder 2", "body", 1, xfrm(x, mid + 0.01, w, 0.133),
-                               'lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>' + self.field_text("sectionsubtitle", role=role) +
+                               'lIns="0" tIns="0" rIns="0" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle>' + self.field_text("sectionsubtitle", role=role, align=al) +
                                '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
         return out
 

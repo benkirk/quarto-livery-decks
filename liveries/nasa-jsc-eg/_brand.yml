@@ -1,0 +1,65 @@
+# NASA JSC Aeroscience and Flight Mechanics Division (EG), dark: a flavor of nasa-dark in Quarto's
+# brand.yml standard, kept strictly standard; engine knobs are in livery.yml. Values: the EG
+# PowerPoint template (reference/notes.md), whose theme names these colors; what is not here (meta,
+# the insignia) is nasa's.
+color:
+  palette:
+    eg-yellow: "#FCDB00"     # accent1: the division bar, the cover band
+    eg-navy: "#061F5F"       # accent2: the NASA | JSC box
+    eg-red: "#F93A1D"        # accent3
+    eg-orange: "#FEA20B"     # accent4
+    eg-blue: "#297DE0"       # accent5 (5.0:1 on black): links
+    eg-green: "#00BC71"      # accent6
+    eg-gray: "#959595"       # dk2 (7.4:1 on black): muted text
+    eg-light-gray: "#E1E1E1" # lt2
+    eg-purple: "#BD92DE"     # folHlink
+    eg-violet: "#6840F0"     # the cover photo's regolith, its dominant lit tone: the marking strip (5.9:1 under white)
+  primary: eg-navy
+  secondary: eg-yellow
+
+typography:
+  # Arial, the template's only face, stood in for by Liberation Sans (Arial's metrics, SIL OFL); Courier
+  # New, its code face, by Liberation Mono. Restated in full: a flavor's fonts replace the parent's.
+  fonts:
+    - family: Liberation Sans
+      source: file
+      files:
+        - path: fonts/LiberationSans-Regular.ttf
+          weight: 400
+        - path: fonts/LiberationSans-Italic.ttf
+          weight: 400
+          style: italic
+        - path: fonts/LiberationSans-Bold.ttf
+          weight: 700
+        - path: fonts/LiberationSans-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Liberation Mono
+      source: file
+      files:
+        - path: fonts/LiberationMono-Regular.ttf
+          weight: 400
+        - path: fonts/LiberationMono-Italic.ttf
+          weight: 400
+          style: italic
+        - path: fonts/LiberationMono-Bold.ttf
+          weight: 700
+  base: Liberation Sans
+  headings: Liberation Sans
+  monospace: Liberation Mono
+
+logo:
+  # reference/eg_art.py extracts these from the template (a PDF of the same name beside each for LaTeX)
+  images:
+    eg-footer:
+      path: logos/eg-footer.png         # the division bar along the foot of content slides
+    eg-patch:
+      path: logos/eg-patch.png          # the division patch (also baked into the cover and closing art)
+    group-patch:
+      path: logos/group-patch.png       # a group's patch beside the division's on the cover: the
+                                        # Flight Sciences Lab's; a group's flavor names its own
+    nasa-name-2line:
+      path: logos/nasa-name-2line.png   # the agency name, two lines, white, beside the insignia
+  medium:
+    light: meatball
+    dark: meatball

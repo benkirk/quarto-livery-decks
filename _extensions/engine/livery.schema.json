@@ -237,14 +237,14 @@
       "additionalProperties": false,
       "properties": {
         "label": {
-          "type": "string",
+          "type": ["string", "null"],
           "default": "Section",
-          "description": "The eyebrow's word over the heading, as \"SECTION n\" (each format sets it in capitals)."
+          "description": "The eyebrow's word over the heading, as \"SECTION n\" (each format sets it in capitals); null: no eyebrow."
         },
         "tab": {"type": "boolean", "description": "The accent tab beside the heading.", "default": true},
         "label-color": {
           "$ref": "#/$defs/role-or-hex",
-          "description": "The eyebrow's color, a role or a hex (HTML and PDF).",
+          "description": "The eyebrow's color, a role or a hex.",
           "default": "secondary"
         }
       }
@@ -430,2386 +430,16 @@
       "description": "Overrides of the composed slides' boxes and colors, by slide; every slide takes the parts of compositions.<name> below.",
       "additionalProperties": false,
       "properties": {
-        "title": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The cover (an override reaches its photo and light variants)."
-        },
-        "title-photo": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The cover with the deck's photo."
-        },
-        "title-light": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The light cover (title=light)."
-        },
-        "title-photo-light": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The light cover with the deck's photo."
-        },
-        "title-band": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The band cover (title.style: band)."
-        },
-        "closing": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The closing slide (an override reaches its light variant)."
-        },
-        "closing-light": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The light closing slide."
-        },
-        "closing-band": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "The closing slide of a band livery."
-        },
-        "section": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "A section slide."
-        },
-        "feature": {
-          "type": "object",
-          "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The colored field behind everything.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The colored field behind everything. (null: none)"
-            },
-            "art": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "string",
-                  "description": "Which art.<kind> picture covers the field: title, section, closing or content."
-                }
-              ],
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
-            },
-            "photo": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The deck's photo.",
-                  "additionalProperties": false,
-                  "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
-                }
-              ],
-              "description": "The deck's photo. (null: none)"
-            },
-            "band": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The band across a band cover's field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The band across a band cover's field. (null: none)"
-            },
-            "waves": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The wave lines drawn over the field.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "style": {
-                      "enum": ["bands", "lines", "cover"],
-                      "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
-                    },
-                    "shift": {
-                      "type": "number",
-                      "minimum": -1,
-                      "maximum": 1,
-                      "description": "How far right of the cover art's position they are drawn, of the width."
-                    },
-                    "role": {"$ref": "#/$defs/role", "description": "Their color."},
-                    "opacity": {
-                      "type": "array",
-                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
-                      "description": "The bands' opacities, outer first."
-                    },
-                    "line": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "The lines' thickness, of the height."
-                    }
-                  }
-                }
-              ],
-              "description": "The wave lines drawn over the field. (null: none)"
-            },
-            "bar": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's title bar.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's title bar. (null: none)"
-            },
-            "panel": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The feature slide's body panel.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "opacity": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 1,
-                      "description": "How opaque it is over the photo."
-                    }
-                  }
-                }
-              ],
-              "description": "The feature slide's body panel. (null: none)"
-            },
-            "mark": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The brand mark.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The brand mark. (null: none)"
-            },
-            "signoff": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The sign-off lockup.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
-                  }
-                }
-              ],
-              "description": "The sign-off lockup. (null: none)"
-            },
-            "column": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The text column: title, subtitle, date and the rest.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "middle"],
-                      "description": "Whether the text hangs from the column's top or is centred in it."
-                    },
-                    "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
-                    "rule": {
-                      "oneOf": [
-                        {"type": "null"},
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 1,
-                            "description": "A fraction."
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
-                      ],
-                      "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
-                    }
-                  }
-                }
-              ],
-              "description": "The text column: title, subtitle, date and the rest. (null: none)"
-            },
-            "fineprint": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The cover's small print.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                    "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
-                    "anchor": {
-                      "enum": ["top", "bottom"],
-                      "description": "Whether the text hangs from the box's top or stands on its bottom."
-                    }
-                  }
-                }
-              ],
-              "description": "The cover's small print. (null: none)"
-            },
-            "eyebrow": {
-              "oneOf": [
-                {"type": "null"},
-                {
-                  "type": "object",
-                  "description": "The \"SECTION n\" label.",
-                  "additionalProperties": false,
-                  "properties": {
-                    "label": {"type": "string", "description": "Its word."},
-                    "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
-                  }
-                }
-              ],
-              "description": "The \"SECTION n\" label. (null: none)"
-            }
-          },
-          "x-slide": "A feature (photo) slide."
-        }
+        "title": {"$ref": "#/$defs/composition", "x-slide": "The cover (an override reaches its photo and light variants)."},
+        "title-photo": {"$ref": "#/$defs/composition", "x-slide": "The cover with the deck's photo."},
+        "title-light": {"$ref": "#/$defs/composition", "x-slide": "The light cover (title=light)."},
+        "title-photo-light": {"$ref": "#/$defs/composition", "x-slide": "The light cover with the deck's photo."},
+        "title-band": {"$ref": "#/$defs/composition", "x-slide": "The band cover (title.style: band)."},
+        "closing": {"$ref": "#/$defs/composition", "x-slide": "The closing slide (an override reaches its light variant)."},
+        "closing-light": {"$ref": "#/$defs/composition", "x-slide": "The light closing slide."},
+        "closing-band": {"$ref": "#/$defs/composition", "x-slide": "The closing slide of a band livery."},
+        "section": {"$ref": "#/$defs/composition", "x-slide": "A section slide."},
+        "feature": {"$ref": "#/$defs/composition", "x-slide": "A feature (photo) slide."}
       }
     },
     "feature": {
@@ -2840,6 +470,53 @@
           "default": true
         },
         "rule": {"type": "boolean", "description": "The hairline under the title.", "default": true}
+      }
+    },
+    "marking": {
+      "type": "object",
+      "description": "A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here.",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": ["string", "null"],
+          "description": "The default text every deck under the livery shows (default: none, no strip)."
+        },
+        "edge": {"enum": ["top", "bottom"], "default": "top", "description": "The edge it sits at."},
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.004,
+          "description": "Its distance from that edge."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8,
+          "description": "Its width, of the slide's width."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.03,
+          "description": "Its height."
+        },
+        "align": {
+          "enum": ["center", "left", "right"],
+          "default": "center",
+          "description": "Where it sits along the edge (left and right at the margin) and how its text aligns."
+        },
+        "fill": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/color-or-role"}],
+          "description": "A fill behind it, a role, a palette name or a hex, to make it stand out (default: none)."
+        },
+        "color": {
+          "$ref": "#/$defs/color-or-role",
+          "description": "Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill)."
+        },
+        "bold": {"type": "boolean", "default": false, "description": "Its text in bold."}
       }
     },
     "installed-fonts": {
@@ -3112,6 +789,7 @@
           "description": "The closing slide's headline."
         },
         "pagenumber": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The page number."},
+        "marking": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The marking strip's text."},
         "footer": {
           "type": "number",
           "exclusiveMinimum": 0,
@@ -3381,6 +1059,283 @@
               "properties": {"light": {"type": "string"}, "dark": {"type": "string"}}
             }
           }
+        }
+      }
+    },
+    "composition": {
+      "type": "object",
+      "description": "The parts of one composed slide; a part not named keeps the engine's value, null removes it.",
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The colored field behind everything.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+              }
+            }
+          ],
+          "description": "The colored field behind everything. (null: none)"
+        },
+        "art": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "string",
+              "description": "Which art.<kind> picture covers the field: title, section, closing or content."
+            }
+          ],
+          "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
+        },
+        "photo": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The deck's photo.",
+              "additionalProperties": false,
+              "properties": {"box": {"$ref": "#/$defs/box", "description": "Where it sits."}}
+            }
+          ],
+          "description": "The deck's photo. (null: none)"
+        },
+        "band": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The band across a band cover's field.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+              }
+            }
+          ],
+          "description": "The band across a band cover's field. (null: none)"
+        },
+        "waves": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The wave lines drawn over the field.",
+              "additionalProperties": false,
+              "properties": {
+                "style": {
+                  "enum": ["bands", "lines", "cover"],
+                  "description": "Translucent bands between the lines, the lines alone, or the cover's field edge."
+                },
+                "shift": {
+                  "type": "number",
+                  "minimum": -1,
+                  "maximum": 1,
+                  "description": "How far right of the cover art's position they are drawn, of the width."
+                },
+                "role": {"$ref": "#/$defs/role", "description": "Their color."},
+                "opacity": {
+                  "type": "array",
+                  "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "An opacity."},
+                  "description": "The bands' opacities, outer first."
+                },
+                "line": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "The lines' thickness, of the height."
+                }
+              }
+            }
+          ],
+          "description": "The wave lines drawn over the field. (null: none)"
+        },
+        "bar": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The feature slide's title bar.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "opacity": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "How opaque it is over the photo."
+                }
+              }
+            }
+          ],
+          "description": "The feature slide's title bar. (null: none)"
+        },
+        "panel": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The feature slide's body panel.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "opacity": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "How opaque it is over the photo."
+                }
+              }
+            }
+          ],
+          "description": "The feature slide's body panel. (null: none)"
+        },
+        "mark": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The brand mark.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+              }
+            }
+          ],
+          "description": "The brand mark. (null: none)"
+        },
+        "signoff": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The sign-off lockup.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+              }
+            }
+          ],
+          "description": "The sign-off lockup. (null: none)"
+        },
+        "column": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The text column: title, subtitle, date and the rest.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "anchor": {
+                  "enum": ["top", "middle"],
+                  "description": "Whether the text hangs from the column's top or is centered in it."
+                },
+                "align": {
+                  "enum": ["left", "center"],
+                  "description": "The text's alignment in the column (default left); a centered column centers its rule too."
+                },
+                "elements": {
+                  "type": "array",
+                  "items": {"enum": ["date", "title", "subtitle", "author", "institute"]},
+                  "uniqueItems": true,
+                  "description": "A cover's column: its elements in order (default date, title, subtitle, author, institute, less a boxed byline's); the title is always here, its tab and rule with it."
+                },
+                "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
+                "rule": {
+                  "oneOf": [
+                    {"type": "null"},
+                    {
+                      "type": "array",
+                      "items": {"type": "number", "minimum": 0, "maximum": 1, "description": "A fraction."},
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  ],
+                  "description": "The short rule under the title, [width of the slide's width, thickness of its height], or null for none."
+                }
+              }
+            }
+          ],
+          "description": "The text column: title, subtitle, date and the rest. (null: none)"
+        },
+        "byline": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "A cover's byline: elements in their own color (role) and, with a box, their own stack apart from the column.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {
+                  "$ref": "#/$defs/role",
+                  "description": "The role it is drawn in (default: the column's)."
+                },
+                "box": {
+                  "oneOf": [{"type": "null"}, {"$ref": "#/$defs/box"}],
+                  "description": "Where its stack sits; without one its elements stay in the column's flow, in the byline's color."
+                },
+                "anchor": {
+                  "enum": ["top", "middle"],
+                  "description": "Whether its stack hangs from the box's top (default) or is centered in it."
+                },
+                "align": {
+                  "enum": ["left", "center"],
+                  "description": "Its text's alignment (default: the column's)."
+                },
+                "elements": {
+                  "type": "array",
+                  "items": {"enum": ["date", "title", "subtitle", "author", "institute"]},
+                  "uniqueItems": true,
+                  "description": "Its elements in order (default author, institute, date); never the title."
+                }
+              }
+            }
+          ],
+          "description": "A cover's byline, apart from the title: author, institute, date by default. (null: none, every element in the column)"
+        },
+        "fineprint": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The cover's small print.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "anchor": {
+                  "enum": ["top", "bottom"],
+                  "description": "Whether the text hangs from the box's top or stands on its bottom."
+                }
+              }
+            }
+          ],
+          "description": "The cover's small print. (null: none)"
+        },
+        "eyebrow": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "The \"SECTION n\" label.",
+              "additionalProperties": false,
+              "properties": {
+                "label": {"type": "string", "description": "Its word."},
+                "color": {"$ref": "#/$defs/role-or-hex", "description": "Its color."}
+              }
+            }
+          ],
+          "description": "The \"SECTION n\" label. (null: none)"
         }
       }
     }

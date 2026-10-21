@@ -121,13 +121,17 @@ def facts(deck: Path) -> dict:
             "size": [round(Emu(prs.slide_width).inches, 3), round(Emu(prs.slide_height).inches, 3)]}
 
 
-def inspect(deck: Path, out: Path, media: Path | None = None):
-    """Write the report on the deck to out, and its pictures into media when given."""
+def inspect(deck: Path, out: Path | None = None, media: Path | None = None):
+    """Write the report on the deck to out (to stdout without one), and its pictures into media
+    when given."""
     prs = Presentation(str(deck))
     with zipfile.ZipFile(deck) as z:
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(report(deck, prs, z))
-        print(f"wrote {out}")
+        if out is None:
+            print(report(deck, prs, z))
+        else:
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(report(deck, prs, z))
+            print(f"wrote {out}")
         if media:
             media.mkdir(parents=True, exist_ok=True)
             for n in z.namelist():

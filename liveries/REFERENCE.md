@@ -32,6 +32,7 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `compositions` | object |  | Overrides of the composed slides' boxes and colors, by slide; every slide takes the parts of compositions.<name> below. |
 | `feature` | object |  | Feature (photo) slides. |
 | `frametitle` | object |  | Content slides' titles. |
+| `marking` | object |  | A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here. |
 | `installed-fonts` | object |  | A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}. |
 | `latex` | object |  | The LaTeX side. |
 | `pptx` | object |  | The PowerPoint template. |
@@ -131,9 +132,9 @@ Section slides.
 
 | key | type | default | |
 |---|---|---|---|
-| `label` | string | `"Section"` | The eyebrow's word over the heading, as "SECTION n" (each format sets it in capitals). |
+| `label` | string or null | `"Section"` | The eyebrow's word over the heading, as "SECTION n" (each format sets it in capitals); null: no eyebrow. |
 | `tab` | boolean | `true` | The accent tab beside the heading. |
-| `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex (HTML and PDF). |
+| `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex. |
 
 ### `art`
 
@@ -246,8 +247,130 @@ The parts of one composed slide; a part not named keeps the engine's value, null
 | `mark` | null or object |  | The brand mark. (null: none) |
 | `signoff` | null or object |  | The sign-off lockup. (null: none) |
 | `column` | null or object |  | The text column: title, subtitle, date and the rest. (null: none) |
+| `byline` | null or object |  | A cover's byline, apart from the title: author, institute, date by default. (null: none, every element in the column) |
 | `fineprint` | null or object |  | The cover's small print. (null: none) |
 | `eyebrow` | null or object |  | The "SECTION n" label. (null: none) |
+
+### `compositions.<name>.field`
+
+The colored field behind everything.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.photo`
+
+The deck's photo.
+
+| key | type | default | |
+|---|---|---|---|
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.band`
+
+The band across a band cover's field.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.waves`
+
+The wave lines drawn over the field.
+
+| key | type | default | |
+|---|---|---|---|
+| `style` | `bands` \| `lines` \| `cover` |  | Translucent bands between the lines, the lines alone, or the cover's field edge. |
+| `shift` | number |  | How far right of the cover art's position they are drawn, of the width. |
+| `role` | role |  | Their color. |
+| `opacity` | list of fractions |  | The bands' opacities, outer first. |
+| `line` | fraction |  | The lines' thickness, of the height. |
+
+### `compositions.<name>.bar`
+
+The feature slide's title bar.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `opacity` | fraction |  | How opaque it is over the photo. |
+
+### `compositions.<name>.panel`
+
+The feature slide's body panel.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `opacity` | fraction |  | How opaque it is over the photo. |
+
+### `compositions.<name>.mark`
+
+The brand mark.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.signoff`
+
+The sign-off lockup.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+
+### `compositions.<name>.column`
+
+The text column: title, subtitle, date and the rest.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `anchor` | `top` \| `middle` |  | Whether the text hangs from the column's top or is centered in it. |
+| `align` | `left` \| `center` |  | The text's alignment in the column (default left); a centered column centers its rule too. |
+| `elements` | list of `date` \| `title` \| `subtitle` \| `author` \| `institute` |  | A cover's column: its elements in order (default date, title, subtitle, author, institute, less a boxed byline's); the title is always here, its tab and rule with it. |
+| `tab` | boolean |  | The accent tab beside the heading. |
+| `rule` | null or list of 2 fractions |  | The short rule under the title, [width of the slide's width, thickness of its height], or null for none. |
+
+### `compositions.<name>.byline`
+
+A cover's byline: elements in their own color (role) and, with a box, their own stack apart from the column.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in (default: the column's). |
+| `box` | null or box |  | Where its stack sits; without one its elements stay in the column's flow, in the byline's color. |
+| `anchor` | `top` \| `middle` |  | Whether its stack hangs from the box's top (default) or is centered in it. |
+| `align` | `left` \| `center` |  | Its text's alignment (default: the column's). |
+| `elements` | list of `date` \| `title` \| `subtitle` \| `author` \| `institute` |  | Its elements in order (default author, institute, date); never the title. |
+
+### `compositions.<name>.fineprint`
+
+The cover's small print.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in. |
+| `box` | box |  | Where it sits. |
+| `anchor` | `top` \| `bottom` |  | Whether the text hangs from the box's top or stands on its bottom. |
+
+### `compositions.<name>.eyebrow`
+
+The "SECTION n" label.
+
+| key | type | default | |
+|---|---|---|---|
+| `label` | string |  | Its word. |
+| `color` | role or hex |  | Its color. |
 
 ### `feature`
 
@@ -266,6 +389,22 @@ Content slides' titles.
 | `align` | `left` \| `center` | `"left"` | The title's alignment in the room beside the mark. |
 | `tab` | boolean | `true` | The accent tab at the paper's edge beside the title. |
 | `rule` | boolean | `true` | The hairline under the title. |
+
+### `marking`
+
+A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here.
+
+| key | type | default | |
+|---|---|---|---|
+| `text` | string or null |  | The default text every deck under the livery shows (default: none, no strip). |
+| `edge` | `top` \| `bottom` | `"top"` | The edge it sits at. |
+| `offset` | fraction | `0.004` | Its distance from that edge. |
+| `width` | fraction | `0.8` | Its width, of the slide's width. |
+| `height` | fraction | `0.03` | Its height. |
+| `align` | `center` \| `left` \| `right` | `"center"` | Where it sits along the edge (left and right at the margin) and how its text aligns. |
+| `fill` | null or color or role |  | A fill behind it, a role, a palette name or a hex, to make it stand out (default: none). |
+| `color` | color or role |  | Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill). |
+| `bold` | boolean | `false` | Its text in bold. |
 
 ### `installed-fonts`
 
@@ -348,6 +487,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `eyebrow` | number | `11` | The "SECTION n" label over a section slide's heading. |
 | `closing` | number | `40` | The closing slide's headline. |
 | `pagenumber` | number | `9` | The page number. |
+| `marking` | number | `9` | The marking strip's text. |
 | `footer` | number | `9` | The footer line (footer=full). |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 

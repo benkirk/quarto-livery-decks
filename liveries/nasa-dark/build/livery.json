@@ -536,7 +536,9 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -585,7 +587,9 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -634,7 +638,9 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -692,7 +698,9 @@
         "opacity": 0.72,
         "role": "dark"
       },
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -733,7 +741,9 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
@@ -785,13 +795,22 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
           0.27,
           0.5,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -854,13 +873,22 @@
         "role": "primary"
       },
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "middle",
         "box": [
           0.06,
           0.27,
           0.52,
           0.45
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -922,13 +950,22 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
           0.27,
           0.5,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "foreground",
         "rule": [
@@ -983,13 +1020,22 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
           0.27,
           0.44,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -1051,13 +1097,22 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
+        "align": "left",
         "anchor": "top",
         "box": [
           0.06,
           0.27,
           0.44,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "foreground",
         "rule": [
@@ -1181,6 +1236,23 @@
       "dark": "meatball-rule",
       "light": "meatball"
     }
+  },
+  "marking": {
+    "align": "center",
+    "bold": false,
+    "box": [
+      0.1,
+      0.004,
+      0.8,
+      0.03
+    ],
+    "color": "#A3A7AD",
+    "edge": "top",
+    "fill": null,
+    "height": 0.03,
+    "offset": 0.004,
+    "text": null,
+    "width": 0.8
   },
   "marks": {
     "background": {
@@ -1338,6 +1410,11 @@
         "leading": 1.3,
         "pt": 12,
         "size": 1.0
+      },
+      "marking": {
+        "leading": 1.2,
+        "pt": 7,
+        "size": 0.5833
       },
       "pagenumber": {
         "leading": 1.2,

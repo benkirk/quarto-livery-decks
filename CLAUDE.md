@@ -14,7 +14,7 @@ Overleaf packer) was `benkirk/beamer-livery-theme` until 2026-10, when it merged
 history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
-`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`), built by `livery build`
+`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`, `nasa-jsc-eg`), built by `livery build`
 into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
 validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
 out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
@@ -47,7 +47,9 @@ The engine also holds the json reader (`livery.py`, also the command), the wave 
 flavor (`extends: cu`) on the band title style (`title: {style: band}`); `nasa` (NASA general,
 external communication; no official template, so the Brand Center's rules and NASA Science's
 public-engagement deck) and its flavor `nasa-dark` (content on black) are the first dark
-livery (see "Dark liveries" below). The reference decks themselves live on Drive or a laptop,
+livery (see "Dark liveries" below); `nasa-jsc-eg` (the JSC Aeroscience and Flight Mechanics
+Division's template) is `nasa-dark`'s flavor with the template's furniture as art rendered from its
+layouts (`reference/eg_art.py`) and a group's patch as a mark a group's own flavor swaps. The reference decks themselves live on Drive or a laptop,
 not in git. A livery without `pptx.fonts` embeds nothing (`embed_fonts.py` says so and leaves
 the deck alone); a livery without `art.waves` gets straight-edged title fields in every format.
 
@@ -156,7 +158,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   docs/other-repos.md "Building in GitHub Actions". Phase 2, a template repository, is #118.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
-  `toc` and the six pptx filters in order; a project's `reference-doc:` wins).
+  `toc` and the seven pptx filters in order; a project's `reference-doc:` wins).
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
   which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
@@ -165,8 +167,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
-  HTML theme) and `type_step` (a deck's `type-body:`/`type-scale:`) on one python-pptx
-  Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
+  HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
+  as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
+  python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
   that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a
@@ -242,7 +245,13 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   template builder's `field_layout()` (Title Slide, Title Slide (light), Section Header, Closing,
   Closing (light)), and `slide_layout.py`'s `draw_cover()` (the title photo, cropped into its
   box under the field and waves) and `draw_feature()`. Slide shapes always draw above layout
-  shapes, so a pptx cover redraws its field, waves and marks on the slide. **`make measure`**
+  shapes, so a pptx cover redraws its field, waves and marks on the slide. A cover's text is
+  parts, each a stack in a box: the column (`column.elements`, the title always its) and an
+  optional `byline` (`role`, `box`, `anchor`, `align`, `elements`: author, institute, date by
+  default), drawn by beamer's `\engine@textstack` in `\engine@pnode`, `title-slide.html`'s second
+  stack shown by the `--engine-cmp-<element>-*` properties, and `slide_layout.py`'s
+  `cover_byline()` (the institute's first appearance in the pptx); `column.align: center` centers
+  a composed slide's text and rule in all three. **`make measure`**
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
@@ -260,8 +269,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the formats fit and overflow alike; the post-processors read `livery.type_pt()` and scale their
   absolute pads by `livery.canvas_scale()`; `scale=` rounds a pptx size to the half point.
   A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>`
-  (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, last in the recipe,
-  reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
+  (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, after every step that
+  sets a size, reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
   since a dark livery's `dark` stays a field color; beamer mixes its tints toward
@@ -368,8 +377,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   In pptx the blue field, logo and waves are the template's Section Header
   layout, which `livery template` generates with the rest of the
   template from the livery's data (`make livery` after a livery change, never edit
-  `template.pptx` by hand); `section_subtitle.py` adds "SECTION n", the tab and
-  placement.
+  `template.pptx` by hand); `section_subtitle.py` adds "SECTION n" (none under
+  `section.label: null`), the tab and placement.
 - **Front matter must be line 1** of every deck `.qmd`: anything above the
   opening `---` (an editor mode-line, a comment) hides it from Quarto, and
   `date: last-modified` renders literally (#7). CI checks this; set editor
@@ -500,6 +509,8 @@ it does, by area, beyond the format notes above:
   placeholder and silently drops the text after it (the slide count doesn't
   change, so `make qa` can't see it). Content *after* `.columns` still splits,
   so put it inside the last column. Code blocks are text and never split.
+- **Two columns at most.** pandoc keeps the first two `.column`s of a pptx slide and drops the
+  rest, silently (HTML and PDF show them all); `columns-pptx.lua` warns with the slide's title.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves

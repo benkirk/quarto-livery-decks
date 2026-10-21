@@ -94,7 +94,8 @@ def today(L: dict) -> dict:
                "mark": mark(72 / H, logo["section-height"], "primary"), "signoff": signoff("primary"),
                "column": {"box": box(m, dv["top"], 0.62 * pad, 1 - dv["top"] - dv["bottom"]), "anchor": "middle",
                           "role": "primary-text", "tab": d.get("tab", True), "rule": None},
-               "eyebrow": {"label": d.get("label", "Section"), "color": d.get("label-color", "secondary")}}
+               "eyebrow": {"label": d.get("label", "Section"), "color": d.get("label-color", "secondary")}
+                          if d.get("label", "Section") else None}
     # feature: the h2 a 180px bar (flex-centred, padding 0 m), the body a 52% panel from 230px to the 70px padding
     feature = {**empty, "photo": {"box": box(0, 0, 1, 1)},
                "bar": {"role": "dark", "opacity": 0.72, "box": box(0, 0, 1, 180 / H)},
@@ -177,6 +178,12 @@ EXPECTED_DELTAS = {
                                 "decided": "ncar and its flavors: pptx's 0.375 (Ben, 2026-10-17); others under the mark"},
                                lambda c, L: L["name"] in NCAR_FAMILY and each(COVERS, lambda x, L: x["column"].update(
                                    box=[0.06, 0.375, 0.44 if x["photo"] else 0.50, 0.485]))(c, L)),
+    "column align": ({"pdf": "left", "html": "left", "pptx": "left",
+                      "decided": "left; column.align: center centers the text and its rule (2026-10-21)"},
+                     lambda c, L: [x["column"].setdefault("align", "left") for x in c.values() if x["column"]]),
+    "cover elements": ({"pdf": "date, title, subtitle, author, institute", "html": "the same", "pptx": "the same",
+                        "decided": "column.elements, less a boxed byline's (2026-10-21)"},
+                       lambda c, L: [c[k]["column"].setdefault("elements", list(lb.ELEMENTS)) for k in lb.COVERS]),
 }
 
 
@@ -242,6 +249,49 @@ def test_override_reaches_variants(tmp_path):
         "an override on title does not reach its variants"
     assert c["title-photo"]["fineprint"] is None and c["title-photo-light"]["fineprint"] is not None, \
         "an override on title-photo reaches beyond it"
+
+
+def test_section_label_null(tmp_path):
+    # section.label: null drops the eyebrow (each format then draws none); the label word is the livery's
+    L = flavor(tmp_path, "nolabel", "section: {label: null}\n")
+    assert L["compositions"]["section"]["eyebrow"] is None, "section.label: null keeps an eyebrow"
+    (tmp_path / "word").mkdir()   # flavor() links the parent into its directory: a fresh one
+    L = flavor(tmp_path / "word", "word", "section: {label: Part}\n")
+    assert L["compositions"]["section"]["eyebrow"]["label"] == "Part"
+
+
+def test_column_align(tmp_path):
+    # column.align: center on closing reaches closing-light; every other column stays left
+    L = flavor(tmp_path, "centered", "compositions:\n  closing: {column: {align: center}}\n")
+    c = L["compositions"]
+    assert c["closing"]["column"]["align"] == c["closing-light"]["column"]["align"] == "center"
+    assert all(x["column"]["align"] == "left" for k, x in c.items() if x["column"] and not k.startswith("closing-") and k != "closing")
+
+
+def test_byline(tmp_path):
+    # a boxed byline takes author, institute, date from the column; it reaches the title's variants,
+    # narrows beside the photo, and wears the foreground on the light covers
+    L = flavor(tmp_path, "byl", "compositions:\n  title: {byline: {role: background, box: [0.06, 0.7, 0.6, 0.2]}}\n")
+    c = L["compositions"]
+    for k in ("title", "title-photo", "title-light", "title-photo-light"):
+        assert c[k]["byline"]["elements"] == ["author", "institute", "date"], k
+        assert c[k]["column"]["elements"] == ["title", "subtitle"], k
+    assert c["title-photo"]["byline"]["box"][2] == 0.44 and c["title"]["byline"]["box"][2] == 0.6
+    assert c["title-light"]["byline"]["role"] == c["title-photo-light"]["byline"]["role"] == "foreground"
+    assert c["title"]["byline"]["anchor"] == "top" and c["closing"]["byline"] is None
+    # without a box, every element stays in the column (the byline only colors its own)
+    (tmp_path / "inline").mkdir()
+    L = flavor(tmp_path / "inline", "inline", "compositions:\n  title: {byline: {role: background}}\n")
+    assert L["compositions"]["title"]["column"]["elements"] == list(lb.ELEMENTS)
+
+
+def test_byline_rejects(tmp_path):
+    # the title stays in the column; a boxed element is in one part only
+    for i, bad in enumerate(("{byline: {box: [0, 0.7, 0.5, 0.2], elements: [title]}}",
+                             "{column: {elements: [title, author]}, byline: {box: [0, 0.7, 0.5, 0.2]}}")):
+        (tmp_path / str(i)).mkdir()
+        with pytest.raises(SystemExit):
+            flavor(tmp_path / str(i), f"bad{i}", f"compositions:\n  title: {bad}\n")
 
 
 def test_flavor_band_from_own_knobs(tmp_path):

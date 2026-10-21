@@ -1,0 +1,113 @@
+{
+  "text-color": "#E6E8EB",
+  "background-color": "#1C2026",
+  "line-number-color": "#959595",
+  "line-number-background-color": null,
+  "text-styles": {
+    "Keyword": {
+      "text-color": "#297DE0",
+      "bold": true
+    },
+    "ControlFlow": {
+      "text-color": "#297DE0",
+      "bold": true
+    },
+    "DataType": {
+      "text-color": "#FFFFFF"
+    },
+    "BuiltIn": {
+      "text-color": "#FFFFFF"
+    },
+    "Function": {
+      "text-color": "#FFFFFF",
+      "bold": true
+    },
+    "Operator": {
+      "text-color": "#E6E8EB"
+    },
+    "DecVal": {
+      "text-color": "#FCDB00"
+    },
+    "BaseN": {
+      "text-color": "#FCDB00"
+    },
+    "Float": {
+      "text-color": "#FCDB00"
+    },
+    "Constant": {
+      "text-color": "#FCDB00"
+    },
+    "Char": {
+      "text-color": "#FCDB00"
+    },
+    "SpecialChar": {
+      "text-color": "#FCDB00"
+    },
+    "String": {
+      "text-color": "#FCDB00"
+    },
+    "VerbatimString": {
+      "text-color": "#FCDB00"
+    },
+    "SpecialString": {
+      "text-color": "#FCDB00"
+    },
+    "Import": {
+      "text-color": "#297DE0"
+    },
+    "Preprocessor": {
+      "text-color": "#297DE0"
+    },
+    "Attribute": {
+      "text-color": "#FFFFFF"
+    },
+    "Variable": {
+      "text-color": "#E6E8EB"
+    },
+    "Extension": {
+      "text-color": "#E6E8EB"
+    },
+    "Other": {
+      "text-color": "#FFFFFF"
+    },
+    "Comment": {
+      "text-color": "#959595",
+      "italic": true
+    },
+    "Documentation": {
+      "text-color": "#959595",
+      "italic": true
+    },
+    "Annotation": {
+      "text-color": "#959595",
+      "italic": true,
+      "bold": true
+    },
+    "CommentVar": {
+      "text-color": "#959595",
+      "italic": true,
+      "bold": true
+    },
+    "Information": {
+      "text-color": "#959595",
+      "italic": true,
+      "bold": true
+    },
+    "Warning": {
+      "text-color": "#FF4458",
+      "italic": true,
+      "bold": true
+    },
+    "Alert": {
+      "text-color": "#FF4458",
+      "bold": true
+    },
+    "Error": {
+      "text-color": "#FF4458",
+      "bold": true
+    },
+    "RegionMarker": {
+      "text-color": "#959595"
+    }
+  }
+}

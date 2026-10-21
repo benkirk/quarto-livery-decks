@@ -57,3 +57,9 @@ Window mode starts from the newest entry's end commit.
 - The six Lua functions that share a name across the two format filters with format-specific
   bodies (`take_layout`, `wrap_layout`, `unwrap_layout`, `hoist_footnotes`, `split_full`,
   `size_plots`): a consolidate candidate if their bodies converge; read before touching.
+- Two idioms for a color knob that takes a role or a hex (#123's review): `section.label-color`
+  (`$defs/role-or-hex`) stays as written in `livery.json` and each drawer resolves it
+  (`section_subtitle._eyebrow_hex`, `comp_measure.py`'s eyebrow mask, `emit_css`'s `role()`);
+  `marking.fill`/`color` (`$defs/color-or-role`) are resolved to hex once by
+  `livery_build.marking()`, so every drawer reads a hex. One should win; build-time resolution
+  is the simpler one for the drawers.

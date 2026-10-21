@@ -1,0 +1,144 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
+# Engine knobs for NASA JSC EG (the Aeroscience and Flight Mechanics Division), dark: nasa-dark on
+# the EG PowerPoint template's canvas, type and furniture. The template draws its starfield, title
+# band, cover band and photo, and the division patch at fixed places, so they are art here, rendered
+# from its layouts (reference/eg_art.py); the insignia, the division bar, the agency name and a
+# group's patch are marks. reference/notes.md has the decisions and what the engine cannot do yet.
+name: nasa-jsc-eg
+extends: nasa-dark
+
+roles:
+  foreground: white             # body text and titles: the template's; eg-light-gray is the fainter option
+  primary-text: white
+  primary-contrast: eg-blue     # links on black
+  accent: eg-red
+  highlight: eg-yellow
+  muted: eg-gray
+  warning: eg-orange
+
+blends:
+  rule: eg-light-gray           # the white hairline under content titles
+
+signoff:                  # the division bar along the foot of content slides (1565 x 60 px)
+  light: eg-footer
+  dark: eg-footer
+  aspect: 26.0833
+  height: 0.054
+  bottom: 0.009
+  corner: bottom-left
+
+marks:                    # by field role: content slides, the cover (dark), the closing and dividers
+  background: {logo: meatball, signoff: eg-footer}          # (surface, under their art)
+  dark: {logo: meatball, signoff: group-patch}
+  surface: {logo: meatball, signoff: nasa-name-2line}
+
+geometry:
+  margin: 0.028           # the template's text inset from the slide's edge
+  logo:
+    corner: top-right
+    height: 0.129
+    top: 0.034
+    inset: 0.014
+    title-height: 0.129
+    section-height: 0.129
+    closing-height: 0.129
+  pagenumber:
+    corner: bottom-right
+
+section:
+  tab: false
+  label: null             # the template's dividers have no "SECTION n"
+
+marking:                  # the template's marking placeholder: a strip at the top edge. A deck's
+  text: "This presentation contains no sensitive information; but if it did, here's where the disclaimer would go"
+  width: 0.777            # own `marking:` replaces this demo text (CUI and the like), `marking: none` drops it
+  height: 0.028
+  offset: 0.004
+  fill: eg-violet         # the cover photo's regolith, so the strip stands out on the starfield
+  color: white
+  bold: true
+
+frametitle:
+  align: left
+  tab: false
+  rule: true
+
+art:
+  title: art/title.jpg      # the cover: starfield, the yellow band, the lab photo, the division patch
+  content: art/content.jpg  # starfield, the title band, the glow behind the insignia
+  closing: art/closing.jpg  # starfield, the division patch centered, the rule beside the insignia
+  section: art/closing.jpg  # the template's dividers are its closing layout ("Backup")
+  titlegraphic: art/title.jpg   # the cover again, as the photo a deck may replace (not nasa's Earth limb)
+
+compositions:             # boxes [x, y, w, h], fractions of the slide, from the template's layouts
+  title:
+    art: title
+    field: {role: dark}
+    mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: dark, box: [0.2717, 0.086, 0.2578, 0.3437]}   # the group patch, slide 1's box
+    column: {role: dark, box: [0.039, 0.43, 0.77, 0.21], anchor: middle, tab: false, rule: null}   # title and
+    byline: {role: foreground, box: [0.039, 0.68, 0.70, 0.27]}   # subtitle on the band under the patches;
+    fineprint: {role: foreground}                                # author, institute, date below it
+  title-photo:            # the cover art is the default title photo, full-bleed (art.titlegraphic):
+    photo: {box: [0, 0, 1, 1]}           # a deck's own titlegraphic replaces all of it
+    field: null                          # nothing over the photo
+    column: {box: [0.039, 0.43, 0.77, 0.21]}
+    byline: {box: [0.039, 0.68, 0.70, 0.27]}   # as wide as on the plain cover (a photo cover narrows it)
+  closing:
+    art: closing
+    field: {role: surface}
+    mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
+    column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
+  section:
+    art: section
+    field: {role: surface}
+    mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
+    column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
+
+installed-fonts:          # Arial itself where the machine has it (HTML; PDF under fonts=brand)
+  base: &arial
+    family: Arial
+    faces:
+      regular: [Arial, ArialMT]
+      bold: [Arial Bold, Arial-BoldMT]
+      italic: [Arial Italic, Arial-ItalicMT]
+      bolditalic: [Arial Bold Italic, Arial-BoldItalicMT]
+  headings: *arial
+
+pptx:
+  template: template.pptx
+  typeface: Arial
+  heading-typeface: Arial
+  size: [13.333, 7.5]       # the template's canvas
+  scheme:
+    hlink: eg-blue
+    folHlink: eg-purple
+
+type:                     # points on that canvas
+  body: 16                # the portable share (the template's master says 20; reference/notes.md)
+  levels: [16, 15, 13, 12, 11]
+  frametitle: 32          # the template's
+  title: 36
+  subtitle: 20            # on the band, under the title
+  author: 20              # the byline below the band (the template's lines are 24, set to fit)
+  institute: 20
+  date: 16
+  closing: 36
+  section: 36
+  sectionsubtitle: 24
+  pagenumber: 12
+  footer: 12
+  marking: 13             # the template's 16 does not fit its strip's height in one line
+
+charts:                   # nasa-dark's (HDS) on black, with the template's yellow for the orange: the
+  dark:                   # third series and the second of every small set; the orange takes HDS's
+    categorical: ["#256EE4", "#EF483F", eg-yellow, "#487682", "#C2B47C", "#609AF6", "#FA8C87", "#79A3AD", "#794BE4", "#F29D49", "#4B9609", "#0CC9AC"]
+  sets:                   # own yellow's slot (10th), so no two yellows. Light slides keep HDS's: the
+    dark:                 # yellow reads 1.4:1 on white
+      2: ["#256EE4", eg-yellow]
+      3: ["#256EE4", eg-yellow, "#0CC9AC"]
+      4: ["#256EE4", eg-yellow, "#0CC9AC", "#4B9609"]
+      5: ["#256EE4", eg-yellow, "#0CC9AC", "#4B9609", "#C2B47C"]

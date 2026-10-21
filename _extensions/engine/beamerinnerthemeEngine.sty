@@ -10,6 +10,14 @@
 \mode<presentation>
 \@ifpackageloaded{engine_livery}{}{\RequirePackage{engine_livery}}
 \RequirePackage{tikz}
+\RequirePackage{etoolbox}
+% beamer's [shrink] ({.shrink}) sets the frame body in a pgf \pgftext, which under XeLaTeX
+% (pgfsys-dvipdfmx.def) resets the color to black: put the body's color back, or a dark livery's
+% shrunk slide is black on black (and a light one's text black, not the brand's)
+\patchcmd\beamer@shrinkframebox
+  {\pgftext[left,top]{\box\beamer@framebox}}
+  {\pgftext[left,top]{\usebeamercolor[fg]{normal text}\box\beamer@framebox}}
+  {}{\PackageWarning{beamerinnerthemeEngine}{could not patch \string\beamer@shrinkframebox}}
 \providecommand\engine@titlestyle{dark}
 \@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
 
@@ -24,6 +32,11 @@
      \vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
     \hskip\dimexpr\beamer@leftmargin-\engine@tabwidth\relax
     \box#1}}
+% the composition column's text alignment (column.align: left | center; \engine@calignof{<comp>}
+% where \engine@comp is not set, as in the closing's body)
+\def\engine@calignof#1{\engine@ifcorner{\csname engine@c@#1@column@align\endcsname}{center}{\centering}{\raggedright}}
+\providecommand\engine@comp{}   % set by \engine@drawcomp; empty: left
+\def\engine@calign{\engine@calignof\engine@comp}
 % \engine@ctab{<box>}: the same beside a composition's column (\engine@bx from the paper's
 % edge), when the column has a tab
 \def\engine@ctab#1{\engine@ifcorner{\engine@cv{column@tab}}{true}{%
@@ -40,25 +53,46 @@
 \defbeamertemplate*{title page}{Engine}{%
   \gdef\engine@bodystyle{title}%
   \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
-% the title's stack, \engine@bw wide: date, title and subtitle with the tab, the rule, author, institute
-\def\engine@titlestack{%
-  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+% a cover's text parts (livery.json compositions: column.elements, byline): \engine@textstack{<part>}
+% walks the part's elements in order, \engine@bw wide. The title carries the tab and the rule, and the
+% subtitle with it when the part holds both; a byline's elements are its own stack in its box, or,
+% without one (byline@inline), stay in the column's flow in the byline's color. The default order
+% (date, title, subtitle, author, institute) sets exactly what the single stack set before.
+\def\engine@has#1#2{\edef\engine@tmpl{\noexpand\in@{,#1,}{,#2,}}\engine@tmpl}
+\def\engine@palign#1{\engine@ifcorner{\csname engine@c@\engine@comp @#1@align\endcsname}{center}{\centering}{\raggedright}}
+\def\engine@elcolor#1{\def\engine@tmpp{column}\ifx\engine@part\engine@tmpp
+  \engine@ifc{byline@inline}{\engine@has{#1}{\engine@cv{byline@inline}}\ifin@\color{\engine@ccolor{Byline}}\fi}{}\fi}
+\def\engine@flush{\engine@pending\let\engine@pending\@empty}
+\def\engine@el@date{\ifx\insertdate\@empty\else
+  \ifx\engine@started\@empty\else\vskip0.02\paperheight\fi   % after other lines (a byline's last)
+  \engine@flush{\engine@elcolor{date}\usebeamerfont{date}\MakeUppercase{\insertdate}\par}%
+  \def\engine@pending{\vskip0.02\paperheight}\def\engine@started{1}\fi}
+\def\engine@el@title{\engine@flush
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@palign\engine@part
     {\usebeamerfont{title}\inserttitle\par}%
-    \ifx\insertsubtitle\@empty\else
-      \vskip0.5em{\usebeamerfont{subtitle}\insertsubtitle\par}%
-    \fi}%
-  \vbox{\hsize=\engine@bw \raggedright
-    \ifx\insertdate\@empty\else
-      {\usebeamerfont{date}\MakeUppercase{\insertdate}\par}\vskip0.02\paperheight
-    \fi
-    \engine@ctab\@tempboxa
-    \vskip0.03\paperheight
-    \engine@ifc{column@rule@w}{%
-      {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
-        height\engine@cv{column@rule@h}\paperheight}\par
-      \vskip0.03\paperheight}{}%
-    \ifx\insertauthor\@empty\else{\usebeamerfont{author}\insertauthor\par}\fi
-    \ifx\insertinstitute\@empty\else{\usebeamerfont{institute}\insertinstitute\par}\fi}}
+    \engine@has{subtitle}{\engine@els}\ifin@\ifx\insertsubtitle\@empty\else
+      \vskip0.5em{\engine@elcolor{subtitle}\usebeamerfont{subtitle}\insertsubtitle\par}%
+    \fi\fi}%
+  \engine@ctab\@tempboxa
+  \vskip0.03\paperheight
+  \engine@ifc{column@rule@w}{%
+    {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
+      height\engine@cv{column@rule@h}\paperheight}\par
+    \vskip0.03\paperheight}{}\def\engine@started{1}}
+\def\engine@el@subtitle{\engine@has{title}{\engine@els}\ifin@\else   % with the title: in its box
+  \ifx\insertsubtitle\@empty\else\engine@flush
+    {\engine@elcolor{subtitle}\usebeamerfont{subtitle}\insertsubtitle\par}\def\engine@started{1}\fi\fi}
+\def\engine@el@author{\ifx\insertauthor\@empty\else\engine@flush
+  {\engine@elcolor{author}\usebeamerfont{author}\insertauthor\par}\def\engine@started{1}\fi}
+\def\engine@el@institute{\ifx\insertinstitute\@empty\else\engine@flush
+  {\engine@elcolor{institute}\usebeamerfont{institute}\insertinstitute\par}\def\engine@started{1}\fi}
+\def\engine@textstack#1{\def\engine@part{#1}%
+  \engine@ifc{#1@elements}{\edef\engine@els{\engine@cv{#1@elements}}}{\def\engine@els{date,title,subtitle,author,institute}}%
+  \let\engine@pending\@empty\let\engine@started\@empty
+  \vbox{\hsize=\engine@bw \engine@palign{#1}%
+    \@for\engine@el:=\engine@els\do{\csname engine@el@\engine@el\endcsname}%
+    \engine@pending}}
+\def\engine@titlestack{\engine@textstack{column}}
 % keep the title frame free of frame numbering by default
 \def\engine@titlepageframe{%
   {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}
@@ -74,21 +108,22 @@
 \defbeamertemplate*{section page}{Engine}{%
   \gdef\engine@bodystyle{section}%
   \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
-% the divider's stack, in its column: the eyebrow, the heading and its subtitle, with the tab
+% the divider's stack, in its column: the eyebrow (none when section.label is null), the heading
+% and its subtitle, with the tab
 \def\engine@sectionstack{%
-  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
-    \ifnum\thesection>0
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
+    \engine@ifc{eyebrow@label}{\ifnum\thesection>0
       {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
         \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
-    \fi
+    \fi}{}%
     {\usebeamerfont{section title}\insertsectionhead\par}%
     \ifx\engine@sectionsubtitle\@empty\else
       \vskip1.2ex
       {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
     \fi}%
   \engine@ctab\@tempboxa}
-\def\insertsectionnumberlabel{\sectionname~\insertsectionnumber}
-\providecommand\sectionname{Section}
+% the livery's word (section.label), as HTML and pptx set it
+\def\insertsectionnumberlabel{\engine@cv{eyebrow@label}~\insertsectionnumber}
 \defbeamertemplate*{subsection page}{Engine}{%
   \vbox{\raggedright
     {\usebeamerfont{section number}\usebeamercolor[fg]{structure}%
@@ -121,10 +156,10 @@
   \gdef\engine@closinghead{#1}%
   \global\setbox\engine@closingbody=\vbox{%
     \hsize=\csname engine@c@\engine@closingcomp @column@w\endcsname\paperwidth
-    \raggedright\usebeamerfont{normal text}#2\par}%
+    \engine@calignof\engine@closingcomp\usebeamerfont{normal text}#2\par}%
   \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
 \def\engine@closingstack{%
-  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
     \usebeamerfont{section title}\engine@closinghead\par}%
   \vbox{\hsize=\engine@bw
     \engine@ctab\@tempboxa
@@ -210,17 +245,17 @@
   \setbeamertemplate{#1 end}{\par\vskip0.6ex}}
 \def\endenginefeaturepanel{\par\egroup}
 % the bar's title, centred on it: the frame title and subtitle
-\def\engine@featuretitle{\vbox{\hsize=\engine@bw \raggedright
+\def\engine@featuretitle{\vbox{\hsize=\engine@bw \engine@calign
   {\usebeamerfont{frametitle}\insertframetitle\par}%
   \ifx\insertframesubtitle\@empty\else
     \vskip0.3ex{\usebeamerfont{framesubtitle}\color{BrandSecondary}\insertframesubtitle\par}\fi}}
 % the cover's stack: the title with its tab, the subtitle, the rule, then the body
 \def\engine@featurestack{%
-  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \raggedright
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
     {\usebeamerfont{frametitle}\insertframetitle\par}%
     \ifx\insertframesubtitle\@empty\else
       \vskip0.5ex{\usebeamerfont{framesubtitle}\insertframesubtitle\par}\fi}%
-  \vbox{\hsize=\engine@bw \raggedright
+  \vbox{\hsize=\engine@bw \engine@calign
     \engine@ctab\@tempboxa
     \engine@ifc{column@rule@w}{\vskip0.03\paperheight
       {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth

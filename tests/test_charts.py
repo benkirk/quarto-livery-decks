@@ -75,7 +75,7 @@ def test_livery_charts(livery: Path):
         swap = lambda p: [p[2], p[1], p[0]] + p[3:]
         assert ch["light"]["categorical"] == swap(SAM_LIGHT) and ch["dark"]["categorical"] == swap(SAM_DARK), \
             f"{d.name}: UCAR Aqua does not lead the sam-queries set"
-    if d.name in ("nasa", "nasa-dark"):
+    if d.name in ("nasa", "nasa-dark", "nasa-jsc-eg"):   # nasa-jsc-eg inherits HDS
         assert ch["light"]["categorical"][:3] == HDS_LIGHT_HEAD and len(ch["light"]["categorical"]) == 12, \
             f"{d.name}: not HDS's 12 categorical colors"
         assert len(ch["light"]["sequential"]) == 11 and all(len(r) == 10 for r in ch["light"]["sequential"].values()), \

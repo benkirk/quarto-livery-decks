@@ -220,7 +220,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--extends", metavar="NAME", help="make a flavor of the livery NAME beside it")
     p = sub.add_parser("inspect", help="report on a reference deck")
     p.add_argument("deck", type=Path)
-    p.add_argument("-o", "--output", type=Path, default=Path("report.md"))
+    p.add_argument("-o", "--output", type=Path, help="write the report here (default: stdout)")
     p.add_argument("--media", type=Path, metavar="DIR", help="extract the deck's pictures into DIR")
     p = sub.add_parser("build", help="write build/ from _brand.yml and livery.yml")
     p.add_argument("dirs", nargs="+", type=Path)
@@ -270,9 +270,12 @@ def main(argv: list[str] | None = None) -> int:
         import livery_build
         import livery_template
         for d in a.dirs:
+            first = not (d / "template.pptx").exists()
             if livery_build.build([d], template_note=False):   # the template comes next
                 return 1
             livery_template.write(d)
+            if first:   # a new flavor's build named its parent's template; now it has its own
+                livery_build.build([d], template_note=False)
         return check_cmd(a.dirs, None, a.qa, a.verbose)
     elif a.cmd == "zip":
         if a.charts:

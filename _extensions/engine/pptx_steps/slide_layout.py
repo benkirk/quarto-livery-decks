@@ -36,12 +36,13 @@ from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_PLACEHOLDER
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
+from pptx.text.text import _Run
 from pptx.util import Pt
 
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
-from . import measure, style_footnotes, style_tables
+from . import docprops, measure, style_footnotes, style_tables
 
 LIVERY    = livery_mod.load()
 MARKER    = "engine-layout:"
@@ -372,20 +373,10 @@ def full_slide(slide, width, height):
     return True
 
 
-def _custom_prop(prs, name):
-    """A metadata string pandoc recorded in docProps/custom.xml, or None."""
-    for part in prs.part.package.iter_parts():
-        if str(part.partname) == "/docProps/custom.xml":
-            for prop in etree.fromstring(part.blob):
-                if prop.get("name") == name:
-                    return "".join(prop.itertext()).strip() or None
-    return None
-
-
 def _title_graphic(prs, deck_dir):
     """The deck's `titlegraphic:` path from docProps/custom.xml, None without one, or "none"
     when the deck asks for the plain cover (`titlegraphic: none`)."""
-    value = _custom_prop(prs, "titlegraphic")
+    value = docprops.prop(prs, "titlegraphic")
     return "none" if value == "none" else deck_dir / value if value else None
 
 
@@ -526,7 +517,7 @@ def draw_cover(slide, width, height, photo, comp):
     x, y, w, h = comp["photo"]["box"]
     _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Photo"
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
-    slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]]
+    slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]] if comp["field"] else "tx2"   # field: null draws none
     shapes = pptx_waves.comp_shapes(WAVES and WAVES["lines"], comp, sid, width, height, field_slot=slot,
                                     line_slot=pptx_waves.ROLE_SLOT[comp["waves"]["role"]] if comp["waves"] else "accent1")
     for i, xml in enumerate(shapes):
@@ -551,12 +542,111 @@ def title_cover(slide, width, height, photo):
         tree.append(copy.deepcopy(sp._element))
 
 
+def cover_byline(prs, slide, comp, width, height):
+    """A cover's byline (compositions: byline) in the pptx. pandoc puts the subtitle and the authors
+    in one paragraph of the subtitle placeholder, a blank line between them, the date in the date
+    placeholder, and drops the institute (slide-layout.lua records the authors and institutes).
+    With a box, the byline's elements become one text box in it (its order, the type roles' sizes,
+    its role, alignment and anchor), and the placeholders keep only the column's elements; without
+    one, the byline's runs are recolored where pandoc put them."""
+    by = comp.get("byline")
+    if not by:
+        return
+    ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
+    date, sub = ph.get(PP_PLACEHOLDER.DATE), ph.get(PP_PLACEHOLDER.SUBTITLE)
+    subtitle = docprops.prop(prs, "subtitle") or ""
+    color = RGBColor.from_string(livery_mod.color(LIVERY, by["role"]))
+    if not by["box"]:
+        _recolor_byline(date, sub, by["elements"], bool(subtitle), color)
+        return
+    authors = docprops.prop(prs, "engine-author") or prs.core_properties.author or ""
+    lines = {"date": [date.text_frame.text.strip()] if date is not None and date.text_frame.text.strip() else [],
+             "subtitle": [subtitle] if subtitle else [],
+             "author": [a for a in authors.split("\n") if a.strip()],
+             "institute": [i for i in (docprops.prop(prs, "engine-institute") or "").split("\n") if i.strip()]}
+    x, y, w, h = by["box"]
+    box = slide.shapes.add_textbox(int(x * width), int(y * height), int(w * width), int(h * height))
+    box.name = "Byline"
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE if by["anchor"] == "middle" else MSO_ANCHOR.TOP
+    first = True
+    for e in by["elements"]:   # as HTML sets them: the date in bold capitals, subtitle and author bold
+        for text in lines[e]:
+            p = tf.paragraphs[0] if first else tf.add_paragraph()
+            p.alignment = PP_ALIGN.CENTER if by["align"] == "center" else PP_ALIGN.LEFT
+            if e == "date" and not first:
+                p.space_before = int(0.02 * height)
+            r = p.add_run()
+            r.text = text
+            r.font.size = Pt(livery_mod.type_pt(LIVERY, e))
+            r.font.bold = e in ("date", "subtitle", "author")
+            r.font.color.rgb = color
+            if e == "date":
+                r.font._rPr.set("cap", "all")
+            first = False
+    keep = comp["column"]["elements"]
+    if date is not None and "date" not in keep:
+        date._element.getparent().remove(date._element)
+    if sub is not None:
+        parts = ([subtitle] if subtitle and "subtitle" in keep else []) + (["\v".join(lines["author"])] if "author" in keep and lines["author"] else [])
+        if parts:
+            sub.text_frame.text = "\v\v".join(parts)
+        else:
+            sub._element.getparent().remove(sub._element)
+
+
+def _recolor_byline(date, sub, els, has_subtitle, color):
+    """A box-less byline: its elements' runs in its color, where pandoc put them (the subtitle's
+    runs before the blank line, the authors' after it, or all of them without a subtitle)."""
+    if date is not None and "date" in els:
+        for p in date.text_frame.paragraphs:
+            for r in p.runs:
+                r.font.color.rgb = color
+    if sub is None:
+        return
+    for p in sub.text_frame.paragraphs:
+        part, brs = "subtitle" if has_subtitle else "author", 0
+        for el in p._p:
+            if el.tag == qn("a:br"):
+                brs += 1
+                if brs == 2:
+                    part = "author"
+            elif el.tag == qn("a:r"):
+                brs = 0
+                if part in els:
+                    _Run(el, p).font.color.rgb = color
+
+
+def closing_top(slide, width, height, comp):
+    """A closing column anchored at its top (column.anchor: top): the headline hangs from the
+    column's top at its measured height, the body right under it, as HTML and PDF flow them (the
+    layout can only split the column at a fixed place). A middle-anchored column is left alone."""
+    col = comp["column"]
+    if BAND or col["anchor"] != "top":
+        return
+    title = slide.shapes.title
+    body = next((s for s in slide.placeholders if s.placeholder_format.idx == 1), None)
+    if title is None:
+        return
+    x, y, w, h = col["box"]
+    X, Y, W, Hh = int(x * width), int(y * height), int(w * width), int(h * height)
+    title.left, title.top, title.width, title.height = X, Y, W, Hh   # all four: a placeholder inherits its frame
+    size = _size(title.text_frame.paragraphs[0], title, slide) if title.text_frame.paragraphs else Pt(36)
+    title.height = min(Hh, _text_height(title, slide, measure.TITLE, 700))
+    if body is not None:
+        top = title.top + title.height + int(0.4 * size)   # the h2's margin-bottom, 0.4em
+        body.left, body.top, body.width, body.height = X, top, W, max(Pt(12), Y + Hh - top)
+
+
 def _left(shape):
-    """A feature title sits at the left of its composition's column, whatever frametitle.align
-    gives the content titles (the layout's title style); a no-op for a left-aligned livery."""
-    if LIVERY.get("frametitle", {}).get("align") == "center":
+    """A feature title takes its composition column's alignment (column.align), whatever
+    frametitle.align gives the content titles (the layout's title style); a no-op when they agree."""
+    want = COMP["feature"]["column"].get("align", "left")
+    if LIVERY.get("frametitle", {}).get("align", "left") != want:
         for p in shape.text_frame.paragraphs:
-            p.alignment = PP_ALIGN.LEFT
+            p.alignment = PP_ALIGN.CENTER if want == "center" else PP_ALIGN.LEFT
 
 
 def _text(shape, color, pt=None):
@@ -651,7 +741,7 @@ def run(prs, pptx: Path) -> None:
     """The open deck, changed in place; pptx its path (a titlegraphic: is relative to its directory)."""
     w, h = prs.slide_width, prs.slide_height
     done = 0
-    light = _custom_prop(prs, "engine-title") == "light"
+    light = docprops.prop(prs, "engine-title") == "light"
     if light and BAND:
         print("slide_layout: WARNING: themeoptions title=light is ignored under the livery's band title", file=sys.stderr)
         light = False
@@ -675,6 +765,7 @@ def run(prs, pptx: Path) -> None:
         if words and "closing" in words:
             if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
                 words.remove("closing")
+                closing_top(slide, w, h, COMP["closing-light" if light else "closing"])
             else:
                 print("slide_layout: WARNING: {.closing} slide, but the template has no Closing layout", file=sys.stderr)
     numbered = sum(add_slide_number(slide) for slide in prs.slides)
@@ -705,4 +796,7 @@ def run(prs, pptx: Path) -> None:
         done += 1
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
         band_stack(prs.slides[0], w, h)
+    if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
+        cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
+        cover_byline(prs, prs.slides[0], COMP[cover], w, h)
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")

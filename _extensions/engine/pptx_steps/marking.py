@@ -1,0 +1,51 @@
+"""The marking strip (livery.yml marking:) on every slide of a deck.
+
+Its text is the deck's `marking:` (pandoc records the string in docProps/custom.xml; `none` turns
+the livery's default off), else the livery's `marking.text`; none, no strip. A text box in the
+livery's box, over everything on the slide: no insets, the text centered on its height in the
+type role's size, its color and weight, a solid fill behind it when the livery names one. The
+template has no placeholder for it (pandoc fills none it does not know)."""
+
+from pptx.dml.color import RGBColor
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.util import Pt
+
+import livery as livery_mod
+
+from . import docprops
+
+LIVERY = livery_mod.load()
+MARKING = LIVERY.get("marking") or {}
+ALIGN = {"center": PP_ALIGN.CENTER, "left": PP_ALIGN.LEFT, "right": PP_ALIGN.RIGHT}
+
+
+def _hex(value: str) -> str:
+    """A hex's six digits (livery_build.marking() resolved the roles)."""
+    return value.lstrip("#").upper()
+
+
+def run(prs, name: str) -> None:
+    deck = docprops.prop(prs, "marking")
+    text = None if deck == "none" else deck or MARKING.get("text")
+    if not text or not MARKING.get("box"):
+        return
+    x, y, w, h = MARKING["box"]
+    W, H = prs.slide_width, prs.slide_height
+    for slide in prs.slides:
+        box = slide.shapes.add_textbox(int(x * W), int(y * H), int(w * W), int(h * H))
+        box.name = "Marking"
+        if MARKING.get("fill"):
+            box.fill.solid()
+            box.fill.fore_color.rgb = RGBColor.from_string(_hex(MARKING["fill"]))
+        tf = box.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p = tf.paragraphs[0]
+        p.alignment = ALIGN[MARKING.get("align", "center")]
+        r = p.add_run()
+        r.text = text
+        r.font.size = Pt(livery_mod.type_pt(LIVERY, "marking"))
+        r.font.color.rgb = RGBColor.from_string(_hex(MARKING.get("color", "muted")))
+        r.font.bold = bool(MARKING.get("bold"))
+    print(f"marking: the marking strip on {len(prs.slides)} slide(s) → {name}")

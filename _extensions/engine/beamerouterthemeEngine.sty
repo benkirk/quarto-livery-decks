@@ -299,14 +299,18 @@
     {\includegraphics[height=\engine@bh]{\engine@cv{#1@img}}};}{}}
 % \engine@cnode{<stack>}: the text column, its stack (a \vbox \engine@bw wide; no text width, which
 % would set it as a paragraph) from the top or centred by the column's anchor
-\def\engine@cnode#1{\engine@box{column}%
-  \engine@ifcorner{\engine@cv{column@anchor}}{middle}%
-    {\node[anchor=west,inner sep=0pt,text=\engine@ccolor{Text}]
-       at (\engine@bx,\engine@by+0.5\engine@bh) {#1};}%
-    {\node[anchor=north west,inner sep=0pt,text=\engine@ccolor{Text}]
-       at (\engine@bx,\engine@by+\engine@bh) {#1};}}
-% the stacks (beamerinnerthemeEngine.sty): the title's with its fineprint, the section's, the closing's
-\def\engine@ctext@title{\engine@cnode{\engine@titlestack}\engine@cfineprint}
+\def\engine@cnode{\engine@pnode{column}{Text}}
+% \engine@pnode{<part>}{<color suffix>}{<stack>}: a text part (the column, a cover's byline) in its box
+\def\engine@pnode#1#2#3{\engine@box{#1}%
+  \engine@ifcorner{\engine@cv{#1@anchor}}{middle}%
+    {\node[anchor=west,inner sep=0pt,text=\engine@ccolor{#2}]
+       at (\engine@bx,\engine@by+0.5\engine@bh) {#3};}%
+    {\node[anchor=north west,inner sep=0pt,text=\engine@ccolor{#2}]
+       at (\engine@bx,\engine@by+\engine@bh) {#3};}}
+% the stacks (beamerinnerthemeEngine.sty): the title's (its column, then a boxed byline) with its
+% fineprint, the section's, the closing's
+\def\engine@ctext@title{\engine@cnode{\engine@titlestack}%
+  \engine@ifc{byline@x}{\engine@pnode{byline}{Byline}{\engine@textstack{byline}}}{}\engine@cfineprint}
 \def\engine@ctext@section{\engine@cnode{\engine@sectionstack}}
 \def\engine@ctext@closing{\engine@cnode{\engine@closingstack}}
 % the feature: the frame title in the column (centred on the bar, or the cover's stack) and the
@@ -357,7 +361,21 @@
     \engine@ifstyle{section}{\engine@drawcomp{section}{section}}{}%
     \engine@ifstyle{feature}{\engine@drawcomp{feature}{feature}}{}%
     \engine@ifstyle{full}{\engine@drawfullbg}{}%
+    \engine@drawmarking
   \end{tikzpicture}}
+
+% the marking strip (livery.yml marking:), on every frame, over everything: the deck's text
+% (\enginemarkingtext, from engine-beamer.lua's marking:; empty for `none`), else the livery's default
+\providecommand\engine@marking@default{}
+\def\engine@drawmarking{%
+  \ifdefined\enginemarkingtext\let\engine@mk\enginemarkingtext\else\let\engine@mk\engine@marking@default\fi
+  \ifx\engine@mk\@empty\else\@ifundefined{engine@marking@x}{}{%
+    \engine@bw=\engine@marking@w\paperwidth \engine@bh=\engine@marking@h\paperheight
+    \engine@bx=\engine@marking@x\paperwidth
+    \engine@by=\dimexpr\paperheight-\engine@marking@y\paperheight-\engine@bh\relax
+    \@ifundefined{engine@marking@fill}{}{\fill[EngineMarkingFill] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}%
+    \node[anchor=center,inner sep=0pt,text width=\engine@bw,align=\engine@marking@align,
+      font={\engine@fs{marking}\selectfont\@ifundefined{engine@marking@bold}{}{\bfseries}},text=EngineMarkingText] at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};}\fi}
 
 % full frame: the image contained (never cropped) between a thin margin and
 % the footline, with the caption line, if any, just above the footline
@@ -367,7 +385,7 @@
   \engine@fullfloor=\engine@geom@fullfootline\paperheight
   \ifx\engine@fullcaption\@empty\else
     \node[anchor=south,inner sep=0pt,text width=0.8\paperwidth,align=center,
-      font=\engine@fs{caption},text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
+      font={\engine@fs{caption}\selectfont},text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
     \advance\engine@fullfloor \engine@geom@fullcaption\paperheight
   \fi
   \node[anchor=center,inner sep=0pt]

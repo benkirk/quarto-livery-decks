@@ -67,6 +67,24 @@ def test_flavor_own_accent_wins(scaffolds):
     assert red["roles"]["accent"] == "#C8102E", "the flavor's own accent did not win"
 
 
+def test_inspect_prints_without_o(tmp_path):
+    r = run("inspect", ROOT / "liveries" / "nasa" / "template.pptx", cwd=tmp_path)
+    assert r.returncode == 0 and "# Reference deck" in r.stdout, "inspect without -o did not print the report"
+    assert not list(tmp_path.iterdir()), "inspect without -o wrote a file"
+
+
+def test_flavor_first_all_passes(tmp_path):
+    # a flavor of a parent naming its own pptx.template (nasa-dark, of nasa), with --from: its first
+    # `all` passes every check (the build once named the parent's template), and the report is written
+    for name in ("nasa", "nasa-dark"):
+        (tmp_path / name).symlink_to(ROOT / "liveries" / name)
+    r = run("new", tmp_path / "fl", "--extends", "nasa-dark", "--from", ROOT / "liveries" / "nasa" / "template.pptx")
+    assert r.returncode == 0, r.stderr
+    assert (tmp_path / "fl" / "reference" / "report.md").exists(), "new --from --extends wrote no report"
+    r = run("all", tmp_path / "fl")
+    assert r.returncode == 0 and "FAIL" not in r.stdout, f"a new flavor's first all: {r.stdout.strip()[-400:]}"
+
+
 def test_new_refuses_nonempty(scaffolds):
     t, _ = scaffolds
     assert run("new", t / "plain").returncode != 0, "new on a non-empty directory succeeded"

@@ -17,6 +17,50 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- A `{.shrink}` slide keeps its text color in the PDF. Beamer's shrink box reset it to black,
+  so a dark livery's shrunk slide (the quickstart's equations) was black on black, and a light
+  livery's shrunk text black instead of the brand's.
+- A marking strip on every slide (`marking: "CUI"` in the front matter), in every format, for a
+  restriction or distribution marking: the livery places and colors it, and may set default text
+  (`marking: none` turns that off). nasa-jsc-eg shows a demo where its template has the strip.
+- pptx: a closing slide or divider whose column hangs from its top (`anchor: top`) does so, as in
+  HTML and PDF: the closing's body follows its measured headline, a divider's block starts at the
+  column's top. Both were centered on the column before, whatever the anchor.
+- A section divider can go without its "SECTION n" label (`section.label: null`) in every
+  format; the PDF stopped on it before, and the pptx ignored it. The PDF now sets the livery's
+  label word (it always said "Section"), and the pptx its label color.
+
+- PDF: a `{.full}` slide's caption is set at the caption size; it was the body's (the node's
+  font never selected the size).
+
+- pptx: a slide of more than two columns warns at render time, naming the slide: pandoc's pptx
+  keeps the first two and dropped the rest without a word (HTML and PDF show them all).
+
+### Liveries
+- The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
+  <parent>` keeps the deck's report too; a new flavor's first `all` passes its checks (its build
+  had named the parent's template).
+- `marking:` (`edge`, `offset`, `width`, `height`, `align`, `fill` and `color`, each a role or a
+  hex, `bold`, `text`) and
+  `type.marking`: the marking strip's look and a default text.
+- A cover's text in two parts: `compositions.title.byline` (`role`, `box`, `anchor`, `align`,
+  `elements`) takes the author, institute and date (by default) apart from the title and subtitle,
+  in its own color and, with a box, its own stack; `column.elements` orders the column's. Without a
+  byline every cover is as before. The pptx draws the byline as a text box, the institute
+  included (pandoc's pptx never showed it).
+- `compositions.<name>.column.align: center` centers a composed slide's text (the closing's
+  "Thank you!", a divider, the cover, the feature title) and its rule, in every format. Each
+  composition part's keys now have their own table in `liveries/REFERENCE.md`.
+- `section.label: null` drops the divider's eyebrow in every format;
+  `section.label-color` now reaches the pptx too.
+- `nasa-jsc-eg`: the NASA JSC Aeroscience and Flight Mechanics Division's template, dark, a
+  flavor of `nasa-dark`: a starfield behind every slide, the division bar along the foot, the
+  cover's yellow band, lab photo and the division's and a group's patches (the title on the band,
+  the byline below it), the closing's centered patch and text, the template's marking strip with
+  demo text, Arial (Liberation Sans standing in). A group in the division puts its own patch on
+  the cover with a one-key flavor (`liveries/nasa-jsc-eg/reference/notes.md`).
+
 ## [26.10.6] - 2026-10-20
 
 ### Decks
