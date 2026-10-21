@@ -342,6 +342,42 @@ local function card_rows(blocks)
   return out
 end
 
+-- Status items (C.status_lists()): a list holding one becomes beamer's itemize, each status item's
+-- glyph its \item[...] label (where the bullet is, as HTML's and the pptx's), bold in its status
+-- color (livery.sty's EngineStatus*), a failed item's text muted; the other items keep the bullet.
+local STATUS_TEX = { done = "EngineStatusDone", warn = "EngineStatusWarn", fail = "EngineStatusFail" }
+
+local function status_items(blocks)
+  return C.status_lists(blocks, function(l, kinds)
+    local out = pandoc.Blocks({ latex("\\begin{itemize}") })
+    for k, item in ipairs(l.content) do
+      local kind, blocks2 = kinds[k], pandoc.Blocks(item)
+      local first = blocks2[1]
+      if kind then
+        local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\item[{\\textcolor{" .. STATUS_TEX[kind] .. "}{\\bfseries "
+          .. first.content[1].text .. "}}] ") })
+        local rest = pandoc.Inlines({})
+        for j = 3, #first.content do rest:insert(first.content[j]) end
+        if kind == "fail" then
+          il:insert(pandoc.RawInline("latex", "\\textcolor{BrandMuted}{")); il:extend(rest); il:insert(pandoc.RawInline("latex", "}"))
+        else
+          il:extend(rest)
+        end
+        blocks2[1] = pandoc.Plain(il)
+      elseif first and (first.t == "Plain" or first.t == "Para") then
+        local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\item ") })
+        il:extend(first.content)
+        blocks2[1] = pandoc.Plain(il)
+      else
+        blocks2:insert(1, latex("\\item"))
+      end
+      out:extend(blocks2)
+    end
+    out:insert(latex("\\end{itemize}"))
+    return out
+  end)
+end
+
 -- A .strip: \begin{enginestrip}{<role color>} round its blocks, its source lines each a paragraph
 local function strips(blocks)
   return blocks:walk({ Div = function(d)
@@ -806,7 +842,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(note_frames(unwrap_layout(hoist_footnotes(out))))))))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))))))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

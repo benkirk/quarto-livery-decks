@@ -32,11 +32,13 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 
 from .columns import rules
-from .slide_layout import BOXES, GEOM, LIVERY, _is_body, _text_height, pads
+from .slide_layout import BODY_PT, BOXES, GEOM, LIVERY, _is_body, _text_height, pads
 
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big)⟧")   # a card's lines (grid-pptx.lua)
 SLACK = 1.1   # measured height x this: autofit stays idle (as caution_box)
+CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
+BODY_GAP = 0.5 * BODY_PT * CARD_GAP   # pt: the template's space before a body paragraph is half the body
 
 
 def _text(p):
@@ -234,6 +236,24 @@ def _shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_on
     return r
 
 
+def _close(p):
+    """A card paragraph's space before: CARD_GAP of the master body's (a:spcBef), as HTML's card lines
+    and beamer's sit close; type_step scales it with the sizes."""
+    ppr = p.find(qn("a:pPr"))
+    if ppr is None:
+        ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
+    for old in ppr.findall(qn("a:spcBef")):
+        ppr.remove(old)
+    bef = etree.Element(qn("a:spcBef"))
+    etree.SubElement(bef, qn("a:spcPts")).set("val", str(round(BODY_GAP * 100)))
+    ln = ppr.find(qn("a:lnSpc"))
+    ln.addnext(bef) if ln is not None else ppr.insert(0, bef)
+
+
+def _card_height(tb, slide):
+    return int(_text_height(tb, slide, gap=Pt(BODY_GAP)))
+
+
 def _card_text(paras, solid):
     """A card's paragraphs, their prefix markers taken off and styled: (head, body) lists. The band's
     title in the subhead size, bold, and its sub in the body size, both primary-text; a label in the
@@ -246,6 +266,7 @@ def _card_text(paras, solid):
             body.append((p[0], p[1], _card_text(p[2], solid)[1]))
             continue
         kind = _prefix(p)
+        _close(p)
         if kind == "title":
             _style(p, livery_mod.type_pt(LIVERY, "subhead"), True, on_role); head.append(p)
         elif kind == "sub":
@@ -280,7 +301,7 @@ def draw_strip(slide, x, y, w, room, paras, role, solid, name):
     if solid:
         for p in paras:
             _style(p, color=_hex("primary-text"))
-    tb.height = min(int(_text_height(tb, slide)), room)
+    tb.height = min(_card_height(tb, slide), room)
     fill = _hex(role) if solid else livery_mod.mix(_hex(role), _hex("background"), BOXES["strip"]["tint"])
     return tb, rect(slide, x, y, w, tb.height, fill, name, behind=tb)
 
@@ -319,7 +340,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
                 tb = body_box(slide, x, y, w, room, run, f"Card {n_col} body" + (f" {len(parts) + 1}" if parts else ""))
                 tb.text_frame.margin_top = tb.text_frame.margin_bottom = bv
                 tb.text_frame.margin_left = tb.text_frame.margin_right = bh
-                parts.append(("text", tb, None, int(_text_height(tb, slide))))
+                parts.append(("text", tb, None, _card_height(tb, slide)))
             run = []
         for it in items:
             if isinstance(it, tuple):
@@ -332,10 +353,10 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         if run or not parts or parts[-1][0] == "strip":
             text_part()
         first = hb if hb is not None else parts[0][1]
-        head_h = int(_text_height(hb, slide)) if hb is not None else 0
-        body_h = sum(int(h * (SLACK if kind == "text" else 1)) for kind, _, _, h in parts)
+        head_h = _card_height(hb, slide) if hb is not None else 0
+        body_h = sum(h for _, _, _, h in parts)   # measured, no slack: the last part runs to the foot
         cards.append(dict(attrs=attrs, x=x, w=w, n=n_col, hb=hb, parts=parts, first=first, head_h=head_h, h=head_h + body_h))
-    total = min(max(c["h"] for c in cards if "plain" not in c), room)
+    total = min(int(max(c["h"] for c in cards if "plain" not in c) * SLACK), room)   # the slack once, at the foot
     for c in cards:
         if "plain" in c:
             c["plain"].top, c["plain"].height = y, total
@@ -352,7 +373,6 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             hb.top, hb.height = y, head_h
         cy = y + head_h
         for i, (kind, tb, r, h) in enumerate(c["parts"]):
-            h = int(h * SLACK) if kind == "text" else h
             if i == len(c["parts"]) - 1 and kind == "text":   # the last text runs to the card's foot
                 h = max(y + total - cy, 0)
             tb.top, tb.height = cy, h

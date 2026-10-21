@@ -194,8 +194,66 @@ local function card_attrs(col)
   return c
 end
 
+-- Status items: in a .card or a ::: {.status} list, `- [x]` (pandoc's ☒), `- [!]` and `- [-]` are
+-- done, warn and fail; a literal ✓ ⚠ ✗ first in an item is one anywhere. `- [ ]` (☐) stays a task
+-- list's unchecked box: an unchecked task is not a failure.
+local MARKED = { ["☒"] = "done", ["[!]"] = "warn", ["[-]"] = "fail" }
+local LITERAL = { ["✓"] = "done", ["⚠"] = "warn", ["✗"] = "fail" }
+local GLYPHS = { done = "✓", warn = "⚠", fail = "✗" }
+
+-- status_item(item, marked): an item's (a list of blocks) status, "done" | "warn" | "fail", and the
+-- item with its leading glyph normalized to the glyph's Str (✓ ⚠ ✗, no variation selector) and a
+-- Space; nil when it is not one. marked: inside a card or a .status list, where [x] [!] [-] count.
+local function status_item(item, marked)
+  local first = item[1]
+  if not first or (first.t ~= "Plain" and first.t ~= "Para") then return nil end
+  local x = first.content[1]
+  if not x or x.t ~= "Str" then return nil end
+  local t = x.text:gsub("\u{FE0E}", ""):gsub("\u{FE0F}", "")
+  local kind = LITERAL[t] or (marked and MARKED[t])
+  if not kind then return nil end
+  local il = first.content:clone()
+  il[1] = pandoc.Str(GLYPHS[kind])
+  if il[2] and il[2].t ~= "Space" then il:insert(2, pandoc.Space()) end
+  local out = pandoc.List(item):clone()
+  out[1] = first.t == "Para" and pandoc.Para(il) or pandoc.Plain(il)
+  return kind, out
+end
+
+-- Every bullet list's status items normalized (status_item()), marked ones inside a card column or
+-- a .status div; fn(list, kinds) then returns the list as a format draws it (kinds: the items'
+-- statuses, nil for a plain item), or nil to keep it.
+local function status_lists(blocks, fn)
+  local function lists(bs, marked)
+    return bs:walk({ BulletList = function(l)
+      local kinds, any = {}, false
+      for k, item in ipairs(l.content) do
+        local kind, norm = status_item(item, marked)
+        if kind then l.content[k], kinds[k], any = norm, kind, true end
+      end
+      if any then return fn(l, kinds) end
+      return nil
+    end })
+  end
+  return blocks:walk({ Div = function(d)
+    if has_class(d, "status") or (has_class(d, "column") and has_class(d, "card")) then
+      d.content = lists(d.content, true)
+      return d
+    end
+    return nil
+  end }):walk({ BulletList = function(l)   -- literal glyphs anywhere
+    local kinds, any = {}, false
+    for k, item in ipairs(l.content) do
+      local kind, norm = status_item(item, false)
+      if kind then l.content[k], kinds[k], any = norm, kind, true end
+    end
+    if any then return fn(l, kinds) end
+    return nil
+  end })
+end
+
 return {
-  has_class = has_class, column_shares = column_shares, is_grid = is_grid, split_lines = split_lines,
+  has_class = has_class, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
   lone_span = lone_span, card_attrs = card_attrs, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, is_figure = is_figure,
   is_note = is_note,

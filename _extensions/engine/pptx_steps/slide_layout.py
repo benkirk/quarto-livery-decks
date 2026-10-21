@@ -168,15 +168,15 @@ def _lines(p, family, size, width, weight=None):
     return measure.runs_lines(_pieces(p, family, size, weight), width / measure.PX)
 
 
-def _text_height(shape, slide, family=measure.BODY, weight=None):
+def _text_height(shape, slide, family=measure.BODY, weight=None, gap=None):
     """The text's height: each paragraph's lines measured in the livery's face, one LINE per line
-    plus a little paragraph spacing."""
+    plus a little paragraph spacing (gap, EMU; the body's 6 pt on the default canvas)."""
     tf = shape.text_frame
     width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
         size = _size(p, shape, slide)
-        total += int(_lines(p, family, size, width, weight) * size * LINE) + Pt(6 * K)
+        total += int(_lines(p, family, size, width, weight) * size * LINE) + (Pt(6 * K) if gap is None else gap)
     return total
 
 

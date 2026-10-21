@@ -261,6 +261,26 @@ local function strips(blocks)
   end })
 end
 
+-- Status items (C.status_lists()): the glyph a span of its status (⚠ with U+FE0E: no emoji), which
+-- the scss sets where the bullet was (the bullet dropped), a failed item's text a span it mutes
+local function status_items(blocks)
+  return C.status_lists(blocks, function(l, kinds)
+    for k, item in ipairs(l.content) do
+      local kind = kinds[k]
+      if kind then
+        local first = item[1]
+        local glyph = first.content[1].text .. (kind == "warn" and "\u{FE0E}" or "")
+        local il = pandoc.Inlines({ pandoc.Span({ pandoc.Str(glyph) }, pandoc.Attr("", { "engine-status-" .. kind })) })
+        local rest = pandoc.Inlines({})
+        for j = 3, #first.content do rest:insert(first.content[j]) end
+        if kind == "fail" then il:insert(pandoc.Span(rest, pandoc.Attr("", { "engine-status-text" }))) else il:extend(rest) end
+        first.content = il
+      end
+    end
+    return l
+  end)
+end
+
 -- A .lead box: raw tags round its blocks (a Div whose first block is a heading becomes a <section>),
 -- its source lines each a paragraph (C.split_lines()); the scss draws it from livery.css's boxes
 local function lead_boxes(blocks)
@@ -694,7 +714,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(doc.blocks))))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks)))))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

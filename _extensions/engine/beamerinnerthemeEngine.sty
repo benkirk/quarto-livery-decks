@@ -388,8 +388,9 @@
 \newbox\engine@cardboxiv \newbox\engine@cardboxv \newbox\engine@cardboxvi
 \def\engine@cardbox#1{\csname engine@cardbox\romannumeral#1\endcsname}
 \def\engine@labelcolor{BrandMuted}\def\engine@bigcolor{BrandPrimaryContrast}
-\newcommand\enginelabel[1]{{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}}}
-\newcommand\enginebig[1]{{\usebeamerfont{display}\color{\engine@bigcolor}#1}}
+% (each its own paragraph, ended inside the font's group: the line takes the font's leading)
+\newcommand\enginelabel[1]{{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}\par}}
+\newcommand\enginebig[1]{{\usebeamerfont{display}\color{\engine@bigcolor}#1\par}}
 \newenvironment{enginecards}{\par\global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
   {\engine@drawcards\par}
 \def\engine@cardval#1{\csname engine@card@#1@\the\engine@ncards\endcsname}
@@ -413,7 +414,7 @@
   \edef\engine@outerparskip{\the\parskip}%
   \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
     \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
-    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % HTML's card lines sit close
     \engine@incardtrue\in@{solid}{#1}\ifin@\engine@solidcardtrue\else\engine@solidcardfalse\fi
     \raggedright\usebeamerfont{normal text}%
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put

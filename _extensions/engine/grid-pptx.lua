@@ -149,6 +149,9 @@ local function mark(blocks, title)
 end
 
 function Pandoc(doc)
+  -- status items (C.status_lists()): the glyph a Str of its own, first in its item, for
+  -- pptx_steps/status_glyphs.py to color; before the cards are flattened (it reads the card divs)
+  doc.blocks = C.status_lists(doc.blocks, function(l) return l end)
   local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
   if level == 0 then level = 2 end
   local out, slide, title = pandoc.Blocks({}), pandoc.Blocks({}), "(before the first slide)"

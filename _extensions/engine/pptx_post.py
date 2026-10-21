@@ -21,7 +21,7 @@ from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
     columns, embed_fonts, enable_autofit, grid, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
-    style_footnotes, style_tables, svg_fallback, type_step)
+    status_glyphs, style_footnotes, style_tables, svg_fallback, type_step)
 
 
 def post(path: Path) -> None:
@@ -54,6 +54,7 @@ def post(path: Path) -> None:
     slide_layout.run(prs, path.resolve())   # layout classes, covers, closings, slide numbers
     columns.run(prs, path.name)             # a two-column slide's widths and gap (grid-pptx.lua's line)
     grid.run(prs, path.name)                # a grid slide (3+ columns) drawn from grid-pptx.lua's markers
+    status_glyphs.run(prs, path.name)       # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
     style_tables.run(prs, path.name)
     marking.run(prs, path.name)             # the marking strip, on every slide
     type_step.run(prs, path)                # a deck's type-body:/type-scale:
