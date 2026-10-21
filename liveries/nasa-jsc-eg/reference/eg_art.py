@@ -3,6 +3,7 @@ usage: python3 -I eg_art.py <NASA-EG-template.pptx> <livery dir>
 
 The art is the template's own layouts, rendered by LibreOffice with their placeholders and the
 marks the engine draws itself taken out: the cover (EG - Title Slide, less the insignia), the
+light cover (EG - Title Slide- Light, less the insignia), the
 content slides (EG - Title & Content, less the insignia, the division bar and the title rule) and
 the closing (EG - Closing, less the insignia and the agency name). The sample talk's slides are
 dropped before anything is written, so none of their content reaches the livery."""
@@ -16,6 +17,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 SRC, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 ART = {   # art name: (layout name, shapes the engine draws instead)
     "title": ("EG - Title Slide", {"Picture 9"}),                                  # the insignia
+    "title-light": ("EG - Title Slide- Light", {"Picture 7"}),                     # the insignia
     "content": ("EG - Title & Content", {"Picture 4", "Picture 11", "Straight Connector 6"}),
     "closing": ("EG - Closing", {"Picture 8", "Picture 2"}),                       # insignia, name
 }

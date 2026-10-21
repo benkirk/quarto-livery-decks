@@ -118,6 +118,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   names it (nasa-jsc-eg: Courier New); HTML and PDF keep `typography.monospace`.
 - `art.title-light`: a picture covering the light cover's field (`themeoptions: [title=light]`),
   in every format; without it the light cover has none, as before.
+- nasa-jsc-eg's light title (`themeoptions: [title=light]`) is its template's light cover: the
+  band, lab photo and patches on white, the text black.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 

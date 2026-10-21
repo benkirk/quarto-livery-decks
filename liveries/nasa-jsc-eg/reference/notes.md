@@ -20,6 +20,9 @@ the marks the engine draws itself; LibreOffice renders; 1920 x 1080 JPEG):
   composition). `art.titlegraphic` is `null`, unsetting nasa's Earth limb; a deck's own
   `titlegraphic:` is drawn full-bleed with no field over it (`compositions.title-photo`: the
   photo's box the slide, `field: null`), replacing the whole cover art.
+- `art/title-light.jpg` (EG - Title Slide- Light, less the insignia): the cover on white, for
+  `themeoptions: [title=light]` (`art.title-light`); `compositions.title-light` sets its title,
+  byline and fine print in `dark`, since a dark livery's light variant would set them white.
 - `art/closing.jpg` (EG - Closing): the starfield, the division patch centered, the rule between
   the agency name and the insignia. Section slides wear it too: the template's divider ("Backup")
   is its closing layout.
@@ -117,10 +120,9 @@ a label, `field: null` on a photo cover, the marking strip; then marks by image 
 `art.titlegraphic: null`, the template's square, dash and dot bullets (`bullets:`), Courier New for
 the pptx's code (`pptx.code-typeface`), the hairline between columns (`boxes.columns.rule`),
 column widths in the pptx and three or more columns there, and the template's card look
-(`boxes.card`: the surface fill, an eg-green outline on a picked card). Still open:
+(`boxes.card`: the surface fill, an eg-green outline on a picked card), and the template's light
+cover (`art.title-light`). Still open:
 
-- **The light cover's art**: the engine takes `art.title-light` now; rendering the template's
-  "EG - Title Slide- Light" with `eg_art.py` needs the reference deck (on Ben's laptop).
 - **Pictures and tables in cards and in slides of three or more columns** are not drawn in their
   column in the pptx yet (the render warns).
 

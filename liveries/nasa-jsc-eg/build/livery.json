@@ -4,6 +4,7 @@
     "content": "art/content.jpg",
     "section": "art/closing.jpg",
     "title": "art/title.jpg",
+    "title-light": "art/title-light.jpg",
     "titlegraphic": null
   },
   "blends": {
@@ -1039,7 +1040,7 @@
       "waves": null
     },
     "title-light": {
-      "art": null,
+      "art": "title-light",
       "band": null,
       "bar": null,
       "byline": {
@@ -1056,7 +1057,7 @@
           "institute",
           "date"
         ],
-        "role": "foreground"
+        "role": "dark"
       },
       "column": {
         "align": "left",
@@ -1071,7 +1072,7 @@
           "title",
           "subtitle"
         ],
-        "role": "foreground",
+        "role": "dark",
         "rule": null,
         "tab": false
       },
@@ -1093,7 +1094,7 @@
           0.5,
           0.1
         ],
-        "role": "foreground"
+        "role": "dark"
       },
       "mark": {
         "box": [

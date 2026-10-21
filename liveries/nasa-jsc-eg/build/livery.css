@@ -449,7 +449,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-fineprint-r: 755.2px;
   --engine-cmp-fineprint-b: 36px;
   --engine-cmp-field: var(--engine-background);
-  --engine-cmp-text: var(--engine-foreground);
+  --engine-cmp-text: var(--engine-dark);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: none;
   --engine-cmp-column-align: left;
@@ -457,33 +457,33 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-date-col: none;
   --engine-cmp-date-byl: block;
   --engine-cmp-date-order: 2;
-  --engine-cmp-date-color: var(--engine-foreground);
+  --engine-cmp-date-color: var(--engine-dark);
   --engine-cmp-title-col: block;
   --engine-cmp-title-byl: none;
   --engine-cmp-title-order: 0;
-  --engine-cmp-title-color: var(--engine-foreground);
+  --engine-cmp-title-color: var(--engine-dark);
   --engine-cmp-subtitle-col: block;
   --engine-cmp-subtitle-byl: none;
   --engine-cmp-subtitle-order: 1;
-  --engine-cmp-subtitle-color: var(--engine-foreground);
+  --engine-cmp-subtitle-color: var(--engine-dark);
   --engine-cmp-author-col: none;
   --engine-cmp-author-byl: block;
   --engine-cmp-author-order: 0;
-  --engine-cmp-author-color: var(--engine-foreground);
+  --engine-cmp-author-color: var(--engine-dark);
   --engine-cmp-institute-col: none;
   --engine-cmp-institute-byl: block;
   --engine-cmp-institute-order: 0;
-  --engine-cmp-institute-color: var(--engine-foreground);
+  --engine-cmp-institute-color: var(--engine-dark);
   --engine-cmp-rule-order: 1;
   --engine-cmp-byline-justify: flex-start;
   --engine-cmp-byline-align: left;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
-  --engine-cmp-fineprint-color: var(--engine-foreground);
+  --engine-cmp-fineprint-color: var(--engine-dark);
   --engine-cmp-fineprint-justify: flex-end;
   --engine-cmp-eyebrow-display: none;
-  background: none;
+  background: url("title-light.jpg") center / cover no-repeat;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("meatball.png"); }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block .engine-signoff { background-image: url("group-patch.png"); }
