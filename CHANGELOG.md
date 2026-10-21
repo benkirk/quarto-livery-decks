@@ -34,8 +34,46 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - PDF: a `{.full}` slide's caption is set at the caption size; it was the body's (the node's
   font never selected the size).
 
-- pptx: a slide of more than two columns warns at render time, naming the slide: pandoc's pptx
-  keeps the first two and dropped the rest without a word (HTML and PDF show them all).
+- pptx: a slide of three or more columns shows them all, at the same widths and gap as HTML and
+  PDF (pandoc's pptx kept the first two and dropped the rest without a word). A picture or table
+  in such a column is not drawn in it yet: the render warns, naming the slide.
+- A `{.caution}` slide's bar and pads, and a feature slide's panel pads, are the same in every
+  format: the livery's `boxes:`, HTML's numbers. The pptx bar is a little thinner (ncar 4.5 to
+  3.6 pt) and its pads follow the body type; the PDF bar is thinner (3 to 2.3 pt) and its text
+  sits 0.9 em from the sides, as HTML's (0.55 em before), so a long caution line can wrap sooner.
+- Columns are laid out alike in every format: each its `width=` share of the text width less the
+  livery's gap (a column without a width shares what is left equally). pptx two-column slides
+  take their widths (pandoc wrote two halves), a picture or table in a column moving with it;
+  HTML columns get the gap in place of Quarto's small side margins; PDF columns keep to the text
+  width (they reached into the margins).
+- `{.wide}` on a slide's heading widens its body to the slide less a narrower margin
+  (`geometry.wide-margin`), in every format: room for three or four columns, or a wide table.
+- A rule between columns where the livery sets `boxes.columns.rule` (nasa-jsc-eg's hairline), in
+  every format, centered in each gap and as tall as the row's tallest column.
+- PDF: a cover whose field is the whole slide shows its photo, as HTML and pptx do; the field was
+  painted over it (#125). Covers with a partial field (ncar, cu, nsi) are unchanged.
+- PDF: a slide's body starts at the top, under its title, as in HTML and pptx; beamer centered
+  it vertically. `{.vcenter}` (or `{.center}`) still centers a slide in every format.
+- A lead box, `::: {.lead}`, before a slide's columns or alone: its lines on the livery's lead
+  fill with an accent bar at its left, in every format (pptx: native shapes and a text box). In a
+  lead each source line is a line: a bold headline over a plain line needs no blank line.
+- Cards: `::: {.column .card}` with a `###` title and an optional `[...]{.sub}` line draws a head
+  band over a body, in its `role=` or else the livery's `boxes.card.roles` by its place in the row
+  (primary, secondary, accent), so a row's cards differ; `.pick` outlines the chosen card, `.solid`
+  fills the whole card with the role; `[LOCAL INVESTMENT]{.label}` and `[$20M]{.big}` are a small
+  caps label and a big number. A row's cards are one height, in every format; pptx draws them as
+  native shapes and text boxes, editable in PowerPoint, each card (and a lead box, a strip) one
+  group: a click selects the card, a second its text. A picture or table in a card is not drawn
+  in it yet (a warning; the PDF draws a row with a table as plain columns).
+- A strip, `::: {.strip role="accent"}`, in a card or on its own: a band tinted in its role
+  (`boxes.strip.tint` over the background) at the card's full width; on a solid card the role
+  itself. Every format.
+- Status items: in a card or a `::: {.status}` list, `- [x]`, `- [!]` and `- [-]` show ✓, ⚠ and ✗
+  in the livery's status colors (`boxes.status`), where the bullet was, a failed item's text
+  muted; a literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays a task list's box.
+- The sample deck shows each of these (a 2/3 and 1/3 split, three plain columns, four on a wide
+  slide, option cards with a lead, a strip and status items, solid cards), and the quickstart a
+  card slide, in the README. docs/authoring.md "Columns" and "Cards and lead boxes".
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
@@ -60,6 +98,34 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the byline below it), the closing's centered patch and text, the template's marking strip with
   demo text, Arial (Liberation Sans standing in). A group in the division puts its own patch on
   the cover with a one-key flavor (`liveries/nasa-jsc-eg/reference/notes.md`).
+- `boxes:`: one set of numbers for the columns and boxes every format draws (`columns`,
+  `caution`, `panel`, `lead`, `card`, `strip`, `status`): gaps, bars, outlines and radii as
+  fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A
+  livery sets only what differs (`liveries/REFERENCE.md`); ncar rounds its cards' corners and
+  keeps its status glyphs off yellow, nasa-jsc-eg rules its columns. `type.display`: the size of
+  a card's big number (default as the closing's headline).
+- `bullets:` (`glyphs`, one per list level, the last repeating; `color`, a role, a palette name or
+  a hex): a livery's own list glyphs in every format, in place of the dot, ring and bar. Without
+  it nothing changes. nasa-jsc-eg uses its template's white square, dash and dot.
+- `compositions.<name>.mark.image` and `.signoff.image` (a `logo.images` name) put a given
+  image on one composed slide, in place of its field role's; a light variant keeps it. nasa-jsc-eg
+  names its group patch and the NASA wordmark this way; its light title and closing showed the
+  division bar in the patch's box.
+- A flavor unsets an inherited `art` picture (`art: {titlegraphic: null}`) or code face
+  (`typography: {monospace: null}` in its `_brand.yml`) with `null`. nasa-jsc-eg's cover no
+  longer doubles as its default title photo: it is the title composition's art.
+- `pptx.code-typeface`: the font the pptx sets code in, an installed face as a brand template
+  names it (nasa-jsc-eg: Courier New); HTML and PDF keep `typography.monospace`.
+- `art.title-light`: a picture covering the light cover's field (`themeoptions: [title=light]`),
+  in every format; without it the light cover has none, as before.
+- nasa-jsc-eg's light title (`themeoptions: [title=light]`) is its template's light cover: the
+  band, lab photo and patches on white, the text black.
+- `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
+  `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
+
+### LaTeX
+- Frames are top-aligned (the class option `t`, without beamer's 0.2 cm under the title); give a
+  frame `[c]` to center it.
 
 ## [26.10.6] - 2026-10-20
 

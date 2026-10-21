@@ -12,6 +12,8 @@ art, pandoc's caption box centered under it in the muted color, the slide number
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
 paragraph, the note's in the caption size and muted color, centred, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
+wide: the body placeholders and a table take the slide less geometry.wide-margin a side (a columns
+slide's are columns.py's); a picture keeps its size, as HTML's does.
 closing: the slide moves onto the template's Closing layout (Closing (light) under themeoptions
 title=light, which slide-layout.lua records as `engine-title: light` and which also moves the
 title slide onto Title Slide (light); a band title ignores it), its placeholders dropping pandoc's
@@ -37,7 +39,7 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
 from pptx.text.text import _Run
-from pptx.util import Pt
+from pptx.util import Emu, Pt
 
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
@@ -61,16 +63,20 @@ NOTE_GAP   = Pt(6 * K)    # note: between the picture or table and the note unde
 CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = RGBColor.from_string(livery_mod.color(LIVERY, "warning"))
-CAUTION_W    = Pt(6 * K)
+BOXES        = LIVERY["boxes"]   # the boxes' numbers, every format's (livery.json boxes)
+SLIDE_H      = Pt(LIVERY["type"]["canvas"]["h"])   # the canvas height: bars are fractions of it
+BODY_PT      = livery_mod.type_pt(LIVERY, "body")  # pads are em of the body type
+CAUTION_W    = Emu(round(BOXES["caution"]["bar"] * SLIDE_H))
 GEOM         = LIVERY["geometry"]
 WAVES        = LIVERY.get("art", {}).get("waves")
 BAND         = (LIVERY.get("title") or {}).get("style") == "band"
 COMP         = LIVERY["compositions"]   # the title, closing, section and feature slides as boxes
 
 
-def _take_marker(slide):
-    """The slide's layout words, with their notes paragraphs removed (slide-layout.lua writes one,
-    single-body.lua another for a note)."""
+def take_marker(slide, key=MARKER):
+    """The words of the slide's notes lines that start with key, those paragraphs removed (for
+    engine-layout:, slide-layout.lua writes one, single-body.lua another for a note; columns.py
+    reads grid-pptx.lua's engine-columns:)."""
     if not slide.has_notes_slide:
         return None
     tf = slide.notes_slide.notes_text_frame
@@ -78,14 +84,13 @@ def _take_marker(slide):
         return None
     words = None
     for p in tf.paragraphs:
-        if p.text.strip().startswith(MARKER):
-            words = (words or []) + p.text.strip()[len(MARKER):].split()
+        if p.text.strip().startswith(key):
+            words = (words or []) + p.text.strip()[len(key):].split()
             body = p._p.getparent()
             body.remove(p._p)
             if body.find(qn("a:p")) is None:
                 etree.SubElement(body, qn("a:p"))
     return words
-    return None
 
 
 def _lvl_size(txstyle, level):
@@ -163,15 +168,15 @@ def _lines(p, family, size, width, weight=None):
     return measure.runs_lines(_pieces(p, family, size, weight), width / measure.PX)
 
 
-def _text_height(shape, slide, family=measure.BODY, weight=None):
+def _text_height(shape, slide, family=measure.BODY, weight=None, gap=None):
     """The text's height: each paragraph's lines measured in the livery's face, one LINE per line
-    plus a little paragraph spacing."""
+    plus a little paragraph spacing (gap, EMU; the body's 6 pt on the default canvas)."""
     tf = shape.text_frame
     width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
         size = _size(p, shape, slide)
-        total += int(_lines(p, family, size, width, weight) * size * LINE) + Pt(6 * K)
+        total += int(_lines(p, family, size, width, weight) * size * LINE) + (Pt(6 * K) if gap is None else gap)
     return total
 
 
@@ -200,12 +205,28 @@ def _biggest(table, other):
     return max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
 
 
+def pads(box, key="pad"):
+    """A box's pads, (vertical, horizontal) in EMU: its em times the body type."""
+    v, h = BOXES[box][key]
+    return Emu(round(v * BODY_PT * 12700)), Emu(round(h * BODY_PT * 12700))   # round: Pt() truncates 91439.99
+
+
+def fit_table(shape, left, width):
+    """A table's frame at left for width (EMU), its grid columns scaled to it in their shares
+    (style_tables re-splits them inside the frame later); its top and height kept."""
+    cols = shape.table._tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
+    total = sum(int(c.get("w")) for c in cols)
+    for c in cols:   # integers: a float makes PowerPoint repair the deck
+        c.set("w", str(round(int(c.get("w")) * width / total)))
+    shape.left, shape.top, shape.width, shape.height = Emu(left), shape.top, Emu(width), shape.height
+
+
 def caution_box(slide, shape, vcenter):
     """The body text box on the soft yellow field, a brand-yellow bar at its left, cut down to
     about its text (pandoc gives it the whole content area); 10% slack keeps autofit idle."""
     tf = shape.text_frame
-    tf.margin_left = tf.margin_right = Pt(14 * K)
-    tf.margin_top = tf.margin_bottom = Pt(8 * K)
+    vpad, hpad = pads("caution")
+    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
     left, top, width, height = shape.left, shape.top, shape.width, shape.height
     est = int(_text_height(shape, slide) * 1.1)
     if est < height:
@@ -223,7 +244,13 @@ def caution_box(slide, shape, vcenter):
     bar.shadow.inherit = False
 
 
-def lay_out(slide, words):
+def lay_out(slide, words, width):
+    if "wide" in words and slide.slide_layout.name != "Two Content":   # columns.py frames a columns slide
+        m = GEOM["wide-margin"]
+        for shape in [sh for sh in slide.shapes if _is_body(sh)]:   # all four: a placeholder inherits its frame
+            shape.left, shape.top, shape.width, shape.height = round(m * width), shape.top, round((1 - 2 * m) * width), shape.height
+        for shape in [sh for sh in slide.shapes if getattr(sh, "has_table", False)]:   # a graphicFrame, not a body
+            fit_table(shape, round(m * width), round((1 - 2 * m) * width))
     scale = 1.0
     for w in words:
         if w.startswith("scale="):
@@ -523,9 +550,9 @@ def draw_cover(slide, width, height, photo, comp):
     for i, xml in enumerate(shapes):
         tree.insert(3 + i, etree.fromstring(xml))
         sid += 1
-    for key, kind, name in (("mark", "logo", "Logo"), ("signoff", "signoff", "Sign-off")):
-        if comp[key]:
-            _box_picture(slide, Path(LIVERY["dir"]) / livery_mod.mark(LIVERY, comp[key]["role"], kind),
+    for key, name in (("mark", "Logo"), ("signoff", "Sign-off")):
+        if comp[key] and comp[key].get("img"):   # its file, the composition's own (livery.json)
+            _box_picture(slide, Path(LIVERY["dir"]) / comp[key]["img"],
                          comp[key]["box"], width, height, f"{name} ({comp[key]['role']})")
     return sid
 
@@ -698,7 +725,8 @@ def draw_feature(slide, width, height, photo):
         for shape in body:
             _frame(shape, px, py, pw, ph, width, height)
             tf = shape.text_frame
-            tf.margin_left = tf.margin_right = Pt(14 * K); tf.margin_top = tf.margin_bottom = Pt(10 * K)
+            vpad, hpad = pads("panel")
+            tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
             est = min(int(_text_height(shape, slide) * 1.1), int(ph * height))
             panel = _rect(slide, [px, py, pw, est / height], width, height, _role(c["panel"]["role"]), c["panel"]["opacity"], "Feature panel")
             tree = slide.shapes._spTree
@@ -760,7 +788,7 @@ def run(prs, pptx: Path) -> None:
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
-    markers = [_take_marker(slide) for slide in prs.slides]
+    markers = [take_marker(slide) for slide in prs.slides]
     for slide, words in zip(prs.slides, markers):   # before numbering: the number is the new layout's
         if words and "closing" in words:
             if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
@@ -790,7 +818,7 @@ def run(prs, pptx: Path) -> None:
                       file=sys.stderr)
         else:
             note = "note" in words and note_style(slide)
-            lay_out(slide, words)
+            lay_out(slide, words, w)
             if note:   # after scale=: the box is cut to the note at the size it is set in
                 note_place(slide)
         done += 1

@@ -28,10 +28,9 @@ signoff:                  # the division bar along the foot of content slides (1
   bottom: 0.009
   corner: bottom-left
 
-marks:                    # by field role: content slides, the cover (dark), the closing and dividers
-  background: {logo: meatball, signoff: eg-footer}          # (surface, under their art)
-  dark: {logo: meatball, signoff: group-patch}
-  surface: {logo: meatball, signoff: nasa-name-2line}
+marks:                    # by field role: content slides; the cover, closing and dividers name theirs (image:)
+  background: {logo: meatball, signoff: eg-footer}
+  dark: {logo: meatball, signoff: eg-footer}
 
 geometry:
   margin: 0.028           # the template's text inset from the slide's edge
@@ -67,35 +66,40 @@ frametitle:
 art:
   title: art/title.jpg      # the cover: starfield, the yellow band, the lab photo, the division patch
   content: art/content.jpg  # starfield, the title band, the glow behind the insignia
+  title-light: art/title-light.jpg   # the template's light cover: the band and photo on white
   closing: art/closing.jpg  # starfield, the division patch centered, the rule beside the insignia
   section: art/closing.jpg  # the template's dividers are its closing layout ("Backup")
-  titlegraphic: art/title.jpg   # the cover again, as the photo a deck may replace (not nasa's Earth limb)
+  titlegraphic: null        # the cover is the title composition's art, not nasa's Earth limb
 
 compositions:             # boxes [x, y, w, h], fractions of the slide, from the template's layouts
   title:
     art: title
     field: {role: dark}
     mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
-    signoff: {role: dark, box: [0.2717, 0.086, 0.2578, 0.3437]}   # the group patch, slide 1's box
+    signoff: {role: dark, image: group-patch, box: [0.2717, 0.086, 0.2578, 0.3437]}   # slide 1's box
     column: {role: dark, box: [0.039, 0.43, 0.77, 0.21], anchor: middle, tab: false, rule: null}   # title and
     byline: {role: foreground, box: [0.039, 0.68, 0.70, 0.27]}   # subtitle on the band under the patches;
     fineprint: {role: foreground}                                # author, institute, date below it
-  title-photo:            # the cover art is the default title photo, full-bleed (art.titlegraphic):
-    photo: {box: [0, 0, 1, 1]}           # a deck's own titlegraphic replaces all of it
+  title-photo:            # a deck's own titlegraphic: full-bleed, the column and byline as on the cover
+    photo: {box: [0, 0, 1, 1]}
     field: null                          # nothing over the photo
     column: {box: [0.039, 0.43, 0.77, 0.21]}
     byline: {box: [0.039, 0.68, 0.70, 0.27]}   # as wide as on the plain cover (a photo cover narrows it)
+  title-light:            # (themeoptions title=light) the light art; the text dark on the band and the white
+    column: {role: dark}
+    byline: {role: dark}
+    fineprint: {role: dark}
   closing:
     art: closing
-    field: {role: surface}
-    mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
-    signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
+    field: {role: dark}
+    mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: dark, image: nasa-name-2line, box: [0.736, 0.081, 0.142, 0.0437]}
     column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
   section:
     art: section
-    field: {role: surface}
-    mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
-    signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
+    field: {role: dark}
+    mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
+    signoff: {role: dark, image: nasa-name-2line, box: [0.736, 0.081, 0.142, 0.0437]}
     column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
 
 installed-fonts:          # Arial itself where the machine has it (HTML; PDF under fonts=brand)
@@ -108,8 +112,19 @@ installed-fonts:          # Arial itself where the machine has it (HTML; PDF und
       bolditalic: [Arial Bold Italic, Arial-BoldItalicMT]
   headings: *arial
 
+bullets:                  # the template's square, dash and dot, white
+  glyphs: ["▪", "–", "•"]
+  color: foreground
+
+boxes:                    # the engine's (livery_build.py BOXES) but for these
+  columns: {rule: 0.0022} # the template's hairline between columns
+  card: {fill: surface, outline-color: eg-green}
+  strip: {tint: 0.3}      # a tint needs more of its role on black
+  status: {done: eg-green, warn: warning, fail: accent}
+
 pptx:
   template: template.pptx
+  code-typeface: Courier New   # the template's code font, installed with PowerPoint (HTML and PDF: Liberation Mono)
   typeface: Arial
   heading-typeface: Arial
   size: [13.333, 7.5]       # the template's canvas
@@ -127,6 +142,7 @@ type:                     # points on that canvas
   institute: 20
   date: 16
   closing: 36
+  display: 36             # a card's big number, as the closing's
   section: 36
   sectionsubtitle: 24
   pagenumber: 12

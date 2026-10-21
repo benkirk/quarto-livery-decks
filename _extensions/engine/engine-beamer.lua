@@ -36,7 +36,13 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       frame option c, .hcenter centers prose and lists as a block (tables
       and captioned figures center on their own; with one of those or
       columns it does nothing), .center is both, and .fill does nothing;
-      .caution boxes the body on a soft yellow field (enginecaution)
+      .caution boxes the body on a soft yellow field (enginecaution), .wide
+      widens it to the paper less geometry.wide-margin a side (enginewide)
+
+  :::: {.columns} / ::: {.column width="55%"}
+      columns each its share of the text width less the livery's gaps
+      (boxes.columns.gap), as HTML and pptx lay them out (onlytextwidth: no
+      overhang into the margins; \enginecolshare)
 
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
@@ -128,11 +134,11 @@ end
 -- Per-slide layout controls: the body goes in a Div before the footnote hoist
 -- (which reaches into it) and becomes raw LaTeX afterwards (unwrap_layout).
 local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true,
-                         caution = true }
+                         caution = true, wide = true }
 local used = { scale = false, hcenter = false }
 
 local function take_layout(blk)
-  local h, v, caution, found = false, false, false, false
+  local h, v, caution, wide, found = false, false, false, false, false
   local kept = pandoc.List({})
   for _, c in ipairs(blk.classes) do
     if LAYOUT_CLASSES[c] then
@@ -140,6 +146,7 @@ local function take_layout(blk)
       h = h or c == "hcenter" or c == "center"
       v = v or c == "vcenter" or c == "center"
       caution = caution or c == "caution"
+      wide = wide or c == "wide"
     else
       kept:insert(c)
     end
@@ -155,7 +162,7 @@ local function take_layout(blk)
   end
   if not found then return nil end
   blk.classes = kept
-  return { h = h, v = v, caution = caution, scale = scale }
+  return { h = h, v = v, caution = caution, wide = wide, scale = scale }
 end
 
 local function wrap_layout(blocks)
@@ -178,6 +185,7 @@ local function wrap_layout(blocks)
       if lay.scale then attr["scale"] = lay.scale end
       if lay.h then attr["hcenter"] = "1" end
       if lay.caution then attr["caution"] = "1" end
+      if lay.wide then attr["wide"] = "1" end
       out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-body" }, attr)))
       out:extend(notes)
     end
@@ -197,7 +205,7 @@ local function boxable(blocks)
     RawBlock = function(r)
       if r.format:match("latex") and r.text:find("\\begin{figure}", 1, true) then ok = false end
     end,
-    Div = function(d) if has_class(d, "columns") then ok = false end end,
+    Div = function(d) if has_class(d, "columns") then ok = false end end,   -- cards included (enginecards)
   })
   return ok
 end
@@ -211,6 +219,10 @@ local function unwrap_layout(blocks)
       if scale then
         used.scale = true
         open, close = "\\enginescalebegin{" .. scale .. "}", "\\enginescaleend"
+      end
+      if b.attributes["wide"] then
+        open = open .. "\\begin{enginewide}"
+        close = "\\end{enginewide}" .. close
       end
       if b.attributes["caution"] then
         open = open .. "\\begin{enginecaution}"
@@ -227,6 +239,195 @@ local function unwrap_layout(blocks)
     else
       out:insert(b)
     end
+  end
+  return out
+end
+
+-- A .columns div at the text width (onlytextwidth: pandoc's spread the columns into the margins),
+-- each column its share (C.column_shares()) of the width less the gaps, a factor pandoc's writer
+-- puts before \linewidth (\enginecolshare), so beamer's \hfill between them is the livery's gap,
+-- with \enginecolrule (boxes.columns.rule) between the columns. The Div stays a Div: pandoc's
+-- writer scopes a heading's block to its column. Last, after the footnote hoist and the layout
+-- boxes, which read the Div.
+local function beamer_columns(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "columns") then return nil end
+    local cols, shares = C.column_shares(d)
+    if not has_class(d, "onlytextwidth") then d.classes:insert("onlytextwidth") end
+    local content, k = pandoc.Blocks({}), 0
+    for _, b in ipairs(d.content) do
+      if b.t == "Div" and has_class(b, "column") then
+        k = k + 1
+        if k > 1 then content:insert(latex("\\enginecolrule")) end
+        b.attributes["width"] = string.format("\\enginecolshare{%.4f}{%d}", shares[k], #cols)
+      end
+      content:insert(b)
+    end
+    d.content = content
+    return d
+  end })
+end
+
+-- A row with a card (C.card_attrs()): \begin{enginecards}, then per column
+-- \begin{enginecard}[pick,solid]{<role's color>}{<share>}{<n>}{<title>}{<sub>} round its body (a plain
+-- column beside cards is a card with no fill, `plain`), [..]{.label} and [..]{.big} lines as
+-- \enginelabel and \enginebig; beamerinnerthemeEngine.sty sets the bodies first, so the row's cards
+-- take one height. A table cannot sit in a box (longtable): the row stays plain columns, warned of.
+local function role_tex(role)
+  if role == "foreground" then return "BrandText" end
+  return "Brand" .. (role:gsub("(%a)([%w]*)", function(a, b) return a:upper() .. b end):gsub("%-", ""))
+end
+
+local function card_body(blocks)
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
+    if label or big then
+      local il = pandoc.Inlines({ pandoc.RawInline("latex", label and "\\enginelabel{" or "\\enginebig{") })
+      il:extend(label or big)
+      il:insert(pandoc.RawInline("latex", "}"))
+      out:insert(pandoc.Para(il))
+    else
+      out:insert(b)
+    end
+  end
+  return out
+end
+
+local function card_rows(blocks, roles)
+  local title = ""
+  local function row(d)
+    if not has_class(d, "columns") then return nil end
+    local cols, shares = C.column_shares(d)
+    local any, tabled = false, false
+    for _, col in ipairs(cols) do
+      if has_class(col, "card") then any = true end
+      col:walk({ Table = function() tabled = true end })
+    end
+    if not any then return nil end
+    if tabled then
+      quarto.log.warning("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
+      return nil
+    end
+    local out = pandoc.Blocks({ latex("\\begin{enginecards}") })
+    for k, col in ipairs(cols) do
+      local c = C.card_attrs(col, roles[(k - 1) % #roles + 1])   -- by its place in the row
+      local opts, role, head, sub, body = "plain", "BrandBackground", "", "", col.content
+      if c then
+        local o = {}
+        if c.pick then table.insert(o, "pick") end
+        if c.solid then table.insert(o, "solid") end
+        opts = table.concat(o, ",")
+        role, body = role_tex(c.role), c.body
+        head = c.title and inlines_to_latex(c.title) or ""
+        sub = c.sub and inlines_to_latex(c.sub) or ""
+      end
+      out:insert(latex(string.format("\\begin{enginecard}[%s]{%s}{%.4f}{%d}{%s}{%s}", opts, role, shares[k], #cols, head, sub)))
+      out:extend(card_body(body))
+      out:insert(latex("\\end{enginecard}"))
+    end
+    out:insert(latex("\\end{enginecards}"))
+    return out
+  end
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    if b.t == "Header" then title = pandoc.utils.stringify(b.content) end
+    if b.t == "Div" and has_class(b, "columns") then
+      local r = row(b)
+      if r then out:extend(r) else out:insert(b) end
+    else
+      out:insert(b:walk({ Div = row }))
+    end
+  end
+  return out
+end
+
+-- Status items (C.status_lists()): a list holding one becomes beamer's itemize, each status item's
+-- glyph its \item[...] label (where the bullet is, as HTML's and the pptx's), bold in its status
+-- color (livery.sty's EngineStatus*), a failed item's text muted; the other items keep the bullet.
+local STATUS_TEX = { done = "EngineStatusDone", warn = "EngineStatusWarn", fail = "EngineStatusFail" }
+
+local function status_items(blocks)
+  return C.status_lists(blocks, function(l, kinds)
+    local out = pandoc.Blocks({ latex("\\begin{itemize}") })
+    for k, item in ipairs(l.content) do
+      local kind, blocks2 = kinds[k], pandoc.Blocks(item)
+      local first = blocks2[1]
+      if kind then
+        local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\item[{\\textcolor{" .. STATUS_TEX[kind] .. "}{\\bfseries "
+          .. first.content[1].text .. "}}] ") })
+        local rest = pandoc.Inlines({})
+        for j = 3, #first.content do rest:insert(first.content[j]) end
+        if kind == "fail" then
+          il:insert(pandoc.RawInline("latex", "\\textcolor{BrandMuted}{")); il:extend(rest); il:insert(pandoc.RawInline("latex", "}"))
+        else
+          il:extend(rest)
+        end
+        blocks2[1] = pandoc.Plain(il)
+      elseif first and (first.t == "Plain" or first.t == "Para") then
+        local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\item ") })
+        il:extend(first.content)
+        blocks2[1] = pandoc.Plain(il)
+      else
+        blocks2:insert(1, latex("\\item"))
+      end
+      out:extend(blocks2)
+    end
+    out:insert(latex("\\end{itemize}"))
+    return out
+  end)
+end
+
+-- A .strip: \begin{enginestrip}{<role color>} round its blocks, its source lines each a paragraph
+local function strips(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "strip") then return nil end
+    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. role_tex(d.attributes["role"] or "accent") .. "}") })
+    out:extend(C.split_lines(d.content))
+    out:insert(latex("\\end{enginestrip}"))
+    return out
+  end })
+end
+
+-- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
+-- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
+local function lead_boxes(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "lead") then return nil end
+    local out = pandoc.Blocks({ latex("\\begin{enginelead}") })
+    out:extend(C.split_lines(d.content))
+    out:insert(latex("\\end{enginelead}"))
+    return out
+  end })
+end
+
+-- A frame whose body opens with a paragraph: \vskip-\parskip before it, so it starts at the body's
+-- top as HTML's and the pptx's do (TeX puts \parskip, the parskip package's half line, before every
+-- paragraph; a list opens at its own \topsep, which already matches). Frames are top-aligned
+-- (beamerthemeEngine.sty), so the space showed. A caution or lead box opens a paragraph too; the
+-- footnote spring and a scale group are looked past; a wide body cancels its own.
+local function opens_paragraph(b)   -- true, false, or nil: look at the next block
+  if b.t == "Para" or b.t == "Plain" then return true end
+  if b.t ~= "RawBlock" then return false end
+  local t = b.text
+  if t == "\\enginefootnotespring" or t:match("^\\enginescalebegin{[^}]*}$") then return nil end
+  if t:find("\\begin{enginewide}", 1, true) or t:find("\\begin{varwidth}", 1, true) then return false end
+  return t:find("\\begin{enginecaution}", 1, true) ~= nil or t:find("\\begin{enginelead}", 1, true) ~= nil
+end
+
+local function first_paragraph(blocks)
+  local out, fresh = pandoc.Blocks({}), false
+  for _, b in ipairs(blocks) do
+    if b.t == "Header" and b.level == slide_level then
+      fresh = true
+    elseif fresh then
+      local opens = opens_paragraph(b)
+      if opens ~= nil then
+        if opens then out:insert(latex("\\vskip-\\parskip")) end
+        fresh = false
+      end
+    end
+    out:insert(b)
   end
   return out
 end
@@ -641,7 +842,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = note_frames(unwrap_layout(hoist_footnotes(out)))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY.boxes.card.roles)))))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

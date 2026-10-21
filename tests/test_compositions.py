@@ -188,9 +188,10 @@ EXPECTED_DELTAS = {
 
 
 def close(a, b, path=""):
-    """[] when a and b agree (numbers within TOL), else the differing paths."""
+    """[] when a and b agree (numbers within TOL), else the differing paths; a mark's files (img,
+    img-print) are not boxes (test_mark_image has them)."""
     if isinstance(a, dict) and isinstance(b, dict):
-        return [p for k in sorted(set(a) | set(b)) for p in close(a.get(k), b.get(k), f"{path}.{k}")]
+        return [p for k in sorted((set(a) | set(b)) - {"img", "img-print"}) for p in close(a.get(k), b.get(k), f"{path}.{k}")]
     if isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
         return [p for i, (x, y) in enumerate(zip(a, b)) for p in close(x, y, f"{path}[{i}]")]
     if isinstance(a, (int, float)) and isinstance(b, (int, float)) and not isinstance(a, bool):
@@ -309,3 +310,43 @@ def test_feature_cover_is_title_photo(tmp_path):
     assert not close({**f, "column": None}, {**tp, "column": None, "fineprint": None}) \
         and not close(f["column"]["box"], [0.06, 0.34, 0.44, 0.52]), \
         "feature.style cover is not the title-photo composition with the body column"
+
+
+def test_mark_image(tmp_path):
+    """A composition's mark or sign-off names its image (image:, a logo.images name): it reaches the
+    composition's img (and img-print where the print lockup exists), its light variant keeps it (a
+    light variant used to put the background role's mark into the box), the others stay by role."""
+    L = flavor(tmp_path, "img", "compositions:\n  title: {mark: {image: ncar-white}}\n")
+    c, images = L["compositions"], L["logo"]["images"]
+    for k in ("title", "title-photo", "title-light", "title-photo-light"):
+        assert c[k]["mark"]["img"] == images["ncar-white"]["path"], f"{k}'s mark is not its image"
+        assert c[k]["mark"]["img-print"] == images["ncar-white-print"]["path"], f"{k}'s print lockup"
+    assert c["closing"]["mark"]["img"] == L["marks"]["primary"]["logo"], "a mark without image: is its role's"
+    assert c["closing-light"]["mark"]["img"] == L["marks"]["background"]["logo"], "the light closing wears background's"
+
+
+def test_mark_image_unknown(tmp_path, capsys):
+    with pytest.raises(SystemExit) as e:
+        flavor(tmp_path, "bad", "compositions:\n  closing: {signoff: {image: nope}}\n")
+    assert "compositions.closing.signoff.image: 'nope' is not a logo.images name" in str(e.value)
+
+
+def test_title_light_art(tmp_path):
+    """art.title-light covers the light cover's field (title-light), and only it: title-photo-light
+    stays art-less, the plain cover keeps its own. The sty names it without the hyphen (a TeX name
+    takes none), and the template's light title layout carries it as media."""
+    import zipfile
+    L = flavor(tmp_path, "lit", "art:\n  title-light: ../ncar/art/mesa-lab.jpg\n")
+    c = L["compositions"]
+    assert c["title-light"]["art"] == "title-light" and c["title-photo-light"]["art"] is None
+    assert c["title"]["art"] == ("title" if isinstance(L["art"].get("title"), str) else None)
+    d = tmp_path / "lit"
+    sty = lb.emit_sty(*lb.resolve(d))
+    assert "\\def\\engine@art@titlelight{" in sty and "\\engine@art@title-light" not in sty
+    from conftest import run
+    assert run("build", d).returncode == 0
+    r = run("template", d, "-o", tmp_path / "t.pptx")
+    assert r.returncode == 0, r.stderr
+    with zipfile.ZipFile(tmp_path / "t.pptx") as z:
+        sizes = {i.file_size for i in z.infolist() if i.filename.startswith("ppt/media/")}
+    assert (ROOT / "liveries" / "ncar" / "art" / "mesa-lab.jpg").stat().st_size in sizes, "the light title's art not in the template"

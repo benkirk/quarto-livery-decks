@@ -31,8 +31,8 @@ import unicodedata
 import zipfile
 
 SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
-EDGE = COLS_EDGE = None   # set in main() from the livery's margin: 1 - margin, and 1 - margin/2
-                          # for beamer columns, which overhang the text margin by half
+EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - geometry.wide-margin
+                          # on a {.wide} slide (columns keep to the text width, onlytextwidth)
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
 
 MEASURE_JS = r"""
@@ -56,7 +56,7 @@ MEASURE_JS = r"""
       use = (aw * k) * (ah * k) / (b.width * b.height);
     }
     return {level2: true, title: h.textContent.trim(), cls: cls.join(' '), kind: 'full',
-            columns: false, use, fit: 1, scale: 1, overRight: false,
+            use, fit: 1, scale: 1, overRight: false,
             capOver: !!cap && cap.scrollHeight > cap.clientHeight + 1, noFigure: !fig};
   }
   const sr = s.getBoundingClientRect(), cs = getComputedStyle(s);
@@ -83,9 +83,10 @@ MEASURE_JS = r"""
   const noteWrap = [...s.querySelectorAll('.engine-note p')].some(
     p => p.offsetHeight > 1.5 * parseFloat(getComputedStyle(p).lineHeight));
   return {level2: true, title: h.textContent.trim(), cls: cls.join(' '), kind,
-          columns: has('.columns'),
           use: Math.max(0, (bot - shift - top) / (limit - top)), fit, scale,
-          overRight: right > sr.width - parseFloat(cs.paddingRight) + 16,  // inline-code padding overhangs
+          // the right edge: the padding, or on a {.wide} slide the wide margin the body widens to
+          overRight: right > sr.width - (s.classList.contains('engine-wide')
+            ? parseFloat(cs.getPropertyValue('--engine-wide-margin')) : parseFloat(cs.paddingRight)) + 16,  // inline-code padding overhangs
           noteWrap};
 }
 """
@@ -192,9 +193,11 @@ def pdf_problems(w, h, words, lines, slide=None):
     """Text past the right margin, into the footer, overlapping, or across a table column.
 
     `slide` is the HTML measurement of the same slide, when the slide counts agree: it says
-    whether the page has columns (a wider right edge) or is a table (column checks)."""
+    whether the page is {.wide} (a wider right edge) or is a table (column checks); without it the
+    wider edge, which any slide may have."""
     out = []
-    edge = w * (COLS_EDGE if slide is None or slide.get("columns") else EDGE) + TOL
+    wide = slide is None or "engine-wide" in slide.get("cls", "").split()
+    edge = w * (WIDE_EDGE if wide else EDGE) + TOL
     for x0, y0, x1, y1, t in words:
         if x1 > edge:
             out.append(("past the right margin", repr(t)))
@@ -432,11 +435,11 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, COLS_EDGE
+    global EDGE, WIDE_EDGE
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
-    margin = livery_mod.load()["geometry"]["margin"]
-    EDGE, COLS_EDGE = 1 - margin, 1 - margin / 2
+    geom = livery_mod.load()["geometry"]
+    EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
 
     html_res = check_html(args.decks, qa)
     report, usage, failed = [], ["deck\tslide\tkind\tuse\tfit\ttitle\tclasses"], False

@@ -48,6 +48,12 @@ def test_sets_are_the_engines():
     assert set(P["art"]["properties"]) == set(lb.ART_KINDS) | {"waves"}, "art differs from ART_KINDS"
     assert set(P["feature"]["properties"]["style"]["enum"]) == set(lb.FEATURE_STYLES), "feature.style differs from FEATURE_STYLES"
     assert set(P["frametitle"]["properties"]) == set(lb.FRAMETITLE), "frametitle differs from FRAMETITLE"
+    assert set(P["boxes"]["properties"]) == set(lb.BOXES), "boxes differ from BOXES"
+    for box, keys in lb.BOXES.items():
+        B = P["boxes"]["properties"][box]["properties"]
+        assert set(B) == set(keys), f"boxes.{box} differs from BOXES"
+        for k, v in keys.items():
+            assert B[k].get("default") == v, f"boxes.{box}.{k}'s default is not BOXES' {v}"
     faces = P["installed-fonts"]["properties"]["base"]["oneOf"][1]["properties"]["faces"]["properties"]
     assert set(faces) == set(lb.FACE_KEYS), "installed-fonts faces differ from FACE_KEYS"
     assert set(lb.BAND) <= set(P["title"]["properties"]), "a BAND key is missing from title"
@@ -96,3 +102,20 @@ def test_build_refuses_with_path(tmp_path):
 
 def test_reference_is_current():
     assert (ROOT / "liveries" / "REFERENCE.md").read_text() == S.doc(), "liveries/REFERENCE.md is stale (livery schema --doc)"
+
+
+def test_flavor_unsets_with_null(tmp_path):
+    """A flavor unsets an inherited key with null (art.*, typography.monospace): it builds, its json
+    has null where the parent had a file, and livery check passes."""
+    t = tmp_path / "liveries"
+    for name in ("nasa", "nasa-dark"):   # nasa-dark extends nasa; nasa has the Earth limb and DM Mono
+        shutil.copytree(ROOT / "liveries" / name, t / name, ignore=shutil.ignore_patterns("build", "reference"))
+    d = t / "unset"; d.mkdir()
+    (d / "_brand.yml").write_text("typography:\n  monospace: null\n")
+    (d / "livery.yml").write_text("schema: 1\nname: unset\nextends: nasa-dark\nart:\n  titlegraphic: null\n")
+    r = run("all", d)
+    assert r.returncode == 0, r.stdout[-800:] + r.stderr[-800:]
+    import json
+    j = json.loads((d / "build" / "livery.json").read_text())
+    assert j["art"]["titlegraphic"] is None and j["typography"]["monospace"] is None, "null did not reach the json"
+    assert "--r-code-font" not in (d / "build" / "livery.css").read_text(), "the parent's code face kept"

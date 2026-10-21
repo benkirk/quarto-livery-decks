@@ -367,12 +367,133 @@ $mermaid-label-fg-color: $engine-primary;
 .reveal .slides section .engine-body { margin-top: var(--engine-shift, 0px); }
 .reveal .slides section.engine-fill > .engine-body :is(pre, pre code) { white-space: pre; }
 // .caution: the warning slides' body on a soft yellow field, a brand-yellow bar at its left
+// (the bar and pads: livery.css, the livery's boxes)
 .reveal .slides section.engine-caution > .engine-body {
   box-sizing: border-box;
-  padding: 0.55em 0.9em;
+  padding: var(--engine-caution-pad);
   background: var(--engine-caution-fill);
-  border-left: 8px solid var(--engine-warning);
+  border-left: var(--engine-caution-bar) solid var(--engine-warning);
 }
+// .wide: the body takes the slide less geometry.wide-margin a side, not the margin
+.reveal .slides section.engine-wide > .engine-body {
+  margin-left: calc(var(--engine-wide-margin) - var(--engine-margin));
+  margin-right: calc(var(--engine-wide-margin) - var(--engine-margin));
+}
+// columns: each its share of the row less the gaps (engine-revealjs.lua sets the flex-grow from
+// the column's width=), the livery's gap between them (boxes.columns.gap), as the pptx and PDF
+// lay them out; the gap replaces Quarto's 0.25/0.5rem side margins
+.reveal .slides section .columns {
+  display: flex;
+  gap: var(--engine-column-gap);
+  align-items: stretch;
+}
+.reveal .slides section .columns > .column {
+  min-width: 0;
+  position: relative;
+}
+.reveal .slides section .columns > .column > :not(ul, ol) {
+  margin-left: 0;
+  margin-right: 0;
+}
+// boxes.columns.rule: a rule centered in each gap, the row's height (0px: none)
+.reveal .slides section .columns > .column + .column::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-0.5 * var(--engine-column-gap));
+  transform: translateX(-50%);
+  width: var(--engine-column-rule);
+  background: var(--engine-rule);
+}
+// ::: {.lead}: a box on the lead fill with a bar at its left (livery.css: the livery's boxes.lead)
+.reveal .slides section .engine-lead {
+  box-sizing: border-box;
+  background: var(--engine-lead-fill);
+  border-left: var(--engine-lead-bar) solid var(--engine-lead-bar-color);
+  padding: var(--engine-lead-pad);
+  margin: 0 0 var(--engine-lead-gap);
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+}
+// cards (::: {.column .card role=...}): a head band in the card's role over a body on the card
+// fill, the row's cards one height (the columns' flex stretch); .pick outlined (inset: no layout
+// shift, and it follows the radius); .solid all of it the role's (livery.css: boxes.card)
+.reveal .slides section .engine-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  background: var(--engine-card-fill);
+  border-radius: var(--engine-card-radius);
+  overflow: hidden;
+  &.engine-pick { box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color); }
+  .engine-card-head {
+    background: var(--engine-card-role);
+    color: var(--engine-primary-text);
+    padding: var(--engine-card-head-pad);
+  }
+  .engine-card-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
+  .engine-card-body {
+    flex: 1;
+    padding: var(--engine-card-pad);
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+  }
+  .engine-label {
+    display: block;
+    font-size: calc(var(--engine-type-eyebrow) * 1em);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--engine-muted);
+  }
+  .engine-big {
+    display: block;
+    font-size: calc(var(--engine-type-display) * 1em);
+    font-weight: 700;
+    line-height: 1.08;
+    color: var(--engine-primary-contrast);
+  }
+  &.engine-solid {
+    background: var(--engine-card-role);
+    .engine-card-head { background: none; }
+    &, p, li, strong, .engine-label, .engine-big { color: var(--engine-primary-text); }
+  }
+}
+// ::: {.strip role=...}: a band tinted in its role (boxes.strip.tint over the background), at a
+// card's full width in a card; on a solid card the role itself, its text primary-text
+.reveal .slides section .engine-strip {
+  background: color-mix(in srgb, var(--engine-strip-role) var(--engine-strip-tint), var(--engine-background));
+  padding: var(--engine-strip-pad);
+  margin: var(--engine-strip-gap) 0;
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+}
+.reveal .slides section .engine-card .engine-strip {
+  margin-left: calc(-1 * var(--engine-card-pad-x));
+  margin-right: calc(-1 * var(--engine-card-pad-x));
+}
+.reveal .slides section .engine-card.engine-solid .engine-strip {
+  background: var(--engine-strip-role);
+  &, p, li, strong { color: var(--engine-primary-text); }
+}
+// status items (- [x] ✓, - [!] ⚠, - [-] ✗ in a card or a ::: {.status} list): the glyph is the
+// bullet, set where the dot was, bold in its status color (livery.css: boxes.status), as the
+// pptx's buChar and beamer's \item[...]; a failed item's text muted
+.reveal .slides section li:has(> .engine-status-done, > .engine-status-warn, > .engine-status-fail,
+    > p:first-child > .engine-status-done, > p:first-child > .engine-status-warn, > p:first-child > .engine-status-fail) {
+  &::before { content: none !important; display: none !important; }
+}
+.reveal .slides section :is(.engine-status-done, .engine-status-warn, .engine-status-fail) {
+  position: absolute;
+  left: -1.05em;
+  font-weight: 700;
+}
+.reveal .slides section .engine-status-done { color: var(--engine-status-done); }
+.reveal .slides section .engine-status-warn { color: var(--engine-status-warn); }
+.reveal .slides section .engine-status-fail { color: var(--engine-status-fail); }
+.reveal .slides section .engine-status-fail ~ .engine-status-text { color: var(--engine-muted); }
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;
@@ -723,7 +844,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   width: var(--engine-cmp-panel-w);
   max-height: var(--engine-cmp-panel-h);
   box-sizing: border-box;
-  padding: 0.6em 0.9em;
+  padding: var(--engine-panel-pad);
   background: var(--engine-cmp-panel-fill);
   &, p, li, strong { color: #fff; }
   h3, .alert, a { color: var(--engine-secondary); }

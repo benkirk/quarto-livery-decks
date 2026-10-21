@@ -97,6 +97,10 @@ latex:                    # build/livery.sty: the palette's LaTeX color names (d
     orange: BrandOrange
     yellow: BrandYellow
 
+boxes:                    # the engine's (livery_build.py BOXES) but for these
+  card: {radius: 0.012}   # the brand's rounded option boxes
+  status: {warn: accent, fail: "#B5540A"}   # yellow is unreadable as text on white; alert-text's dark orange
+
 pptx:
   template: template.pptx
   typeface: Poppins

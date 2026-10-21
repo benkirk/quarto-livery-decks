@@ -20,8 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # livery, pptx_waves,
 from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
-    embed_fonts, enable_autofit, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
-    style_footnotes, style_tables, svg_fallback, type_step)
+    columns, embed_fonts, enable_autofit, grid, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
+    status_glyphs, style_footnotes, style_tables, svg_fallback, type_step)
 
 
 def post(path: Path) -> None:
@@ -45,12 +45,16 @@ def post(path: Path) -> None:
     prs = Presentation(buf)
 
     # One Presentation. Footnotes are styled before slide_layout, whose scale= leaves them at
-    # their size; tables after it has scaled the runs; the marking strip before type_step, so a
+    # their size; columns after it, which leaves a columns slide's frames alone (its {.wide} words
+    # are its own line's); tables after both, re-split inside their final frames; the marking strip before type_step, so a
     # deck's type step scales it as HTML and PDF do; type_step last, since it multiplies every
     # size the steps before it set.
     style_footnotes.run(prs, path.name)
     link_captions.run(prs, path.name)       # a linked picture's URL, a box pandoc cannot add
     slide_layout.run(prs, path.resolve())   # layout classes, covers, closings, slide numbers
+    columns.run(prs, path.name)             # a two-column slide's widths and gap (grid-pptx.lua's line)
+    grid.run(prs, path.name)                # a grid slide (3+ columns) drawn from grid-pptx.lua's markers
+    status_glyphs.run(prs, path.name)       # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
     style_tables.run(prs, path.name)
     marking.run(prs, path.name)             # the marking strip, on every slide
     type_step.run(prs, path)                # a deck's type-body:/type-scale:

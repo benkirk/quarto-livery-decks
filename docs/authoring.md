@@ -95,6 +95,90 @@ pandoc can't add one without splitting the slide). One line per slide, from
 its first linked image. `{height="72%"}` is the full-width screenshot recipe
 and fits all three.
 
+## Columns
+
+`:::: {.columns}` with a `::: {.column}` per column lays them out side by side, alike in every
+format: each column takes its `width=` share of the row less the livery's gap, and a column
+without a width takes an equal share of what is left.
+
+```markdown
+:::: {.columns}
+::: {.column width="67%"}
+- The wider column
+:::
+::: {.column}
+![](images/example.jpg)
+:::
+::::
+```
+
+- **Two columns** are pandoc's own two-column layout in pptx, set to their widths after
+  rendering; a picture or table in a column moves and scales with it.
+- **Three or more columns** are drawn in pptx as text boxes at the same widths (pandoc's pptx
+  keeps only two). First-cut limit: a picture or table in one of them is not drawn in its
+  column yet; the render warns, naming the slide, and pandoc splits the slide (`make qa`'s
+  slide count catches it). Put pictures and tables on a two-column slide.
+- **`{.wide}`** on the heading widens the body to the slide less a narrower margin
+  (`geometry.wide-margin`), in every format: the deliberate way to room for four columns or a
+  wide table.
+- A livery may draw a **rule** between columns (`boxes.columns.rule`; nasa-jsc-eg does).
+- In pptx, text after a picture in a column is dropped by pandoc; keep it above the picture.
+
+## Cards and lead boxes
+
+A lead box over a row of cards is a slide of options side by side:
+
+```markdown
+::: {.lead}
+**Three ways to spend the next allocation**
+Each trades local capacity against a share of the consortium system.
+:::
+
+:::: {.columns}
+::: {.column .card .pick}
+### OPTION 1
+[A modern GPU system]{.sub}
+
+**Total cost $30M**
+[Local investment]{.label}
+[$20M]{.big}
+
+::: {.strip role="accent"}
+→ **$10M** to the consortium
+:::
+
+- [x] Data archive expansion
+- [!] High-resolution runs
+- [-] Interactive analysis
+:::
+::: {.column .card}
+...
+:::
+::::
+```
+
+- **`::: {.lead}`** sets its lines on the livery's lead fill with an accent bar at its left.
+  In a lead and in a card each source line is a line: no blank line between the bold headline
+  and the line under it.
+- **`.card`** on a column draws a head band in its `role=` (any livery role) over a body. A card
+  without one takes the livery's `boxes.card.roles` in turn by its place in the row (by default
+  primary, secondary, accent), so a row's cards differ. The `###` is the band's title, a `[...]{.sub}` paragraph right after it the band's
+  second line. `.pick` outlines the chosen card; `.solid` makes the whole card the role's color,
+  its text white. A row's cards are one height.
+- **`[...]{.label}`** is a small capitals label, **`[...]{.big}`** a big number, each on a line
+  of its own.
+- **`::: {.strip role="accent"}`** is a band tinted in its role, across the card (or on its own,
+  across the body).
+- **Status items.** In a card or a `::: {.status}` list, `- [x]`, `- [!]` and `- [-]` show ✓, ⚠
+  and ✗ in the livery's status colors where the bullet was, a failed item's text muted. A
+  literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays an unchecked task box.
+- pptx draws cards, leads and strips as native shapes and text boxes, editable in PowerPoint:
+  each is one group ("Card 1", "Lead"), so a click selects it whole and a second click its text.
+  The first-cut limit of three columns holds for cards: no picture or table in a card (the PDF
+  draws a row with a table as plain columns). A lead beside a table goes in the title or the
+  notes: a lead makes the slide a card slide, and the table would split it. A card slide's
+  `.caution` and `.vcenter` do not apply in pptx.
+
 ## Notes under a figure
 
 A remark that belongs to a figure or table, a summary line or where its numbers come from, goes

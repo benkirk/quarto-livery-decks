@@ -49,18 +49,32 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Fonts.** The brand's font files in `_brand.yml` in place of the stand-in (free,
      bundleable; a proprietary face is named in the pptx and stood in for elsewhere),
      `typography.monospace` for a code face, `installed-fonts` for a proprietary face to prefer
-     where installed, and `pptx.typeface` (and `heading-typeface`).
+     where installed, and `pptx.typeface` (and `heading-typeface`, and `code-typeface` for the
+     pptx's code when the brand template names an installed one).
    - **Marks.** The brand's logos in `_brand.yml` in place of the placeholder (an RGB PNG for
      the web, the same name as `.pdf` for LaTeX), a `signoff` lockup if the brand wants one at
      the foot, and `marks` when a field needs another mark than the defaults (`background` wears
-     `logo.medium.light`, `primary` the dark one, every other field primary's).
+     `logo.medium.light`, `primary` the dark one, every other field primary's). One composed slide
+     wears a given image with `compositions.<name>.mark.image` or `.signoff.image` (a
+     `logo.images` name); its light variant keeps it.
    - **Geometry.** The scaffold's fractions are ncar's; set the lockup's `geometry.logo.aspect`,
      the marks' corners, and `logo.inset` to put the content mark nearer the paper's edge.
+     `geometry.wide-margin` is a `{.wide}` slide's side margin (default half the margin),
+     `geometry.body-bottom` the content body's foot.
+   - **Boxes.** `boxes:` holds the numbers every format draws its columns and boxes with: the
+     column gap and an optional rule between columns, the caution box's bar and pads, the
+     feature panel's pads, the lead box, cards (fill, corner radius, a picked card's outline),
+     strips (their tint) and the status glyphs' colors. Set only what differs from the engine's
+     (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
+     its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
      hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover (nsi);
      `feature.style`; `compositions` to move any box of the composed slides.
+   - **Bullets.** `bullets:` (`glyphs` per level, `color`) when the brand's template draws its own
+     list glyphs; the glyphs must exist in `pptx.typeface`.
    - **Art.** `art`: wave curves (`common/utils/fit-waves.py` fits them to the brand's cover
-     art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo.
+     art), or a picture per slide kind, or nothing; `titlegraphic` for a default title photo,
+     `title-light` for the light cover's own picture.
    - **Type.** `type:` in points and `pptx.size`, the brand template's canvas (docs/authoring.md "Text
      sizes and the slide size").
    - **Chart colors.** A brand guide's published data palette goes in `charts:` (`ramps`,
@@ -68,7 +82,10 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      nothing, the engine generates one from the brand's own colors. Look at the swatch sheet
      (step 3) and record the result in the notes.
    - **Flavors.** `extends:` makes a livery a flavor of another, naming only what differs
-     (`livery new liveries/<name> --extends <parent>`).
+     (`livery new liveries/<name> --extends <parent>`). `null` unsets what the parent sets: an
+     `art` picture (`art: {titlegraphic: null}`), or the code face in the flavor's `_brand.yml`
+     (`typography: {monospace: null}`; the parent's font list still comes whole, its code-face
+     files with it).
 3. **Build and check.** `make livery LIVERY=<name>` after every change; `livery check
    liveries/<name> --qa` adds the quickstart deck's `make qa` and the chart colors' contact sheet
    in `decks/quickstart/_qa/`. `make -C decks/plots qa LIVERY=<name>` shows the plots in it,

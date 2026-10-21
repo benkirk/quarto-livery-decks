@@ -108,6 +108,66 @@
     "table-band": "#F7F6F5",
     "table-rule": "#C1CBD7"
   },
+  "boxes": {
+    "card": {
+      "fill": "#FFFFFF",
+      "head-pad": [
+        0.35,
+        0.8
+      ],
+      "outline": 0.0033,
+      "outline-color": "#00818F",
+      "pad": [
+        0.5,
+        0.8
+      ],
+      "radius": 0.012,
+      "roles": [
+        "primary",
+        "secondary",
+        "accent"
+      ]
+    },
+    "caution": {
+      "bar": 0.0089,
+      "pad": [
+        0.55,
+        0.9
+      ]
+    },
+    "columns": {
+      "gap": 0.03,
+      "rule": 0
+    },
+    "lead": {
+      "bar": 0.0089,
+      "bar-color": "#FAA119",
+      "fill": "#F1F0EE",
+      "pad": [
+        0.55,
+        0.9
+      ]
+    },
+    "panel": {
+      "pad": [
+        0.6,
+        0.9
+      ]
+    },
+    "status": {
+      "done": "#00818F",
+      "fail": "#B5540A",
+      "warn": "#FAA119"
+    },
+    "strip": {
+      "pad": [
+        0.3,
+        0.8
+      ],
+      "tint": 0.18
+    }
+  },
+  "bullets": null,
   "charts": {
     "brand": [
       "#0057C2",
@@ -431,6 +491,8 @@
           0.2213,
           0.1
         ],
+        "img": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf",
         "role": "primary"
       },
       "panel": null,
@@ -483,6 +545,8 @@
           0.1992,
           0.09
         ],
+        "img": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf",
         "role": "dark"
       },
       "panel": null,
@@ -526,6 +590,8 @@
           0.2213,
           0.1
         ],
+        "img": "logos/NSF-NCAR_Logo_FullColor_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_FullColor_RGB.pdf",
         "role": "background"
       },
       "panel": null,
@@ -630,6 +696,8 @@
           0.177,
           0.08
         ],
+        "img": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf",
         "role": "primary"
       },
       "panel": null,
@@ -701,6 +769,8 @@
           0.1992,
           0.09
         ],
+        "img": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf",
         "role": "primary"
       },
       "panel": null,
@@ -780,6 +850,8 @@
           0.1992,
           0.09
         ],
+        "img": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf",
         "role": "dark"
       },
       "panel": null,
@@ -849,6 +921,8 @@
           0.1992,
           0.09
         ],
+        "img": "logos/NSF-NCAR_Logo_FullColor_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_FullColor_RGB.pdf",
         "role": "background"
       },
       "panel": null,
@@ -917,6 +991,8 @@
           0.1992,
           0.09
         ],
+        "img": "logos/NSF-NCAR_Logo_Color-White_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_Color-White_RGB.pdf",
         "role": "primary"
       },
       "panel": null,
@@ -994,6 +1070,8 @@
           0.1992,
           0.09
         ],
+        "img": "logos/NSF-NCAR_Logo_FullColor_RGB.png",
+        "img-print": "logos/NSF-NCAR_Logo_FullColor_RGB.pdf",
         "role": "background"
       },
       "panel": null,
@@ -1025,6 +1103,7 @@
     "tab": true
   },
   "geometry": {
+    "body-bottom": 0.9222,
     "full": {
       "caption": 0.06,
       "footline": 0.075,
@@ -1043,7 +1122,8 @@
       "bottom": 0.0889,
       "top": 0.1333
     },
-    "tab-width": 0.018
+    "tab-width": 0.018,
+    "wide-margin": 0.03
   },
   "latex": {
     "colors": {
@@ -1208,6 +1288,11 @@
         "leading": 1.2,
         "pt": 8,
         "size": 0.6667
+      },
+      "display": {
+        "leading": 1.08,
+        "pt": 30,
+        "size": 2.5
       },
       "eyebrow": {
         "leading": 1.2,

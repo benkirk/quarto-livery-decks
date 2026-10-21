@@ -109,6 +109,19 @@
           "description": "The side margin of every slide, of the width.",
           "default": 0.06
         },
+        "wide-margin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The side margin of a `{.wide}` slide, of the width (default: half the margin)."
+        },
+        "body-bottom": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The foot of a content slide's body, of the height.",
+          "default": 0.9222
+        },
         "tab-width": {
           "type": "number",
           "minimum": 0,
@@ -254,16 +267,17 @@
       "description": "Pictures and curves behind the fields. A path is relative to the livery.",
       "additionalProperties": false,
       "properties": {
-        "title": {"$ref": "#/$defs/path", "description": "A picture covering the cover's field."},
-        "section": {"$ref": "#/$defs/path", "description": "A picture covering section slides' field."},
+        "title": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering the cover's field. (null: none: a flavor unsetting its parent's)"},
+        "title-light": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering the light cover's field (themeoptions title=light; without it the light cover has none). (null: none: a flavor unsetting its parent's)"},
+        "section": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering section slides' field. (null: none: a flavor unsetting its parent's)"},
         "closing": {
-          "$ref": "#/$defs/path",
-          "description": "A picture covering the closing slide's field (a band livery's default: title's)."
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}],
+          "description": "A picture covering the closing slide's field (a band livery's default: title's). (null: none: a flavor unsetting its parent's)"
         },
-        "content": {"$ref": "#/$defs/path", "description": "A picture behind every content slide."},
+        "content": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture behind every content slide. (null: none: a flavor unsetting its parent's)"},
         "titlegraphic": {
-          "$ref": "#/$defs/path",
-          "description": "The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover)."
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}],
+          "description": "The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover). (null: none: a flavor unsetting its parent's)"
         },
         "waves": {
           "type": "object",
@@ -519,6 +533,93 @@
         "bold": {"type": "boolean", "default": false, "description": "Its text in bold."}
       }
     },
+    "boxes": {
+      "type": "object",
+      "description": "The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default.",
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "type": "object",
+          "description": "A slide's columns.",
+          "additionalProperties": false,
+          "properties": {
+            "gap": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.03, "description": "The gap between two columns, of the slide's width."},
+            "rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "A rule centered in each gap, its width (of the slide's height); 0 draws none."}
+          }
+        },
+        "caution": {
+          "type": "object",
+          "description": "A `{.caution}` slide's body.",
+          "additionalProperties": false,
+          "properties": {
+            "bar": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0089, "description": "The warning-colored bar at its left, its width (of the slide's height)."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.55, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "panel": {
+          "type": "object",
+          "description": "A feature slide's panel.",
+          "additionalProperties": false,
+          "properties": {
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.6, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "lead": {
+          "type": "object",
+          "description": "A lead box (`::: {.lead}`) over a slide's columns.",
+          "additionalProperties": false,
+          "properties": {
+            "fill": {"$ref": "#/$defs/color-or-role", "default": "surface", "description": "Its fill, a role, a palette name or a hex."},
+            "bar": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0089, "description": "The bar at its left, its width (of the slide's height)."},
+            "bar-color": {"$ref": "#/$defs/color-or-role", "default": "accent", "description": "The bar's color, a role, a palette name or a hex."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.55, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "card": {
+          "type": "object",
+          "description": "A card (`::: {.column .card}`): a colored head band over a body.",
+          "additionalProperties": false,
+          "properties": {
+            "fill": {"$ref": "#/$defs/color-or-role", "default": "background", "description": "Its body's fill, a role, a palette name or a hex."},
+            "radius": {"type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "Its corners' radius (of the slide's height); 0 for square corners."},
+            "outline": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0033, "description": "The outline of a picked card (`.pick`), its width (of the slide's height)."},
+            "outline-color": {"$ref": "#/$defs/color-or-role", "default": "highlight", "description": "That outline's color, a role, a palette name or a hex."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.5, 0.8], "description": "Its body's text from the card's edges, in em of the body type."},
+            "head-pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.35, 0.8], "description": "The head band's text from its edges, in em of the body type."},
+            "roles": {"type": "array", "items": {"$ref": "#/$defs/role"}, "minItems": 1, "default": ["primary", "secondary", "accent"], "description": "The roles a card without role= takes by its place in the row, in turn: the first card the first role."}
+          }
+        },
+        "strip": {
+          "type": "object",
+          "description": "A strip (`::: {.strip}`): a band tinted in its role across a card.",
+          "additionalProperties": false,
+          "properties": {
+            "tint": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.18, "description": "The role's share in its fill, over the background."},
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 0.8], "description": "Its text's distance from its edges, in em of the body type."}
+          }
+        },
+        "status": {
+          "type": "object",
+          "description": "The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors.",
+          "additionalProperties": false,
+          "properties": {
+            "done": {"$ref": "#/$defs/color-or-role", "default": "highlight", "description": "✓, a role, a palette name or a hex."},
+            "warn": {"$ref": "#/$defs/color-or-role", "default": "warning", "description": "⚠, a role, a palette name or a hex."},
+            "fail": {"$ref": "#/$defs/color-or-role", "default": "accent", "description": "✗, a role, a palette name or a hex."}
+          }
+        }
+      }
+    },
+    "bullets": {
+      "type": "object",
+      "description": "List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface.",
+      "additionalProperties": false,
+      "required": ["glyphs"],
+      "properties": {
+        "glyphs": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2}, "minItems": 1, "description": "A glyph per level, the first the top level's; the last repeats."},
+        "color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "Their color, a role, a palette name or a hex."}
+      }
+    },
     "installed-fonts": {
       "type": "object",
       "description": "A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}.",
@@ -663,6 +764,7 @@
           "description": "The font PowerPoint sets body text in (the theme's minor font)."
         },
         "heading-typeface": {"type": "string", "description": "The font PowerPoint sets titles in (default: typeface)."},
+        "code-typeface": {"type": "string", "minLength": 1, "description": "The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace."},
         "fonts": {
           "$ref": "#/$defs/path",
           "description": "A directory of .fntdata files to embed in each deck; without it, the deck embeds no fonts."
@@ -790,6 +892,7 @@
         },
         "pagenumber": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The page number."},
         "marking": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The marking strip's text."},
+        "display": {"type": "number", "exclusiveMinimum": 0, "default": 40, "description": "A card's big number (`[$20M]{.big}`)."},
         "footer": {
           "type": "number",
           "exclusiveMinimum": 0,
@@ -1015,6 +1118,7 @@
             "headings": {"type": "string"},
             "monospace": {
               "oneOf": [
+                {"type": "null"},
                 {"type": "string"},
                 {
                   "type": "object",
@@ -1086,11 +1190,11 @@
           "oneOf": [
             {"type": "null"},
             {
-              "type": "string",
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content."
+              "enum": ["title", "title-light", "section", "closing", "content"],
+              "description": "Which art.<kind> picture covers the field: title, title-light, section, closing or content."
             }
           ],
-          "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
+          "description": "Which art.<kind> picture covers the field: title, title-light, section, closing or content. (null: none)"
         },
         "photo": {
           "oneOf": [
@@ -1204,8 +1308,9 @@
               "description": "The brand mark.",
               "additionalProperties": false,
               "properties": {
-                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in: its image is the role's marks entry, else primary's."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "image": {"$ref": "#/$defs/image", "description": "Its image (a logo.images name), in place of its role's; a light variant keeps it."}
               }
             }
           ],
@@ -1219,8 +1324,9 @@
               "description": "The sign-off lockup.",
               "additionalProperties": false,
               "properties": {
-                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in."},
-                "box": {"$ref": "#/$defs/box", "description": "Where it sits."}
+                "role": {"$ref": "#/$defs/role", "description": "The role it is drawn in: its image is the role's marks entry, else primary's."},
+                "box": {"$ref": "#/$defs/box", "description": "Where it sits."},
+                "image": {"$ref": "#/$defs/image", "description": "Its image (a logo.images name), in place of its role's; a light variant keeps it."}
               }
             }
           ],

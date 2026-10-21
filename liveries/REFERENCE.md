@@ -33,6 +33,8 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `feature` | object |  | Feature (photo) slides. |
 | `frametitle` | object |  | Content slides' titles. |
 | `marking` | object |  | A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here. |
+| `boxes` | object |  | The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default. |
+| `bullets` | object |  | List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface. |
 | `installed-fonts` | object |  | A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}. |
 | `latex` | object |  | The LaTeX side. |
 | `pptx` | object |  | The PowerPoint template. |
@@ -78,6 +80,8 @@ The slides' furniture, in fractions of the slide.
 | key | type | default | |
 |---|---|---|---|
 | `margin` | fraction | `0.06` | The side margin of every slide, of the width. |
+| `wide-margin` | fraction |  | The side margin of a `{.wide}` slide, of the width (default: half the margin). |
+| `body-bottom` | fraction | `0.9222` | The foot of a content slide's body, of the height. |
 | `tab-width` | fraction |  | The width of the accent tab at the paper's edge beside titles, of the width. |
 | `logo` | object |  | The brand mark. |
 | `pagenumber` | object |  | The page number. |
@@ -142,11 +146,12 @@ Pictures and curves behind the fields. A path is relative to the livery.
 
 | key | type | default | |
 |---|---|---|---|
-| `title` | path |  | A picture covering the cover's field. |
-| `section` | path |  | A picture covering section slides' field. |
-| `closing` | path |  | A picture covering the closing slide's field (a band livery's default: title's). |
-| `content` | path |  | A picture behind every content slide. |
-| `titlegraphic` | path |  | The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover). |
+| `title` | null or path |  | A picture covering the cover's field. (null: none: a flavor unsetting its parent's) |
+| `title-light` | null or path |  | A picture covering the light cover's field (themeoptions title=light; without it the light cover has none). (null: none: a flavor unsetting its parent's) |
+| `section` | null or path |  | A picture covering section slides' field. (null: none: a flavor unsetting its parent's) |
+| `closing` | null or path |  | A picture covering the closing slide's field (a band livery's default: title's). (null: none: a flavor unsetting its parent's) |
+| `content` | null or path |  | A picture behind every content slide. (null: none: a flavor unsetting its parent's) |
+| `titlegraphic` | null or path |  | The cover photo for decks that set none (a deck's titlegraphic: none keeps the plain cover). (null: none: a flavor unsetting its parent's) |
 | `waves` | object |  | The brand's wave lines, drawn by the engine in the roles' colors: bands on the cover, section and closing slides, faint lines behind content slides. |
 
 ### `art.waves`
@@ -238,7 +243,7 @@ The parts of one composed slide; a part not named keeps the engine's value, null
 | key | type | default | |
 |---|---|---|---|
 | `field` | null or object |  | The colored field behind everything. (null: none) |
-| `art` | null or string |  | Which art.<kind> picture covers the field: title, section, closing or content. (null: none) |
+| `art` | null or `title` \| `title-light` \| `section` \| `closing` \| `content` |  | Which art.<kind> picture covers the field: title, title-light, section, closing or content. (null: none) |
 | `photo` | null or object |  | The deck's photo. (null: none) |
 | `band` | null or object |  | The band across a band cover's field. (null: none) |
 | `waves` | null or object |  | The wave lines drawn over the field. (null: none) |
@@ -315,8 +320,9 @@ The brand mark.
 
 | key | type | default | |
 |---|---|---|---|
-| `role` | role |  | The role it is drawn in. |
+| `role` | role |  | The role it is drawn in: its image is the role's marks entry, else primary's. |
 | `box` | box |  | Where it sits. |
+| `image` | image |  | Its image (a logo.images name), in place of its role's; a light variant keeps it. |
 
 ### `compositions.<name>.signoff`
 
@@ -324,8 +330,9 @@ The sign-off lockup.
 
 | key | type | default | |
 |---|---|---|---|
-| `role` | role |  | The role it is drawn in. |
+| `role` | role |  | The role it is drawn in: its image is the role's marks entry, else primary's. |
 | `box` | box |  | Where it sits. |
+| `image` | image |  | Its image (a logo.images name), in place of its role's; a light variant keeps it. |
 
 ### `compositions.<name>.column`
 
@@ -406,6 +413,99 @@ A marking strip on every slide (a restriction or distribution marking, CUI and t
 | `color` | color or role |  | Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill). |
 | `bold` | boolean | `false` | Its text in bold. |
 
+### `boxes`
+
+The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default.
+
+| key | type | default | |
+|---|---|---|---|
+| `columns` | object |  | A slide's columns. |
+| `caution` | object |  | A `{.caution}` slide's body. |
+| `panel` | object |  | A feature slide's panel. |
+| `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
+| `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
+| `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
+| `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
+
+### `boxes.columns`
+
+A slide's columns.
+
+| key | type | default | |
+|---|---|---|---|
+| `gap` | fraction | `0.03` | The gap between two columns, of the slide's width. |
+| `rule` | fraction | `0` | A rule centered in each gap, its width (of the slide's height); 0 draws none. |
+
+### `boxes.caution`
+
+A `{.caution}` slide's body.
+
+| key | type | default | |
+|---|---|---|---|
+| `bar` | fraction | `0.0089` | The warning-colored bar at its left, its width (of the slide's height). |
+| `pad` | [vertical, horizontal] em | `[0.55, 0.9]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.panel`
+
+A feature slide's panel.
+
+| key | type | default | |
+|---|---|---|---|
+| `pad` | [vertical, horizontal] em | `[0.6, 0.9]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.lead`
+
+A lead box (`::: {.lead}`) over a slide's columns.
+
+| key | type | default | |
+|---|---|---|---|
+| `fill` | color or role | `"surface"` | Its fill, a role, a palette name or a hex. |
+| `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
+| `bar-color` | color or role | `"accent"` | The bar's color, a role, a palette name or a hex. |
+| `pad` | [vertical, horizontal] em | `[0.55, 0.9]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.card`
+
+A card (`::: {.column .card}`): a colored head band over a body.
+
+| key | type | default | |
+|---|---|---|---|
+| `fill` | color or role | `"background"` | Its body's fill, a role, a palette name or a hex. |
+| `radius` | fraction | `0` | Its corners' radius (of the slide's height); 0 for square corners. |
+| `outline` | fraction | `0.0033` | The outline of a picked card (`.pick`), its width (of the slide's height). |
+| `outline-color` | color or role | `"highlight"` | That outline's color, a role, a palette name or a hex. |
+| `pad` | [vertical, horizontal] em | `[0.5, 0.8]` | Its body's text from the card's edges, in em of the body type. |
+| `head-pad` | [vertical, horizontal] em | `[0.35, 0.8]` | The head band's text from its edges, in em of the body type. |
+| `roles` | list of roles | `["primary", "secondary", "accent"]` | The roles a card without role= takes by its place in the row, in turn: the first card the first role. |
+
+### `boxes.strip`
+
+A strip (`::: {.strip}`): a band tinted in its role across a card.
+
+| key | type | default | |
+|---|---|---|---|
+| `tint` | fraction | `0.18` | The role's share in its fill, over the background. |
+| `pad` | [vertical, horizontal] em | `[0.3, 0.8]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.status`
+
+The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors.
+
+| key | type | default | |
+|---|---|---|---|
+| `done` | color or role | `"highlight"` | ✓, a role, a palette name or a hex. |
+| `warn` | color or role | `"warning"` | ⚠, a role, a palette name or a hex. |
+| `fail` | color or role | `"accent"` | ✗, a role, a palette name or a hex. |
+
+### `bullets`
+
+List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface.
+
+| key | type | default | |
+|---|---|---|---|
+| `glyphs` | list of strings |  | A glyph per level, the first the top level's; the last repeats. |
+| `color` | color or role | `"primary-contrast"` | Their color, a role, a palette name or a hex. |
+
 ### `installed-fonts`
 
 A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}.
@@ -440,6 +540,7 @@ The PowerPoint template.
 | `template` | path | `"template.pptx"` | The template file. |
 | `typeface` | string |  | The font PowerPoint sets body text in (the theme's minor font). |
 | `heading-typeface` | string |  | The font PowerPoint sets titles in (default: typeface). |
+| `code-typeface` | string |  | The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace. |
 | `fonts` | path |  | A directory of .fntdata files to embed in each deck; without it, the deck embeds no fonts. |
 | `size` | list of 2 numbers | `[13.333, 7.5]` | The slide in inches, [width, height]; type: sizes are points on it. |
 | `scheme` | object |  | Theme color slots set outright (default: each slot's role). A value is a palette name or a hex. |
@@ -488,6 +589,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `closing` | number | `40` | The closing slide's headline. |
 | `pagenumber` | number | `9` | The page number. |
 | `marking` | number | `9` | The marking strip's text. |
+| `display` | number | `40` | A card's big number (`[$20M]{.big}`). |
 | `footer` | number | `9` | The footer line (footer=full). |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 

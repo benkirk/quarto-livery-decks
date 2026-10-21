@@ -15,7 +15,7 @@ The same quickstart deck under each livery (title, divider, content, closing):
 
 Two example decks ship with the framework:
 
-- **`decks/quickstart/`** is twelve slides, one of each headline feature. It is the deck to
+- **`decks/quickstart/`** is thirteen slides, one of each headline feature. It is the deck to
   copy when you start your own (see "What you get" below).
 - **`decks/sample/`** is a **cookbook** showing one example of every capability you're
   likely to need: text formatting, math, tables, two-column layouts, image embeds,
@@ -71,7 +71,7 @@ A repository of your own decks can build them on every push instead
 Every slide of `decks/quickstart/quickstart.qmd`, in the HTML deck under the default `ncar`
 livery:
 
-![All twelve slides of the quickstart deck in the HTML format](decks/quickstart/screenshots/overview.png)
+![All thirteen slides of the quickstart deck in the HTML format](decks/quickstart/screenshots/overview.png)
 
 | Slide | The Markdown behind it |
 |---|---|
@@ -79,6 +79,7 @@ livery:
 | [Section divider](decks/quickstart/screenshots/02-divider.png) | `# Write Markdown`, then a paragraph: the subtitle |
 | [Bullets and a footnote](decks/quickstart/screenshots/03-text.png) | a list, then a paragraph starting with `†`; `{.vcenter scale="1.2"}` on the heading |
 | [Columns](decks/quickstart/screenshots/04-columns.png) | `:::: {.columns}` with a list in one `.column` and a table in the other |
+| [Cards](decks/quickstart/screenshots/12-cards.png) | `.card` on each `.column`: a `###` title, a `[...]{.sub}` line, a `[...]{.label}`, a `[...]{.big}` number, `- [x]`/`- [-]`/`- [!]` status items; `.pick` outlines one |
 | [Equations](decks/quickstart/screenshots/05-math.png) | LaTeX between `$$`: OMML in pptx, MathJax in HTML, real TeX in the PDF |
 | [Code, static and live](decks/quickstart/screenshots/06-code.png) | a ` ```bash ` block, and a ` ```{bash} ` cell run at render time |
 | [Diagram](decks/quickstart/screenshots/07-mermaid.png) | a ` ```{mermaid} ` cell (Graphviz ` ```{dot} ` works the same way) |

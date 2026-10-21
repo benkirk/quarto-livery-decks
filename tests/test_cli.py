@@ -192,3 +192,19 @@ def test_bad_palette_names_its_key(tmp_path):
     r = run("build", d)
     assert r.returncode != 0 and "livery.yml: roles.accent: 'orang' is neither" in r.stderr, \
         f"a bad palette name without its key: {r.stderr.strip()[-200:]}"
+
+
+def test_mono_code_typeface(tmp_path):
+    """livery mono: pptx.code-typeface when a livery names one, else the bundled code face (nasa's DM
+    Mono), else nothing (ncar bundles none)."""
+    import shutil
+    t = tmp_path / "liveries"
+    for name in ("nasa",):
+        shutil.copytree(ROOT / "liveries" / name, t / name, ignore=shutil.ignore_patterns("reference"))
+    d = t / "courier"; d.mkdir()
+    (d / "_brand.yml").write_text("{}\n")
+    (d / "livery.yml").write_text("schema: 1\nname: courier\nextends: nasa\npptx:\n  code-typeface: Courier New\n")
+    assert run("build", d).returncode == 0
+    assert run("mono", d).stdout.strip() == "Courier New", "code-typeface not taken"
+    assert run("mono", t / "nasa").stdout.strip() == "DM Mono", "the bundled code face"
+    assert run("mono", ROOT / "liveries" / "ncar").stdout.strip() == "", "a livery without a code face"

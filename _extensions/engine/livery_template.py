@@ -23,7 +23,7 @@ from pathlib import Path
 
 import livery as livery_mod
 import pptx_waves
-from livery_build import SLOT_ROLES
+from livery_build import ART_KINDS, SLOT_ROLES
 from livery_charts import custom_colors
 
 # the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
@@ -83,7 +83,7 @@ class Builder:
         self.heading_typeface = livery["pptx"].get("heading-typeface", self.typeface)
         art = livery.get("art") or {}
         self.waves = art.get("waves")
-        self.art = {k: art[k] for k in ("title", "section", "content", "closing", "titlegraphic") if isinstance(art.get(k), str)}
+        self.art = {k: art[k] for k in ART_KINDS if isinstance(art.get(k), str)}
         self.signoff = livery.get("signoff")
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]
@@ -166,7 +166,7 @@ class Builder:
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab-width"]
-        title_top, rule_y, body_bottom = 0.049, 0.1444, 1 - 0.0778
+        title_top, rule_y, body_bottom = 0.049, 0.1444, g["body-bottom"]
         body_top = self.L.get("frametitle", {}).get("body", 0.1667)   # below a taller mark
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
         corner = self.logo_corner
@@ -177,13 +177,18 @@ class Builder:
         sizes = self.levels
         ind, tabsz, ins = (round(v * self.k) for v in (228600, 457200, 45720))   # 0.25, 0.5, 0.05 in on 7.5 in
         bullets = [("Arial", "•"), ("Wingdings", "§"), ("Courier New", "o"), ("Arial", "–"), ("Arial", "»")]
+        bu, buclr = self.L.get("bullets"), ""
+        if bu:   # the livery's glyphs (bullets:), the last repeating, in the pptx typeface and their color
+            face = self.L["pptx"].get("typeface", "Arial")
+            bullets = [(face, bu["glyphs"][min(i, len(bu["glyphs"]) - 1)]) for i in range(len(sizes))]
+            buclr = f'<a:buClr><a:srgbClr val="{bu["color"][1:]}"/></a:buClr>'
         body_lvls = ""
         for i, (sz, (bfont, bchar)) in enumerate(zip(sizes, bullets), 1):
             mar = ind * i
             # the space before an item, as HTML's list-item margins: a share of the body
             spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * (0.5 if i == 1 else 0.3))}"/></a:spcBef>'
             body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-{ind}" algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
-                          f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}'
+                          f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}{buclr}'
                           f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz}" kern="1200">'
                           f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                           f'</a:defRPr></a:lvl{i}pPr>')
@@ -337,10 +342,11 @@ class Builder:
     def media_for(self, name):
         """{rId: media name} a field layout's composition wears: its mark, sign-off, art and photo."""
         c, out = self.comps[self.comp_name(name)], {}
+        comp = self.comp_name(name)
         if c["mark"]:
-            out["rId2"] = f"mark-{c['mark']['role']}"
+            out["rId2"] = f"mark-{comp}"       # its file, the composition's own (livery.json img)
         if c["signoff"]:
-            out["rId3"] = f"signoff-{c['signoff']['role']}"
+            out["rId3"] = f"signoff-{comp}"
         if c["art"]:
             out["rId4"] = f"art-{c['art']}"
         if c["band"] and c["photo"] and "titlegraphic" in self.art:
@@ -349,20 +355,21 @@ class Builder:
 
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
-        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), 1 - 0.0778
+        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), g["body-bottom"]
         h = body_bottom - body_top
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
-        half = (1 - 2 * m - 0.03) / 2
+        gap = self.L["boxes"]["columns"]["gap"]   # every format's column gap (livery.json boxes)
+        half = (1 - 2 * m - gap) / 2
         if name == "Title and Content":
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, body_top, 1 - 2 * m, h), 'vert="horz"', "", "Click to edit Master text styles"))
         elif name == "Two Content":
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, body_top, half, h), 'vert="horz"', "", "Left", sz="half"))
-            shapes.append(self.ph("Content Placeholder 3", None, 2, xfrm(m + half + 0.03, body_top, half, h), 'vert="horz"', "", "Right", sz="half"))
+            shapes.append(self.ph("Content Placeholder 3", None, 2, xfrm(m + half + gap, body_top, half, h), 'vert="horz"', "", "Right", sz="half"))
         elif name == "Comparison":
             head_h = 0.09
             head_lst = f'<a:lvl1pPr marL="0" indent="0"><a:buNone/><a:defRPr sz="{self.sz("subhead")}" b="1">{fill("tx2")}</a:defRPr></a:lvl1pPr>'
-            for i, (idx_head, idx_body, x) in enumerate(((1, 11, m), (3, 2, m + half + 0.03))):
+            for i, (idx_head, idx_body, x) in enumerate(((1, 11, m), (3, 2, m + half + gap))):
                 shapes.append(self.ph(f"Text Placeholder {i + 2}", "body", idx_head, xfrm(x, body_top, half, head_h),
                                       'vert="horz" anchor="b"><a:normAutofit/></a:bodyPr><a:lstStyle>' + head_lst +
                                       '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Heading</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "", sz="quarter" if i else None).split("<!--")[0])
@@ -412,6 +419,8 @@ class Builder:
         names += [n for lay in FIELD_LAYOUTS for n in self.media_for(lay).values()]
         def path_of(n):
             kind, _, key = n.partition("-")
+            if kind in ("mark", "signoff") and key in self.comps:   # a composition's own file
+                return self.comps[key][kind]["img"]
             return (mark(key) if kind == "mark" else mark(key, "signoff") if kind == "signoff"
                     else self.art[key] if kind == "art" else self.art["titlegraphic"])
         part_of, by_path = {}, {}   # one media part per file: a lockup serving two roles is stored once

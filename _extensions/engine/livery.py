@@ -167,11 +167,16 @@ def deps(d: str) -> list[str]:
 
 
 def mono(d: str) -> str:
-    """typography.monospace's family when the livery bundles its files (livery_build's mono_font())."""
+    """The pptx's code face (pandoc's monofont, the pptx its only reader): pptx.code-typeface when the
+    livery names one (an installed face, as the template's), else typography.monospace's family when
+    the livery bundles its files (livery_build's mono_font()). HTML and PDF read typography.monospace."""
     if not (Path(d) / "build" / "livery.json").exists():
         return ""
+    L = load(d)
+    if (L.get("pptx") or {}).get("code-typeface"):
+        return L["pptx"]["code-typeface"]
     import livery_build   # beside this file; only this command needs it (and PyYAML)
-    return livery_build.mono_font(load(d))[0]
+    return livery_build.mono_font(L)[0]
 
 
 def figsize(d: str) -> str:

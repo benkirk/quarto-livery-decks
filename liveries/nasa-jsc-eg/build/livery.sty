@@ -99,6 +99,33 @@
 \def\engine@marking@fill{}
 \def\engine@marking@bold{}
 \def\engine@marking@default{This presentation contains no sensitive information; but if it did, here's where the disclaimer would go}
+% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
+% its pads (@pady, @padx: em of the body type) and colors
+\def\engine@boxes@columns@gap{0.03}
+\def\engine@boxes@columns@rule{0.0022}
+\def\engine@boxes@caution@bar{0.0089}
+\def\engine@boxes@caution@pady{0.55}\def\engine@boxes@caution@padx{0.9}
+\def\engine@boxes@panel@pady{0.6}\def\engine@boxes@panel@padx{0.9}
+\definecolor{EngineBoxesLeadFill}{HTML}{1C2026}
+\def\engine@boxes@lead@bar{0.0089}
+\definecolor{EngineBoxesLeadBarColor}{HTML}{F93A1D}
+\def\engine@boxes@lead@pady{0.55}\def\engine@boxes@lead@padx{0.9}
+\definecolor{EngineBoxesCardFill}{HTML}{1C2026}
+\def\engine@boxes@card@radius{0}
+\def\engine@boxes@card@outline{0.0033}
+\definecolor{EngineBoxesCardOutlineColor}{HTML}{00BC71}
+\def\engine@boxes@card@pady{0.5}\def\engine@boxes@card@padx{0.8}
+\def\engine@boxes@card@headpady{0.35}\def\engine@boxes@card@headpadx{0.8}
+\def\engine@boxes@strip@tint{0.3}
+\def\engine@boxes@strip@pady{0.3}\def\engine@boxes@strip@padx{0.8}
+\definecolor{EngineStatusDone}{HTML}{00BC71}
+\definecolor{EngineStatusWarn}{HTML}{FEA20B}
+\definecolor{EngineStatusFail}{HTML}{F93A1D}
+% the list glyphs per level (bullets:), in their color
+\definecolor{EngineBullet}{HTML}{FFFFFF}
+\def\engine@bullet@i{▪}
+\def\engine@bullet@ii{–}
+\def\engine@bullet@iii{•}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.028}
 \def\engine@geom@tabwidth{0.018}
@@ -116,11 +143,13 @@
 \def\engine@geom@fullpad{0.025}
 \def\engine@geom@fullfootline{0.075}
 \def\engine@geom@fullcaption{0.06}
+\def\engine@geom@widemargin{0.014}
+\def\engine@geom@bodybottom{0.9222}
 \def\engine@art@title{\engineliverydir art/title}
+\def\engine@art@titlelight{\engineliverydir art/title-light}
 \def\engine@art@section{\engineliverydir art/closing}
 \def\engine@art@closing{\engineliverydir art/closing}
 \def\engine@art@content{\engineliverydir art/content}
-\def\engine@art@titlegraphic{\engineliverydir art/title}
 % type: the body as a fraction of the paper height, each role's size and leading as ratios to it,
 % the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)
 \def\engine@type@frac{0.02963}
@@ -144,6 +173,7 @@
 \def\engine@type@pagenumber{{0.75}{1.2}}
 \def\engine@type@footer{{0.75}{1.2}}
 \def\engine@type@marking{{0.8125}{1.2}}
+\def\engine@type@display{{2.25}{1.08}}
 \def\engine@type@levelii{{0.9375}{1.4}}
 \def\engine@type@leveliii{{0.8125}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}
@@ -283,9 +313,9 @@
 \def\engine@c@titlelight@fineprint@w{0.5}
 \def\engine@c@titlelight@fineprint@h{0.1}
 \colorlet{EngineCtitlelightField}{BrandBackground}
-\colorlet{EngineCtitlelightText}{BrandText}
-\colorlet{EngineCtitlelightByline}{BrandText}
-\colorlet{EngineCtitlelightFineprint}{BrandText}
+\colorlet{EngineCtitlelightText}{BrandDark}
+\colorlet{EngineCtitlelightByline}{BrandDark}
+\colorlet{EngineCtitlelightFineprint}{BrandDark}
 \def\engine@c@titlelight@column@anchor{middle}
 \def\engine@c@titlelight@column@tab{false}
 \def\engine@c@titlelight@column@align{left}
@@ -295,7 +325,8 @@
 \def\engine@c@titlelight@byline@align{left}
 \def\engine@c@titlelight@fineprint@anchor{bottom}
 \def\engine@c@titlelight@mark@img{\engineliverydir ../nasa/logos/meatball}
-\def\engine@c@titlelight@signoff@img{\engineliverydir logos/eg-footer}
+\def\engine@c@titlelight@signoff@img{\engineliverydir logos/group-patch}
+\def\engine@c@titlelight@art{\engineliverydir art/title-light}
 \def\engine@c@titlephotolight@field@x{0}
 \def\engine@c@titlephotolight@field@y{0}
 \def\engine@c@titlephotolight@field@w{0.5}
@@ -337,7 +368,7 @@
 \def\engine@c@titlephotolight@byline@align{left}
 \def\engine@c@titlephotolight@fineprint@anchor{bottom}
 \def\engine@c@titlephotolight@mark@img{\engineliverydir ../nasa/logos/meatball}
-\def\engine@c@titlephotolight@signoff@img{\engineliverydir logos/eg-footer}
+\def\engine@c@titlephotolight@signoff@img{\engineliverydir logos/group-patch}
 \def\engine@c@titleband@field@x{0}
 \def\engine@c@titleband@field@y{0}
 \def\engine@c@titleband@field@w{1}
@@ -378,7 +409,7 @@
 \def\engine@c@titleband@column@rule@h{0.0033}
 \def\engine@c@titleband@fineprint@anchor{top}
 \def\engine@c@titleband@mark@img{\engineliverydir ../nasa/logos/meatball}
-\def\engine@c@titleband@signoff@img{\engineliverydir logos/group-patch}
+\def\engine@c@titleband@signoff@img{\engineliverydir logos/eg-footer}
 \def\engine@c@titleband@art{\engineliverydir art/title}
 \def\engine@c@closing@field@x{0}
 \def\engine@c@closing@field@y{0}
@@ -396,7 +427,7 @@
 \def\engine@c@closing@column@y{0.649}
 \def\engine@c@closing@column@w{0.923}
 \def\engine@c@closing@column@h{0.3}
-\colorlet{EngineCclosingField}{BrandSurface}
+\colorlet{EngineCclosingField}{BrandDark}
 \colorlet{EngineCclosingText}{BrandText}
 \def\engine@c@closing@column@anchor{top}
 \def\engine@c@closing@column@tab{false}
@@ -426,7 +457,7 @@
 \def\engine@c@closinglight@column@tab{false}
 \def\engine@c@closinglight@column@align{center}
 \def\engine@c@closinglight@mark@img{\engineliverydir ../nasa/logos/meatball}
-\def\engine@c@closinglight@signoff@img{\engineliverydir logos/eg-footer}
+\def\engine@c@closinglight@signoff@img{\engineliverydir logos/nasa-name-2line}
 \def\engine@c@closingband@field@x{0}
 \def\engine@c@closingband@field@y{0}
 \def\engine@c@closingband@field@w{1}
@@ -449,7 +480,7 @@
 \def\engine@c@closingband@column@tab{true}
 \def\engine@c@closingband@column@align{left}
 \def\engine@c@closingband@mark@img{\engineliverydir ../nasa/logos/meatball}
-\def\engine@c@closingband@signoff@img{\engineliverydir logos/group-patch}
+\def\engine@c@closingband@signoff@img{\engineliverydir logos/eg-footer}
 \def\engine@c@closingband@art{\engineliverydir art/closing}
 \def\engine@c@section@field@x{0}
 \def\engine@c@section@field@y{0}
@@ -467,7 +498,7 @@
 \def\engine@c@section@column@y{0.649}
 \def\engine@c@section@column@w{0.923}
 \def\engine@c@section@column@h{0.3}
-\colorlet{EngineCsectionField}{BrandSurface}
+\colorlet{EngineCsectionField}{BrandDark}
 \colorlet{EngineCsectionText}{BrandText}
 \def\engine@c@section@column@anchor{top}
 \def\engine@c@section@column@tab{false}

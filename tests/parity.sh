@@ -57,7 +57,7 @@ snapshot() {   # <deck dir> <deck name> <out dir> <livery>, after build
   fi
   {
     grep -c 'ppt/media/image' "$out/pptx-members.txt" || true
-    cat "$out"/pptx/ppt/slides/*.xml | grep -o 'engine-section-label' | wc -l | tr -d ' '
+    { cat "$out"/pptx/ppt/slides/*.xml | grep -o 'engine-section-label' || true; } | wc -l | tr -d ' '
     grep -c 'embeddedFontLst' "$out/pptx/ppt/presentation.xml" || true
   } >"$out/greps.txt"
   # after the greps, which read the engine's own names

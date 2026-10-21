@@ -166,7 +166,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rsvg-convert`: conda-forge librsvg), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
-  `style_footnotes`, `link_captions`, `slide_layout`, `style_tables` (tables drawn as in the
+  `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
+  widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
+  marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
@@ -215,8 +217,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   (after pandoc, because anything after an image splits a pptx slide). A deck
   should not hand-roll footers for this. docs/authoring.md "Linked images".
 - **Short slides** (`{.hcenter}`, `{.vcenter}`, `{.center}`, `scale="S"`,
-  `{.fill}`, each independent): the theme centers and scales the
-  body in HTML and PDF. pptx drops slide classes, so the engine's `slide-layout.lua`
+  `{.fill}`, `{.wide}`, each independent): the theme centers and scales the
+  body in HTML and PDF; `.wide` widens it to the slide less `geometry.wide-margin` a side in every
+  format (pptx: the body placeholders, a columns slide's columns). pptx drops slide classes, so the engine's `slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
   centers a table by its measured height (rows in PowerPoint's own sizing can still differ). `.center` is the theme's, not
@@ -337,7 +340,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   its role (`marks:`; `livery.json` always has `marks`, read with
   `livery.mark(livery, role, "logo"|"signoff")`): content slides `background`,
   dividers, covers and the cover closing `primary`, the band title and closing
-  `title.field`. Defaults: background `logo.medium.light`/`signoff.light`, primary the
+  `title.field`. A composed slide's are its composition's: `compositions.<name>.mark|signoff`
+  resolve to files (`img`, `img-print`), by `image:` (a `logo.images` name; a light variant keeps
+  it) else the role's, and every drawer reads those (nasa-jsc-eg names its patches so). Defaults: background `logo.medium.light`/`signoff.light`, primary the
   dark ones, any other role primary's (nsi: black mark on gold, white on the band). pandoc writes no slide-number box, so
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).
@@ -509,8 +514,34 @@ it does, by area, beyond the format notes above:
   placeholder and silently drops the text after it (the slide count doesn't
   change, so `make qa` can't see it). Content *after* `.columns` still splits,
   so put it inside the last column. Code blocks are text and never split.
-- **Two columns at most.** pandoc keeps the first two `.column`s of a pptx slide and drops the
-  rest, silently (HTML and PDF show them all); `columns-pptx.lua` warns with the slide's title.
+- **Columns: two tiers.** pandoc keeps the first two `.column`s of a pptx slide and drops the
+  rest, silently. Columns take their `width=` shares of the content box less `boxes.columns.gap`
+  in every format. A *plain* slide (two columns, no card or lead) stays pandoc's Two Content:
+  `grid-pptx.lua` writes the shares on a notes line (`engine-columns: 0.55 0.45`) and `columns.py`
+  frames the placeholders, moving a column's picture or table with them. Never a marker paragraph
+  there: beside a picture or table it demotes the slide. A *grid* slide (`is_grid()`: more than
+  two columns, a `.card`, a `.lead`) is flattened on purpose into one placeholder with marker
+  paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`, `⟦engine:end⟧`), which `grid.py`
+  redraws as text boxes carrying the master's body list style and deletes. First-cut limit: a
+  picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits the
+  slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
+  pandoc, silently, in either tier.
+- **Cards and boxes** (`::: {.lead}`, `::: {.column .card role= .pick .solid}` with `###`,
+  `[..]{.sub}`, `[..]{.label}`, `[..]{.big}`, `::: {.strip role=}`, status items `- [x]`/`[!]`/`[-]`
+  in a card or `::: {.status}`): `engine-common.lua` reads them once (`card_attrs()`,
+  `split_lines()`: in a lead or card a source line is a line, `status_lists()`), and every
+  number is `livery.json` `boxes` (`livery.yml` `boxes:`, merged box by box over `BOXES`). pptx:
+  a grid slide; `grid-pptx.lua` writes `⟦engine:lead⟧`, `⟦engine:column card role=... pick
+  solid⟧`, `⟦engine:strip role=...⟧` (each closed by `⟦engine:end⟧`) and prefix markers
+  `⟦engine:title⟧`/`sub`/`label`/`big`; `grid.py` draws native shapes ("Card n fill", "Card n head",
+  "Lead fill", "Card n strip k"...), one group per card, lead or strip ("Card n", "Lead", "Strip": a
+  click selects it whole; tests look inside groups), under text boxes whose `lstStyle` is the master's body style
+  (bullets and sizes as the placeholder's), each head its own height, a row's cards one height;
+  `status_glyphs.py` makes a glyph the bullet (`a:buChar`). HTML: raw tags (a Div opening with a
+  heading would become a `<section>`), the role a custom property (`role` is ARIA's attribute).
+  PDF: `\engine@barbox` (caution, lead, strip), tcolorbox cards set in one run (bodies boxed
+  first, the feature panel's pattern), a status list beamer's itemize with `\item[✓]`. PDF frames
+  are top-aligned (`t`, without beamer's 0.2 cm; a paragraph-first body cancels its `\parskip`).
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves

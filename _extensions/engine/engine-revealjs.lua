@@ -172,10 +172,10 @@ end
 -- (unwrap_layout), since pandoc turns a Div that starts with a heading into a
 -- <section>.  The classes go on the slide; the script and the scss act on them.
 local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true,
-                         caution = true }
+                         caution = true, wide = true }
 
 local function take_layout(blk)
-  local h, v, fill, caution, found = false, false, false, false, false
+  local h, v, fill, caution, wide, found = false, false, false, false, false, false
   local kept = pandoc.List({})
   for _, c in ipairs(blk.classes) do
     if LAYOUT_CLASSES[c] then
@@ -184,6 +184,7 @@ local function take_layout(blk)
       v = v or c == "vcenter" or c == "center"
       fill = fill or c == "fill"
       caution = caution or c == "caution"
+      wide = wide or c == "wide"
     else
       kept:insert(c)
     end
@@ -199,7 +200,7 @@ local function take_layout(blk)
   end
   if not found then return nil end
   blk.classes = kept
-  return { h = h, v = v, fill = fill, caution = caution, scale = scale }
+  return { h = h, v = v, fill = fill, caution = caution, wide = wide, scale = scale }
 end
 
 local function wrap_layout(blocks)
@@ -217,6 +218,7 @@ local function wrap_layout(blocks)
       if lay.v then blk.classes:insert("engine-vcenter") end
       if lay.fill then blk.classes:insert("engine-fill") end
       if lay.caution then blk.classes:insert("engine-caution") end
+      if lay.wide then blk.classes:insert("engine-wide") end
       if lay.scale then blk.attributes["data-engine-scale"] = lay.scale end
       local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do
@@ -229,6 +231,105 @@ local function wrap_layout(blocks)
     end
   end
   return out
+end
+
+-- A .columns div's columns at their shares of the row less its gaps (C.column_shares(), as the pptx
+-- and PDF lay them out): flex-grow by the share from a zero basis, Quarto's width= dropped (the
+-- scss gives the row its gap)
+local function flex_columns(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "columns") then return nil end
+    local cols, shares = C.column_shares(d)
+    for k, col in ipairs(cols) do
+      col.attributes["width"] = nil
+      col.attributes["style"] = string.format("flex: %.4f 1 0%%;", shares[k]) .. (col.attributes["style"] or "")
+    end
+    return d
+  end })
+end
+
+-- A .strip (in a card or on its own): raw tags round its blocks, its role a custom property
+-- (role= is ARIA's attribute), its source lines each a paragraph; the scss tints it
+local function strips(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "strip") then return nil end
+    local out = pandoc.Blocks({ html(string.format('<div class="engine-strip" style="--engine-strip-role: var(--engine-%s)">',
+      d.attributes["role"] or "accent")) })
+    out:extend(C.split_lines(d.content))
+    out:insert(html("</div>"))
+    return out
+  end })
+end
+
+-- Status items (C.status_lists()): the glyph a span of its status (⚠ with U+FE0E: no emoji), which
+-- the scss sets where the bullet was (the bullet dropped), a failed item's text a span it mutes
+local function status_items(blocks)
+  return C.status_lists(blocks, function(l, kinds)
+    for k, item in ipairs(l.content) do
+      local kind = kinds[k]
+      if kind then
+        local first = item[1]
+        local glyph = first.content[1].text .. (kind == "warn" and "\u{FE0E}" or "")
+        local il = pandoc.Inlines({ pandoc.Span({ pandoc.Str(glyph) }, pandoc.Attr("", { "engine-status-" .. kind })) })
+        local rest = pandoc.Inlines({})
+        for j = 3, #first.content do rest:insert(first.content[j]) end
+        if kind == "fail" then il:insert(pandoc.Span(rest, pandoc.Attr("", { "engine-status-text" }))) else il:extend(rest) end
+        first.content = il
+      end
+    end
+    return l
+  end)
+end
+
+-- A .lead box: raw tags round its blocks (a Div whose first block is a heading becomes a <section>),
+-- its source lines each a paragraph (C.split_lines()); the scss draws it from livery.css's boxes
+local function lead_boxes(blocks)
+  return blocks:walk({ Div = function(d)
+    if not has_class(d, "lead") then return nil end
+    local out = pandoc.Blocks({ html('<div class="engine-lead">') })
+    out:extend(C.split_lines(d.content))
+    out:insert(html("</div>"))
+    return out
+  end })
+end
+
+-- A card column (C.card_attrs()): the Div kept (its flex share), its content raw tags round a head
+-- band (the title and sub) and a body, the role a custom property (role= is ARIA's attribute in
+-- HTML); [..]{.label}, [..]{.big} and [..]{.sub} spans as engine- classes. The scss draws it.
+local function inline_html(inlines)
+  return (pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "html"):gsub("%s+$", ""))
+end
+
+local SPANS = { label = "engine-label", big = "engine-big", sub = "engine-sub" }
+
+local function card_columns(blocks, roles)
+  local function card(d, k)
+    local c = C.card_attrs(d, roles[(k - 1) % #roles + 1])
+    if not c then return nil end
+    local cls = "engine-card" .. (c.pick and " engine-pick" or "") .. (c.solid and " engine-solid" or "")
+    local out = pandoc.Blocks({ html(string.format('<div class="%s" style="--engine-card-role: var(--engine-%s)">', cls, c.role)) })
+    if c.title or c.sub then
+      local head = '<div class="engine-card-head">'
+      if c.title then head = head .. '<div class="engine-card-title">' .. inline_html(c.title) .. "</div>" end
+      if c.sub then head = head .. '<div class="engine-card-sub">' .. inline_html(c.sub) .. "</div>" end
+      out:insert(html(head .. "</div>"))
+    end
+    out:insert(html('<div class="engine-card-body">'))
+    out:extend(c.body:walk({ Span = function(sp)
+      for k, v in pairs(SPANS) do
+        if has_class(sp, k) then sp.classes = sp.classes:filter(function(x) return x ~= k end); sp.classes:insert(v) end
+      end
+      return sp
+    end }))
+    out:insert(html("</div></div>"))
+    d.content = out
+    return d
+  end
+  return blocks:walk({ Div = function(d)   -- a card's default role is by its place in the row
+    if not has_class(d, "columns") then return nil end
+    for k, col in ipairs(C.column_shares(d)) do card(col, k) end
+    return d
+  end })
 end
 
 local function unwrap_layout(blocks)
@@ -527,7 +628,16 @@ local function add_dependency(livery)
     add(livery.marks[role].logo)
     if livery.marks[role].signoff then add(livery.marks[role].signoff) end
   end
-  for _, kind in ipairs({ "title", "section", "closing", "content", "titlegraphic" }) do   -- static art files
+  local comps = {}   -- every composition's own mark and sign-off files (an image: of its own)
+  for k in pairs(livery.compositions or {}) do table.insert(comps, k) end
+  table.sort(comps)
+  for _, k in ipairs(comps) do
+    for _, part in ipairs({ "mark", "signoff" }) do
+      local p = livery.compositions[k][part]
+      if type(p) == "table" and type(p.img) == "string" then add(p.img) end
+    end
+  end
+  for _, kind in ipairs({ "title", "title-light", "section", "closing", "content", "titlegraphic" }) do   -- static art files
     if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
   end
   quarto.doc.add_html_dependency({
@@ -617,7 +727,7 @@ function Pandoc(doc)
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(doc.blocks), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks))), livery.boxes.card.roles))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

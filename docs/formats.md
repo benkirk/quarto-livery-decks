@@ -69,6 +69,9 @@ Per deck, `make pptx` runs:
      demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text or a
      `::: note` after a table or image, which joins its caption box);
    - `slide-layout.lua` carries a slide's layout classes over as a notes line for `slide_layout`;
+   - `grid-pptx.lua` carries a two-column slide's widths over as a notes line for `columns`, and
+     flattens a slide of more than two columns (pandoc's pptx keeps the first two), cards, a lead
+     box or a strip into one text flow with marker paragraphs for `grid`;
    - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [authoring.md "Linked images"](authoring.md#linked-images));
    - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too).
 2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
@@ -99,6 +102,15 @@ Per deck, `make pptx` runs:
    - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
      title slides at the template's extra layouts; sets a `::: note` in the caption's look
      under its figure (see [authoring.md "Notes under a figure"](authoring.md#notes-under-a-figure)); copies the slide number onto every slide.
+   - `columns`: sets a two-column slide's columns at their widths, the livery's gap between them
+     (`boxes.columns.gap`), as HTML and PDF lay them out; pandoc's are the template's two halves.
+     A picture or table in a column moves and scales with it.
+   - `grid`: draws a slide of three or more columns, cards, a lead box or a strip from
+     `grid-pptx.lua`'s markers: native shapes (fills, bars, rounded cards, outlines) and text
+     boxes in the body placeholder's look, at the same widths, gap and pads as HTML and PDF (the
+     livery's `boxes`). A picture or table in such a column is not drawn in it yet (a warning at
+     render time).
+   - `status_glyphs`: makes a status item's ✓ ⚠ ✗ its bullet, in the livery's status color.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in the primary color, thin rules between rows, every second row banded, the
      blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set

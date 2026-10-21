@@ -33,6 +33,7 @@
   --engine-logo-top: 30.6px;
   --engine-margin: 44.8px;
   --engine-tab-width: 28.8px;
+  --engine-wide-margin: 22.4px;
   --engine-full-pad: 40px;
   --engine-full-footline: 67.5px;
   --engine-full-caption: 54px;
@@ -56,6 +57,7 @@
   --engine-type-sectionsubtitle: 1.5;
   --engine-type-eyebrow: 0.5625;
   --engine-type-closing: 2.25;
+  --engine-type-display: 2.25;
   --engine-type-level2: 0.9375;
   --engine-type-level3: 0.8667;
   --engine-type-level4: 0.9231;
@@ -87,6 +89,29 @@
   --engine-marking-fill: #6840F0;
   --engine-marking-text: #FFFFFF;
   --engine-marking-weight: 700;
+  --engine-column-gap: 48px;
+  --engine-column-rule: 2px;
+  --engine-caution-bar: 8px;
+  --engine-caution-pad: 0.55em 0.9em;
+  --engine-panel-pad: 0.6em 0.9em;
+  --engine-lead-fill: #1C2026;
+  --engine-lead-bar: 8px;
+  --engine-lead-bar-color: #F93A1D;
+  --engine-lead-pad: 0.55em 0.9em;
+  --engine-lead-gap: 0.55em;
+  --engine-card-fill: #1C2026;
+  --engine-card-radius: 0px;
+  --engine-card-outline: 3px;
+  --engine-card-outline-color: #00BC71;
+  --engine-card-pad: 0.5em 0.8em;
+  --engine-card-head-pad: 0.35em 0.8em;
+  --engine-card-pad-x: 0.8em;
+  --engine-strip-tint: 30%;
+  --engine-strip-pad: 0.3em 0.8em;
+  --engine-strip-gap: 0.3em;
+  --engine-status-done: #00BC71;
+  --engine-status-warn: #FEA20B;
+  --engine-status-fail: #F93A1D;
 }
 /* chart colors (livery.json charts) */
 :root {
@@ -128,7 +153,9 @@ html:root {
 .reveal .slides section .engine-signoff { background-image: url("eg-footer.png"); }
 .reveal .slides section.engine-field .engine-signoff,
 .reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("eg-footer.png"); }
-.reveal .slides section.engine-title .engine-title-photo-default { background: url("title.jpg") center / cover no-repeat; }
+html .reveal .slides section ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
+html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
+html .reveal .slides section ul ul ul > li::before { content: "•"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;
@@ -422,7 +449,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-fineprint-r: 755.2px;
   --engine-cmp-fineprint-b: 36px;
   --engine-cmp-field: var(--engine-background);
-  --engine-cmp-text: var(--engine-foreground);
+  --engine-cmp-text: var(--engine-dark);
   --engine-cmp-column-justify: center;
   --engine-cmp-column-tab: none;
   --engine-cmp-column-align: left;
@@ -430,36 +457,36 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   --engine-cmp-date-col: none;
   --engine-cmp-date-byl: block;
   --engine-cmp-date-order: 2;
-  --engine-cmp-date-color: var(--engine-foreground);
+  --engine-cmp-date-color: var(--engine-dark);
   --engine-cmp-title-col: block;
   --engine-cmp-title-byl: none;
   --engine-cmp-title-order: 0;
-  --engine-cmp-title-color: var(--engine-foreground);
+  --engine-cmp-title-color: var(--engine-dark);
   --engine-cmp-subtitle-col: block;
   --engine-cmp-subtitle-byl: none;
   --engine-cmp-subtitle-order: 1;
-  --engine-cmp-subtitle-color: var(--engine-foreground);
+  --engine-cmp-subtitle-color: var(--engine-dark);
   --engine-cmp-author-col: none;
   --engine-cmp-author-byl: block;
   --engine-cmp-author-order: 0;
-  --engine-cmp-author-color: var(--engine-foreground);
+  --engine-cmp-author-color: var(--engine-dark);
   --engine-cmp-institute-col: none;
   --engine-cmp-institute-byl: block;
   --engine-cmp-institute-order: 0;
-  --engine-cmp-institute-color: var(--engine-foreground);
+  --engine-cmp-institute-color: var(--engine-dark);
   --engine-cmp-rule-order: 1;
   --engine-cmp-byline-justify: flex-start;
   --engine-cmp-byline-align: left;
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
-  --engine-cmp-fineprint-color: var(--engine-foreground);
+  --engine-cmp-fineprint-color: var(--engine-dark);
   --engine-cmp-fineprint-justify: flex-end;
   --engine-cmp-eyebrow-display: none;
-  background: none;
+  background: url("title-light.jpg") center / cover no-repeat;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block::after { background-image: url("meatball.png"); }
-html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block .engine-signoff { background-image: url("eg-footer.png"); }
+html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block .engine-signoff { background-image: url("group-patch.png"); }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -569,7 +596,7 @@ html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-
   background: none;
 }
 html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo::after { background-image: url("meatball.png"); }
-html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo .engine-signoff { background-image: url("eg-footer.png"); }
+html.engine-title-light div.reveal div.slides section.engine-title.quarto-title-block.engine-title-photo .engine-signoff { background-image: url("group-patch.png"); }
 html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -678,7 +705,7 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band {
   background: url("title.jpg") center / cover no-repeat;
 }
 html div.reveal div.slides section.engine-title.quarto-title-block.engine-band::after { background-image: url("meatball.png"); }
-html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .engine-signoff { background-image: url("group-patch.png"); }
+html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .engine-signoff { background-image: url("eg-footer.png"); }
 .reveal .slides section.slide.level2.closing {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -750,7 +777,7 @@ html div.reveal div.slides section.engine-title.quarto-title-block.engine-band .
   --engine-cmp-fineprint-h: 0px;
   --engine-cmp-fineprint-r: 1600px;
   --engine-cmp-fineprint-b: 900px;
-  --engine-cmp-field: var(--engine-surface);
+  --engine-cmp-field: var(--engine-dark);
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: none;
@@ -848,7 +875,7 @@ html.engine-title-light .reveal .slides section.slide.level2.closing {
   background: none;
 }
 html.engine-title-light .reveal .slides section.slide.level2.closing::after { background-image: url("meatball.png"); }
-html.engine-title-light .reveal .slides section.slide.level2.closing .engine-signoff { background-image: url("eg-footer.png"); }
+html.engine-title-light .reveal .slides section.slide.level2.closing .engine-signoff { background-image: url("nasa-name-2line.png"); }
 html .reveal .slides section.slide.level2.closing.engine-band {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -933,7 +960,7 @@ html .reveal .slides section.slide.level2.closing.engine-band {
   background: url("closing.jpg") center / cover no-repeat;
 }
 html .reveal .slides section.slide.level2.closing.engine-band::after { background-image: url("meatball.png"); }
-html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { background-image: url("group-patch.png"); }
+html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { background-image: url("eg-footer.png"); }
 .reveal .slides section.slide.engine-section {
   --engine-cmp-field-display: block;
   --engine-cmp-field-x: 0px;
@@ -1005,7 +1032,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-fineprint-h: 0px;
   --engine-cmp-fineprint-r: 1600px;
   --engine-cmp-fineprint-b: 900px;
-  --engine-cmp-field: var(--engine-surface);
+  --engine-cmp-field: var(--engine-dark);
   --engine-cmp-text: var(--engine-foreground);
   --engine-cmp-column-justify: flex-start;
   --engine-cmp-column-tab: none;
