@@ -25,7 +25,8 @@ from conftest import ROOT
 ENGINE = ROOT / "_extensions" / "engine"
 NCAR = ROOT / "liveries" / "ncar"
 MD = ("## Status\n\n::: {.status}\n- [x] Done thing\n- [!] Risky thing\n- [-] Failed thing\n- [ ] Open thing\n:::\n\n"
-      "## Plain\n\n- [x] A task outside\n- ✓ A literal glyph\n")
+      "## Plain\n\n- [x] A task outside\n- ✓ A literal glyph\n\n"
+      "## ⚠︎ Careful\n\n✓ A paragraph, not an item\n")
 STEP = """
 import sys
 from pptx import Presentation
@@ -86,3 +87,12 @@ def test_outside(deck):
 def test_idempotent(deck):
     _, first, second = deck
     assert first == second, "a second run of status_glyphs changed the deck"
+
+
+def test_not_list_items(deck):
+    """A slide title and a paragraph led by a glyph are not status items: they keep the glyph."""
+    prs, *_ = deck
+    slide = prs.slides[2]
+    assert slide.shapes.title.text_frame.text.startswith("⚠"), "the title lost its glyph"
+    p = items(slide)[0]
+    assert p.text.startswith("✓") and bullet(p) == (None, None), "a paragraph made a status item"

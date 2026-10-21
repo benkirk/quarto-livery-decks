@@ -2,7 +2,8 @@
 
 grid-pptx.lua normalizes a status item (engine-common.lua's status_lists(): `- [x]`, `- [!]`,
 `- [-]` in a card or a `::: {.status}` list, a literal ✓ ⚠ ✗ anywhere) to the glyph first in its
-paragraph. On every text frame of every slide this takes the glyph and its space off the
+paragraph. On every text frame of every slide, in a list item (pandoc writes a:buNone on every
+other paragraph, a slide's title too: "## ⚠︎ Careful" keeps its glyph), this takes the glyph and its space off the
 paragraph's text and makes it the paragraph's bullet (`a:buChar`, colored `a:buClr` in the
 livery's boxes.status color), so it stands where the bullet was and the text keeps its indent,
 as HTML's and beamer's do; a failed item's text is muted. Idempotent: a paragraph whose bullet
@@ -47,6 +48,8 @@ def _color(rpr, hexv):
 def mark(p) -> bool:
     """A paragraph (a:p) led by a status glyph: the glyph made its bullet; False if it is not one."""
     ppr = p.find(qn("a:pPr"))
+    if ppr is not None and ppr.find(qn("a:buNone")) is not None:   # not a list item: a title, a paragraph
+        return False
     if ppr is not None and (bu := ppr.find(qn("a:buChar"))) is not None and bu.get("char") in GLYPHS:
         return False
     runs = p.findall(qn("a:r"))
