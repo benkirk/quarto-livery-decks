@@ -536,6 +536,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -586,6 +587,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -636,6 +638,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -695,6 +698,7 @@
         "opacity": 0.72,
         "role": "dark"
       },
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -737,6 +741,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -790,6 +795,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "top",
@@ -798,6 +804,13 @@
           0.27,
           0.5,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -860,6 +873,7 @@
         "role": "primary"
       },
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -868,6 +882,13 @@
           0.27,
           0.52,
           0.45
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -929,6 +950,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "top",
@@ -937,6 +959,13 @@
           0.27,
           0.5,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "foreground",
         "rule": [
@@ -991,6 +1020,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "top",
@@ -999,6 +1029,13 @@
           0.27,
           0.44,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -1060,6 +1097,7 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "top",
@@ -1068,6 +1106,13 @@
           0.27,
           0.44,
           0.59
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "foreground",
         "rule": [

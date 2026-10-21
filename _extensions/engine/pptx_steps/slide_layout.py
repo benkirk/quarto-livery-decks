@@ -36,6 +36,7 @@ from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_PLACEHOLDER
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
+from pptx.text.text import _Run
 from pptx.util import Pt
 
 import livery as livery_mod
@@ -551,6 +552,83 @@ def title_cover(slide, width, height, photo):
         tree.append(copy.deepcopy(sp._element))
 
 
+def cover_byline(prs, slide, comp, width, height):
+    """A cover's byline (compositions: byline) in the pptx. pandoc puts the subtitle and the authors
+    in one paragraph of the subtitle placeholder, a blank line between them, the date in the date
+    placeholder, and drops the institute (slide-layout.lua records the authors and institutes).
+    With a box, the byline's elements become one text box in it (its order, the type roles' sizes,
+    its role, alignment and anchor), and the placeholders keep only the column's elements; without
+    one, the byline's runs are recolored where pandoc put them."""
+    by = comp.get("byline")
+    if not by:
+        return
+    ph = {sh.placeholder_format.type: sh for sh in slide.placeholders}
+    date, sub = ph.get(PP_PLACEHOLDER.DATE), ph.get(PP_PLACEHOLDER.SUBTITLE)
+    subtitle = _custom_prop(prs, "subtitle") or ""
+    color = RGBColor.from_string(livery_mod.color(LIVERY, by["role"]))
+    if not by["box"]:
+        _recolor_byline(date, sub, by["elements"], bool(subtitle), color)
+        return
+    authors = _custom_prop(prs, "engine-author") or prs.core_properties.author or ""
+    lines = {"date": [date.text_frame.text.strip()] if date is not None and date.text_frame.text.strip() else [],
+             "subtitle": [subtitle] if subtitle else [],
+             "author": [a for a in authors.split("\n") if a.strip()],
+             "institute": [i for i in (_custom_prop(prs, "engine-institute") or "").split("\n") if i.strip()]}
+    x, y, w, h = by["box"]
+    box = slide.shapes.add_textbox(int(x * width), int(y * height), int(w * width), int(h * height))
+    box.name = "Byline"
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE if by["anchor"] == "middle" else MSO_ANCHOR.TOP
+    first = True
+    for e in by["elements"]:   # as HTML sets them: the date in bold capitals, subtitle and author bold
+        for text in lines[e]:
+            p = tf.paragraphs[0] if first else tf.add_paragraph()
+            p.alignment = PP_ALIGN.CENTER if by["align"] == "center" else PP_ALIGN.LEFT
+            if e == "date" and not first:
+                p.space_before = int(0.02 * height)
+            r = p.add_run()
+            r.text = text
+            r.font.size = Pt(livery_mod.type_pt(LIVERY, e))
+            r.font.bold = e in ("date", "subtitle", "author")
+            r.font.color.rgb = color
+            if e == "date":
+                r.font._rPr.set("cap", "all")
+            first = False
+    keep = comp["column"]["elements"]
+    if date is not None and "date" not in keep:
+        date._element.getparent().remove(date._element)
+    if sub is not None:
+        parts = ([subtitle] if subtitle and "subtitle" in keep else []) + (["\v".join(lines["author"])] if "author" in keep and lines["author"] else [])
+        if parts:
+            sub.text_frame.text = "\v\v".join(parts)
+        else:
+            sub._element.getparent().remove(sub._element)
+
+
+def _recolor_byline(date, sub, els, has_subtitle, color):
+    """A box-less byline: its elements' runs in its color, where pandoc put them (the subtitle's
+    runs before the blank line, the authors' after it, or all of them without a subtitle)."""
+    if date is not None and "date" in els:
+        for p in date.text_frame.paragraphs:
+            for r in p.runs:
+                r.font.color.rgb = color
+    if sub is None:
+        return
+    for p in sub.text_frame.paragraphs:
+        part, brs = "subtitle" if has_subtitle else "author", 0
+        for el in p._p:
+            if el.tag == qn("a:br"):
+                brs += 1
+                if brs == 2:
+                    part = "author"
+            elif el.tag == qn("a:r"):
+                brs = 0
+                if part in els:
+                    _Run(el, p).font.color.rgb = color
+
+
 def closing_top(slide, width, height, comp):
     """A closing column anchored at its top (column.anchor: top): the headline hangs from the
     column's top at its measured height, the body right under it, as HTML and PDF flow them (the
@@ -728,4 +806,7 @@ def run(prs, pptx: Path) -> None:
         done += 1
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
         band_stack(prs.slides[0], w, h)
+    if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
+        cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
+        cover_byline(prs, prs.slides[0], COMP[cover], w, h)
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")

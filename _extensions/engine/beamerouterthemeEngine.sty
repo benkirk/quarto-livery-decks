@@ -299,14 +299,18 @@
     {\includegraphics[height=\engine@bh]{\engine@cv{#1@img}}};}{}}
 % \engine@cnode{<stack>}: the text column, its stack (a \vbox \engine@bw wide; no text width, which
 % would set it as a paragraph) from the top or centred by the column's anchor
-\def\engine@cnode#1{\engine@box{column}%
-  \engine@ifcorner{\engine@cv{column@anchor}}{middle}%
-    {\node[anchor=west,inner sep=0pt,text=\engine@ccolor{Text}]
-       at (\engine@bx,\engine@by+0.5\engine@bh) {#1};}%
-    {\node[anchor=north west,inner sep=0pt,text=\engine@ccolor{Text}]
-       at (\engine@bx,\engine@by+\engine@bh) {#1};}}
-% the stacks (beamerinnerthemeEngine.sty): the title's with its fineprint, the section's, the closing's
-\def\engine@ctext@title{\engine@cnode{\engine@titlestack}\engine@cfineprint}
+\def\engine@cnode{\engine@pnode{column}{Text}}
+% \engine@pnode{<part>}{<color suffix>}{<stack>}: a text part (the column, a cover's byline) in its box
+\def\engine@pnode#1#2#3{\engine@box{#1}%
+  \engine@ifcorner{\engine@cv{#1@anchor}}{middle}%
+    {\node[anchor=west,inner sep=0pt,text=\engine@ccolor{#2}]
+       at (\engine@bx,\engine@by+0.5\engine@bh) {#3};}%
+    {\node[anchor=north west,inner sep=0pt,text=\engine@ccolor{#2}]
+       at (\engine@bx,\engine@by+\engine@bh) {#3};}}
+% the stacks (beamerinnerthemeEngine.sty): the title's (its column, then a boxed byline) with its
+% fineprint, the section's, the closing's
+\def\engine@ctext@title{\engine@cnode{\engine@titlestack}%
+  \engine@ifc{byline@x}{\engine@pnode{byline}{Byline}{\engine@textstack{byline}}}{}\engine@cfineprint}
 \def\engine@ctext@section{\engine@cnode{\engine@sectionstack}}
 \def\engine@ctext@closing{\engine@cnode{\engine@closingstack}}
 % the feature: the frame title in the column (centred on the bar, or the cover's stack) and the

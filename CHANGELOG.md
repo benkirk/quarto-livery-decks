@@ -29,6 +29,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   label word (it always said "Section"), and the pptx its label color.
 
 ### Liveries
+- A cover's text in two parts: `compositions.title.byline` (`role`, `box`, `anchor`, `align`,
+  `elements`) takes the author, institute and date (by default) apart from the title and subtitle,
+  in its own color and, with a box, its own stack; `column.elements` orders the column's. Without a
+  byline every cover is as before. The pptx draws the byline as a text box, the institute
+  included (pandoc's pptx never showed it).
 - `compositions.<name>.column.align: center` centers a composed slide's text (the closing's
   "Thank you!", a divider, the cover, the feature title) and its rule, in every format. Each
   composition part's keys now have their own table in `liveries/REFERENCE.md`.

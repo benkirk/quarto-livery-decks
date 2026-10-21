@@ -328,6 +328,9 @@ def measure(im, comp, L, fmt):
     # not the column's pixels: the marks grown (a format may draw them off their box), the rest as they are
     cut = [grown(comp[k]["box"]) for k in ("mark", "signoff") if comp[k]]
     cut += [comp[k]["box"] for k in ("fineprint", "panel") if comp[k]]
+    by = comp.get("byline")
+    if by and by["box"]:   # a cover's byline in a box of its own: its ink is not the column's
+        cut.append(grown(by["box"]))
     f = comp["field"]
     if f and f["box"][2] < 1:   # beyond a field narrower than the slide: the photo, whose darks may be the text's colour
         cut.append([f["box"][0] + f["box"][2], 0, 1 - f["box"][0] - f["box"][2], 1])
@@ -347,6 +350,19 @@ def measure(im, comp, L, fmt):
     else:
         add("column", "top", y, b and b[1], tol)
     add("column", "right<=", x + w, b and b[2], TOL)   # text may end short of the box, not past it
+    if by and by["box"]:   # the byline's stack in its box, by its own anchor and alignment
+        bx, byy, bw, bh = by["box"]
+        gb = grown(by["box"])
+        b = bbox(mask_of(im, gb, rgb(roles[by["role"]]), near=True,
+                         cut=[grown(comp[k]["box"]) for k in ("mark", "signoff") if comp[k]]), gb, 2)
+        if by["align"] == "center":
+            add("byline", "centre-x", bx + bw / 2, b and (b[0] + b[2]) / 2, TOL)
+        else:
+            add("byline", "left", bx, b and b[0], TOL)
+        if by["anchor"] == "middle":
+            add("byline", "centre", byy + bh / 2, b and (b[1] + b[3]) / 2, TOL_MIDDLE if fmt == "pptx" else TOL)
+        else:
+            add("byline", "top", byy, b and b[1], TOL)
     return out
 
 
@@ -356,8 +372,10 @@ def overlay(path, comp):
     from PIL import Image, ImageDraw
     im = Image.open(path).convert("RGB").resize((W, H))
     d = ImageDraw.Draw(im)
-    for key in ("field", "photo", "band", "bar", "panel", "mark", "signoff", "column", "fineprint"):
-        c = comp[key]
+    for key in ("field", "photo", "band", "bar", "panel", "mark", "signoff", "column", "byline", "fineprint"):
+        c = comp.get(key)
+        if c and not c.get("box"):   # a box-less byline
+            continue
         nominal = key == "field" and comp["waves"]   # with waves the field's edge is line 2, not its box
         if c and not nominal and c["box"] != [0, 0, 1, 1] and c["box"][2] > 0 and c["box"][3] > 0:   # not an empty box
             x0, y0, x1, y1 = px(c["box"])

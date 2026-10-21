@@ -587,6 +587,8 @@ function Pandoc(doc)
   title_slide_attributes(meta, { ["data-background-color"] = bg })
   meta["engine-title-art"] = pandoc.RawInline("html", comp_art(tcomp, r, (tg or default_photo) and photo_img(tg) or nil))
   meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
+  -- a cover's byline with a box of its own (livery.json compositions): title-slide.html's second stack
+  if tcomp.byline and tcomp.byline.box then meta["engine-byline"] = true end
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   local out = pandoc.Blocks({})

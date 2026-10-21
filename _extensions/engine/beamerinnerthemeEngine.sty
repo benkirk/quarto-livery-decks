@@ -53,25 +53,46 @@
 \defbeamertemplate*{title page}{Engine}{%
   \gdef\engine@bodystyle{title}%
   \vbox to \dimexpr\textheight-2pt\relax{\vfil}}
-% the title's stack, \engine@bw wide: date, title and subtitle with the tab, the rule, author, institute
-\def\engine@titlestack{%
-  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
+% a cover's text parts (livery.json compositions: column.elements, byline): \engine@textstack{<part>}
+% walks the part's elements in order, \engine@bw wide. The title carries the tab and the rule, and the
+% subtitle with it when the part holds both; a byline's elements are its own stack in its box, or,
+% without one (byline@inline), stay in the column's flow in the byline's color. The default order
+% (date, title, subtitle, author, institute) sets exactly what the single stack set before.
+\def\engine@has#1#2{\edef\engine@tmpl{\noexpand\in@{,#1,}{,#2,}}\engine@tmpl}
+\def\engine@palign#1{\engine@ifcorner{\csname engine@c@\engine@comp @#1@align\endcsname}{center}{\centering}{\raggedright}}
+\def\engine@elcolor#1{\def\engine@tmpp{column}\ifx\engine@part\engine@tmpp
+  \engine@ifc{byline@inline}{\engine@has{#1}{\engine@cv{byline@inline}}\ifin@\color{\engine@ccolor{Byline}}\fi}{}\fi}
+\def\engine@flush{\engine@pending\let\engine@pending\@empty}
+\def\engine@el@date{\ifx\insertdate\@empty\else
+  \ifx\engine@started\@empty\else\vskip0.02\paperheight\fi   % after other lines (a byline's last)
+  \engine@flush{\engine@elcolor{date}\usebeamerfont{date}\MakeUppercase{\insertdate}\par}%
+  \def\engine@pending{\vskip0.02\paperheight}\def\engine@started{1}\fi}
+\def\engine@el@title{\engine@flush
+  \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@palign\engine@part
     {\usebeamerfont{title}\inserttitle\par}%
-    \ifx\insertsubtitle\@empty\else
-      \vskip0.5em{\usebeamerfont{subtitle}\insertsubtitle\par}%
-    \fi}%
-  \vbox{\hsize=\engine@bw \engine@calign
-    \ifx\insertdate\@empty\else
-      {\usebeamerfont{date}\MakeUppercase{\insertdate}\par}\vskip0.02\paperheight
-    \fi
-    \engine@ctab\@tempboxa
-    \vskip0.03\paperheight
-    \engine@ifc{column@rule@w}{%
-      {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
-        height\engine@cv{column@rule@h}\paperheight}\par
-      \vskip0.03\paperheight}{}%
-    \ifx\insertauthor\@empty\else{\usebeamerfont{author}\insertauthor\par}\fi
-    \ifx\insertinstitute\@empty\else{\usebeamerfont{institute}\insertinstitute\par}\fi}}
+    \engine@has{subtitle}{\engine@els}\ifin@\ifx\insertsubtitle\@empty\else
+      \vskip0.5em{\engine@elcolor{subtitle}\usebeamerfont{subtitle}\insertsubtitle\par}%
+    \fi\fi}%
+  \engine@ctab\@tempboxa
+  \vskip0.03\paperheight
+  \engine@ifc{column@rule@w}{%
+    {\usebeamercolor[fg]{title rule}\vrule width\engine@cv{column@rule@w}\paperwidth
+      height\engine@cv{column@rule@h}\paperheight}\par
+    \vskip0.03\paperheight}{}\def\engine@started{1}}
+\def\engine@el@subtitle{\engine@has{title}{\engine@els}\ifin@\else   % with the title: in its box
+  \ifx\insertsubtitle\@empty\else\engine@flush
+    {\engine@elcolor{subtitle}\usebeamerfont{subtitle}\insertsubtitle\par}\def\engine@started{1}\fi\fi}
+\def\engine@el@author{\ifx\insertauthor\@empty\else\engine@flush
+  {\engine@elcolor{author}\usebeamerfont{author}\insertauthor\par}\def\engine@started{1}\fi}
+\def\engine@el@institute{\ifx\insertinstitute\@empty\else\engine@flush
+  {\engine@elcolor{institute}\usebeamerfont{institute}\insertinstitute\par}\def\engine@started{1}\fi}
+\def\engine@textstack#1{\def\engine@part{#1}%
+  \engine@ifc{#1@elements}{\edef\engine@els{\engine@cv{#1@elements}}}{\def\engine@els{date,title,subtitle,author,institute}}%
+  \let\engine@pending\@empty\let\engine@started\@empty
+  \vbox{\hsize=\engine@bw \engine@palign{#1}%
+    \@for\engine@el:=\engine@els\do{\csname engine@el@\engine@el\endcsname}%
+    \engine@pending}}
+\def\engine@titlestack{\engine@textstack{column}}
 % keep the title frame free of frame numbering by default
 \def\engine@titlepageframe{%
   {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}

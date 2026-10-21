@@ -86,7 +86,11 @@ BODY_ROLES = ("subhead", "table", "code", "caption", "footnote")
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
 FEATURE_STYLES = ("bar", "cover")   # feature.style: the photo under a bar and panel, or the cover
-COMP_KEYS = ("field", "art", "photo", "band", "waves", "bar", "panel", "mark", "signoff", "column", "fineprint", "eyebrow")
+COMP_KEYS = ("field", "art", "photo", "band", "waves", "bar", "panel", "mark", "signoff", "column", "byline", "fineprint",
+             "eyebrow")
+COVERS = ("title", "title-photo", "title-light", "title-photo-light", "title-band")   # the compositions with a byline
+ELEMENTS = ("date", "title", "subtitle", "author", "institute")   # a cover's text, in the column's default order
+BYLINE = ("author", "institute", "date")   # a byline's default elements
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -416,7 +420,11 @@ def compositions(name: str, data: dict, out: dict) -> dict:
         col, fp = c["column"]["box"], c["fineprint"]
         return variant(c, art=None, fineprint=fp and {**fp, "box": [fp["box"][0], fp["box"][1], 0.44, fp["box"][3]]}, field={"box": _box(0, 0, 0.5, 1)}, photo={"box": _box(0.48, 0, 0.52, 1)},
                        waves=wave("cover", 0, [0.65], "secondary"),
-                       column={"box": [col[0], col[1], 0.44, col[3]]})
+                       column={"box": [col[0], col[1], 0.44, col[3]]},
+                       byline=narrow(c["byline"]))
+
+    def narrow(b):   # a byline's box beside the photo, as the column's
+        return b and {**b, "box": b.get("box") and [b["box"][0], b["box"][1], min(0.44, b["box"][2]), b["box"][3]]}
 
     def light(c):
         w = c["waves"]
@@ -425,6 +433,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                        mark=c["mark"] and {**c["mark"], "role": "background"},
                        signoff=c["signoff"] and {**c["signoff"], "role": "background"},
                        column={"role": "foreground"},
+                       byline=c["byline"] and {**c["byline"], "role": "foreground"},
                        fineprint=c["fineprint"] and {**c["fineprint"], "role": "foreground"})
 
     top, bottom, split = t["top"], t["bottom"], t["split"]
@@ -492,11 +501,34 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     for c in res.values():   # the column's text alignment, left unless a livery centers it
         if c["column"]:
             c["column"].setdefault("align", "left")
+    for k in COVERS:   # the cover's text: which elements the column and the byline hold, in order
+        res[k] = cover_elements(name, k, res[k])
     for k, c in res.items():
         for role in [c[b]["role"] for b in COMP_KEYS if isinstance(c[b], dict) and "role" in c[b]]:
             if role not in out["roles"]:
                 sys.exit(f"{name}: compositions.{k}: role {role!r} is not a role")
     return res
+
+
+def cover_elements(name: str, k: str, c: dict) -> dict:
+    """A cover's column and byline resolved: the byline's role, anchor, align, box and elements
+    (author, institute, date unless named), and the column's elements (every element, less a boxed
+    byline's, unless named). The title is the column's; no element is in both when the byline has
+    a box (without one, its elements stay in the column's flow, in its color)."""
+    col, by = c["column"], c["byline"]
+    if by is not None:
+        by = c["byline"] = {"role": col["role"], "box": None, "anchor": "top", "align": col["align"],
+                            "elements": list(BYLINE), **by}
+    boxed = by["elements"] if by and by["box"] else []
+    col.setdefault("elements", [e for e in ELEMENTS if e not in boxed])
+    for part, els in (("column", col["elements"]), ("byline", by["elements"] if by else [])):
+        if bad := [e for e in els if e not in ELEMENTS] or (len(set(els)) < len(els) and ["a repeat"]):
+            sys.exit(f"{name}: compositions.{k}.{part}.elements: {bad} (elements: {', '.join(ELEMENTS)}, once each)")
+    if "title" not in col["elements"] or "title" in (by["elements"] if by else []):
+        sys.exit(f"{name}: compositions.{k}: the title is the column's (column.elements, not byline.elements)")
+    if both := sorted(set(col["elements"]) & set(boxed)):
+        sys.exit(f"{name}: compositions.{k}: {both} in both the column and the byline's box")
+    return c
 
 
 def installed_fonts(name: str, spec: dict) -> dict:
@@ -724,8 +756,8 @@ def emit_sty_charts(livery: dict) -> list[str]:
 
 # the role each composition key is drawn in -> the colorlet suffix livery.sty gives it
 COMP_COLORS = {"field": "Field", "band": "Band", "waves": "Waves", "bar": "Bar", "panel": "Panel",
-               "column": "Text", "fineprint": "Fineprint"}
-BOXED = ("field", "photo", "band", "bar", "panel", "mark", "signoff", "column", "fineprint")
+               "column": "Text", "byline": "Byline", "fineprint": "Fineprint"}
+BOXED = ("field", "photo", "band", "bar", "panel", "mark", "signoff", "column", "byline", "fineprint")
 
 
 def emit_sty_compositions(livery: dict, stem) -> list[str]:
@@ -737,7 +769,7 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
         n = comp.replace("-", "")
         d = lambda k, v: L.append(f"\\def\\engine@c@{n}@{k}{{{v}}}")
         for k in BOXED:
-            if c[k]:
+            if c[k] and c[k].get("box"):   # a byline may have none
                 for axis, v in zip("xywh", c[k]["box"]):
                     d(f"{k}@{axis}", v)
         for k, suffix in COMP_COLORS.items():
@@ -754,6 +786,13 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
         col = c["column"]
         d("column@anchor", col["anchor"]); d("column@tab", "true" if col["tab"] else "false")
         d("column@align", col["align"])
+        if "elements" in col:   # a cover's text, in order; the byline's apart, or colored in the column's flow
+            d("column@elements", ",".join(col["elements"]))
+            by = c["byline"]
+            if by:
+                d("byline@elements", ",".join(by["elements"])); d("byline@anchor", by["anchor"]); d("byline@align", by["align"])
+                if not by["box"]:
+                    d("byline@inline", ",".join(by["elements"]))
         if col["rule"]:
             d("column@rule@w", col["rule"][0]); d("column@rule@h", col["rule"][1])
         if c["fineprint"]:
@@ -1034,8 +1073,8 @@ def emit_css_compositions(livery: dict) -> list[str]:
     for comp, sel in CSEL.items():
         c, props = livery["compositions"][comp], []
         for k in BOXED:   # x y w h, and r b: the distance of its right and bottom edges from the slide's
-            x, y, w, h = c[k]["box"] if c[k] else [0, 0, 0, 0]
-            props.append(f"--engine-cmp-{k}-display: {'block' if c[k] else 'none'};")
+            x, y, w, h = c[k]["box"] if c[k] and c[k].get("box") else [0, 0, 0, 0]
+            props.append(f"--engine-cmp-{k}-display: {'block' if c[k] and c[k].get('box') else 'none'};")
             props += [f"--engine-cmp-{k}-{a}: {px(v, W if a in 'xwr' else H)};"
                       for a, v in zip("xywhrb", (x, y, w, h, 1 - x - w, 1 - y - h))]
         props.append(f"--engine-cmp-field: {role(c['field']['role']) if c['field'] else 'transparent'};")
@@ -1045,6 +1084,23 @@ def emit_css_compositions(livery: dict) -> list[str]:
         props.append(f"--engine-cmp-column-tab: {'block' if col['tab'] else 'none'};")
         props.append(f"--engine-cmp-column-align: {col['align']};")
         props.append(f"--engine-cmp-rule-mx: {'auto' if col['align'] == 'center' else '0'};")   # a centered rule
+        if "elements" in col:   # a cover's elements: in the column or the byline's box, in order, in a color
+            by = c["byline"]; boxed = by["elements"] if by and by["box"] else []
+            order = {}   # flex order; an institute right after an author shares its order, so each
+            for part in (col["elements"], boxed):   # author's affiliations stay beside it (by-author)
+                for i, e in enumerate(part):
+                    order[e] = order["author"] if e == "institute" and i and part[i - 1] == "author" else i
+            for e in ELEMENTS:
+                props.append(f"--engine-cmp-{e}-col: {'block' if e in col['elements'] else 'none'};")
+                props.append(f"--engine-cmp-{e}-byl: {'block' if e in boxed else 'none'};")
+                props.append(f"--engine-cmp-{e}-order: {order.get(e, 0)};")
+                props.append(f"--engine-cmp-{e}-color: {role(by['role'] if by and e in by['elements'] else col['role'])};")
+            ce = col["elements"]   # the rule under the title, or under the subtitle that follows it
+            after = "subtitle" if "subtitle" in ce and ce.index("subtitle") == ce.index("title") + 1 else "title"
+            props.append(f"--engine-cmp-rule-order: {order[after]};")
+            if by:
+                props.append(f"--engine-cmp-byline-justify: {'center' if by['anchor'] == 'middle' else 'flex-start'};")
+                props.append(f"--engine-cmp-byline-align: {by['align']};")
         rule = col["rule"] or [0, 0]
         props.append(f"--engine-cmp-rule-display: {'block' if col['rule'] else 'none'};")
         props += [f"--engine-cmp-rule-w: {px(rule[0], W)};", f"--engine-cmp-rule-h: {px(rule[1], H)};"]

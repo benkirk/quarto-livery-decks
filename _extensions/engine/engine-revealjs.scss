@@ -469,6 +469,38 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     flex-direction: column;
     justify-content: var(--engine-cmp-column-justify);
   }
+  // a cover's elements (column.elements, byline): each in its part, in its order and color; both
+  // stacks hold every element's markup, and the livery's css shows each in one
+  .engine-title-text, .engine-title-byline {
+    .date { order: var(--engine-cmp-date-order, 0); color: var(--engine-cmp-date-color, var(--engine-cmp-text)); }
+    h1.title { order: var(--engine-cmp-title-order, 1); }
+    .subtitle { order: var(--engine-cmp-subtitle-order, 2); color: var(--engine-cmp-subtitle-color, var(--engine-cmp-text)); }
+    .engine-title-rule { order: var(--engine-cmp-rule-order, 2); }
+    .author { order: var(--engine-cmp-author-order, 3); color: var(--engine-cmp-author-color, var(--engine-cmp-text)); }
+    .institute { order: var(--engine-cmp-institute-order, 3); color: var(--engine-cmp-institute-color, var(--engine-cmp-text)); }
+    .author a { color: inherit; }
+  }
+  .engine-title-text {
+    .date { display: var(--engine-cmp-date-col, block); }
+    .subtitle { display: var(--engine-cmp-subtitle-col, block); }
+    .author { display: var(--engine-cmp-author-col, block); }
+    .institute { display: var(--engine-cmp-institute-col, block); }
+  }
+  .engine-title-byline {
+    position: absolute;
+    left: var(--engine-cmp-byline-x);
+    top: var(--engine-cmp-byline-y);
+    width: var(--engine-cmp-byline-w);
+    height: var(--engine-cmp-byline-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--engine-cmp-byline-justify, flex-start);
+    text-align: var(--engine-cmp-byline-align, left);
+    .date { display: var(--engine-cmp-date-byl, none); }
+    .subtitle { display: var(--engine-cmp-subtitle-byl, none); }
+    .author { display: var(--engine-cmp-author-byl, none); }
+    .institute { display: var(--engine-cmp-institute-byl, none); }
+  }
   .date {
     font-size: calc(var(--engine-type-date, 0.6) * 1em);
     font-weight: 700;
@@ -524,7 +556,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     color: var(--engine-cmp-fineprint-color);
     p { margin: 0; line-height: 1.4; }
   }
-  &, h1, .subtitle, .date, .author, .institute, a { color: var(--engine-cmp-text); }
+  &, h1, a { color: var(--engine-cmp-text); }
 }
 
 // ---------------------------------------------------------------------------

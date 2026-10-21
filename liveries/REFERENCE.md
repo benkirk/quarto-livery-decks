@@ -246,6 +246,7 @@ The parts of one composed slide; a part not named keeps the engine's value, null
 | `mark` | null or object |  | The brand mark. (null: none) |
 | `signoff` | null or object |  | The sign-off lockup. (null: none) |
 | `column` | null or object |  | The text column: title, subtitle, date and the rest. (null: none) |
+| `byline` | null or object |  | A cover's byline, apart from the title: author, institute, date by default. (null: none, every element in the column) |
 | `fineprint` | null or object |  | The cover's small print. (null: none) |
 | `eyebrow` | null or object |  | The "SECTION n" label. (null: none) |
 
@@ -335,8 +336,21 @@ The text column: title, subtitle, date and the rest.
 | `box` | box |  | Where it sits. |
 | `anchor` | `top` \| `middle` |  | Whether the text hangs from the column's top or is centered in it. |
 | `align` | `left` \| `center` |  | The text's alignment in the column (default left); a centered column centers its rule too. |
+| `elements` | list of `date` \| `title` \| `subtitle` \| `author` \| `institute` |  | A cover's column: its elements in order (default date, title, subtitle, author, institute, less a boxed byline's); the title is always here, its tab and rule with it. |
 | `tab` | boolean |  | The accent tab beside the heading. |
 | `rule` | null or list of 2 fractions |  | The short rule under the title, [width of the slide's width, thickness of its height], or null for none. |
+
+### `compositions.<name>.byline`
+
+A cover's byline: elements in their own color (role) and, with a box, their own stack apart from the column.
+
+| key | type | default | |
+|---|---|---|---|
+| `role` | role |  | The role it is drawn in (default: the column's). |
+| `box` | null or box |  | Where its stack sits; without one its elements stay in the column's flow, in the byline's color. |
+| `anchor` | `top` \| `middle` |  | Whether its stack hangs from the box's top (default) or is centered in it. |
+| `align` | `left` \| `center` |  | Its text's alignment (default: the column's). |
+| `elements` | list of `date` \| `title` \| `subtitle` \| `author` \| `institute` |  | Its elements in order (default author, institute, date); never the title. |
 
 ### `compositions.<name>.fineprint`
 

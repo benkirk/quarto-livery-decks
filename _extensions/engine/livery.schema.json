@@ -1196,6 +1196,12 @@
                   "enum": ["left", "center"],
                   "description": "The text's alignment in the column (default left); a centered column centers its rule too."
                 },
+                "elements": {
+                  "type": "array",
+                  "items": {"enum": ["date", "title", "subtitle", "author", "institute"]},
+                  "uniqueItems": true,
+                  "description": "A cover's column: its elements in order (default date, title, subtitle, author, institute, less a boxed byline's); the title is always here, its tab and rule with it."
+                },
                 "tab": {"type": "boolean", "description": "The accent tab beside the heading."},
                 "rule": {
                   "oneOf": [
@@ -1213,6 +1219,41 @@
             }
           ],
           "description": "The text column: title, subtitle, date and the rest. (null: none)"
+        },
+        "byline": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "description": "A cover's byline: elements in their own color (role) and, with a box, their own stack apart from the column.",
+              "additionalProperties": false,
+              "properties": {
+                "role": {
+                  "$ref": "#/$defs/role",
+                  "description": "The role it is drawn in (default: the column's)."
+                },
+                "box": {
+                  "oneOf": [{"type": "null"}, {"$ref": "#/$defs/box"}],
+                  "description": "Where its stack sits; without one its elements stay in the column's flow, in the byline's color."
+                },
+                "anchor": {
+                  "enum": ["top", "middle"],
+                  "description": "Whether its stack hangs from the box's top (default) or is centered in it."
+                },
+                "align": {
+                  "enum": ["left", "center"],
+                  "description": "Its text's alignment (default: the column's)."
+                },
+                "elements": {
+                  "type": "array",
+                  "items": {"enum": ["date", "title", "subtitle", "author", "institute"]},
+                  "uniqueItems": true,
+                  "description": "Its elements in order (default author, institute, date); never the title."
+                }
+              }
+            }
+          ],
+          "description": "A cover's byline, apart from the title: author, institute, date by default. (null: none, every element in the column)"
         },
         "fineprint": {
           "oneOf": [

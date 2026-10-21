@@ -25,6 +25,31 @@ $for(institute)$
 $endfor$
 $endif$
   </div>
+$if(engine-byline)$
+  <div class="engine-title-byline">
+$if(date)$
+    <p class="date">$date$</p>
+$endif$
+$if(subtitle)$
+    <p class="subtitle">$subtitle$</p>
+$endif$
+$if(by-author)$
+$for(by-author)$
+    <p class="author">$if(it.url)$<a href="$it.url$">$endif$$it.name.literal$$if(it.url)$</a>$endif$</p>
+$for(it.affiliations)$
+    <p class="institute">$it.name$</p>
+$endfor$
+$endfor$
+$else$
+$for(author)$
+    <p class="author">$author$</p>
+$endfor$
+$for(institute)$
+    <p class="institute">$institute$</p>
+$endfor$
+$endif$
+  </div>
+$endif$
 $if(fineprint)$
   <div class="engine-fineprint">$fineprint$</div>
 $endif$
