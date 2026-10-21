@@ -12,8 +12,8 @@ art, pandoc's caption box centered under it in the muted color, the slide number
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
 paragraph, the note's in the caption size and muted color, centred, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
-wide: the body placeholders take the slide less geometry.wide-margin a side (a columns slide's
-are columns.py's).
+wide: the body placeholders and a table take the slide less geometry.wide-margin a side (a columns
+slide's are columns.py's); a picture keeps its size, as HTML's does.
 closing: the slide moves onto the template's Closing layout (Closing (light) under themeoptions
 title=light, which slide-layout.lua records as `engine-title: light` and which also moves the
 title slide onto Title Slide (light); a band title ignores it), its placeholders dropping pandoc's
@@ -211,6 +211,16 @@ def pads(box, key="pad"):
     return Emu(round(v * BODY_PT * 12700)), Emu(round(h * BODY_PT * 12700))   # round: Pt() truncates 91439.99
 
 
+def fit_table(shape, left, width):
+    """A table's frame at left for width (EMU), its grid columns scaled to it in their shares
+    (style_tables re-splits them inside the frame later); its top and height kept."""
+    cols = shape.table._tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
+    total = sum(int(c.get("w")) for c in cols)
+    for c in cols:   # integers: a float makes PowerPoint repair the deck
+        c.set("w", str(round(int(c.get("w")) * width / total)))
+    shape.left, shape.top, shape.width, shape.height = Emu(left), shape.top, Emu(width), shape.height
+
+
 def caution_box(slide, shape, vcenter):
     """The body text box on the soft yellow field, a brand-yellow bar at its left, cut down to
     about its text (pandoc gives it the whole content area); 10% slack keeps autofit idle."""
@@ -239,6 +249,8 @@ def lay_out(slide, words, width):
         m = GEOM["wide-margin"]
         for shape in [sh for sh in slide.shapes if _is_body(sh)]:   # all four: a placeholder inherits its frame
             shape.left, shape.top, shape.width, shape.height = round(m * width), shape.top, round((1 - 2 * m) * width), shape.height
+        for shape in [sh for sh in slide.shapes if getattr(sh, "has_table", False)]:   # a graphicFrame, not a body
+            fit_table(shape, round(m * width), round((1 - 2 * m) * width))
     scale = 1.0
     for w in words:
         if w.startswith("scale="):

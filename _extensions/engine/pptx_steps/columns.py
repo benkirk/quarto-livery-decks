@@ -18,12 +18,11 @@ style_tables and type_step.
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.oxml.ns import qn
 from pptx.util import Emu
 
 import livery as livery_mod
 
-from .slide_layout import BOXES, GEOM, LIVERY, _text_height, take_marker
+from .slide_layout import BOXES, GEOM, LIVERY, _text_height, fit_table, take_marker
 
 RULE = RGBColor.from_string(livery_mod.blend(LIVERY, "rule"))   # HTML's --engine-rule, beamer's BrandRule
 
@@ -95,11 +94,7 @@ def frame_slide(slide, words, width, height):
         i = _column_of(sh, old)
         x, w = new[i]
         if table:
-            cols = sh.table._tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
-            total = sum(int(c.get("w")) for c in cols)
-            for c in cols:   # integers: a float makes PowerPoint repair the deck
-                c.set("w", str(round(int(c.get("w")) * w / total)))
-            sh.left, sh.top, sh.width, sh.height = x, sh.top, w, sh.height
+            fit_table(sh, x, w)
             row.append((sh.top, sh.top + sh.height))
             continue
         top, height = area.get(i, (sh.top, sh.height))

@@ -7,7 +7,7 @@ written by hand: that filter needs Quarto), then the driver's steps run in a sub
 livery's LIVERY_DIR. A 55/45 slide's placeholders are the shares of the content box less the gap,
 within 1 EMU; a picture pandoc put at the old half frame moves into its column and scales to its
 width, its aspect kept; a {.wide} slide's box starts at geometry.wide-margin, its Title and Content
-body too; every offset, extent and size is an integer EMU. Under ncar and nasa-jsc-eg (another
+body and a table too (its grid columns scaled); every offset, extent and size is an integer EMU. Under ncar and nasa-jsc-eg (another
 canvas, a dark livery). Needs pandoc ($QUARTO_PANDOC).
 """
 
@@ -40,7 +40,8 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Three\n\n:::: {.columns}\n::: {.column}\n- AAA\n- aaa\n:::\n::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
-      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS)
+      '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE)
 STEP = """
 import sys
 from pathlib import Path
@@ -116,6 +117,11 @@ def test_wide(deck):
     assert abs(body.left - m * prs.slide_width) <= 1 and abs(body.width - (1 - 2 * m) * prs.slide_width) <= 1, \
         "a wide Title and Content body"
     assert body.top > 0 and body.height > 0, "the body's top and height kept (all four fields set)"
+    table = next(sh for sh in prs.slides[8].shapes if getattr(sh, "has_table", False))   # a graphicFrame, not a body
+    assert abs(table.left - m * prs.slide_width) <= 1 and abs(table.width - (1 - 2 * m) * prs.slide_width) <= 1, \
+        f"a wide table {table.left, table.width}: pandoc's frame kept"
+    cols = table.table._tbl.findall("{*}tblGrid/{*}gridCol")
+    assert abs(sum(int(c.get("w")) for c in cols) - table.width) <= len(cols), "the grid columns not scaled to the frame"
 
 
 def test_integers(deck):
@@ -149,9 +155,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 8, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 9, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
