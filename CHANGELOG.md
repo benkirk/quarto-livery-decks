@@ -17,6 +17,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Liveries
+- `nasa-jsc-eg`: the NASA JSC Aeroscience and Flight Mechanics Division's template, dark, a
+  flavor of `nasa-dark`: a starfield behind every slide, the division bar along the foot, the
+  cover's yellow band, lab photo and the division's and a group's patches, the closing's centered
+  patch, Arial (Liberation Sans standing in). A group in the division puts its own patch on the
+  cover with a one-key flavor (`liveries/nasa-jsc-eg/reference/notes.md`).
+
 ## [26.10.6] - 2026-10-20
 
 ### Decks

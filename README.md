@@ -11,7 +11,7 @@ quickstart deck, write Markdown. What each release changed is in [`CHANGELOG.md`
 
 The same quickstart deck under each livery (title, divider, content, closing):
 
-![The quickstart deck under the ncar, cu, nsi, nasa and nasa-dark liveries](decks/quickstart/screenshots/liveries.png)
+![The quickstart deck under the ncar, cu, nsi, nasa, nasa-dark and nasa-jsc-eg liveries](decks/quickstart/screenshots/liveries.png)
 
 Two example decks ship with the framework:
 
@@ -108,7 +108,7 @@ livery can be a *flavor* of another (`extends:`), naming only what differs.
 |---|---|---|---|---|
 | **NCAR** | `ncar` (NSF NCAR, the default); `ucar`, `ucp` and `ncarucar`, the brand guide's other lockups | Poppins, bundled, embedded in the pptx | each member's lockup top right | the 2026 brand palette; deep-blue fields and the wave super-graphic; the Mesa Lab on the cover |
 | **University of Colorado** | `cu` (CU Boulder); `nsi`, the Center for National Security Initiatives (`extends: cu`) | Helvetica Neue where installed; TeX Gyre Heros, Condensed for headings, standing in | `cu`: the CU Boulder lockup as a sign-off, bottom left; `nsi`: the center's mark top left, the Research & Innovation Office lockup as its sign-off | gold fields, a faded Flatirons photo behind content; `nsi`: its master deck's band title, a satellite photo behind content, centred titles |
-| **NASA** | `nasa` (external communication, on white); `nasa-dark` (`extends: nasa`, on black); program liveries belong here too | NASA's digital faces, bundled: Inter headings, Public Sans body, DM Mono code | the insignia top right and the agency name at the foot, the brand's preferred identifier | NASA Blue fields with the white-rule insignia; `nasa-dark`: content on black over a faint deep field, cover and closing on black |
+| **NASA** | `nasa` (external communication, on white); `nasa-dark` (`extends: nasa`, on black); `nasa-jsc-eg`, the JSC Aeroscience and Flight Mechanics Division's template (`extends: nasa-dark`); program liveries belong here too | NASA's digital faces, bundled: Inter headings, Public Sans body, DM Mono code; `nasa-jsc-eg`: Arial, Liberation Sans standing in | the insignia top right and the agency name at the foot, the brand's preferred identifier; `nasa-jsc-eg`: the division bar at the foot, the division and group patches on the cover | NASA Blue fields with the white-rule insignia; `nasa-dark`: content on black over a faint deep field, cover and closing on black; `nasa-jsc-eg`: a starfield, the yellow cover band and lab photo |
 
 `make <format> LIVERY=<name>` picks one of `liveries/` (`ncar` is the default);
 `LIVERY_DIR=<path>` takes a livery from anywhere (a repo's own, say). Each livery's

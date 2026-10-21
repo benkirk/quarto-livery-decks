@@ -22,6 +22,7 @@ as a new Overleaf project:
 | `nsi` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip&engine=xelatex) | [nsi-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nsi-overleaf.zip) |
 | `nasa` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip&engine=xelatex) | [nasa-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip) |
 | `nasa-dark` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip&engine=xelatex) | [nasa-dark-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip) |
+| `nasa-jsc-eg` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-jsc-eg-overleaf.zip&engine=xelatex) | [nasa-jsc-eg-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-jsc-eg-overleaf.zip) |
 
 By hand: download a zip, then **New Project → Upload Project**, **Menu → Compiler →
 XeLaTeX** and **Recompile**. Under pdfLaTeX the deck builds too, but in Helvetica with
@@ -182,3 +183,4 @@ Each livery also exports its **palette by name** (`latex.colors` in its
 - **ucar**, **ucp**, **ncarucar**: those plus `UCARAqua`, `UCARAquaContrast`, `LightAqua`
 - **cu**, **nsi**: `CUGold`, `CUBlack`, `CUDarkGray`, `CULightGray`, `CUAccessibleGold`, `CUSkyBlue`, ...
 - **nasa**, **nasa-dark**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...
+- **nasa-jsc-eg**: those plus `EgYellow`, `EgNavy`, `EgRed`, `EgOrange`, `EgBlue`, `EgGreen`, ...
