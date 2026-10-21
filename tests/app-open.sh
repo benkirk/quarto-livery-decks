@@ -193,11 +193,16 @@ for app in keynote powerpoint; do
   echo "== $(app_name "$app")"
   # pre-flight: an instance that does not answer (wedged on a document whose file is gone) is
   # quit, else the guard reads "no answer" as "nothing open" and the first open hangs; then our
-  # leftover documents are closed
+  # leftover documents are closed, for up to 30 s while one still loads (a killed run's open, its
+  # file deleted, shows in the count before its path does); a user's own still stops the run
   if pgrep -x "$(app_proc "$app")" >/dev/null && [ -z "$(docs_open "$app")" ]; then
     echo "  ($(app_name "$app") does not answer: quitting it)"; quit_app "$app"
   fi
   close_ours "$app"
+  for _ in $(seq 1 15); do   # an interrupted run's open may still be loading (its file gone): wait it out
+    n=$(docs_open "$app"); [ -z "$n" ] || [ "$n" = 0 ] && break
+    sleep 2; close_ours "$app"
+  done
   check "$app" "$ROOT/liveries/ncar/template.pptx" OK "control: the ncar template (opens)"
   if [ "$app" = keynote ]; then
     pandoc=${QUARTO_PANDOC:-$(command -v pandoc || true)}
