@@ -25,6 +25,15 @@ A release's entry is written here before its tag is pushed, and becomes its note
   color).
 - `make qa` no longer reads a table's caption (or a note under it) as a cell running into the
   next column; the sample deck's qa passes, and CI runs it.
+- Decks in the cloud, nothing installed. `.devcontainer/` opens the repository in GitHub
+  Codespaces on the published image (the README's badge, or `gh codespace create` and `ssh`
+  from a laptop), within a personal account's free quota one codespace at a time
+  (docs/container.md "In GitHub Codespaces"). A repository of your own decks builds them on
+  every push with the reusable workflow `build-decks.yaml`: the pptx, PDF and HTML attached
+  to the run, one directory's site deployed to GitHub Pages (docs/other-repos.md "Building
+  in GitHub Actions").
+- The image tag `latest` is the newest release, as an anonymous pull expects; `main` names
+  the main branch's head as before.
 
 ### LaTeX
 - A beamer caption is its text alone, muted and centred: no "Figure n:" / "Table n:" label.
