@@ -59,6 +59,13 @@ itself when `quarto` is not on your PATH, or when `DECKS_RUNTIME` says so
 A directory of `.qmd` files with no Makefile builds with `docker run` alone
 ([`docs/container.md`](docs/container.md)).
 
+**Nothing to install at all?** [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/benkirk/quarto-livery-decks?quickstart=1)
+opens the repository in GitHub Codespaces on the same image, VS Code in the browser or
+`gh codespace ssh` from your laptop, inside a personal account's free quota
+([docs/container.md "In GitHub Codespaces"](docs/container.md#in-github-codespaces)).
+A repository of your own decks can build them on every push instead
+([docs/other-repos.md "Building in GitHub Actions"](docs/other-repos.md#building-in-github-actions)).
+
 ## What you get
 
 Every slide of `decks/quickstart/quickstart.qmd`, in the HTML deck under the default `ncar`
@@ -124,7 +131,8 @@ walks through it; [`liveries/REFERENCE.md`](liveries/REFERENCE.md) is every `liv
 | make or change a livery | [`liveries/README.md`](liveries/README.md), [`liveries/REFERENCE.md`](liveries/REFERENCE.md) |
 | write slides in LaTeX, on Overleaf or with XeLaTeX alone | [`latex/README.md`](latex/README.md) |
 | build with Docker, Podman or Apptainer, nothing installed | [`docs/container.md`](docs/container.md) |
-| keep your decks in another repository, or publish the HTML decks | [`docs/other-repos.md`](docs/other-repos.md) |
+| build in GitHub Codespaces, nothing installed at all | [docs/container.md "In GitHub Codespaces"](docs/container.md#in-github-codespaces) |
+| keep your decks in another repository, build them on every push, or publish the HTML decks | [`docs/other-repos.md`](docs/other-repos.md) |
 | see what changed in a release | [`CHANGELOG.md`](CHANGELOG.md) |
 | see how the engine and the liveries are designed | [`design/engine-and-liveries.md`](design/engine-and-liveries.md) |
 
