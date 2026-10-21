@@ -87,6 +87,14 @@
 \def\engine@ft@align{left}
 \def\engine@ft@notab{}
 \def\engine@ft@bodytop{0.1852}
+% the marking strip (marking:); its text is the deck's \enginemarking, else this default
+\def\engine@marking@x{0.1115}
+\def\engine@marking@y{0.004}
+\def\engine@marking@w{0.777}
+\def\engine@marking@h{0.028}
+\def\engine@marking@align{center}
+\colorlet{EngineMarkingText}{BrandText}
+\def\engine@marking@default{This presentation contains no sensitive information; but if it did, here's where the disclaimer would go}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.028}
 \def\engine@geom@tabwidth{0.018}
@@ -120,10 +128,10 @@
 \def\engine@type@caption{{0.5625}{1.3}}
 \def\engine@type@footnote{{0.5}{1.35}}
 \def\engine@type@title{{2.25}{1.12}}
-\def\engine@type@subtitle{{1.125}{1.3}}
-\def\engine@type@date{{0.75}{1.2}}
-\def\engine@type@author{{1.0}{1.3}}
-\def\engine@type@institute{{1.0}{1.3}}
+\def\engine@type@subtitle{{1.25}{1.3}}
+\def\engine@type@date{{1.0}{1.2}}
+\def\engine@type@author{{1.25}{1.3}}
+\def\engine@type@institute{{1.25}{1.3}}
 \def\engine@type@fineprint{{0.375}{1.4}}
 \def\engine@type@section{{2.25}{1.08}}
 \def\engine@type@sectionsubtitle{{1.5}{1.3}}
@@ -131,6 +139,7 @@
 \def\engine@type@closing{{2.25}{1.08}}
 \def\engine@type@pagenumber{{0.75}{1.2}}
 \def\engine@type@footer{{0.75}{1.2}}
+\def\engine@type@marking{{0.8125}{1.2}}
 \def\engine@type@levelii{{0.9375}{1.4}}
 \def\engine@type@leveliii{{0.8125}{1.4}}
 \def\engine@type@leveliv{{0.75}{1.4}}
@@ -182,27 +191,32 @@
 \def\engine@c@title@signoff@w{0.2578}
 \def\engine@c@title@signoff@h{0.3437}
 \def\engine@c@title@column@x{0.039}
-\def\engine@c@title@column@y{0.405}
+\def\engine@c@title@column@y{0.43}
 \def\engine@c@title@column@w{0.77}
-\def\engine@c@title@column@h{0.245}
+\def\engine@c@title@column@h{0.21}
+\def\engine@c@title@byline@x{0.039}
+\def\engine@c@title@byline@y{0.68}
+\def\engine@c@title@byline@w{0.7}
+\def\engine@c@title@byline@h{0.27}
 \def\engine@c@title@fineprint@x{0.028}
 \def\engine@c@title@fineprint@y{0.86}
 \def\engine@c@title@fineprint@w{0.5}
 \def\engine@c@title@fineprint@h{0.1}
 \colorlet{EngineCtitleField}{BrandDark}
 \colorlet{EngineCtitleText}{BrandDark}
+\colorlet{EngineCtitleByline}{BrandText}
 \colorlet{EngineCtitleFineprint}{BrandText}
 \def\engine@c@title@column@anchor{middle}
 \def\engine@c@title@column@tab{false}
 \def\engine@c@title@column@align{left}
+\def\engine@c@title@column@elements{title,subtitle}
+\def\engine@c@title@byline@elements{author,institute,date}
+\def\engine@c@title@byline@anchor{top}
+\def\engine@c@title@byline@align{left}
 \def\engine@c@title@fineprint@anchor{bottom}
 \def\engine@c@title@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@title@signoff@img{\engineliverydir logos/group-patch}
 \def\engine@c@title@art{\engineliverydir art/title}
-\def\engine@c@titlephoto@field@x{0}
-\def\engine@c@titlephoto@field@y{0}
-\def\engine@c@titlephoto@field@w{0.001}
-\def\engine@c@titlephoto@field@h{0.001}
 \def\engine@c@titlephoto@photo@x{0}
 \def\engine@c@titlephoto@photo@y{0}
 \def\engine@c@titlephoto@photo@w{1}
@@ -216,19 +230,27 @@
 \def\engine@c@titlephoto@signoff@w{0.2578}
 \def\engine@c@titlephoto@signoff@h{0.3437}
 \def\engine@c@titlephoto@column@x{0.039}
-\def\engine@c@titlephoto@column@y{0.405}
+\def\engine@c@titlephoto@column@y{0.43}
 \def\engine@c@titlephoto@column@w{0.77}
-\def\engine@c@titlephoto@column@h{0.245}
+\def\engine@c@titlephoto@column@h{0.21}
+\def\engine@c@titlephoto@byline@x{0.039}
+\def\engine@c@titlephoto@byline@y{0.68}
+\def\engine@c@titlephoto@byline@w{0.7}
+\def\engine@c@titlephoto@byline@h{0.27}
 \def\engine@c@titlephoto@fineprint@x{0.028}
 \def\engine@c@titlephoto@fineprint@y{0.86}
 \def\engine@c@titlephoto@fineprint@w{0.44}
 \def\engine@c@titlephoto@fineprint@h{0.1}
-\colorlet{EngineCtitlephotoField}{BrandDark}
 \colorlet{EngineCtitlephotoText}{BrandDark}
+\colorlet{EngineCtitlephotoByline}{BrandText}
 \colorlet{EngineCtitlephotoFineprint}{BrandText}
 \def\engine@c@titlephoto@column@anchor{middle}
 \def\engine@c@titlephoto@column@tab{false}
 \def\engine@c@titlephoto@column@align{left}
+\def\engine@c@titlephoto@column@elements{title,subtitle}
+\def\engine@c@titlephoto@byline@elements{author,institute,date}
+\def\engine@c@titlephoto@byline@anchor{top}
+\def\engine@c@titlephoto@byline@align{left}
 \def\engine@c@titlephoto@fineprint@anchor{bottom}
 \def\engine@c@titlephoto@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@titlephoto@signoff@img{\engineliverydir logos/group-patch}
@@ -245,19 +267,28 @@
 \def\engine@c@titlelight@signoff@w{0.2578}
 \def\engine@c@titlelight@signoff@h{0.3437}
 \def\engine@c@titlelight@column@x{0.039}
-\def\engine@c@titlelight@column@y{0.405}
+\def\engine@c@titlelight@column@y{0.43}
 \def\engine@c@titlelight@column@w{0.77}
-\def\engine@c@titlelight@column@h{0.245}
+\def\engine@c@titlelight@column@h{0.21}
+\def\engine@c@titlelight@byline@x{0.039}
+\def\engine@c@titlelight@byline@y{0.68}
+\def\engine@c@titlelight@byline@w{0.7}
+\def\engine@c@titlelight@byline@h{0.27}
 \def\engine@c@titlelight@fineprint@x{0.028}
 \def\engine@c@titlelight@fineprint@y{0.86}
 \def\engine@c@titlelight@fineprint@w{0.5}
 \def\engine@c@titlelight@fineprint@h{0.1}
 \colorlet{EngineCtitlelightField}{BrandBackground}
 \colorlet{EngineCtitlelightText}{BrandText}
+\colorlet{EngineCtitlelightByline}{BrandText}
 \colorlet{EngineCtitlelightFineprint}{BrandText}
 \def\engine@c@titlelight@column@anchor{middle}
 \def\engine@c@titlelight@column@tab{false}
 \def\engine@c@titlelight@column@align{left}
+\def\engine@c@titlelight@column@elements{title,subtitle}
+\def\engine@c@titlelight@byline@elements{author,institute,date}
+\def\engine@c@titlelight@byline@anchor{top}
+\def\engine@c@titlelight@byline@align{left}
 \def\engine@c@titlelight@fineprint@anchor{bottom}
 \def\engine@c@titlelight@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@titlelight@signoff@img{\engineliverydir logos/eg-footer}
@@ -278,19 +309,28 @@
 \def\engine@c@titlephotolight@signoff@w{0.2578}
 \def\engine@c@titlephotolight@signoff@h{0.3437}
 \def\engine@c@titlephotolight@column@x{0.039}
-\def\engine@c@titlephotolight@column@y{0.405}
+\def\engine@c@titlephotolight@column@y{0.43}
 \def\engine@c@titlephotolight@column@w{0.44}
-\def\engine@c@titlephotolight@column@h{0.245}
+\def\engine@c@titlephotolight@column@h{0.21}
+\def\engine@c@titlephotolight@byline@x{0.039}
+\def\engine@c@titlephotolight@byline@y{0.68}
+\def\engine@c@titlephotolight@byline@w{0.44}
+\def\engine@c@titlephotolight@byline@h{0.27}
 \def\engine@c@titlephotolight@fineprint@x{0.028}
 \def\engine@c@titlephotolight@fineprint@y{0.86}
 \def\engine@c@titlephotolight@fineprint@w{0.44}
 \def\engine@c@titlephotolight@fineprint@h{0.1}
 \colorlet{EngineCtitlephotolightField}{BrandBackground}
 \colorlet{EngineCtitlephotolightText}{BrandText}
+\colorlet{EngineCtitlephotolightByline}{BrandText}
 \colorlet{EngineCtitlephotolightFineprint}{BrandText}
 \def\engine@c@titlephotolight@column@anchor{middle}
 \def\engine@c@titlephotolight@column@tab{false}
 \def\engine@c@titlephotolight@column@align{left}
+\def\engine@c@titlephotolight@column@elements{title,subtitle}
+\def\engine@c@titlephotolight@byline@elements{author,institute,date}
+\def\engine@c@titlephotolight@byline@anchor{top}
+\def\engine@c@titlephotolight@byline@align{left}
 \def\engine@c@titlephotolight@fineprint@anchor{bottom}
 \def\engine@c@titlephotolight@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@titlephotolight@signoff@img{\engineliverydir logos/eg-footer}
@@ -329,6 +369,7 @@
 \def\engine@c@titleband@column@anchor{middle}
 \def\engine@c@titleband@column@tab{true}
 \def\engine@c@titleband@column@align{left}
+\def\engine@c@titleband@column@elements{date,title,subtitle,author,institute}
 \def\engine@c@titleband@column@rule@w{0.13}
 \def\engine@c@titleband@column@rule@h{0.0033}
 \def\engine@c@titleband@fineprint@anchor{top}
@@ -355,7 +396,7 @@
 \colorlet{EngineCclosingText}{BrandText}
 \def\engine@c@closing@column@anchor{top}
 \def\engine@c@closing@column@tab{false}
-\def\engine@c@closing@column@align{left}
+\def\engine@c@closing@column@align{center}
 \def\engine@c@closing@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@closing@signoff@img{\engineliverydir logos/nasa-name-2line}
 \def\engine@c@closing@art{\engineliverydir art/closing}
@@ -379,7 +420,7 @@
 \colorlet{EngineCclosinglightText}{BrandText}
 \def\engine@c@closinglight@column@anchor{top}
 \def\engine@c@closinglight@column@tab{false}
-\def\engine@c@closinglight@column@align{left}
+\def\engine@c@closinglight@column@align{center}
 \def\engine@c@closinglight@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@closinglight@signoff@img{\engineliverydir logos/eg-footer}
 \def\engine@c@closingband@field@x{0}
@@ -426,9 +467,7 @@
 \colorlet{EngineCsectionText}{BrandText}
 \def\engine@c@section@column@anchor{top}
 \def\engine@c@section@column@tab{false}
-\def\engine@c@section@column@align{left}
-\def\engine@c@section@eyebrow@label{Section}
-\colorlet{EngineCsectionEyebrow}{BrandMuted}
+\def\engine@c@section@column@align{center}
 \def\engine@c@section@mark@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@section@signoff@img{\engineliverydir logos/nasa-name-2line}
 \def\engine@c@section@art{\engineliverydir art/closing}

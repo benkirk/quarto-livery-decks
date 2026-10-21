@@ -48,7 +48,14 @@ geometry:
 
 section:
   tab: false
-  label-color: muted      # the template's dividers have no eyebrow; a quiet one (beamer needs it)
+  label: null             # the template's dividers have no "SECTION n"
+
+marking:                  # the template's marking placeholder: a strip at the top edge, no fill. A deck's
+  text: "This presentation contains no sensitive information; but if it did, here's where the disclaimer would go"
+  width: 0.777            # own `marking:` replaces this demo text (CUI and the like), `marking: none` drops it
+  height: 0.028
+  offset: 0.004
+  text-role: foreground
 
 frametitle:
   align: left
@@ -68,24 +75,26 @@ compositions:             # boxes [x, y, w, h], fractions of the slide, from the
     field: {role: dark}
     mark: {role: dark, box: [0.898, 0.034, 0.0881, 0.129]}
     signoff: {role: dark, box: [0.2717, 0.086, 0.2578, 0.3437]}   # the group patch, slide 1's box
-    column: {role: dark, box: [0.039, 0.405, 0.77, 0.245], anchor: middle, tab: false, rule: null}   # the band under the patches
-    fineprint: {role: foreground}
+    column: {role: dark, box: [0.039, 0.43, 0.77, 0.21], anchor: middle, tab: false, rule: null}   # title and
+    byline: {role: foreground, box: [0.039, 0.68, 0.70, 0.27]}   # subtitle on the band under the patches;
+    fineprint: {role: foreground}                                # author, institute, date below it
   title-photo:            # the cover art is the default title photo, full-bleed (art.titlegraphic):
     photo: {box: [0, 0, 1, 1]}           # a deck's own titlegraphic replaces all of it
-    field: {box: [0, 0, 0.001, 0.001]}   # no field over it: null breaks the pptx, an empty box make measure
-    column: {box: [0.039, 0.405, 0.77, 0.245]}
+    field: null                          # nothing over the photo
+    column: {box: [0.039, 0.43, 0.77, 0.21]}
+    byline: {box: [0.039, 0.68, 0.70, 0.27]}   # as wide as on the plain cover (a photo cover narrows it)
   closing:
     art: closing
     field: {role: surface}
     mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
     signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
-    column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false}
+    column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
   section:
     art: section
     field: {role: surface}
     mark: {role: surface, box: [0.898, 0.034, 0.0881, 0.129]}
     signoff: {role: surface, box: [0.736, 0.081, 0.142, 0.0437]}
-    column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false}
+    column: {role: foreground, box: [0.039, 0.649, 0.923, 0.30], anchor: top, tab: false, align: center}
 
 installed-fonts:          # Arial itself where the machine has it (HTML; PDF under fonts=brand)
   base: &arial
@@ -111,15 +120,16 @@ type:                     # points on that canvas
   levels: [16, 15, 13, 12, 11]
   frametitle: 32          # the template's
   title: 36
-  subtitle: 18            # the byline shares the band with the title (reference/notes.md)
-  author: 16
-  institute: 16
-  date: 12
+  subtitle: 20            # on the band, under the title
+  author: 20              # the byline below the band (the template's lines are 24, set to fit)
+  institute: 20
+  date: 16
   closing: 36
   section: 36
   sectionsubtitle: 24
   pagenumber: 12
   footer: 12
+  marking: 13             # the template's 16 does not fit its strip's height in one line
 
 charts:                   # nasa-dark's (HDS) on black, with the template's yellow for the orange: the
   dark:                   # third series and the second of every small set; the orange takes HDS's

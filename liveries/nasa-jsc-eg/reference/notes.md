@@ -17,8 +17,9 @@ the marks the engine draws itself; LibreOffice renders; 1920 x 1080 JPEG):
   hairline is the engine's (`frametitle.rule`, `blends.rule`), not the art's.
 - `art/title.jpg` (EG - Title Slide): the starfield, the orange-to-yellow band with its contour
   lines, the lab photo behind the arc, the division patch top left. It is also
-  `art.titlegraphic`, drawn full-bleed (`compositions.title-photo.photo`), so a deck's own
-  `titlegraphic:` replaces the whole cover art, and nasa's Earth limb is never drawn.
+  `art.titlegraphic`, drawn full-bleed with no field over it (`compositions.title-photo`: the
+  photo's box the slide, `field: null`), so a deck's own `titlegraphic:` replaces the whole
+  cover art, and nasa's Earth limb is never drawn.
 - `art/closing.jpg` (EG - Closing): the starfield, the division patch centered, the rule between
   the agency name and the insignia. Section slides wear it too: the template's divider ("Backup")
   is its closing layout.
@@ -54,8 +55,7 @@ logo:
       path: logos/group-patch.png   # the group's patch, RGB PNG, with logos/group-patch.pdf beside it
 ```
 
-and `make livery LIVERY=nasa-jsc-eg-<group>`, twice the first time (a new flavor's first build
-reads its parent's template, so its first check finds `build/` stale; #125). The patch fills its box's height (0.344 of the
+and `make livery LIVERY=nasa-jsc-eg-<group>`. The patch fills its box's height (0.344 of the
 slide) at its own aspect. A group with no patch of its own sets `compositions: {title:
 {signoff: null}}` instead.
 
@@ -72,11 +72,10 @@ nasa-dark's. The pptx link slots are the template's: `hlink` the blue, `folHlink
 the template's lt2, and `#EBEBEB`). It is one line, `roles.foreground`; the content titles follow
 it too (the engine has no separate title color), so a fainter body dims the titles with it.
 
-**The cover title is black on the yellow band** (Ben, 2026-10-20, to assess): the template sets
-it white, 1.4:1 on the yellow. The column is one stack in one color, so the byline (date,
-subtitle, author) goes on the band with it, at 18/16/12 pt, and a two-line title is tight. The
-template's white title with its byline below the band on black is one edit: the title and
-title-photo columns from y 0.426, `anchor: top`, `role: foreground`.
+**The cover**: the title and subtitle black on the yellow band (Ben, 2026-10-20, to assess; the
+template sets the title white, 1.4:1 on the yellow), the author, institute and date white below
+it, where the template lists its byline (`compositions.title.byline`, its own box from y 0.68).
+The title alone is the template's white with one edit: the column's `role: foreground`.
 
 ## Chart colors
 
@@ -87,6 +86,15 @@ place of HDS's own yellow, so the palette holds one yellow. The checks give the 
 nasa-dark (the yellow, like the orange, is lighter than the band). Light slides keep HDS's
 palette: the yellow reads 1.4:1 on white. seaborn's bars desaturate it toward mustard, and in a
 stacked area the yellow family's darker shades go olive.
+
+## Marking strip
+
+The template has a marking placeholder on every layout, a strip at the top edge ("Click to edit
+CUI Marking": x 0.111, width 0.777, y 0.004, height 0.028, centered, no fill). `marking:` draws it
+in every format, white (`text-role: foreground`), with demo text as the livery's default: "This
+presentation contains no sensitive information; but if it did, here's where the disclaimer would
+go". A deck sets its own (`marking: "CUI"`), or `marking: none`. The template's 16 pt does not fit
+the strip's height on one line; 13 does (`type.marking`).
 
 ## Type and fonts
 
@@ -100,24 +108,20 @@ its own sample slides shrink to fit.
 
 ## What the engine cannot do yet
 
-Onboarding this livery turned up engine improvements, filed as #124, and bugs, filed as #125.
-The workarounds this livery uses until they land:
+Onboarding this livery filed engine improvements (#124) and bugs (#125). Its first sprint added
+what this livery now uses: the cover's byline (its own color and box), centered closing and
+divider text (`column.align`), dividers without a label (`section.label: null`), `field: null` on
+a photo cover, and the marking strip. Still worked around:
 
-- **Cover byline** (#124): the whole stack sits on the band, in black, at smaller sizes.
 - **Closing and divider marks** (#124): their fields take the `surface` role, which the art hides,
-  so they wear the agency name while the cover wears the group patch.
-- **Inherited title photo** (#124): the cover art doubles as `art.titlegraphic`, full-bleed, so a
-  deck's own `titlegraphic:` replaces the whole cover. Its field box is `[0, 0, 0.001, 0.001]`:
-  `null` crashes the pptx and an empty box `make measure` (#125).
-- **Divider eyebrow** (#125): a muted "SECTION n" stays, since `eyebrow: null` breaks the PDF.
-- **Bullets, centered closing text, the column rule, the light cover, the marking line, Courier
-  New in the pptx** (#124): not reproduced.
-- **A group's flavor**: run `make livery` twice the first time (#125).
+  so they wear the agency name while the cover wears the group patch (marks go by field role).
+- **Inherited title photo** (#124): the cover art doubles as `art.titlegraphic` (a flavor cannot
+  unset nasa's).
+- **Bullets, the column rule, the light cover, Courier New in the pptx** (#124): not reproduced.
 
 `make measure` reports its boxes "over" on the cover, closing and dividers: the measurer reads the
 art's own ink (the starfield, the patches, the rule beside the insignia) as content. The deltas are
-the same in all three formats, which is what it checks; the pptx sets the closing and divider text
-a little lower than HTML and PDF.
+the same in all three formats, which is what it checks.
 
 ## The template's other layouts
 

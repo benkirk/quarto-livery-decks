@@ -539,8 +539,9 @@
       "art": "closing",
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
-        "align": "left",
+        "align": "center",
         "anchor": "top",
         "box": [
           0.039,
@@ -589,6 +590,7 @@
       "art": "closing",
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -639,8 +641,9 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
-        "align": "left",
+        "align": "center",
         "anchor": "top",
         "box": [
           0.039,
@@ -698,6 +701,7 @@
         "opacity": 0.72,
         "role": "dark"
       },
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -740,8 +744,9 @@
       "art": "section",
       "band": null,
       "bar": null,
+      "byline": null,
       "column": {
-        "align": "left",
+        "align": "center",
         "anchor": "top",
         "box": [
           0.039,
@@ -753,10 +758,7 @@
         "rule": null,
         "tab": false
       },
-      "eyebrow": {
-        "color": "muted",
-        "label": "Section"
-      },
+      "eyebrow": null,
       "field": {
         "box": [
           0,
@@ -793,14 +795,34 @@
       "art": "title",
       "band": null,
       "bar": null,
+      "byline": {
+        "align": "left",
+        "anchor": "top",
+        "box": [
+          0.039,
+          0.68,
+          0.7,
+          0.27
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
       "column": {
         "align": "left",
         "anchor": "middle",
         "box": [
           0.039,
-          0.405,
+          0.43,
           0.77,
-          0.245
+          0.21
+        ],
+        "elements": [
+          "title",
+          "subtitle"
         ],
         "role": "dark",
         "rule": null,
@@ -860,6 +882,7 @@
         "role": "primary"
       },
       "bar": null,
+      "byline": null,
       "column": {
         "align": "left",
         "anchor": "middle",
@@ -868,6 +891,13 @@
           0.27,
           0.552,
           0.45
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
         ],
         "role": "primary-text",
         "rule": [
@@ -929,14 +959,34 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": {
+        "align": "left",
+        "anchor": "top",
+        "box": [
+          0.039,
+          0.68,
+          0.7,
+          0.27
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
       "column": {
         "align": "left",
         "anchor": "middle",
         "box": [
           0.039,
-          0.405,
+          0.43,
           0.77,
-          0.245
+          0.21
+        ],
+        "elements": [
+          "title",
+          "subtitle"
         ],
         "role": "foreground",
         "rule": null,
@@ -988,29 +1038,41 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": {
+        "align": "left",
+        "anchor": "top",
+        "box": [
+          0.039,
+          0.68,
+          0.7,
+          0.27
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
       "column": {
         "align": "left",
         "anchor": "middle",
         "box": [
           0.039,
-          0.405,
+          0.43,
           0.77,
-          0.245
+          0.21
+        ],
+        "elements": [
+          "title",
+          "subtitle"
         ],
         "role": "dark",
         "rule": null,
         "tab": false
       },
       "eyebrow": null,
-      "field": {
-        "box": [
-          0,
-          0,
-          0.001,
-          0.001
-        ],
-        "role": "dark"
-      },
+      "field": null,
       "fineprint": {
         "anchor": "bottom",
         "box": [
@@ -1054,14 +1116,34 @@
       "art": null,
       "band": null,
       "bar": null,
+      "byline": {
+        "align": "left",
+        "anchor": "top",
+        "box": [
+          0.039,
+          0.68,
+          0.44,
+          0.27
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
       "column": {
         "align": "left",
         "anchor": "middle",
         "box": [
           0.039,
-          0.405,
+          0.43,
           0.44,
-          0.245
+          0.21
+        ],
+        "elements": [
+          "title",
+          "subtitle"
         ],
         "role": "foreground",
         "rule": null,
@@ -1240,6 +1322,22 @@
       "light": "meatball"
     }
   },
+  "marking": {
+    "align": "center",
+    "box": [
+      0.1115,
+      0.004,
+      0.777,
+      0.028
+    ],
+    "edge": "top",
+    "fill": null,
+    "height": 0.028,
+    "offset": 0.004,
+    "text": "This presentation contains no sensitive information; but if it did, here's where the disclaimer would go",
+    "text-role": "foreground",
+    "width": 0.777
+  },
   "marks": {
     "background": {
       "logo": "../nasa/logos/meatball.png",
@@ -1327,8 +1425,7 @@
   },
   "schema": 1,
   "section": {
-    "label": "Section",
-    "label-color": "muted",
+    "label": null,
     "tab": false
   },
   "signoff": {
@@ -1353,8 +1450,8 @@
     "roles": {
       "author": {
         "leading": 1.3,
-        "pt": 16,
-        "size": 1.0
+        "pt": 20,
+        "size": 1.25
       },
       "body": {
         "leading": 1.4,
@@ -1378,8 +1475,8 @@
       },
       "date": {
         "leading": 1.2,
-        "pt": 12,
-        "size": 0.75
+        "pt": 16,
+        "size": 1.0
       },
       "eyebrow": {
         "leading": 1.2,
@@ -1408,8 +1505,13 @@
       },
       "institute": {
         "leading": 1.3,
-        "pt": 16,
-        "size": 1.0
+        "pt": 20,
+        "size": 1.25
+      },
+      "marking": {
+        "leading": 1.2,
+        "pt": 13,
+        "size": 0.8125
       },
       "pagenumber": {
         "leading": 1.2,
@@ -1433,8 +1535,8 @@
       },
       "subtitle": {
         "leading": 1.3,
-        "pt": 18,
-        "size": 1.125
+        "pt": 20,
+        "size": 1.25
       },
       "table": {
         "leading": 1.3,
