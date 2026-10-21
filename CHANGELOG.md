@@ -129,6 +129,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   renders before.
 
 ### LaTeX
+- The theme states its requirements: a LaTeX kernel of 2022-06-01 or later (`\NeedsTeXFormat`
+  in `engine_livery.sty`, which every theme file loads through) and `tcolorbox` with `skins` and
+  `breakable`, which the cards made unconditional. latex/README.md names both.
 - Frames are top-aligned (the class option `t`, without beamer's 0.2 cm under the title); give a
   frame `[c]` to center it.
 
