@@ -146,7 +146,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Cloud**: `.devcontainer/devcontainer.json` runs the image in GitHub Codespaces (`:main`, the
   checkout's own image; the `sshd` feature layered at creation for `gh codespace ssh`, nothing
   added to the Dockerfile; `postCreateCommand` calls the entrypoint with `true` for the matplotlib
-  seed, since dev containers replace the entrypoint; docs/container.md "In GitHub Codespaces":
+  seed, since dev containers replace the entrypoint, and writes a `profile.d` line putting the
+  checkout's `bin/` first on PATH (`remoteEnv` reaches VS Code's shells, not an ssh login); docs/container.md "In GitHub Codespaces":
   the custom image counts against the free storage quota, so one codespace at a time). The
   reusable `build-decks.yaml` (`workflow_call`) is a consumer's cloud build: `make` per deck
   directory in the image (`:latest`, the newest release), the outputs as the `decks` artifact,

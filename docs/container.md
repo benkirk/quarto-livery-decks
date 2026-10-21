@@ -195,17 +195,18 @@ the repository checked out at `/workspaces/quarto-livery-decks` and `quarto` on 
 
 ```bash
 gh auth refresh -h github.com -s codespace        # once: the codespace scope
-gh codespace create -r benkirk/quarto-livery-decks --retention-period 24h
+gh codespace create -R benkirk/quarto-livery-decks --retention-period 24h
 gh codespace ssh                                  # a shell in it (it asks which codespace)
   make -C decks/quickstart all                    # inside: pptx, html, pdf
   exit
-gh codespace cp 'remote:/workspaces/quarto-livery-decks/decks/quickstart/quickstart.*' .
+gh codespace cp -e 'remote:/workspaces/quarto-livery-decks/decks/quickstart/quickstart.*' .   # -e: the remote expands the path
 gh codespace delete                               # when done: a stopped codespace still bills storage
 ```
 
 `gh codespace ssh -- make -C decks/quickstart pptx` runs one command. `ssh` needs an SSH
 server, which the `sshd` dev container feature adds on top of the image when the codespace is
-created; the image itself carries nothing for it.
+created; the image itself carries nothing for it. The shell's PATH starts with the checkout's `bin/`,
+so `livery` is the checkout's, not the image's copy.
 
 **In the browser**: the README's badge, or "Code" > "Codespaces" on the repository page, opens
 VS Code on it. In its terminal, `make -C decks/quickstart all`; the pptx and PDF download from
@@ -219,8 +220,10 @@ free (GitHub Free; Pro 180 h and 20 GB-month), so about 60 hours on the default 
 machine (8 GB RAM, 32 GB disk). The storage counts this image, about 8 GB, for every
 codespace kept, running or stopped, until it is deleted (30 days after it stops, unless
 `--retention-period` or your Codespaces settings say less): one codespace at a time, deleted
-when done, stays inside the free quota; two kept for a month do not. The first start pulls
-the image, a few minutes; a resume takes seconds. A codespace on an organization's
+when done, stays inside the free quota; two kept for a month do not. The first start takes
+about five minutes, four of them the image pull; a resume takes seconds. The 32 GB disk has
+about 6 GB free once the image is on it, enough for decks, not for much else. The quickstart's
+`make qa`, all three formats and their screenshots, takes a bit over a minute on the 2 cores. A codespace on an organization's
 repository bills the organization only where it allows that; this repository is a personal
 one, so your own quota applies.
 
