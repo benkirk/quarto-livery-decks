@@ -18,7 +18,8 @@ from pptx.util import Pt
 
 import livery as livery_mod
 
-LIVERY     = livery_mod.load()
+from .common import LIVERY, is_picture
+
 NAME       = "link-caption"
 SIZE       = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the caption role
 COLOR      = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
@@ -28,7 +29,7 @@ BAND_TALL  = 0.04
 
 
 def _picture_link(shape):
-    if not hasattr(shape, "image"):
+    if not is_picture(shape):
         return None
     try:
         return shape.click_action.hyperlink.address

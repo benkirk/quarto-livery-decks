@@ -13,15 +13,10 @@ from pptx.util import Pt
 import livery as livery_mod
 
 from . import docprops
+from .common import LIVERY
 
-LIVERY = livery_mod.load()
-MARKING = LIVERY.get("marking") or {}
+MARKING = LIVERY.get("marking") or {}   # its colors hexes: livery_build.marking() resolved the roles
 ALIGN = {"center": PP_ALIGN.CENTER, "left": PP_ALIGN.LEFT, "right": PP_ALIGN.RIGHT}
-
-
-def _hex(value: str) -> str:
-    """A hex's six digits (livery_build.marking() resolved the roles)."""
-    return value.lstrip("#").upper()
 
 
 def run(prs, name: str) -> None:
@@ -36,7 +31,7 @@ def run(prs, name: str) -> None:
         box.name = "Marking"
         if MARKING.get("fill"):
             box.fill.solid()
-            box.fill.fore_color.rgb = RGBColor.from_string(_hex(MARKING["fill"]))
+            box.fill.fore_color.rgb = RGBColor.from_string(livery_mod.hex(LIVERY, MARKING["fill"]))
         tf = box.text_frame
         tf.word_wrap = True
         tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
@@ -46,6 +41,6 @@ def run(prs, name: str) -> None:
         r = p.add_run()
         r.text = text
         r.font.size = Pt(livery_mod.type_pt(LIVERY, "marking"))
-        r.font.color.rgb = RGBColor.from_string(_hex(MARKING.get("color", "muted")))
+        r.font.color.rgb = RGBColor.from_string(livery_mod.hex(LIVERY, MARKING.get("color", "muted")))
         r.font.bold = bool(MARKING.get("bold"))
     print(f"marking: the marking strip on {len(prs.slides)} slide(s) → {name}")

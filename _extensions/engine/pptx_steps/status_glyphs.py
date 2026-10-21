@@ -15,34 +15,11 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .slide_layout import LIVERY
+from .common import BOXES, LIVERY, ppr_place, rpr, set_fill
 
 GLYPHS = {"✓": "done", "⚠": "warn", "✗": "fail"}
-STATUS = LIVERY["boxes"]["status"]
-MUTED = livery_mod.color(LIVERY, "muted").lstrip("#")
-# a:pPr's children, in schema order: a bullet's elements go before the rest
-PPR_ORDER = ["lnSpc", "spcBef", "spcAft", "buClrTx", "buClr", "buSzTx", "buSzPct", "buSzPts", "buFontTx", "buFont",
-             "buNone", "buAutoNum", "buChar", "buBlip", "tabLst", "defRPr", "extLst"]
-
-
-def _place(ppr, el):
-    """el into a:pPr at its schema position."""
-    rank = PPR_ORDER.index(etree.QName(el).localname)
-    for i, child in enumerate(ppr):
-        name = etree.QName(child).localname
-        if name in PPR_ORDER and PPR_ORDER.index(name) > rank:
-            child.addprevious(el)
-            return
-    ppr.append(el)
-
-
-def _color(rpr, hexv):
-    for old in rpr.findall(qn("a:solidFill")):
-        rpr.remove(old)
-    fill = etree.Element(qn("a:solidFill"))
-    etree.SubElement(fill, qn("a:srgbClr")).set("val", hexv)
-    ln = rpr.find(qn("a:ln"))
-    ln.addnext(fill) if ln is not None else rpr.insert(0, fill)
+STATUS = BOXES["status"]
+MUTED = livery_mod.color(LIVERY, "muted")
 
 
 def mark(p) -> bool:
@@ -72,17 +49,14 @@ def mark(p) -> bool:
             ppr.remove(old)
     kind = GLYPHS[glyph]
     clr = etree.Element(qn("a:buClr"))
-    etree.SubElement(clr, qn("a:srgbClr")).set("val", STATUS[kind].lstrip("#"))
-    _place(ppr, clr)
+    etree.SubElement(clr, qn("a:srgbClr")).set("val", livery_mod.hex(LIVERY, STATUS[kind]))
+    ppr_place(ppr, clr)
     bu = etree.Element(qn("a:buChar"))
     bu.set("char", glyph)
-    _place(ppr, bu)
+    ppr_place(ppr, bu)
     if kind == "fail":   # the failed item's text muted
         for r in runs:
-            rpr = r.find(qn("a:rPr"))
-            if rpr is None:
-                rpr = etree.Element(qn("a:rPr")); r.insert(0, rpr)
-            _color(rpr, MUTED)
+            set_fill(rpr(r), MUTED)
     return True
 
 

@@ -8,7 +8,9 @@ numbers, footnotes, covers, tables in the livery's style), so Make.common's pptx
 after rendering. Each deck is read once, the steps in pptx_steps/ run in the order below, and it
 is saved once: the first five on the zip's parts (text and lxml), the rest on one python-pptx
 Presentation. The livery comes from $LIVERY_DIR (Make.common exports it), else a `_livery` link
-in the current directory (the engine's livery.py)."""
+in the current directory (the engine's livery.py), read once by pptx_steps/common.py, which holds
+what the steps share (the livery's numbers, the shape and run helpers); measure.py measures text
+in the livery's faces."""
 
 import io
 import sys

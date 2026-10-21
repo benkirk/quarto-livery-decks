@@ -24,25 +24,24 @@ import re
 import sys
 
 from lxml import etree
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
 import livery as livery_mod
 
-from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE
-
 from .columns import rules
-from .slide_layout import BODY_PT, BOXES, GEOM, LIVERY, _is_body, _text_height, pads
+from .common import BODY_PT, BOXES, GEOM, LIVERY, SLACK, is_body, pads, ppr_place, rect, rpr, set_fill
+from .measure import text_height
 
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big)⟧")   # a card's lines (grid-pptx.lua)
-SLACK = 1.1   # measured height x this: autofit stays idle (as caution_box)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = 0.5 * BODY_PT * CARD_GAP   # pt: the template's space before a body paragraph is half the body
 
 
-def _text(p):
+def _para_text(p):
     return "".join(t.text or "" for t in p.iter(qn("a:t")))
 
 
@@ -67,7 +66,7 @@ def parse(paragraphs):
         else:
             segs.append(("text", [p]))
     for p in paragraphs:
-        m = MARK.match(_text(p).strip())
+        m = MARK.match(_para_text(p).strip())
         if m is None:
             top = stack[-1] if stack else None
             if top is None or top[0] == "columns":   # a stray paragraph between columns: text
@@ -158,17 +157,6 @@ def group(slide, shapes, name):
     return g
 
 
-def rect(slide, x, y, w, h, hexv, name, behind=None):
-    """A filled rectangle (EMU, a #RRGGBB fill), no line or shadow; behind: a shape it goes under."""
-    r = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
-    r.fill.solid(); r.fill.fore_color.rgb = RGBColor.from_string(hexv[1:])
-    r.line.fill.background(); r.shadow.inherit = False
-    r.name = name
-    if behind is not None:
-        behind._element.addprevious(r._element)
-    return r
-
-
 def draw_lead(slide, x, y, w, room, paras, slide_height):
     """The lead box: its text on boxes.lead.fill, a bar of bar-color at its left, the text padded
     by boxes.lead.pad, the box cut to its measured text; the height it takes, a pad's gap under it
@@ -179,17 +167,17 @@ def draw_lead(slide, x, y, w, room, paras, slide_height):
     tb = body_box(slide, x + bar, y, w - bar, room, paras, "Lead text")
     tf = tb.text_frame
     tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
-    h = min(int(_text_height(tb, slide) * SLACK), room)
+    h = min(int(text_height(tb, slide) * SLACK), room)
     tb.height = h
-    fill = rect(slide, x, y, w, h, lead["fill"], "Lead fill", behind=tb)
-    bar_shape = rect(slide, x, y, bar, h, lead["bar-color"], "Lead bar", behind=tb)
+    fill = rect(slide, x, y, w, h, _hex(lead["fill"]), "Lead fill", behind=tb)
+    bar_shape = rect(slide, x, y, bar, h, _hex(lead["bar-color"]), "Lead bar", behind=tb)
     group(slide, [fill, bar_shape, tb], "Lead")
     return h + vpad
 
 
-def _hex(role):
-    """A role's color as #RRGGBB (livery.color() gives it without the #), as boxes' colors are."""
-    return "#" + livery_mod.color(LIVERY, role).lstrip("#")
+def _hex(value):
+    """A role's, or a box color's (#RRGGBB), six digits."""
+    return livery_mod.hex(LIVERY, value)
 
 
 def _prefix(p):
@@ -207,29 +195,23 @@ def _prefix(p):
 
 
 def _style(p, size=None, bold=None, color=None, caps=False):
-    """Every run of the paragraph at a size (pt), bold, a #RRGGBB color, small caps' tracking."""
+    """Every run of the paragraph at a size (pt), bold, a six-digit color, small caps' tracking."""
     for r in p.iter(qn("a:r")):
-        rpr = r.find(qn("a:rPr"))
-        if rpr is None:
-            rpr = etree.Element(qn("a:rPr")); r.insert(0, rpr)
+        el = rpr(r)
         if size is not None:
-            rpr.set("sz", str(round(livery_mod.half_pt(size) * 100)))
+            el.set("sz", str(round(livery_mod.half_pt(size) * 100)))
         if bold is not None:
-            rpr.set("b", "1" if bold else "0")
+            el.set("b", "1" if bold else "0")
         if caps:
-            rpr.set("cap", "all"); rpr.set("spc", "100")
+            el.set("cap", "all"); el.set("spc", "100")
         if color is not None:
-            for old in rpr.findall(qn("a:solidFill")):
-                rpr.remove(old)
-            fill = etree.Element(qn("a:solidFill"))
-            etree.SubElement(fill, qn("a:srgbClr")).set("val", color[1:])
-            ln = rpr.find(qn("a:ln"))
-            (ln.addnext(fill) if ln is not None else rpr.insert(0, fill))
+            set_fill(el, color)
 
 
 def _shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_only=False):
     """A card's rectangle, rounded when radius (EMU) > 0 (top_only: its top corners, a head band's);
-    fill a #RRGGBB or None; line (#RRGGBB, width EMU) an outline; behind: a shape it goes under."""
+    fill a six-digit hex or None; line (hex, width EMU) an outline; behind: a shape it goes under.
+    Its own shape, not common.rect(): the preset geometry differs."""
     kind = (MSO_SHAPE.ROUND_2_SAME_RECTANGLE if top_only else MSO_SHAPE.ROUNDED_RECTANGLE) if radius > 0 else MSO_SHAPE.RECTANGLE
     r = slide.shapes.add_shape(kind, Emu(x), Emu(y), Emu(w), Emu(h))
     if radius > 0:
@@ -237,11 +219,11 @@ def _shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_on
         if top_only:
             r.adjustments[1] = 0.0
     if fill:
-        r.fill.solid(); r.fill.fore_color.rgb = RGBColor.from_string(fill[1:])
+        r.fill.solid(); r.fill.fore_color.rgb = RGBColor.from_string(fill)
     else:
         r.fill.background()
     if line:
-        r.line.color.rgb = RGBColor.from_string(line[0][1:]); r.line.width = Emu(line[1])
+        r.line.color.rgb = RGBColor.from_string(line[0]); r.line.width = Emu(line[1])
     else:
         r.line.fill.background()
     r.shadow.inherit = False
@@ -261,12 +243,11 @@ def _close(p):
         ppr.remove(old)
     bef = etree.Element(qn("a:spcBef"))
     etree.SubElement(bef, qn("a:spcPts")).set("val", str(round(BODY_GAP * 100)))
-    ln = ppr.find(qn("a:lnSpc"))
-    ln.addnext(bef) if ln is not None else ppr.insert(0, bef)
+    ppr_place(ppr, bef)
 
 
 def _card_height(tb, slide):
-    return int(_text_height(tb, slide, gap=Pt(BODY_GAP)))
+    return int(text_height(tb, slide, gap=Pt(BODY_GAP)))
 
 
 def _card_text(paras, solid):
@@ -317,11 +298,12 @@ def draw_strip(slide, x, y, w, room, paras, role, solid, name):
         for p in paras:
             _style(p, color=_hex("primary-text"))
     tb.height = min(_card_height(tb, slide), room)
-    fill = _hex(role) if solid else livery_mod.mix(_hex(role), _hex("background"), BOXES["strip"]["tint"])
+    fill = _hex(role) if solid else _hex(livery_mod.mix(_hex(role), _hex("background"), BOXES["strip"]["tint"]))
     return tb, rect(slide, x, y, w, tb.height, fill, name, behind=tb)
 
 
-def _role(attrs, default="primary"):
+def _pick_role(attrs, default="primary"):
+    """A marker's role= when it is a role, else the default."""
     r = attrs.get("role", default)
     return r if r in LIVERY["roles"] else default
 
@@ -364,7 +346,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             if isinstance(it, tuple):
                 text_part() if run else None
                 n_strip += 1
-                tb, r = draw_strip(slide, x, y, w, room, it[2], _role(it[1], "accent"), solid, f"Card {n_col} strip {n_strip}")
+                tb, r = draw_strip(slide, x, y, w, room, it[2], _pick_role(it[1], "accent"), solid, f"Card {n_col} strip {n_strip}")
                 parts.append(("strip", tb, r, tb.height))
             else:
                 run.append(it)
@@ -380,13 +362,13 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
             c["plain"].top, c["plain"].height = y, total
             continue
         attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
-        role, solid = _hex(_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)])), attrs.get("solid")
-        mine = [_shape(slide, x, y, w, total, radius, role if solid else card["fill"], f"Card {n} fill", behind=c["first"])]
+        role, solid = _hex(_pick_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)])), attrs.get("solid")
+        mine = [_shape(slide, x, y, w, total, radius, role if solid else _hex(card["fill"]), f"Card {n} fill", behind=c["first"])]
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
             mine.append(_shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"], top_only=True))
         if attrs.get("pick"):
             mine.append(_shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
-                               line=(card["outline-color"], round(card["outline"] * slide_height))))
+                               line=(_hex(card["outline-color"]), round(card["outline"] * slide_height))))
         if hb is not None:
             hb.top, hb.height = y, head_h
         cy = y + head_h
@@ -414,12 +396,12 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
                 for p in body.findall(qn("a:p")):
                     if p not in seg[1]:
                         body.remove(p)
-                h = min(int(_text_height(ph, slide) * SLACK), bottom - y)
+                h = min(int(text_height(ph, slide) * SLACK), bottom - y)
                 ph.left, ph.top, ph.width, ph.height = left, y, width, h
                 keep = True
             else:
                 tb = body_box(slide, left, y, width, max(bottom - y, 0), seg[1], "Body text")
-                h = min(int(_text_height(tb, slide) * SLACK), max(bottom - y, 0))
+                h = min(int(text_height(tb, slide) * SLACK), max(bottom - y, 0))
                 tb.height = h
             y += h
             continue
@@ -427,7 +409,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
             continue
         if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
-            tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _role(seg[1], "accent"), False, "Strip fill")
+            tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _pick_role(seg[1], "accent"), False, "Strip fill")
             tb.name = "Strip text"
             group(slide, [r, tb], "Strip")
             y += tb.height + pads("strip")[0]
@@ -445,7 +427,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             n_col += 1
             boxes.append(body_box(slide, x, y, w, room, _flat(paras), f"Column {n_col}"))
         h = room
-        tallest = min(max(int(_text_height(b, slide)) for b in boxes), room)
+        tallest = min(max(int(text_height(b, slide)) for b in boxes), room)
         if any(s[0] == "text" for s in later):   # text below: the row as tall as its tallest column
             h = min(int(tallest * SLACK), room)
             for b in boxes:
@@ -459,15 +441,15 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
 def run(prs, name: str) -> None:
     done = 0
     for slide in prs.slides:
-        for ph in [sh for sh in slide.shapes if _is_body(sh)]:
+        for ph in [sh for sh in slide.shapes if is_body(sh)]:
             paragraphs = ph.text_frame._txBody.findall(qn("a:p"))
-            if not any(_text(p).startswith("⟦engine:") for p in paragraphs):
+            if not any(_para_text(p).startswith("⟦engine:") for p in paragraphs):
                 continue
             segs = parse(paragraphs)
             if segs is None:
                 continue
             for p in paragraphs:   # the marker paragraphs go
-                if MARK.match(_text(p).strip()):
+                if MARK.match(_para_text(p).strip()):
                     p.getparent().remove(p)
             lay_out(slide, ph, segs, prs.slide_width, prs.slide_height)
             done += 1

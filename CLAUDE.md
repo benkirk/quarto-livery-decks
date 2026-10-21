@@ -171,7 +171,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
-  python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
+  python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
+  steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
+  measuring (`text_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
   that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a

@@ -21,9 +21,8 @@ import re
 import sys
 from pathlib import Path
 
-import livery as livery_mod
+from .common import LIVERY
 
-LIVERY = livery_mod.load()
 TYPEFACE = LIVERY["pptx"]["typeface"]
 FAMILY = TYPEFACE.lower().replace(" ", "")
 FONTS_DIR = Path(LIVERY["dir"]) / LIVERY["pptx"].get("fonts", "fonts/pptx")

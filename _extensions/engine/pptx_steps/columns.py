@@ -20,15 +20,14 @@ style_tables and type_step.
 
 import sys
 
-from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Emu
 
 import livery as livery_mod
 
-from .slide_layout import BOXES, GEOM, LIVERY, _text_height, fit_table, take_marker
+from .common import BOXES, GEOM, LIVERY, fit_table, is_picture, is_table, rect, take_marker
+from .measure import text_height
 
-RULE = RGBColor.from_string(livery_mod.blend(LIVERY, "rule"))   # HTML's --engine-rule, beamer's BrandRule
+RULE = livery_mod.blend(LIVERY, "rule")   # HTML's --engine-rule, beamer's BrandRule
 
 KEY = "engine-columns:"
 
@@ -52,10 +51,7 @@ def rules(slide, frames, top, height, slide_width, slide_height):
         return
     g = round(BOXES["columns"]["gap"] * slide_width)
     for x, cw in frames[:-1]:
-        r = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x + cw + (g - w) // 2), Emu(top), Emu(w), Emu(height))
-        r.fill.solid(); r.fill.fore_color.rgb = RULE
-        r.line.fill.background(); r.shadow.inherit = False
-        r.name = "Column rule"
+        rect(slide, x + cw + (g - w) // 2, top, w, height, RULE, "Column rule")
 
 
 def _old(width):
@@ -87,17 +83,16 @@ def frame_slide(slide, words, width, height):
             x, w = new[idx - 1]
             sh.left, sh.top, sh.width, sh.height = x, sh.top, w, sh.height
             if sh.text_frame.text.strip():
-                row.append((sh.top, sh.top + min(_text_height(sh, slide), sh.height)))
+                row.append((sh.top, sh.top + min(text_height(sh, slide), sh.height)))
     for ph in slide.slide_layout.placeholders:
         if ph.placeholder_format.idx in (1, 2):
             area[ph.placeholder_format.idx - 1] = (ph.top, ph.height)
     for sh in slide.shapes:
-        table = getattr(sh, "has_table", False) and sh.has_table
-        if not (table or sh.shape_type == 13):   # 13: a picture
+        if not (is_table(sh) or is_picture(sh)):
             continue
         i = _column_of(sh, old)
         x, w = new[i]
-        if table:
+        if is_table(sh):
             fit_table(sh, x, w)
             row.append((sh.top, sh.top + sh.height))
             continue

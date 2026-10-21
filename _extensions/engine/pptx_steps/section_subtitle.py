@@ -18,6 +18,8 @@ from lxml import etree
 import livery as livery_mod
 
 from . import measure
+from .common import GEOM, LIVERY
+from .measure import PT_PX, PX
 
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -33,11 +35,6 @@ CHROME_PH = {"dt", "ftr", "sldNum"}  # date, footer, slide number — ignore
 # Divider geometry in the revealjs theme's 1600x900 px, from its section-slide rules
 # (engine-revealjs.scss), on the livery's canvas (livery.json type.canvas, pt): 1 px is
 # 7620 EMU and 1 px of type 0.6 pt on 13.333 x 7.5 in, 5715 EMU and 0.45 pt on 10 x 5.625.
-LIVERY = livery_mod.load()
-GEOM = LIVERY["geometry"]
-CANVAS = LIVERY["type"]["canvas"]
-PX = CANVAS["w"] * 12700 / 1600
-PT_PX = CANVAS["h"] / 900                   # points of type per slide pixel
 COLUMN = LIVERY["compositions"]["section"]["column"]   # the divider's text column (compositions)
 BLOCK_TOP = round(COLUMN["box"][1] * 900)                 # the block is centred between its top
 BLOCK_BOTTOM = round((COLUMN["box"][1] + COLUMN["box"][3]) * 900)   # and bottom (120 ... 820 px)
@@ -176,8 +173,7 @@ def _decor(name, sid, x, y, w, h, inner):
 
 def _eyebrow_hex():
     """The eyebrow's color (section.label-color: a role or a hex), as HTML and PDF draw it."""
-    c = EYEBROW["color"] if EYEBROW else "secondary"
-    return c.lstrip("#").upper() if c.startswith("#") else livery_mod.color(LIVERY, c)
+    return livery_mod.hex(LIVERY, EYEBROW["color"] if EYEBROW else "secondary")
 
 
 def _dress(root, layout_root, number):

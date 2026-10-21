@@ -19,7 +19,7 @@ the framework's scripts.
 `make livery LIVERY=<name>` (or LIVERY_DIR=), which runs `livery all`. The subcommands import
 their modules only when run, so `zip` needs nothing beyond Python and the engine.
 
-    import livery as livery_mod     load, color, scheme, blend, mix, font_file, mark, files
+    import livery as livery_mod     load, color, hex, scheme, blend, mix, font_file, mark, files
 
 The reader's directory comes from the argument, else $LIVERY_DIR (exported by the framework's
 Make.common), else a `_livery` link in the current directory. `deps` prints
@@ -73,6 +73,12 @@ def contrast(a: str, b: str) -> float:
 def color(livery: dict, role: str) -> str:
     """A role's hex without '#', as the pptx scripts write it."""
     return livery["roles"][role].lstrip("#").upper()
+
+
+def hex(livery: dict, value: str) -> str:
+    """A role's, or a '#RRGGBB' value's, six digits upper: the one color form the pptx steps write
+    (a box's color in livery.json is a hex, a role= attribute a role)."""
+    return (value if value.startswith("#") else livery["roles"][value]).lstrip("#").upper()
 
 
 def scheme(livery: dict, slot: str) -> str:
