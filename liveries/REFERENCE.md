@@ -147,6 +147,7 @@ Pictures and curves behind the fields. A path is relative to the livery.
 | key | type | default | |
 |---|---|---|---|
 | `title` | null or path |  | A picture covering the cover's field. (null: none: a flavor unsetting its parent's) |
+| `title-light` | null or path |  | A picture covering the light cover's field (themeoptions title=light; without it the light cover has none). (null: none: a flavor unsetting its parent's) |
 | `section` | null or path |  | A picture covering section slides' field. (null: none: a flavor unsetting its parent's) |
 | `closing` | null or path |  | A picture covering the closing slide's field (a band livery's default: title's). (null: none: a flavor unsetting its parent's) |
 | `content` | null or path |  | A picture behind every content slide. (null: none: a flavor unsetting its parent's) |
@@ -242,7 +243,7 @@ The parts of one composed slide; a part not named keeps the engine's value, null
 | key | type | default | |
 |---|---|---|---|
 | `field` | null or object |  | The colored field behind everything. (null: none) |
-| `art` | null or string |  | Which art.<kind> picture covers the field: title, section, closing or content. (null: none) |
+| `art` | null or `title` \| `title-light` \| `section` \| `closing` \| `content` |  | Which art.<kind> picture covers the field: title, title-light, section, closing or content. (null: none) |
 | `photo` | null or object |  | The deck's photo. (null: none) |
 | `band` | null or object |  | The band across a band cover's field. (null: none) |
 | `waves` | null or object |  | The wave lines drawn over the field. (null: none) |

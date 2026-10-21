@@ -23,7 +23,7 @@ from pathlib import Path
 
 import livery as livery_mod
 import pptx_waves
-from livery_build import SLOT_ROLES
+from livery_build import ART_KINDS, SLOT_ROLES
 from livery_charts import custom_colors
 
 # the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
@@ -83,7 +83,7 @@ class Builder:
         self.heading_typeface = livery["pptx"].get("heading-typeface", self.typeface)
         art = livery.get("art") or {}
         self.waves = art.get("waves")
-        self.art = {k: art[k] for k in ("title", "section", "content", "closing", "titlegraphic") if isinstance(art.get(k), str)}
+        self.art = {k: art[k] for k in ART_KINDS if isinstance(art.get(k), str)}
         self.signoff = livery.get("signoff")
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]

@@ -268,6 +268,7 @@
       "additionalProperties": false,
       "properties": {
         "title": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering the cover's field. (null: none: a flavor unsetting its parent's)"},
+        "title-light": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering the light cover's field (themeoptions title=light; without it the light cover has none). (null: none: a flavor unsetting its parent's)"},
         "section": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}], "description": "A picture covering section slides' field. (null: none: a flavor unsetting its parent's)"},
         "closing": {
           "oneOf": [{"type": "null"}, {"$ref": "#/$defs/path"}],
@@ -1189,11 +1190,11 @@
           "oneOf": [
             {"type": "null"},
             {
-              "type": "string",
-              "description": "Which art.<kind> picture covers the field: title, section, closing or content."
+              "enum": ["title", "title-light", "section", "closing", "content"],
+              "description": "Which art.<kind> picture covers the field: title, title-light, section, closing or content."
             }
           ],
-          "description": "Which art.<kind> picture covers the field: title, section, closing or content. (null: none)"
+          "description": "Which art.<kind> picture covers the field: title, title-light, section, closing or content. (null: none)"
         },
         "photo": {
           "oneOf": [

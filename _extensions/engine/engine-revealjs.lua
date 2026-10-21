@@ -637,7 +637,7 @@ local function add_dependency(livery)
       if type(p) == "table" and type(p.img) == "string" then add(p.img) end
     end
   end
-  for _, kind in ipairs({ "title", "section", "closing", "content", "titlegraphic" }) do   -- static art files
+  for _, kind in ipairs({ "title", "title-light", "section", "closing", "content", "titlegraphic" }) do   -- static art files
     if livery.art and type(livery.art[kind]) == "string" then add(livery.art[kind]) end
   end
   quarto.doc.add_html_dependency({

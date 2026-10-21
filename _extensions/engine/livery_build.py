@@ -51,7 +51,8 @@ ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "code-text": "BrandCodeText"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
 # art.<kind> files: backgrounds per slide kind, and titlegraphic, the title photo a deck sets none of
-ART_KINDS = ("title", "section", "closing", "content", "titlegraphic")
+ART_KINDS = ("title", "title-light", "section", "closing", "content", "titlegraphic")
+COMP_ART = ("title", "title-light", "section", "closing", "content")   # the kinds a composition's art names
 # the title slide's composition (title: in livery.yml) when it is the band: fractions of the slide,
 # roles for the colors; its strip wears marks.<field>
 BAND = {"top": 0.27, "bottom": 0.72, "split": 0.62, "band": "primary", "field": "dark", "field-text": "background"}
@@ -488,9 +489,9 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     def narrow(b):   # a byline's box beside the photo, as the column's
         return b and {**b, "box": b.get("box") and [b["box"][0], b["box"][1], min(0.44, b["box"][2]), b["box"][3]]}
 
-    def light(c):
+    def light(c, art=None):   # art: the light cover's own picture (art.title-light), else none
         w = c["waves"]
-        return variant(c, art=None, field={"role": "background"},
+        return variant(c, art=art, field={"role": "background"},
                        waves=w and {**w, "style": "lines", "opacity": []} if w and w["style"] == "bands" else w,
                        mark=c["mark"] and {**c["mark"], "role": "background"},
                        signoff=c["signoff"] and {**c["signoff"], "role": "background"},
@@ -549,7 +550,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
         feature = variant(tp, fineprint=None, column={"box": _box(m, 0.34, 0.44, 0.52), "anchor": "top"})
     res = {"title": title,
            "title-photo": photo(title),
-           "title-light": light(title),
+           "title-light": light(title, "title-light" if has_art("title-light") else None),
            "title-photo-light": light(photo(title)),
            "title-band": title_band,
            "closing": closing,
@@ -819,9 +820,9 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             L.append(f"  .. controls {fmt(pts[2])} and {fmt(pts[1])} .. {fmt(pts[0])}}}")
         for k, v in waves.get("shift", {}).items():
             L.append(f"\\def\\engine@waveshift@{k}{{{v}}}")
-    for kind in ART_KINDS:
+    for kind in ART_KINDS:   # (no hyphen in a TeX name: title-light is titlelight)
         if isinstance(art.get(kind), str):
-            L.append(f"\\def\\engine@art@{kind}{{{stem(art[kind])}}}")
+            L.append(f"\\def\\engine@art@{kind.replace('-', '')}{{{stem(art[kind])}}}")
     if livery.get("title", {}).get("style") == "band":   # its boxes and colors are the compositions'
         L.append("\\def\\engine@title@style{band}")
     L.append("% type: the body as a fraction of the paper height, each role's size and leading as ratios to it,")

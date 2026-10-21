@@ -329,3 +329,24 @@ def test_mark_image_unknown(tmp_path, capsys):
     with pytest.raises(SystemExit) as e:
         flavor(tmp_path, "bad", "compositions:\n  closing: {signoff: {image: nope}}\n")
     assert "compositions.closing.signoff.image: 'nope' is not a logo.images name" in str(e.value)
+
+
+def test_title_light_art(tmp_path):
+    """art.title-light covers the light cover's field (title-light), and only it: title-photo-light
+    stays art-less, the plain cover keeps its own. The sty names it without the hyphen (a TeX name
+    takes none), and the template's light title layout carries it as media."""
+    import zipfile
+    L = flavor(tmp_path, "lit", "art:\n  title-light: ../ncar/art/mesa-lab.jpg\n")
+    c = L["compositions"]
+    assert c["title-light"]["art"] == "title-light" and c["title-photo-light"]["art"] is None
+    assert c["title"]["art"] == ("title" if isinstance(L["art"].get("title"), str) else None)
+    d = tmp_path / "lit"
+    sty = lb.emit_sty(*lb.resolve(d))
+    assert "\\def\\engine@art@titlelight{" in sty and "\\engine@art@title-light" not in sty
+    from conftest import run
+    assert run("build", d).returncode == 0
+    r = run("template", d, "-o", tmp_path / "t.pptx")
+    assert r.returncode == 0, r.stderr
+    with zipfile.ZipFile(tmp_path / "t.pptx") as z:
+        sizes = {i.file_size for i in z.infolist() if i.filename.startswith("ppt/media/")}
+    assert (ROOT / "liveries" / "ncar" / "art" / "mesa-lab.jpg").stat().st_size in sizes, "the light title's art not in the template"

@@ -113,6 +113,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   longer doubles as its default title photo: it is the title composition's art.
 - `pptx.code-typeface`: the font the pptx sets code in, an installed face as a brand template
   names it (nasa-jsc-eg: Courier New); HTML and PDF keep `typography.monospace`.
+- `art.title-light`: a picture covering the light cover's field (`themeoptions: [title=light]`),
+  in every format; without it the light cover has none, as before.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
 
