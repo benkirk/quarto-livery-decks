@@ -36,7 +36,9 @@ for i in "${!files[@]}"; do   # AppleScript's POSIX file needs an absolute path
   files[$i]=$(cd "$(dirname "${files[$i]}")" && pwd)/$(basename "${files[$i]}")
 done
 
-tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+# the copies' directory: "app-open." in every path, so a run closes its own documents (and an
+# interrupted run's), never the user's
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/app-open.XXXXXX")
 bad=0
 
 # app <name>: the application's name, its process, its document class and the timeout
@@ -55,6 +57,35 @@ quit_app() {   # <app>: quit by its process (a modal alert ignores a polite quit
   while pgrep -x "$(app_proc "$1")" >/dev/null; do sleep 1; done
 }
 
+ready_app() {   # <app>: launch it and wait until it answers (after a quit_app, the next open ran
+  # before Keynote was ready: "every slide ... doesn't understand count")
+  osascript -e "tell application \"$(app_name "$1")\" to activate" >/dev/null 2>&1
+  for _ in $(seq 1 60); do [ -n "$(docs_open "$1")" ] && return 0; sleep 1; done
+  return 1
+}
+
+close_ours() {   # <app>: close, saving nothing, every document opened from an app-open copy (this
+  # run's or an interrupted one's: its file was deleted, and the next run's guard then hung on it)
+  pgrep -x "$(app_proc "$1")" >/dev/null || return 0
+  if [ "$1" = keynote ]; then
+    osascript -e 'with timeout of 10 seconds' -e 'tell application "Keynote"' \
+      -e 'repeat with d in (get every document)' \
+      -e 'try' -e 'if (POSIX path of (file of d)) contains "app-open." then close d saving no' -e 'end try' \
+      -e 'end repeat' -e 'end tell' -e 'end timeout' >/dev/null 2>&1   # (a file reference: no alias, the file may be gone)
+  else
+    osascript -e 'with timeout of 10 seconds' -e 'tell application "Microsoft PowerPoint"' \
+      -e 'repeat with d in (get every presentation)' \
+      -e 'try' -e 'if (full name of d) contains "app-open." then close d saving no' -e 'end try' \
+      -e 'end repeat' -e 'end tell' -e 'end timeout' >/dev/null 2>&1
+  fi
+}
+
+cleanup() {   # on exit, an interrupted run's included: our documents closed, then the copies gone
+  for a in keynote powerpoint; do close_ours "$a"; done
+  rm -rf "$tmp"
+}
+trap cleanup EXIT
+
 settle() {   # <app>, after an OK: quit it if a window outlived the document (Keynote's "may look
   # different" warnings stay open, AppleScript cannot close them, and the next open then waits
   # behind them); politely, since it holds no document of ours or anyone's by now
@@ -71,6 +102,7 @@ try() {   # <app> <file>: prints OK (n slides) or FAIL (why)
   # a copy in a temporary directory: the apps are sandboxed, and a file under ~/Documents (or
   # ~/Downloads) raises macOS's folder-access prompt, modal like a refusal
   f=$(mktemp -d "$tmp/open.XXXX")/$(basename "$2"); cp "$2" "$f"
+  pgrep -x "$(app_proc "$app")" >/dev/null || ready_app "$app"   # launched and answering first
   if pgrep -x "$(app_proc "$app")" >/dev/null; then
     n=$(docs_open "$app")
     if [ -n "$n" ] && [ "$n" != 0 ]; then
@@ -159,6 +191,13 @@ for app in keynote powerpoint; do
     echo "app-open: $(app_name "$app") is not installed" >&2; bad=1; continue
   fi
   echo "== $(app_name "$app")"
+  # pre-flight: an instance that does not answer (wedged on a document whose file is gone) is
+  # quit, else the guard reads "no answer" as "nothing open" and the first open hangs; then our
+  # leftover documents are closed
+  if pgrep -x "$(app_proc "$app")" >/dev/null && [ -z "$(docs_open "$app")" ]; then
+    echo "  ($(app_name "$app") does not answer: quitting it)"; quit_app "$app"
+  fi
+  close_ours "$app"
   check "$app" "$ROOT/liveries/ncar/template.pptx" OK "control: the ncar template (opens)"
   if [ "$app" = keynote ]; then
     pandoc=${QUARTO_PANDOC:-$(command -v pandoc || true)}
