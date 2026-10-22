@@ -8,7 +8,8 @@ Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop:
 ## Overleaf
 
 Each release of this repo carries one project zip per livery: the theme's `.sty`, the
-livery's fonts, logos and art, a `latexmkrc`, and a starter `talk.tex` on
+livery's fonts, logos and art, a `latexmkrc`, the starter `talk.tex` and the cookbook
+`sample.tex` ([authoring.md](authoring.md): every slide pattern a LaTeX author can use), both on
 `\usetheme[livery=liveries/<name>, fonts=bundled]{Engine}`. One click opens it
 as a new Overleaf project:
 
@@ -51,9 +52,10 @@ This directory holds the engine's own LaTeX decks; build them here:
 | | `make` target | output |
 |---|---|---|
 | the starter deck, `talk.tex` (a link to the extension's copy, which the Overleaf zips carry) | `make` | `talk.pdf` |
-| every feature: `examples/template.tex`; `paper.tex`, a document that is not slides; `mathfonts.tex`, the math-font specimen; `quarto-demo.qmd` | `make examples` | `examples/*.pdf` |
-| `template.tex` under UCAR, UCP, NCAR-UCAR, the light title, 4:3, pdfLaTeX and `mathfont=poppins` | `make variants` | `examples/template-*.pdf` |
+| every feature: `examples/template.tex`; the cookbook `sample.tex` ([authoring.md](authoring.md)); `paper.tex`, a document that is not slides; `mathfonts.tex`, the math-font specimen; `quarto-demo.qmd` | `make examples` | `examples/*.pdf` |
+| `template.tex` under UCAR, UCP, NCAR-UCAR, the light title, 4:3, pdfLaTeX and `mathfont=poppins`; `sample.tex` under cu, the dark livery nasa-dark and 4:3 | `make variants` | `examples/template-*.pdf`, `examples/sample-*.pdf` |
 | the Quarto demo as an HTML deck | `make html` | `examples/quarto-demo.html` |
+| the README's math-font specimen and the cookbook's contact sheet | `make previews` | `math-fonts.png`, `sample.png` |
 
 `make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
 MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and
@@ -84,29 +86,9 @@ latexmk -xelatex my-talk.tex
 
 ## Writing slides in LaTeX
 
-A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)"](../docs/formats.md#pdf-beamer); the sample deck has every one).
-
-| | LaTeX |
-|---|---|
-| Title slide | `\titlepage` in a `[plain]` frame |
-| Photo on the title slide (else the livery's default, if it has one: the NCAR family's is the Mesa Lab) | `\titlegraphic{\includegraphics{photo.jpg}}`; `\enginenotitlegraphic` for the plain cover |
-| Fine print under the title | `\titlefineprint{...}` |
-| Section divider | `\section{...}` |
-| Divider subtitle | `\sectionsubtitle{...}` before `\section` |
-| Slide | `\begin{frame}{Title}` |
-| Blocks | `block`, `exampleblock`, `alertblock` |
-| Emphasis | `\alert{...}` |
-| Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first in the frame and again after the content, then `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` |
-| Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` |
-| Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body |
-| Closing slide | `\engineclosingframe{Thank you!}{...}` |
-| Center or scale a short slide's body | `\begin{frame}[c]`, `\fontsize` |
-| Code | `lstlisting` (styled automatically) |
-| Table | your own `tabular`, unstyled; `\engineth{...}` for a header cell and `\rowcolor{enginetableband}` for a band are there to use |
-| Extra logo or slide decoration | `\logo{...}`: bottom right, above the footer (space reserved) |
-| Theme options | `\usetheme[<options>]{Engine}` |
-| Math font | `\usetheme[mathfont=stix]{Engine}` |
-| Smaller (or larger) text | `\usetheme[typescale=0.85]{Engine}` |
+[authoring.md](authoring.md): every slide pattern of the Quarto decks written by hand (columns,
+cards, strips, status lists, the caution box, notes, scaling, the marking strip), the cookbook
+`examples/sample.tex` that shows each one, and what stays Quarto's and the LaTeX way to do it.
 
 ## Theme options
 

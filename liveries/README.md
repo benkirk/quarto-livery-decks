@@ -24,7 +24,7 @@ livery; `-v` prints every check.
 | `livery template <dir> [-o FILE]` | generates `template.pptx` from `build/livery.json` (never edit it by hand) |
 | `livery check <dir>... [--swatch DIR] [--qa]` | build freshness, every file the data names, the template's pandoc compliance and that it rebuilds from the data, contrast warnings, the chart colors' checks (`--swatch`: their contact sheet `DIR/charts-<name>.png`); `--qa` then runs the quickstart deck's `make qa` under the livery |
 | `livery all <dir>... [--qa]` | build, template, check: the loop to rerun after every edit |
-| `livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]` | the Overleaf project: the theme, the livery and a starter deck |
+| `livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]` | the Overleaf project: the theme, the livery, the starter deck and the LaTeX cookbook |
 | `livery zip --charts <dir> -o <zip>` | the charts bundle: the plot style and helper for matplotlib outside the decks |
 | `livery schema --doc [--check]` | regenerates [REFERENCE.md](REFERENCE.md) from the schema |
 

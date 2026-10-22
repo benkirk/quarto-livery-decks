@@ -338,9 +338,15 @@ jobs:
       - name: Check fonts are embedded
         run: |
           cd latex
-          for f in talk.pdf examples/template.pdf examples/quarto-demo.pdf; do
+          for f in talk.pdf examples/template.pdf examples/sample.pdf examples/quarto-demo.pdf; do
             pdffonts "$f" | tee /dev/stderr | grep -c Poppins-Bold >/dev/null
           done
+
+      # the cookbook (latex/authoring.md) is ours: an overfull line in it, under any of its variants
+      # (cu, nasa-dark, 4:3), is a defect of the layer or the deck, and zero is the ratchet
+      - name: The cookbook sets no overfull line
+        run: |
+          if grep -l '^Overfull' latex/examples/sample*.log; then grep '^Overfull' latex/examples/sample*.log; exit 1; fi
 
       # mathfont=serif by default: the equation page sets its math in a serif math font, not
       # Poppins Italic (that is what mathfont=poppins is for)
@@ -440,6 +446,9 @@ jobs:
           make -C decks/quickstart overleaf LIVERY="$LIVERY"
           rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q "decks/quickstart/$LIVERY-overleaf.zip" -d /tmp/overleaf
           (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex)
+          (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error sample.tex)   # the cookbook, every livery
+          # into the tree for the artifact: an absolute path in the upload list makes / its root
+          cp /tmp/overleaf/sample.pdf "decks/quickstart/$LIVERY-cookbook.pdf"
           family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "liveries/$LIVERY/build/livery.json")
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -c "${family// /}" >/dev/null
           if pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null; then
@@ -493,6 +502,7 @@ jobs:
             decks/quickstart/quickstart.pdf
             decks/quickstart/${{ matrix.livery }}-overleaf.zip
             decks/quickstart/${{ matrix.livery }}-charts.zip
+            decks/quickstart/${{ matrix.livery }}-cookbook.pdf
             decks/quickstart/_qa/
             decks/fixtures/_qa/measure.tsv
             decks/fixtures/_qa/compositions-${{ matrix.livery }}.png

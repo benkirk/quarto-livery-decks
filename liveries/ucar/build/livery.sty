@@ -35,6 +35,25 @@
 \definecolor{BrandCautionFill}{HTML}{FFF9DA}
 \definecolor{BrandAlertText}{HTML}{B5540A}
 \definecolor{BrandRule}{HTML}{A9B8CB}
+% the roles and blends by name (a card's or strip's role=): \engine@role@<name> is its color
+\expandafter\def\csname engine@role@primary\endcsname{BrandPrimary}
+\expandafter\def\csname engine@role@primary-text\endcsname{BrandPrimaryText}
+\expandafter\def\csname engine@role@primary-contrast\endcsname{BrandPrimaryContrast}
+\expandafter\def\csname engine@role@secondary\endcsname{BrandSecondary}
+\expandafter\def\csname engine@role@accent\endcsname{BrandAccent}
+\expandafter\def\csname engine@role@highlight\endcsname{BrandHighlight}
+\expandafter\def\csname engine@role@foreground\endcsname{BrandText}
+\expandafter\def\csname engine@role@background\endcsname{BrandBackground}
+\expandafter\def\csname engine@role@muted\endcsname{BrandMuted}
+\expandafter\def\csname engine@role@surface\endcsname{BrandSurface}
+\expandafter\def\csname engine@role@warning\endcsname{BrandWarning}
+\expandafter\def\csname engine@role@dark\endcsname{BrandDark}
+\expandafter\def\csname engine@role@code-text\endcsname{BrandCodeText}
+\expandafter\def\csname engine@role@table-rule\endcsname{BrandTableRule}
+\expandafter\def\csname engine@role@table-band\endcsname{BrandTableBand}
+\expandafter\def\csname engine@role@caution-fill\endcsname{BrandCautionFill}
+\expandafter\def\csname engine@role@alert-text\endcsname{BrandAlertText}
+\expandafter\def\csname engine@role@rule\endcsname{BrandRule}
 % marks: light on the background field, dark on primary (the print lockup when there is one)
 \def\engine@logo@light{\engineliverydir logos/UCAR-Logo_Color_RGB}
 \def\engine@logo@dark{\engineliverydir logos/UCAR-Logo_White_RGB}
@@ -56,7 +75,7 @@
 \definecolor{EngineMarkingText}{HTML}{6B7C99}
 \def\engine@marking@default{}
 % boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
-% its pads (@pady, @padx: em of the body type) and colors
+% its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row
 \def\engine@boxes@columns@gap{0.03}
 \def\engine@boxes@columns@rule{0}
 \def\engine@boxes@caution@bar{0.0089}
@@ -72,6 +91,7 @@
 \definecolor{EngineBoxesCardOutlineColor}{HTML}{00818F}
 \def\engine@boxes@card@pady{0.5}\def\engine@boxes@card@padx{0.8}
 \def\engine@boxes@card@headpady{0.35}\def\engine@boxes@card@headpadx{0.8}
+\def\engine@boxes@card@roles{primary,secondary,accent}
 \def\engine@boxes@strip@tint{0.18}
 \def\engine@boxes@strip@pady{0.3}\def\engine@boxes@strip@padx{0.8}
 \definecolor{EngineGlyphDone}{HTML}{00818F}

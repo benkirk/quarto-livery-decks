@@ -18,6 +18,51 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
+  livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
+  instead of the brand's; lists, labels and strips in a card colored themselves and were right.
+
+### LaTeX
+- `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
+  color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
+  theme resolves a `role=` itself.
+- A strip inside a card no longer sets an overfull line (6 pt at ncar's body): the strip widened
+  its line by the card's pad and took back only the left one. Nothing moves on the page; the
+  `Overfull \hbox` goes from the log.
+- Cards and strips take keys: `\begin{enginecards}{3}` (or weights, `{2,1,1}`) holds
+  `\begin{enginecard}[role=secondary, pick, solid]{Title}{Sub}` (`{}` for no sub-line; `plain` for
+  a column beside cards), and `\begin{enginestrip}[role=accent]`. A `role=` is a role or blend of
+  the livery by name, else any defined color, else a warning and the default (a card's place in
+  the row; a strip's accent). `pick=<2>` draws the outline on those steps only, its width kept on
+  every step. The old positional form (`{<TeX color>}{<share>}{<n>}`) is gone; the Quarto filter
+  writes the new one.
+- Status lists: `\begin{enginestatus}` with `\done`, `\warn` and `\fail` items (an overlay spec as
+  on `\item`: `\warn<2->`) and plain `\item`s, ✓ ⚠ ✗ as the bullets in the livery's status
+  colors, a failed item muted to its end; `\engineglyph{done|warn|fail}` is the glyph anywhere.
+  The three names exist only inside the environment. `\cmark`, `\xmark` and `\pmark` (and the
+  pifont they loaded) are retired.
+- Columns for a hand author: `\begin{enginecolumns}{2,1}` with `\enginecolumn` opening each column
+  at its share of the text width less the livery's gap (and its rule, when it draws one), over
+  beamer's `columns`; `\enginecolshare` and `\enginecolrule` stay as the primitives.
+- `\begin{enginescale}{1.4}` scales a body (its lists, tables and code with it), and
+  `\enginemarking{CUI}` in the preamble sets the marking strip's text (`{}` for none): the
+  filter's private preamble macros for `scale=` and `marking:` are theme commands.
+- `latex/examples/sample.tex` is the LaTeX cookbook: the twin of the Quarto sample deck slide for
+  slide (columns, cards with a moving pick, steps inside cards, status lists, the caution box,
+  notes, scale, footnotes, feature and full frames, captured output, pre-rendered diagrams),
+  built by `make examples` in `latex/`; `make variants` adds it under cu, under the dark livery
+  nasa-dark and at 4:3. CI compiles it and fails on an overfull line in it.
+- The Overleaf zip of every livery ships the cookbook beside the starter: `sample.tex` on the
+  livery's bundled fonts, with its photo, diagrams and captured session; `latexmk -xelatex
+  sample.tex` builds it in the unpacked zip, and CI does so for every livery.
+- `latex/sample.png`, the cookbook's contact sheet (four pattern slides under ncar, cu and
+  nasa-dark), from `make previews` in `latex/` (`sheet.py`).
+- `latex/authoring.md`: writing slides in LaTeX, every pattern of the Quarto decks by hand (the
+  table moved from `latex/README.md` and grown), the cards, strips and status lists walked
+  through on the Options slide with the overlay notes, and what stays Quarto's with the LaTeX
+  way to do it (diagrams, executable cells, plots, the linked-image footer, callouts, autofit).
+
 ## [26.10.7] - 2026-10-21
 
 ### Decks

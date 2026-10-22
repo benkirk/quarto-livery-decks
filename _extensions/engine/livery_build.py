@@ -211,8 +211,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
-    # the TeX name of each role and blend (livery.sty defines them), the one table the beamer filter
-    # reads for a card's or strip's role=
+    # the TeX name of each role and blend (livery.sty defines them, and carries this table as
+    # \engine@role@<name> for a card's or strip's role=; the filters check a role= against it)
     out.setdefault("latex", {})["roles"] = {**{r: t for r, t in ROLE_TEX.items() if r in roles},
                                             **{b: tex_name("brand-" + b, {}) for b in blends}}
     g = out.setdefault("geometry", {})   # the margin, a {.wide} slide's side margin, and the body's foot
@@ -731,6 +731,9 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for key, color in BEAMER_BLENDS.items():   # a livery's blends: override, which the theme would recompute
         if key in livery["blends"] and livery["blends"][key] != blends.get(key):
             L.append(f"\\colorlet{{{color}}}{{{tex_name('brand-' + key, {})}}}")
+    L.append("% the roles and blends by name (a card's or strip's role=): \\engine@role@<name> is its color")
+    for role, tex in livery["latex"]["roles"].items():   # hyphenated names: through \csname
+        L.append(f"\\expandafter\\def\\csname engine@role@{role}\\endcsname{{{tex}}}")
     marks = livery["marks"]
     stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
     L.append("% marks: light on the background field, dark on primary (the print lockup when there is one)")
@@ -862,15 +865,16 @@ def emit_sty_boxes(livery: dict) -> list[str]:
     """The boxes (livery.json boxes): \\engine@boxes@<box>@<key> for each number (fractions of the paper,
     tint a share), @pady and @padx for each pad (em, so the factor goes before `em`), and a color per
     color key, EngineBoxes<Box><Key> (the status glyphs' EngineGlyph<Key>: EngineStatus* are the
-    charts'), as hex."""
+    charts'), as hex; the card roles as their names (the theme resolves them through
+    \\engine@role@<name>)."""
     L = ["% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),",
-         "% its pads (@pady, @padx: em of the body type) and colors"]
+         "% its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row"]
     for box, v in livery["boxes"].items():
         for k, val in v.items():
             name = k.replace("-", "")
-            if k == "roles":   # role names, read from livery.json by the filters
-                continue
-            if k in BOX_COLORS.get(box, ()):
+            if k == "roles":
+                L.append(f"\\def\\engine@boxes@{box}@{name}{{{','.join(val)}}}")
+            elif k in BOX_COLORS.get(box, ()):
                 tex = f"EngineGlyph{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
                 L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{val[1:]}}}")
             elif isinstance(val, list):   # [vertical, horizontal]

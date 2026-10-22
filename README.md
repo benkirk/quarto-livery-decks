@@ -130,7 +130,7 @@ walks through it; [`liveries/REFERENCE.md`](liveries/REFERENCE.md) is every `liv
 | know what each format does: the layout tree, the build pipeline, the fonts, the template's constraints, what is beamer's and what is revealjs's | [`docs/formats.md`](docs/formats.md) |
 | put a plot on a slide in the livery's colors | [`decks/plots/README.md`](decks/plots/README.md) |
 | make or change a livery | [`liveries/README.md`](liveries/README.md), [`liveries/REFERENCE.md`](liveries/REFERENCE.md) |
-| write slides in LaTeX, on Overleaf or with XeLaTeX alone | [`latex/README.md`](latex/README.md) |
+| write slides in LaTeX, on Overleaf or with XeLaTeX alone | [`latex/README.md`](latex/README.md); every slide pattern in LaTeX, and what stays Quarto's: [`latex/authoring.md`](latex/authoring.md) |
 | build with Docker, Podman or Apptainer, nothing installed | [`docs/container.md`](docs/container.md) |
 | build in GitHub Codespaces, nothing installed at all | [docs/container.md "In GitHub Codespaces"](docs/container.md#in-github-codespaces) |
 | keep your decks in another repository, build them on every push, or publish the HTML decks | [`docs/other-repos.md`](docs/other-repos.md) |

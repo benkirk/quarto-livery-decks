@@ -178,6 +178,7 @@ Each trades local capacity against a share of the consortium system.
   draws a row with a table as plain columns). A lead beside a table goes in the title or the
   notes: a lead makes the slide a card slide, and the table would split it. A card slide's
   `.caution` and `.vcenter` do not apply in pptx.
+- The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).
 
 ## Notes under a figure
 

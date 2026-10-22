@@ -5,11 +5,14 @@
 The zip holds the engine's *.sty under _extensions/engine/, liveries/<name>/ with build/livery.sty
 and every file LaTeX reads (fonts of any extension, each logo as its .pdf when there is one else
 its image, the art; a flavor's inherited ../<parent>/ paths land beside it), a latexmkrc pointing
-TeX at both, and the starter with its \\usetheme line rewritten to
-`livery=liveries/<name>, fonts=bundled` (never the installed-fonts probe: fontconfig by name is too
-slow for a free Overleaf compile). The starter's photos: --photo for both the title and the photo
-slide; else the livery's art.titlegraphic (the theme's default title photo) on the photo slide and
-no \\titlegraphic line; else no photo at all. Compiles with `latexmk -xelatex talk.tex` alone."""
+TeX at both, the starter with its \\usetheme line rewritten to `livery=liveries/<name>,
+fonts=bundled` (never the installed-fonts probe: fontconfig by name is too slow for a free Overleaf
+compile), and the cookbook, latex/examples/sample.tex (latex/authoring.md), its theme line
+rewritten the same way and the files it reads beside it (its photo, the pre-rendered diagrams,
+the captured session). The starter's photos: --photo for both the title and the photo slide; else
+the livery's art.titlegraphic (the theme's default title photo) on the photo slide and no
+\\titlegraphic line; else no photo at all. Compiles with `latexmk -xelatex talk.tex` (or
+sample.tex) alone."""
 
 import posixpath
 import re
@@ -20,6 +23,12 @@ from pathlib import Path
 import livery as livery_mod
 
 ENGINE = Path(__file__).resolve().parent
+LATEX = ENGINE.parent.parent / "latex"   # the engine's pure-LaTeX side: the cookbook and what it reads
+COOKBOOK = "examples/sample.tex"
+# the cookbook's files, as it names them (TEXINPUTS reaches latex/ and latex/examples/ in the tree;
+# the zip's root is both)
+COOKBOOK_FILES = ["images/wallpaper/mesa_lab.jpg", "examples/diagrams/render.pdf", "examples/diagrams/systems.pdf",
+                  "examples/snippets/terminal/whoami.session"]
 LATEXMKRC = """\
 # latexmk reads this file when run from this directory -- Overleaf does.  It
 # points TeX at the theme in _extensions/engine/ and at the livery's logos and
@@ -46,11 +55,17 @@ def livery_files(lv: dict, name: str) -> dict[str, Path]:
     return out
 
 
-def rewrite_starter(text: str, name: str, photo: str | None, explicit: bool) -> str:
-    """The \\usetheme line for this livery; the title and photo-slide pictures as decided."""
+def rewrite_theme(text: str, name: str, what: str) -> str:
+    """The deck's \\usetheme line on this livery's bundled fonts."""
     text, n = re.subn(r"^\\usetheme\[[^\]]*\]\{Engine\}", rf"\\usetheme[livery=liveries/{name}, fonts=bundled]{{Engine}}", text, flags=re.M)
     if n != 1:
-        sys.exit("the starter has no \\usetheme[...]{Engine} line")
+        sys.exit(f"the {what} has no \\usetheme[...]{{Engine}} line")
+    return text
+
+
+def rewrite_starter(text: str, name: str, photo: str | None, explicit: bool) -> str:
+    """The \\usetheme line for this livery; the title and photo-slide pictures as decided."""
+    text = rewrite_theme(text, name, "starter")
     # --photo names the title photo too; otherwise the theme supplies art.titlegraphic
     title = f"\\titlegraphic{{\\includegraphics{{{photo}}}}}\n" if explicit else ""
     text, n = re.subn(r"^\\titlegraphic\{.*\}.*\n", lambda m: title, text, flags=re.M)
@@ -80,13 +95,17 @@ def write(livery: Path, out: Path, starter: Path = ENGINE / "talk.tex", photo: P
         tg = (lv.get("art") or {}).get("titlegraphic")
         shown = posixpath.normpath(f"liveries/{name}/{tg}") if isinstance(tg, str) else None
     text = rewrite_starter(starter.read_text(), name, shown, bool(photo))
+    cookbook = rewrite_theme((LATEX / COOKBOOK).read_text(), name, "cookbook")
+    for f in COOKBOOK_FILES:   # at the paths the cookbook names (examples/ is its directory)
+        files[f.removeprefix("examples/")] = LATEX / f
     missing = [str(src) for src in files.values() if not src.is_file()]
     if missing:
         sys.exit("missing: " + ", ".join(missing))
     out.unlink(missing_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("talk.tex", text)
+        zf.writestr("sample.tex", cookbook)
         zf.writestr("latexmkrc", LATEXMKRC)
         for arc, src in files.items():
             zf.write(src, arc)
-    print(f"wrote {out}: {name}, {len(files) + 2} files")
+    print(f"wrote {out}: {name}, {len(files) + 3} files")
