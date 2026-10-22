@@ -5,9 +5,10 @@ pandoc renders a `#` heading (with `slide-level: 2`) as a title-only "Section He
 drops the markdown after it onto a separate, untitled slide; the template's Section Header
 layout has a subtitle placeholder (idx=1) pandoc never fills, so this moves the orphan's body
 there and deletes the orphan. It then dresses every divider as HTML and PDF do: the livery's
-divider label ("Section n"; none under section.label: null) in section.label-color (secondary
-by default), the tab beside the title, and label, title and subtitle stacked and centered as
-one block, line counts measured in the livery's heading and body fonts. Zip surgery via lxml,
+divider label ("Section n"; none under section.label: null, nor on a divider the metadata's
+`engine-unnumbered` names, which the count skips) in section.label-color (secondary by default),
+the tab beside the title, and label, title and subtitle stacked and centered as one block, line
+counts measured in the livery's heading and body fonts. Zip surgery via lxml,
 third in pptx_post.py (after svg_fallback and notes_clrmap), before embed_fonts rewrites
 presentation.xml. Idempotent: merged dividers stay merged; label and tab are replaced."""
 
@@ -18,7 +19,7 @@ from lxml import etree
 
 import livery as livery_mod
 
-from . import measure
+from . import docprops, measure
 from .common import GEOM, LIVERY
 from .measure import PT_PX, PX
 
@@ -178,7 +179,8 @@ def _eyebrow_hex():
 
 
 def _dress(root, layout_root, number):
-    """Label, tab and a centered title block on one divider slide."""
+    """Label, tab and a centered title block on one divider slide; number None: an unnumbered
+    divider, no label (and no room for one)."""
     tree = root.find("p:cSld/p:spTree", NS)
     for sp in tree.findall("p:sp", NS):
         if sp.find("p:nvSpPr/p:cNvPr", NS).get("name") in DECOR:
@@ -199,8 +201,9 @@ def _dress(root, layout_root, number):
         _x, w, pt, spacing = style
         return measure.lines(_paragraphs(sp), measure.font(family, weight, pt), w) * LINE * spacing * pt / PT_PX
 
-    label_h = LINE * LABEL_PT / PT_PX if EYEBROW else 0
-    label_gap = LABEL_GAP if EYEBROW else 0
+    labelled = EYEBROW and number is not None
+    label_h = LINE * LABEL_PT / PT_PX if labelled else 0
+    label_gap = LABEL_GAP if labelled else 0
     title_h = height(t_style, title, measure.TITLE, 700) + 4   # the face the pptx sets titles in
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
     body_h = height(b_style, body, measure.BODY, 400) + 4 if body_text else 0
@@ -223,7 +226,7 @@ def _dress(root, layout_root, number):
     tab = _decor(DECOR[1], sid + 1, 0, y + inset, TAB_W, title_h - 2 * inset,
                  '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill>'
                  '<a:schemeClr val="accent4"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>')
-    if EYEBROW:
+    if labelled:
         tree.append(label)
     if TAB:
         tree.append(tab)
@@ -259,12 +262,19 @@ def run(parts: dict, name: str) -> None:
             merged.append(s_part)
             orphans.append((o_el, o_rid, o_part))
 
+    # the dividers outside the count (.unnumbered, which pandoc drops: grid-pptx.lua writes their
+    # places among the dividers into the metadata), so the numbers agree with HTML's and the PDF's
+    custom = parts.get("docProps/custom.xml")
+    skip = {int(w) for w in ((docprops.props_of(custom)[1].get("engine-unnumbered") or "").split()
+                             if custom else [])}
     orphan_parts = {p for _el, _rid, p in orphans}
-    dressed = []
+    dressed, number = [], 0
     for _el, _rid, part in ordered:
         if info[part]["layout"] == SECTION_LAYOUT and part not in orphan_parts:
             layout_root = _parse(parts[_layout_part(parts, part)])
-            _dress(info[part]["root"], layout_root, len(dressed) + 1)
+            numbered = len(dressed) + 1 not in skip
+            number += numbered
+            _dress(info[part]["root"], layout_root, number if numbered else None)
             dressed.append(part)
 
     if not dressed:

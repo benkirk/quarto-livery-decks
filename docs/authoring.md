@@ -76,6 +76,9 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   logo or rule, and the paragraph after it (or a `::: note`) becomes a one-line caption. The
   title stays in the source for navigation and `make qa`. pptx gets it
   from `slide_layout.py`.
+- `# Backup {.unnumbered}` is a section divider outside the count, in every format: no
+  "SECTION n" over it, and the dividers after it keep their numbers. A paragraph right after it
+  is its subtitle, as under any divider. In the PDF it has no bookmark.
 - `## Thank you! {.closing}` makes a closing slide.
 - `### Heading {.example}` / `{.alert}` give block variants.
 - `[text]{.alert}` emphasizes text.

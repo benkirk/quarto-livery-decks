@@ -22,6 +22,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Fine print under the title | `\titlefineprint{...}` |
 | Section divider | `\section{...}` |
 | Divider subtitle | `\sectionsubtitle{...}` before `\section` |
+| Divider outside the count (an appendix, the backup slides) | `\enginesectionunnumbered{Backup}{A subtitle}` between frames, `{}` for no subtitle: no eyebrow, and no `\section`, so no counter step, table-of-contents line or PDF bookmark (`\section*` still steps beamer's counter) |
 | Slide | `\begin{frame}{Title}` |
 | Blocks | `block`, `exampleblock`, `alertblock` |
 | Emphasis | `\alert{...}` |

@@ -778,28 +778,30 @@ function Pandoc(doc)
         i = i + 1
       end
     elseif blk.t == "Header" and blk.level == 1 and slide_level > 1 then
-      -- paragraphs alone between a divider and the next slide: the subtitle
-      if not has_class(blk, "unnumbered") then section = section + 1 end
-      local j, paras = i + 1, pandoc.List({})
-      while j <= #blocks and (blocks[j].t == "Para" or blocks[j].t == "Plain") do
-        paras:insert(blocks[j])
-        j = j + 1
+      -- paragraphs alone between a divider and the next slide: the subtitle (C.divider_subtitle)
+      local paras, j = C.divider_subtitle(blocks, i, slide_level)
+      local text = pandoc.List({})
+      for k, p in ipairs(paras or {}) do
+        if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
+        text:extend(p.content)
       end
-      if #paras > 0 and (j > #blocks or is_slide_break(blocks[j]))
-          and not has_class(blk, "unnumbered") then
-        local text = pandoc.List({})
-        for k, p in ipairs(paras) do
-          if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
-          text:extend(p.content)
-        end
-        subtitles:insert(latex("\\enginesectionsubtitle{" .. section .. "}{"
-          .. inlines_to_latex(text) .. "}"))
-        out:insert(blk)
-        i = j
+      if has_class(blk, "unnumbered") then
+        -- outside the count: no \section (pandoc's \section* steps the counter as \section does),
+        -- the divider drawn by the theme in a plain frame of its own (an empty-titled slide heading;
+        -- a raw block between slides would land in the slide before)
+        local frame = pandoc.Header(slide_level, {}, pandoc.Attr(blk.identifier))
+        add_frameoption(frame, "plain,noframenumbering")
+        out:insert(frame)
+        out:insert(latex("\\enginesectionunnumbered{" .. inlines_to_latex(blk.content) .. "}{"
+          .. (paras and inlines_to_latex(text) or "") .. "}"))
       else
+        section = section + 1
+        if paras then
+          subtitles:insert(latex("\\enginesectionsubtitle{" .. section .. "}{" .. inlines_to_latex(text) .. "}"))
+        end
         out:insert(blk)
-        i = i + 1
       end
+      i = j
     else
       out:insert(blk)
       i = i + 1

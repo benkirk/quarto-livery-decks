@@ -102,11 +102,11 @@
 % and its subtitle, with the tab
 \def\engine@sectionstack{%
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
-    \engine@ifc{eyebrow@label}{\ifnum\thesection>0
+    \engine@ifc{eyebrow@label}{\ifengine@numbered\ifnum\thesection>0
       {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
         \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
-    \fi}{}%
-    {\usebeamerfont{section title}\insertsectionhead\par}%
+    \fi\fi}{}%
+    {\usebeamerfont{section title}\ifengine@numbered\insertsectionhead\else\engine@sectionhead\fi\par}%
     \ifx\engine@sectionsubtitle\@empty\else
       \vskip1.2ex
       {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
@@ -130,6 +130,23 @@
      \begin{frame}[plain,noframenumbering]\sectionpage\end{frame}}%
     \gdef\engine@sectionsubtitle{}}
 \fi
+% a divider outside the count (an appendix, the backup slides): the same stack with no eyebrow,
+% and no \section, so no counter step, no table-of-contents line and no PDF bookmark (\section*
+% steps the counter as \section does).  \enginesectionunnumbered{Title}{Subtitle}, {} for none:
+% between frames it draws a plain frame of its own; inside a frame (the Quarto filter opens one)
+% it is that frame's body.  The stack is drawn at shipout, outside the body's group, so the
+% heading, subtitle and switch are global until then.
+\newif\ifengine@numbered \engine@numberedtrue
+\def\engine@sectionhead{}
+\AddToHook{shipout/after}{\ifengine@numbered\else
+  \global\engine@numberedtrue\gdef\engine@sectionhead{}\gdef\engine@sectionsubtitle{}\fi}
+\newcommand\enginesectionunnumbered[2]{%
+  \ifbeamer@inframe\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
+    {\global\engine@numberedfalse
+     \gdef\engine@sectionhead{#1}\gdef\engine@sectionsubtitle{#2}%
+     \sectionpage}%
+    {{\setbeamercolor{normal text}{fg=BrandPrimaryText}%
+      \begin{frame}[plain,noframenumbering]\enginesectionunnumbered{#1}{#2}\end{frame}}}}
 
 % ---------------------------------------------------------------------------
 % closing frame:  \engineclosingframe{Thank you!}{contact details ...}

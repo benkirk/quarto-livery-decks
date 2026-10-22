@@ -36,6 +36,14 @@ Its subtitle, the paragraph right after it.
 
 A `###` block puts the text on the field.
 
+# Backup {.unnumbered}
+
+A divider outside the count: no number, in every format.
+
+## A backup slide
+
+- An appendix's slides follow an unnumbered divider.
+
 ## Thank you! {.closing}
 
 The closing slide.

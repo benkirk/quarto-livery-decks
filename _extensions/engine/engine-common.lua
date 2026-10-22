@@ -45,6 +45,36 @@ local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
 end
 
+-- A divider's subtitle: the paragraphs alone between the divider at blocks[i] and the next slide.
+-- Returns them and the index after them, or nil and i + 1 when there are none (or anything else
+-- follows them: they are a slide of their own then).
+local function divider_subtitle(blocks, i, level)
+  local j, paras = i + 1, pandoc.List({})
+  while j <= #blocks and (blocks[j].t == "Para" or blocks[j].t == "Plain") do
+    paras:insert(blocks[j])
+    j = j + 1
+  end
+  if #paras > 0 and (j > #blocks or is_slide_break(blocks[j], level)) then return paras, j end
+  return nil, i + 1
+end
+
+-- The deck's section dividers (`#` headings over `##` slides), in order, as every format counts
+-- them: { number (nil for .unnumbered), title (inlines), sub (the subtitle's blocks, or nil),
+-- unnumbered, at (the divider's index in blocks) }.
+local function sections(blocks, level)
+  local out, n = {}, 0
+  if level <= 1 then return out end
+  for i, b in ipairs(blocks) do
+    if b.t == "Header" and b.level == 1 then
+      local unnumbered = has_class(b, "unnumbered")
+      if not unnumbered then n = n + 1 end
+      table.insert(out, { number = (not unnumbered) and n or nil, title = b.content,
+                          sub = (divider_subtitle(blocks, i, level)), unnumbered = unnumbered, at = i })
+    end
+  end
+  return out
+end
+
 -- The slide kinds a composition draws (their classes on the slide's heading; not content slides), and
 -- the per-slide layout classes of a content slide (take_layout()).
 local SLIDE_KINDS = { feature = true, closing = true, full = true }
@@ -618,6 +648,7 @@ return {
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  divider_subtitle = divider_subtitle, sections = sections,
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,

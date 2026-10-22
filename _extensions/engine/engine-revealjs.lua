@@ -684,17 +684,10 @@ function Pandoc(doc)
       end
       out:insert(blk)
       out:insert(html(comp_art(comps.section, r)))
-      i = i + 1
       -- paragraphs alone between the divider and the next slide: the subtitle
-      local j, paras = i, pandoc.List({})
-      while j <= #blocks and (blocks[j].t == "Para" or blocks[j].t == "Plain") do
-        paras:insert(blocks[j])
-        j = j + 1
-      end
-      if #paras > 0 and (j > #blocks or is_slide_break(blocks[j])) then
-        out:insert(pandoc.Div(paras, pandoc.Attr("", { "engine-subtitle" })))
-        i = j
-      end
+      local paras
+      paras, i = C.divider_subtitle(blocks, i, slide_level)
+      if paras then out:insert(pandoc.Div(paras, pandoc.Attr("", { "engine-subtitle" }))) end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "closing") then
       local cbg, cclass = field_of(ccomp)
       blk.attributes["data-background-color"] = cbg

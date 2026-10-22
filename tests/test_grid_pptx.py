@@ -135,3 +135,21 @@ def test_rail_marked(tmp_path):
                         "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧Pilot", "Six weeks.", "⟦engine:end⟧", "⟦engine:end⟧"], paras[0]
     assert paras[1] == ["⟦engine:rail kind=timeline role=primary-contrast⟧", "⟦engine:item done⟧", "⟦engine:title⟧Q1", "Accepted",
                         "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧2026", "Full", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]
+
+
+def test_unnumbered_in_the_metadata(tmp_path):
+    """pandoc's pptx writer drops `.unnumbered`: the filter writes the dividers outside the count,
+    by their places among the dividers, as `engine-unnumbered` (docProps/custom.xml), for
+    section_subtitle.py; a deck without one has no such property."""
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+
+    def custom(md):
+        out = tmp_path / "u.pptx"
+        subprocess.run([pandoc, "--slide-level=2", "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True,
+                       check=True, capture_output=True)
+        with zipfile.ZipFile(out) as z:
+            return z.read("docProps/custom.xml").decode() if "docProps/custom.xml" in z.namelist() else ""
+    md = "# One\n\n## a\n\nx\n\n# Backup {.unnumbered}\n\n## b\n\ny\n\n# Two\n\n## c\n\nz\n\n# More {.unnumbered}\n\n## d\n\nw\n"
+    prop = re.search(r'name="engine-unnumbered"[^>]*>.*?<vt:lpwstr>([^<]*)</vt:lpwstr>', custom(md), re.S)
+    assert prop and prop.group(1) == "2 4", custom(md)
+    assert "engine-unnumbered" not in custom(md.replace(" {.unnumbered}", ""))

@@ -36,14 +36,15 @@ def run(*args, **kw):
 
 @pytest.fixture(scope="session")
 def pandoc_deck():
-    """render(tmp, md, name): the pptx pandoc writes from md (its images relative to tmp), as its zip parts."""
+    """render(tmp, md, name, *args): the pptx pandoc writes from md (its images relative to tmp; args
+    pandoc's own options), as its zip parts."""
     pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
     if not pandoc:
         pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
 
-    def render(tmp: Path, md: str, name: str) -> dict[str, bytes]:
+    def render(tmp: Path, md: str, name: str, *args: str) -> dict[str, bytes]:
         out = tmp / name
-        subprocess.run([pandoc, "-o", str(out)], input=md, text=True, cwd=tmp, check=True)
+        subprocess.run([pandoc, *args, "-o", str(out)], input=md, text=True, cwd=tmp, check=True)
         with zipfile.ZipFile(out) as z:
             return {i.filename: z.read(i.filename) for i in z.infolist()}
 

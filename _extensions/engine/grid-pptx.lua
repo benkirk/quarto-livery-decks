@@ -30,6 +30,9 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   or date a paragraph led by `⟦engine:title⟧`, its text, `⟦engine:end⟧`, and a last `⟦engine:end⟧`;
   a slide with one is a grid slide. A div rail_items() refuses (warned of) stays as it is.
 
+It also writes the deck's `.unnumbered` dividers, which the pptx writer drops, into the metadata
+(`engine-unnumbered: 2 4`, their places among the dividers), for pptx_steps/section_subtitle.py.
+
 Plain pandoc, no Quarto API, so a test can run it.
 ]]
 
@@ -175,6 +178,13 @@ function Pandoc(doc)
   doc.blocks = C.status_lists(doc.blocks, function(l) return l end)
   local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
   if level == 0 then level = 2 end
+  -- pandoc's pptx writer drops .unnumbered: the dividers outside the count, by their place among
+  -- the deck's dividers (1-based), as `engine-unnumbered: 2 4` for pptx_steps/section_subtitle.py
+  local unnumbered = {}
+  for k, s in ipairs(C.sections(doc.blocks, level)) do
+    if s.unnumbered then table.insert(unnumbered, tostring(k)) end
+  end
+  if #unnumbered > 0 then doc.meta["engine-unnumbered"] = pandoc.MetaString(table.concat(unnumbered, " ")) end
   local out, slide, title = pandoc.Blocks({}), pandoc.Blocks({}), "(before the first slide)"
   for _, blk in ipairs(doc.blocks) do
     if C.is_slide_break(blk, level) then

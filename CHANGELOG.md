@@ -41,6 +41,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
   directory is a prerequisite, so editing one rebuilds the deck.
+- An unnumbered divider (`# Backup {.unnumbered}`) is outside the count in every format: pptx and
+  PDF no longer give it a number, as HTML already did, so the dividers after it keep the numbers
+  HTML shows. The PDF draws it with its subtitle (it drew no divider at all before, and the
+  subtitle became a slide of its own), and a subtitle given to the next divider stays on it.
 
 ### Liveries
 - `boxes.rail` (`line`, `line-color`, `badge`, `dot`, `fill`, `pad`): the look of the new steps and
@@ -63,6 +67,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `backend=biber`), and every livery's Overleaf zip carries the bibliography.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
+- `\enginesectionunnumbered{Title}{Subtitle}` draws a divider outside the count (an appendix,
+  the backup slides): the divider's look without the eyebrow, and no `\section`, so no counter
+  step, no table-of-contents line and no PDF bookmark (`\section*` is no substitute: it steps
+  beamer's counter as `\section` does).
 
 ## [26.10.8] - 2026-10-22
 
