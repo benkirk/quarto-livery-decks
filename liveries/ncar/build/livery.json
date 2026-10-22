@@ -143,6 +143,14 @@
       "gap": 0.03,
       "rule": 0
     },
+    "gallery": {
+      "fill": null,
+      "gap": 0.006,
+      "pad": [
+        0.15,
+        0.15
+      ]
+    },
     "lead": {
       "bar": 0.0089,
       "bar-color": "#FAA119",

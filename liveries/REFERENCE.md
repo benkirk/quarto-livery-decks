@@ -430,6 +430,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
 | `rail` | object |  | Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below. |
+| `gallery` | object |  | Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each. |
 
 ### `boxes.columns`
 
@@ -534,6 +535,16 @@ Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the 
 | `dot` | fraction | `0.02` | A milestone's dot, its diameter (of the slide's height). |
 | `fill` | null or color or role | `null` | A cell behind each item's text, a role, a blend, a palette name or a hex; null for none. |
 | `pad` | [vertical, horizontal] em | `[0.4, 0.4]` | Each item's text's distance from its cell's edges, in em of the body type. |
+
+### `boxes.gallery`
+
+Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each.
+
+| key | type | default | |
+|---|---|---|---|
+| `gap` | fraction | `0.006` | The gap between the cells, both ways (of the slide's width). |
+| `pad` | [vertical, horizontal] em | `[0.15, 0.15]` | A cell's inset round its picture and caption, and the caption's distance under its picture, in em of the body type. |
+| `fill` | null or color or role | `null` | A cell behind each picture and its caption, a role, a blend, a palette name or a hex; null for none. |
 
 ### `bullets`
 

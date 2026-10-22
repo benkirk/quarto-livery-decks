@@ -119,10 +119,14 @@ BOXES = {
     # steps and timelines: line, badge and dot of the height (the rail's thickness, a step's badge's
     # and a milestone's dot's diameter); fill a cell behind each item, null for none
     "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "fill": None, "pad": [0.4, 0.4]},
+    # image galleries: gap between the cells, both ways, of the width (a close wall of pictures: the
+    # columns' 0.03 is loose); pad the cell's inset and the caption's distance under its picture; fill a cell
+    # behind each picture and caption, null for none
+    "gallery": {"gap": 0.006, "pad": [0.15, 0.15], "fill": None},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
-              "rail": ("line-color", "fill")}
+              "rail": ("line-color", "fill"), "gallery": ("fill",)}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -856,6 +860,8 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
                 L.append(f"\\def\\engine@geom@{k}{k2.replace('-', '')}{{{v2}}}")
         elif not isinstance(v, list):
             L.append(f"\\def\\engine@geom@{k.replace('-', '')}{{{v}}}")
+    # the body box's height (geometry.body, derived: a list, which the loop skips): a gallery's default height
+    L.append(f"\\def\\engine@geom@bodyheight{{{geom['body'][3]}}}")
     art = livery.get("art", {})
     waves = art.get("waves")
     if waves:
@@ -1038,6 +1044,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
     for k in ("margin", "tab-width", "wide-margin"):
         if k in geom:
             props.append(f"--engine-{k}: {px(geom[k], W)};")
+    # the body box's foot (the slide's padding below it; a gallery's rows fill to it)
+    props.append(f"--engine-body-bottom: {px(geom['body-bottom'])};")
     for k, v in geom.get("full", {}).items():
         props.append(f"--engine-full-{k}: {px(v, W if k == 'pad' else H)};")
     # type: the body and the frame title in slide pixels, every other role as its ratio to the body
@@ -1180,6 +1188,10 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-rail-badge: {px(rail['badge'])};", f"--engine-rail-dot: {px(rail['dot'])};",
           f"--engine-rail-fill: {rail['fill'] or 'transparent'};", f"--engine-rail-pad: {pad(rail['pad'])};",
           f"--engine-rail-pad-y: {rail['pad'][0]:g}em;", f"--engine-rail-pad-x: {rail['pad'][1]:g}em;"]   # a mark and a date line up with the text
+    gal = b["gallery"]
+    p += [f"--engine-gallery-gap: {px(gal['gap'], W)};", f"--engine-gallery-pad: {pad(gal['pad'])};",
+          f"--engine-gallery-pad-y: {gal['pad'][0]:g}em;",   # a caption's distance under its picture
+          f"--engine-gallery-fill: {gal['fill'] or 'transparent'};"]
     return p
 
 

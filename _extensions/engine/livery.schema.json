@@ -650,6 +650,24 @@
               "description": "Each item's text's distance from its cell's edges, in em of the body type."
             }
           }
+        },
+        "gallery": {
+          "type": "object",
+          "description": "Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each.",
+          "additionalProperties": false,
+          "properties": {
+            "gap": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.006, "description": "The gap between the cells, both ways (of the slide's width)."},
+            "pad": {
+              "type": "array",
+              "items": {"type": "number", "minimum": 0},
+              "minItems": 2,
+              "maxItems": 2,
+              "x-kind": "[vertical, horizontal] em",
+              "default": [0.15, 0.15],
+              "description": "A cell's inset round its picture and caption, and the caption's distance under its picture, in em of the body type."
+            },
+            "fill": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/color-or-role"}], "default": null, "description": "A cell behind each picture and its caption, a role, a blend, a palette name or a hex; null for none."}
+          }
         }
       }
     },

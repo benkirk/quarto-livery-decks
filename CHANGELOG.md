@@ -65,6 +65,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   timelines, the rail's thickness and color, a step's badge, a milestone's dot, an optional cell
   behind each item. Every livery keeps its look with no change; the defaults draw the rail in the
   `rule` blend with no cell.
+- `boxes.gallery` (`gap`, `pad`, `fill`): the look of the new image galleries, the gap between the
+  cells (of the slide's width), a cell's inset and its caption's distance under the picture, an
+  optional cell behind each picture. Nothing to do: the defaults draw a close wall of pictures
+  with no cell.
 - `boxes.quote` (`bar`, `bar-color`, `pad`) and the `quote` type role (24 pt on the default canvas,
   scaling with the body): the look of the new quote block, a bar at its left in `bar-color`
   and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that

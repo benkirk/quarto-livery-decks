@@ -93,7 +93,7 @@ $mermaid-label-fg-color: $engine-primary;
   height: 100%;
   box-sizing: border-box;
   isolation: isolate;  // keeps the z-index:-1 waves above the slide background in print
-  padding: var(--engine-body-top, 150px) var(--engine-margin) 70px;   // below the mark (livery.css)
+  padding: var(--engine-body-top, 150px) var(--engine-margin) calc(900px - var(--engine-body-bottom, 830px));   // below the mark (livery.css)
 }
 
 // the mark on content slides: top right unless the livery's geometry.logo.corner says
@@ -1095,7 +1095,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 // reveal's print stylesheet zeroes every section's padding (!important);
 // restate each slide type's (more specific, so these win)
 html.reveal-print .reveal .slides {
-  section.slide, section.engine-title { padding: var(--engine-body-top, 150px) var(--engine-margin) 70px !important; }
+  section.slide, section.engine-title { padding: var(--engine-body-top, 150px) var(--engine-margin) calc(900px - var(--engine-body-bottom, 830px)) !important; }
   section.engine-title.quarto-title-block { padding: 0 !important; }
   section.slide.engine-section, section.slide.level2.closing {
     padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
