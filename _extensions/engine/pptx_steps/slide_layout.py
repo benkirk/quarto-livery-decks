@@ -53,7 +53,6 @@ from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, fit_picture, fi
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
-CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
 FULL_FLOOR = LIVERY["geometry"]["full"]["footline"]  # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
@@ -83,10 +82,11 @@ def _scale_paragraphs(paragraphs, scale, size_at):
             r.set("sz", str(round(livery_mod.half_pt(sz * scale / 100) * 100)))   # to the half point
 
 
-def _table_height(table, other, biggest, pad=CELL_PAD):
+def _table_height(table, other, biggest, pad=2 * style_tables.CELL_MAR):
     """A table's height: each row as tall as its cell of most lines, measured in the livery's base
-    face in its column's width (less the cell's margins), at the table's biggest size, plus pad
-    (the cell's top and bottom margins) a row."""
+    face in its column's width (less the cell's margins), at the table's biggest size, plus pad a
+    row: the cell's top and bottom margins as style_tables sets them (it runs after this step, so
+    the cells still carry PowerPoint's defaults here)."""
     widths = [col.width for col in table.columns]
     total = 0
     for row in table.rows:
@@ -250,8 +250,7 @@ def note_place(slide):
     est = int(text_height(caption, slide) * SLACK)   # the slack keeps autofit idle, as caution_box
     if is_table(fig):
         other = other_size(slide)
-        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other),
-                                         2 * style_tables.CELL_MAR)
+        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other))
     else:
         bottom = fig.top + fig.height
         room = floor - est - NOTE_GAP
