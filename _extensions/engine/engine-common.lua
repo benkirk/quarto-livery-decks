@@ -754,26 +754,40 @@ local function rail_items(div, kind, livery, who)
   return { role = role, start = kind == "steps" and (list.start or 1) or nil, items = items }
 end
 
--- The slide's rails drawn: each top-level .steps or .timeline div that rail_items() reads becomes
--- draw(kind, rail) (blocks); one inside another div (a column, a card) is not drawn, in any format
--- (beamer's save boxes are a card's; pptx flattens a column), and is warned of and left as its list.
-local function top_rails(blocks, livery, who, draw)
+-- The slide's elements of one kind drawn at its top level: each top-level block whose kind(b) names
+-- it (".steps", ".gallery"...) and read(b, kind) accepts becomes draw(x, kind) (blocks); one inside
+-- another div (a column, a card) is not drawn, in any format (beamer's save boxes are a card's; pptx
+-- flattens a column), and is warned of and left as it is (left: "list", "pictures"), its role=
+-- dropped (an invalid ARIA role in HTML otherwise).
+local function top_level(blocks, kind_of, read, draw, who, left)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    local kind = rail_kind(b)
-    local rail = kind and rail_items(b, kind, livery, who)
-    if rail then
-      out:extend(draw(kind, rail))
+    local kind = kind_of(b)
+    local x = kind and read(b, kind)
+    if x then
+      out:extend(draw(x, kind))
     else
       if b.t == "Div" and not kind then
-        b.content:walk({ Div = function(d)
-          if rail_kind(d) then warn(who .. ": a ." .. rail_kind(d) .. " inside a column or another div is not drawn; left as its list") end
+        b.content = b.content:walk({ Div = function(d)
+          local inner = kind_of(d)
+          if inner then
+            warn(who .. ": a ." .. inner .. " inside a column or another div is not drawn; left as its " .. left)
+            d.attributes["role"] = nil
+            return d
+          end
         end })
       end
       out:insert(b)
     end
   end
   return out
+end
+
+-- The slide's rails drawn (top_level): each .steps or .timeline div rail_items() reads becomes
+-- draw(kind, rail).
+local function top_rails(blocks, livery, who, draw)
+  return top_level(blocks, rail_kind, function(b, kind) return rail_items(b, kind, livery, who) end,
+                   function(r, kind) return draw(kind, r) end, who, "list")
 end
 
 -- Image galleries (::: {.gallery cols= rows= fit= height=}): a div of image files, each its own paragraph
@@ -885,25 +899,10 @@ local function latex_file(src, out)
   return path
 end
 
--- The slide's galleries drawn: each top-level .gallery div that gallery_items() reads becomes draw(g)
--- (blocks); one inside another div (a column, a card) is not drawn, in any format (pptx flattens a
--- column), and is warned of and left as its pictures (top_rails' shape; a gallery has no role).
+-- The slide's galleries drawn (top_level): each .gallery div gallery_items() reads becomes draw(g).
 local function top_galleries(blocks, who, draw)
-  local out = pandoc.Blocks({})
-  for _, b in ipairs(blocks) do
-    local g = is_gallery(b) and gallery_items(b, who)
-    if g then
-      out:extend(draw(g))
-    else
-      if b.t == "Div" and not is_gallery(b) then
-        b.content:walk({ Div = function(d)
-          if is_gallery(d) then warn(who .. ": a .gallery inside a column or another div is not drawn; left as its pictures") end
-        end })
-      end
-      out:insert(b)
-    end
-  end
-  return out
+  return top_level(blocks, function(b) return is_gallery(b) and "gallery" end,
+                   function(b) return gallery_items(b, who) end, draw, who, "pictures")
 end
 
 -- Every bullet list's status items normalized (status_item()), marked ones inside a card column or
@@ -950,7 +949,7 @@ return {
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
-  rail_kind = rail_kind, rail_items = rail_items, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
+  rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
   is_gallery = is_gallery, gallery_items = gallery_items, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
   latex_file = latex_file,
 }
