@@ -89,6 +89,10 @@
         0.4
       ]
     },
+    "references": {
+      "gap": 0.4,
+      "hang": 1.5
+    },
     "status": {
       "done": "#00B0F0",
       "fail": "#E4002B",

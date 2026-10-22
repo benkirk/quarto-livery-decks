@@ -24,6 +24,7 @@ from conftest import ENGINE, ROOT, run
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
 FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot")
+EMS = {("references", "hang"), ("references", "gap")}   # em of a type role, not a fraction
 
 
 def test_every_key(livery):
@@ -41,6 +42,8 @@ def test_every_key(livery):
                 assert v is None or isinstance(v, str), f"{where} is not a family or null"
             elif (box, k) == ("quote", "style"):
                 assert v in ("normal", "italic"), f"{where} is not normal or italic"
+            elif (box, k) in EMS:
+                assert isinstance(v, (int, float)) and v >= 0, f"{where} is not an em length"
             elif k in FRACTIONS:
                 assert isinstance(v, (int, float)) and 0 <= v <= 1, f"{where} is not a fraction"
             else:

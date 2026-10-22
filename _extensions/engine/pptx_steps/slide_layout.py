@@ -60,8 +60,8 @@ CAP_SIZE   = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the themes' caption s
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 NOTE_GAP   = Pt(6 * K)    # note: between the picture or table and the note under it
 REF_PT     = livery_mod.type_pt(LIVERY, "footnote")   # references: the list in the footnote size,
-REF_HANG   = 1.5          # a hanging indent of 1.5 em of it, 0.4 em above each entry (HTML, PDF)
-REF_BEFORE = 0.4
+REF_HANG   = BOXES["references"]["hang"]   # hung and spaced by boxes.references (em of it), as HTML and PDF
+REF_BEFORE = BOXES["references"]["gap"]
 CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = livery_mod.color(LIVERY, "warning")

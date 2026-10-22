@@ -160,6 +160,8 @@
   --engine-gallery-pad: 0.15em 0.15em;
   --engine-gallery-pad-y: 0.15em;
   --engine-gallery-fill: transparent;
+  --engine-references-hang: 1.5em;
+  --engine-references-gap: 0.4em;
 }
 /* chart colors (livery.json charts) */
 :root {

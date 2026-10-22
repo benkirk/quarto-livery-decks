@@ -123,6 +123,9 @@ BOXES = {
     # columns' 0.03 is loose); pad the cell's inset and the caption's distance under its picture; fill a cell
     # behind each picture and caption, null for none
     "gallery": {"gap": 0.006, "pad": [0.15, 0.15], "fill": None},
+    # the references slide's list (a deck's bibliography): each entry's hanging indent and the gap
+    # above it, em of the footnote type it is set in
+    "references": {"hang": 1.5, "gap": 0.4},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
@@ -1194,6 +1197,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-gallery-gap: {px(gal['gap'], W)};", f"--engine-gallery-pad: {pad(gal['pad'])};",
           f"--engine-gallery-pad-y: {gal['pad'][0]:g}em;",   # a caption's distance under its picture
           f"--engine-gallery-fill: {gal['fill'] or 'transparent'};"]
+    refs = b["references"]
+    p += [f"--engine-references-hang: {refs['hang']:g}em;", f"--engine-references-gap: {refs['gap']:g}em;"]
     return p
 
 

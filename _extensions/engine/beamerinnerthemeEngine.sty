@@ -247,7 +247,7 @@
 \setbeamertemplate{bibliography item}{\ifdefined\insertbiblabel\insertbiblabel\fi}
 % biblatex's list (\printbibliography) set as the Quarto list: the footnote size, a 1.5 em hanging
 % indent, 0.4 em between entries
-\AtBeginDocument{\@ifpackageloaded{biblatex}{\setlength\bibhang{1.5em}\setlength\bibitemsep{0.4em}%
+\AtBeginDocument{\@ifpackageloaded{biblatex}{\setlength\bibhang{\engine@boxes@references@hang em}\setlength\bibitemsep{\engine@boxes@references@gap em}%
   \AtBeginBibliography{\usebeamerfont{bibliography entry author}}}{}}
 % the reference list (Quarto's citations partial: CSLReferences, {hanging}{entry spacing}) set as
 % HTML and pptx set it: in the footnote size, a 1.5 em hanging indent, and the style's entry spacing
@@ -255,12 +255,12 @@
 % 1.5 em strut it opens each entry with (\beamer@newblock: spacing for beamer's own bibliography,
 % 0.3 of a line more above every entry here).
 \AtBeginDocument{\ifdefined\cslhangindent
-  \setlength\cslhangindent{1.5em}%
+  \setlength\cslhangindent{\engine@boxes@references@hang em}%
   \renewenvironment{CSLReferences}[2]{\usebeamerfont{bibliography entry author}%
     \patchcmd\beamer@newblock{\ht\beamer@tempbox=1.5em}{}{}{}\begin{list}{}{%
     \setlength{\itemindent}{0pt}\setlength{\leftmargin}{0pt}\setlength{\parsep}{0pt}%
     \ifodd #1\relax\setlength{\leftmargin}{\cslhangindent}\setlength{\itemindent}{-1\cslhangindent}\fi
-    \setlength{\itemsep}{#2\dimexpr0.4em\relax}}}{\end{list}}\fi}
+    \setlength{\itemsep}{#2\dimexpr\engine@boxes@references@gap em\relax}}}{\end{list}}\fi}
 
 % ---------------------------------------------------------------------------
 % blocks: square, flat (no shadows/gradients -- Brand Guide p25)

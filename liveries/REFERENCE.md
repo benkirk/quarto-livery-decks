@@ -430,6 +430,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
 | `rail` | object |  | Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below. |
+| `references` | object |  | The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size. |
 | `gallery` | object |  | Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each. |
 
 ### `boxes.columns`
@@ -535,6 +536,15 @@ Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the 
 | `dot` | fraction | `0.02` | A milestone's dot, its diameter (of the slide's height). |
 | `fill` | null or color or role | `null` | A cell behind each item's text, a role, a blend, a palette name or a hex; null for none. |
 | `pad` | [vertical, horizontal] em | `[0.4, 0.4]` | Each item's text's distance from its cell's edges, in em of the body type. |
+
+### `boxes.references`
+
+The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size.
+
+| key | type | default | |
+|---|---|---|---|
+| `hang` | number | `1.5` | Each entry's hanging indent, in em of its type. |
+| `gap` | number | `0.4` | The gap above each entry, in em of its type. |
 
 ### `boxes.gallery`
 

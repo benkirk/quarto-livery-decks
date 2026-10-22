@@ -683,7 +683,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   text-align: left;
   margin-left: 0;     // pandoc's div.hanging-indent hangs the whole list too; the entries hang here
   text-indent: 0;
-  .csl-entry { padding-left: 1.5em; text-indent: -1.5em; margin: 0.4em 0; }
+  .csl-entry { padding-left: var(--engine-references-hang); text-indent: calc(-1 * var(--engine-references-hang)); margin: var(--engine-references-gap) 0; }
 }
 
 // a lifted ^[...] note's mark in the text (engine-common.lua lift_footnotes())

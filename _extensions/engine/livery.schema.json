@@ -651,6 +651,15 @@
             }
           }
         },
+        "references": {
+          "type": "object",
+          "description": "The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size.",
+          "additionalProperties": false,
+          "properties": {
+            "hang": {"type": "number", "minimum": 0, "default": 1.5, "description": "Each entry's hanging indent, in em of its type."},
+            "gap": {"type": "number", "minimum": 0, "default": 0.4, "description": "The gap above each entry, in em of its type."}
+          }
+        },
         "gallery": {
           "type": "object",
           "description": "Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each.",

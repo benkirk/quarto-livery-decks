@@ -187,6 +187,10 @@
         0.4
       ]
     },
+    "references": {
+      "gap": 0.4,
+      "hang": 1.5
+    },
     "status": {
       "done": "#00818F",
       "fail": "#B5540A",
