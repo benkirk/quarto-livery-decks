@@ -261,7 +261,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `engine-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
   one picture to the slide and centers pandoc's caption box under it. Any other
-  body is left alone with a warning. `make qa` fails a caption that wraps.
+  body is left alone with a warning. `make qa` fails a caption that wraps. A `.gallery` may be
+  the figure ("Galleries" below): HTML puts its grid in `.engine-full-figure`, beamer writes the
+  bare `[enginefull]` key and the background draws the stored cells, and pptx's `slide_layout.py`
+  only hides the furniture (`hide_furniture()`, for a body holding the gallery marker) and leaves
+  the slide to `grid.py`.
 - **Compositions**: the title (`title`, `title-photo`, `title-light`,
   `title-photo-light`, `title-band`), closing (`closing`, `closing-light`, `closing-band`),
   `section` and `feature` slides are boxes in `build/livery.json` `compositions` (`[x, y, w, h]`
@@ -508,7 +512,9 @@ it does, by area, beyond the format notes above:
   `Package Engine Warning` and the default by place in `\engine@boxes@card@roles`),
   `enginestrip[role=]`, `enginestatus` with `\done`/`\warn`/`\fail` (local to it) and
   `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking{}`,
-  `enginequote[role=]{Attribution}`, `\engineagenda`, `\enginesectionunnumbered{Title}{Sub}`. The
+  `enginequote[role=]{Attribution}`, `\engineagenda`, `\enginesectionunnumbered{Title}{Sub}`,
+  `enginegallery[cols=,rows=,fit=,height=]` with `\engineimage[Caption]{file}` (and the bare
+  `[enginefull]` frame key, which a gallery fills). The
   cookbook `latex/examples/sample.tex` is the sample deck slide for slide plus three frames on
   overlays (a moving pick, steps inside cards, a stepped status list); `make variants` builds it
   under cu, nasa-dark and 4:3, `make previews` the committed `latex/sample.png` (`sheet.py`:
@@ -619,6 +625,27 @@ it does, by area, beyond the format notes above:
   open it) or dot, a rail rectangle and `body_box` texts, one group ("Steps", "Timeline"). PDF:
   `enginesteps`/`enginestep`, `enginetimeline`/`\enginemilestone[done]` on the cards' six save
   boxes, drawn by one tikzpicture at `\end`.
+- **Galleries** (`::: {.gallery cols= rows= fit=contain|cover height=}` of image paragraphs; at most
+  twelve, file images only, at a slide's top level): `engine-common.lua`'s `gallery_items()` reads
+  one (cols `ceil(sqrt(n))` and rows `ceil(n/cols)` by default, a caption from a Figure or the alt
+  text, several images on consecutive lines an item each; a src under `figure-*/` or `*_files/`,
+  an executed cell's plot or a baked diagram, is refused: pptx reads the files from disk after the
+  render, where those are not), `top_galleries()` the one walk, `is_grid()` counts it,
+  `split_full()` takes it as a `.full` slide's figure; every number `boxes.gallery` (`gap` of the
+  width, `pad`, a nullable `fill`). HTML: `galleries()` after `rails()` wraps a gallery slide's
+  body in `.engine-gallery-body`, the body box in slide pixels (`--engine-body-top` to
+  `--engine-body-bottom`, which also sets the slide's foot padding), a flex column, so text above
+  takes its height and the grid the rest; the `<img>` is pandoc's (embed-resources inlines it).
+  pptx: a grid slide, `⟦engine:gallery cols= rows= fit=[ height=][ full]⟧`, per image
+  `⟦engine:item src=<path, white space, = and ⟦⟧ percent-encoded>⟧`, its caption, `⟦engine:end⟧`;
+  `pptx_steps/gallery.py` reads the files from the deck's directory (`grid.run(prs, path)`), an
+  .svg through `svg_fallback.rasterize_svg()`, and places each with `common.fit_picture()`
+  (`contain_box()`, `cover_crop()`: an `a:srcRect`), one group ("Gallery"). pandoc's pptx writer
+  draws no picture held in a Div, so a refused gallery or one in a column is unwrapped into its
+  paragraphs (pandoc splits the slide; `make qa`'s count catches it). PDF: `enginegallery` stores
+  its images and draws the cells at `\end` in one tikzpicture, at `height=` of the body box capped
+  at `\engine@bodyroom` (beamer sets `\beamer@frametextheight` only after the body; a fragile
+  frame reads 0); `engine-beamer.lua` writes it before `bound_sized_images()`.
 - **Quotes** (`::: {.quote role=}` or a bare `>`, anywhere in a slide's body but the notes, a lead
   or a strip, where it warns and stays its lines): `engine-common.lua`'s `quote_parts()` (a last
   line led by —, – or -- the attribution) and `quote_blocks()`, the one walk every format uses;

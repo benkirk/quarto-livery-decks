@@ -136,8 +136,12 @@ branched from, not a window read).
   chevron steps (`style="chevron"`), alternating timeline labels, subsections in the agenda,
   `agenda: each`, the quote's quotation-mark glyph, `current=` on the agenda, a note-style CSL
   (needs citeproc in the filter), callouts reaching pptx as a native shape, stat tiles as a card
-  preset, an image grid with captions (after the grid step's picture limit), editable pptx charts
-  from data, icons in pptx.
+  preset, editable pptx charts from data, icons in pptx. (The image grid with captions on that list
+  is done: the gallery sprint, `design/gallery-handoff.md`.)
+- Deferred by the gallery sprint (2026-10-22): links round gallery images; vector (SVG) gallery
+  images in pptx (rasterized now: an svgBlip twin per picture is svg_fallback's zip surgery); cells
+  of unequal size (spans or weights); a picture or table inside a grid-slide column, which the
+  gallery's disk read could now reach.
 - A citation in a `::: note` is lost in the PDF: `engine-beamer.lua`'s `note_frames()` writes the
   note as raw LaTeX (`pandoc.write`), so citeproc never sees it; the footnote hoist moved to pandoc
   inlines between raw wrappers in the citations sprint, and the note could take the same shape.

@@ -75,7 +75,8 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
 - `## Title {.full}` gives one diagram or image the whole slide: no title,
   logo or rule, and the paragraph after it (or a `::: note`) becomes a one-line caption. The
   title stays in the source for navigation and `make qa`. pptx gets it
-  from `slide_layout.py`.
+  from `slide_layout.py`. A `::: {.gallery}` in place of the image fills the slide with its cells
+  (["Image galleries"](#image-galleries)).
 - `# Backup {.unnumbered}` is a section divider outside the count, in every format: no
   "SECTION n" over it, and the dividers after it keep their numbers. A paragraph right after it
   is its subtitle, as under any divider. In the PDF it has no bookmark.
@@ -296,6 +297,71 @@ A process, step by step, is an ordered list in a `steps` div; milestones are a b
   row and a second click a part. A slide with one is a grid slide, as a lead makes it: a picture
   or table beside it splits the slide.
 - The same slides in LaTeX are [latex/authoring.md "Steps and timelines"](../latex/authoring.md#steps-and-timelines).
+
+## Image galleries
+
+A grid of pictures is a `gallery` div of image files:
+
+```markdown
+## Six views of the quickstart
+
+A line above a gallery takes its own height; the cells share what is left (PDF: give `height=`).
+
+::: {.gallery cols=3 rows=2 height=0.75}
+![The cover](images/gallery-1.png)
+![A divider](images/gallery-2.png)
+![Text, rotated](images/gallery-3.png)
+![Columns](images/gallery-4.png)
+![Cards](images/gallery-5.png)
+![Cards, rotated](images/gallery-6.png)
+:::
+
+## A strip of six {.wide}
+
+::: {.gallery cols=6 rows=1 fit=cover}
+![](images/gallery-1.png)
+...
+:::
+
+## The quickstart, six ways {.full}
+
+::: {.gallery cols=3 rows=2 fit=cover}
+...
+:::
+
+With `{.full}` the cells fill the slide, and this line is the caption.
+```
+
+- The pictures sit in equal cells, row by row, close together with no frame (the livery's
+  `boxes.gallery`: its `gap`, its `pad` round each picture, and a `fill` behind each cell if it
+  sets one). **`cols=`** and **`rows=`** set the grid; without them it is as square as the count
+  allows (five images are 3 by 2, seven are 3 by 3), and one given alone sets the other.
+- **`fit=contain`** (the default) shows each picture whole, letterboxed in its cell; **`fit=cover`**
+  crops it to fill the cell, the same amount off either side.
+- **A caption** is the image's own (`![Caption](path)`) and goes under its picture on one line, in
+  the caption size, muted, centered. When any image has one, every cell keeps the line, so a row's
+  pictures and captions line up; keep each short (`make qa` fails one that runs past its cell).
+- **Where it goes.** Under the title, a gallery takes the body; text above it takes its own height
+  and the cells share the rest. **`height=0.6`** gives the gallery that share of the body instead.
+  The PDF cannot measure what is above the gallery, so give `height=` whenever there is text above
+  it, or it runs past the foot there. On a `{.wide}` slide the gallery takes the wider body; on a
+  `{.full}` slide it fills the slide (no title, logo or rule) and the paragraph after it is the
+  slide's caption, as for a full-slide figure.
+- **Limits:** at most twelve images; image files only (`png`, `jpg`, `svg`), each its own paragraph
+  or one after another on consecutive lines; on the slide itself, not in a column or a card. A plot
+  or diagram cell is refused, in every format: the pptx reads the gallery's files from disk after
+  the render, where an executed cell's figure is not. A link round a gallery image is not drawn
+  yet. Anything else in the div, too many images for `cols` x `rows`, or a gallery in a column warns
+  and leaves the pictures as they were (in the pptx pandoc then splits the slide over them, which
+  `make qa`'s slide count catches). An image's own `width=` or `height=` is dropped: the cell sizes
+  the picture.
+- pptx draws a gallery as native pictures, one group ("Gallery"; inside it "Gallery 1 picture",
+  "Gallery 1 caption", "Gallery 1 cell", and "Gallery caption" on a `{.full}` slide): `cover`
+  crops each picture in place, so PowerPoint's crop tool restores it. An SVG image becomes a PNG
+  of it there.
+- In HTML a slide's gallery fills the body to its foot, so a `†` slide footnote on the same slide
+  sits over its last row: put the remark in a caption instead.
+- The same slides in LaTeX are [latex/authoring.md "Galleries"](../latex/authoring.md#galleries).
 
 ## Notes under a figure
 

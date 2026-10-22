@@ -41,6 +41,7 @@ A release's entry is written here before its tag is pushed, and becomes its note
   image is a PNG of it; in the PDF a gallery under text needs `height=` (TeX cannot measure what is
   above it). Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
   itself (not in a column or a card); anything else warns and leaves the pictures as they were.
+  `docs/authoring.md` "Image galleries".
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx

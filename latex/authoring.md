@@ -159,8 +159,8 @@ The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
 
 ## Galleries
 
-The cookbook's three gallery slides, as the Quarto ones in the sample deck,
-[decks/sample/sample.qmd](../decks/sample/sample.qmd):
+The cookbook's three gallery slides, as the Quarto ones in
+[docs/authoring.md "Image galleries"](../docs/authoring.md#image-galleries):
 
 ```latex
 \begin{enginegallery}[cols=3,rows=2,height=0.75]   % under a line of text: give height=
