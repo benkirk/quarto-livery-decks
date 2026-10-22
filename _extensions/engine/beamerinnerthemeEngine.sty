@@ -292,10 +292,12 @@
 % filter writes all of this for paragraphs that start with † or ‡.
 % ---------------------------------------------------------------------------
 \newcommand\enginefootnotespring{\par\vskip 0pt plus 1filll\relax}
+% the footnotes' short rule, drawn once: here and as beamer's \footnoterule (the misc section)
+\newcommand\engine@footnoterule{{\color{BrandText!30!BrandBackground}\rule{12mm}{0.6pt}}}
 \newenvironment{enginefootnotes}{%
   \par\noindent\begin{minipage}[b]{0.6\textwidth}\raggedright
   \usebeamerfont{footnote}\color{BrandMuted}%
-  {\color{BrandText!30!BrandBackground}\rule{12mm}{0.6pt}}\par\vskip0.8ex}%
+  \engine@footnoterule\par\vskip0.8ex}%
   {\end{minipage}\par}
 \newcommand\enginefootnote[2]{%
   \par\hangindent=1.1em\hangafter=1\noindent
@@ -669,6 +671,8 @@
 \setbeamertemplate{footnote}{%
   \parindent 0em\noindent\raggedright\usebeamercolor[fg]{footnote}%
   \hbox to 1.2em{\hfil\insertfootnotemark\,}\insertfootnotetext\par}
-\renewcommand\footnoterule{\kern-3pt{\color{BrandText!30!BrandBackground}\hrule width 12mm height 0.6pt}\kern 2.6pt}
+% (\engine@footnoterule is a box; \nointerlineskip on both sides places it as LaTeX's \hrule is,
+% with no interline glue before it or before the footnote's first line)
+\renewcommand\footnoterule{\kern-3pt\nointerlineskip\hbox{\engine@footnoterule}\nointerlineskip\kern 2.6pt}
 
 \mode<all>
