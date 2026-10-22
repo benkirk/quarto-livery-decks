@@ -137,6 +137,8 @@ The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
 
 - **`enginesteps[role=]{<n>}`** and **`enginetimeline[role=]{<n>}`** open a row of n equal items,
   the livery's column gap between them; an item beyond n is an error, and six is the most. A
+  longer process goes on over a second frame, `\begin{enginesteps}[start=7]{3}` numbering its
+  badges from 7. A
   thin rail (the livery's `boxes.rail`: the `rule` blend by default) runs through the marks from
   the first to the row's right edge. `role=` colors the badges and dots as it colors a card's band
   (a role, a blend or a defined color). The default is `primary-contrast`, the primary that reads

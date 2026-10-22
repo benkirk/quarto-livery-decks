@@ -44,7 +44,7 @@ doc.blocks:walk({ Div = function(d)
   local r = C.rail_items(d, kind, livery, "t")
   local out = { kind = kind, role_left = d.attributes["role"] or pandoc.json.null }
   if r then
-    out.role, out.items = r.role, {}
+    out.role, out.start, out.items = r.role, r.start or pandoc.json.null, {}
     for _, it in ipairs(r.items) do
       table.insert(out.items, { title = it.title and pandoc.utils.stringify(it.title) or pandoc.json.null,
                                 body = md(it.body), done = it.done == nil and pandoc.json.null or it.done })
@@ -91,6 +91,7 @@ def test_steps(tmp_path):
     (r,), warnings = rails(tmp_path, STEPS)
     assert not warnings, warnings
     assert r["kind"] == "steps" and r["role"] == "secondary" and r["role_left"] is None, "role= read and taken off"
+    assert r["start"] == 1, "the list's first number"
     assert [i["title"] for i in r["items"]] == ["Propose", "Pilot", "Scale"]
     assert r["items"][0]["body"] == "A one-page case; the review board reads it in a week.", "the Space after the title dropped"
     assert r["items"][1]["body"] == "Six weeks on the shared system.\n\nA second source line is a second line, as in a card.", \
@@ -98,9 +99,17 @@ def test_steps(tmp_path):
     assert all(i["done"] is None for i in r["items"]), "a step has no status"
 
 
+def test_start(tmp_path):
+    """A process that goes on over a second slide: its list starts past 1, and the badges count
+    from it (every format adds start - 1 to the item's place)."""
+    (r,), warnings = rails(tmp_path, "::: {.steps}\n4. **Review** The board reads it.\n5. **Decide** Yes or no.\n:::\n")
+    assert not warnings and r["start"] == 4 and [i["title"] for i in r["items"]] == ["Review", "Decide"], (r, warnings)
+
+
 def test_timeline(tmp_path):
     (r,), warnings = rails(tmp_path, TIMELINE)
     assert r["kind"] == "timeline" and r["role"] == "primary-contrast", "the default role"
+    assert r["start"] is None, "a timeline counts nothing"
     assert [i["title"] for i in r["items"]] == ["Q1 2025", "Q3 2025", "2026", "2027"]
     assert [i["done"] for i in r["items"]] == [True, False, False, False], "[x] done; [ ], plain and [!] pending"
     assert [i["body"] for i in r["items"]] == ["Proposal accepted", "Pilot complete", "Full allocation", "Review"], \

@@ -611,11 +611,12 @@
   \expandafter\engine@begincard\expandafter{\engine@ckeys}\box\engine@cardbox{#1}\end{tcolorbox}}
 
 % ---------------------------------------------------------------------------
-% steps and timelines, the rail: \begin{enginesteps}[role=<role>]{<n>} of n
+% steps and timelines, the rail: \begin{enginesteps}[role=<role>,start=<k>]{<n>} of n
 % \begin{enginestep}{<title>} ... \end{enginestep}, and \begin{enginetimeline}[role=<role>]{<n>} of
 % n \enginemilestone[done]{<date>}{<label>} (the Quarto filter writes them for ::: {.steps} and
 % ::: {.timeline}). The items share the row equally (\engine@shares: {n}), the livery's column gap
-% between them; an item beyond n is an error, and six is the most (the cards' save boxes). role=
+% between them; an item beyond n is an error, and six is the most (the cards' save boxes): a longer
+% process goes on over a second frame, start=7 numbering its badges from 7. role=
 % colors the badges and dots (a role, a blend or a defined color, \engine@rolecolor; default
 % primary-contrast, the primary that reads on the background). Each item's text is set first into
 % a box, at its width less boxes.rail.pad (a step's title in the block title font, bold, over its
@@ -627,7 +628,7 @@
 % (the block title font, bold) above its dot; the texts under the marks, the
 % row's cells one height, on boxes.rail.fill when the livery sets one (EngineBoxesRailFill).
 % ---------------------------------------------------------------------------
-\pgfkeys{/engine/rail/.cd, role/.store in=\engine@railrole}
+\pgfkeys{/engine/rail/.cd, role/.store in=\engine@railrole, start/.store in=\engine@railstart}
 \newif\ifengine@milestonedone
 \pgfkeys{/engine/milestone/.cd, done/.is if=engine@milestonedone}
 \newcount\engine@nrail \newcount\engine@railk
@@ -638,9 +639,9 @@
 \def\engine@railbegin#1#2#3{\par\engine@shares{rail}{#3}\def\engine@railkind{#1}%
   \ifnum\engine@rail@n>6
     \PackageError{Engine}{engine#1{\engine@rail@n}: more than six items}%
-      {A row of steps or milestones holds at most six: split it over two slides.}%
+      {A row of steps or milestones holds at most six: split it over two slides (start=7 numbers the second's badges on).}%
   \fi
-  \def\engine@railrole{}\pgfkeys{/engine/rail/.cd,#2}%
+  \def\engine@railrole{}\def\engine@railstart{1}\pgfkeys{/engine/rail/.cd,#2}%
   \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@primary-contrast\endcsname}%
   \else\engine@rolecolor{\engine@railrole}{primary-contrast}\fi
   \let\engine@railcolor\engine@rolename
@@ -707,7 +708,7 @@
       \ifx\engine@railkind\engine@railsteps
         \node[circle, fill=\engine@railcolor, text=BrandBackground, minimum size=\the\engine@railmark, inner sep=0pt,
           font=\usebeamerfont{block title}\bfseries]
-          at \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid} {\the\engine@railk};
+          at \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid} {\the\numexpr\engine@railk+\engine@railstart-1\relax};
       \else
         \ifnum\csname engine@rail@done@\the\engine@railk\endcsname=\@ne
           \fill[\engine@railcolor] \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}

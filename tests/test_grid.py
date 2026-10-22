@@ -36,7 +36,8 @@ DEFAULTS = ('## Default roles\n\n:::: {.columns}\n' + ''.join(f'::: {{.column .c
 WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
 RAILS = ('## Steps\n\n::: {.steps role="secondary"}\n1. **Propose** A one-page case.\n2. **Pilot** Six weeks.\n'
          '   A second line.\n3. **Scale** The allocation.\n:::\n\n'
-         '## Timeline\n\n::: {.timeline}\n- [x] **Q1 2025** Accepted\n- **2026** Full allocation\n:::\n')
+         '## Timeline\n\n::: {.timeline}\n- [x] **Q1 2025** Accepted\n- **2026** Full allocation\n:::\n\n'
+         '## Later steps\n\n::: {.steps}\n4. **Review** The board reads it.\n5. **Decide** Yes or no.\n:::\n')
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -158,9 +159,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 11, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 12, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -281,6 +282,11 @@ def test_rail(deck):
     assert date.top + date.height == by["Rail"].top + by["Rail"].height // 2 - round(rail["dot"] * H) // 2, "the date above the dot"
     assert by["Milestone 2 text"].text_frame.text == "Full allocation", "the label under it"
     assert "⟦" not in slide._element.xml, "a marker left"
+
+    slide = prs.slides[11]   # a process going on from 4: the badges follow the list's numbers
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert [by[f"Step {k} badge"].text_frame.text for k in (1, 2)] == ["4", "5"], "the badges from the list's start"
+    assert str(by["Step 1 badge"].fill.fore_color.rgb) == role("primary-contrast"), "the default role"
 
 
 def test_card_type_step(pandoc_deck, tmp_path):

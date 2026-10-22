@@ -25,7 +25,8 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
   drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
 - Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
-  (kind=timeline), per item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done milestone), its title
+  (kind=timeline; `start=4` when the ordered list begins past 1: the badges count from it), per
+  item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done milestone), its title
   or date a paragraph led by `⟦engine:title⟧`, its text, `⟦engine:end⟧`, and a last `⟦engine:end⟧`;
   a slide with one is a grid slide. A div rail_items() refuses (warned of) stays as it is.
 
@@ -144,7 +145,8 @@ local function mark(blocks, title)
       flow(C.split_lines(b.content), title, out)
       out:insert(marker("end"))
     elseif rail then
-      out:insert(marker("rail kind=" .. kind .. " role=" .. rail.role))
+      out:insert(marker("rail kind=" .. kind .. " role=" .. rail.role
+        .. (rail.start and rail.start ~= 1 and (" start=" .. rail.start) or "")))
       for _, item in ipairs(rail.items) do
         out:insert(marker(item.done and "item done" or "item"))
         if item.title then out:insert(prefixed("title", item.title)) end

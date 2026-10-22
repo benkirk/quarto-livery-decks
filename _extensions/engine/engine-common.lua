@@ -482,8 +482,10 @@ end
 
 -- Steps and timelines, the rail: a ::: {.steps role=} div holding one ordered list, a ::: {.timeline}
 -- one bullet list. rail_kind(div): "steps", "timeline" or nil. rail_items(div, kind, livery, who):
--- { role, items = { { title = inlines|nil, body = blocks, done = bool|nil }, ... } }, as every format
--- draws it: an item's first bold run (a Strong first in its first paragraph) is its title (a step's)
+-- { role, start, items = { { title = inlines|nil, body = blocks, done = bool|nil }, ... } }, as every
+-- format draws it (start: the ordered list's first number, a step's badges count from it, so a
+-- process split over two slides goes on at `7.`; nil for a timeline): an item's first bold run (a
+-- Strong first in its first paragraph) is its title (a step's)
 -- or its date (a milestone's), the Space after it dropped, the rest of that paragraph its first body
 -- line and its other blocks the rest, the source lines lines (split_lines()); a milestone's `- [x]`
 -- (status_item(), marked) is done, a plain item (or `- [ ]`) pending, `[!]` and `[-]` warned of and
@@ -554,7 +556,7 @@ local function rail_items(div, kind, livery, who)
     for k = il and 2 or 1, #item do body:insert(item[k]) end
     table.insert(items, { title = title, body = split_lines(body), done = done })
   end
-  return { role = role, items = items }
+  return { role = role, start = kind == "steps" and (list.start or 1) or nil, items = items }
 end
 
 -- The slide's rails drawn: each top-level .steps or .timeline div that rail_items() reads becomes

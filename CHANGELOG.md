@@ -27,7 +27,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   on the background), and a badge's number is knocked out in the background color. In the pptx
   each is native shapes, one group ("Steps", "Timeline"), the badges and dots PowerPoint circles.
   Limits: six items at most, text only, on the slide itself (not in a card or a column); anything
-  else warns and stays a plain list. `docs/authoring.md` "Steps and timelines".
+  else warns and stays a plain list. A longer process goes on over a second slide whose list
+  starts at `7.`: the badges follow the list's numbers. `docs/authoring.md` "Steps and timelines".
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
@@ -48,10 +49,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `rule` blend with no cell.
 
 ### LaTeX
-- Steps and timelines: `\begin{enginesteps}[role=]{n}` holding `\begin{enginestep}{Title} ...
+- Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...
   \end{enginestep}`, and `\begin{enginetimeline}[role=]{n}` holding
-  `\enginemilestone[done]{Date}{Label}`: a rail through numbered badges or dots, at most six items,
-  overlays working inside a step. The cookbook (`latex/examples/sample.tex`) has both.
+  `\enginemilestone[done]{Date}{Label}`: a rail through numbered badges or dots, at most six items
+  (`start=7` numbers a second frame's badges on), overlays working inside a step. The cookbook
+  (`latex/examples/sample.tex`) has both.
 - Citations with biblatex: `\printbibliography` no longer stops the compile (the theme's
   `bibliography item` called `\insertbiblabel`, which biblatex never defines), and its list is
   set as the Quarto decks' (the footnote size, a 1.5 em hanging indent, 0.4 em between entries).

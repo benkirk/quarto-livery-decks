@@ -83,6 +83,12 @@ On a solid card.
 \enginemilestone{2026}{Full allocation}
 \end{enginetimeline}
 \end{frame}
+\begin{frame}{Steps from four}
+\begin{enginesteps}[start=4]{2}
+\begin{enginestep}{Review} The board reads it. \end{enginestep}
+\begin{enginestep}{Decide} Yes or no. \end{enginestep}
+\end{enginesteps}
+\end{frame}
 \end{document}
 """
 
@@ -170,11 +176,12 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 6, "the pick=<2> and the \\uncover<2-> frames are two pages, the other two one each"
+    assert len(texts) == 7, "the pick=<2> and the \\uncover<2-> frames are two pages, the other three one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
     assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
     for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
         assert all(w in t for w in ("Propose", "Six weeks.", "Scale", "Q1 2025", "Proposal accepted", "2026")), t
+    assert "Review" in texts[6] and {"4", "5"} <= set(texts[6].split()), "start=4: the badges read 4 and 5"
 
 
 def test_role_warns_and_falls_back(deck):

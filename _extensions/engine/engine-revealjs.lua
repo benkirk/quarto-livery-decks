@@ -290,7 +290,7 @@ local function rails(blocks, livery)
       kind, r.role, #r.items)) })
     for k, it in ipairs(r.items) do
       local title = '<div class="engine-rail-title">' .. (it.title and inline_html(it.title) or "") .. "</div>"
-      local mark = '<div class="engine-rail-mark">' .. (kind == "steps" and ('<div class="engine-rail-badge">' .. k .. "</div>")
+      local mark = '<div class="engine-rail-mark">' .. (kind == "steps" and ('<div class="engine-rail-badge">' .. (k + r.start - 1) .. "</div>")
         or '<div class="engine-rail-dot"></div>') .. "</div>"
       local open = '<div class="engine-rail-item' .. (it.done and " engine-done" or "") .. '">'
       if kind == "steps" then   -- the badge, then the title in the text's cell

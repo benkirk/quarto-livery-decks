@@ -422,7 +422,8 @@ def _badge(slide, x, y, d, fill, k, name):
 def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_height):
     """Steps or a timeline: the items in equal columns (column_frames(), the columns' gap), a rail
     of boxes.rail.line in line-color through the marks, from the first mark's middle to the row's
-    right edge; a step's badge (badge of the height, the role's, its number in the background color) over a
+    right edge; a step's badge (badge of the height, the role's, its number in the background color,
+    counted from the marker's start=, the list's first number) over a
     text box of its title (the subhead size, bold) and text, or a milestone's date (subhead, bold,
     to the box's foot) over its dot (dot of the height, the role's when done, else the background
     in a ring of the role) over its label. The text boxes padded by boxes.rail.pad, a mark and a
@@ -433,6 +434,7 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
     steps = kind == "steps"
     noun = "Step" if steps else "Milestone"
     role = _hex(_pick_role(attrs, "primary-contrast", slide))
+    start = int(attrs.get("start", 1))
     mark = round(rail["badge" if steps else "dot"] * slide_height)
     vpad, hpad = pads("rail")
     frames = column_frames(x, w, [1 / len(items)] * len(items), slide_width)
@@ -472,7 +474,7 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
         if rail["fill"]:
             shapes.append(rect(slide, cx, ty, cw, text_h, _hex(rail["fill"]), f"{noun} {k} cell", behind=tb))
         if steps:
-            shapes.append(_badge(slide, cx + hpad, my, mark, role, k, f"{noun} {k} badge"))
+            shapes.append(_badge(slide, cx + hpad, my, mark, role, k + start - 1, f"{noun} {k} badge"))
         elif iattrs.get("done"):
             shapes.append(_oval(slide, cx + hpad, my, mark, role, f"{noun} {k} dot"))
         else:

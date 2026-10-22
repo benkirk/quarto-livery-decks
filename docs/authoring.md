@@ -217,7 +217,8 @@ A process, step by step, is an ordered list in a `steps` div; milestones are a b
   on the background too: a light one on a light livery makes faint marks.
 - **Limits:** at most six items; text only (a list in a step is fine, a picture or table is not);
   never inside a card or a column. Anything else in the div, the wrong kind of list or a seventh
-  item, warns and leaves the div as plain content. Keep a step to two or three lines: the row is
+  item, warns and leaves the div as plain content. A longer process goes on over a second slide
+  whose list starts at `7.`: the badges follow the list's numbers. Keep a step to two or three lines: the row is
   as tall as its tallest step, and a long one crowds the slide in pptx and overflows in the PDF.
 - pptx draws each as native shapes, one group ("Steps", "Timeline"; inside it "Step 1 badge",
   "Step 1 text", "Milestone 1 dot", "Milestone 1 title", "Rail"), so a click selects the whole

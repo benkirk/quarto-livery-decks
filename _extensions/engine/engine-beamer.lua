@@ -379,7 +379,8 @@ end
 -- status items, so a literal ✓ first in a milestone is its status, as in the other formats.
 local function rails(blocks, livery)
   return C.top_rails(blocks, livery, "engine-beamer", function(kind, r)
-    local out = pandoc.Blocks({ latex(string.format("\\begin{engine%s}[role=%s]{%d}", kind, r.role, #r.items)) })
+    local keys = "role=" .. r.role .. (r.start and r.start ~= 1 and (",start=" .. r.start) or "")   -- the list's first number
+    local out = pandoc.Blocks({ latex(string.format("\\begin{engine%s}[%s]{%d}", kind, keys, #r.items)) })
     for _, it in ipairs(r.items) do
       local title = it.title and inlines_to_latex(it.title) or ""
       if kind == "steps" then
