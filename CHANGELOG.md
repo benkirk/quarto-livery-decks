@@ -63,6 +63,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
   reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white and 1.6:1 on
   ucar's, under the 3:1 a mark needs.
+- `boxes.quote.family` and `boxes.quote.style`: a quote's lines in a face of their own, a family the
+  livery bundles (`typography.fonts`; null, the default, is the body's) and `normal` or `italic`,
+  in every format; `pptx.quote-typeface` names the face PowerPoint sets them in (by default the
+  family's name). A family the livery does not bundle fails the build with its path.
 
 ### LaTeX
 - Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...

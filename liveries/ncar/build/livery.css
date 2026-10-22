@@ -93,6 +93,7 @@
   --engine-quote-bar-color: #0057C2;
   --engine-quote-pad: 0.3em 1em;
   --engine-quote-gap: 0.3em;
+  --engine-quote-style: normal;
   --engine-card-fill: #FFFFFF;
   --engine-card-radius: 10.8px;
   --engine-card-outline: 3px;

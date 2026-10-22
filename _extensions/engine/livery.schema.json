@@ -582,7 +582,9 @@
           "properties": {
             "bar": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0089, "description": "The bar at its left, its width (of the slide's height)."},
             "bar-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default."},
-            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 1.0], "description": "Its text's distance from its edges, in em of the body type."}
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 1.0], "description": "Its text's distance from its edges, in em of the body type."},
+            "family": {"type": ["string", "null"], "minLength": 1, "default": null, "description": "The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface."},
+            "style": {"enum": ["normal", "italic"], "default": "normal", "description": "Its lines' style: normal (upright) or italic."}
           }
         },
         "card": {
@@ -795,6 +797,7 @@
           "description": "The font PowerPoint sets body text in (the theme's minor font)."
         },
         "heading-typeface": {"type": "string", "description": "The font PowerPoint sets titles in (default: typeface)."},
+        "quote-typeface": {"type": "string", "minLength": 1, "description": "The font PowerPoint sets a quote's lines in when boxes.quote.family names one (default: that family's name); measured in the family's files."},
         "code-typeface": {"type": "string", "minLength": 1, "description": "The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace."},
         "fonts": {
           "$ref": "#/$defs/path",

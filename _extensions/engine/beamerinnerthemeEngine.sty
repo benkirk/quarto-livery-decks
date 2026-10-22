@@ -510,7 +510,8 @@
 
 % ---------------------------------------------------------------------------
 % quote: \begin{enginequote}[role=<role>]{<attribution>} ... \end{enginequote} (the Quarto filter
-% writes it for ::: {.quote} and a bare `>`): its lines in the quote font with a bar at its left in
+% writes it for ::: {.quote} and a bare `>`): its lines in the `engine quote` font (the quote size,
+% boxes.quote.family and style) with a bar at its left in
 % the role (default the box's bar-color, livery.sty's boxes.quote), no fill, padded by its pads; the
 % attribution, when not {}, under them at the caption size, muted, after "— ". In a card or a
 % column too, as wide as its line.
@@ -522,9 +523,9 @@
   \else\engine@rolecolorelse{\engine@quoterole}{EngineBoxesQuoteBarColor}{the quote bar's color}\fi
   \colorlet{engine@quotebar}{\engine@rolename}%
   \def\engine@quotewho{#2}%
-  \engine@barbox{quote}\usebeamerfont{quote}}%
-  {\ifx\engine@quotewho\@empty\else
-     \par\vskip0.6ex{\usebeamerfont{caption}\color{BrandMuted}— \engine@quotewho\par}\fi
+  \engine@barbox{quote}\usebeamerfont{engine quote}}%
+  {\ifx\engine@quotewho\@empty\else   % the attribution in the body's face, upright
+     \par\vskip0.6ex{\normalfont\usebeamerfont{caption}\color{BrandMuted}— \engine@quotewho\par}\fi
    \endengine@barbox{}{engine@quotebar}\vskip\engine@pady}
 
 % ---------------------------------------------------------------------------

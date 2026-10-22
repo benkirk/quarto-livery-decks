@@ -408,7 +408,7 @@ $mermaid-label-fg-color: $engine-primary;
   > :last-child { margin-bottom: 0; }
 }
 // ::: {.quote} and a bare `>` (a <blockquote> no more: the filter writes this box): a bar at its
-// left in its role= (else the box's bar-color), no fill, its lines in the quote role, the
+// left in its role= (else the box's bar-color), no fill, its lines in the quote role and face, the
 // attribution at caption, muted (livery.css: boxes.quote); the pads, in em of the body, on the box,
 // the sizes on its paragraphs, so the pads do not grow with the text
 .reveal .slides section .engine-quote {
@@ -416,9 +416,15 @@ $mermaid-label-fg-color: $engine-primary;
   border-left: var(--engine-quote-bar) solid var(--engine-quote-role, var(--engine-quote-bar-color));
   padding: var(--engine-quote-pad);
   margin: var(--engine-quote-gap) 0;
-  > p { font-size: calc(var(--engine-type-quote) * 1em); line-height: 1.3; margin: 0; }
+  > p {   // its face: boxes.quote.family (else the body's) and style
+    font-size: calc(var(--engine-type-quote) * 1em); line-height: 1.3; margin: 0;
+    font-family: var(--engine-quote-family, inherit); font-style: var(--engine-quote-style, normal);
+  }
   > p + p { margin-top: 0.25em; }
-  > p.engine-attribution { font-size: calc(var(--engine-type-caption) * 1em); color: var(--engine-muted); margin-top: 0.6em; }
+  > p.engine-attribution {   // in the body's face, upright
+    font-size: calc(var(--engine-type-caption) * 1em); color: var(--engine-muted); margin-top: 0.6em;
+    font-family: inherit; font-style: normal;
+  }
   > :first-child { margin-top: 0; }
 }
 // cards (::: {.column .card role=...}): a head band in the card's role over a body on the card

@@ -305,12 +305,33 @@ def draw_strip(slide, x, y, w, room, paras, role, solid, name):
     return tb, rect(slide, x, y, w, tb.height, fill, name, behind=tb)
 
 
+# a:rPr's children before a:latin, in the schema's order (a fill and a line among them)
+_BEFORE_LATIN = {qn(f"a:{t}") for t in ("ln", "noFill", "solidFill", "gradFill", "blipFill", "pattFill", "grpFill",
+                                         "effectLst", "effectDag", "highlight", "uLnTx", "uLn", "uFillTx", "uFill")}
+
+
+def _latin(el, face):
+    """A run's a:rPr set in a typeface: its a:latin, made in the schema's place when it has none."""
+    lat = el.find(qn("a:latin"))
+    if lat is None:
+        lat = etree.Element(qn("a:latin"))
+        before = [c for c in el if c.tag in _BEFORE_LATIN]
+        before[-1].addnext(lat) if before else el.insert(0, lat)
+    lat.set("typeface", face)
+
+
+QUOTE_FACE = LIVERY["pptx"].get("quote-typeface") or BOXES["quote"]["family"]   # None: the body's
+
+
 def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
-    """A quote: its lines in the quote size, the attribution (led by ⟦engine:attribution⟧) at the
-    caption size in muted after "— ", in a text box padded by boxes.quote.pad beside a bar of
-    boxes.quote.bar of the color at its left, no fill, cut to its text. (text box, bar) at y."""
+    """A quote: its lines in the quote size, in boxes.quote.family (PowerPoint's pptx.quote-typeface,
+    else the family's name; none: the body's) and boxes.quote.style, the attribution (led by
+    ⟦engine:attribution⟧) at the caption size in muted after "— ", in the body's face, upright; in a
+    text box padded by boxes.quote.pad beside a bar of boxes.quote.bar of the color at its left, no
+    fill, cut to its text (measured in the family's files). (text box, bar) at y."""
     bar = round(BOXES["quote"]["bar"] * slide_height)
     vpad, hpad = pads("quote")
+    italic = BOXES["quote"]["style"] == "italic"
     for p in paras:
         if _prefix(p) == "attribution":
             t = p.find(".//" + qn("a:t"))
@@ -319,6 +340,12 @@ def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
             _style(p, livery_mod.type_pt(LIVERY, "caption"), color=_hex("muted"))
         else:
             _style(p, livery_mod.type_pt(LIVERY, "quote"))
+            for r in p.iter(qn("a:r")):
+                el = rpr(r)
+                if italic:
+                    el.set("i", "1")
+                if QUOTE_FACE:
+                    _latin(el, QUOTE_FACE)
     tb = body_box(slide, x + bar, y, max(w - bar, 0), room, paras, f"{name} text")
     tf = tb.text_frame
     tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad

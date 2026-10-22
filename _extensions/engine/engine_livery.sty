@@ -146,6 +146,19 @@
   \engine@tmp
 \fi\fi\fi
 
+% the quote's family (boxes.quote.family with files of its own, \engine@quotefont@* from livery.sty):
+% \enginequotefont, which the font theme gives a quote's lines (`engine quote`), with the faces it has
+\iftutex\ifdefined\engine@quotefont@family
+  \RequirePackage{fontspec}
+  \edef\engine@tmp{\noexpand\newfontfamily\noexpand\enginequotefont{\engine@quotefont@family}[%
+    Scale = 1.0, Path = \engine@quotefont@dir, Extension = \engine@quotefont@ext,
+    UprightFont = \engine@quotefont@regular
+    \ifdefined\engine@quotefont@bold, BoldFont = \engine@quotefont@bold\fi
+    \ifdefined\engine@quotefont@italic, ItalicFont = \engine@quotefont@italic\fi
+    \ifdefined\engine@quotefont@bolditalic, BoldItalicFont = \engine@quotefont@bolditalic\fi]}%
+  \engine@tmp
+\fi\fi
+
 \ifengine@basefont\else
   \iftutex
     \RequirePackage{fontspec}

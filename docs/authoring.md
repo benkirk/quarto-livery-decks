@@ -201,6 +201,10 @@ The purpose of computing is insight, not numbers.
   takes the livery's `boxes.quote.bar-color`, by default `primary-contrast` (the primary that reads
   on the background). A `role=` you pick should read on the background too: a thin bar in a light
   role fades on white. Each source line is a line, as in a lead.
+- Its face is the body's unless the livery names one: `boxes.quote.family` (a family the livery
+  bundles in `_brand.yml`'s `typography.fonts`) and `boxes.quote.style` (`normal` or `italic`),
+  in every format; PowerPoint sets it in `pptx.quote-typeface` (by default the family's name, so
+  install the face or name an installed one). The attribution stays in the body's face.
 - A last line that starts with `—`, `–` or `--` is the **attribution**: set under the quote at the
   caption size, muted, after "— ". A last line that begins with a dash for another reason is
   read the same way, so reword it.

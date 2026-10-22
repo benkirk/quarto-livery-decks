@@ -39,6 +39,10 @@ def test_every_key(livery):
                 assert v and all(r in json.loads((livery / "build" / "livery.json").read_text())["roles"] for r in v), f"{where}: not roles"
             elif k in lb.BOX_COLORS.get(box, ()):
                 assert (v is None and (box, k) == ("rail", "fill")) or HEX.match(v), f"{where} is not #RRGGBB"
+            elif (box, k) == ("quote", "family"):   # a bundled family, or null: the body's
+                assert v is None or isinstance(v, str), f"{where} is not a family or null"
+            elif (box, k) == ("quote", "style"):
+                assert v in ("normal", "italic"), f"{where} is not normal or italic"
             elif k in FRACTIONS:
                 assert isinstance(v, (int, float)) and 0 <= v <= 1, f"{where} is not a fraction"
             else:
@@ -75,10 +79,11 @@ def test_merge_box_by_box():
     assert b["caution"] == lb.BOXES["caution"], "an untouched box is the default"
 
 
-def tmp_livery(tmp_path, boxes: str):
-    """ncar copied into tmp_path with a boxes: block, built: (return code, stderr, livery.json)."""
-    d = tmp_path / "liveries" / "ncar"
-    shutil.copytree(ROOT / "liveries" / "ncar", d, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
+def tmp_livery(tmp_path, boxes: str, name="ncar"):
+    """A livery (ncar) copied into tmp_path/liveries/ with a boxes: block, built: (return code, stderr,
+    livery.json)."""
+    d = tmp_path / "liveries" / name
+    shutil.copytree(ROOT / "liveries" / name, d, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
     y = d / "livery.yml"
     text = re.sub(r"\nboxes:.*?\n\n", "\n", y.read_text(), flags=re.S)   # ncar's own block out
     y.write_text(text.replace("\npptx:", f"\nboxes:\n{boxes}\npptx:", 1))

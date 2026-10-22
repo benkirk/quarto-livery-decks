@@ -475,6 +475,8 @@ A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no 
 | `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
 | `bar-color` | color or role | `"primary-contrast"` | The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default. |
 | `pad` | [vertical, horizontal] em | `[0.3, 1.0]` | Its text's distance from its edges, in em of the body type. |
+| `family` | string or null | `null` | The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface. |
+| `style` | `normal` \| `italic` | `"normal"` | Its lines' style: normal (upright) or italic. |
 
 ### `boxes.card`
 
@@ -565,6 +567,7 @@ The PowerPoint template.
 | `template` | path | `"template.pptx"` | The template file. |
 | `typeface` | string |  | The font PowerPoint sets body text in (the theme's minor font). |
 | `heading-typeface` | string |  | The font PowerPoint sets titles in (default: typeface). |
+| `quote-typeface` | string |  | The font PowerPoint sets a quote's lines in when boxes.quote.family names one (default: that family's name); measured in the family's files. |
 | `code-typeface` | string |  | The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace. |
 | `fonts` | path |  | A directory of .fntdata files to embed in each deck; without it, the deck embeds no fonts. |
 | `size` | list of 2 numbers | `[13.333, 7.5]` | The slide in inches, [width, height]; type: sizes are points on it. |

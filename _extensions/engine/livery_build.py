@@ -105,7 +105,8 @@ BOXES = {
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
-    "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0]},   # a quote block: a bar, no fill
+    "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0],   # a quote block: a bar, no fill,
+              "family": None, "style": "normal"},   # its lines' face: a typography.fonts family (null: the body's), its style
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
@@ -253,6 +254,9 @@ def resolve(d: Path) -> tuple[dict, dict]:
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's (a blend too: the rail's rule)
                          lambda c, k: roles.get(c) or blends.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
+    qf = out["boxes"]["quote"]["family"]   # a face every format draws: one the livery bundles
+    if qf is not None and not family_files(out, qf):
+        sys.exit(f"livery.yml: boxes.quote.family: {qf!r} is not a typography.fonts family with files")
     # derived, not yml keys: the content body's box (the template's placeholder, the plots' size) and
     # the Two Content column's width (the template's halves, the shares' reference in columns.py)
     m, top = g["margin"], out["frametitle"]["body"]
@@ -676,14 +680,25 @@ def base_font(livery: dict) -> tuple[str, list]:
     return family, []
 
 
+def family_files(livery: dict, family: str) -> list:
+    """A typography.fonts family's files ([] when it has none, or no such family)."""
+    return next((f["files"] for f in livery["typography"].get("fonts", []) if f.get("family") == family and f.get("files")), [])
+
+
 def heading_font(livery: dict) -> tuple[str, list]:
     """The headings family and its files when it is a second family with files of its own."""
     t = livery["typography"]
     family = t.get("headings", "")
-    if family and family != t.get("base", ""):
-        for font in t.get("fonts", []):
-            if font.get("family") == family and font.get("files"):
-                return family, font["files"]
+    if family and family != t.get("base", "") and family_files(livery, family):
+        return family, family_files(livery, family)
+    return "", []
+
+
+def quote_font(livery: dict) -> tuple[str, list]:
+    """The quote's family (boxes.quote.family) and its files when it is not the body's."""
+    family = livery["boxes"]["quote"]["family"]
+    if family and family != livery["typography"].get("base", ""):
+        return family, family_files(livery, family)
     return "", []
 
 
@@ -774,6 +789,16 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             face = face_of(f)
             if face:
                 L.append(f"\\def\\engine@headfont@{face}{{{Path(f['path']).stem}}}")
+    qfamily, qfiles = quote_font(livery)
+    if qfamily:   # the quote's face (boxes.quote.family), when not the body's: the faces it has
+        L.append("% the quote's family's files (boxes.quote.family)")
+        L.append(f"\\def\\engine@quotefont@family{{{qfamily}}}")
+        L.append(f"\\def\\engine@quotefont@dir{{{texpath(Path(qfiles[0]['path']).parent.as_posix())}/}}")
+        L.append(f"\\def\\engine@quotefont@ext{{{Path(qfiles[0]['path']).suffix}}}")
+        for f in qfiles:
+            face = face_of(f)
+            if face:
+                L.append(f"\\def\\engine@quotefont@{face}{{{Path(f['path']).stem}}}")
     mfamily, mfaces = mono_font(livery)
     if mfamily:   # the code face (typography.monospace), when the livery bundles one
         L.append("% the code face's files (typography.monospace)")
@@ -882,6 +907,8 @@ def emit_sty_boxes(livery: dict) -> list[str]:
             name = k.replace("-", "")
             if k == "roles":
                 L.append(f"\\def\\engine@boxes@{box}@{name}{{{','.join(val)}}}")
+            elif (box, k) == ("quote", "family"):   # its files are the fonts' (\engine@quotefont@*, above)
+                continue
             elif k in BOX_COLORS.get(box, ()):
                 if val is None:   # none (a rail's fill): the theme tests \ifcsname
                     continue
@@ -978,8 +1005,11 @@ def emit_css(livery: dict, extra: str = "") -> str:
     hfamily, hfiles = heading_font(livery)
     installed = livery.get("installed-fonts", {})
     mfamily, mfaces = mono_font(livery)
+    qfamily, qfiles = quote_font(livery)
+    if qfamily in (hfamily, mfamily):   # already declared
+        qfiles = []
     for fam, fs, inst in ((family, files, installed.get("base")), (hfamily, hfiles, installed.get("headings")),
-                          (mfamily, list(mfaces.values()), None)):
+                          (mfamily, list(mfaces.values()), None), (qfamily, qfiles, None)):
         for f in fs:   # an installed face first, by full and PostScript name (CSS local() matches no family)
             names = (inst or {}).get("faces", {}).get(face_of(f), [])
             local = "".join(f'local("{n}"), ' for n in names)
@@ -1127,7 +1157,10 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-lead-gap: {lead['pad'][0]:g}em;"]   # under it: its vertical pad, as the pptx and beamer leave
     quote = b["quote"]
     p += [f"--engine-quote-bar: {px(quote['bar'])};", f"--engine-quote-bar-color: {quote['bar-color']};",
-          f"--engine-quote-pad: {pad(quote['pad'])};", f"--engine-quote-gap: {quote['pad'][0]:g}em;"]   # above and below it: its vertical pad
+          f"--engine-quote-pad: {pad(quote['pad'])};", f"--engine-quote-gap: {quote['pad'][0]:g}em;",   # above and below it: its vertical pad
+          f"--engine-quote-style: {quote['style']};"]
+    if quote["family"]:   # else the body's
+        p.append(f'--engine-quote-family: "{quote["family"]}";')
     p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
           f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",

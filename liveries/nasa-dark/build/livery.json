@@ -59,10 +59,12 @@
     "quote": {
       "bar": 0.0089,
       "bar-color": "#6E9BFF",
+      "family": null,
       "pad": [
         0.3,
         1.0
-      ]
+      ],
+      "style": "normal"
     },
     "rail": {
       "badge": 0.05,

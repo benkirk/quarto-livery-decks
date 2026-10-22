@@ -64,7 +64,9 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Boxes.** `boxes:` holds the numbers every format draws its columns and boxes with: the
      column gap and an optional rule between columns, the caution box's bar and pads, the
      feature panel's pads, the lead box, cards (fill, corner radius, a picked card's outline),
-     strips (their tint) and the status glyphs' colors. Set only what differs from the engine's
+     strips (their tint), the status glyphs' colors, the steps' rail, and the quote block (its
+     bar, and a face of its own: `boxes.quote.family`, a bundled family, and `style`). Set only
+     what differs from the engine's
      (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
      its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
