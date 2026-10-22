@@ -21,16 +21,6 @@ branched from, not a window read).
 
 ## Entries
 
-## 2026-10-22: sprint `decks/agenda-quote` (not a sweep)
-
-- Mode: a sprint's own record (`design/agenda-quote-handoff.md`)
-- Done: the divider-subtitle rule, written twice (`engine-revealjs.lua`, `engine-beamer.lua`),
-  is `engine-common.lua`'s `divider_subtitle()`, and pptx reads the dividers through `sections()`
-- Open: pptx draws a quote in a plain column of a grid slide but still flattens a strip there to
-  its text (`grid.py` `_flat()`; `_plain_column()` could take the strip too); `measure.py` measures
-  an italic quote face upright (`font()` takes a weight, no style); the pptx agenda's number sits
-  on its title's line by a hand constant (0.8 of the two sizes' difference)
-
 ## 2026-10-21: window #105–#126
 
 - Mode: window
@@ -61,8 +51,8 @@ branched from, not a window read).
 - Done after (the gallery sprint, `design/gallery-handoff.md` commit 1, 2026-10-22): the lift the
   steps handoff asked for once `grid.py` passed ~600 lines (753 after the quote and the agenda):
   `body_box`, `group`, `shape`, `style_runs` and `para_text` moved to `pptx_steps/common.py`, with
-  the picture recipes `slide_layout.py` kept privately (`contain_box`, `cover_crop`,
-  `fit_picture`); `svg_fallback.py`'s rasterizer public as `rasterize_svg(svg, dpi)` (it stays
+  the picture recipes as new public helpers there (`contain_box`, `cover_crop`, `fit_picture`,
+  which `slide_layout.py` and `gallery.py` import); `svg_fallback.py`'s rasterizer public as `rasterize_svg(svg, dpi)` (it stays
   there: that step reads no livery, and common.py loads one); `grid.run()` takes the deck's path
 - Tried and dropped: none
 - Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
@@ -142,6 +132,11 @@ branched from, not a window read).
   images in pptx (rasterized now: an svgBlip twin per picture is svg_fallback's zip surgery); cells
   of unequal size (spans or weights); a picture or table inside a grid-slide column, which the
   gallery's disk read could now reach.
+- From the agenda-quote sprint (#134): pptx draws a quote in a plain column of a grid slide but
+  still flattens a strip there to its text (`grid.py` `_flat()`; `_plain_column()` could take the
+  strip too); `measure.py` measures an italic quote face upright (`font()` takes a weight, no
+  style); the pptx agenda's number sits on its title's line by a hand constant (0.8 of the two
+  sizes' difference).
 - A citation in a `::: note` is lost in the PDF: `engine-beamer.lua`'s `note_frames()` writes the
   note as raw LaTeX (`pandoc.write`), so citeproc never sees it; the footnote hoist moved to pandoc
   inlines between raw wrappers in the citations sprint, and the note could take the same shape.
