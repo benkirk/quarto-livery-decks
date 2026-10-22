@@ -82,10 +82,10 @@ TYPE = {"body": (16, 1.4), "subhead": (20, 1.2), "frametitle": (27, 1.15), "tabl
         "subtitle": (20, 1.3), "date": (11, 1.2), "author": (16, 1.3), "institute": (16, 1.3),
         "fineprint": (7, 1.4), "section": (40, 1.08), "sectionsubtitle": (20, 1.3), "eyebrow": (11, 1.2),
         "closing": (40, 1.08), "pagenumber": (9, 1.2), "footer": (9, 1.2), "marking": (9, 1.2),
-        "display": (40, 1.08)}   # display: a card's big number ([$20M]{.big})
+        "display": (40, 1.08), "quote": (24, 1.3)}   # display: a card's big number ([$20M]{.big}); quote: a quote block's text
 LEVELS = (16, 15, 13, 12, 11)   # the body's five list levels, the first the body itself
 # the roles that scale with the body when a livery leaves them out (the rest scale with the canvas)
-BODY_ROLES = ("subhead", "table", "code", "caption", "footnote")
+BODY_ROLES = ("subhead", "table", "code", "caption", "footnote", "quote")
 # the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
@@ -105,6 +105,7 @@ BOXES = {
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
+    "quote": {"bar": 0.0089, "bar-color": "secondary", "pad": [0.3, 1.0]},   # a quote block: a bar, no fill
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
@@ -115,7 +116,7 @@ BOXES = {
     "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "fill": None, "pad": [0.4, 0.4]},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
-BOX_COLORS = {"lead": ("fill", "bar-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
+BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill")}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
@@ -1123,6 +1124,9 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-lead-fill: {lead['fill']};", f"--engine-lead-bar: {px(lead['bar'])};",
           f"--engine-lead-bar-color: {lead['bar-color']};", f"--engine-lead-pad: {pad(lead['pad'])};",
           f"--engine-lead-gap: {lead['pad'][0]:g}em;"]   # under it: its vertical pad, as the pptx and beamer leave
+    quote = b["quote"]
+    p += [f"--engine-quote-bar: {px(quote['bar'])};", f"--engine-quote-bar-color: {quote['bar-color']};",
+          f"--engine-quote-pad: {pad(quote['pad'])};"]
     p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
           f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",

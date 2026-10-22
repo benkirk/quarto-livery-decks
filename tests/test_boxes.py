@@ -54,6 +54,11 @@ def test_every_key(livery):
     assert f"--engine-rail-fill: {b['rail']['fill'] or 'transparent'};" in css
     assert ("EngineBoxesRailFill" in sty) == (b["rail"]["fill"] is not None), "a null fill defines no color"
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
+    q = b["quote"]   # the quote block: its bar, its color and pads in every format's file, its type role
+    assert f"--engine-quote-bar-color: {q['bar-color']};" in css and f"--engine-quote-pad: {q['pad'][0]:g}em {q['pad'][1]:g}em;" in css
+    assert f"\\definecolor{{EngineBoxesQuoteBarColor}}{{HTML}}{{{q['bar-color'][1:]}}}" in sty
+    assert f"\\def\\engine@boxes@quote@bar{{{q['bar']}}}" in sty and f"\\def\\engine@boxes@quote@pady{{{q['pad'][0]}}}" in sty
+    assert "\\def\\engine@type@quote{" in sty and "--engine-type-quote:" in css
     # the theme resolves a role= and the card roles by place through the role table, in the sty too
     j = json.loads((livery / "build" / "livery.json").read_text())
     assert f"\\def\\engine@boxes@card@roles{{{','.join(b['card']['roles'])}}}" in sty

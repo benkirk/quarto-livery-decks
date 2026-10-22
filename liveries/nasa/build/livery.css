@@ -63,6 +63,7 @@
   --engine-type-eyebrow: 0.75;
   --engine-type-closing: 2.6667;
   --engine-type-display: 2.5;
+  --engine-type-quote: 1.5;
   --engine-type-level2: 0.9167;
   --engine-type-level3: 0.9091;
   --engine-type-level4: 0.9;
@@ -103,6 +104,9 @@
   --engine-lead-bar-color: #E4002B;
   --engine-lead-pad: 0.55em 0.9em;
   --engine-lead-gap: 0.55em;
+  --engine-quote-bar: 8px;
+  --engine-quote-bar-color: #8A8D8F;
+  --engine-quote-pad: 0.3em 1em;
   --engine-card-fill: #FFFFFF;
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;

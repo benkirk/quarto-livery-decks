@@ -154,6 +154,14 @@
         0.9
       ]
     },
+    "quote": {
+      "bar": 0.0089,
+      "bar-color": "#34E1F4",
+      "pad": [
+        0.3,
+        1.0
+      ]
+    },
     "rail": {
       "badge": 0.05,
       "dot": 0.02,
@@ -1396,6 +1404,11 @@
         "leading": 1.2,
         "pt": 7,
         "size": 0.5833
+      },
+      "quote": {
+        "leading": 1.3,
+        "pt": 18,
+        "size": 1.5
       },
       "section": {
         "leading": 1.08,

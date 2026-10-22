@@ -423,6 +423,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `caution` | object |  | A `{.caution}` slide's body. |
 | `panel` | object |  | A feature slide's panel. |
 | `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
+| `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
@@ -464,6 +465,16 @@ A lead box (`::: {.lead}`) over a slide's columns.
 | `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
 | `bar-color` | color or role | `"accent"` | The bar's color, a role, a palette name or a hex. |
 | `pad` | [vertical, horizontal] em | `[0.55, 0.9]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.quote`
+
+A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar.
+
+| key | type | default | |
+|---|---|---|---|
+| `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
+| `bar-color` | color or role | `"secondary"` | The bar's color when the quote names no role=, a role, a palette name or a hex. |
+| `pad` | [vertical, horizontal] em | `[0.3, 1.0]` | Its text's distance from its edges, in em of the body type. |
 
 ### `boxes.card`
 
@@ -604,6 +615,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `pagenumber` | number | `9` | The page number. |
 | `marking` | number | `9` | The marking strip's text. |
 | `display` | number | `40` | A card's big number (`[$20M]{.big}`). |
+| `quote` | number | `24` | A quote block's text (its attribution is `caption`). |
 | `footer` | number | `9` | The footer line (footer=full). |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 
