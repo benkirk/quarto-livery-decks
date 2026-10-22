@@ -29,6 +29,7 @@ A release's entry is written here before its tag is pushed, and becomes its note
   Limits: six items at most, text only, on the slide itself (not in a card or a column); anything
   else warns and stays a plain list. A longer process goes on over a second slide whose list
   starts at `7.`: the badges follow the list's numbers. `docs/authoring.md` "Steps and timelines".
+  The sample has one of each ("A process, step by step", "A timeline").
 - Image galleries: `::: {.gallery}` around image files (each `![Caption](path)` or `![](path)`)
   draws them as a grid of equal cells, close together with no frame, a one-line caption under each
   picture in the caption look (any caption reserves the line in every cell, so a row lines up).
@@ -41,7 +42,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   image is a PNG of it; in the PDF a gallery under text needs `height=` (TeX cannot measure what is
   above it). Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
   itself (not in a column or a card); anything else warns and leaves the pictures as they were.
-  `docs/authoring.md` "Image galleries".
+  `docs/authoring.md` "Image galleries". The sample has three ("Six views from orbit and
+  beyond", "A strip of six" wide, "Earth and space, six ways" full).
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
@@ -53,7 +55,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   between them; in the PDF its frame breaks across pages as the list needs. A deck that cites but
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
-  directory is a prerequisite, so editing one rebuilds the deck.
+  directory is a prerequisite, so editing one rebuilds the deck. The sample cites ("Citing
+  sources", and "References" before its closing).
 - Agenda slides: `## Agenda {.agenda}` with an empty body lists the deck's numbered sections, a
   row each (the number beside the title, the divider's subtitle under it), by position: up front
   every section upcoming; placed in a section, that one current (bold), the earlier ones done
@@ -67,7 +70,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   stays as its lines. In the pptx it is a text box and a bar, one group ("Quote"), and a quote in
   a column makes the slide a card slide (beside a picture or table, the slide stays pandoc's and the
   quote pandoc's own, warned). HTML's old blockquote look (a muted paragraph, a thin
-  border) and the PDF's plain italic quote are gone. `docs/authoring.md` "Quotes".
+  border) and the PDF's plain italic quote are gone. `docs/authoring.md` "Quotes". The sample
+  has "A pull quote".
 - An unnumbered divider (`# Backup {.unnumbered}`) is outside the count in every format: pptx and
   PDF no longer give it a number, as HTML already did, so the dividers after it keep the numbers
   HTML shows. The PDF draws it with its subtitle (it drew no divider at all before, and the
@@ -82,20 +86,20 @@ A release's entry is written here before its tag is pushed, and becomes its note
   cells (of the slide's width), a cell's inset and its caption's distance under the picture, an
   optional cell behind each picture. Nothing to do: the defaults draw a close wall of pictures
   with no cell.
-- `boxes.quote` (`bar`, `bar-color`, `pad`) and the `quote` type role (24 pt on the default canvas,
-  scaling with the body): the look of the new quote block, a bar at its left in `bar-color`
-  and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
-  reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white and 1.6:1 on
-  ucar's, under the 3:1 a mark needs.
+- `boxes.quote` (`bar`, `bar-color`, `pad`, `family`, `style`) and the `quote` type role (24 pt on
+  the default canvas, scaling with the body): the look of the new quote block, a bar at its left
+  in `bar-color` and its text in the `quote` size. The bar is `primary-contrast` by default, the
+  primary that reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white
+  and 1.6:1 on ucar's, under the 3:1 a mark needs. `family` sets the lines in a face of their
+  own, a family the livery bundles (`typography.fonts`; null, the default, is the body's), and
+  `style` is `normal` or `italic`, in every format; `pptx.quote-typeface` names the face
+  PowerPoint sets them in (by default the family's name). A family the livery does not bundle
+  fails the build with its path.
 - `section.progress` (default false): a numbered divider's eyebrow reads "SECTION 3 OF 5", its
   number of the deck's numbered sections, in every format.
 - `boxes.agenda` (`number-color`, `current-color`): the agenda's section numbers and its current
   section's title, both `primary-contrast` by default (text on the content background: the
   divider's eyebrow color and the primary do not read there on every livery).
-- `boxes.quote.family` and `boxes.quote.style`: a quote's lines in a face of their own, a family the
-  livery bundles (`typography.fonts`; null, the default, is the body's) and `normal` or `italic`,
-  in every format; `pptx.quote-typeface` names the face PowerPoint sets them in (by default the
-  family's name). A family the livery does not bundle fails the build with its path.
 
 ### LaTeX
 - `enginegallery` with `\engineimage[caption]{file}`: an image gallery in equal cells, `cols=`,
@@ -113,8 +117,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   set as the Quarto decks' (the footnote size, a 1.5 em hanging indent, 0.4 em between entries).
   beamer's own `\footnote` and biblatex's `\footcite` take the slide footnotes' look: the text
   muted, the mark bold in the accent, under the theme's short rule. The cookbook cites (a "Citing
-  sources" frame and a References frame, `examples/references.bib`, biblatex on bibtex; biber is
-  `backend=biber`), and every livery's Overleaf zip carries the bibliography.
+  sources" frame and a References frame, `examples/references.bib`, biblatex run by bibtex;
+  `backend=biber` switches to biber, which the container image does not install), every
+  livery's Overleaf zip carries the bibliography, and the image installs `texlive-bibtex-extra`
+  for biblatex.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
 - `\begin{enginequote}[role=]{Attribution} ... \end{enginequote}`: a quote, its lines in the quote
