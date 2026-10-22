@@ -226,13 +226,13 @@
 \def\engine@agendarow{%
   \edef\engine@tmpa{\ifengine@agenda\ifnum0\inserttocsectionnumber<\c@section done\else
     \ifnum0\inserttocsectionnumber=\c@section current\else next\fi\fi\else next\fi}%
-  \vskip\dimexpr0.55\engine@typebody-\parskip\relax   % HTML's row gap: the paragraph skip taken back
+  \vskip\dimexpr\engine@boxes@agenda@gap\engine@typebody-\parskip\relax   % the row gap: the paragraph skip taken back
   {\raggedright\engine@fs{subhead}\selectfont   % the number on the title's line, the title hung beside it
-   \hangindent2\engine@typebody\noindent\hbox to 2\engine@typebody{\usebeamerfont{eyebrow}%
+   \hangindent\engine@boxes@agenda@numberwidth\engine@typebody\noindent\hbox to \engine@boxes@agenda@numberwidth\engine@typebody{\usebeamerfont{eyebrow}%
      \color{EngineBoxesAgendaNumberColor}\inserttocsectionnumber\hfil}%
    {\csname engine@agenda@\engine@tmpa\endcsname\inserttocsection}\par}%
   \@ifundefined{engine@secsub@\inserttocsectionnumber}{}{\vskip\dimexpr0.15\engine@typebody-\parskip\relax
-    {\raggedright\leftskip2\engine@typebody\usebeamerfont{caption}\color{BrandMuted}%
+    {\raggedright\leftskip\engine@boxes@agenda@numberwidth\engine@typebody\usebeamerfont{caption}\color{BrandMuted}%
      \csname engine@secsub@\inserttocsectionnumber\endcsname\par}}}
 \defbeamertemplate*{section in toc}{Engine}{\engine@agendarow}
 \defbeamertemplate*{section in toc shaded}{Engine}{\engine@agendarow}
@@ -725,8 +725,8 @@
       {A row of steps or milestones holds at most six: split it over two slides (start=7 numbers the second's badges on).}%
   \fi
   \def\engine@railrole{}\def\engine@railstart{1}\pgfkeys{/engine/rail/.cd,#2}%
-  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@primary-contrast\endcsname}%
-  \else\engine@rolecolor{\engine@railrole}{primary-contrast}\fi
+  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@\engine@boxes@rail@role\endcsname}%
+  \else\engine@rolecolor{\engine@railrole}{\engine@boxes@rail@role}\fi
   \let\engine@railcolor\engine@rolename
   \global\engine@nrail=\z@ \global\engine@railbody=\z@ \global\engine@raildate=\z@}
 \newenvironment{enginesteps}[2][]{\engine@railbegin{steps}{#1}{#2}}{\engine@drawrail\par}
@@ -791,9 +791,9 @@
         \else
           \fill[BrandBackground] \engine@pt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
             circle[radius=\the\dimexpr.5\engine@railmark\relax];
-          \draw[\engine@railcolor, line width=\the\dimexpr.2\engine@railmark\relax]
+          \draw[\engine@railcolor, line width=\the\dimexpr\engine@boxes@rail@ring\engine@railmark\relax]
             \engine@pt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
-            circle[radius=\the\dimexpr.4\engine@railmark\relax];
+            circle[radius=\the\dimexpr(\engine@railmark-\engine@boxes@rail@ring\engine@railmark)/2\relax];
         \fi
         \node[anchor=south west, inner sep=0pt] at \engine@pt{\engine@railx+\engine@railpx}{-\engine@raildate}
           {\vbox{\hsize=\dimexpr\engine@railw-2\engine@railpx\relax\raggedright

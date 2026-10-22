@@ -270,13 +270,13 @@ AGENDA_COLORS = {"done": _hex("muted"), "current": _hex(BOXES["agenda"]["current
 
 
 def draw_agenda(slide, x, y, w, room, items):
-    """The agenda's rows, top down from y, a body gap (0.55 em) above each: a number box 2 em wide (the
+    """The agenda's rows, top down from y, boxes.agenda.gap above each: a number box number-width wide (the
     eyebrow size, bold, boxes.agenda.number-color) beside a text box, the title in the subhead size
     (done muted, current bold in boxes.agenda.current-color, next the text's) and the divider's
     subtitle under it (the caption size, muted); each cut to its text, measured. When the rows run
     past the room, the subtitles go (the room is what a slide has: no autofit on native boxes).
     One group, "Agenda", of "Agenda k number" and "Agenda k text". The height it takes."""
-    gap, col = em(0.55), em(2)
+    gap, col = em(BOXES["agenda"]["gap"]), em(BOXES["agenda"]["number-width"])
     rows = []
     for k, (_, attrs, paras) in enumerate(items, 1):
         title, sub = [], []
@@ -497,7 +497,7 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
     rail = BOXES["rail"]
     steps = kind == "steps"
     noun = "Step" if steps else "Milestone"
-    role = _hex(_pick_role(attrs, "primary-contrast", slide))
+    role = _hex(_pick_role(attrs, BOXES["rail"]["role"], slide))
     start = int(attrs.get("start", 1))
     mark = round(rail["badge" if steps else "dot"] * slide_height)
     vpad, hpad = pads("rail")
@@ -542,7 +542,7 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
             shapes.append(_oval(slide, cx + hpad, my, mark, role, f"{noun} {k} dot"))
         else:
             shapes.append(_oval(slide, cx + hpad, my, mark, _hex("background"), f"{noun} {k} dot",
-                                line=(role, max(round(0.2 * mark), 1))))
+                                line=(role, max(round(BOXES["rail"]["ring"] * mark), 1))))
         shapes.append(tb)
     shapes += dates
     group(slide, shapes, "Steps" if steps else "Timeline")

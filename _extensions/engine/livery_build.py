@@ -105,9 +105,10 @@ BOXES = {
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
-    # the agenda slide: its section numbers' color and the current section's title's (text on the
-    # content background: primary-contrast reads there on every livery, the eyebrow and primary not)
-    "agenda": {"number-color": "primary-contrast", "current-color": "primary-contrast"},
+    # the agenda slide: its section numbers' color and the current section's title's (text on the content
+    # background: primary-contrast reads there on every livery, the eyebrow and primary not); gap the
+    # space above each row and number-width the number column, em of the body (HTML's 0.55em, 2em)
+    "agenda": {"number-color": "primary-contrast", "current-color": "primary-contrast", "gap": 0.55, "number-width": 2},
     "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0],   # a quote block: a bar, no fill,
               "family": None, "style": "normal"},   # its lines' face: a typography.fonts family (null: the body's), its style
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
@@ -118,7 +119,10 @@ BOXES = {
     "status": {"done": "highlight", "warn": "warning", "fail": "accent"},   # the ✓ ⚠ ✗ glyphs
     # steps and timelines: line, badge and dot of the height (the rail's thickness, a step's badge's
     # and a milestone's dot's diameter); fill a cell behind each item, null for none
-    "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "fill": None, "pad": [0.4, 0.4]},
+    # and a milestone's dot's diameter; ring a pending dot's stroke, of the dot); role the marks' color
+    # when the div names no role= (primary-contrast: a small mark must read on the background)
+    "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "ring": 0.2, "role": "primary-contrast",
+             "fill": None, "pad": [0.4, 0.4]},
     # image galleries: gap between the cells, both ways, of the width (a close wall of pictures: the
     # columns' 0.03 is loose); pad the cell's inset and the caption's distance under its picture; fill a cell
     # behind each picture and caption, null for none
@@ -321,6 +325,10 @@ def boxes(b: dict, hexof, roles=()) -> dict:
             hexof(r, f"{box}.roles[{i}]")
             if roles and (r.startswith("#") or r not in roles):
                 sys.exit(f"livery.yml: boxes.{box}.roles[{i}]: {r!r} is not a role")
+        if "role" in v:   # a role or blend name, kept as a name (the rail's default: role= resolves through it)
+            hexof(v["role"], f"{box}.role")
+            if v["role"].startswith("#"):
+                sys.exit(f"livery.yml: boxes.{box}.role: {v['role']!r} is a hex, not a role or blend")
         out[box] = v
     return out
 
@@ -1174,7 +1182,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-lead-fill: {lead['fill']};", f"--engine-lead-bar: {px(lead['bar'])};",
           f"--engine-lead-bar-color: {lead['bar-color']};", f"--engine-lead-pad: {pad(lead['pad'])};",
           f"--engine-lead-gap: {lead['pad'][0]:g}em;"]   # under it: its vertical pad, as the pptx and beamer leave
-    p += [f"--engine-agenda-number: {b['agenda']['number-color']};", f"--engine-agenda-current: {b['agenda']['current-color']};"]
+    p += [f"--engine-agenda-number: {b['agenda']['number-color']};", f"--engine-agenda-current: {b['agenda']['current-color']};",
+          f"--engine-agenda-gap: {b['agenda']['gap']:g}em;", f"--engine-agenda-number-width: {b['agenda']['number-width']:g}em;"]
     quote = b["quote"]
     p += [f"--engine-quote-bar: {px(quote['bar'])};", f"--engine-quote-bar-color: {quote['bar-color']};",
           f"--engine-quote-pad: {pad(quote['pad'])};", f"--engine-quote-gap: {quote['pad'][0]:g}em;",   # above and below it: its vertical pad
@@ -1190,7 +1199,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-glyph-{k}: {c};" for k, c in b["status"].items()]   # the ✓ ⚠ ✗ glyphs (--engine-status-* are the charts')
     rail = b["rail"]
     p += [f"--engine-rail-line: {px(rail['line'])};", f"--engine-rail-line-color: {rail['line-color']};",
-          f"--engine-rail-badge: {px(rail['badge'])};", f"--engine-rail-dot: {px(rail['dot'])};",
+          f"--engine-rail-badge: {px(rail['badge'])};", f"--engine-rail-dot: {px(rail['dot'])};", f"--engine-rail-ring: {rail['ring']:g};",
           f"--engine-rail-fill: {rail['fill'] or 'transparent'};", f"--engine-rail-pad: {pad(rail['pad'])};",
           f"--engine-rail-pad-y: {rail['pad'][0]:g}em;", f"--engine-rail-pad-x: {rail['pad'][1]:g}em;"]   # a mark and a date line up with the text
     gal = b["gallery"]

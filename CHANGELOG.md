@@ -101,6 +101,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   section's title, both `primary-contrast` by default (text on the content background: the
   divider's eyebrow color and the primary do not read there on every livery).
 
+- `boxes.agenda.gap` and `boxes.agenda.number-width` (the row gap and the number column, em of the
+  body), `boxes.rail.ring` (a pending dot's stroke, of the dot) and `boxes.rail.role` (the marks'
+  color when the div names no `role=`): numbers every format drew by hand alike, now the
+  livery's. Nothing to do: the defaults are those numbers. HTML's agenda title now hangs at the
+  number column's edge as PDF and pptx set it (it sat 0.9 em further in).
 - `boxes.references` (`hang`, `gap`): the references list's hanging indent and the gap above each
   entry, em of the footnote type, read by every format (each drew 1.5 em and 0.4 em by hand).
   Nothing to do: the defaults are those numbers.

@@ -23,8 +23,8 @@ import livery_build as lb
 from conftest import ENGINE, ROOT, run
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot")
-EMS = {("references", "hang"), ("references", "gap")}   # em of a type role, not a fraction
+FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot", "ring")
+EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width")}   # em of a type role, not a fraction
 
 
 def test_every_key(livery):
@@ -42,6 +42,9 @@ def test_every_key(livery):
                 assert v is None or isinstance(v, str), f"{where} is not a family or null"
             elif (box, k) == ("quote", "style"):
                 assert v in ("normal", "italic"), f"{where} is not normal or italic"
+            elif k == "role":   # a role or blend name, kept as a name
+                lv = json.loads((livery / "build" / "livery.json").read_text())
+                assert v in lv["roles"] or v in lv["blends"], f"{where} is not a role or blend"
             elif (box, k) in EMS:
                 assert isinstance(v, (int, float)) and v >= 0, f"{where} is not an em length"
             elif k in FRACTIONS:

@@ -449,13 +449,12 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   padding: 0;
   display: grid;
   grid-template-columns: max-content 1fr;
-  column-gap: 0.9em;
-  row-gap: 0.55em;
+  row-gap: var(--engine-agenda-gap);   // the title hung beside the number column, as PDF and pptx: no column gap
   > li { display: contents; }
   .engine-agenda-number {
     font-size: calc(var(--engine-type-eyebrow) * 1em); font-weight: 700; color: var(--engine-agenda-number);
     line-height: calc(var(--engine-leading-subhead, 1.2) * var(--engine-type-subhead) / var(--engine-type-eyebrow));   // on the title's first line
-    min-width: 2em;
+    min-width: var(--engine-agenda-number-width);
   }
   .engine-agenda-title { display: block; font-size: calc(var(--engine-type-subhead) * 1em); line-height: var(--engine-leading-subhead, 1.2); }
   .engine-agenda-sub { display: block; font-size: calc(var(--engine-type-caption) * 1em); color: var(--engine-muted); margin-top: 0.15em; }
@@ -581,7 +580,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
     height: var(--engine-rail-dot);
     border-radius: 50%;
     background: var(--engine-background);
-    border: calc(var(--engine-rail-dot) * 0.2) solid var(--engine-rail-role);
+    border: calc(var(--engine-rail-dot) * var(--engine-rail-ring)) solid var(--engine-rail-role);
   }
   .engine-done .engine-rail-dot { background: var(--engine-rail-role); }
   &.engine-timeline > .engine-rail-item > .engine-rail-title {   // the date, above its dot

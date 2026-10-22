@@ -125,6 +125,8 @@
   --engine-lead-gap: 0.55em;
   --engine-agenda-number: #297DE0;
   --engine-agenda-current: #297DE0;
+  --engine-agenda-gap: 0.55em;
+  --engine-agenda-number-width: 2em;
   --engine-quote-bar: 8px;
   --engine-quote-bar-color: #297DE0;
   --engine-quote-pad: 0.3em 1em;
@@ -147,6 +149,7 @@
   --engine-rail-line-color: #E1E1E1;
   --engine-rail-badge: 45px;
   --engine-rail-dot: 18px;
+  --engine-rail-ring: 0.2;
   --engine-rail-fill: transparent;
   --engine-rail-pad: 0.4em 0.4em;
   --engine-rail-pad-y: 0.4em;

@@ -582,7 +582,9 @@
           "additionalProperties": false,
           "properties": {
             "number-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The section numbers' color, a role, a palette name or a hex; text on the content background, so one that reads there."},
-            "current-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The current section's title's color (bold), a role, a palette name or a hex."}
+            "current-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The current section's title's color (bold), a role, a palette name or a hex."},
+            "gap": {"type": "number", "minimum": 0, "default": 0.55, "description": "The space above each row, in em of the body type."},
+            "number-width": {"type": "number", "minimum": 0, "default": 2, "description": "The number column's width, the title hung beside it, in em of the body type."}
           }
         },
         "quote": {
@@ -639,6 +641,8 @@
             "line-color": {"$ref": "#/$defs/color-or-role", "default": "rule", "description": "The rail's color, a role, a blend, a palette name or a hex."},
             "badge": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.05, "description": "A step's numbered badge, its diameter (of the slide's height)."},
             "dot": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.02, "description": "A milestone's dot, its diameter (of the slide's height)."},
+            "ring": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.2, "description": "A pending milestone's dot is a ring: its stroke, as a share of the dot."},
+            "role": {"type": "string", "minLength": 1, "default": "primary-contrast", "description": "The marks' color when the div names no `role=`: a role or blend name (not a hex); primary-contrast, the primary that reads on the background, by default."},
             "fill": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/color-or-role"}], "default": null, "description": "A cell behind each item's text, a role, a blend, a palette name or a hex; null for none."},
             "pad": {
               "type": "array",

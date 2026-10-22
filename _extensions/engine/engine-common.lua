@@ -714,7 +714,8 @@ end
 local function rail_items(div, kind, livery, who)
   local role = div.attributes["role"]
   div.attributes["role"] = nil
-  role = livery and box_role(livery, role, "primary-contrast", who) or role or "primary-contrast"
+  local default = livery and livery.boxes and livery.boxes.rail.role or "primary-contrast"   -- boxes.rail.role
+  role = livery and box_role(livery, role, default, who) or role or default
   local list = #div.content == 1 and div.content[1] or nil
   local what = kind == "steps" and "ordered list (1. 2. 3.)" or "bullet list (- [x] done, - pending)"
   if not list or list.t ~= RAIL_LIST[kind] then

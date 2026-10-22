@@ -478,6 +478,8 @@ The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows.
 |---|---|---|---|
 | `number-color` | color or role | `"primary-contrast"` | The section numbers' color, a role, a palette name or a hex; text on the content background, so one that reads there. |
 | `current-color` | color or role | `"primary-contrast"` | The current section's title's color (bold), a role, a palette name or a hex. |
+| `gap` | number | `0.55` | The space above each row, in em of the body type. |
+| `number-width` | number | `2` | The number column's width, the title hung beside it, in em of the body type. |
 
 ### `boxes.quote`
 
@@ -534,6 +536,8 @@ Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the 
 | `line-color` | color or role | `"rule"` | The rail's color, a role, a blend, a palette name or a hex. |
 | `badge` | fraction | `0.05` | A step's numbered badge, its diameter (of the slide's height). |
 | `dot` | fraction | `0.02` | A milestone's dot, its diameter (of the slide's height). |
+| `ring` | fraction | `0.2` | A pending milestone's dot is a ring: its stroke, as a share of the dot. |
+| `role` | string | `"primary-contrast"` | The marks' color when the div names no `role=`: a role or blend name (not a hex); primary-contrast, the primary that reads on the background, by default. |
 | `fill` | null or color or role | `null` | A cell behind each item's text, a role, a blend, a palette name or a hex; null for none. |
 | `pad` | [vertical, horizontal] em | `[0.4, 0.4]` | Each item's text's distance from its cell's edges, in em of the body type. |
 

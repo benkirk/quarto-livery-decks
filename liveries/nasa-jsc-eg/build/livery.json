@@ -17,7 +17,9 @@
   "boxes": {
     "agenda": {
       "current-color": "#297DE0",
-      "number-color": "#297DE0"
+      "gap": 0.55,
+      "number-color": "#297DE0",
+      "number-width": 2
     },
     "card": {
       "fill": "#1C2026",
@@ -91,7 +93,9 @@
       "pad": [
         0.4,
         0.4
-      ]
+      ],
+      "ring": 0.2,
+      "role": "primary-contrast"
     },
     "references": {
       "gap": 0.4,
