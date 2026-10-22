@@ -607,6 +607,27 @@
             "warn": {"$ref": "#/$defs/color-or-role", "default": "warning", "description": "⚠, a role, a palette name or a hex."},
             "fail": {"$ref": "#/$defs/color-or-role", "default": "accent", "description": "✗, a role, a palette name or a hex."}
           }
+        },
+        "rail": {
+          "type": "object",
+          "description": "Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below.",
+          "additionalProperties": false,
+          "properties": {
+            "line": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.004, "description": "The rail's thickness (of the slide's height)."},
+            "line-color": {"$ref": "#/$defs/color-or-role", "default": "rule", "description": "The rail's color, a role, a blend, a palette name or a hex."},
+            "badge": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.05, "description": "A step's numbered badge, its diameter (of the slide's height)."},
+            "dot": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.02, "description": "A milestone's dot, its diameter (of the slide's height)."},
+            "fill": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/color-or-role"}], "default": null, "description": "A cell behind each item's text, a role, a blend, a palette name or a hex; null for none."},
+            "pad": {
+              "type": "array",
+              "items": {"type": "number", "minimum": 0},
+              "minItems": 2,
+              "maxItems": 2,
+              "x-kind": "[vertical, horizontal] em",
+              "default": [0.4, 0.4],
+              "description": "Each item's text's distance from its cell's edges, in em of the body type."
+            }
+          }
         }
       }
     },

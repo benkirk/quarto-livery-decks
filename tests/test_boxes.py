@@ -25,7 +25,7 @@ from conftest import ROOT, run
 
 ENGINE = ROOT / "_extensions" / "engine"
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint")
+FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot")
 
 
 def test_every_key(livery):
@@ -38,7 +38,7 @@ def test_every_key(livery):
             if k == "roles":
                 assert v and all(r in json.loads((livery / "build" / "livery.json").read_text())["roles"] for r in v), f"{where}: not roles"
             elif k in lb.BOX_COLORS.get(box, ()):
-                assert HEX.match(v), f"{where} is not #RRGGBB"
+                assert (v is None and (box, k) == ("rail", "fill")) or HEX.match(v), f"{where} is not #RRGGBB"
             elif k in FRACTIONS:
                 assert isinstance(v, (int, float)) and 0 <= v <= 1, f"{where} is not a fraction"
             else:
@@ -50,6 +50,9 @@ def test_every_key(livery):
     assert f"\\definecolor{{EngineGlyphDone}}{{HTML}}{{{b['status']['done'][1:]}}}" in sty
     assert f"\\def\\engine@boxes@caution@padx{{{b['caution']['pad'][1]}}}" in sty
     assert f"\\definecolor{{EngineBoxesCardOutlineColor}}{{HTML}}{{{b['card']['outline-color'][1:]}}}" in sty
+    assert f"--engine-rail-line-color: {b['rail']['line-color']};" in css
+    assert f"--engine-rail-fill: {b['rail']['fill'] or 'transparent'};" in css
+    assert ("EngineBoxesRailFill" in sty) == (b["rail"]["fill"] is not None), "a null fill defines no color"
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
     # the theme resolves a role= and the card roles by place through the role table, in the sty too
     j = json.loads((livery / "build" / "livery.json").read_text())
@@ -86,6 +89,11 @@ def test_colors_resolve(tmp_path):
     assert j["boxes"]["lead"]["bar-color"] == j["palette"]["orange"], "a palette name"
     assert j["boxes"]["card"]["outline-color"] == "#6840F0", "a hex, upper-cased"
     assert j["boxes"]["status"]["done"] == j["roles"]["highlight"], "the default, a role"
+    assert j["boxes"]["rail"]["line-color"] == j["blends"]["rule"], "the default, a blend"
+    assert j["boxes"]["rail"]["fill"] is None, "the default, null: no cell"
+    rc, err, j = tmp_livery(tmp_path / "fill", "  rail: {fill: surface, line-color: muted}\n")
+    assert rc == 0, err
+    assert j["boxes"]["rail"]["fill"] == j["roles"]["surface"] and j["boxes"]["rail"]["line-color"] == j["roles"]["muted"], "a cell"
 
 
 @pytest.mark.parametrize("boxes, expect", [

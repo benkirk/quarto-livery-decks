@@ -37,6 +37,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
   instead of the brand's; lists, labels and strips in a card colored themselves and were right.
 
+### Liveries
+- `boxes.rail` (`line`, `line-color`, `badge`, `dot`, `fill`, `pad`): the look of the new steps and
+  timelines, the rail's thickness and color, a step's badge, a milestone's dot, an optional cell
+  behind each item. Every livery keeps its look with no change; the defaults draw the rail in the
+  `rule` blend with no cell.
+
 ### LaTeX
 - Citations with biblatex: `\printbibliography` no longer stops the compile (the theme's
   `bibliography item` called `\insertbiblabel`, which biblatex never defines), and its list is
