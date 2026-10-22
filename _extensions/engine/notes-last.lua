@@ -5,25 +5,24 @@
 -- untitled continuation.  Notes after any content (images and tables
 -- included) are harmless, so last is always safe.  Other formats: untouched.
 
-local function is_notes(blk)
-  return blk.t == "Div" and blk.classes:includes("notes")
+if FORMAT ~= "pptx" then
+  return {}
 end
 
+local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "engine-common.lua" }))   -- beside this filter
+
 function Pandoc(doc)
-  if FORMAT ~= "pptx" then
-    return nil
-  end
-  local level = PANDOC_WRITER_OPTIONS.slide_level or 2
+  local level = C.slide_level()
   local out, notes = pandoc.Blocks({}), pandoc.Blocks({})
   local function flush()
     out:extend(notes)
     notes = pandoc.Blocks({})
   end
   for _, blk in ipairs(doc.blocks) do
-    if (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule" then
+    if C.is_slide_break(blk, level) then
       flush()
       out:insert(blk)
-    elseif is_notes(blk) then
+    elseif C.is_notes(blk) then
       notes:insert(blk)
     else
       out:insert(blk)

@@ -8,19 +8,11 @@
 -- The picture itself is the link in all three. One line per slide: the first
 -- linked image's URL.
 
+local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "engine-common.lua" }))   -- beside this filter
+local EXTDIR = pandoc.path.directory(PANDOC_SCRIPT_FILE)
+
 local MUTED             -- the livery's muted role, hex without '#'
 local PDF_MAX = 68      -- % height that leaves the PDF foot line clear of a 16:9 shot
-
--- The livery: `livery:` in the metadata (the shared _quarto.yml names _livery, Make's link),
--- else $LIVERY_DIR, else _livery; build/livery.json is its resolved truth (livery_build.py).
-local function load_livery(meta)
-  local dirs = { meta.livery and pandoc.utils.stringify(meta.livery), os.getenv("LIVERY_DIR"), "_livery" }
-  for _, dir in ipairs(dirs) do
-    local f = dir and io.open(dir .. "/build/livery.json")
-    if f then local s = f:read("a"); f:close(); return quarto.json.decode(s) end
-  end
-  error("linked-images.lua: no livery: set `livery:` in the metadata, export LIVERY_DIR, or link _livery")
-end
 
 -- PDF: a linked 16:9 screenshot at {height="72%"} reaches the page foot, under
 -- the link line; cap it so authors keep one recipe for every format.
@@ -65,15 +57,15 @@ function Pandoc(doc)
   if not (quarto.doc.is_format("revealjs") or quarto.doc.is_format("beamer")) then
     return nil
   end
-  MUTED = (load_livery(doc.meta).roles.muted:gsub("#", ""))
-  local level = PANDOC_WRITER_OPTIONS.slide_level or 2
+  MUTED = (C.load_livery(doc.meta, EXTDIR, "linked-images.lua").roles.muted:gsub("#", ""))   -- `livery:` in the metadata
+  local level = C.slide_level()
   local out, url = pandoc.Blocks({}), nil
   local function close_slide()
     if url then out:insert(link_line(url)) end
     url = nil
   end
   for _, blk in ipairs(doc.blocks) do
-    if (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule" then
+    if C.is_slide_break(blk, level) then
       close_slide()
     else
       url = url or image_link(blk)

@@ -13,11 +13,7 @@ if not quarto.doc.is_format("pptx") then
   return {}
 end
 
-local function here(f)   -- this file's directory: Quarto's resolver, else plain pandoc's script path
-  if quarto and quarto.utils then return quarto.utils.resolve_path(f) end
-  return pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), f })
-end
-local C = dofile(here("engine-common.lua"))
+local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "engine-common.lua" }))   -- beside this filter
 
 -- the layout controls (C.take_layout, as the other formats read them) and the slide kinds
 -- (C.SLIDE_KINDS), as the words of the notes line, in one order
