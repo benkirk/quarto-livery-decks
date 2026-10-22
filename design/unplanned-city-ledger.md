@@ -46,10 +46,10 @@ branched from, not a window read).
   the template's own paragraph spacing (`livery.SPC_BEFORE`; the caution, lead, panel and note
   boxes grow 2–9 pt, nsi's band title stack moves 2 pt; shipped on the contact sheet); the
   prose batch; a state line on each finished `design/` handoff; the two heuristics below
-- Done after (the LaTeX-first-class sprint, 2026-10-21): `\cmark`/`\xmark`/`\pmark` and pifont
+- Done after (#129, the LaTeX-first-class sprint, 2026-10-21): `\cmark`/`\xmark`/`\pmark` and pifont
   retired from `engine_livery.sty`; `enginestatus` and `\engineglyph` are the one status idiom
 - Tried and dropped: none
-- Open (deferred 2026-10-21, the LaTeX-first-class sprint): the cookbook's 4:3 variant
+- Open (deferred 2026-10-21, #129): the cookbook's 4:3 variant
   (`latex/examples/sample-43.pdf`) sets two overfull lines, an unbreakable `boxes.columns.rule` in
   its four-column frame and the Options cards 7 pt tall; the CI ratchet is on `sample.log` only
 - Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
