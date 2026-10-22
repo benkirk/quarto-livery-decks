@@ -354,9 +354,10 @@ With `{.full}` the cells fill the slide, and this line is the caption.
   or diagram cell is refused, in every format: the pptx reads the gallery's files from disk after
   the render, where an executed cell's figure is not. A link round a gallery image is not drawn
   yet. Anything else in the div, too many images for `cols` x `rows`, or a gallery in a column warns
-  and leaves the pictures as they were (in the pptx pandoc then splits the slide over them, which
-  `make qa`'s slide count catches). An image's own `width=` or `height=` is dropped: the cell sizes
-  the picture.
+  and leaves the pictures as they were. In the pptx a refused gallery on the slide itself splits
+  the slide over its pictures, which `make qa`'s slide count catches; one in a column keeps its
+  first picture only (pandoc drops what follows a picture in a column, silently), so watch the
+  render's warning. An image's own `width=` or `height=` is dropped: the cell sizes the picture.
 - pptx draws a gallery as native pictures, one group ("Gallery"; inside it "Gallery 1 picture",
   "Gallery 1 caption", "Gallery 1 cell", and "Gallery caption" on a `{.full}` slide): `cover`
   crops each picture in place, so PowerPoint's crop tool restores it. An SVG image becomes a PNG

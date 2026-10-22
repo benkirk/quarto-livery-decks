@@ -42,8 +42,9 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:end⟧`, and a last `⟦engine:end⟧`: text, so pandoc embeds no picture and keeps Title and
   Content; pptx_steps/gallery.py reads the files from the deck's directory. A gallery the reader
   refuses (warned of, naming the slide), or one in a column (warned of), is unwrapped into its
-  pictures, which pandoc draws and splits the slide over (pandoc's pptx writer draws no picture held
-  in a Div).
+  pictures (pandoc's pptx writer draws no picture held in a Div): on the slide itself pandoc draws
+  them and splits the slide over them, which `make qa`'s count catches; in a column it keeps the
+  first and drops the rest silently, so the warning is the one signal.
 
 An agenda slide (`## Agenda {.agenda}`, an empty body) is `⟦engine:agenda current=n⟧`, per numbered
 section `⟦engine:item n=k state=done|current|next⟧` with its title and subtitle led by

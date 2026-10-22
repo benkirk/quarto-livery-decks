@@ -642,7 +642,8 @@ it does, by area, beyond the format notes above:
   .svg through `svg_fallback.rasterize_svg()`, and places each with `common.fit_picture()`
   (`contain_box()`, `cover_crop()`: an `a:srcRect`), one group ("Gallery"). pandoc's pptx writer
   draws no picture held in a Div, so a refused gallery or one in a column is unwrapped into its
-  paragraphs (pandoc splits the slide; `make qa`'s count catches it). PDF: `enginegallery` stores
+  paragraphs (on the slide itself pandoc splits the slide, which `make qa`'s count catches; in a
+  column it keeps the first picture and drops the rest silently, so only the warning tells). PDF: `enginegallery` stores
   its images and draws the cells at `\end` in one tikzpicture, at `height=` of the body box capped
   at `\engine@bodyroom` (beamer sets `\beamer@frametextheight` only after the body; a fragile
   frame reads 0); `engine-beamer.lua` writes it before `bound_sized_images()`.
