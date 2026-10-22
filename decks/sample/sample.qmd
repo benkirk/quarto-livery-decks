@@ -5,6 +5,7 @@ author: "Your Name, NCAR/CISL"
 date: last-modified
 engine: jupyter
 jupyter: bash
+bibliography: references.bib
 ---
 
 # Basics
@@ -67,6 +68,20 @@ font beside Poppins; `themeoptions: [fonts=bundled, mathfont=stix]` (or
 ::: {.notes}
 Column alignment is set with `:---`, `:---:`, and `---:` in the separator
 row. (Text after a table would split the pptx slide; notes never do.)
+:::
+
+## Citing sources
+
+MPAS solves the compressible equations on a C-grid [@skamarock2012]; see also @knuth84.
+A footnote citation^[[@quarto], the system these decks are built with.] lifts to the
+slide's foot.
+
+† A dagger line is still a slide footnote; a lifted note takes the next marker (‡).
+
+::: {.notes}
+`bibliography:` in the front matter names the `.bib` beside the deck; `[@key]` cites in
+parentheses, `@key` in the text. A `^[...]` note takes the next of † ‡ § ¶ after the slide's own
+dagger lines.
 :::
 
 # Layouts
@@ -391,6 +406,16 @@ slide.
 foot under a short rule in HTML and PDF, muted in place in pptx.
 
 *‡ A second one stacks under the first, in order; emphasis is kept.*
+
+## References
+
+::: {#refs}
+:::
+
+::: {.notes}
+The slide holding `::: {#refs}` is the references slide in every format; a deck that cites
+without one gets it last, with a warning.
+:::
 
 ## Thank you! {.closing}
 

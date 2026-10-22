@@ -336,7 +336,8 @@ def html_findings(slides):
                          "paragraphs (each a caption line)" % tag)
         if s.get("noFigure"):
             fails.append("%s: {.full} slide without a drawn figure" % tag)
-        if "smaller" in cls and "engine-fill" not in cls:
+        # (Quarto marks the references slide .smaller itself; the theme sets that list's size)
+        if "smaller" in cls and "engine-fill" not in cls and "engine-references" not in cls:
             hints.append("%s: .smaller without .fill shrinks the HTML text; drop it, or add "
                          ".fill with a PDF scale=" % tag)
         floor = 1.0 if "engine-fill" in cls else s["scale"]

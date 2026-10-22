@@ -507,6 +507,8 @@ $mermaid-label-fg-color: $engine-primary;
 .reveal .slides section #refs {
   font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
   text-align: left;
+  margin-left: 0;     // pandoc's div.hanging-indent hangs the whole list too; the entries hang here
+  text-indent: 0;
   .csl-entry { padding-left: 1.5em; text-indent: -1.5em; margin: 0.4em 0; }
 }
 

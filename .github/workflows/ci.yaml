@@ -144,6 +144,26 @@ jobs:
               assert p.alignment == PP_ALIGN.CENTER and all(r.font.size.pt == cap for r in p.runs), p.text
           EOF
 
+      # citations: the References slide marked in HTML,
+      # the entries in the PDF (a citation in the text and its entry: Skamarock twice at least), the
+      # pptx entries in the footnote size; the ^[...] note lifted, no pandoc Notes slide
+      - name: Check the sample's citations
+        run: |
+          cd decks/sample
+          grep -q 'engine-references' sample.html
+          test "$(pdftotext sample.pdf - | grep -c Skamarock)" -ge 2
+          python3 - <<'EOF'
+          import json
+          from pptx import Presentation
+          foot = json.load(open("_livery/build/livery.json"))["type"]["roles"]["footnote"]["pt"]
+          prs = Presentation("sample.pptx")
+          titles = [s.shapes.title.text_frame.text if s.shapes.title else "" for s in prs.slides]
+          assert "Notes" not in titles, "pandoc's Notes slide"
+          refs = [p for s in prs.slides for sh in s.shapes if sh.has_text_frame
+                  for p in sh.text_frame.paragraphs if p.text.startswith("Knuth")]
+          assert len(refs) == 1 and all(r.font.size.pt == foot for r in refs[0].runs), [p.text for p in refs]
+          EOF
+
       # the sample's own make qa (docs/authoring.md "Checking a deck"): every slide of every
       # format shot, overflow, slide counts, a note or a .full caption that wraps
       - name: QA the sample deck
