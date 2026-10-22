@@ -12,6 +12,9 @@
 \usepackage{booktabs}
 \usepackage{listings}
 \usepackage{varwidth}     % a list centered as a block (the "filled" slide)
+% citations: biblatex, author-year, run by bibtex (latexmk runs it); biber: backend=biber
+\usepackage[style=authoryear,backend=bibtex]{biblatex}
+\addbibresource{references.bib}
 
 % livery=liveries/<name>|<dir>   title=dark|light   footer=minimal|full   mathfont=serif|stix|sans|...
 % typescale=0.9 sizes every slide's text
@@ -107,6 +110,17 @@
   \end{tabular}
   \enginenote{Sample HPC resources}
   \note{Column alignment is the tabular's preamble: l, c, r.}
+\end{frame}
+
+\begin{frame}{Citing sources}
+  % biblatex's commands: \parencite (Author Year), \textcite (Author (Year)), \footcite (a
+  % footnote at the frame's foot, in the theme's look); the list is \printbibliography
+  MPAS solves the compressible equations on a C-grid \parencite{skamarock2012}; see also
+  \textcite{knuth84}.
+  \medskip
+
+  A footnote citation\footcite{quarto} is beamer's own footnote, set at the foot of the frame
+  under the theme's short rule, its mark in the accent.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -475,6 +489,11 @@ print(speedup(0.95, 64))
       accent color.}
     \enginefootnote{‡}{\emph{A second one stacks under the first, in order; emphasis is kept.}}
   \end{enginefootnotes}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+  % allowframebreaks: a long list runs on over as many pages as it needs, (1), (2)
+  \printbibliography[heading=none]
 \end{frame}
 
 \engineclosingframe{Thank you!}{%

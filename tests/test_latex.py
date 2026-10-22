@@ -7,8 +7,11 @@ A small deck on every environment (a status list nested in a status list among t
 looped TeX) compiles with XeLaTeX through latexmk, TEXINPUTS and TTFONTS set as latex/Makefile
 sets them (the theme, the liveries and the root), and its log has no Overfull line; the frame whose pick moves (`pick=<2>`) is two pages; a `role=` that is neither a
 role nor a color leaves the theme's warning in the log and takes the default; the marking is on
-every page; a third card on a row opened for two is the share error. Skipped without xelatex
-(CI's latex job runs in the image, which has TeX).
+every page; a third card on a row opened for two is the share error. A second deck cites with
+biblatex (author-year, bibtex, as the cookbook): the citation reads on its frame, `\footcite` sets
+beamer's footnote there, the entries are on the References frame, and its log has no Overfull
+line; skipped without biblatex. Skipped without xelatex (CI's latex job runs in the image, which
+has TeX).
 """
 
 import os
@@ -85,6 +88,28 @@ TOO_MANY = r"""
 """
 
 
+CITE = r"""
+\documentclass[aspectratio=169]{beamer}
+\usetheme[livery=liveries/ncar,fonts=bundled]{Engine}
+\usepackage[style=authoryear,backend=bibtex]{biblatex}
+\addbibresource{refs.bib}
+\begin{document}
+\begin{frame}{Citing sources}
+MPAS runs on a C-grid \parencite{skamarock2012}; see \textcite{knuth84}.
+A footnote citation\footcite{knuth84} at the foot.
+\end{frame}
+\begin{frame}[allowframebreaks]{References}
+\printbibliography[heading=none]
+\end{frame}
+\end{document}
+"""
+BIB = """
+@book{knuth84, author = {Knuth, Donald E.}, title = {The TeXbook}, publisher = {Addison-Wesley}, year = {1984}}
+@article{skamarock2012, author = {Skamarock, William C. and Klemp, Joseph B.}, title = {A Multiscale
+  Nonhydrostatic Atmospheric Model}, journal = {Monthly Weather Review}, volume = {140}, year = {2012}}
+"""
+
+
 def compile_tex(d, name: str, text: str):
     """latexmk on the deck written to d/name.tex: the completed process and the log's text."""
     (d / f"{name}.tex").write_text(text)
@@ -137,3 +162,25 @@ def test_too_many_cards(deck):
     d, _ = deck
     r, log = compile_tex(d, "toomany", TOO_MANY)
     assert r.returncode != 0 and "enginecards{2}: card 3 has no share" in log, log[-1500:]
+
+
+@pytest.fixture(scope="module")
+def cited(tmp_path_factory):
+    if not (shutil.which("xelatex") and shutil.which("latexmk")):
+        pytest.skip("xelatex and latexmk: the LaTeX layer compiles only with TeX")
+    if not subprocess.run(["kpsewhich", "biblatex.sty"], capture_output=True, text=True).stdout.strip():
+        pytest.skip("biblatex: the image's texlive-bibtex-extra")
+    d = tmp_path_factory.mktemp("cite")
+    (d / "refs.bib").write_text(BIB)
+    r, log = compile_tex(d, "cite", CITE)
+    assert r.returncode == 0, (r.stdout[-2000:], log[-3000:])
+    return pages(d / "cite.pdf"), log
+
+
+def test_cites(cited):
+    texts, log = cited
+    assert len(texts) == 2 and "Overfull" not in log, [l for l in log.splitlines() if l.startswith("Overfull")]
+    assert "Skamarock and Klemp 2012" in texts[0] and "Knuth (1984)" in texts[0], texts[0]
+    assert "Knuth 1984." in texts[0] or "Knuth 1984" in texts[0].split("at the foot.")[1], "the footcite at the frame's foot"
+    assert "References" in texts[1] and "(1)" not in texts[1], "one page: no continuation count"
+    assert "Knuth, Donald E. (1984)" in texts[1] and "Monthly Weather Review" in texts[1], texts[1]

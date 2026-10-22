@@ -36,6 +36,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
   instead of the brand's; lists, labels and strips in a card colored themselves and were right.
 
 ### LaTeX
+- Citations with biblatex: `\printbibliography` no longer stops the compile (the theme's
+  `bibliography item` called `\insertbiblabel`, which biblatex never defines), and its list is
+  set as the Quarto decks' (the footnote size, a 1.5 em hanging indent, 0.4 em between entries).
+  beamer's own `\footnote` and biblatex's `\footcite` take the slide footnotes' look: the text
+  muted, the mark bold in the accent, under the theme's short rule. The cookbook cites (a "Citing
+  sources" frame and a References frame, `examples/references.bib`, biblatex on bibtex; biber is
+  `backend=biber`), and every livery's Overleaf zip carries the bibliography.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the

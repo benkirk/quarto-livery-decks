@@ -10,6 +10,11 @@
 *.toc
 *.vrb
 *.xdv
+# bibtex's, for the cookbook's biblatex (examples/references.bib is the source and stays tracked)
+*.bbl
+*.blg
+*.run.xml
+*-blx.bib
 # the examples' outputs; examples/diagrams/*.pdf are sources and stay tracked
 /examples/*.pdf
 /examples/*.html

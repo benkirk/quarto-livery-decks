@@ -195,7 +195,12 @@
 % Quarto loads the caption package (before the theme), which draws its own label: none there either
 \AtBeginDocument{\@ifpackageloaded{caption}{\captionsetup{labelformat=empty,labelsep=none,
   justification=centering}}{}}
-\setbeamertemplate{bibliography item}{\insertbiblabel}
+% thebibliography's label; biblatex defines no \insertbiblabel (its author-year lists have none)
+\setbeamertemplate{bibliography item}{\ifdefined\insertbiblabel\insertbiblabel\fi}
+% biblatex's list (\printbibliography) set as the Quarto list: the footnote size, a 1.5 em hanging
+% indent, 0.4 em between entries
+\AtBeginDocument{\@ifpackageloaded{biblatex}{\setlength\bibhang{1.5em}\setlength\bibitemsep{0.4em}%
+  \AtBeginBibliography{\usebeamerfont{bibliography entry author}}}{}}
 % the reference list (Quarto's citations partial: CSLReferences, {hanging}{entry spacing}) set as
 % HTML and pptx set it: in the footnote size, a 1.5 em hanging indent, and the style's entry spacing
 % (1 in most) in steps of 0.4 em rather than of a line
@@ -656,8 +661,11 @@
 % ---------------------------------------------------------------------------
 % an allowframebreaks frame's pages numbered, (1), (2), only when it runs to more than one
 \setbeamertemplate{frametitle continuation}[singleframecheck][\,(\insertcontinuationcount)]
+% beamer's \footnote (\footcite, a hand author's) in the slide footnotes' look (enginefootnotes): the
+% text muted, the mark in the accent and bold (the color and font themes), under the same short rule
 \setbeamertemplate{footnote}{%
-  \parindent 0em\noindent\raggedright
+  \parindent 0em\noindent\raggedright\usebeamercolor[fg]{footnote}%
   \hbox to 1.2em{\hfil\insertfootnotemark\,}\insertfootnotetext\par}
+\renewcommand\footnoterule{\kern-3pt{\color{BrandText!30!BrandBackground}\hrule width 12mm height 0.6pt}\kern 2.6pt}
 
 \mode<all>

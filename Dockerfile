@@ -15,11 +15,12 @@ ENV LANG=C.UTF-8
 
 # 1. The toolchain the recipes call, TeX Live (the list the former ci-liveries workflow proved, the
 #    engine's own CI list: quarto's XeLaTeX render AND the Overleaf zip's bare latexmk, which
-#    cannot install packages the way TinyTeX does), LibreOffice Impress for `make measure`'s
-#    pptx leg. TinyTeX is per-user ($HOME) and needs the network at render time: not here.
+#    cannot install packages the way TinyTeX does; texlive-bibtex-extra is biblatex, for the
+#    cookbook's citations, which bibtex runs), LibreOffice Impress for `make measure`'s pptx leg.
+#    TinyTeX is per-user ($HOME) and needs the network at render time: not here.
 RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
       ca-certificates curl git rsync unzip zip jq make \
-      latexmk texlive-xetex texlive-latex-recommended texlive-latex-extra \
+      latexmk texlive-xetex texlive-latex-recommended texlive-latex-extra texlive-bibtex-extra \
       texlive-fonts-recommended texlive-fonts-extra lmodern fonts-lmodern fonts-texgyre-math \
       poppler-utils libreoffice-impress \
     && rm -rf /var/lib/apt/lists/*
