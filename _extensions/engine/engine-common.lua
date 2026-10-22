@@ -834,6 +834,25 @@ local function gallery_items(div, who)
   return { cols = cols, rows = rows, fit = fit, height = height, items = items, captioned = captioned }
 end
 
+-- The file a raw \includegraphics names for an image src: percent-decoded (pandoc writes a space as
+-- %20), and a media-bag item written to disk first. Quarto's pdfImages filter converts an .svg to a
+-- PDF with rsvg-convert, puts it in pandoc's media bag and names it in the src (vec.svg -> vec.pdf);
+-- pandoc writes a bag item out only where an Image references it, and a gallery's images are raw
+-- LaTeX (engine-beamer.lua's \engineimage), so this writes it where pandoc would,
+-- <output>_files/mediabag/<src> (out: the output file, PANDOC_STATE.output_file), and names that.
+-- Beamer's alone; here so tests/test_gallery.py reaches it.
+local function latex_file(src, out)
+  local file = src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+  local _, bytes = pandoc.mediabag.lookup(src)
+  if not bytes then return file end
+  local stem = (out or "index.tex"):gsub("%.[^.%/]*$", "")
+  local path = pandoc.path.join({ stem .. "_files", "mediabag", file })
+  pandoc.system.make_directory(pandoc.path.directory(path), true)
+  local f = assert(io.open(path, "wb"), "engine-common: cannot write " .. path)
+  f:write(bytes); f:close()
+  return path
+end
+
 -- The slide's galleries drawn: each top-level .gallery div that gallery_items() reads becomes draw(g)
 -- (blocks); one inside another div (a column, a card) is not drawn, in any format (pptx flattens a
 -- column), and is warned of and left as its pictures (top_rails' shape; a gallery has no role).
@@ -900,4 +919,5 @@ return {
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
   is_gallery = is_gallery, gallery_items = gallery_items, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
+  latex_file = latex_file,
 }

@@ -57,6 +57,11 @@ if arg[2] == "latexfig" then   -- Quarto's PDF shape of ![Caption](path): a clas
     if C.is_gallery(b) then io.write(pandoc.json.encode({ full = C.split_full(pandoc.Blocks({ b.content[1] })) ~= nil }) .. "\n") end
   end
 end
+if arg[2] == "bag" then   -- latex_file(): a media-bag item (an .svg's PDF, as Quarto leaves it) written out under arg[3]
+  pandoc.mediabag.insert("images/vec.pdf", "application/pdf", "%PDF-1.4 fake")
+  io.write(C.latex_file("images/vec.pdf", arg[3]) .. "\n" .. C.latex_file("pics/my%20pic.jpg", arg[3]) .. "\n")
+  return
+end
 if arg[2] == "top" then   -- top_galleries(): each drawn gallery a paragraph naming it, the rest as it was
   local out = C.top_galleries(doc.blocks, "t", function(g) return { pandoc.Para("GALLERY " .. #g.items) } end)
   io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
@@ -150,6 +155,16 @@ def test_quarto_latex_figure(tmp_path):
     assert not warnings, warnings
     assert full == {"full": True}
     assert [(i["src"], i["caption"]) for i in g["items"]] == [("g1.png", "One"), ("g2.png", None)] and g["captioned"] is True
+
+
+def test_latex_file(tmp_path):
+    """The file a gallery's \\engineimage names: an .svg's PDF, which Quarto converts into pandoc's
+    media bag (pandoc writes a bag item out only where an Image references it), written where pandoc
+    would put it, <output>_files/mediabag/<src>; any other src percent-decoded to the file's name."""
+    bag, plain = harness(tmp_path, "", "bag", str(tmp_path / "deck.tex")).splitlines()
+    assert bag == str(tmp_path / "deck_files" / "mediabag" / "images" / "vec.pdf"), bag
+    assert (tmp_path / "deck_files" / "mediabag" / "images" / "vec.pdf").read_bytes() == b"%PDF-1.4 fake"
+    assert plain == "pics/my pic.jpg"
 
 
 def test_size_attributes_dropped(tmp_path):

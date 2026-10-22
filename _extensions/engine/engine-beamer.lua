@@ -411,14 +411,15 @@ local function rails(blocks, livery)
 end
 
 -- An image gallery (C.gallery_items()): \begin{enginegallery}[cols=,rows=,fit=,height=] with an
--- \engineimage[<caption>]{<file>} per image (the src a URL in pandoc's form, a space as %20: decoded
--- to the file's name), one raw block; beamerinnerthemeEngine.sty draws the cells, or on a bare
--- [enginefull] frame stores them for the background.
+-- \engineimage[<caption>]{<file>} per image (C.latex_file(): the src a URL in pandoc's form, a space
+-- as %20, decoded to the file's name; an .svg's PDF, which Quarto left in the media bag, written out
+-- first), one raw block; beamerinnerthemeEngine.sty draws the cells, or on a bare [enginefull] frame
+-- stores them for the background.
 local function gallery_latex(g)
   local keys = string.format("cols=%d,rows=%d,fit=%s", g.cols, g.rows, g.fit) .. (g.height and (",height=" .. g.height) or "")
   local lines = { "\\begin{enginegallery}[" .. keys .. "]" }
   for _, it in ipairs(g.items) do
-    local file = it.src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+    local file = C.latex_file(it.src, PANDOC_STATE and PANDOC_STATE.output_file)
     table.insert(lines, "\\engineimage" .. (it.caption and ("[{" .. inlines_to_latex(it.caption) .. "}]") or "") .. "{" .. file .. "}")
   end
   table.insert(lines, "\\end{enginegallery}")
