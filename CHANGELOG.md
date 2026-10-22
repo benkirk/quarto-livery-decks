@@ -48,6 +48,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   notes, scale, footnotes, feature and full frames, captured output, pre-rendered diagrams),
   built by `make examples` in `latex/`; `make variants` adds it under cu, under the dark livery
   nasa-dark and at 4:3. CI compiles it and fails on an overfull line in it.
+- The Overleaf zip of every livery ships the cookbook beside the starter: `sample.tex` on the
+  livery's bundled fonts, with its photo, diagrams and captured session; `latexmk -xelatex
+  sample.tex` builds it in the unpacked zip, and CI does so for every livery.
 
 ## [26.10.7] - 2026-10-21
 

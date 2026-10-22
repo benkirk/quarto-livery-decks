@@ -9,7 +9,7 @@ the framework's scripts.
     livery template <dir> [-o FILE]     build/livery.json -> template.pptx (livery_template.py)
     livery check <dir>... [--swatch DIR] [--qa]   the livery's checks; --qa then the quickstart's make qa
     livery all <dir>... [--qa]          build, template, check: the onboarding loop
-    livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]   the Overleaf project (overleaf_zip.py)
+    livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]   the Overleaf project: the starter and the cookbook (overleaf_zip.py)
     livery zip --charts <dir> -o <zip>  the charts bundle for matplotlib (mpl_zip.py)
     livery schema --doc [-o FILE] [--check]   livery.yml's reference from its schema
     livery deps|mono|figsize <dir>      for Make.common: the files a deck build reads, the code

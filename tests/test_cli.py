@@ -94,7 +94,8 @@ def test_extends_missing_parent(tmp_path):
     assert run("new", tmp_path / "orphan", "--extends", "nope").returncode != 0, "new --extends of a missing parent succeeded"
 
 
-@pytest.mark.parametrize("flags, member", [((), "talk.tex"), (("--charts",), "livery_mpl.py")], ids=["overleaf", "charts"])
+@pytest.mark.parametrize("flags, member", [((), "talk.tex"), ((), "sample.tex"), ((), "diagrams/render.pdf"),
+                                           (("--charts",), "livery_mpl.py")], ids=["overleaf", "cookbook", "cookbook-diagram", "charts"])
 def test_zip_packs(scaffolds, tmp_path, flags, member):
     t, _ = scaffolds
     out = tmp_path / "o.zip"
