@@ -6,7 +6,8 @@
 #                   cookbook, the twin of decks/sample/sample.qmd; latex/authoring.md)
 #   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex,
 #                   and sample.tex under cu, nasa-dark and at 4:3
-#   make previews   math-fonts.png from the specimen (needs poppler's pdftoppm)
+#   make previews   math-fonts.png from the specimen, sample.png from the cookbook and two of its
+#                   variants (needs poppler's pdftoppm; sample.png needs Pillow too)
 #   make diagrams   examples/diagrams/*.pdf from their .dot/.mmd (needs Graphviz, npx)
 #   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (livery zip)
 #   make clean
@@ -76,10 +77,15 @@ examples/sample-%.pdf: examples/sample.tex FORCE
 	  -usepretex='\def\enginethemeoptions{$(opts_sample-$*)}\def\engineaspectratio{$(or $(aspect_sample-$*),169)}' \
 	  sample.tex
 
-# the README's math-font specimen: the summary slide of examples/mathfonts.pdf
-previews: math-fonts.png
+# the README's math-font specimen: the summary slide of examples/mathfonts.pdf; authoring.md's
+# contact sheet: four pattern slides of the cookbook under ncar, cu and nasa-dark (sheet.py finds
+# them by title). Both are committed: rebuild sample.png whenever the cookbook's pattern slides
+# change, look at it, and commit it (as the README images rule for the quickstart).
+previews: math-fonts.png sample.png
 math-fonts.png: examples/mathfonts.pdf
 	pdftoppm -r 150 -f 9 -l 9 -singlefile -png $< math-fonts
+sample.png: examples/sample.pdf examples/sample-cu.pdf examples/sample-nasa-dark.pdf sheet.py
+	python3 sheet.py $(filter %.pdf,$^) -o $@
 
 # One source per example diagram: quarto-demo.qmd renders it itself, and
 # template.tex includes the PDF built here (committed, so `make examples`

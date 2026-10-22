@@ -56,6 +56,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - The Overleaf zip of every livery ships the cookbook beside the starter: `sample.tex` on the
   livery's bundled fonts, with its photo, diagrams and captured session; `latexmk -xelatex
   sample.tex` builds it in the unpacked zip, and CI does so for every livery.
+- `latex/sample.png`, the cookbook's contact sheet (four pattern slides under ncar, cu and
+  nasa-dark), from `make previews` in `latex/` (`sheet.py`).
 
 ## [26.10.7] - 2026-10-21
 
