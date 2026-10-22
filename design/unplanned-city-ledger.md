@@ -21,6 +21,16 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-10-22: sprint `decks/agenda-quote` (not a sweep)
+
+- Mode: a sprint's own record (`design/agenda-quote-handoff.md`)
+- Done: the divider-subtitle rule, written twice (`engine-revealjs.lua`, `engine-beamer.lua`),
+  is `engine-common.lua`'s `divider_subtitle()`, and pptx reads the dividers through `sections()`
+- Open: pptx draws a quote in a plain column of a grid slide but still flattens a strip there to
+  its text (`grid.py` `_flat()`; `_plain_column()` could take the strip too); `measure.py` measures
+  an italic quote face upright (`font()` takes a weight, no style); the pptx agenda's number sits
+  on its title's line by a hand constant (0.8 of the two sizes' difference)
+
 ## 2026-10-21: window #105–#126
 
 - Mode: window

@@ -404,7 +404,15 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   divider's subtitle in every format: `section_subtitle.py` for pptx, the
   theme's `\sectionsubtitle` (via its Lua filter) for beamer, and
   `engine-revealjs.lua` for HTML. Only plain
-  paragraphs qualify; anything else after a divider stays a slide of its own.
+  paragraphs qualify; anything else after a divider stays a slide of its own (one rule,
+  `engine-common.lua`'s `divider_subtitle()`; `sections()` lists the dividers for every format).
+  Sections are counted alike: a `{.unnumbered}` divider has no "SECTION n" and leaves the count
+  alone. pptx drops the class, so `grid-pptx.lua` writes the unnumbered ones' places among the
+  dividers into the metadata (`engine-unnumbered: 2 4`, `docProps/custom.xml`) for
+  `section_subtitle.py`; beamer's `\section*` steps the counter like `\section`, so the filter
+  opens a plain frame (an empty-titled slide heading: a raw block between slides lands in the
+  slide before) holding the theme's `\enginesectionunnumbered{Title}{Sub}` (no `\section`, no toc
+  line, no bookmark; its state global until shipout, where the background draws the stack).
   In pptx the blue field, logo and waves are the template's Section Header
   layout, which `livery template` generates with the rest of the
   template from the livery's data (`make livery` after a livery change, never edit
@@ -497,7 +505,8 @@ it does, by area, beyond the format notes above:
   `role=` resolves through livery.sty's `\engine@role@<name>`, else a defined color, else a
   `Package Engine Warning` and the default by place in `\engine@boxes@card@roles`),
   `enginestrip[role=]`, `enginestatus` with `\done`/`\warn`/`\fail` (local to it) and
-  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking{}`. The
+  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking{}`,
+  `enginequote[role=]{Attribution}`, `\engineagenda`, `\enginesectionunnumbered{Title}{Sub}`. The
   cookbook `latex/examples/sample.tex` is the sample deck slide for slide plus three frames on
   overlays (a moving pick, steps inside cards, a stepped status list); `make variants` builds it
   under cu, nasa-dark and 4:3, `make previews` the committed `latex/sample.png` (`sheet.py`:
@@ -514,7 +523,9 @@ it does, by area, beyond the format notes above:
   link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
   Overfull, a moving pick's pages, the `role=` warning, the share error, and a deck citing with
   biblatex; skipped without TeX), `test_footnotes.py` (engine-common.lua under `pandoc lua` with a
-  `quarto` shim: the lift's markers and warnings, `ensure_refs`; the pptx filter and steps),
+  `quarto` shim: the lift's markers and warnings, `ensure_refs`; the pptx filter and steps; the
+  same harness in `test_rail.py`, `test_quote.py` and `test_section_subtitle.py`, which also
+  checks the pptx dividers' numbers),
   and the rest of `tests/test_*.py`, one per pptx step or engine area). pytest's
   discovery is the one list of tests, and CI's latex job runs `make test`. One test:
   `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under
@@ -606,6 +617,28 @@ it does, by area, beyond the format notes above:
   open it) or dot, a rail rectangle and `body_box` texts, one group ("Steps", "Timeline"). PDF:
   `enginesteps`/`enginestep`, `enginetimeline`/`\enginemilestone[done]` on the cards' six save
   boxes, drawn by one tikzpicture at `\end`.
+- **Quotes** (`::: {.quote role=}` or a bare `>`, anywhere in a slide's body but the notes, a lead
+  or a strip, where it warns and stays its lines): `engine-common.lua`'s `quote_parts()` (a last
+  line led by —, – or -- the attribution) and `quote_blocks()`, the one walk every format uses;
+  `boxes.quote` (`bar`, `bar-color` primary-contrast by default, `pad`, `family`: a bundled
+  `typography.fonts` family or null, `style`) and the `quote` type role; `pptx.quote-typeface`
+  names PowerPoint's face. pptx: `⟦engine:quote role=⟧` ... `⟦engine:attribution⟧` ...
+  `⟦engine:end⟧` in a `.engine-quote-marks` Div; a quote in a column makes a grid slide
+  (`is_grid()`); `grid.py`'s `draw_quote()` (group "Quote"; in a card inside its pads, in a plain
+  column between its text boxes, `_plain_column()`/`_place()`). HTML: `.engine-quote`, the pads on
+  the box, the sizes on its paragraphs. PDF: `enginequote` on `\engine@barbox` with an empty fill,
+  the theme's own `engine quote` font (beamer's `quote` untouched: a hand `quote` environment).
+- **Agenda** (`## Agenda {.agenda}`, an empty body; by position, no `current=`):
+  `engine-common.lua`'s `agenda_rows()` over `sections()` (the numbered ones; done, current,
+  next by the section the slide sits in), `agenda_notes()` (notes kept, a body warned and
+  dropped); `boxes.agenda` (`number-color`, `current-color`, both primary-contrast: text on the
+  content background). HTML: an `<ol class="engine-agenda">` grid. pptx: `⟦engine:agenda
+  current=n⟧`, `⟦engine:item n=k state=..⟧` with `title`/`sub` prefixes; `grid.py`'s
+  `draw_agenda()` (group "Agenda": a number box beside a text box per row, subtitles dropped
+  past the room). PDF: `\engineagenda`, beamer's table of contents at tocdepth 1 in a `\vbox`
+  (`hideallsubsections` would add 1.5em a row) through the theme's `section in toc` templates
+  (a plain `\tableofcontents` draws the same rows, none current); a clean Quarto build reruns for
+  the `.toc`; `\AtBeginSection` copies each subtitle's text to the aux file for an agenda before it.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves
