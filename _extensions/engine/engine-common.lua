@@ -45,6 +45,36 @@ local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
 end
 
+-- The slide level pandoc breaks slides at (slide-level:, which the engine formats set to 2).
+local function slide_level()
+  return (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
+end
+
+-- The slide's blocks from blocks[i] on, up to the next slide break (its heading is blocks[i - 1],
+-- which the caller has taken), and the index after them: the one walk every filter takes.
+local function slide_from(blocks, i, level)
+  local slide = pandoc.Blocks({})
+  while i <= #blocks and not is_slide_break(blocks[i], level) do
+    slide:insert(blocks[i])
+    i = i + 1
+  end
+  return slide, i
+end
+
+-- speaker notes (::: {.notes})
+local function is_notes(b)
+  return b.t == "Div" and has_class(b, "notes")
+end
+
+-- A slide's body and its speaker notes, each in their order.
+local function split_notes(blocks)
+  local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    if is_notes(b) then notes:insert(b) else body:insert(b) end
+  end
+  return body, notes
+end
+
 -- A divider's subtitle: the paragraphs alone between the divider at blocks[i] and the next slide.
 -- Returns them and the index after them, or nil and i + 1 when there are none (or anything else
 -- follows them: they are a slide of their own then).
@@ -188,7 +218,7 @@ end
 local function lift_footnotes(blocks)
   local rank, last = {}, 0
   for k, m in ipairs(MARKERS) do rank[m] = k end
-  local function skip_notes(d) if has_class(d, "notes") then return d, false end end
+  local function skip_notes(d) if is_notes(d) then return d, false end end
   local used = { traverse = "topdown", Div = skip_notes, Para = function(p)
     local m = footnote_marker(p)
     if m and rank[m] > last then last = rank[m] end
@@ -230,7 +260,7 @@ local function take_footnotes(blocks)
   local kept = pandoc.Blocks({})
   local filter = { Para = function(p) if footnote_marker(p) then found:insert(p); return {} end end }
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and has_class(b, "notes") then
+    if is_notes(b) then
       kept:insert(b)
     elseif footnote_marker(b) then
       found:insert(b)
@@ -438,7 +468,7 @@ end
 local function agenda_notes(body, who, title)
   local notes = pandoc.Blocks({})
   for _, b in ipairs(body) do
-    if b.t == "Div" and has_class(b, "notes") then
+    if is_notes(b) then
       notes:insert(b)
     else
       warn(who .. ": the agenda slide \"" .. title .. "\" has a body of its own; the engine writes it, so it is dropped")
@@ -619,7 +649,7 @@ local function quote_blocks(blocks, livery, who, draw)
   end
   return blocks:walk({ traverse = "topdown",
     Div = function(d)
-      if has_class(d, "notes") then return d, false end
+      if is_notes(d) then return d, false end
       if has_class(d, "lead") or has_class(d, "strip") then return as_lines(d), false end
       if is_quote(d) then return draw(quote_parts(d, livery, who)), false end
       return nil
@@ -911,6 +941,7 @@ return {
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, split_notes = split_notes,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote, quote_parts = quote_parts,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,

@@ -72,7 +72,7 @@ end
 function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   byline_meta(doc.meta)
-  local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
+  local level = C.slide_level()
   local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
   local refs = C.refs_heading(blocks, level)
   local out, pending = pandoc.Blocks({}), nil

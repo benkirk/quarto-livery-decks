@@ -185,7 +185,7 @@ local function fold_trailing(body)
 end
 
 function Pandoc(doc)
-  local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
+  local level = C.slide_level()
   local out = pandoc.Blocks({})
   local body, notes, in_slide = pandoc.Blocks({}), pandoc.Blocks({}), false
   local function flush()

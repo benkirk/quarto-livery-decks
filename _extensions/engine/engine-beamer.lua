@@ -94,8 +94,6 @@ local function inlines_to_latex(inlines)
   return (pandoc.write(doc, "latex"):gsub("%s+$", ""))
 end
 
-local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
-
 -- slide footnotes: † ‡ § ¶ paragraphs and ^[...] notes (C.take_footnotes()), lifted to the frame's foot
 
 -- A footnote as \enginefootnote{<marker>}{<text>} with its text left as pandoc's inlines, so a
@@ -122,16 +120,10 @@ local function hoist_footnotes(blocks)
     out:insert(blk)
     i = i + 1
     if C.content_heading(blk, slide_level, CONTENT_KINDS) then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local kept, notes = C.take_footnotes(slide)
-      local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
-      for _, b in ipairs(kept:walk({ Span = noteref })) do
-        if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
-      end
+      local body, tail = C.split_notes(kept:walk({ Span = noteref }))
       if #notes > 0 then
         out:insert(latex("\\enginefootnotespring"))
         out:extend(body)
@@ -160,12 +152,9 @@ local function wrap_layout(blocks)
     local lay = C.content_heading(blk, slide_level, CONTENT_KINDS) and C.take_layout(blk, "engine-beamer")
     if lay then
       if lay.v then add_frameoption(blk, "c") end
-      local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local body, notes = C.split_notes(slide)
       local attr = {}
       if lay.scale then attr["scale"] = lay.scale end
       if lay.h then attr["hcenter"] = "1" end
@@ -624,11 +613,8 @@ local function full_frames(blocks)
     local blk = blocks[i]
     i = i + 1
     if blk.t == "Header" and blk.level == slide_level and has_class(blk, "full") then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local fig, caption, rest = C.split_full(slide)
       local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-beamer")
       local src   -- a figure's image path; nil for a gallery (the bare key) or a refused one
@@ -706,9 +692,7 @@ local function bound_sized_images(doc)
 end
 
 function Pandoc(doc)
-  if PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level then
-    slide_level = PANDOC_WRITER_OPTIONS.slide_level
-  end
+  slide_level = C.slide_level()
 
   doc.blocks = galleries(full_frames(doc.blocks))
   doc = bound_sized_images(doc)
@@ -769,8 +753,8 @@ function Pandoc(doc)
         blk.classes = blk.classes:filter(function(c) return c ~= "agenda" end)
         out:insert(blk)
         i = i + 1
-        local body = pandoc.Blocks({})
-        while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+        local body
+        body, i = C.slide_from(blocks, i, slide_level)
         local notes = C.agenda_notes(body, "engine-beamer", pandoc.utils.stringify(blk.content))
         out:insert(latex("\\engineagenda"))
         out:extend(notes)
@@ -784,12 +768,9 @@ function Pandoc(doc)
         out:insert(blk)
         i = i + 1
         -- the body on the composition's panel (enginefeaturepanel), the notes outside it
-        local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-        while i <= #blocks and not is_slide_break(blocks[i]) do
-          local b = blocks[i]
-          if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-          i = i + 1
-        end
+        local slide
+        slide, i = C.slide_from(blocks, i, slide_level)
+        local body, notes = C.split_notes(slide)
         if #body > 0 then
           -- a heading below the slide's becomes a block here, so it closes inside the panel
           -- (pandoc's own block would run on past the panel's end)
@@ -815,11 +796,9 @@ function Pandoc(doc)
         blk.content = pandoc.Inlines({})
         out:insert(blk)
         out:insert(latex("\\engineclosingcontent{" .. headline .. "}{%"))
-        i = i + 1
-        while i <= #blocks and not is_slide_break(blocks[i]) do
-          out:insert(blocks[i])
-          i = i + 1
-        end
+        local slide
+        slide, i = C.slide_from(blocks, i + 1, slide_level)
+        out:extend(slide)
         out:insert(latex("}"))
       else
         out:insert(blk)

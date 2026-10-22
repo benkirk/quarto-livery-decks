@@ -24,16 +24,11 @@ local function here(f)   -- this file's directory: Quarto's resolver, else plain
 end
 local C = dofile(here("engine-common.lua"))
 
-local function is_notes(b) return b.t == "Div" and C.has_class(b, "notes") end
-
 -- one content slide's body (its heading excluded), the notes lifted and placed
 local function lift(slide)
   local blocks, lifted = C.lift_footnotes(slide)
   if #lifted == 0 then return blocks end
-  local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-  for _, b in ipairs(blocks) do
-    if is_notes(b) then notes:insert(b) else body:insert(b) end
-  end
+  local body, notes = C.split_notes(blocks)
   local last = body[#body]
   if last and last.t == "Div" and C.has_class(last, "columns") and not C.is_grid(last, body) then
     local cols = last.content:filter(function(c) return c.t == "Div" and C.has_class(c, "column") end)
@@ -46,19 +41,15 @@ local function lift(slide)
 end
 
 function Pandoc(doc)
-  local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
-  if level == 0 then level = 2 end
+  local level = C.slide_level()
   local out, i, blocks = pandoc.Blocks({}), 1, doc.blocks
   while i <= #blocks do
     local blk = blocks[i]
     out:insert(blk)
     i = i + 1
     if C.content_heading(blk, level) then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not C.is_slide_break(blocks[i], level) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, level)
       out:extend(lift(slide))
     end
   end

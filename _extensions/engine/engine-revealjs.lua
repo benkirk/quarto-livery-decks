@@ -130,8 +130,6 @@ local slide_level = 2
 
 local function html(s) return pandoc.RawBlock("html", s) end
 
-local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
-
 -- Slide footnotes: a paragraph that starts with † (or ‡) is an aside.  Every
 -- one on a content slide, columns included, moves to the slide's foot, in order, under
 -- one short rule (scss); its marker hangs in the margin in the accent color.
@@ -162,12 +160,9 @@ local function wrap_layout(blocks)
       if lay.caution then blk.classes:insert("engine-caution") end
       if lay.wide then blk.classes:insert("engine-wide") end
       if lay.scale then blk.attributes["data-engine-scale"] = lay.scale end
-      local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local body, notes = C.split_notes(slide)
       out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-body" })))
       out:extend(notes)
     end
@@ -363,14 +358,11 @@ local function galleries(blocks)
     out:insert(blk)
     i = i + 1
     if C.content_heading(blk, slide_level) then
-      local slide, drawn = pandoc.Blocks({}), false
-      while i <= #blocks and not is_slide_break(blocks[i]) do slide:insert(blocks[i]); i = i + 1 end
+      local slide, drawn
+      slide, i = C.slide_from(blocks, i, slide_level)
       slide = C.top_galleries(slide, "engine-revealjs", function(g) drawn = true; return gallery_html(g) end)
       if drawn then   -- the body (less notes) in the wrapper, the notes after it
-        local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-        for _, b in ipairs(slide) do
-          if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        end
+        local body, notes = C.split_notes(slide)
         out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-gallery-body" })))
         out:extend(notes)
       else
@@ -435,17 +427,11 @@ local function hoist_footnotes(blocks)
     out:insert(blk)
     i = i + 1
     if C.content_heading(blk, slide_level) then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local kept, notes = C.take_footnotes(slide)
       if #notes > 0 then
-        local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
-        for _, b in ipairs(kept) do
-          if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
-        end
+        local body, tail = C.split_notes(kept)
         out:extend(body)
         out:insert(html('<div class="engine-footnotes">'))
         for _, p in ipairs(notes) do out:insert(dagger(p)) end
@@ -674,9 +660,7 @@ local function title_slide_attributes(meta, kv)
 end
 
 function Pandoc(doc)
-  if PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level then
-    slide_level = PANDOC_WRITER_OPTIONS.slide_level
-  end
+  slide_level = C.slide_level()
   local meta = doc.meta
   local opts = C.theme_options(meta)
 
@@ -802,12 +786,9 @@ function Pandoc(doc)
       local fart = comp_art(comps.feature, r, fimg and photo_img(fimg))
       if fart ~= "" then out:insert(html(fart)) end
       i = i + 1
-      local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local body, notes = C.split_notes(slide)
       -- raw tags, not a Div: pandoc turns a Div that starts with a heading
       -- into a <section>, which reveal would count as a slide of its own
       if #body > 0 then
@@ -818,11 +799,8 @@ function Pandoc(doc)
       out:extend(notes)
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "full") then
       i = i + 1
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local fig, caption, rest = C.split_full(slide)
       local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-revealjs")
       if fig and C.is_gallery(fig) and not gallery then fig = nil end   -- refused, warned of: an ordinary slide
@@ -855,8 +833,8 @@ function Pandoc(doc)
       out:insert(blk)
       if content_art then out:insert(html(content_art)) end
       i = i + 1
-      local body = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+      local body
+      body, i = C.slide_from(blocks, i, slide_level)
       local notes = C.agenda_notes(body, "engine-revealjs", pandoc.utils.stringify(blk.content))
       out:insert(html('<ol class="engine-agenda">'))
       for _, row in ipairs(C.agenda_rows(secs, section)) do

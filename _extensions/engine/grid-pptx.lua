@@ -75,7 +75,7 @@ end
 local function layout_words(blocks)
   local set = {}
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and C.has_class(b, "notes") then
+    if C.is_notes(b) then
       local words = pandoc.utils.stringify(b):match("engine%-layout:([^\n]*)")
       for w in (words or ""):gmatch("%S+") do set[w] = true end
     end
@@ -146,7 +146,7 @@ local function flow(blocks, title, out)
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
-    elseif b.t == "Div" and not C.has_class(b, "notes") then
+    elseif b.t == "Div" and not C.is_notes(b) then
       flow(b.content, title, out)
     else
       out:insert(b)
@@ -278,8 +278,7 @@ function Pandoc(doc)
   -- status items (C.status_lists()): the glyph a Str of its own, first in its item, for
   -- pptx_steps/status_glyphs.py to color; before the cards are flattened (it reads the card divs)
   doc.blocks = C.status_lists(doc.blocks, function(l) return l end)
-  local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
-  if level == 0 then level = 2 end
+  local level = C.slide_level()
   -- pandoc's pptx writer drops .unnumbered: the dividers outside the count, by their place among
   -- the deck's dividers (1-based), as `engine-unnumbered: 2 4` for pptx_steps/section_subtitle.py
   local unnumbered = {}
