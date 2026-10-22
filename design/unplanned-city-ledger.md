@@ -49,9 +49,6 @@ branched from, not a window read).
 - Done after (#129, the LaTeX-first-class sprint, 2026-10-21): `\cmark`/`\xmark`/`\pmark` and pifont
   retired from `engine_livery.sty`; `enginestatus` and `\engineglyph` are the one status idiom
 - Tried and dropped: none
-- Open (deferred 2026-10-21, #129): the cookbook's 4:3 variant
-  (`latex/examples/sample-43.pdf`) sets two overfull lines, an unbreakable `boxes.columns.rule` in
-  its four-column frame and the Options cards 7 pt tall; the CI ratchet is on `sample.log` only
 - Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
   `wrap_layout` and `hoist_footnotes`, beamer does not: a `.full` frame with `scale=` is scaled in
   the PDF only; `CONTENT_KINDS` in engine-beamer.lua marks it); `notes-last.lua` and

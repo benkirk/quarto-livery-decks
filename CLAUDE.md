@@ -480,7 +480,7 @@ it does, by area, beyond the format notes above:
   overlays (a moving pick, steps inside cards, a stepped status list); `make variants` builds it
   under cu, nasa-dark and 4:3, `make previews` the committed `latex/sample.png` (`sheet.py`:
   rebuild and commit it when those slides change); CI fails on an Overfull line in `sample.log`
-  (the 4:3 variant's two are deferred, on the ledger). `tests/test_latex.py` compiles a deck on
+  under every variant. `tests/test_latex.py` compiles a deck on
   the layer; every livery's Overleaf zip carries `sample.tex` with its photo, diagrams and
   session, and CI builds it there; `parity-latex` snapshots the four cookbook PDFs.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every

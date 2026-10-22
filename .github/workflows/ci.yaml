@@ -342,11 +342,11 @@ jobs:
             pdffonts "$f" | tee /dev/stderr | grep -c Poppins-Bold >/dev/null
           done
 
-      # the cookbook (latex/authoring.md) is ours: an overfull line in it is a defect of the layer
-      # or the deck, and zero is the ratchet
+      # the cookbook (latex/authoring.md) is ours: an overfull line in it, under any of its variants
+      # (cu, nasa-dark, 4:3), is a defect of the layer or the deck, and zero is the ratchet
       - name: The cookbook sets no overfull line
         run: |
-          if grep -q '^Overfull' latex/examples/sample.log; then grep '^Overfull' latex/examples/sample.log; exit 1; fi
+          if grep -l '^Overfull' latex/examples/sample*.log; then grep '^Overfull' latex/examples/sample*.log; exit 1; fi
 
       # mathfont=serif by default: the equation page sets its math in a serif math font, not
       # Poppins Italic (that is what mathfont=poppins is for)
