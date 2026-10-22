@@ -36,8 +36,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   3 by 2), `fit=cover` crops each picture to fill its cell where the default `contain` shows it
   whole, and `height=0.6` gives the gallery that share of the body. Text above a gallery takes its
   own height and the cells share the rest; on a `{.wide}` slide the gallery takes the wider body,
-  and on a `{.full}` slide the whole slide, the paragraph after it the slide's caption. In HTML.
-  Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
+  and on a `{.full}` slide the whole slide, the paragraph after it the slide's caption. In HTML and
+  pptx; in the pptx the pictures are cropped or fitted in place, one group ("Gallery"), and an SVG
+  image is a PNG of it. Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
   itself (not in a column or a card); anything else warns and leaves the pictures as they were.
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the

@@ -209,3 +209,31 @@ def test_quote_beside_a_picture(tmp_path):
     with zipfile.ZipFile(out) as z:
         xml = z.read("ppt/slides/slide1.xml").decode()
     assert "⟦engine:" not in xml and "Quoted" in xml and "<p:pic>" in xml, "pandoc's own slide, the picture in it"
+
+
+def test_gallery_marked(tmp_path):
+    """A gallery: its marker with the cells, the fit and height= (`full` from slide-layout.lua's notes
+    line), an item marker per image with its path percent-encoded where it would break the marker, its
+    caption a paragraph before the item's end, no picture embedded; a refused gallery is unwrapped into
+    its pictures (pandoc drops a picture in a Div), warned of by its slide's title."""
+    for name in ("g1.png", "g 2=x.png"):
+        shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / name)
+    md = ('## Gallery\n\n::: {.gallery cols=2 height=0.6}\n![The cover](g1.png)\n\n![](<g 2=x.png>)\n:::\n\n'
+          '## Full\n\n::: {.gallery fit=cover}\n![](g1.png)\n:::\n\nThe caption.\n\n::: notes\nengine-layout: full\n:::\n\n'
+          '## Refused\n\n::: {.gallery cols=1 rows=1}\n![](g1.png)\n\n![](g1.png)\n:::\n')
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "g.pptx"
+    r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True,
+                       capture_output=True, cwd=tmp_path)
+    with zipfile.ZipFile(out) as z:
+        slides = [z.read(n).decode() for n in sorted((n for n in z.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", n)),
+                                                     key=lambda n: int(re.search(r"(\d+)", n).group(1)))]
+    paras = [["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", x)] for x in slides]
+    assert paras[0][1:] == ["⟦engine:gallery cols=2 rows=1 fit=contain height=0.6⟧", "⟦engine:item src=g1.png⟧", "The cover",
+                            "⟦engine:end⟧", "⟦engine:item src=g%202%3Dx.png⟧", "⟦engine:end⟧", "⟦engine:end⟧"], paras[0]
+    assert "<p:pic>" not in slides[0] and "<p:pic>" not in slides[1], "the files are gallery.py's to read, not pandoc's"
+    assert paras[1][1:4] == ["⟦engine:gallery cols=1 rows=1 fit=cover full⟧", "⟦engine:item src=g1.png⟧", "⟦engine:end⟧"], paras[1]
+    assert "The caption." in paras[1], "the slide caption after the gallery, for grid.py"
+    refused = slides[next(k for k, x in enumerate(slides) if "Refused" in x):]   # it and pandoc's continuations
+    assert "⟦engine:" not in "".join(refused) and "".join(refused).count("<p:pic>") == 2, "a refused gallery: pandoc's pictures"
+    assert 'grid-pptx.lua: slide "Refused": a .gallery of 2 images does not fit cols=1 rows=1' in r.stderr, r.stderr

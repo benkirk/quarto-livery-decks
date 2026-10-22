@@ -1,5 +1,5 @@
-"""A grid slide (three or more columns, a lead box, cards, strips, quotes, steps, a timeline, an agenda) redrawn from
-grid-pptx.lua's markers.
+"""A grid slide (three or more columns, a lead box, cards, strips, quotes, steps, a timeline, an agenda, a
+gallery) redrawn from grid-pptx.lua's markers.
 
 grid-pptx.lua flattens a grid slide's columns into one text flow, which pandoc writes into the
 Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:...⟧`):
@@ -11,7 +11,9 @@ milestone) ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, steps or a tim
 `⟦engine:attribution⟧` line at the caption size, muted, beside a bar; on its own, in a card inside
 its pads, or in a plain column between its text boxes); `⟦engine:agenda current=n⟧`, per numbered
 section `⟦engine:item n=k state=..⟧` ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, the agenda
-(draw_agenda(): a number box beside a text box per row). This
+(draw_agenda(): a number box beside a text box per row); `⟦engine:gallery cols=c rows=r fit=f ..⟧`, per
+image `⟦engine:item src=..⟧`, its caption, `⟦engine:end⟧`, and a last `⟦engine:end⟧`, an image gallery
+(gallery.py's draw_gallery(), which reads the files from the deck's directory). This
 parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
@@ -41,6 +43,7 @@ from pptx.util import Emu, Pt
 import livery as livery_mod
 
 from .columns import rules
+from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, SLACK, body_box, column_frames, group, is_body, pads, para_text, ppr_place,
                      rect, rpr, shape, style_runs)
 from .measure import text_height
@@ -63,9 +66,9 @@ def _attrs(rest):
 def parse(paragraphs):
     """The flow as segments: ("text", [p]), ("lead", attrs, [p]), ("strip" or "quote", attrs, [p]),
     ("columns", shares, [(attrs, [p])]; a strip or quote in a column one of its items),
-    ("rail", attrs, [("item", attrs, [p])]); None when it holds no marker of a box (not a grid
-    slide). Markers nest: a column inside its columns, an item inside its rail, each closed by its
-    `end`."""
+    (kind, attrs, [("item", attrs, [p])]) for a rail, an agenda or a gallery; None when it holds no
+    marker of a box (not a grid slide). Markers nest: a column inside its columns, an item inside its
+    rail, agenda or gallery, each closed by its `end`."""
     segs, stack = [], []   # stack: the open containers, innermost last
 
     def text(p):
@@ -77,7 +80,7 @@ def parse(paragraphs):
         m = MARK.match(para_text(p).strip())
         if m is None:
             top = stack[-1] if stack else None
-            if top is None or top[0] in ("columns", "rail", "agenda"):   # a stray paragraph between columns or items: text
+            if top is None or top[0] in ("columns", "rail", "agenda", "gallery"):   # a stray paragraph between columns or items: text
                 text(p)
             else:
                 top[-1].append(p)
@@ -92,10 +95,10 @@ def parse(paragraphs):
         elif kind == "rail" and not stack:
             seg = ("rail", attrs, [])
             segs.append(seg); stack.append(seg)
-        elif kind == "agenda" and not stack:
-            seg = ("agenda", attrs, [])
+        elif kind in ("agenda", "gallery") and not stack:
+            seg = (kind, attrs, [])
             segs.append(seg); stack.append(seg)
-        elif kind == "item" and stack and stack[-1][0] in ("rail", "agenda"):
+        elif kind == "item" and stack and stack[-1][0] in ("rail", "agenda", "gallery"):
             item = ("item", attrs, [])
             stack[-1][2].append(item); stack.append(item)
         elif kind == "lead" and not stack:
@@ -574,12 +577,21 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
     return ty + text_h - y + vpad
 
 
-def lay_out(slide, ph, segs, slide_width, slide_height):
+def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
     left, top, width = ph.left, ph.top, ph.width
     bottom = round(GEOM["body-bottom"] * slide_height)
-    y, n_col, keep = top, 0, False
+    y, n_col, keep, taken = top, 0, False, set()
     for i, seg in enumerate(segs):
         later = segs[i + 1:]
+        if i in taken:   # a full slide's caption, drawn with its gallery
+            continue
+        if seg[0] == "gallery":   # on a {.full} slide the text after it is the slide's caption
+            caption = None
+            if seg[1].get("full") and later and later[0][0] == "text":
+                caption = later[0][1]; taken.add(i + 1)
+            y += draw_gallery(slide, (left, y, width, max(bottom - y, 0)), seg[1], seg[2], caption,
+                              slide_width, slide_height, deck_dir)
+            continue
         if seg[0] == "text":
             if i == 0:   # before the columns: the placeholder keeps it, cut to its text
                 body = ph.text_frame._txBody
@@ -655,7 +667,7 @@ def run(prs, path: Path) -> None:
             for p in paragraphs:   # the marker paragraphs go
                 if MARK.match(para_text(p).strip()):
                     p.getparent().remove(p)
-            lay_out(slide, ph, segs, prs.slide_width, prs.slide_height)
+            lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent)
             done += 1
         left = [t.text for t in slide._element.iter(qn("a:t")) if t.text and "⟦" in t.text]
         if left:

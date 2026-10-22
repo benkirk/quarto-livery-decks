@@ -8,7 +8,8 @@ the middle of its area (its rows measured; PowerPoint sizes rows itself). scale=
 table run at S times its inherited size. hcenter, fill: nothing (a text box cannot shrink-wrap).
 caution: the body on the livery's caution-fill with a warning-colored bar at its left (footnotes
 stay inside; pptx cannot move them). full: the one picture fills the slide, no title or master
-art, pandoc's caption box centered under it in the muted color, the slide number kept.
+art, pandoc's caption box centered under it in the muted color, the slide number kept; a gallery's
+full slide (grid-pptx.lua's marker in its body) only loses its furniture here, grid.py fills it.
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
 paragraph, the note's in the caption size and muted color, centred, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
@@ -47,7 +48,8 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
-from .common import BOXES, GEOM, K, LIVERY, SLACK, contain_box, fit_picture, fit_table, is_body, is_picture, is_table, pads, ppr_place, rect, rpr, take_marker
+from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, fit_picture, fit_table, is_body, is_picture, is_table, pads,
+                     para_text, ppr_place, rect, rpr, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
@@ -263,6 +265,21 @@ def note_place(slide):
         caption.left, min(bottom + NOTE_GAP, floor - est), caption.width, est)
 
 
+def hide_furniture(slide):
+    """A full slide's furniture gone: the master's logo, tab, rule and waves hidden (showMasterSp),
+    the title deleted (it stays in the source); the slide number kept."""
+    slide._element.set("showMasterSp", "0")
+    title = slide.shapes.title
+    if title is not None:
+        title._element.getparent().remove(title._element)
+
+
+def has_gallery(slide):
+    """A body placeholder holding grid-pptx.lua's gallery marker (grid.py draws it, later)."""
+    return any(para_text(p).startswith("⟦engine:gallery") for sh in slide.shapes if is_body(sh)
+               for p in sh.text_frame._txBody.findall(qn("a:p")))
+
+
 def full_slide(slide, width, height):
     """One picture over the whole slide; False (slide untouched) for any other body."""
     pics = [sh for sh in slide.shapes if is_picture(sh)]
@@ -270,10 +287,7 @@ def full_slide(slide, width, height):
     if len(pics) != 1 or len(texts) > 1:
         return False
     pic, caption = pics[0], (texts[0] if texts else None)
-    slide._element.set("showMasterSp", "0")
-    title = slide.shapes.title
-    if title is not None:
-        title._element.getparent().remove(title._element)
+    hide_furniture(slide)
     pad, floor = int(FULL_PAD * width), int(FULL_FLOOR * height)
     if caption is not None:
         cap = int(FULL_CAP * height)
@@ -696,7 +710,9 @@ def run(prs, pptx: Path) -> None:
             else:
                 draw_feature(slide, w, h, photo)
         elif "full" in words:   # its caption, a note's lines too, is the full caption
-            if not full_slide(slide, w, h):
+            if has_gallery(slide):   # grid.py fills the slide with the gallery and its caption
+                hide_furniture(slide)
+            elif not full_slide(slide, w, h):
                 title = slide.shapes.title
                 print("slide_layout: WARNING: {.full} slide %r needs one picture and at most a "
                       "caption; left as it is" % (title.text_frame.text if title else ""),
