@@ -282,13 +282,10 @@ end
 -- one row per part: a step's badge over its title and text, a milestone's date over its dot over
 -- its label), the role a custom property (role= is ARIA's attribute); each item's parts are the
 -- grid's cells (.engine-rail-item is display: contents), so a row's parts line up across the items
--- and the rail runs through the marks. The scss draws it from livery.css's boxes.rail.
+-- and the rail runs through the marks. The scss draws it from livery.css's boxes.rail. At the
+-- slide's top level only (C.top_rails()): one in a column is warned of and stays a list.
 local function rails(blocks, livery)
-  return blocks:walk({ Div = function(d)
-    local kind = C.rail_kind(d)
-    if not kind then return nil end
-    local r = C.rail_items(d, kind, livery, "engine-revealjs")
-    if not r then return nil end
+  return C.top_rails(blocks, livery, "engine-revealjs", function(kind, r)
     local out = pandoc.Blocks({ html(string.format('<div class="engine-rail engine-%s" style="--engine-rail-role: var(--engine-%s); --engine-rail-n: %d">',
       kind, r.role, #r.items)) })
     for k, it in ipairs(r.items) do
@@ -306,7 +303,7 @@ local function rails(blocks, livery)
     end
     out:insert(html("</div>"))
     return out
-  end })
+  end)
 end
 
 local function unwrap_layout(blocks)

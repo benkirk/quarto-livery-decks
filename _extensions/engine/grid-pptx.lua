@@ -93,6 +93,9 @@ local function flow(blocks, title, out)
       out:insert(marker("strip role=" .. (b.attributes["role"] or "accent")))
       flow(C.split_lines(b.content), title, out)
       out:insert(marker("end"))
+    elseif C.rail_kind(b) then
+      warn(title, "a ." .. C.rail_kind(b) .. " inside a column or another div is not drawn; left as its list")
+      flow(b.content, title, out)
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)

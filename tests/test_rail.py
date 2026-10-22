@@ -5,8 +5,9 @@
 A `::: {.steps}` div holds one ordered list, a `::: {.timeline}` one bullet list: each item's first
 bold run is its title (a step's) or its date (a milestone's), the rest its text, a source line a
 line; a milestone's `- [x]` is done, a plain item or `- [ ]` pending, `[!]` and `[-]` warned of and
-pending. role= is taken off, `primary` by default, a name that is not the livery's warned of. The
-wrong list, more than six items, or a picture inside warns and leaves the div alone.
+pending. role= is taken off, `primary-contrast` by default, a name that is not the livery's warned
+of. The wrong list, more than six items, or a picture inside warns and leaves the div alone; a rail
+inside a column is not drawn (top_rails()), warned of.
 engine-common.lua runs under `pandoc lua` with a `quarto` shim (test_footnotes.py's harness).
 Needs pandoc ($QUARTO_PANDOC).
 """
@@ -28,8 +29,14 @@ HARNESS = r"""
 local warnings = {}
 quarto = { log = { warning = function(s) table.insert(warnings, s) end }, json = { decode = pandoc.json.decode } }
 local C = dofile(arg[1])
-local livery = arg[2] and { roles = { ["primary-contrast"] = "#000000", secondary = "#111111" }, blends = { rule = "#222222" } } or nil
+local livery = arg[2] == "livery" and { roles = { ["primary-contrast"] = "#000000", secondary = "#111111" }, blends = { rule = "#222222" } } or nil
 local doc = pandoc.read(io.read("a"), "markdown")
+if arg[2] == "top" then   -- top_rails(): each drawn rail a paragraph naming it, the rest as it was
+  local out = C.top_rails(doc.blocks, nil, "t", function(kind, r) return { pandoc.Para("RAIL " .. kind .. " " .. #r.items) } end)
+  io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
+  for _, w in ipairs(warnings) do io.write("\nWARNING: " .. w) end
+  return
+end
 local function md(blocks) return (pandoc.write(pandoc.Pandoc(blocks), "markdown", { wrap_text = "none" }):gsub("%s+$", "")) end
 doc.blocks:walk({ Div = function(d)
   local kind = C.rail_kind(d)
@@ -125,3 +132,17 @@ def test_no_title(tmp_path):
     (r,), _ = rails(tmp_path, "::: {.steps}\n1. Plain *step*.\n2. **B**\n:::\n")
     assert r["items"][0] == {"title": None, "body": "Plain *step*.", "done": None}
     assert r["items"][1]["title"] == "B" and r["items"][1]["body"] == "", "a title alone: no text"
+
+
+def test_top_level_only(tmp_path):
+    """A rail at the slide's top level is drawn; one in a column is warned of and stays a list."""
+    md = STEPS + "\n:::: {.columns}\n::: {.column}\n" + TIMELINE + ":::\n::::\n"
+    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    script = tmp_path / "harness.lua"
+    script.write_text(HARNESS)
+    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua"), "top"], input=md, text=True,
+                       capture_output=True, check=True)
+    text, *warnings = r.stdout.split("\nWARNING: ")
+    assert "RAIL steps 3" in text and "RAIL timeline" not in text, text
+    assert "Proposal accepted" in text, "the nested timeline kept as its list"
+    assert len(warnings) == 1 and ".timeline inside a column or another div is not drawn" in warnings[0], warnings

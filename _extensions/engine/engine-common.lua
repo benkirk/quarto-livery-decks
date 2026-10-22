@@ -557,6 +557,28 @@ local function rail_items(div, kind, livery, who)
   return { role = role, items = items }
 end
 
+-- The slide's rails drawn: each top-level .steps or .timeline div that rail_items() reads becomes
+-- draw(kind, rail) (blocks); one inside another div (a column, a card) is not drawn, in any format
+-- (beamer's save boxes are a card's; pptx flattens a column), and is warned of and left as its list.
+local function top_rails(blocks, livery, who, draw)
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    local kind = rail_kind(b)
+    local rail = kind and rail_items(b, kind, livery, who)
+    if rail then
+      out:extend(draw(kind, rail))
+    else
+      if b.t == "Div" and not kind then
+        b.content:walk({ Div = function(d)
+          if rail_kind(d) then warn(who .. ": a ." .. rail_kind(d) .. " inside a column or another div is not drawn; left as its list") end
+        end })
+      end
+      out:insert(b)
+    end
+  end
+  return out
+end
+
 -- Every bullet list's status items normalized (status_item()), marked ones inside a card column or
 -- a .status div; fn(list, kinds) then returns the list as a format draws it (kinds: the items'
 -- statuses, nil for a plain item), or nil to keep it.
@@ -597,5 +619,5 @@ return {
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
-  rail_kind = rail_kind, rail_items = rail_items, RAIL_MAX = RAIL_MAX,
+  rail_kind = rail_kind, rail_items = rail_items, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
 }
