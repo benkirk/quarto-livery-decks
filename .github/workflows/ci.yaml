@@ -342,10 +342,7 @@ jobs:
       - uses: actions/checkout@v7
 
       # `make test`: the committed liveries' build/ fresh and their checks, then pytest over
-      # tests/ (the resolved compositions against the decided numbers, every livery's type in
-      # whole or half points, the schema and its reference, the chart colors, the pptx steps on
-      # pandoc's decks, the livery command's scaffolds, bin/new-deck, the docs' links and
-      # section pointers); the one list of tests is pytest's discovery
+      # tests/; the one list of tests is pytest's discovery
       - name: Test the engine (make test)
         run: make test
 

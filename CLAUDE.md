@@ -178,7 +178,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
   measuring (`text_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
-  that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
+  that sizes a box (dividers, caution boxes, feature panels, centered tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a
   `pptx.heading-typeface`, Courier and other unbundled faces at 0.6 em a character). pandoc gets `-M monofont=<family>` when the livery bundles a
@@ -288,7 +288,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
-  before-picture. The pptx can't flow a stack: `band_stack()` centres a band's date, title,
+  before-picture. The pptx can't flow a stack: `band_stack()` centers a band's date, title,
   rule and subtitle on the column from their text, measured (the rule moves onto the slide),
   a closing splits its column at the middle. Over art, a mark's box is the eroded mask's core
   widened along its rows (`widened()`), so thin type ("Office") is not lost.
@@ -316,9 +316,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
 - **Content title**: `livery.yml` `frametitle: {align: left|center, tab, rule}`
-  (nsi: centred, no tab, no hairline, as the NSI master deck's slide 20; its mark at the paper's
+  (nsi: centered, no tab, no hairline, as the NSI master deck's slide 20; its mark at the paper's
   edge, `geometry.logo.inset: 0.015`); the body starts below
-  a mark taller than ncar's (`livery.json` `frametitle.body`). Beamer centres the title in the
+  a mark taller than ncar's (`livery.json` `frametitle.body`). Beamer centers the title in the
   same band as HTML and pptx (it sat higher before).
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
@@ -494,7 +494,7 @@ it does, by area, beyond the format notes above:
   cover art), or a static picture per slide kind (`art.title|section|closing|content`).
 - **Title styles**: `title.style` `cover` (default) or `band` (a field in a role with
   `art.title` over it, a band holding the text left of `split` and the photo right of it, the
-  marks centred in the strip below; nsi). `title=light` follows the brand's own light cover
+  marks centered in the strip below; nsi). `title=light` follows the brand's own light cover
   (UCAR Communications' template, slide 4).
 - **Templates**: `livery_template.py` generates each `template.pptx` with `Closing` and
   `Title Slide (light)` layouts pandoc never picks; the theme1.xml slots follow the roles
@@ -533,8 +533,8 @@ it does, by area, beyond the format notes above:
   Overfull, a moving pick's pages, the `role=` warning, the share error, and a deck citing with
   biblatex; skipped without TeX), `test_footnotes.py` (engine-common.lua under `pandoc lua` with a
   `quarto` shim: the lift's markers and warnings, `ensure_refs`; the pptx filter and steps; the
-  same harness in `test_rail.py`, `test_quote.py` and `test_section_subtitle.py`, which also
-  checks the pptx dividers' numbers),
+  same harness in `test_rail.py`, `test_quote.py`, `test_gallery.py` and
+  `test_section_subtitle.py`, which also checks the pptx dividers' numbers),
   and the rest of `tests/test_*.py`, one per pptx step or engine area). pytest's
   discovery is the one list of tests, and CI's latex job runs `make test`. One test:
   `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under

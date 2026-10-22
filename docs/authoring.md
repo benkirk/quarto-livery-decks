@@ -424,7 +424,7 @@ A footnote citation^[Skamarock et al. (2012), eqs. (3)–(7).] lifts to the slid
 `[@key]` cites in parentheses, `@key` in the text. The slide that holds `::: {#refs}` is the
 references slide in every format: the entries in the footnote size, each hanging by 1.5 em, 0.4 em
 apart. In the PDF its frame breaks over as many pages as the list needs, titled "References (1)",
-"References (2)". A deck that cites but has no `::: {#refs}` gets a References slide last, with a
+"References (2)" once it runs past one page. A deck that cites but has no `::: {#refs}` gets a References slide last, with a
 warning (`reference-section-title:` names it; `suppress-bibliography: true` leaves it out). A
 `[@fig-x]` cross-reference is not a citation. Editing the `.bib` (or a `.csl`) rebuilds the deck.
 
