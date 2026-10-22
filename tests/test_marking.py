@@ -17,9 +17,8 @@ import pytest
 import livery as livery_mod
 import livery_build as lb
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT
 
-ENGINE = ROOT / "_extensions" / "engine"
 DEMO = "This presentation contains no sensitive information"
 STEP = """
 import sys

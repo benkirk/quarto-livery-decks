@@ -25,9 +25,8 @@ import subprocess
 
 import pytest
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT
 
-ENGINE = ROOT / "_extensions" / "engine"
 TEXENV = {"TEXINPUTS": f"{ENGINE}//:{ROOT}/liveries//:{ROOT}/:", "TTFONTS": f"{ROOT}/:{ROOT}/liveries//:{ENGINE}//:"}
 
 DECK = r"""

@@ -13,7 +13,6 @@ livery's LIVERY_DIR). Needs pandoc ($QUARTO_PANDOC) for that one.
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 
@@ -21,9 +20,8 @@ import pytest
 
 import livery_build as lb
 
-from conftest import ROOT, run
+from conftest import ENGINE, ROOT, run
 
-ENGINE = ROOT / "_extensions" / "engine"
 HEX = re.compile(r"^#[0-9A-F]{6}$")
 FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot")
 
@@ -87,20 +85,7 @@ def test_merge_box_by_box():
     assert b["caution"] == lb.BOXES["caution"], "an untouched box is the default"
 
 
-def tmp_livery(tmp_path, boxes: str, name="ncar"):
-    """A livery (ncar) copied into tmp_path/liveries/ with a boxes: block, built: (return code, stderr,
-    livery.json)."""
-    d = tmp_path / "liveries" / name
-    shutil.copytree(ROOT / "liveries" / name, d, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
-    y = d / "livery.yml"
-    text = re.sub(r"\nboxes:.*?\n\n", "\n", y.read_text(), flags=re.S)   # ncar's own block out
-    y.write_text(text.replace("\npptx:", f"\nboxes:\n{boxes}\npptx:", 1))
-    r = run("build", d)
-    j = json.loads((d / "build" / "livery.json").read_text()) if r.returncode == 0 else None
-    return r.returncode, r.stderr, j
-
-
-def test_colors_resolve(tmp_path):
+def test_colors_resolve(tmp_path, tmp_livery):
     rc, err, j = tmp_livery(tmp_path, "  lead: {fill: secondary, bar-color: orange}\n  card: {outline-color: \"#6840f0\"}\n")
     assert rc == 0, err
     assert j["boxes"]["lead"]["fill"] == j["roles"]["secondary"], "a role"
@@ -127,7 +112,7 @@ def test_colors_resolve(tmp_path):
     ("  caution: {pad: [0.5]}\n", "boxes.caution.pad: "),
     ("  card: {roles: [primary, nope]}\n", "boxes.card.roles[1]: 'nope' is neither"),
 ])
-def test_refused_with_path(tmp_path, boxes, expect):
+def test_refused_with_path(tmp_path, tmp_livery, boxes, expect):
     rc, err, _ = tmp_livery(tmp_path, boxes)
     assert rc != 0 and expect in err, f"rc {rc}: {err.strip()!r}"
 

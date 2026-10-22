@@ -8,33 +8,26 @@ line; a milestone's `- [x]` is done, a plain item or `- [ ]` pending, `[!]` and 
 pending. role= is taken off, `primary-contrast` by default, a name that is not the livery's warned
 of. The wrong list, more than six items, or a picture inside warns and leaves the div alone; a rail
 inside a column is not drawn (top_rails()), warned of.
-engine-common.lua runs under `pandoc lua` with a `quarto` shim (test_footnotes.py's harness).
+engine-common.lua runs under `pandoc lua` with a `quarto` shim (conftest's lua_common).
 Needs pandoc ($QUARTO_PANDOC).
 """
 
 import json
-import os
-import shutil
-import subprocess
 
 import pytest
 
-from conftest import ROOT
+from conftest import lua_common
 
-ENGINE = ROOT / "_extensions" / "engine"
 
 # rail_items() on every rail div of the markdown from stdin, as JSON lines: {kind, role, items:
-# [{title, body (markdown), done}]} or {kind, nil: true}; each warning a line "WARNING: ..."
+# [{title, body (markdown), done}]} or {kind, nil: true} (conftest's lua_common: the quarto shim, C,
+# the warnings)
 HARNESS = r"""
-local warnings = {}
-quarto = { log = { warning = function(s) table.insert(warnings, s) end }, json = { decode = pandoc.json.decode } }
-local C = dofile(arg[1])
 local livery = arg[2] == "livery" and { roles = { ["primary-contrast"] = "#000000", secondary = "#111111" }, blends = { rule = "#222222" } } or nil
 local doc = pandoc.read(io.read("a"), "markdown")
 if arg[2] == "top" then   -- top_rails(): each drawn rail a paragraph naming it, the rest as it was
   local out = C.top_rails(doc.blocks, nil, "t", function(kind, r) return { pandoc.Para("RAIL " .. kind .. " " .. #r.items) } end)
   io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
-  for _, w in ipairs(warnings) do io.write("\nWARNING: " .. w) end
   return
 end
 local function md(blocks) return (pandoc.write(pandoc.Pandoc(blocks), "markdown", { wrap_text = "none" }):gsub("%s+$", "")) end
@@ -54,7 +47,6 @@ doc.blocks:walk({ Div = function(d)
   end
   io.write(pandoc.json.encode(out) .. "\n")
 end })
-for _, w in ipairs(warnings) do io.write("WARNING: " .. w .. "\n") end
 """
 
 STEPS = """::: {.steps role="secondary"}
@@ -75,16 +67,8 @@ TIMELINE = """::: {.timeline}
 
 def rails(tmp_path, md, livery=False):
     """The harness's output on md: (the rails, the warnings)."""
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not exe:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
-    script = tmp_path / "harness.lua"
-    script.write_text(HARNESS)
-    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua"), *(["livery"] if livery else [])],
-                       input=md, text=True, capture_output=True, check=True)
-    lines = r.stdout.splitlines()
-    return ([json.loads(x) for x in lines if not x.startswith("WARNING: ")],
-            [x[len("WARNING: "):] for x in lines if x.startswith("WARNING: ")])
+    out, warnings = lua_common(tmp_path, HARNESS, md, *(["livery"] if livery else []))
+    return [json.loads(x) for x in out.splitlines()], warnings
 
 
 def test_steps(tmp_path):
@@ -146,12 +130,7 @@ def test_no_title(tmp_path):
 def test_top_level_only(tmp_path):
     """A rail at the slide's top level is drawn; one in a column is warned of and stays a list."""
     md = STEPS + "\n:::: {.columns}\n::: {.column}\n" + TIMELINE + ":::\n::::\n"
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    script = tmp_path / "harness.lua"
-    script.write_text(HARNESS)
-    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua"), "top"], input=md, text=True,
-                       capture_output=True, check=True)
-    text, *warnings = r.stdout.split("\nWARNING: ")
+    text, warnings = lua_common(tmp_path, HARNESS, md, "top")
     assert "RAIL steps 3" in text and "RAIL timeline" not in text, text
     assert "Proposal accepted" in text, "the nested timeline kept as its list"
     assert len(warnings) == 1 and ".timeline inside a column or another div is not drawn" in warnings[0], warnings

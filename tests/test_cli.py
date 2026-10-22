@@ -26,9 +26,8 @@ from pathlib import Path
 
 import pytest
 
-from conftest import ROOT, run
+from conftest import ENGINE, ROOT, run
 
-ENGINE = ROOT / "_extensions" / "engine"
 VERSION = re.search(r"^version:\s*(\S+)", (ENGINE / "_extension.yml").read_text(), re.M)[1]
 
 

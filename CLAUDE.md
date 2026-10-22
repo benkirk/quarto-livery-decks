@@ -539,8 +539,9 @@ it does, by area, beyond the format notes above:
   discovery is the one list of tests, and CI's latex job runs `make test`. One test:
   `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under
   `tmp_path`, never the tree, and never changes directory or the environment in-process
-  (`tests/conftest.py` has the harness: `ROOT`, the per-livery `livery` argument, `run` for the
-  livery command, `pandoc_deck`); expensive setup is a module-scoped fixture, which
+  (`tests/conftest.py` has the harness: `ROOT`, `ENGINE`, the per-livery `livery` argument, `run`
+  for the livery command, `pandoc_exe`, `lua_common` for engine-common.lua under `pandoc lua`
+  with the `quarto` shim, `pandoc_deck`, `tmp_livery`, `flat`); expensive setup is a module-scoped fixture, which
   `loadfile` keeps on one worker. For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
