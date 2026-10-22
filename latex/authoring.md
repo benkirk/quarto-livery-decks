@@ -3,7 +3,7 @@
 The theme is beamer with a livery; everything beamer does works. What this page adds is the
 layer the engine draws the framework's slide patterns with, written as a hand author writes it:
 columns at shares, a lead box, cards, strips, status lists, a caution box, notes, a scale group,
-the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
+image galleries, the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
 `decks/sample/sample.qmd` slide for slide (`make examples` here); `make variants` builds it under
 `cu`, under the dark livery `nasa-dark` and at 4:3. Four of its pattern slides under three
 liveries:
@@ -37,6 +37,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | A quote: its lines in the quote size beside a bar, the attribution under them | `\begin{enginequote}[role=accent]{Richard Hamming, 1962} ... \end{enginequote}`; `{}` for no attribution, no `role=` for the livery's bar color (`boxes.quote`); in a card or a column too |
 | Steps of a process on a rail, a numbered badge each | `\begin{enginesteps}[role=secondary]{3}` holding `\begin{enginestep}{Title} ... \end{enginestep}` (["Steps and timelines"](#steps-and-timelines)) |
 | A timeline: milestones on a rail, the date above each dot | `\begin{enginetimeline}{4}` holding `\enginemilestone[done]{Q1 2025}{Label}`; without `[done]` the dot is hollow |
+| An image gallery: equal cells of pictures, a caption under each | `\begin{enginegallery}[cols=3,rows=2,fit=cover,height=0.6]` holding `\engineimage[Caption]{file.png}` per picture (["Galleries"](#galleries)) |
 | Status list: ✓ ⚠ ✗ as the bullets | `\begin{enginestatus}` with `\done`, `\warn`, `\fail` items (and plain `\item`); `\engineglyph{done}` is the glyph anywhere |
 | Warning slide: the body on the soft yellow field with the brand-yellow bar | `\begin{enginecaution} ... \end{enginecaution}` |
 | Note under a figure or table (the caption's look: small, muted, centered) | `\enginenote{...}` |
@@ -48,7 +49,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Citations (biblatex, author-year) | `\usepackage[style=authoryear,backend=bibtex]{biblatex}` and `\addbibresource{references.bib}` in the preamble (`backend=biber` where biber is installed); `\parencite{key}`, `\textcite{key}`, `\footcite{key}` (a footnote at the frame's foot) |
 | The reference list | `\begin{frame}[allowframebreaks]{References}\printbibliography[heading=none]\end{frame}`: the footnote size, a 1.5 em hanging indent; a long list runs on, (1), (2) |
 | Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` |
-| Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body |
+| Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body; the bare `[enginefull]` with an `enginegallery` in the body fills the slide with the gallery |
 | Closing slide | `\engineclosingframe{Thank you!}{...}` |
 | Speaker notes | `\note{...}` in the frame; `\setbeameroption{show notes}` in the preamble shows them |
 | Code | `lstlisting` (styled automatically; the frame `[fragile]`), `\lstinputlisting{file}` |
@@ -155,6 +156,40 @@ The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
   under it; `[done]` fills the dot in the role, else the dot is hollow, ringed in it.
 - Keep a step to two or three lines: the row is as tall as its tallest step, and beamer does not
   shrink a frame to fit.
+
+## Galleries
+
+The cookbook's three gallery slides, as the Quarto ones in the sample deck,
+[decks/sample/sample.qmd](../decks/sample/sample.qmd):
+
+```latex
+\begin{enginegallery}[cols=3,rows=2,height=0.75]   % under a line of text: give height=
+  \engineimage[The cover]{images/gallery-1.png}
+  \engineimage{images/gallery-2.png}               % no caption: the line is kept
+  ...
+\end{enginegallery}
+
+\begin{frame}[enginefull]                          % the bare key: no picture of its own
+  \enginefullcaption{The cells fill the slide; this line is the caption.}
+  \begin{enginegallery}[cols=3,rows=2,fit=cover] ... \end{enginegallery}
+\end{frame}
+```
+
+- **`enginegallery[<keys>]`** lays its images out in equal cells, row-major, the livery's
+  `boxes.gallery.gap` apart, each picture inset by `boxes.gallery.pad`. `cols=` and `rows=` set the
+  grid; without them it is as square as the count allows (five images: 3 by 2), and one given alone
+  sets the other. At most twelve images, and no more than `cols` x `rows`: either is an error.
+- **`fit=contain`** (the default) shows each picture whole, letterboxed in its cell; **`fit=cover`**
+  scales it to fill the cell and clips the rest.
+- **`\engineimage[Caption]{file}`** adds a picture; its caption is one line under it, in the caption
+  size, muted. When any image has a caption, every cell keeps the caption line, so a row lines up.
+- **`height=`** is the gallery's share of the body box (default `1`, the whole box, capped at the
+  frame's room under its title). TeX cannot measure what stands above the gallery in the frame, so
+  give `height=` when there is text above it, or it runs past the foot.
+- In a bare **`[enginefull]`** frame the environment only stores its images: the frame's
+  background fills the slide less the full-slide pads with them (no title, logo or rule), and
+  `\enginefullcaption` is the caption line, as for a full-slide figure. A `{.wide}` body
+  (`enginewide`) widens a gallery with it.
 
 ## Out of scope for LaTeX
 

@@ -11,7 +11,8 @@ whose pick moves (`pick=<2>`) is two pages, and the frame whose step holds an `\
 `role=` that is neither a role nor a color leaves the theme's warning in the log and takes the
 default; the marking is on every page; a quote reads with its attribution, in a card too; an unnumbered divider has no eyebrow and leaves the count alone; the agenda lists the numbered
 sections, a hand subtitle under its title, the Backup not; a third card or step on a row opened for two is the share
-error. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
+error; a gallery under its caption line, a bare [enginefull] frame filled with one, and four images on
+three cells or thirteen in all the gallery's errors. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
 on its frame, `\footcite` sets beamer's footnote there, the entries are on the References frame,
 and its log has no Overfull line; skipped without biblatex. Skipped without xelatex (CI's latex
 job runs in the image, which has TeX).
@@ -111,8 +112,35 @@ No attribution, its own color.
 \enginesectionunnumbered{Backup}{A subtitle}
 \section{Second}
 \begin{frame}{Where we are}\engineagenda\end{frame}
+\begin{frame}{A gallery}
+\begin{enginegallery}[cols=3]
+\engineimage[A wide one]{g1.png}
+\engineimage{g2.png}
+\engineimage{g3.png}
+\end{enginegallery}
+\end{frame}
+\begin{frame}[enginefull]
+\enginefullcaption{The caption of the full gallery.}
+\begin{enginegallery}[fit=cover]
+\engineimage{g1.png}\engineimage{g2.png}\engineimage{g3.png}\engineimage{g1.png}
+\end{enginegallery}
+\end{frame}
 \end{document}
 """
+
+TOO_MANY_IMAGES = r"""
+\documentclass[aspectratio=169]{beamer}
+\usetheme[livery=liveries/ncar,fonts=bundled]{Engine}
+\begin{document}
+\begin{frame}{Four on three}
+\begin{enginegallery}[cols=3,rows=1]
+\engineimage{g1.png}\engineimage{g2.png}\engineimage{g3.png}\engineimage{g1.png}
+\end{enginegallery}
+\end{frame}
+\end{document}
+"""
+THIRTEEN_IMAGES = TOO_MANY_IMAGES.replace("[cols=3,rows=1]", "").replace(
+    r"\engineimage{g1.png}\engineimage{g2.png}\engineimage{g3.png}\engineimage{g1.png}", r"\engineimage{g1.png}" * 13)
 
 TOO_MANY_STEPS = r"""
 \documentclass[aspectratio=169]{beamer}
@@ -179,6 +207,9 @@ def deck(tmp_path_factory):
     if not (shutil.which("xelatex") and shutil.which("latexmk")):
         pytest.skip("xelatex and latexmk: the LaTeX layer compiles only with TeX")
     d = tmp_path_factory.mktemp("latex")
+    from PIL import Image   # the galleries' images: a wide, a tall and a square one
+    for name, size, color in (("g1.png", (320, 120), "#0057C2"), ("g2.png", (90, 240), "#FFA300"), ("g3.png", (150, 150), "#00A650")):
+        Image.new("RGB", size, color).save(d / name)
     r, log = compile_tex(d, "deck", DECK)
     assert r.returncode == 0, (r.stdout[-2000:], log[-3000:])
     return d, log
@@ -198,7 +229,7 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 13, "the pick=<2> and the \\uncover<2-> frames are two pages, the other nine one each"
+    assert len(texts) == 15, "the pick=<2> and the \\uncover<2-> frames are two pages, the other eleven one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
     assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
     for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
@@ -233,7 +264,7 @@ def test_agenda(deck):
     each once, a hand author's \\sectionsubtitle under its title (the aux file's copy), the
     unnumbered Backup absent."""
     d, _ = deck
-    t = " ".join(pages(d / "deck.pdf")[-1].replace("TEST MARKING", "").split())
+    t = " ".join(pages(d / "deck.pdf")[-3].replace("TEST MARKING", "").split())   # before the two gallery frames
     assert t.startswith("Where we are"), t
     assert t.count("Numbered") == 1 and t.count("Second") == 1 and "Its subtitle" in t, t
     assert "Backup" not in t, t
@@ -282,3 +313,24 @@ def test_cites(cited):
     assert "Knuth 1984." in texts[0] or "Knuth 1984" in texts[0].split("at the foot.")[1], "the footcite at the frame's foot"
     assert "References" in texts[1] and "(1)" not in texts[1], "one page: no continuation count"
     assert "Knuth, Donald E. (1984)" in texts[1] and "Monthly Weather Review" in texts[1], texts[1]
+
+
+def test_gallery(deck):
+    """enginegallery: its frame's caption line under the pictures (cols=3, one row); the bare
+    [enginefull] frame draws the gallery and its caption with no title."""
+    d, _ = deck
+    texts = pages(d / "deck.pdf")
+    assert "A gallery" in texts[-2] and "A wide one" in texts[-2], texts[-2]
+    full = " ".join(texts[-1].replace("TEST MARKING", "").split())
+    assert full.startswith("The caption of the full gallery.") and "A gallery" not in full, full
+    out = subprocess.run(["pdfimages", "-list", "-f", str(len(texts)), "-l", str(len(texts)), str(d / "deck.pdf")],
+                         capture_output=True, text=True).stdout
+    assert len([l for l in out.splitlines()[2:] if l.split()[2:3] == ["image"]]) >= 4, out   # four cells drawn
+
+
+@pytest.mark.parametrize("tex, why", [("TOO_MANY_IMAGES", "enginegallery: 4 images do not fit cols=3, rows=1"),
+                                      ("THIRTEEN_IMAGES", "enginegallery: more than twelve images")])
+def test_too_many_images(deck, tex, why):
+    d, _ = deck
+    r, log = compile_tex(d, tex.lower(), globals()[tex])
+    assert r.returncode != 0 and why in log, log[-1500:]

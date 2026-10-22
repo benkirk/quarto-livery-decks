@@ -36,9 +36,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   3 by 2), `fit=cover` crops each picture to fill its cell where the default `contain` shows it
   whole, and `height=0.6` gives the gallery that share of the body. Text above a gallery takes its
   own height and the cells share the rest; on a `{.wide}` slide the gallery takes the wider body,
-  and on a `{.full}` slide the whole slide, the paragraph after it the slide's caption. In HTML and
-  pptx; in the pptx the pictures are cropped or fitted in place, one group ("Gallery"), and an SVG
-  image is a PNG of it. Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
+  and on a `{.full}` slide the whole slide, the paragraph after it the slide's caption. In every
+  format; in the pptx the pictures are cropped or fitted in place, one group ("Gallery"), and an SVG
+  image is a PNG of it; in the PDF a gallery under text needs `height=` (TeX cannot measure what is
+  above it). Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
   itself (not in a column or a card); anything else warns and leaves the pictures as they were.
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
@@ -96,6 +97,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   family's name). A family the livery does not bundle fails the build with its path.
 
 ### LaTeX
+- `enginegallery` with `\engineimage[caption]{file}`: an image gallery in equal cells, `cols=`,
+  `rows=`, `fit=contain|cover` and `height=` (a share of the body box) as its keys; the bare
+  `[enginefull]` frame key (no image of its own) fills the slide with the gallery in its body.
+  `latex/authoring.md` "Galleries"; the cookbook has the three gallery slides, and every Overleaf
+  zip carries their six images.
 - Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...
   \end{enginestep}`, and `\begin{enginetimeline}[role=]{n}` holding
   `\enginemilestone[done]{Date}{Label}`: a rail through numbered badges or dots, at most six items

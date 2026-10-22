@@ -805,6 +805,129 @@
   \end{tikzpicture}}}
 
 % ---------------------------------------------------------------------------
+% image galleries: \begin{enginegallery}[cols=<c>,rows=<r>,fit=contain|cover,height=<share>] of
+% \engineimage[<caption>]{<file>} (the Quarto filter writes it for ::: {.gallery}): the images in
+% equal cells, row-major, boxes.gallery.gap apart both ways (of the paper's width), each picture in
+% its cell less boxes.gallery.pad, whole (contain, the default) or cropped to fill it (cover), a
+% caption under it in the caption size, muted, centered; when any image has a caption every cell
+% keeps the caption line, so a row lines up. cols defaults to ceil(sqrt(n)), rows to ceil(n/cols)
+% (rows alone: cols ceil(n/rows)); more than twelve images, or more than cols x rows, is an error.
+% The gallery is height= of the body box's height (\engine@geom@bodyheight; default 1, the whole
+% box), at most the frame's room under its title (\engine@bodyroom): TeX cannot measure what stands
+% above it in the frame, so give height= under text. A cell of
+% boxes.gallery.fill (EngineBoxesGalleryFill) sits behind each when the livery sets one. In a
+% [enginefull] frame (the bare key) the environment only stores the images: the background
+% template, drawn after the body, fills the paper less geometry.full's pads with them.
+% ---------------------------------------------------------------------------
+\pgfkeys{/engine/gallery/.cd, cols/.store in=\engine@galcolsk, rows/.store in=\engine@galrowsk,
+  fit/.store in=\engine@galfit, height/.store in=\engine@galheight}
+\newcount\engine@galn \newcount\engine@galk \newcount\engine@galcol \newcount\engine@galrow
+\newcount\engine@galcols \newcount\engine@galrows
+\newdimen\engine@galx \newdimen\engine@galy \newdimen\engine@galw \newdimen\engine@galh \newdimen\engine@galgap
+\newdimen\engine@galcw \newdimen\engine@galch \newdimen\engine@galpx \newdimen\engine@galpy \newdimen\engine@galcap
+\newdimen\engine@galpw \newdimen\engine@galph \newdimen\engine@galcx \newdimen\engine@galcy
+\newif\ifengine@galcap
+\def\engine@galcover{cover}\def\engine@galfull{full}\def\engine@galfitg{contain}
+\newcommand\engineimage[2][]{%
+  \global\advance\engine@galn\@ne
+  \ifnum\engine@galn>12
+    \PackageError{Engine}{enginegallery: more than twelve images}%
+      {A gallery holds at most twelve images: split it over two slides.}%
+  \fi
+  \expandafter\gdef\csname engine@gal@src@\the\engine@galn\endcsname{#2}%
+  \expandafter\gdef\csname engine@gal@cap@\the\engine@galn\endcsname{#1}%
+  \def\engine@tmpa{#1}\ifx\engine@tmpa\@empty\else\global\engine@galcaptrue\fi
+  \ignorespaces}
+\newenvironment{enginegallery}[1][]{\par
+  \def\engine@galcolsk{0}\def\engine@galrowsk{0}\def\engine@galfit{contain}\def\engine@galheight{1}%
+  \pgfkeys{/engine/gallery/.cd,#1}%
+  \global\engine@galn=\z@ \global\engine@galcapfalse\ignorespaces}%
+ {\engine@galgrid
+  \ifx\engine@framestyle\engine@galfull\else   % a full frame's background draws it
+    \engine@galh=\engine@galheight\dimexpr\engine@geom@bodyheight\paperheight\relax
+    \ifdim\engine@galh>\engine@bodyroom \engine@galh=\engine@bodyroom \fi
+    \noindent\hbox{\begin{tikzpicture}[x=1pt,y=1pt]
+      \useasboundingbox \engine@railpt{0pt}{0pt} rectangle \engine@railpt{\linewidth}{-\engine@galh};
+      \engine@gallerycells{0pt}{0pt}{\linewidth}{\engine@galh}%
+    \end{tikzpicture}}\par
+  \fi}
+% the frame's room under a title in the theme's band (the outer theme's \engine@frametitle ends it at
+% the body's top, 0.1667 of the paper or the livery's frametitle.body), less beamer's 0.25em under the
+% title box and the \lineskip TeX puts above a line as tall as a gallery (enginewide's minipage is
+% one): \beamer@frametextheight, which beamer sets only after the body (a fragile frame's reads 0)
+\def\engine@bodyroom{\dimexpr\textheight-\ifdefined\engine@ft@bodytop\engine@ft@bodytop\else0.1667\fi\paperheight-0.25em-\lineskip\relax}
+% the grid, globally (a full frame's background reads it after the body): cols and rows derived
+\def\engine@galgrid{%
+  \ifnum\engine@galn=\z@
+    \PackageError{Engine}{enginegallery: no \string\engineimage}{A gallery holds one to twelve \string\engineimage.}%
+  \fi
+  \global\engine@galcols=\engine@galcolsk\relax \global\engine@galrows=\engine@galrowsk\relax
+  \ifnum\engine@galcols<\@ne
+    \ifnum\engine@galrows<\@ne \global\engine@galcols=\fpeval{ceil(sqrt(\the\engine@galn))}\relax
+    \else \global\engine@galcols=\fpeval{ceil(\the\engine@galn/\the\engine@galrows)}\relax \fi
+  \fi
+  \ifnum\engine@galrows<\@ne \global\engine@galrows=\fpeval{ceil(\the\engine@galn/\the\engine@galcols)}\relax\fi
+  \ifnum\engine@galn>\numexpr\engine@galcols*\engine@galrows\relax
+    \PackageError{Engine}{enginegallery: \the\engine@galn\space images do not fit cols=\the\engine@galcols, rows=\the\engine@galrows}%
+      {Give more cols or rows, or fewer images.}%
+  \fi
+  \xdef\engine@galfitg{\engine@galfit}}
+% \engine@gallerycells{<x>}{<y>}{<w>}{<h>}: the stored images in that box (tikz commands; (x, y) its
+% top left, y up, \engine@railpt's points), the pads in em of the body type
+\def\engine@gallerycells#1#2#3#4{%
+  \begingroup\usebeamerfont{normal text}%
+  \engine@galx=\dimexpr#1\relax \engine@galy=\dimexpr#2\relax \engine@galw=\dimexpr#3\relax \engine@galh=\dimexpr#4\relax
+  \engine@galgap=\engine@boxes@gallery@gap\paperwidth
+  \engine@galpx=\engine@boxes@gallery@padx em\relax \engine@galpy=\engine@boxes@gallery@pady em\relax
+  \engine@galcw=\dimexpr(\engine@galw-\engine@galgap*(\engine@galcols-1))/\engine@galcols\relax
+  \engine@galch=\dimexpr(\engine@galh-\engine@galgap*(\engine@galrows-1))/\engine@galrows\relax
+  \engine@galcap=\z@
+  \ifengine@galcap   % the caption line: a strut of the caption size and its gap under the picture
+    \setbox\@tempboxa\hbox{\engine@fs{caption}\selectfont\strut}%
+    \engine@galcap=\dimexpr\ht\@tempboxa+\dp\@tempboxa+\engine@galpy\relax
+  \fi
+  \engine@galpw=\dimexpr\engine@galcw-2\engine@galpx\relax
+  \engine@galph=\dimexpr\engine@galch-2\engine@galpy-\engine@galcap\relax
+  \engine@galk=\z@ \engine@galcol=\z@ \engine@galrow=\z@
+  \loop\advance\engine@galk\@ne
+    \engine@galcx=\dimexpr\engine@galx+(\engine@galcw+\engine@galgap)*\engine@galcol\relax
+    \engine@galcy=\dimexpr\engine@galy-(\engine@galch+\engine@galgap)*\engine@galrow\relax
+    \ifcsname\string\color@EngineBoxesGalleryFill\endcsname
+      \fill[EngineBoxesGalleryFill] \engine@railpt{\engine@galcx}{\engine@galcy}
+        rectangle \engine@railpt{\engine@galcx+\engine@galcw}{\engine@galcy-\engine@galch};
+    \fi
+    \expandafter\engine@galpicture\expandafter{\csname engine@gal@src@\the\engine@galk\endcsname}%
+    \ifengine@galcap
+      \node[anchor=north, inner sep=0pt, text width=\the\engine@galpw, align=center,
+        font={\engine@fs{caption}\selectfont}, text=BrandMuted]
+        at \engine@railpt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-2\engine@galpy-\engine@galph}
+        {\strut\csname engine@gal@cap@\the\engine@galk\endcsname};
+    \fi
+    \advance\engine@galcol\@ne
+    \ifnum\engine@galcol=\engine@galcols \engine@galcol=\z@ \advance\engine@galrow\@ne \fi
+  \ifnum\engine@galk<\engine@galn\repeat
+  \endgroup}
+% one picture in its box: contain, scaled to fit it whole; cover, scaled to fill it (by its height when
+% it is wider than the box, else its width) and clipped to it
+\def\engine@galpicture#1{%
+  \ifx\engine@galfitg\engine@galcover
+    \setbox\@tempboxa\hbox{\includegraphics{#1}}\dimen@=\wd\@tempboxa \dimen@ii=\ht\@tempboxa
+    \ifnum\fpeval{\strip@pt\dimen@ * \strip@pt\engine@galph > \strip@pt\dimen@ii * \strip@pt\engine@galpw}=\@ne
+      \edef\engine@galopt{height=\the\engine@galph}\else\edef\engine@galopt{width=\the\engine@galpw}\fi
+    \begin{scope}
+      \clip \engine@railpt{\engine@galcx+\engine@galpx}{\engine@galcy-\engine@galpy}
+        rectangle \engine@railpt{\engine@galcx+\engine@galpx+\engine@galpw}{\engine@galcy-\engine@galpy-\engine@galph};
+      \node[anchor=center, inner sep=0pt]
+        at \engine@railpt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-\engine@galpy-.5\engine@galph}
+        {\expandafter\includegraphics\expandafter[\engine@galopt]{#1}};
+    \end{scope}
+  \else
+    \node[anchor=center, inner sep=0pt]
+      at \engine@railpt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-\engine@galpy-.5\engine@galph}
+      {\includegraphics[width=\the\engine@galpw, height=\the\engine@galph, keepaspectratio]{#1}};
+  \fi}
+
+% ---------------------------------------------------------------------------
 % status lists: \begin{enginestatus} \done ... \warn<2-> ... \fail ... \item ... \end{enginestatus}
 % (the Quarto filter writes it for - [x] / [!] / [-] items in a card or a .status list): beamer's
 % itemize, each status item's glyph as its label (where the bullet is, as HTML's and the pptx's),

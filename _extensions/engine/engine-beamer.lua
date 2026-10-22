@@ -410,6 +410,29 @@ local function rails(blocks, livery)
   end)
 end
 
+-- An image gallery (C.gallery_items()): \begin{enginegallery}[cols=,rows=,fit=,height=] with an
+-- \engineimage[<caption>]{<file>} per image (the src a URL in pandoc's form, a space as %20: decoded
+-- to the file's name), one raw block; beamerinnerthemeEngine.sty draws the cells, or on a bare
+-- [enginefull] frame stores them for the background.
+local function gallery_latex(g)
+  local keys = string.format("cols=%d,rows=%d,fit=%s", g.cols, g.rows, g.fit) .. (g.height and (",height=" .. g.height) or "")
+  local lines = { "\\begin{enginegallery}[" .. keys .. "]" }
+  for _, it in ipairs(g.items) do
+    local file = it.src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+    table.insert(lines, "\\engineimage" .. (it.caption and ("[{" .. inlines_to_latex(it.caption) .. "}]") or "") .. "{" .. file .. "}")
+  end
+  table.insert(lines, "\\end{enginegallery}")
+  return pandoc.Blocks({ latex(table.concat(lines, "\n")) })
+end
+
+-- The slide's top-level galleries (C.top_galleries(); one in a column is warned of and stays its
+-- pictures), as raw LaTeX before bound_sized_images, which would turn an image with a width= into
+-- raw LaTeX first (the reader drops the attribute: the cell sizes the picture). A {.full} slide's
+-- is full_frames()'.
+local function galleries(blocks)
+  return C.top_galleries(blocks, "engine-beamer", gallery_latex)
+end
+
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
 -- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
 local function lead_boxes(blocks)
@@ -425,7 +448,7 @@ end
 -- A frame whose body opens with a paragraph: \vskip-\parskip before it, so it starts at the body's
 -- top as HTML's and the pptx's do (TeX puts \parskip, the parskip package's half line, before every
 -- paragraph; a list opens at its own \topsep, which already matches). Frames are top-aligned
--- (beamerthemeEngine.sty), so the space showed. A caution, lead or quote box opens a paragraph too; the
+-- (beamerthemeEngine.sty), so the space showed. A caution, lead, quote or gallery box opens a paragraph too; the
 -- footnote spring and a scale group are looked past; a wide body cancels its own.
 local function opens_paragraph(b)   -- true, false, or nil: look at the next block
   if b.t == "Para" or b.t == "Plain" then return true end
@@ -434,7 +457,7 @@ local function opens_paragraph(b)   -- true, false, or nil: look at the next blo
   if t == "\\enginefootnotespring" or t:match("^\\begin{enginescale}{[^}]*}$") then return nil end
   if t:find("\\begin{enginewide}", 1, true) or t:find("\\begin{varwidth}", 1, true) then return false end
   return t:find("\\begin{enginecaution}", 1, true) ~= nil or t:find("\\begin{enginelead}", 1, true) ~= nil
-    or t:find("\\begin{enginequote}", 1, true) ~= nil
+    or t:find("\\begin{enginequote}", 1, true) ~= nil or t:find("\\begin{enginegallery}", 1, true) ~= nil
 end
 
 local function first_paragraph(blocks)
@@ -615,10 +638,18 @@ local function full_frames(blocks)
         i = i + 1
       end
       local src, caption, rest = split_full(slide)
-      if src then
-        add_frameoption(blk, "enginefull=" .. src)
+      local fig = C.split_full(slide)
+      local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-beamer")
+      if fig and C.is_gallery(fig) and not gallery then   -- refused, warned of: an ordinary frame of its pictures
+        src = nil
+        fig.classes = fig.classes:filter(function(c) return c ~= "gallery" end)   -- read once: galleries() passes it
+      end
+      if gallery or src then
+        -- a gallery's frame takes the bare key (the background draws its cells), a figure's its image
+        add_frameoption(blk, gallery and "enginefull" or ("enginefull=" .. src))
         blk.content = pandoc.Inlines({})
         out:insert(blk)
+        if gallery then out:extend(gallery_latex(gallery)) end
         if #caption > 0 then
           local text = pandoc.List({})
           for k, p in ipairs(caption) do
@@ -630,7 +661,7 @@ local function full_frames(blocks)
         out:extend(rest)
       else
         quarto.log.warning("engine-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
-          .. "\" needs one figure, then only paragraphs; drawn as an ordinary slide")
+          .. "\" needs one figure or a gallery, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
         out:extend(slide)
@@ -686,7 +717,7 @@ function Pandoc(doc)
     slide_level = PANDOC_WRITER_OPTIONS.slide_level
   end
 
-  doc.blocks = full_frames(doc.blocks)
+  doc.blocks = galleries(full_frames(doc.blocks))
   doc = bound_sized_images(doc)
   load_theme(doc)
   doc = size_plots(doc)
