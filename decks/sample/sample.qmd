@@ -8,6 +8,13 @@ jupyter: bash
 bibliography: references.bib
 ---
 
+## Agenda {.agenda}
+
+::: notes
+`{.agenda}` with an empty body: the engine lists the numbered sections, each divider's subtitle
+under it. Up front none is current; placed in a section, that one is (see Wrap-up).
+:::
+
 # Basics
 
 A paragraph right after a `#` divider becomes its subtitle, in every format.
@@ -420,6 +427,8 @@ slide.
 
 # Wrap-up
 
+## Where we are {.agenda}
+
 ## Next steps
 
 - Copy this file as a starting point for new decks.
@@ -453,7 +462,7 @@ ordinary slide.
 
 Questions: your.name@ucar.edu
 
-# Backup
+# Backup {.unnumbered}
 
 ## Project config: `_quarto.yml` {scale="0.47"}
 

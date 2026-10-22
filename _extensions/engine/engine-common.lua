@@ -402,6 +402,49 @@ local function column_shares(div)
   return cols, shares
 end
 
+-- An agenda slide: a slide-level heading with .agenda (`## Agenda {.agenda}`), the engine its body.
+local function is_agenda(blk, level)
+  return blk.t == "Header" and blk.level == level and has_class(blk, "agenda")
+end
+
+-- An agenda slide's body (its blocks up to the next slide): the speaker notes kept, anything else
+-- warned of and dropped (the engine writes the body). Returns the notes.
+local function agenda_notes(body, who, title)
+  local notes = pandoc.Blocks({})
+  for _, b in ipairs(body) do
+    if b.t == "Div" and has_class(b, "notes") then
+      notes:insert(b)
+    else
+      warn(who .. ": the agenda slide \"" .. title .. "\" has a body of its own; the engine writes it, so it is dropped")
+      break
+    end
+  end
+  return notes
+end
+
+-- The agenda's rows: every numbered section (sections()) in order, { number, title (inlines), sub
+-- (the subtitle's inlines, paragraphs joined by a space, or nil), state }: by the section the slide
+-- sits in (current: the numbered dividers before it, 0 up front), an earlier one "done", that one
+-- "current", a later one "next"; up front all "next".
+local function agenda_rows(sections, current)
+  local rows = {}
+  for _, s in ipairs(sections) do
+    if s.number then
+      local sub
+      if s.sub then
+        sub = pandoc.Inlines({})
+        for k, p in ipairs(s.sub) do
+          if k > 1 then sub:insert(pandoc.Space()) end
+          sub:extend(p.content)
+        end
+      end
+      table.insert(rows, { number = s.number, title = s.title, sub = sub,
+        state = s.number < current and "done" or (s.number == current and "current" or "next") })
+    end
+  end
+  return rows
+end
+
 -- A quote block: `::: {.quote role=..}`, or a bare `>` blockquote (the same box, no role=).
 local function is_quote(b)
   return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
@@ -710,6 +753,7 @@ return {
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote, quote_parts = quote_parts,
+  is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,

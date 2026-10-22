@@ -34,6 +34,12 @@
   \titlepage
 \end{frame}
 
+\begin{frame}{Agenda}
+  % the numbered sections, from \section's table-of-contents lines (a second run: latexmk's), each
+  % \sectionsubtitle under its title; placed in a section, that one is current (see Wrap-up)
+  \engineagenda
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \sectionsubtitle{A \texttt{\textbackslash sectionsubtitle} before the section is the divider's subtitle.}
 \section{Basics}
@@ -512,6 +518,10 @@ print(speedup(0.95, 64))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Wrap-up}
 
+\begin{frame}{Where we are}
+  \engineagenda
+\end{frame}
+
 \begin{frame}{Next steps}
   % slide footnotes: a spring first, the content, a spring, then the footnotes
   \enginefootnotespring
@@ -540,7 +550,8 @@ print(speedup(0.95, 64))
   Questions: \texttt{your.name@ucar.edu}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Backup}
+% a divider outside the count: no eyebrow, not on the agenda (no \section, so no bookmark either)
+\enginesectionunnumbered{Backup}{}
 
 \begin{frame}[fragile]{Project config: \texttt{latexmkrc}}
   % \lstinputlisting pastes a file at build time, so the slide stays in sync with it

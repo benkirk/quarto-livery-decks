@@ -216,6 +216,37 @@ The purpose of computing is insight, not numbers.
 - In LaTeX it is `\begin{enginequote}[role=accent]{Richard Hamming, 1962}`
   ([latex/authoring.md](../latex/authoring.md#the-patterns)).
 
+## Agenda
+
+An agenda slide lists the deck's numbered sections; the engine writes its body:
+
+```markdown
+## Agenda {.agenda}
+
+# Basics
+
+A paragraph right after a divider is its subtitle, and the agenda shows it too.
+
+...
+
+# Wrap-up
+
+## Where we are {.agenda}
+```
+
+- **`{.agenda}`** on a slide heading with an empty body draws a row per numbered section: its
+  number beside its title, the divider's subtitle under it. Speaker notes stay; anything else in
+  the body warns and is dropped.
+- **By position.** Up front (before the first divider) every section is upcoming. Placed in a
+  section, that one is current (bold, in the livery's `boxes.agenda.current-color`), the earlier
+  ones are done (muted) and the later ones upcoming. The numbers take `boxes.agenda.number-color`;
+  both are `primary-contrast` by default, the primary that reads on the background.
+- An unnumbered divider (`# Backup {.unnumbered}`) is not on the agenda.
+- pptx draws the rows as text boxes, one group ("Agenda"); a long agenda that runs past the slide
+  loses its subtitles there, with a warning. The PDF draws it from beamer's table of contents,
+  which a second LaTeX run fills (Quarto's build reruns for it).
+- In LaTeX it is `\engineagenda` in a frame ([latex/authoring.md](../latex/authoring.md#the-patterns)).
+
 ## Steps and timelines
 
 A process, step by step, is an ordered list in a `steps` div; milestones are a bullet list in a

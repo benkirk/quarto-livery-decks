@@ -43,6 +43,8 @@ QUOTES = ('## Quote\n\n::: {.quote role="accent"}\nThe purpose of computing\nis 
           '::: {.column .card}\n### OPTION 2\nOther.\n:::\n::::\n\n'
           '## Quote in a column\n\n:::: {.columns}\n::: {.column}\n- one\n- two\n:::\n::: {.column}\nBefore.\n\n'
           '> In a plain column.\n\nAfter.\n:::\n::::\n')
+AGENDA = ('# One\n\n## Where we are {.agenda}\n\n# Two\n\n## Two body\n\nText.\n\n'
+          '# Backup {.unnumbered}\n\n## Backup body\n\nText.\n')   # slides 15 to 20
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -50,7 +52,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
       '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
-      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES)
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA)
 STEP = """
 import sys
 from pathlib import Path
@@ -164,9 +166,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 15, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 21, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -368,6 +370,32 @@ def test_quote(deck):
     assert by["Column 2"].text_frame.text == "Before." and by["Column 2 3"].text_frame.text == "After."
     assert by["Column 2"].top + by["Column 2"].height <= bar.top <= bar.top + bar.height <= by["Column 2 3"].top
     assert "⟦" not in prs.slides[13]._element.xml + prs.slides[14]._element.xml, "a marker left"
+
+
+def test_agenda(deck):
+    """An agenda slide in section 1 of 2: one group ("Agenda"), a row per numbered section (the
+    unnumbered Backup none), each a number box (its number, the eyebrow size, bold, in
+    boxes.agenda.number-color) beside a text box (the title in the subhead size): section 1 current,
+    bold in current-color, section 2 next, the text's color; rows top down; no marker."""
+    import livery as livery_mod
+    livery, prs, _ = deck
+    slide = prs.slides[16]
+    by = {s.name: s for s in flat(slide.shapes)}
+    assert by["Agenda"].shape_type == 6, sorted(by)
+    assert {n for n in by if n.startswith("Agenda ")} == {"Agenda 1 number", "Agenda 1 text", "Agenda 2 number", "Agenda 2 text"}
+    pt = lambda role: str(round(livery_mod.half_pt(livery_mod.type_pt(livery, role)) * 100))
+    for k in (1, 2):
+        num, text = by[f"Agenda {k} number"], by[f"Agenda {k} text"]
+        r = num.text_frame.paragraphs[0].runs[0]
+        assert r.text == str(k) and r._r.get_or_add_rPr().get("sz") == pt("eyebrow") and r.font.bold
+        assert str(r.font.color.rgb) == livery["boxes"]["agenda"]["number-color"][1:], "the number's color"
+        assert num.top == text.top and num.left < text.left, "the number beside its title"
+    one, two = (by[f"Agenda {k} text"].text_frame.paragraphs[0].runs[0] for k in (1, 2))
+    assert one.text == "One" and one.font.bold and str(one.font.color.rgb) == livery["boxes"]["agenda"]["current-color"][1:]
+    assert two.text == "Two" and not two.font.bold and two._r.get_or_add_rPr().get("sz") == pt("subhead")
+    assert two._r.get_or_add_rPr().find("{*}solidFill") is None, "a later section in the text's own color"
+    assert by["Agenda 1 text"].top < by["Agenda 2 text"].top
+    assert "⟦" not in slide._element.xml, "a marker left"
 
 
 def test_default_roles(deck):

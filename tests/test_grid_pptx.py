@@ -171,3 +171,26 @@ def test_quote_marked(tmp_path):
     assert paras[0][1:] == ["⟦engine:quote role=accent⟧", "One line", "another", "⟦engine:attribution⟧Who, 1962", "⟦engine:end⟧"], paras[0]
     assert paras[1][1:] == ["⟦engine:columns widths=0.5,0.5⟧", "⟦engine:column⟧", "Left", "⟦engine:end⟧", "⟦engine:column⟧",
                             "⟦engine:quote⟧", "Right", "⟦engine:attribution⟧Them", "⟦engine:end⟧", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]
+
+
+def test_agenda_marked(tmp_path):
+    """An agenda slide: its title, `⟦engine:agenda current=n⟧` (the numbered dividers before it), per
+    numbered section an item marker with its number and state, the title and the divider's
+    subtitle led by their prefixes; the unnumbered Backup absent; a body of its own dropped."""
+    md = ("## Agenda {.agenda}\n\nAn author's line.\n\n# One\n\nIts subtitle.\n\n## a\n\nx\n\n"
+          "# Two\n\n## Where we are {.agenda}\n\n# Backup {.unnumbered}\n\n## b\n\ny\n")
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "a.pptx"
+    r = subprocess.run([pandoc, "--slide-level=2", "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True,
+                       check=True, capture_output=True)
+    assert "has a body of its own" in r.stderr, r.stderr
+    with zipfile.ZipFile(out) as z:
+        texts = [[("".join(re.findall(r"<a:t>([^<]*)</a:t>", p))) for p in re.findall(r"<a:p>.*?</a:p>", z.read(n).decode())]
+                 for n in sorted((n for n in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)),
+                                 key=lambda n: int(re.search(r"(\d+)", n).group(1)))]
+    front = next(t for t in texts if t and t[0] == "Agenda")
+    assert front[1:] == ["⟦engine:agenda current=0⟧", "⟦engine:item n=1 state=next⟧", "⟦engine:title⟧One", "⟦engine:sub⟧Its subtitle.",
+                         "⟦engine:end⟧", "⟦engine:item n=2 state=next⟧", "⟦engine:title⟧Two", "⟦engine:end⟧", "⟦engine:end⟧"], front
+    later = next(t for t in texts if t and t[0] == "Where we are")
+    assert "⟦engine:agenda current=2⟧" in later and "⟦engine:item n=1 state=done⟧" in later and "⟦engine:item n=2 state=current⟧" in later
+    assert not any("Backup" in x for x in front + later), "an unnumbered divider is not on the agenda"

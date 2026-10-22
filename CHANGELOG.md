@@ -41,6 +41,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
   directory is a prerequisite, so editing one rebuilds the deck.
+- Agenda slides: `## Agenda {.agenda}` with an empty body lists the deck's numbered sections, a
+  row each (the number beside the title, the divider's subtitle under it), by position: up front
+  every section upcoming; placed in a section, that one current (bold), the earlier ones done
+  (muted). An unnumbered divider is not on it. In the pptx the rows are text boxes, one group
+  ("Agenda"); in the PDF they are beamer's table of contents, drawn in the same rows.
+  `docs/authoring.md` "Agenda". The sample has two, and its Backup divider is unnumbered.
 - Quotes: `::: {.quote}` or a bare `>` blockquote sets its lines in the livery's new `quote` size
   beside a bar at its left (`role=` colors it; by default the livery's `boxes.quote.bar-color`),
   with no fill; a last line starting with `—`, `–` or `--` is the attribution, under it at the
@@ -63,6 +69,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
   reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white and 1.6:1 on
   ucar's, under the 3:1 a mark needs.
+- `boxes.agenda` (`number-color`, `current-color`): the agenda's section numbers and its current
+  section's title, both `primary-contrast` by default (text on the content background: the
+  divider's eyebrow color and the primary do not read there on every livery).
 - `boxes.quote.family` and `boxes.quote.style`: a quote's lines in a face of their own, a family the
   livery bundles (`typography.fonts`; null, the default, is the body's) and `normal` or `italic`,
   in every format; `pptx.quote-typeface` names the face PowerPoint sets them in (by default the
@@ -86,6 +95,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `\begin{enginequote}[role=]{Attribution} ... \end{enginequote}`: a quote, its lines in the quote
   size beside a bar in the role (by default the livery's quote bar color), the attribution under it
   after "— " (`{}` for none); in a card or a column too. The cookbook has "A pull quote".
+- `\engineagenda`: the agenda, beamer's table of contents in the Quarto decks' rows (the number,
+  the title, the `\sectionsubtitle` under it; the section the frame sits in current, the earlier
+  ones muted). The theme's table-of-contents templates draw a plain `\tableofcontents` the same
+  way. The cookbook has an Agenda frame and a "Where we are" one, and its Backup is unnumbered.
 - `\enginesectionunnumbered{Title}{Subtitle}` draws a divider outside the count (an appendix,
   the backup slides): the divider's look without the eyebrow, and no `\section`, so no counter
   step, no table-of-contents line and no PDF bookmark (`\section*` is no substitute: it steps

@@ -123,9 +123,11 @@
 
 \ifengine@sectionpages
   \AtBeginSection[]{%
-    \@ifundefined{engine@secsub@\thesection}{}{%
-      \expandafter\gdef\expandafter\engine@sectionsubtitle\expandafter
-        {\csname engine@secsub@\thesection\endcsname}}%
+    \@ifundefined{engine@secsub@\thesection}{}{%   (its text, not its name: the aux file gets the text)
+      \expandafter\global\expandafter\let\expandafter\engine@sectionsubtitle
+        \csname engine@secsub@\thesection\endcsname}%
+    \ifx\engine@sectionsubtitle\@empty\else   % for an agenda before it, on the next run
+      \immediate\write\@auxout{\noexpand\enginesectionsubtitle{\thesection}{\unexpanded\expandafter{\engine@sectionsubtitle}}}\fi
     {\setbeamercolor{normal text}{fg=BrandPrimaryText}%
      \begin{frame}[plain,noframenumbering]\sectionpage\end{frame}}%
     \gdef\engine@sectionsubtitle{}}
@@ -205,7 +207,33 @@
 % pandoc's tight lists (\tightlist zeroes \itemsep) keep it too: HTML spaces them alike
 \AtBeginDocument{\providecommand\tightlist{}\renewcommand\tightlist{\parskip\z@\ifnum\@listdepth>1
   \itemsep0.15\engine@typebody\else\itemsep0.25\engine@typebody\fi}}
-\setbeamertemplate{sections/subsections in toc}[square]
+% the agenda: \engineagenda is beamer's table of contents (\section's lines in the .toc, from the
+% run before) drawn as HTML's and the pptx's agenda rows: the number (the eyebrow font, bold,
+% livery.sty's boxes.agenda number color) beside the title (the subhead size) and the divider's
+% subtitle under it (the caption size, muted: \enginesectionsubtitle's, the Quarto filter's or the
+% aux file's copy of a \sectionsubtitle), at the gap HTML's rows keep. Its state by the section the
+% frame sits in: an earlier one muted (done), that one bold in the current color, a later one the
+% text color; up front all the text color. A plain \tableofcontents draws its rows so, every one
+% the text color. In a \vbox, so beamer's \vfill between rows stays at none (hideallsubsections would
+% put a 1.5em skip there; tocdepth 1 leaves the subsections out instead).
+\newif\ifengine@agenda
+\def\engine@agenda@done{\color{BrandMuted}}
+\def\engine@agenda@current{\color{EngineBoxesAgendaCurrentColor}\bfseries}
+\def\engine@agenda@next{\color{BrandText}}
+\def\engine@agendarow{%
+  \edef\engine@tmpa{\ifengine@agenda\ifnum0\inserttocsectionnumber<\c@section done\else
+    \ifnum0\inserttocsectionnumber=\c@section current\else next\fi\fi\else next\fi}%
+  \vskip\dimexpr0.55\engine@typebody-\parskip\relax   % HTML's row gap: the paragraph skip taken back
+  {\raggedright\engine@fs{subhead}\selectfont   % the number on the title's line, the title hung beside it
+   \hangindent2\engine@typebody\noindent\hbox to 2\engine@typebody{\usebeamerfont{eyebrow}%
+     \color{EngineBoxesAgendaNumberColor}\inserttocsectionnumber\hfil}%
+   {\csname engine@agenda@\engine@tmpa\endcsname\inserttocsection}\par}%
+  \@ifundefined{engine@secsub@\inserttocsectionnumber}{}{\vskip\dimexpr0.15\engine@typebody-\parskip\relax
+    {\raggedright\leftskip2\engine@typebody\usebeamerfont{caption}\color{BrandMuted}%
+     \csname engine@secsub@\inserttocsectionnumber\endcsname\par}}}
+\defbeamertemplate*{section in toc}{Engine}{\engine@agendarow}
+\defbeamertemplate*{section in toc shaded}{Engine}{\engine@agendarow}
+\newcommand\engineagenda{{\engine@agendatrue\c@tocdepth\@ne\vbox{\tableofcontents}}}   % sections only
 % a caption is its text alone, centred (the caption font and color: beamer draws the template
 % with both), as HTML and pptx set it: no "Figure 1:" label
 \setbeamertemplate{caption}{{\centering\insertcaption\par}}

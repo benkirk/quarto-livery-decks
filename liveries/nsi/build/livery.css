@@ -105,6 +105,8 @@
   --engine-lead-bar-color: #CFB87C;
   --engine-lead-pad: 0.55em 0.9em;
   --engine-lead-gap: 0.55em;
+  --engine-agenda-number: #8D7334;
+  --engine-agenda-current: #8D7334;
   --engine-quote-bar: 8px;
   --engine-quote-bar-color: #8D7334;
   --engine-quote-pad: 0.3em 1em;

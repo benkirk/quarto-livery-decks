@@ -739,7 +739,18 @@ function Pandoc(doc)
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == slide_level then
-      if has_class(blk, "feature") then
+      if C.is_agenda(blk, slide_level) then
+        -- the agenda: the theme's \engineagenda (beamer's table of contents in the agenda's rows, by
+        -- the section the frame sits in); the slide's own body dropped (warned), its notes kept
+        blk.classes = blk.classes:filter(function(c) return c ~= "agenda" end)
+        out:insert(blk)
+        i = i + 1
+        local body = pandoc.Blocks({})
+        while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+        local notes = C.agenda_notes(body, "engine-beamer", pandoc.utils.stringify(blk.content))
+        out:insert(latex("\\engineagenda"))
+        out:extend(notes)
+      elseif has_class(blk, "feature") then
         local bg = blk.attributes["background"] or blk.attributes["background-image"]
         if bg then
           add_frameoption(blk, "enginebg=" .. bg)

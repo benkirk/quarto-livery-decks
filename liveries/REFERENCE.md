@@ -423,6 +423,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `caution` | object |  | A `{.caution}` slide's body. |
 | `panel` | object |  | A feature slide's panel. |
 | `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
+| `agenda` | object |  | The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows. |
 | `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
@@ -465,6 +466,15 @@ A lead box (`::: {.lead}`) over a slide's columns.
 | `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
 | `bar-color` | color or role | `"accent"` | The bar's color, a role, a palette name or a hex. |
 | `pad` | [vertical, horizontal] em | `[0.55, 0.9]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.agenda`
+
+The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows.
+
+| key | type | default | |
+|---|---|---|---|
+| `number-color` | color or role | `"primary-contrast"` | The section numbers' color, a role, a palette name or a hex; text on the content background, so one that reads there. |
+| `current-color` | color or role | `"primary-contrast"` | The current section's title's color (bold), a role, a palette name or a hex. |
 
 ### `boxes.quote`
 

@@ -1,4 +1,4 @@
-"""A grid slide (three or more columns, a lead box, cards, strips, quotes, steps, a timeline) redrawn from
+"""A grid slide (three or more columns, a lead box, cards, strips, quotes, steps, a timeline, an agenda) redrawn from
 grid-pptx.lua's markers.
 
 grid-pptx.lua flattens a grid slide's columns into one text flow, which pandoc writes into the
@@ -9,7 +9,9 @@ Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:
 milestone) ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, steps or a timeline (draw_rail());
 `⟦engine:quote role=r⟧` ... `⟦engine:end⟧` a quote (draw_quote(): its lines in the quote size, an
 `⟦engine:attribution⟧` line at the caption size, muted, beside a bar; on its own, in a card inside
-its pads, or in a plain column between its text boxes). This
+its pads, or in a plain column between its text boxes); `⟦engine:agenda current=n⟧`, per numbered
+section `⟦engine:item n=k state=..⟧` ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, the agenda
+(draw_agenda(): a number box beside a text box per row). This
 parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
@@ -77,7 +79,7 @@ def parse(paragraphs):
         m = MARK.match(_para_text(p).strip())
         if m is None:
             top = stack[-1] if stack else None
-            if top is None or top[0] in ("columns", "rail"):   # a stray paragraph between columns or items: text
+            if top is None or top[0] in ("columns", "rail", "agenda"):   # a stray paragraph between columns or items: text
                 text(p)
             else:
                 top[-1].append(p)
@@ -92,7 +94,10 @@ def parse(paragraphs):
         elif kind == "rail" and not stack:
             seg = ("rail", attrs, [])
             segs.append(seg); stack.append(seg)
-        elif kind == "item" and stack and stack[-1][0] == "rail":
+        elif kind == "agenda" and not stack:
+            seg = ("agenda", attrs, [])
+            segs.append(seg); stack.append(seg)
+        elif kind == "item" and stack and stack[-1][0] in ("rail", "agenda"):
             item = ("item", attrs, [])
             stack[-1][2].append(item); stack.append(item)
         elif kind == "lead" and not stack:
@@ -236,17 +241,22 @@ def _shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_on
     return r
 
 
-def _close(p):
-    """A card paragraph's space before: CARD_GAP of the master body's (a:spcBef), as beamer's card
-    lines sit close (HTML uses reveal's block margin); type_step scales it with the sizes."""
+def _space_before(p, pts):
+    """A paragraph's space before (a:spcBef), in points."""
     ppr = p.find(qn("a:pPr"))
     if ppr is None:
         ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
     for old in ppr.findall(qn("a:spcBef")):
         ppr.remove(old)
     bef = etree.Element(qn("a:spcBef"))
-    etree.SubElement(bef, qn("a:spcPts")).set("val", str(round(BODY_GAP * 100)))
+    etree.SubElement(bef, qn("a:spcPts")).set("val", str(round(pts * 100)))
     ppr_place(ppr, bef)
+
+
+def _close(p):
+    """A card paragraph's space before: CARD_GAP of the master body's (a:spcBef), as beamer's card
+    lines sit close (HTML uses reveal's block margin); type_step scales it with the sizes."""
+    _space_before(p, BODY_GAP)
 
 
 def _card_height(tb, slide):
@@ -364,6 +374,66 @@ def _quote_color(attrs, slide):
         print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: role={r!r} is not a role or a blend "
               "of the livery; the quote bar's color", file=sys.stderr)
     return _hex(BOXES["quote"]["bar-color"])
+
+
+AGENDA_COLORS = {"done": _hex("muted"), "current": _hex(BOXES["agenda"]["current-color"]), "next": None}   # None: the text's
+
+
+def draw_agenda(slide, x, y, w, room, items):
+    """The agenda's rows, top down from y, a body gap (0.55 em) above each: a number box 2 em wide (the
+    eyebrow size, bold, boxes.agenda.number-color) beside a text box, the title in the subhead size
+    (done muted, current bold in boxes.agenda.current-color, next the text's) and the divider's
+    subtitle under it (the caption size, muted); each cut to its text, measured. When the rows run
+    past the room, the subtitles go (the room is what a slide has: no autofit on native boxes).
+    One group, "Agenda", of "Agenda k number" and "Agenda k text". The height it takes."""
+    gap, col = Emu(round(0.55 * BODY_PT * 12700)), Emu(round(2 * BODY_PT * 12700))
+    rows = []
+    for k, (_, attrs, paras) in enumerate(items, 1):
+        title, sub = [], []
+        for p in paras:
+            (sub if _prefix(p) == "sub" else title).append(p)
+        state = attrs.get("state", "next")
+        for p in title:
+            _style(p, livery_mod.type_pt(LIVERY, "subhead"), state == "current", AGENDA_COLORS.get(state))
+            _space_before(p, 0)
+        for p in sub:
+            _style(p, livery_mod.type_pt(LIVERY, "caption"), color=_hex("muted"))
+            _close(p)
+        num = copy.deepcopy(title[0]) if title else etree.Element(qn("a:p"))
+        runs = num.findall(qn("a:r"))
+        for r in runs[1:]:
+            num.remove(r)
+        if runs:
+            runs[0].find(qn("a:t")).text = attrs.get("n", str(k))
+        _style(num, livery_mod.type_pt(LIVERY, "eyebrow"), True, _hex(BOXES["agenda"]["number-color"]))
+        rows.append((k, num, title, sub))
+
+    def lay(with_subs):
+        shapes, cy = [], y
+        for k, num, title, sub in rows:
+            cy += gap
+            tb = body_box(slide, x + col, cy, max(w - col, 0), room, title + (sub if with_subs else []), f"Agenda {k} text")
+            tb.text_frame.margin_top = tb.text_frame.margin_bottom = 0   # the rows apart by the gap alone, as HTML's
+            th = int(text_height(tb, slide))
+            tb.height = int(th * SLACK)   # the box with its slack (no fill: an overlap does not show), the row its text
+            nb = body_box(slide, x, cy, col, tb.height, [num], f"Agenda {k} number")
+            # the number on the title's first line: down by the difference of the two sizes' ascents
+            nb.text_frame.margin_top = round((livery_mod.type_pt(LIVERY, "subhead") - livery_mod.type_pt(LIVERY, "eyebrow")) * 0.8 * 12700)
+            nb.text_frame.margin_bottom = 0
+            shapes += [nb, tb]
+            cy += th
+        return shapes, cy - y
+    shapes, h = lay(True)
+    if h > room and any(sub for *_, sub in rows):   # past the room: drop the subtitles and lay out again
+        for sh in shapes:
+            sh._element.getparent().remove(sh._element)
+        title = slide.shapes.title
+        print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: the agenda runs past the slide; "
+              "its subtitles dropped", file=sys.stderr)
+        shapes, h = lay(False)
+    if shapes:
+        group(slide, shapes, "Agenda")
+    return min(h, room)
 
 
 def _plain_column(slide, x, y, w, room, items, name, slide_height):
@@ -625,6 +695,9 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             continue
         if seg[0] == "lead":
             y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
+            continue
+        if seg[0] == "agenda":
+            y += draw_agenda(slide, left, y, width, max(bottom - y, 0), seg[2])
             continue
         if seg[0] == "rail":
             y += draw_rail(slide, left, y, width, max(bottom - y, 0), seg[1].get("kind", "steps"), seg[2], seg[1],

@@ -71,6 +71,36 @@ def test_sections_read(tmp_path):
                    (3, "Not a subtitle", None, False)]
 
 
+AGENDA_READER = r"""
+quarto = { log = { warning = function(s) end } }
+local C = dofile(arg[1])
+local doc = pandoc.read(io.read("a"), "markdown")
+local secs = C.sections(doc.blocks, 2)
+local out = {}
+for _, cur in ipairs({ 0, 2 }) do
+  for _, r in ipairs(C.agenda_rows(secs, cur)) do
+    table.insert(out, { cur = cur, number = r.number, title = pandoc.utils.stringify(r.title),
+                        sub = r.sub and pandoc.utils.stringify(r.sub) or pandoc.json.null, state = r.state })
+  end
+end
+io.write(pandoc.json.encode(out))
+"""
+
+
+def test_agenda_rows(tmp_path):
+    """agenda_rows(): the numbered sections only (the Backup left out), each with its subtitle; up
+    front (0) all next; from section 2, 1 done, 2 current, 3 next."""
+    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    script = tmp_path / "agenda.lua"
+    script.write_text(AGENDA_READER)
+    md = BODY.replace("# Backup", "# Backup {.unnumbered}") + "\n# Three\n\nIts own subtitle.\n\n## D\n\nw\n"
+    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua")], input=md, text=True,
+                       capture_output=True, check=True)
+    got = [(x["cur"], x["number"], x["title"], x["sub"], x["state"]) for x in json.loads(r.stdout)]
+    assert got == [(0, 1, "One", None, "next"), (0, 2, "Two", None, "next"), (0, 3, "Three", "Its own subtitle.", "next"),
+                   (2, 1, "One", None, "done"), (2, 2, "Two", None, "current"), (2, 3, "Three", "Its own subtitle.", "next")], got
+
+
 def dividers(path):
     """Each divider slide, in deck order: (its title, its eyebrow's text or None, its title's y)."""
     with zipfile.ZipFile(path) as z:

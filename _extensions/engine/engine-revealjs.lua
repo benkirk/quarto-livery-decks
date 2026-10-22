@@ -690,6 +690,7 @@ function Pandoc(doc)
 
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery), livery))), 0
+  local secs = C.sections(blocks, slide_level)   -- the dividers, for an agenda slide
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then
@@ -780,6 +781,32 @@ function Pandoc(doc)
         if content_art then out:insert(html(content_art)) end
         out:extend(slide)
       end
+    elseif C.is_agenda(blk, slide_level) then
+      -- the agenda: the numbered sections (C.agenda_rows(), by the section this slide sits in) as an
+      -- <ol> of rows, the number beside the title and the divider's subtitle; the slide's own body
+      -- dropped (warned), its notes kept
+      blk.classes = blk.classes:filter(function(c) return c ~= "agenda" end)
+      out:insert(blk)
+      if content_art then out:insert(html(content_art)) end
+      i = i + 1
+      local body = pandoc.Blocks({})
+      while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+      local notes = C.agenda_notes(body, "engine-revealjs", pandoc.utils.stringify(blk.content))
+      out:insert(html('<ol class="engine-agenda">'))
+      for _, row in ipairs(C.agenda_rows(secs, section)) do
+        local raw = function(t) return pandoc.RawInline("html", t) end
+        local il = pandoc.Inlines({ raw(string.format('<li data-engine-state="%s"><span class="engine-agenda-number">%d</span>'
+          .. '<span class="engine-agenda-text"><span class="engine-agenda-title">', row.state, row.number)) })
+        il:extend(row.title)
+        il:insert(raw("</span>"))
+        if row.sub then
+          il:insert(raw('<span class="engine-agenda-sub">')); il:extend(row.sub); il:insert(raw("</span>"))
+        end
+        il:insert(raw("</span></li>"))
+        out:insert(pandoc.Plain(il))
+      end
+      out:insert(html("</ol>"))
+      out:extend(notes)
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "brand-dark") then
       blk.attributes["data-background-color"] = c.dark
       blk.classes:insert("engine-field")

@@ -32,6 +32,10 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   or date a paragraph led by `⟦engine:title⟧`, its text, `⟦engine:end⟧`, and a last `⟦engine:end⟧`;
   a slide with one is a grid slide. A div rail_items() refuses (warned of) stays as it is.
 
+An agenda slide (`## Agenda {.agenda}`, an empty body) is `⟦engine:agenda current=n⟧`, per numbered
+section `⟦engine:item n=k state=done|current|next⟧` with its title and subtitle led by
+`⟦engine:title⟧` and `⟦engine:sub⟧`, `⟦engine:end⟧`, and a last `⟦engine:end⟧`.
+
 It also writes the deck's `.unnumbered` dividers, which the pptx writer drops, into the metadata
 (`engine-unnumbered: 2 4`, their places among the dividers), for pptx_steps/section_subtitle.py.
 
@@ -148,6 +152,27 @@ local function flatten(d, title)
   return out
 end
 
+-- an agenda slide (C.is_agenda()): its heading (the class off), then `⟦engine:agenda current=n⟧`, per
+-- numbered section `⟦engine:item n=k state=done|current|next⟧`, its title led by `⟦engine:title⟧`,
+-- the divider's subtitle by `⟦engine:sub⟧`, `⟦engine:end⟧`, and a last `⟦engine:end⟧` (one body
+-- placeholder: Title and Content, for grid.py); the slide's own body dropped (warned), its notes kept
+local function agenda_marks(blocks, title, secs, current)
+  local h = blocks[1]
+  h.classes = h.classes:filter(function(c) return c ~= "agenda" end)
+  local body = pandoc.Blocks({})
+  for k = 2, #blocks do body:insert(blocks[k]) end
+  local out = pandoc.Blocks({ h, marker("agenda current=" .. current) })
+  for _, row in ipairs(C.agenda_rows(secs, current)) do
+    out:insert(marker("item n=" .. row.number .. " state=" .. row.state))
+    out:insert(prefixed("title", row.title))
+    if row.sub then out:insert(prefixed("sub", row.sub)) end
+    out:insert(marker("end"))
+  end
+  out:insert(marker("end"))
+  out:extend(C.agenda_notes(body, "grid-pptx.lua", title))
+  return out
+end
+
 -- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
@@ -205,16 +230,22 @@ function Pandoc(doc)
     if s.unnumbered then table.insert(unnumbered, tostring(k)) end
   end
   if #unnumbered > 0 then doc.meta["engine-unnumbered"] = pandoc.MetaString(table.concat(unnumbered, " ")) end
+  local secs, current = C.sections(doc.blocks, level), 0   -- current: the numbered dividers so far
+  local function one(slide, title)
+    if slide[1] and C.is_agenda(slide[1], level) then return agenda_marks(slide, title, secs, current) end
+    return mark(slide, title)
+  end
   local out, slide, title = pandoc.Blocks({}), pandoc.Blocks({}), "(before the first slide)"
   for _, blk in ipairs(doc.blocks) do
     if C.is_slide_break(blk, level) then
-      out:extend(mark(slide, title))
+      out:extend(one(slide, title))
       slide = pandoc.Blocks({})
       if blk.t == "Header" then title = pandoc.utils.stringify(blk.content) end
+      if blk.t == "Header" and blk.level == 1 and level > 1 and not C.has_class(blk, "unnumbered") then current = current + 1 end
     end
     slide:insert(blk)
   end
-  out:extend(mark(slide, title))
+  out:extend(one(slide, title))
   doc.blocks = out
   return doc
 end

@@ -575,6 +575,15 @@
             "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.55, 0.9], "description": "Its text's distance from its edges, in em of the body type."}
           }
         },
+        "agenda": {
+          "type": "object",
+          "description": "The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows.",
+          "additionalProperties": false,
+          "properties": {
+            "number-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The section numbers' color, a role, a palette name or a hex; text on the content background, so one that reads there."},
+            "current-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The current section's title's color (bold), a role, a palette name or a hex."}
+          }
+        },
         "quote": {
           "type": "object",
           "description": "A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar.",

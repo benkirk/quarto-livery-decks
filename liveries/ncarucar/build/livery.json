@@ -109,6 +109,10 @@
     "table-rule": "#C1CBD7"
   },
   "boxes": {
+    "agenda": {
+      "current-color": "#0057C2",
+      "number-color": "#0057C2"
+    },
     "card": {
       "fill": "#FFFFFF",
       "head-pad": [

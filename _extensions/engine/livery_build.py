@@ -105,6 +105,9 @@ BOXES = {
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
+    # the agenda slide: its section numbers' color and the current section's title's (text on the
+    # content background: primary-contrast reads there on every livery, the eyebrow and primary not)
+    "agenda": {"number-color": "primary-contrast", "current-color": "primary-contrast"},
     "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0],   # a quote block: a bar, no fill,
               "family": None, "style": "normal"},   # its lines' face: a typography.fonts family (null: the body's), its style
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
@@ -118,7 +121,7 @@ BOXES = {
     "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "fill": None, "pad": [0.4, 0.4]},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
-BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
+BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill")}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
@@ -1155,6 +1158,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-lead-fill: {lead['fill']};", f"--engine-lead-bar: {px(lead['bar'])};",
           f"--engine-lead-bar-color: {lead['bar-color']};", f"--engine-lead-pad: {pad(lead['pad'])};",
           f"--engine-lead-gap: {lead['pad'][0]:g}em;"]   # under it: its vertical pad, as the pptx and beamer leave
+    p += [f"--engine-agenda-number: {b['agenda']['number-color']};", f"--engine-agenda-current: {b['agenda']['current-color']};"]
     quote = b["quote"]
     p += [f"--engine-quote-bar: {px(quote['bar'])};", f"--engine-quote-bar-color: {quote['bar-color']};",
           f"--engine-quote-pad: {pad(quote['pad'])};", f"--engine-quote-gap: {quote['pad'][0]:g}em;",   # above and below it: its vertical pad

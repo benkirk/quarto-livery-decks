@@ -427,6 +427,28 @@ $mermaid-label-fg-color: $engine-primary;
   }
   > :first-child { margin-top: 0; }
 }
+// ## Agenda {.agenda}: the numbered sections, a row each, the number (the eyebrow size, bold,
+// boxes.agenda.number-color) beside the title (subhead) and the divider's subtitle (caption, muted);
+// done muted, the current one bold in boxes.agenda.current-color (livery.css)
+.reveal .slides section ol.engine-agenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 0.9em;
+  row-gap: 0.55em;
+  > li { display: contents; }
+  .engine-agenda-number {
+    font-size: calc(var(--engine-type-eyebrow) * 1em); font-weight: 700; color: var(--engine-agenda-number);
+    line-height: calc(1.2 * var(--engine-type-subhead) / var(--engine-type-eyebrow));   // on the title's first line
+    min-width: 2em;
+  }
+  .engine-agenda-title { display: block; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
+  .engine-agenda-sub { display: block; font-size: calc(var(--engine-type-caption) * 1em); color: var(--engine-muted); margin-top: 0.15em; }
+  > li[data-engine-state="done"] .engine-agenda-title { color: var(--engine-muted); }
+  > li[data-engine-state="current"] .engine-agenda-title { color: var(--engine-agenda-current); font-weight: 700; }
+}
 // cards (::: {.column .card role=...}): a head band in the card's role over a body on the card
 // fill, the row's cards one height (the columns' flex stretch); .pick outlined (inset: no layout
 // shift, and it follows the radius); .solid all of it the role's (livery.css: boxes.card)

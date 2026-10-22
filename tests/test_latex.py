@@ -9,7 +9,8 @@ looped TeX) compiles with XeLaTeX through latexmk, TEXINPUTS and TTFONTS set as 
 sets them (the theme, the liveries and the root), and its log has no Overfull line; the frame
 whose pick moves (`pick=<2>`) is two pages, and the frame whose step holds an `\\uncover<2->`; a
 `role=` that is neither a role nor a color leaves the theme's warning in the log and takes the
-default; the marking is on every page; a quote reads with its attribution, in a card too; an unnumbered divider has no eyebrow and leaves the count alone; a third card or step on a row opened for two is the share
+default; the marking is on every page; a quote reads with its attribution, in a card too; an unnumbered divider has no eyebrow and leaves the count alone; the agenda lists the numbered
+sections, a hand subtitle under its title, the Backup not; a third card or step on a row opened for two is the share
 error. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
 on its frame, `\footcite` sets beamer's footnote there, the entries are on the References frame,
 and its log has no Overfull line; skipped without biblatex. Skipped without xelatex (CI's latex
@@ -104,10 +105,12 @@ No attribution, its own color.
 \begin{enginecard}{OTHER}{}Text.\end{enginecard}
 \end{enginecards}
 \end{frame}
+\sectionsubtitle{Its subtitle}
 \section{Numbered}
 \begin{frame}{In the section}A slide.\end{frame}
 \enginesectionunnumbered{Backup}{A subtitle}
 \section{Second}
+\begin{frame}{Where we are}\engineagenda\end{frame}
 \end{document}
 """
 
@@ -195,7 +198,7 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 12, "the pick=<2> and the \\uncover<2-> frames are two pages, the other eight one each"
+    assert len(texts) == 13, "the pick=<2> and the \\uncover<2-> frames are two pages, the other nine one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
     assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
     for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
@@ -220,9 +223,20 @@ def test_unnumbered_divider(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")[8:]
     words = [" ".join(t.replace("TEST MARKING", "").split()) for t in texts]
-    assert words[0] == "SECTION 1 Numbered" and "In the section" in words[1], words
+    assert words[0] == "SECTION 1 Numbered Its subtitle" and "In the section" in words[1], words
     assert words[2] == "Backup A subtitle", words[2]
     assert words[3] == "SECTION 2 Second", words[3]
+
+
+def test_agenda(deck):
+    """\\engineagenda: the numbered sections from beamer's table of contents (latexmk's second run),
+    each once, a hand author's \\sectionsubtitle under its title (the aux file's copy), the
+    unnumbered Backup absent."""
+    d, _ = deck
+    t = " ".join(pages(d / "deck.pdf")[-1].replace("TEST MARKING", "").split())
+    assert t.startswith("Where we are"), t
+    assert t.count("Numbered") == 1 and t.count("Second") == 1 and "Its subtitle" in t, t
+    assert "Backup" not in t, t
 
 
 def test_role_warns_and_falls_back(deck):
