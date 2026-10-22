@@ -144,7 +144,7 @@ jobs:
               assert p.alignment == PP_ALIGN.CENTER and all(r.font.size.pt == cap for r in p.runs), p.text
           EOF
 
-      # citations: the References slide marked in HTML,
+      # citations (docs/authoring.md "Citations and footnotes"): the References slide marked in HTML,
       # the entries in the PDF (a citation in the text and its entry: Skamarock twice at least), the
       # pptx entries in the footnote size; the ^[...] note lifted, no pandoc Notes slide
       - name: Check the sample's citations

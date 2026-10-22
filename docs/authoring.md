@@ -213,6 +213,48 @@ A note follows it in the same look, so the two read as one block. A table and it
 (`: A caption` after the table) are centered in every format too, the caption in the same look:
 under the table in HTML and pptx, above it in the PDF, where beamer puts a table's caption.
 
+## Citations and footnotes
+
+A deck cites from a bibliography beside it, as any Quarto document does:
+
+```markdown
+---
+bibliography: references.bib      # beside the .qmd; csl: optional (author-year styles only)
+---
+
+## Citing sources
+
+MPAS solves the compressible equations on a C-grid [@skamarock2012]; see also @knuth84.
+A footnote citation^[Skamarock et al. (2012), eqs. (3)–(7).] lifts to the slide's foot.
+
+† A dagger line is still a slide footnote; a lifted note takes the next marker (‡).
+
+## References
+
+::: {#refs}
+:::
+```
+
+`[@key]` cites in parentheses, `@key` in the text. The slide that holds `::: {#refs}` is the
+references slide in every format: the entries in the footnote size, each hanging by 1.5 em, 0.4 em
+apart. In the PDF its frame breaks over as many pages as the list needs, titled "References (1)",
+"References (2)". A deck that cites but has no `::: {#refs}` gets a References slide last, with a
+warning (`reference-section-title:` names it; `suppress-bibliography: true` leaves it out). A
+`[@fig-x]` cross-reference is not a citation. Editing the `.bib` (or a `.csl`) rebuilds the deck.
+
+**Slide footnotes.** A paragraph that starts with `†`, `‡`, `§` or `¶` is a slide footnote: HTML
+and PDF move every one on a slide (in a column or a div too) to its foot, under a short rule, the
+marker in the accent; pptx cannot move content, so it mutes them in place. A `^[...]` note is one
+too: it takes the next of those markers after the slide's own dagger lines, leaves the marker as a
+superscript in the text, and joins them, so a deck has one footnote look in every format (pptx no
+longer makes a "Notes" slide at the end). On a two-column slide pptx puts it at the foot of the
+last column. A note in the speaker notes stays as pandoc writes it; a fifth note on a slide, or one
+holding more than paragraphs (a list), warns and stays as pandoc writes it.
+
+Limits: author-year styles only (a note style, whose citations are footnotes, would need the
+engine to run citeproc itself); pptx shows a citation as text, not a link. A very long list in
+HTML shrinks to the autofit floor and then scrolls; split it over two slides.
+
 ## Centering and scaling a short slide
 
 Six per-slide controls on the heading, each independent, act on the body

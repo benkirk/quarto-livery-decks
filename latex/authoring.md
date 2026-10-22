@@ -38,6 +38,9 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Center a short slide's body | `\begin{frame}[c]`; a list as a block: `\begin{center}\begin{varwidth}{\linewidth}` (the `varwidth` package) |
 | Marking strip on every slide (`marking:` in a Quarto deck) | `\enginemarking{CUI}` in the preamble, where the livery places it; `\enginemarking{}` turns a livery's default off |
 | Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first in the frame and again after the content, then `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` |
+| A numbered footnote (beamer's), in the slide footnotes' look | `\footnote{...}`: muted, its mark bold in the accent, under the same short rule |
+| Citations (biblatex, author-year) | `\usepackage[style=authoryear,backend=bibtex]{biblatex}` and `\addbibresource{references.bib}` in the preamble (`backend=biber` where biber is installed); `\parencite{key}`, `\textcite{key}`, `\footcite{key}` (a footnote at the frame's foot) |
+| The reference list | `\begin{frame}[allowframebreaks]{References}\printbibliography[heading=none]\end{frame}`: the footnote size, a 1.5 em hanging indent; a long list runs on, (1), (2) |
 | Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` |
 | Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body |
 | Closing slide | `\engineclosingframe{Thank you!}{...}` |

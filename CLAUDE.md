@@ -162,7 +162,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   docs/other-repos.md "Building in GitHub Actions". Phase 2, a template repository, is #118.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
-  `toc` and the seven pptx filters in order; a project's `reference-doc:` wins).
+  `toc` and the eight pptx filters in order; a project's `reference-doc:` wins).
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
   which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
@@ -197,11 +197,30 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
   on a `v*` tag (cut by hand, asked first, never moved: latex/README.md's Overleaf links serve
   `releases/latest`).
-- **Slide footnotes** (a paragraph starting with `†`, or `‡` for a second): the
-  theme lifts every one on a slide, columns included, to the slide's
-  foot in HTML and PDF, under a short muted rule with the marker in the accent
-  orange; pptx can't move content, so `style_footnotes.py` mutes them in place
-  in the same colors. `*† text*` works too.
+- **Slide footnotes** (a paragraph starting with `†`, `‡`, `§` or `¶`, the printer's order,
+  `engine-common.lua` `MARKERS`): the theme lifts every one on a slide, columns included, to the
+  slide's foot in HTML and PDF, under a short muted rule with the marker in the accent orange;
+  pptx can't move content, so `style_footnotes.py` mutes them in place in the same colors.
+  `*† text*` works too. A `^[...]` note is one: `lift_footnotes()` (called by `take_footnotes()`,
+  so both hoists; in pptx by `inline-footnotes.lua`, which puts it in a plain two-column slide's
+  last column) makes it a superscript mark (`.engine-noteref`) and a paragraph led by the next
+  marker after the slide's dagger lines; one in the speaker notes, a fifth, or one holding a list
+  stays pandoc's (warned). Beamer's hoist keeps the text as pandoc inlines between raw
+  `\enginefootnote{m}{` and `}`, so citeproc (which runs after the filters) reaches a citation in
+  it; beamer's own `\footnote`/`\footcite` take the same look (`\footnoterule`, the footnote mark
+  color).
+- **Citations** (`bibliography:`, `[@key]`; docs/authoring.md "Citations and footnotes"): Quarto
+  appends citeproc after the extension's filters, so they see `Cite` inlines and the author's empty
+  `::: {#refs}`; the entries exist only for the pptx steps, the beamer theme (Quarto's
+  `CSLReferences` partial, which the inner theme takes over: 1.5 em hang, 0.4 em steps, beamer's
+  `\bibitem` strut dropped) and the css. `engine-common.lua`'s `has_cites()`, `refs_div()`,
+  `refs_heading()`, `ensure_refs()` (a References slide last, warned, when a deck cites without
+  one): the slide holding `#refs` is `engine-references` (HTML), `allowframebreaks` (PDF; the
+  continuation count only past one page), `engine-layout: references` (pptx,
+  `slide_layout.py`'s `references_style()`), every one in the footnote size. Author-year styles
+  only: a note style needs citeproc in the filter. The LaTeX cookbook cites with biblatex on
+  bibtex (the image's `texlive-bibtex-extra`; biber is not installed); the theme's `bibliography
+  item` must not assume `\insertbiblabel` (biblatex defines none).
 - **Notes under a figure** (`::: note` right after a slide's figure or table): its
   caption, as the `.full` caption looks (caption role, muted, centered, just under it). HTML
   `.engine-note`, PDF `\enginenote` (both after the † lift, which reaches into it; after a
@@ -493,7 +512,9 @@ it does, by area, beyond the format notes above:
   `*.md` files resolves, every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a
   heading that exists, `design/` exempt; the consumer example's release pins and the changelog's
   link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
-  Overfull, a moving pick's pages, the `role=` warning, the share error; skipped without TeX),
+  Overfull, a moving pick's pages, the `role=` warning, the share error, and a deck citing with
+  biblatex; skipped without TeX), `test_footnotes.py` (engine-common.lua under `pandoc lua` with a
+  `quarto` shim: the lift's markers and warnings, `ensure_refs`; the pptx filter and steps),
   and the rest of `tests/test_*.py`, one per pptx step or engine area). pytest's
   discovery is the one list of tests, and CI's latex job runs `make test`. One test:
   `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under

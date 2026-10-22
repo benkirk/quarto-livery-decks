@@ -116,3 +116,14 @@ branched from, not a window read).
 - The `version:` line's three shell readers (`image.mk`, `release.yml`, `ci.yaml`), which must
   stay shell since the host side runs without Python; `livery_mpl.py` keeps its own reader because
   it ships alone in the charts zip.
+- Deferred by the three element sprints of 2026-10-22 (`design/citations-handoff.md`, "Deferred"):
+  chevron steps (`style="chevron"`), alternating timeline labels, subsections in the agenda,
+  `agenda: each`, the quote's quotation-mark glyph, `current=` on the agenda, a note-style CSL
+  (needs citeproc in the filter), callouts reaching pptx as a native shape, stat tiles as a card
+  preset, an image grid with captions (after the grid step's picture limit), editable pptx charts
+  from data, icons in pptx.
+- A citation in a `::: note` is lost in the PDF: `engine-beamer.lua`'s `note_frames()` writes the
+  note as raw LaTeX (`pandoc.write`), so citeproc never sees it; the footnote hoist moved to pandoc
+  inlines between raw wrappers in the citations sprint, and the note could take the same shape.
+- A long reference list in HTML (30 entries on one slide) shrinks to the autofit floor, then
+  scrolls under Quarto's `scrollable` and runs over the slide number; the PDF breaks the frame.
