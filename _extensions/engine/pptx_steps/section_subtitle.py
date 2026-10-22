@@ -23,13 +23,7 @@ import livery as livery_mod
 from . import docprops, measure
 from .common import GEOM, LIVERY
 from .measure import PT_PX, PX
-
-P = "http://schemas.openxmlformats.org/presentationml/2006/main"
-A = "http://schemas.openxmlformats.org/drawingml/2006/main"
-R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-CT = "http://schemas.openxmlformats.org/package/2006/content-types"
-PR = "http://schemas.openxmlformats.org/package/2006/relationships"
-NS = {"p": P, "a": A, "r": R}
+from .ooxml import A, CT, NS, P, PR, R, parse, serialize
 
 SECTION_LAYOUT = "Section Header"
 TITLE_PH = {"title", "ctrTitle"}
@@ -59,21 +53,13 @@ def _resolve(base_dir, target):
     return posixpath.normpath(posixpath.join(base_dir, target))
 
 
-def _parse(data):
-    return etree.fromstring(data)
-
-
-def _serialize(root):
-    return etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
-
-
 def _rels_for(parts, part_name):
     """(rels_part_name, [(Id, Type, resolved_target), ...]) for a part."""
     d = posixpath.dirname(part_name)
     rels_name = posixpath.join(d, "_rels", posixpath.basename(part_name) + ".rels")
     if rels_name not in parts:
         return rels_name, []
-    root = _parse(parts[rels_name])
+    root = parse(parts[rels_name])
     rels = [(rel.get("Id"), rel.get("Type"), _resolve(d, rel.get("Target")))
             for rel in root.findall("{%s}Relationship" % PR)]
     return rels_name, rels
@@ -82,7 +68,7 @@ def _rels_for(parts, part_name):
 def _layout_name(parts, slide_part):
     for _id, typ, tgt in _rels_for(parts, slide_part)[1]:
         if typ.endswith("/slideLayout"):
-            csld = _parse(parts[tgt]).find("{%s}cSld" % P)
+            csld = parse(parts[tgt]).find("{%s}cSld" % P)
             return csld.get("name") if csld is not None else None
     return None
 
@@ -238,7 +224,7 @@ def _dress(root, layout_root, number, of=None):
 
 def run(parts: dict, name: str) -> None:
     """The deck's zip members (name -> bytes), changed in place; name for the message."""
-    pres = _parse(parts["ppt/presentation.xml"])
+    pres = parse(parts["ppt/presentation.xml"])
     sld_id_lst = pres.find("p:sldIdLst", NS)
     presrels_name, presrels = _rels_for(parts, "ppt/presentation.xml")
     relmap = {rid: tgt for rid, _typ, tgt in presrels}
@@ -248,7 +234,7 @@ def run(parts: dict, name: str) -> None:
 
     info = {}
     for _el, _rid, part in ordered:
-        root = _parse(parts[part])
+        root = parse(parts[part])
         has_title, has_body, body_sp = _classify(root)
         info[part] = dict(root=root, has_title=has_title, has_body=has_body,
                           body_sp=body_sp, layout=_layout_name(parts, part))
@@ -274,7 +260,7 @@ def run(parts: dict, name: str) -> None:
     total = sum(1 for k in range(1, len(dividers) + 1) if k not in skip)   # the numbered ones: section.progress's
     dressed, number = [], 0
     for part in dividers:
-        layout_root = _parse(parts[_layout_part(parts, part)])
+        layout_root = parse(parts[_layout_part(parts, part)])
         numbered = len(dressed) + 1 not in skip
         number += numbered
         _dress(info[part]["root"], layout_root, number if numbered else None, total)
@@ -295,24 +281,24 @@ def run(parts: dict, name: str) -> None:
             if typ.endswith("/notesSlide"):
                 delete_names.update({tgt, _rels_for(parts, tgt)[0]})
 
-    presrels_root = _parse(parts[presrels_name])
+    presrels_root = parse(parts[presrels_name])
     for rel in presrels_root.findall("{%s}Relationship" % PR):
         if rel.get("Id") in del_rids:
             presrels_root.remove(rel)
 
-    ct_root = _parse(parts["[Content_Types].xml"])
+    ct_root = parse(parts["[Content_Types].xml"])
     del_partnames = {"/" + n for n in delete_names if n.endswith(".xml")}
     for ov in ct_root.findall("{%s}Override" % CT):
         if ov.get("PartName") in del_partnames:
             ct_root.remove(ov)
 
     modified = {
-        "ppt/presentation.xml": _serialize(pres),
-        presrels_name: _serialize(presrels_root),
-        "[Content_Types].xml": _serialize(ct_root),
+        "ppt/presentation.xml": serialize(pres),
+        presrels_name: serialize(presrels_root),
+        "[Content_Types].xml": serialize(ct_root),
     }
     for s_part in dressed:
-        modified[s_part] = _serialize(info[s_part]["root"])
+        modified[s_part] = serialize(info[s_part]["root"])
 
     for n in delete_names:
         parts.pop(n, None)

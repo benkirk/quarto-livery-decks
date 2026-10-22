@@ -36,7 +36,6 @@ VARIANTS = [
 FONT_REL_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font"
 FONT_CONTENT_TYPE = "application/x-fontdata"  # matches the original NCAR template
 
-NS_P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 
 
 def check_fonts() -> dict[str, bytes]:

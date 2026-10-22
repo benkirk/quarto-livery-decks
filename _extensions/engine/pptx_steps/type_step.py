@@ -18,10 +18,9 @@ import livery as livery_mod
 
 from . import docprops
 from .common import LIVERY
+from .ooxml import CP, VT, serialize
 
 SIZED = (qn("a:rPr"), qn("a:defRPr"), qn("a:endParaRPr"))
-CP = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"
-VT = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"
 FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"   # a user-defined property's, as pandoc writes them
 
 
@@ -67,5 +66,5 @@ def run(prs, path) -> None:
     pid = max((int(p.get("pid")) for p in root if p.get("pid")), default=1) + 1
     mark = etree.SubElement(root, f"{{{CP}}}property", fmtid=FMTID, pid=str(pid), name="engine-type-step")
     etree.SubElement(mark, f"{{{VT}}}lpwstr").text = f"{f:.4f}"
-    part._blob = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+    part._blob = serialize(root)
     print(f"type_step: sizes x {f:.4f} ({n} runs and styles, to the half point) -> {path}")
