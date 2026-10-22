@@ -364,16 +364,9 @@ def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
 
 
 def _quote_color(attrs, slide):
-    """A quote marker's role= as a hex when it is a role or a blend of the livery; else (none, or a
-    name that is neither, warned of as engine-common.lua's quote_parts does) the box's bar-color."""
-    r = attrs.get("role")
-    if r in LIVERY["roles"] or r in LIVERY["blends"]:
-        return _hex(r)
-    if r is not None:
-        title = slide.shapes.title
-        print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: role={r!r} is not a role or a blend "
-              "of the livery; the quote bar's color", file=sys.stderr)
-    return _hex(BOXES["quote"]["bar-color"])
+    """A quote marker's role= as a hex when it is a role or a blend of the livery, else (none, or a
+    name that is neither, warned of by _pick_role) the box's bar-color."""
+    return _hex(_pick_role(attrs, BOXES["quote"]["bar-color"], slide))
 
 
 AGENDA_COLORS = {"done": _hex("muted"), "current": _hex(BOXES["agenda"]["current-color"]), "next": None}   # None: the text's
