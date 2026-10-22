@@ -587,8 +587,9 @@ it does, by area, beyond the format notes above:
   in every format. A *plain* slide (two columns, no card or lead) stays pandoc's Two Content:
   `grid-pptx.lua` writes the shares on a notes line (`engine-columns: 0.55 0.45`) and `columns.py`
   frames the placeholders, moving a column's picture or table with them. Never a marker paragraph
-  there: beside a picture or table it demotes the slide. A *grid* slide (`is_grid()`: more than
-  two columns, a `.card`, a `.lead`, a `.steps` or `.timeline`) is flattened on purpose into one
+  there: beside a picture or table it demotes the slide. A *grid* slide (what `is_grid()` counts,
+  the one list above it: more than two columns, a `.card`, a `.lead`, a `.strip`, a rail, a
+  `.gallery`, a quote) is flattened on purpose into one
   placeholder with marker paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`,
   `⟦engine:end⟧`), which `grid.py` redraws as text boxes carrying the master's body list style
   and deletes. First-cut limit: a

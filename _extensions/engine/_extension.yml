@@ -59,7 +59,8 @@ contributes:
       #   inline-footnotes  a slide's ^[...] notes as slide footnotes († ‡ § ¶ after its dagger
       #                     lines), in place of pandoc's Notes slide; style_footnotes.py styles them
       #   grid-pptx         a two-column slide's shares as a notes line, for columns.py; a grid
-      #                     slide (three or more columns, a .card, a .lead, steps or a timeline)
+      #                     slide (what engine-common.lua's is_grid() counts: three or more
+      #                     columns, a card, a lead, a strip, a rail, a gallery, a quote)
       #                     flattened into marker paragraphs, for grid.py: pandoc's pptx keeps two
       #                     columns and drops the rest
       #   notes-last        speaker notes before a columns div split the slide; every slide's

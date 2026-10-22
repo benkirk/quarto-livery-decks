@@ -518,11 +518,12 @@ local function is_quote(b)
   return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
 end
 
--- A grid slide: the columns div has a .card column, a column holding a quote (unless a column holds
--- a picture or table, which a grid column cannot: the slide stays pandoc's, the quote its own), or
--- more than two columns, or the slide (its blocks) has a .lead, a .steps, a .timeline, a .gallery or a
--- quote of its own. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py); pandoc's two
--- placeholders cannot hold it.
+-- A grid slide, the one list (the prose elsewhere says "what is_grid() counts"): the columns div has
+-- more than two columns, a .card column, or a column holding a quote (unless a column holds a picture
+-- or table, which a grid column cannot: the slide stays pandoc's, the quote its own); or the slide (its
+-- blocks) has a .lead, a .strip, a .steps, a .timeline, a .gallery or a quote of its own. pptx draws one
+-- from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py and gallery.py); pandoc's two placeholders
+-- cannot hold it.
 local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
