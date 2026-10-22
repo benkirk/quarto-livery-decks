@@ -22,6 +22,9 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Fine print under the title | `\titlefineprint{...}` |
 | Section divider | `\section{...}` |
 | Divider subtitle | `\sectionsubtitle{...}` before `\section` |
+| Agenda: the numbered sections, a row each, each `\sectionsubtitle` under its title; in a section, that one current | `\begin{frame}{Agenda}\engineagenda\end{frame}` (from the table of contents: `latexmk` runs LaTeX twice); a plain `\tableofcontents` draws the same rows, none current |
+| "SECTION 3 OF 5" over a divider, under a livery with `section.progress` | `\enginesectiontotal{5}` in the preamble: the numbered sections' count (a livery without it ignores the line) |
+| Divider outside the count (an appendix, the backup slides) | `\enginesectionunnumbered{Backup}{A subtitle}` between frames, `{}` for no subtitle: no eyebrow, and no `\section`, so no counter step, table-of-contents line or PDF bookmark (`\section*` still steps beamer's counter) |
 | Slide | `\begin{frame}{Title}` |
 | Blocks | `block`, `exampleblock`, `alertblock` |
 | Emphasis | `\alert{...}` |
@@ -31,6 +34,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Lead box over a row of cards, or alone | `\begin{enginelead} ... \end{enginelead}`; each line its own paragraph (`\par`) |
 | Cards, side by side at one height | `\begin{enginecards}{3}` holding `\begin{enginecard}[<keys>]{Title}{Sub}` (next section) |
 | A strip, in a card or on its own | `\begin{enginestrip}[role=accent] ... \end{enginestrip}` |
+| A quote: its lines in the quote size beside a bar, the attribution under them | `\begin{enginequote}[role=accent]{Richard Hamming, 1962} ... \end{enginequote}`; `{}` for no attribution, no `role=` for the livery's bar color (`boxes.quote`); in a card or a column too |
 | Steps of a process on a rail, a numbered badge each | `\begin{enginesteps}[role=secondary]{3}` holding `\begin{enginestep}{Title} ... \end{enginestep}` (["Steps and timelines"](#steps-and-timelines)) |
 | A timeline: milestones on a rail, the date above each dot | `\begin{enginetimeline}{4}` holding `\enginemilestone[done]{Q1 2025}{Label}`; without `[done]` the dot is hollow |
 | Status list: ✓ ⚠ ✗ as the bullets | `\begin{enginestatus}` with `\done`, `\warn`, `\fail` items (and plain `\item`); `\engineglyph{done}` is the glyph anywhere |

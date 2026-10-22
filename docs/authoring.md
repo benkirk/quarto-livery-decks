@@ -76,6 +76,11 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   logo or rule, and the paragraph after it (or a `::: note`) becomes a one-line caption. The
   title stays in the source for navigation and `make qa`. pptx gets it
   from `slide_layout.py`.
+- `# Backup {.unnumbered}` is a section divider outside the count, in every format: no
+  "SECTION n" over it, and the dividers after it keep their numbers. A paragraph right after it
+  is its subtitle, as under any divider. In the PDF it has no bookmark.
+  A livery with `section: {progress: true}` reads "SECTION 3 OF 5" over a numbered divider: its
+  number of the numbered sections.
 - `## Thank you! {.closing}` makes a closing slide.
 - `### Heading {.example}` / `{.alert}` give block variants.
 - `[text]{.alert}` emphasizes text.
@@ -179,6 +184,72 @@ Each trades local capacity against a share of the consortium system.
   notes: a lead makes the slide a card slide, and the table would split it. A card slide's
   `.caution` and `.vcenter` do not apply in pptx.
 - The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).
+
+## Quotes
+
+A quotation is a `quote` div, or a bare `>` blockquote, anywhere in a slide's body:
+
+```markdown
+::: {.quote role="accent"}
+The purpose of computing is insight, not numbers.
+— Richard Hamming, 1962
+:::
+
+> A bare blockquote is the same box, in the livery's bar color.
+```
+
+- Its lines are set in the livery's `quote` size (24 pt on the default canvas) beside a bar at
+  its left, with no fill. `role=` colors the bar (any livery role or blend); without it the bar
+  takes the livery's `boxes.quote.bar-color`, by default `primary-contrast` (the primary that reads
+  on the background). A `role=` you pick should read on the background too: a thin bar in a light
+  role fades on white. Each source line is a line, as in a lead.
+- Its face is the body's unless the livery names one: `boxes.quote.family` (a family the livery
+  bundles in `_brand.yml`'s `typography.fonts`) and `boxes.quote.style` (`normal` or `italic`),
+  in every format; PowerPoint sets it in `pptx.quote-typeface` (by default the family's name, so
+  install the face or name an installed one). The attribution stays in the body's face.
+- A last line that starts with `—`, `–` or `--` is the **attribution**: set under the quote at the
+  caption size, muted, after "— ". A last line that begins with a dash for another reason is
+  read the same way, so reword it.
+- A quote works on its own, in a column and in a card (inside the card's pads). Inside a lead or a
+  strip it is not drawn (those are boxes of lines already): a warning, and its lines stay. In the
+  speaker notes a `>` stays as it is.
+- pptx draws it as a text box and a bar, one group ("Quote"); a quote in a column makes the slide
+  a card slide (drawn by the engine, like three columns). Beside a picture or table in a two-column
+  slide the slide stays pandoc's and the quote is pandoc's plain blockquote there, with a warning
+  (HTML and the PDF draw the box).
+- In LaTeX it is `\begin{enginequote}[role=accent]{Richard Hamming, 1962}`
+  ([latex/authoring.md](../latex/authoring.md#the-patterns)).
+
+## Agenda
+
+An agenda slide lists the deck's numbered sections; the engine writes its body:
+
+```markdown
+## Agenda {.agenda}
+
+# Basics
+
+A paragraph right after a divider is its subtitle, and the agenda shows it too.
+
+...
+
+# Wrap-up
+
+## Where we are {.agenda}
+```
+
+- **`{.agenda}`** on a slide heading with an empty body draws a row per numbered section: its
+  number beside its title, the divider's subtitle under it. Speaker notes stay; anything else in
+  the body warns and is dropped.
+- **By position.** Up front (before the first divider) every section is upcoming. Placed in a
+  section, that one is current (bold, in the livery's `boxes.agenda.current-color`), the earlier
+  ones are done (muted) and the later ones upcoming. The numbers take `boxes.agenda.number-color`;
+  both are `primary-contrast` by default, the primary that reads on the background.
+- An unnumbered divider (`# Backup {.unnumbered}`) is not on the agenda.
+- pptx draws the rows as text boxes, one group ("Agenda"); a long agenda that runs past the slide
+  loses its subtitles there, with a warning. The PDF draws it from beamer's table of contents,
+  which a second LaTeX run fills (Quarto's build reruns for it).
+- In LaTeX it is `\engineagenda` in a frame ([latex/authoring.md](../latex/authoring.md#the-patterns)).
 
 ## Steps and timelines
 

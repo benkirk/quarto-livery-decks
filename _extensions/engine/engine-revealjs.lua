@@ -203,6 +203,25 @@ local function strips(blocks, livery)
   end })
 end
 
+-- Quote blocks (C.quote_blocks(): ::: {.quote}, or a bare `>`), at any depth: raw tags round its
+-- lines, its role= a custom property (the scss falls back on the box's bar-color), its attribution
+-- a paragraph led by "— "; the scss draws the bar, the sizes and the muted attribution
+local function quote_boxes(blocks, livery)
+  return C.quote_blocks(blocks, livery, "engine-revealjs", function(q)
+    local style = q.role and string.format(' style="--engine-quote-role: var(--engine-%s)"', q.role) or ""
+    local out = pandoc.Blocks({ html('<div class="engine-quote"' .. style .. '>') })
+    out:extend(q.body)
+    if q.attribution then
+      local il = pandoc.Inlines({ pandoc.RawInline("html", '<p class="engine-attribution">'), pandoc.Str("—"), pandoc.Space() })
+      il:extend(q.attribution)
+      il:insert(pandoc.RawInline("html", "</p>"))
+      out:insert(pandoc.Plain(il))
+    end
+    out:insert(html("</div>"))
+    return out
+  end)
+end
+
 -- Status items (C.status_lists()): the glyph a span of its status (⚠ with U+FE0E: no emoji), which
 -- the scss sets where the bullet was (the bullet dropped), a failed item's text a span it mutes
 local function status_items(blocks)
@@ -670,7 +689,12 @@ function Pandoc(doc)
   doc.blocks = cited
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery), livery))), 0
+  local secs = C.sections(blocks, slide_level)   -- the dividers, for an agenda slide
+  local total = 0   -- the numbered ones, for section.progress
+  for _, sec in ipairs(secs) do if sec.number then total = total + 1 end end
+  local eyebrow = comps.section.eyebrow
+  local progress = type(eyebrow) == "table" and eyebrow.progress == true
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then
@@ -681,20 +705,14 @@ function Pandoc(doc)
       if not has_class(blk, "unnumbered") then
         section = section + 1
         blk.attributes["data-engine-section"] = tostring(section)
+        if progress then blk.attributes["data-engine-section-total"] = tostring(total) end   -- "3 of 5"
       end
       out:insert(blk)
       out:insert(html(comp_art(comps.section, r)))
-      i = i + 1
       -- paragraphs alone between the divider and the next slide: the subtitle
-      local j, paras = i, pandoc.List({})
-      while j <= #blocks and (blocks[j].t == "Para" or blocks[j].t == "Plain") do
-        paras:insert(blocks[j])
-        j = j + 1
-      end
-      if #paras > 0 and (j > #blocks or is_slide_break(blocks[j])) then
-        out:insert(pandoc.Div(paras, pandoc.Attr("", { "engine-subtitle" })))
-        i = j
-      end
+      local paras
+      paras, i = C.divider_subtitle(blocks, i, slide_level)
+      if paras then out:insert(pandoc.Div(paras, pandoc.Attr("", { "engine-subtitle" }))) end
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "closing") then
       local cbg, cclass = field_of(ccomp)
       blk.attributes["data-background-color"] = cbg
@@ -768,6 +786,32 @@ function Pandoc(doc)
         if content_art then out:insert(html(content_art)) end
         out:extend(slide)
       end
+    elseif C.is_agenda(blk, slide_level) then
+      -- the agenda: the numbered sections (C.agenda_rows(), by the section this slide sits in) as an
+      -- <ol> of rows, the number beside the title and the divider's subtitle; the slide's own body
+      -- dropped (warned), its notes kept
+      blk.classes = blk.classes:filter(function(c) return c ~= "agenda" end)
+      out:insert(blk)
+      if content_art then out:insert(html(content_art)) end
+      i = i + 1
+      local body = pandoc.Blocks({})
+      while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+      local notes = C.agenda_notes(body, "engine-revealjs", pandoc.utils.stringify(blk.content))
+      out:insert(html('<ol class="engine-agenda">'))
+      for _, row in ipairs(C.agenda_rows(secs, section)) do
+        local raw = function(t) return pandoc.RawInline("html", t) end
+        local il = pandoc.Inlines({ raw(string.format('<li data-engine-state="%s"><span class="engine-agenda-number">%d</span>'
+          .. '<span class="engine-agenda-text"><span class="engine-agenda-title">', row.state, row.number)) })
+        il:extend(row.title)
+        il:insert(raw("</span>"))
+        if row.sub then
+          il:insert(raw('<span class="engine-agenda-sub">')); il:extend(row.sub); il:insert(raw("</span>"))
+        end
+        il:insert(raw("</span></li>"))
+        out:insert(pandoc.Plain(il))
+      end
+      out:insert(html("</ol>"))
+      out:extend(notes)
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "brand-dark") then
       blk.attributes["data-background-color"] = c.dark
       blk.classes:insert("engine-field")

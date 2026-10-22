@@ -135,3 +135,77 @@ def test_rail_marked(tmp_path):
                         "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧Pilot", "Six weeks.", "⟦engine:end⟧", "⟦engine:end⟧"], paras[0]
     assert paras[1] == ["⟦engine:rail kind=timeline role=primary-contrast⟧", "⟦engine:item done⟧", "⟦engine:title⟧Q1", "Accepted",
                         "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧2026", "Full", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]
+
+
+def test_unnumbered_in_the_metadata(tmp_path):
+    """pandoc's pptx writer drops `.unnumbered`: the filter writes the dividers outside the count,
+    by their places among the dividers, as `engine-unnumbered` (docProps/custom.xml), for
+    section_subtitle.py; a deck without one has no such property."""
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+
+    def custom(md):
+        out = tmp_path / "u.pptx"
+        subprocess.run([pandoc, "--slide-level=2", "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True,
+                       check=True, capture_output=True)
+        with zipfile.ZipFile(out) as z:
+            return z.read("docProps/custom.xml").decode() if "docProps/custom.xml" in z.namelist() else ""
+    md = "# One\n\n## a\n\nx\n\n# Backup {.unnumbered}\n\n## b\n\ny\n\n# Two\n\n## c\n\nz\n\n# More {.unnumbered}\n\n## d\n\nw\n"
+    prop = re.search(r'name="engine-unnumbered"[^>]*>.*?<vt:lpwstr>([^<]*)</vt:lpwstr>', custom(md), re.S)
+    assert prop and prop.group(1) == "2 4", custom(md)
+    assert "engine-unnumbered" not in custom(md.replace(" {.unnumbered}", ""))
+
+
+def test_quote_marked(tmp_path):
+    """A quote: `⟦engine:quote⟧` (role= only when it names one), a paragraph per source line, the
+    attribution a paragraph led by `⟦engine:attribution⟧` without its dash, `⟦engine:end⟧`; a bare
+    `>` the same. A quote in a column makes a two-column slide a grid slide (its columns flattened),
+    and a quote on its own is marked too."""
+    md = ('## Quote\n\n::: {.quote role="accent"}\nOne line\nanother\n— Who, 1962\n:::\n\n'
+          '## Column\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\n> Right\n> -- Them\n:::\n::::\n')
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "q.pptx"
+    subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
+    with zipfile.ZipFile(out) as z:
+        slides = [z.read(f"ppt/slides/slide{n}.xml").decode() for n in (1, 2)]
+    paras = [["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", x)] for x in slides]
+    assert paras[0][1:] == ["⟦engine:quote role=accent⟧", "One line", "another", "⟦engine:attribution⟧Who, 1962", "⟦engine:end⟧"], paras[0]
+    assert paras[1][1:] == ["⟦engine:columns widths=0.5,0.5⟧", "⟦engine:column⟧", "Left", "⟦engine:end⟧", "⟦engine:column⟧",
+                            "⟦engine:quote⟧", "Right", "⟦engine:attribution⟧Them", "⟦engine:end⟧", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]
+
+
+def test_agenda_marked(tmp_path):
+    """An agenda slide: its title, `⟦engine:agenda current=n⟧` (the numbered dividers before it), per
+    numbered section an item marker with its number and state, the title and the divider's
+    subtitle led by their prefixes; the unnumbered Backup absent; a body of its own dropped."""
+    md = ("## Agenda {.agenda}\n\nAn author's line.\n\n# One\n\nIts subtitle.\n\n## a\n\nx\n\n"
+          "# Two\n\n## Where we are {.agenda}\n\n# Backup {.unnumbered}\n\n## b\n\ny\n")
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "a.pptx"
+    r = subprocess.run([pandoc, "--slide-level=2", "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True,
+                       check=True, capture_output=True)
+    assert "has a body of its own" in r.stderr, r.stderr
+    with zipfile.ZipFile(out) as z:
+        texts = [[("".join(re.findall(r"<a:t>([^<]*)</a:t>", p))) for p in re.findall(r"<a:p>.*?</a:p>", z.read(n).decode())]
+                 for n in sorted((n for n in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)),
+                                 key=lambda n: int(re.search(r"(\d+)", n).group(1)))]
+    front = next(t for t in texts if t and t[0] == "Agenda")
+    assert front[1:] == ["⟦engine:agenda current=0⟧", "⟦engine:item n=1 state=next⟧", "⟦engine:title⟧One", "⟦engine:sub⟧Its subtitle.",
+                         "⟦engine:end⟧", "⟦engine:item n=2 state=next⟧", "⟦engine:title⟧Two", "⟦engine:end⟧", "⟦engine:end⟧"], front
+    later = next(t for t in texts if t and t[0] == "Where we are")
+    assert "⟦engine:agenda current=2⟧" in later and "⟦engine:item n=1 state=done⟧" in later and "⟦engine:item n=2 state=current⟧" in later
+    assert not any("Backup" in x for x in front + later), "an unnumbered divider is not on the agenda"
+
+
+def test_quote_beside_a_picture(tmp_path):
+    """A two-column slide with a quote in one column and a picture in the other stays pandoc's (a grid
+    column cannot hold the picture): no marker, the quote pandoc's own blockquote, and a warning."""
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / "p.png")
+    md = "## Beside\n\n:::: {.columns}\n" + COL.format("", "> Quoted\n> -- Them") + COL.format("", "![](p.png)") + "::::\n"
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "b.pptx"
+    r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True,
+                       capture_output=True, cwd=tmp_path)
+    assert "a quote beside a picture or table in a two-column slide is not drawn in pptx" in r.stderr, r.stderr
+    with zipfile.ZipFile(out) as z:
+        xml = z.read("ppt/slides/slide1.xml").decode()
+    assert "⟦engine:" not in xml and "Quoted" in xml and "<p:pic>" in xml, "pandoc's own slide, the picture in it"

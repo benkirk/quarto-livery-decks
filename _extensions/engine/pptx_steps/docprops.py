@@ -1,6 +1,6 @@
 """The deck's metadata as pandoc records it in docProps/custom.xml: one user-defined property
 per front-matter key (a string; a list as an empty string). Read by the steps that take a deck's
-word (titlegraphic, marking, the type step, the cover's byline)."""
+word (titlegraphic, marking, the type step, the cover's byline, the unnumbered dividers)."""
 
 from lxml import etree
 
@@ -15,10 +15,16 @@ def part(prs):
     return None
 
 
+def props_of(blob):
+    """The part's root and its properties as {name: text}, from its bytes (a step on the zip's
+    parts, section_subtitle, reads them so)."""
+    root = etree.fromstring(blob)
+    return root, {p.get("name"): "".join(p.itertext()).strip() for p in root}
+
+
 def props(part):
     """The part's root and its properties as {name: text}."""
-    root = etree.fromstring(part.blob)
-    return root, {p.get("name"): "".join(p.itertext()).strip() for p in root}
+    return props_of(part.blob)
 
 
 def prop(prs, name):

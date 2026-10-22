@@ -371,6 +371,18 @@ local function strips(blocks, livery)
   end })
 end
 
+-- Quote blocks (C.quote_blocks(): ::: {.quote}, or a bare `>`), at any depth:
+-- \begin{enginequote}[role=<role>]{<attribution>} round its lines (no role=: the box's bar-color)
+local function quote_boxes(blocks, livery)
+  return C.quote_blocks(blocks, livery, "engine-beamer", function(q)
+    local who = q.attribution and inlines_to_latex(q.attribution) or ""
+    local out = pandoc.Blocks({ latex("\\begin{enginequote}" .. (q.role and ("[role=" .. q.role .. "]") or "") .. "{" .. who .. "}") })
+    out:extend(q.body)
+    out:insert(latex("\\end{enginequote}"))
+    return out
+  end)
+end
+
 -- Steps and timelines (C.rail_items()): \begin{enginesteps}[role=<role>]{<n>} with a
 -- \begin{enginestep}{<title>} round each step's text (as a card's body: \enginelabel and \enginebig
 -- lines), or \begin{enginetimeline}[role=<role>]{<n>} with \enginemilestone[done]{<date>}{<label>}
@@ -413,7 +425,7 @@ end
 -- A frame whose body opens with a paragraph: \vskip-\parskip before it, so it starts at the body's
 -- top as HTML's and the pptx's do (TeX puts \parskip, the parskip package's half line, before every
 -- paragraph; a list opens at its own \topsep, which already matches). Frames are top-aligned
--- (beamerthemeEngine.sty), so the space showed. A caution or lead box opens a paragraph too; the
+-- (beamerthemeEngine.sty), so the space showed. A caution, lead or quote box opens a paragraph too; the
 -- footnote spring and a scale group are looked past; a wide body cancels its own.
 local function opens_paragraph(b)   -- true, false, or nil: look at the next block
   if b.t == "Para" or b.t == "Plain" then return true end
@@ -422,6 +434,7 @@ local function opens_paragraph(b)   -- true, false, or nil: look at the next blo
   if t == "\\enginefootnotespring" or t:match("^\\begin{enginescale}{[^}]*}$") then return nil end
   if t:find("\\begin{enginewide}", 1, true) or t:find("\\begin{varwidth}", 1, true) then return false end
   return t:find("\\begin{enginecaution}", 1, true) ~= nil or t:find("\\begin{enginelead}", 1, true) ~= nil
+    or t:find("\\begin{enginequote}", 1, true) ~= nil
 end
 
 local function first_paragraph(blocks)
@@ -726,7 +739,18 @@ function Pandoc(doc)
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == slide_level then
-      if has_class(blk, "feature") then
+      if C.is_agenda(blk, slide_level) then
+        -- the agenda: the theme's \engineagenda (beamer's table of contents in the agenda's rows, by
+        -- the section the frame sits in); the slide's own body dropped (warned), its notes kept
+        blk.classes = blk.classes:filter(function(c) return c ~= "agenda" end)
+        out:insert(blk)
+        i = i + 1
+        local body = pandoc.Blocks({})
+        while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+        local notes = C.agenda_notes(body, "engine-beamer", pandoc.utils.stringify(blk.content))
+        out:insert(latex("\\engineagenda"))
+        out:extend(notes)
+      elseif has_class(blk, "feature") then
         local bg = blk.attributes["background"] or blk.attributes["background-image"]
         if bg then
           add_frameoption(blk, "enginebg=" .. bg)
@@ -778,34 +802,36 @@ function Pandoc(doc)
         i = i + 1
       end
     elseif blk.t == "Header" and blk.level == 1 and slide_level > 1 then
-      -- paragraphs alone between a divider and the next slide: the subtitle
-      if not has_class(blk, "unnumbered") then section = section + 1 end
-      local j, paras = i + 1, pandoc.List({})
-      while j <= #blocks and (blocks[j].t == "Para" or blocks[j].t == "Plain") do
-        paras:insert(blocks[j])
-        j = j + 1
+      -- paragraphs alone between a divider and the next slide: the subtitle (C.divider_subtitle)
+      local paras, j = C.divider_subtitle(blocks, i, slide_level)
+      local text = pandoc.List({})
+      for k, p in ipairs(paras or {}) do
+        if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
+        text:extend(p.content)
       end
-      if #paras > 0 and (j > #blocks or is_slide_break(blocks[j]))
-          and not has_class(blk, "unnumbered") then
-        local text = pandoc.List({})
-        for k, p in ipairs(paras) do
-          if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
-          text:extend(p.content)
-        end
-        subtitles:insert(latex("\\enginesectionsubtitle{" .. section .. "}{"
-          .. inlines_to_latex(text) .. "}"))
-        out:insert(blk)
-        i = j
+      if has_class(blk, "unnumbered") then
+        -- outside the count: no \section (pandoc's \section* steps the counter as \section does),
+        -- the divider drawn by the theme in a plain frame of its own (an empty-titled slide heading;
+        -- a raw block between slides would land in the slide before)
+        local frame = pandoc.Header(slide_level, {}, pandoc.Attr(blk.identifier))
+        add_frameoption(frame, "plain,noframenumbering")
+        out:insert(frame)
+        out:insert(latex("\\enginesectionunnumbered{" .. inlines_to_latex(blk.content) .. "}{"
+          .. (paras and inlines_to_latex(text) or "") .. "}"))
       else
+        section = section + 1
+        if paras then
+          subtitles:insert(latex("\\enginesectionsubtitle{" .. section .. "}{" .. inlines_to_latex(text) .. "}"))
+        end
         out:insert(blk)
-        i = i + 1
       end
+      i = j
     else
       out:insert(blk)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(rails(note_frames(unwrap_layout(hoist_footnotes(out))), LIVERY)), LIVERY)), LIVERY)))
+  doc.blocks = first_paragraph(lead_boxes(strips(quote_boxes(beamer_columns(card_rows(status_items(rails(note_frames(unwrap_layout(hoist_footnotes(out))), LIVERY)), LIVERY)), LIVERY), LIVERY)))
   if used.hcenter then
     local hi = header_includes(doc)
     hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") }))
@@ -814,6 +840,11 @@ function Pandoc(doc)
   if #subtitles > 0 then
     local hi = header_includes(doc)
     hi:insert(pandoc.Blocks(subtitles))
+    doc.meta["header-includes"] = hi
+  end
+  if section > 0 then   -- the numbered sections' total, for a livery's section.progress ("SECTION 3 of 5")
+    local hi = header_includes(doc)
+    hi:insert(pandoc.Blocks({ latex("\\enginesectiontotal{" .. section .. "}") }))
     doc.meta["header-includes"] = hi
   end
   return doc

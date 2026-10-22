@@ -82,10 +82,10 @@ TYPE = {"body": (16, 1.4), "subhead": (20, 1.2), "frametitle": (27, 1.15), "tabl
         "subtitle": (20, 1.3), "date": (11, 1.2), "author": (16, 1.3), "institute": (16, 1.3),
         "fineprint": (7, 1.4), "section": (40, 1.08), "sectionsubtitle": (20, 1.3), "eyebrow": (11, 1.2),
         "closing": (40, 1.08), "pagenumber": (9, 1.2), "footer": (9, 1.2), "marking": (9, 1.2),
-        "display": (40, 1.08)}   # display: a card's big number ([$20M]{.big})
+        "display": (40, 1.08), "quote": (24, 1.3)}   # display: a card's big number ([$20M]{.big}); quote: a quote block's text
 LEVELS = (16, 15, 13, 12, 11)   # the body's five list levels, the first the body itself
 # the roles that scale with the body when a livery leaves them out (the rest scale with the canvas)
-BODY_ROLES = ("subhead", "table", "code", "caption", "footnote")
+BODY_ROLES = ("subhead", "table", "code", "caption", "footnote", "quote")
 # the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
@@ -105,6 +105,12 @@ BOXES = {
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
+    # the agenda slide: its section numbers' color and the current section's title's (text on the
+    # content background: primary-contrast reads there on every livery, the eyebrow and primary not)
+    "agenda": {"number-color": "primary-contrast", "current-color": "primary-contrast"},
+    "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0],   # a quote block: a bar, no fill,
+              "family": None, "style": "normal"},   # its lines' face: a typography.fonts family (null: the body's), its style
+    # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
@@ -115,7 +121,7 @@ BOXES = {
     "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "fill": None, "pad": [0.4, 0.4]},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
-BOX_COLORS = {"lead": ("fill", "bar-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
+BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill")}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
@@ -251,6 +257,9 @@ def resolve(d: Path) -> tuple[dict, dict]:
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's (a blend too: the rail's rule)
                          lambda c, k: roles.get(c) or blends.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
+    qf = out["boxes"]["quote"]["family"]   # a face every format draws: one the livery bundles
+    if qf is not None and not family_files(out, qf):
+        sys.exit(f"livery.yml: boxes.quote.family: {qf!r} is not a typography.fonts family with files")
     # derived, not yml keys: the content body's box (the template's placeholder, the plots' size) and
     # the Two Content column's width (the template's halves, the shares' reference in columns.py)
     m, top = g["margin"], out["frametitle"]["body"]
@@ -553,7 +562,8 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
                           "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
                "eyebrow": {"label": dv.get("label", "Section"),   # section.label-color, a role or a hex, as hex
-                           "color": (lambda c: c if c.startswith("#") else out["roles"][c])(dv.get("label-color", "secondary"))}
+                           "color": (lambda c: c if c.startswith("#") else out["roles"][c])(dv.get("label-color", "secondary")),
+                           "progress": bool(dv.get("progress", False))}   # "SECTION 3 of 5"
                           if dv.get("label", "Section") else None}   # section.label: null, no eyebrow
     feature = {**empty,
                "photo": {"box": _box(0, 0, 1, 1)},
@@ -674,14 +684,25 @@ def base_font(livery: dict) -> tuple[str, list]:
     return family, []
 
 
+def family_files(livery: dict, family: str) -> list:
+    """A typography.fonts family's files ([] when it has none, or no such family)."""
+    return next((f["files"] for f in livery["typography"].get("fonts", []) if f.get("family") == family and f.get("files")), [])
+
+
 def heading_font(livery: dict) -> tuple[str, list]:
     """The headings family and its files when it is a second family with files of its own."""
     t = livery["typography"]
     family = t.get("headings", "")
-    if family and family != t.get("base", ""):
-        for font in t.get("fonts", []):
-            if font.get("family") == family and font.get("files"):
-                return family, font["files"]
+    if family and family != t.get("base", "") and family_files(livery, family):
+        return family, family_files(livery, family)
+    return "", []
+
+
+def quote_font(livery: dict) -> tuple[str, list]:
+    """The quote's family (boxes.quote.family) and its files when it is not the body's."""
+    family = livery["boxes"]["quote"]["family"]
+    if family and family != livery["typography"].get("base", ""):
+        return family, family_files(livery, family)
     return "", []
 
 
@@ -772,6 +793,16 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             face = face_of(f)
             if face:
                 L.append(f"\\def\\engine@headfont@{face}{{{Path(f['path']).stem}}}")
+    qfamily, qfiles = quote_font(livery)
+    if qfamily:   # the quote's face (boxes.quote.family), when not the body's: the faces it has
+        L.append("% the quote's family's files (boxes.quote.family)")
+        L.append(f"\\def\\engine@quotefont@family{{{qfamily}}}")
+        L.append(f"\\def\\engine@quotefont@dir{{{texpath(Path(qfiles[0]['path']).parent.as_posix())}/}}")
+        L.append(f"\\def\\engine@quotefont@ext{{{Path(qfiles[0]['path']).suffix}}}")
+        for f in qfiles:
+            face = face_of(f)
+            if face:
+                L.append(f"\\def\\engine@quotefont@{face}{{{Path(f['path']).stem}}}")
     mfamily, mfaces = mono_font(livery)
     if mfamily:   # the code face (typography.monospace), when the livery bundles one
         L.append("% the code face's files (typography.monospace)")
@@ -880,6 +911,8 @@ def emit_sty_boxes(livery: dict) -> list[str]:
             name = k.replace("-", "")
             if k == "roles":
                 L.append(f"\\def\\engine@boxes@{box}@{name}{{{','.join(val)}}}")
+            elif (box, k) == ("quote", "family"):   # its files are the fonts' (\engine@quotefont@*, above)
+                continue
             elif k in BOX_COLORS.get(box, ()):
                 if val is None:   # none (a rail's fill): the theme tests \ifcsname
                     continue
@@ -959,6 +992,8 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
         if c["eyebrow"]:
             e = c["eyebrow"]
             d("eyebrow@label", e["label"])
+            if e["progress"]:   # \insertsectionnumberlabel adds "of <total>" (\enginesectiontotal)
+                d("eyebrow@progress", "true")
             L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")   # hex: compositions() resolved it
         for k in ("mark", "signoff"):   # its files, the composition's own (compositions())
             if c[k] and c[k].get("img"):
@@ -976,8 +1011,11 @@ def emit_css(livery: dict, extra: str = "") -> str:
     hfamily, hfiles = heading_font(livery)
     installed = livery.get("installed-fonts", {})
     mfamily, mfaces = mono_font(livery)
+    qfamily, qfiles = quote_font(livery)
+    if qfamily in (hfamily, mfamily):   # already declared
+        qfiles = []
     for fam, fs, inst in ((family, files, installed.get("base")), (hfamily, hfiles, installed.get("headings")),
-                          (mfamily, list(mfaces.values()), None)):
+                          (mfamily, list(mfaces.values()), None), (qfamily, qfiles, None)):
         for f in fs:   # an installed face first, by full and PostScript name (CSS local() matches no family)
             names = (inst or {}).get("faces", {}).get(face_of(f), [])
             local = "".join(f'local("{n}"), ' for n in names)
@@ -1123,6 +1161,13 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-lead-fill: {lead['fill']};", f"--engine-lead-bar: {px(lead['bar'])};",
           f"--engine-lead-bar-color: {lead['bar-color']};", f"--engine-lead-pad: {pad(lead['pad'])};",
           f"--engine-lead-gap: {lead['pad'][0]:g}em;"]   # under it: its vertical pad, as the pptx and beamer leave
+    p += [f"--engine-agenda-number: {b['agenda']['number-color']};", f"--engine-agenda-current: {b['agenda']['current-color']};"]
+    quote = b["quote"]
+    p += [f"--engine-quote-bar: {px(quote['bar'])};", f"--engine-quote-bar-color: {quote['bar-color']};",
+          f"--engine-quote-pad: {pad(quote['pad'])};", f"--engine-quote-gap: {quote['pad'][0]:g}em;",   # above and below it: its vertical pad
+          f"--engine-quote-style: {quote['style']};"]
+    if quote["family"]:   # else the body's
+        p.append(f'--engine-quote-family: "{quote["family"]}";')
     p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
           f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",

@@ -139,6 +139,7 @@ Section slides.
 | `label` | string or null | `"Section"` | The eyebrow's word over the heading, as "SECTION n" (each format sets it in capitals); null: no eyebrow. |
 | `tab` | boolean | `true` | The accent tab beside the heading. |
 | `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex. |
+| `progress` | boolean | `false` | The eyebrow reads "SECTION 3 of 5": the divider's number of the numbered sections, in every format (LaTeX: \enginesectiontotal{5} in the preamble; the Quarto filter writes it). |
 
 ### `art`
 
@@ -423,6 +424,8 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `caution` | object |  | A `{.caution}` slide's body. |
 | `panel` | object |  | A feature slide's panel. |
 | `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
+| `agenda` | object |  | The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows. |
+| `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
@@ -464,6 +467,27 @@ A lead box (`::: {.lead}`) over a slide's columns.
 | `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
 | `bar-color` | color or role | `"accent"` | The bar's color, a role, a palette name or a hex. |
 | `pad` | [vertical, horizontal] em | `[0.55, 0.9]` | Its text's distance from its edges, in em of the body type. |
+
+### `boxes.agenda`
+
+The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows.
+
+| key | type | default | |
+|---|---|---|---|
+| `number-color` | color or role | `"primary-contrast"` | The section numbers' color, a role, a palette name or a hex; text on the content background, so one that reads there. |
+| `current-color` | color or role | `"primary-contrast"` | The current section's title's color (bold), a role, a palette name or a hex. |
+
+### `boxes.quote`
+
+A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar.
+
+| key | type | default | |
+|---|---|---|---|
+| `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
+| `bar-color` | color or role | `"primary-contrast"` | The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default. |
+| `pad` | [vertical, horizontal] em | `[0.3, 1.0]` | Its text's distance from its edges, in em of the body type. |
+| `family` | string or null | `null` | The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface. |
+| `style` | `normal` \| `italic` | `"normal"` | Its lines' style: normal (upright) or italic. |
 
 ### `boxes.card`
 
@@ -554,6 +578,7 @@ The PowerPoint template.
 | `template` | path | `"template.pptx"` | The template file. |
 | `typeface` | string |  | The font PowerPoint sets body text in (the theme's minor font). |
 | `heading-typeface` | string |  | The font PowerPoint sets titles in (default: typeface). |
+| `quote-typeface` | string |  | The font PowerPoint sets a quote's lines in when boxes.quote.family names one (default: that family's name); measured in the family's files. |
 | `code-typeface` | string |  | The font PowerPoint sets code in (default: typography.monospace's family when the livery bundles it, else pandoc's); HTML and PDF keep typography.monospace. |
 | `fonts` | path |  | A directory of .fntdata files to embed in each deck; without it, the deck embeds no fonts. |
 | `size` | list of 2 numbers | `[13.333, 7.5]` | The slide in inches, [width, height]; type: sizes are points on it. |
@@ -604,6 +629,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `pagenumber` | number | `9` | The page number. |
 | `marking` | number | `9` | The marking strip's text. |
 | `display` | number | `40` | A card's big number (`[$20M]{.big}`). |
+| `quote` | number | `24` | A quote block's text (its attribution is `caption`). |
 | `footer` | number | `9` | The footer line (footer=full). |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 

@@ -11,6 +11,10 @@
     "table-rule": "#494D51"
   },
   "boxes": {
+    "agenda": {
+      "current-color": "#6E9BFF",
+      "number-color": "#6E9BFF"
+    },
     "card": {
       "fill": "#000000",
       "head-pad": [
@@ -55,6 +59,16 @@
         0.6,
         0.9
       ]
+    },
+    "quote": {
+      "bar": 0.0089,
+      "bar-color": "#6E9BFF",
+      "family": null,
+      "pad": [
+        0.3,
+        1.0
+      ],
+      "style": "normal"
     },
     "rail": {
       "badge": 0.05,
@@ -834,7 +848,8 @@
       },
       "eyebrow": {
         "color": "#8A8D8F",
-        "label": "Section"
+        "label": "Section",
+        "progress": false
       },
       "field": {
         "box": [
@@ -1543,6 +1558,11 @@
         "leading": 1.2,
         "pt": 8,
         "size": 0.6667
+      },
+      "quote": {
+        "leading": 1.3,
+        "pt": 18,
+        "size": 1.5
       },
       "section": {
         "leading": 1.08,

@@ -185,6 +185,9 @@ EXPECTED_DELTAS = {
     "cover elements": ({"pdf": "date, title, subtitle, author, institute", "html": "the same", "pptx": "the same",
                         "decided": "column.elements, less a boxed byline's (2026-10-21)"},
                        lambda c, L: [c[k]["column"].setdefault("elements", list(lb.ELEMENTS)) for k in lb.COVERS]),
+    "section progress": ({"pdf": "SECTION n", "html": "SECTION n", "pptx": "SECTION n",
+                          "decided": "eyebrow.progress, section.progress, default off: SECTION n of N (2026-10-22)"},
+                         lambda c, L: c["section"]["eyebrow"] and c["section"]["eyebrow"].setdefault("progress", False)),
 }
 
 

@@ -51,12 +51,17 @@
 \setbeamerfont{block title}{size=\engine@fs{subhead},series=\sbseries}
 \setbeamerfont{display}{size=\engine@fs{display},series=\bfseries}   % a card's big number
 \setbeamerfont{eyebrow}{size=\engine@fs{eyebrow},series=\bfseries}   % a card's label
+% a quote block's lines (enginequote): the quote size, in boxes.quote.family (\enginequotefont, else
+% the body's) and its style; a font of the theme's own, so beamer's plain quote keeps its look
+\setbeamerfont{engine quote}{size=\engine@fs{quote},shape=\csname engine@quoteshape@\engine@boxes@quote@style\endcsname}
+\def\engine@quoteshape@normal{\upshape}\def\engine@quoteshape@italic{\itshape}
+\AtBeginDocument{\ifdefined\enginequotefont\setbeamerfont{engine quote}{family=\enginequotefont}\fi}   % (as the headings')
 \setbeamerfont{item projected}{size=\scriptsize,series=\bfseries}
 % nested items at the livery's list levels (type.levels, as the pptx ladder and HTML's nested lists)
 \setbeamerfont{itemize/enumerate subbody}{size=\engine@fs{levelii}}
 \setbeamerfont{itemize/enumerate subsubbody}{size=\engine@fs{leveliii}}
 
-\setbeamerfont{section in toc}{series=\sbseries}
+\setbeamerfont{section in toc}{series=\mdseries}   % the agenda's rows (the inner theme): the current one bold
 \setbeamerfont{subsection in toc}{size=\small}
 \setbeamerfont{page number in head/foot}{size=\scriptsize,series=\bfseries}
 \setbeamerfont{footline}{size=\tiny}

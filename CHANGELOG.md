@@ -41,12 +41,44 @@ A release's entry is written here before its tag is pushed, and becomes its note
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
   directory is a prerequisite, so editing one rebuilds the deck.
+- Agenda slides: `## Agenda {.agenda}` with an empty body lists the deck's numbered sections, a
+  row each (the number beside the title, the divider's subtitle under it), by position: up front
+  every section upcoming; placed in a section, that one current (bold), the earlier ones done
+  (muted). An unnumbered divider is not on it. In the pptx the rows are text boxes, one group
+  ("Agenda"); in the PDF they are beamer's table of contents, drawn in the same rows.
+  `docs/authoring.md` "Agenda". The sample has two, and its Backup divider is unnumbered.
+- Quotes: `::: {.quote}` or a bare `>` blockquote sets its lines in the livery's new `quote` size
+  beside a bar at its left (`role=` colors it; by default the livery's `boxes.quote.bar-color`),
+  with no fill; a last line starting with `—`, `–` or `--` is the attribution, under it at the
+  caption size, muted. On its own, in a column or in a card; inside a lead or a strip it warns and
+  stays as its lines. In the pptx it is a text box and a bar, one group ("Quote"), and a quote in
+  a column makes the slide a card slide (beside a picture or table, the slide stays pandoc's and the
+  quote pandoc's own, warned). HTML's old blockquote look (a muted paragraph, a thin
+  border) and the PDF's plain italic quote are gone. `docs/authoring.md` "Quotes".
+- An unnumbered divider (`# Backup {.unnumbered}`) is outside the count in every format: pptx and
+  PDF no longer give it a number, as HTML already did, so the dividers after it keep the numbers
+  HTML shows. The PDF draws it with its subtitle (it drew no divider at all before, and the
+  subtitle became a slide of its own), and a subtitle given to the next divider stays on it.
 
 ### Liveries
 - `boxes.rail` (`line`, `line-color`, `badge`, `dot`, `fill`, `pad`): the look of the new steps and
   timelines, the rail's thickness and color, a step's badge, a milestone's dot, an optional cell
   behind each item. Every livery keeps its look with no change; the defaults draw the rail in the
   `rule` blend with no cell.
+- `boxes.quote` (`bar`, `bar-color`, `pad`) and the `quote` type role (24 pt on the default canvas,
+  scaling with the body): the look of the new quote block, a bar at its left in `bar-color`
+  and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
+  reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white and 1.6:1 on
+  ucar's, under the 3:1 a mark needs.
+- `section.progress` (default false): a numbered divider's eyebrow reads "SECTION 3 OF 5", its
+  number of the deck's numbered sections, in every format.
+- `boxes.agenda` (`number-color`, `current-color`): the agenda's section numbers and its current
+  section's title, both `primary-contrast` by default (text on the content background: the
+  divider's eyebrow color and the primary do not read there on every livery).
+- `boxes.quote.family` and `boxes.quote.style`: a quote's lines in a face of their own, a family the
+  livery bundles (`typography.fonts`; null, the default, is the body's) and `normal` or `italic`,
+  in every format; `pptx.quote-typeface` names the face PowerPoint sets them in (by default the
+  family's name). A family the livery does not bundle fails the build with its path.
 
 ### LaTeX
 - Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...
@@ -63,6 +95,19 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `backend=biber`), and every livery's Overleaf zip carries the bibliography.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
+- `\begin{enginequote}[role=]{Attribution} ... \end{enginequote}`: a quote, its lines in the quote
+  size beside a bar in the role (by default the livery's quote bar color), the attribution under it
+  after "— " (`{}` for none); in a card or a column too. The cookbook has "A pull quote".
+- `\engineagenda`: the agenda, beamer's table of contents in the Quarto decks' rows (the number,
+  the title, the `\sectionsubtitle` under it; the section the frame sits in current, the earlier
+  ones muted). The theme's table-of-contents templates draw a plain `\tableofcontents` the same
+  way. The cookbook has an Agenda frame and a "Where we are" one, and its Backup is unnumbered.
+- `\enginesectiontotal{<n>}` in the preamble: the numbered sections' count, for a livery's
+  `section.progress` eyebrow ("SECTION 3 OF 5"); the Quarto filter writes it.
+- `\enginesectionunnumbered{Title}{Subtitle}` draws a divider outside the count (an appendix,
+  the backup slides): the divider's look without the eyebrow, and no `\section`, so no counter
+  step, no table-of-contents line and no PDF bookmark (`\section*` is no substitute: it steps
+  beamer's counter as `\section` does).
 
 ## [26.10.8] - 2026-10-22
 

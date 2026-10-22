@@ -102,18 +102,21 @@
 % and its subtitle, with the tab
 \def\engine@sectionstack{%
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
-    \engine@ifc{eyebrow@label}{\ifnum\thesection>0
+    \engine@ifc{eyebrow@label}{\ifengine@numbered\ifnum\thesection>0
       {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
         \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
-    \fi}{}%
-    {\usebeamerfont{section title}\insertsectionhead\par}%
+    \fi\fi}{}%
+    {\usebeamerfont{section title}\ifengine@numbered\insertsectionhead\else\engine@sectionhead\fi\par}%
     \ifx\engine@sectionsubtitle\@empty\else
       \vskip1.2ex
       {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
     \fi}%
   \engine@ctab\@tempboxa}
-% the livery's word (section.label), as HTML and pptx set it
-\def\insertsectionnumberlabel{\engine@cv{eyebrow@label}~\insertsectionnumber}
+% the livery's word (section.label), as HTML and pptx set it; with section.progress, "of" the total
+% of numbered sections, \enginesectiontotal{<n>} in the preamble (the Quarto filter writes it)
+\newcommand\enginesectiontotal[1]{\gdef\engine@sectiontotal{#1}}
+\def\insertsectionnumberlabel{\engine@cv{eyebrow@label}~\insertsectionnumber
+  \engine@ifc{eyebrow@progress}{\ifdefined\engine@sectiontotal~of~\engine@sectiontotal\fi}{}}
 \defbeamertemplate*{subsection page}{Engine}{%
   \vbox{\raggedright
     {\usebeamerfont{section number}\usebeamercolor[fg]{structure}%
@@ -123,13 +126,32 @@
 
 \ifengine@sectionpages
   \AtBeginSection[]{%
-    \@ifundefined{engine@secsub@\thesection}{}{%
-      \expandafter\gdef\expandafter\engine@sectionsubtitle\expandafter
-        {\csname engine@secsub@\thesection\endcsname}}%
+    \@ifundefined{engine@secsub@\thesection}{}{%   (its text, not its name: the aux file gets the text)
+      \expandafter\global\expandafter\let\expandafter\engine@sectionsubtitle
+        \csname engine@secsub@\thesection\endcsname}%
+    \ifx\engine@sectionsubtitle\@empty\else   % for an agenda before it, on the next run
+      \immediate\write\@auxout{\noexpand\enginesectionsubtitle{\thesection}{\unexpanded\expandafter{\engine@sectionsubtitle}}}\fi
     {\setbeamercolor{normal text}{fg=BrandPrimaryText}%
      \begin{frame}[plain,noframenumbering]\sectionpage\end{frame}}%
     \gdef\engine@sectionsubtitle{}}
 \fi
+% a divider outside the count (an appendix, the backup slides): the same stack with no eyebrow,
+% and no \section, so no counter step, no table-of-contents line and no PDF bookmark (\section*
+% steps the counter as \section does).  \enginesectionunnumbered{Title}{Subtitle}, {} for none:
+% between frames it draws a plain frame of its own; inside a frame (the Quarto filter opens one)
+% it is that frame's body.  The stack is drawn at shipout, outside the body's group, so the
+% heading, subtitle and switch are global until then.
+\newif\ifengine@numbered \engine@numberedtrue
+\def\engine@sectionhead{}
+\AddToHook{shipout/after}{\ifengine@numbered\else
+  \global\engine@numberedtrue\gdef\engine@sectionhead{}\gdef\engine@sectionsubtitle{}\fi}
+\newcommand\enginesectionunnumbered[2]{%
+  \ifbeamer@inframe\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
+    {\global\engine@numberedfalse
+     \gdef\engine@sectionhead{#1}\gdef\engine@sectionsubtitle{#2}%
+     \sectionpage}%
+    {{\setbeamercolor{normal text}{fg=BrandPrimaryText}%
+      \begin{frame}[plain,noframenumbering]\enginesectionunnumbered{#1}{#2}\end{frame}}}}
 
 % ---------------------------------------------------------------------------
 % closing frame:  \engineclosingframe{Thank you!}{contact details ...}
@@ -188,7 +210,33 @@
 % pandoc's tight lists (\tightlist zeroes \itemsep) keep it too: HTML spaces them alike
 \AtBeginDocument{\providecommand\tightlist{}\renewcommand\tightlist{\parskip\z@\ifnum\@listdepth>1
   \itemsep0.15\engine@typebody\else\itemsep0.25\engine@typebody\fi}}
-\setbeamertemplate{sections/subsections in toc}[square]
+% the agenda: \engineagenda is beamer's table of contents (\section's lines in the .toc, from the
+% run before) drawn as HTML's and the pptx's agenda rows: the number (the eyebrow font, bold,
+% livery.sty's boxes.agenda number color) beside the title (the subhead size) and the divider's
+% subtitle under it (the caption size, muted: \enginesectionsubtitle's, the Quarto filter's or the
+% aux file's copy of a \sectionsubtitle), at the gap HTML's rows keep. Its state by the section the
+% frame sits in: an earlier one muted (done), that one bold in the current color, a later one the
+% text color; up front all the text color. A plain \tableofcontents draws its rows so, every one
+% the text color. In a \vbox, so beamer's \vfill between rows stays at none (hideallsubsections would
+% put a 1.5em skip there; tocdepth 1 leaves the subsections out instead).
+\newif\ifengine@agenda
+\def\engine@agenda@done{\color{BrandMuted}}
+\def\engine@agenda@current{\color{EngineBoxesAgendaCurrentColor}\bfseries}
+\def\engine@agenda@next{\color{BrandText}}
+\def\engine@agendarow{%
+  \edef\engine@tmpa{\ifengine@agenda\ifnum0\inserttocsectionnumber<\c@section done\else
+    \ifnum0\inserttocsectionnumber=\c@section current\else next\fi\fi\else next\fi}%
+  \vskip\dimexpr0.55\engine@typebody-\parskip\relax   % HTML's row gap: the paragraph skip taken back
+  {\raggedright\engine@fs{subhead}\selectfont   % the number on the title's line, the title hung beside it
+   \hangindent2\engine@typebody\noindent\hbox to 2\engine@typebody{\usebeamerfont{eyebrow}%
+     \color{EngineBoxesAgendaNumberColor}\inserttocsectionnumber\hfil}%
+   {\csname engine@agenda@\engine@tmpa\endcsname\inserttocsection}\par}%
+  \@ifundefined{engine@secsub@\inserttocsectionnumber}{}{\vskip\dimexpr0.15\engine@typebody-\parskip\relax
+    {\raggedright\leftskip2\engine@typebody\usebeamerfont{caption}\color{BrandMuted}%
+     \csname engine@secsub@\inserttocsectionnumber\endcsname\par}}}
+\defbeamertemplate*{section in toc}{Engine}{\engine@agendarow}
+\defbeamertemplate*{section in toc shaded}{Engine}{\engine@agendarow}
+\newcommand\engineagenda{{\engine@agendatrue\c@tocdepth\@ne\vbox{\tableofcontents}}}   % sections only
 % a caption is its text alone, centred (the caption font and color: beamer draws the template
 % with both), as HTML and pptx set it: no "Figure 1:" label
 \setbeamertemplate{caption}{{\centering\insertcaption\par}}
@@ -322,8 +370,9 @@
 \@ifundefined{\string\color@enginecautionfill}{\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}}{}
 % \engine@barbox{<box>} ... \endengine@barbox{<fill>}{<bar color>}: the body set in a minipage the
 % line width less the bar and the pads (livery.sty's \engine@boxes@<box>@bar, @padx, @pady; a box
-% without a bar has none), on the fill with the bar at its left. \colorbox's one \fboxsep is 0: the
-% pads are explicit, the vertical and the horizontal apart. The caution box and the lead are on it.
+% without a bar has none), on the fill with the bar at its left; an empty fill, none. \colorbox's one
+% \fboxsep is 0: the pads are explicit, the vertical and the horizontal apart. The caution box, the
+% lead, the strip and the quote are on it.
 \newsavebox\engine@barboxbox
 \newdimen\engine@padx \newdimen\engine@pady \newdimen\engine@barw
 \def\engine@barboxin{}   % after \noindent: a strip in a card moves out to the card's edge
@@ -337,9 +386,11 @@
   \begin{lrbox}{\engine@barboxbox}%
   \begin{minipage}{\dimexpr\linewidth-\engine@barw-2\engine@padx\relax}\parskip=\engine@outerparskip\relax}
 \def\endengine@barbox#1#2{\end{minipage}\end{lrbox}%
+  \setbox\engine@barboxbox=\vbox{\vskip\engine@pady
+    \hbox{\hskip\engine@padx\usebox\engine@barboxbox\hskip\engine@padx}\vskip\engine@pady}%
   \hbox{{\color{#2}\vrule width \engine@barw}%
-    {\setlength\fboxsep{0pt}\colorbox{#1}{\vbox{\vskip\engine@pady
-      \hbox{\hskip\engine@padx\usebox\engine@barboxbox\hskip\engine@padx}\vskip\engine@pady}}}}\engine@barboxout\par}
+    \ifx\relax#1\relax\box\engine@barboxbox
+    \else{\setlength\fboxsep{0pt}\colorbox{#1}{\box\engine@barboxbox}}\fi}\engine@barboxout\par}
 \newenvironment{enginecaution}{\engine@barbox{caution}}{\endengine@barbox{enginecautionfill}{BrandWarning}}
 
 % ---------------------------------------------------------------------------
@@ -411,14 +462,16 @@
 % livery's exported palette, a document's own \definecolor), else the default role, with a warning.
 % ---------------------------------------------------------------------------
 \RequirePackage{pgfkeys}   % (tikz's; the keys of enginecard and enginestrip)
-\def\engine@rolecolor#1#2{%
+\def\engine@rolecolor#1#2{\engine@rolecolorelse{#1}{\csname engine@role@#2\endcsname}{#2}}
+% \engine@rolecolorelse{<name>}{<default color>}{<its word in the warning>}: the same, the default a color
+\def\engine@rolecolorelse#1#2#3{%
   \ifcsname engine@role@#1\endcsname
     \edef\engine@rolename{\csname engine@role@#1\endcsname}%
   \else\ifcsname\string\color@#1\endcsname
     \edef\engine@rolename{#1}%
   \else
-    \PackageWarning{Engine}{role=#1 is not a role of the livery or a color; #2}%
-    \edef\engine@rolename{\csname engine@role@#2\endcsname}%
+    \PackageWarning{Engine}{role=#1 is not a role of the livery or a color; #3}%
+    \edef\engine@rolename{#2}%
   \fi\fi}
 % \engine@nthrole{<k>}: \engine@nthrolename is the k-th of livery.sty's \engine@boxes@card@roles,
 % around again past its end (a card's default role, by its place in the row)
@@ -485,6 +538,26 @@
   \fi
   \engine@barbox{strip}}%
   {\endengine@barbox{engine@strip}{engine@strip}}
+
+% ---------------------------------------------------------------------------
+% quote: \begin{enginequote}[role=<role>]{<attribution>} ... \end{enginequote} (the Quarto filter
+% writes it for ::: {.quote} and a bare `>`): its lines in the `engine quote` font (the quote size,
+% boxes.quote.family and style) with a bar at its left in
+% the role (default the box's bar-color, livery.sty's boxes.quote), no fill, padded by its pads; the
+% attribution, when not {}, under them at the caption size, muted, after "— ". In a card or a
+% column too, as wide as its line.
+% ---------------------------------------------------------------------------
+\pgfkeys{/engine/quote/.cd, role/.store in=\engine@quoterole}
+\newenvironment{enginequote}[2][]{%
+  \def\engine@quoterole{}\pgfkeys{/engine/quote/.cd,#1}%
+  \ifx\engine@quoterole\@empty\def\engine@rolename{EngineBoxesQuoteBarColor}%
+  \else\engine@rolecolorelse{\engine@quoterole}{EngineBoxesQuoteBarColor}{the quote bar's color}\fi
+  \colorlet{engine@quotebar}{\engine@rolename}%
+  \def\engine@quotewho{#2}%
+  \engine@barbox{quote}\usebeamerfont{engine quote}}%
+  {\ifx\engine@quotewho\@empty\else   % the attribution in the body's face, upright
+     \par\vskip0.6ex{\normalfont\usebeamerfont{caption}\color{BrandMuted}— \engine@quotewho\par}\fi
+   \endengine@barbox{}{engine@quotebar}\vskip\engine@pady}
 
 % ---------------------------------------------------------------------------
 % cards: a row \begin{enginecards}{<shares>} of \begin{enginecard}[<keys>]{<title>}{<sub>} ...

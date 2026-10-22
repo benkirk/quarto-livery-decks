@@ -8,6 +8,13 @@ jupyter: bash
 bibliography: references.bib
 ---
 
+## Agenda {.agenda}
+
+::: notes
+`{.agenda}` with an empty body: the engine lists the numbered sections, each divider's subtitle
+under it. Up front none is current; placed in a section, that one is (see Wrap-up).
+:::
+
 # Basics
 
 A paragraph right after a `#` divider becomes its subtitle, in every format.
@@ -54,6 +61,16 @@ where $f$ is the parallel fraction and $p$ is the processor count. PPTX
 renders these natively as OMML equations. The PDF sets math in a serif math
 font beside Poppins; `themeoptions: [fonts=bundled, mathfont=stix]` (or
 `lm`, `pagella`, `sans`, `poppins`) picks another.
+
+## A pull quote
+
+::: {.quote}
+The purpose of computing is insight, not numbers.
+— Richard Hamming, 1962
+:::
+
+A `::: {.quote}` block, or a bare `>` blockquote, sets its lines in the quote size beside a bar
+(`role=` picks its color). A last line that starts with a dash is the attribution.
 
 ## Tables
 
@@ -410,6 +427,8 @@ slide.
 
 # Wrap-up
 
+## Where we are {.agenda}
+
 ## Next steps
 
 - Copy this file as a starting point for new decks.
@@ -443,7 +462,7 @@ ordinary slide.
 
 Questions: your.name@ucar.edu
 
-# Backup
+# Backup {.unnumbered}
 
 ## Project config: `_quarto.yml` {scale="0.47"}
 

@@ -8,7 +8,8 @@ livery.json type.canvas): font() takes points of type, lines() and runs_lines() 
 pixels. A face is the one the pptx sets, measured in the livery's bundled files
 (livery.font_file): its typeface is the base family's stand-in (cu's Helvetica Neue measures as
 TeX Gyre Heros), titles take the headings family only when the livery names a pptx
-heading-typeface (else the template sets them in the typeface too), and a face the livery does
+heading-typeface (else the template sets them in the typeface too), a quote's lines its
+boxes.quote.family (under its pptx.quote-typeface, or its own name), and a face the livery does
 not bundle, pandoc's Courier for code, advances 0.6 em a character, as Courier does."""
 
 import functools
@@ -30,7 +31,8 @@ PPTX = LIVERY["pptx"]
 BODY = TYPE["base"]                                            # the pptx's body text
 TITLE = TYPE["headings"] if PPTX.get("heading-typeface") else BODY   # its titles (+mj-lt)
 BUNDLED = {f["family"] for f in TYPE.get("fonts", []) if f.get("files")}
-PPTX_FACES = {PPTX.get("typeface"): BODY, PPTX.get("heading-typeface"): TYPE.get("headings")}
+PPTX_FACES = {PPTX.get("typeface"): BODY, PPTX.get("heading-typeface"): TYPE.get("headings"),
+              PPTX.get("quote-typeface"): LIVERY["boxes"]["quote"]["family"]}   # a quote's (grid.py), in its family's files
 LINE = 1.2                                  # line height / font size, for the text estimates
 
 

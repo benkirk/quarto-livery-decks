@@ -45,6 +45,36 @@ local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
 end
 
+-- A divider's subtitle: the paragraphs alone between the divider at blocks[i] and the next slide.
+-- Returns them and the index after them, or nil and i + 1 when there are none (or anything else
+-- follows them: they are a slide of their own then).
+local function divider_subtitle(blocks, i, level)
+  local j, paras = i + 1, pandoc.List({})
+  while j <= #blocks and (blocks[j].t == "Para" or blocks[j].t == "Plain") do
+    paras:insert(blocks[j])
+    j = j + 1
+  end
+  if #paras > 0 and (j > #blocks or is_slide_break(blocks[j], level)) then return paras, j end
+  return nil, i + 1
+end
+
+-- The deck's section dividers (`#` headings over `##` slides), in order, as every format counts
+-- them: { number (nil for .unnumbered), title (inlines), sub (the subtitle's blocks, or nil),
+-- unnumbered, at (the divider's index in blocks) }.
+local function sections(blocks, level)
+  local out, n = {}, 0
+  if level <= 1 then return out end
+  for i, b in ipairs(blocks) do
+    if b.t == "Header" and b.level == 1 then
+      local unnumbered = has_class(b, "unnumbered")
+      if not unnumbered then n = n + 1 end
+      table.insert(out, { number = (not unnumbered) and n or nil, title = b.content,
+                          sub = (divider_subtitle(blocks, i, level)), unnumbered = unnumbered, at = i })
+    end
+  end
+  return out
+end
+
 -- The slide kinds a composition draws (their classes on the slide's heading; not content slides), and
 -- the per-slide layout classes of a content slide (take_layout()).
 local SLIDE_KINDS = { feature = true, closing = true, full = true }
@@ -372,17 +402,72 @@ local function column_shares(div)
   return cols, shares
 end
 
--- A grid slide: the columns div has a .card column or more than two columns, or the slide (its
--- blocks) has a .lead, a .steps or a .timeline. pptx draws one from marker paragraphs
--- (grid-pptx.lua, pptx_steps/grid.py); pandoc's two placeholders cannot hold it.
+-- An agenda slide: a slide-level heading with .agenda (`## Agenda {.agenda}`), the engine its body.
+local function is_agenda(blk, level)
+  return blk.t == "Header" and blk.level == level and has_class(blk, "agenda")
+end
+
+-- An agenda slide's body (its blocks up to the next slide): the speaker notes kept, anything else
+-- warned of and dropped (the engine writes the body). Returns the notes.
+local function agenda_notes(body, who, title)
+  local notes = pandoc.Blocks({})
+  for _, b in ipairs(body) do
+    if b.t == "Div" and has_class(b, "notes") then
+      notes:insert(b)
+    else
+      warn(who .. ": the agenda slide \"" .. title .. "\" has a body of its own; the engine writes it, so it is dropped")
+      break
+    end
+  end
+  return notes
+end
+
+-- The agenda's rows: every numbered section (sections()) in order, { number, title (inlines), sub
+-- (the subtitle's inlines, paragraphs joined by a space, or nil), state }: by the section the slide
+-- sits in (current: the numbered dividers before it, 0 up front), an earlier one "done", that one
+-- "current", a later one "next"; up front all "next".
+local function agenda_rows(sections, current)
+  local rows = {}
+  for _, s in ipairs(sections) do
+    if s.number then
+      local sub
+      if s.sub then
+        sub = pandoc.Inlines({})
+        for k, p in ipairs(s.sub) do
+          if k > 1 then sub:insert(pandoc.Space()) end
+          sub:extend(p.content)
+        end
+      end
+      table.insert(rows, { number = s.number, title = s.title, sub = sub,
+        state = s.number < current and "done" or (s.number == current and "current" or "next") })
+    end
+  end
+  return rows
+end
+
+-- A quote block: `::: {.quote role=..}`, or a bare `>` blockquote (the same box, no role=).
+local function is_quote(b)
+  return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
+end
+
+-- A grid slide: the columns div has a .card column, a column holding a quote (unless a column holds
+-- a picture or table, which a grid column cannot: the slide stays pandoc's, the quote its own), or
+-- more than two columns, or the slide (its blocks) has a .lead, a .steps, a .timeline or a quote of
+-- its own. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py); pandoc's two
+-- placeholders cannot hold it.
 local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
+  local quoted, pictured = false, false   -- a quote in a column: its box is grid.py's to draw
   for _, c in ipairs(cols) do
     if has_class(c, "card") then return true end
+    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end,
+             Image = function() pictured = true end, Table = function() pictured = true end })
   end
+  if quoted and not pictured then return true end
   for _, b in ipairs(blocks or {}) do
     if b.t == "Div" and (has_class(b, "lead") or has_class(b, "steps") or has_class(b, "timeline")) then return true end
+    if is_quote(b) then return true end
   end
   return false
 end
@@ -464,6 +549,58 @@ local GLYPHS = { done = "✓", warn = "⚠", fail = "✗" }
 -- status_item(item, marked): an item's (a list of blocks) status, "done" | "warn" | "fail", and the
 -- item with its leading glyph normalized to the glyph's Str (✓ ⚠ ✗, no variation selector) and a
 -- Space; nil when it is not one. marked: inside a card or a .status list, where [x] [!] [-] count.
+-- A quote's parts: { role (role= when it is a role or a blend of the livery, else nil: the box's
+-- bar-color, boxes.quote; a name that is neither is warned of), body (its source lines each a
+-- paragraph, split_lines()), attribution (the last line's inlines after its leading —, – or --,
+-- the dash and the space after it dropped; nil when the last line has none) }. livery nil (the pptx
+-- filter, which has none): role= kept as written, for grid.py to check.
+local DASHES = { "—", "–", "--" }   -- pandoc's smart quotes make `--` an en dash before a filter sees it
+local function quote_parts(b, livery, who)
+  local role = b.t == "Div" and b.attributes["role"] or nil
+  if role and livery and not (livery.roles[role] or (livery.blends and livery.blends[role])) then
+    warn(who .. ": role=\"" .. role .. "\" is not a role or a blend of the livery; the quote bar's color")
+    role = nil
+  end
+  local body = split_lines(b.content)
+  local last, attribution = body[#body], nil
+  if last and (last.t == "Para" or last.t == "Plain") and last.content[1] and last.content[1].t == "Str" then
+    local s = last.content[1].text
+    for _, d in ipairs(DASHES) do
+      if s:sub(1, #d) == d then
+        local il = pandoc.Inlines({})
+        if #s > #d then il:insert(pandoc.Str(s:sub(#d + 1))) end
+        for k = 2, #last.content do il:insert(last.content[k]) end
+        while il[1] and (il[1].t == "Space" or il[1].t == "SoftBreak") do il:remove(1) end
+        if #il > 0 then attribution = il; body:remove(#body) end
+        break
+      end
+    end
+  end
+  return { role = role, body = body, attribution = attribution }
+end
+
+-- Every quote block in blocks replaced by draw(quote_parts()), the blocks a format draws it with: at
+-- any depth (a column, a card, a wrapper div), but not in the speaker notes, nor inside another quote;
+-- inside a .lead or a .strip (a box of lines already) a quote is warned of and left as its lines.
+-- One rule for every format.
+local function quote_blocks(blocks, livery, who, draw)
+  local function as_lines(d)   -- the quotes inside a lead or a strip: their lines, warned of
+    local function lines(q)
+      warn(who .. ": a quote inside a .lead or a .strip is not drawn; left as its lines")
+      return split_lines(q.content)
+    end
+    return d:walk({ Div = function(x) if is_quote(x) then return lines(x) end end, BlockQuote = lines })
+  end
+  return blocks:walk({ traverse = "topdown",
+    Div = function(d)
+      if has_class(d, "notes") then return d, false end
+      if has_class(d, "lead") or has_class(d, "strip") then return as_lines(d), false end
+      if is_quote(d) then return draw(quote_parts(d, livery, who)), false end
+      return nil
+    end,
+    BlockQuote = function(b) return draw(quote_parts(b, livery, who)), false end })
+end
+
 local function status_item(item, marked)
   local first = item[1]
   if not first or (first.t ~= "Plain" and first.t ~= "Para") then return nil end
@@ -618,6 +755,9 @@ return {
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote, quote_parts = quote_parts,
+  is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
+  quote_blocks = quote_blocks,
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,

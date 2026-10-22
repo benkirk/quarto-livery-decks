@@ -34,6 +34,12 @@
   \titlepage
 \end{frame}
 
+\begin{frame}{Agenda}
+  % the numbered sections, from \section's table-of-contents lines (a second run: latexmk's), each
+  % \sectionsubtitle under its title; placed in a section, that one is current (see Wrap-up)
+  \engineagenda
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \sectionsubtitle{A \texttt{\textbackslash sectionsubtitle} before the section is the divider's subtitle.}
 \section{Basics}
@@ -93,6 +99,14 @@
   where $f$ is the parallel fraction and $p$ is the processor count. The theme sets math in a
   serif math font beside the brand's sans; \texttt{\textbackslash usetheme[mathfont=stix]\{Engine\}}
   (or \texttt{lm}, \texttt{pagella}, \texttt{sans}, \texttt{poppins}) picks another.
+\end{frame}
+
+\begin{frame}{A pull quote}
+  \begin{enginequote}{Richard Hamming, 1962}   % [role=accent] colors the bar; {} for no attribution
+    The purpose of computing is insight, not numbers.
+  \end{enginequote}
+  An \texttt{enginequote} sets its lines in the quote size beside a bar (\texttt{role=} picks its
+  color), the attribution under them.
 \end{frame}
 
 \begin{frame}{Tables}
@@ -504,6 +518,10 @@ print(speedup(0.95, 64))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Wrap-up}
 
+\begin{frame}{Where we are}
+  \engineagenda
+\end{frame}
+
 \begin{frame}{Next steps}
   % slide footnotes: a spring first, the content, a spring, then the footnotes
   \enginefootnotespring
@@ -532,7 +550,8 @@ print(speedup(0.95, 64))
   Questions: \texttt{your.name@ucar.edu}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Backup}
+% a divider outside the count: no eyebrow, not on the agenda (no \section, so no bookmark either)
+\enginesectionunnumbered{Backup}{}
 
 \begin{frame}[fragile]{Project config: \texttt{latexmkrc}}
   % \lstinputlisting pastes a file at build time, so the slide stays in sync with it

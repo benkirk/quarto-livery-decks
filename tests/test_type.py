@@ -76,6 +76,7 @@ def test_canvas_alone_scales(tmp_path):
 def test_body_alone_carries_body_roles(tmp_path):
     t = resolve(tmp_path, {"type": {"body": 20}})   # the body alone: body roles and levels follow, titles stay
     assert t["roles"]["table"]["pt"] == 16.5 and t["roles"]["frametitle"]["pt"] == 27, "body-only override"
+    assert t["roles"]["quote"]["pt"] == 30, "a quote's text follows the body (BODY_ROLES)"
     assert t["levels"] == [20, 19, 16.5, 15, 14], f"body-only levels {t['levels']}"
 
 

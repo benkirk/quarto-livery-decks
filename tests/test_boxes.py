@@ -39,6 +39,10 @@ def test_every_key(livery):
                 assert v and all(r in json.loads((livery / "build" / "livery.json").read_text())["roles"] for r in v), f"{where}: not roles"
             elif k in lb.BOX_COLORS.get(box, ()):
                 assert (v is None and (box, k) == ("rail", "fill")) or HEX.match(v), f"{where} is not #RRGGBB"
+            elif (box, k) == ("quote", "family"):   # a bundled family, or null: the body's
+                assert v is None or isinstance(v, str), f"{where} is not a family or null"
+            elif (box, k) == ("quote", "style"):
+                assert v in ("normal", "italic"), f"{where} is not normal or italic"
             elif k in FRACTIONS:
                 assert isinstance(v, (int, float)) and 0 <= v <= 1, f"{where} is not a fraction"
             else:
@@ -54,6 +58,11 @@ def test_every_key(livery):
     assert f"--engine-rail-fill: {b['rail']['fill'] or 'transparent'};" in css
     assert ("EngineBoxesRailFill" in sty) == (b["rail"]["fill"] is not None), "a null fill defines no color"
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
+    q = b["quote"]   # the quote block: its bar, its color and pads in every format's file, its type role
+    assert f"--engine-quote-bar-color: {q['bar-color']};" in css and f"--engine-quote-pad: {q['pad'][0]:g}em {q['pad'][1]:g}em;" in css
+    assert f"\\definecolor{{EngineBoxesQuoteBarColor}}{{HTML}}{{{q['bar-color'][1:]}}}" in sty
+    assert f"\\def\\engine@boxes@quote@bar{{{q['bar']}}}" in sty and f"\\def\\engine@boxes@quote@pady{{{q['pad'][0]}}}" in sty
+    assert "\\def\\engine@type@quote{" in sty and "--engine-type-quote:" in css
     # the theme resolves a role= and the card roles by place through the role table, in the sty too
     j = json.loads((livery / "build" / "livery.json").read_text())
     assert f"\\def\\engine@boxes@card@roles{{{','.join(b['card']['roles'])}}}" in sty
@@ -70,10 +79,11 @@ def test_merge_box_by_box():
     assert b["caution"] == lb.BOXES["caution"], "an untouched box is the default"
 
 
-def tmp_livery(tmp_path, boxes: str):
-    """ncar copied into tmp_path with a boxes: block, built: (return code, stderr, livery.json)."""
-    d = tmp_path / "liveries" / "ncar"
-    shutil.copytree(ROOT / "liveries" / "ncar", d, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
+def tmp_livery(tmp_path, boxes: str, name="ncar"):
+    """A livery (ncar) copied into tmp_path/liveries/ with a boxes: block, built: (return code, stderr,
+    livery.json)."""
+    d = tmp_path / "liveries" / name
+    shutil.copytree(ROOT / "liveries" / name, d, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
     y = d / "livery.yml"
     text = re.sub(r"\nboxes:.*?\n\n", "\n", y.read_text(), flags=re.S)   # ncar's own block out
     y.write_text(text.replace("\npptx:", f"\nboxes:\n{boxes}\npptx:", 1))
@@ -170,3 +180,21 @@ def test_geometry_derived(livery):
     top = j["frametitle"]["body"]
     assert g["body"] == [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)], f"{livery.name}: geometry.body"
     assert g["half"] == round((1 - 2 * m - j["boxes"]["columns"]["gap"]) / 2, 4), f"{livery.name}: geometry.half"
+
+
+def _contrast(a, b):
+    """WCAG contrast of two #RRGGBB colors."""
+    def lum(h):
+        c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_quote_bar_reads(livery):
+    """The quote's default bar, a thin mark with no fill behind it, reads on the livery's background:
+    3:1 at least (WCAG's non-text contrast). secondary did not (ncar 2.1, ucar 1.6)."""
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    c = _contrast(j["boxes"]["quote"]["bar-color"], j["roles"]["background"])
+    assert c >= 3, f"{livery.name}: the quote bar {j['boxes']['quote']['bar-color']} on {j['roles']['background']} is {c:.1f}:1"

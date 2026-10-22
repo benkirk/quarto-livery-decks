@@ -1,5 +1,6 @@
 """Compile a deck written on the theme's LaTeX layer (latex/authoring.md): cards on keys, strips,
-status lists, columns, a caution box, a note, a scale group, steps, a timeline and the marking.
+status lists, columns, a caution box, a note, a scale group, steps, a timeline, the marking and
+an unnumbered divider.
 
     python3 -m pytest tests/test_latex.py
 
@@ -8,7 +9,8 @@ looped TeX) compiles with XeLaTeX through latexmk, TEXINPUTS and TTFONTS set as 
 sets them (the theme, the liveries and the root), and its log has no Overfull line; the frame
 whose pick moves (`pick=<2>`) is two pages, and the frame whose step holds an `\\uncover<2->`; a
 `role=` that is neither a role nor a color leaves the theme's warning in the log and takes the
-default; the marking is on every page; a third card or step on a row opened for two is the share
+default; the marking is on every page; a quote reads with its attribution, in a card too; an unnumbered divider has no eyebrow and leaves the count alone; the agenda lists the numbered
+sections, a hand subtitle under its title, the Backup not; a third card or step on a row opened for two is the share
 error. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
 on its frame, `\footcite` sets beamer's footnote there, the entries are on the References frame,
 and its log has no Overfull line; skipped without biblatex. Skipped without xelatex (CI's latex
@@ -89,6 +91,26 @@ On a solid card.
 \begin{enginestep}{Decide} Yes or no. \end{enginestep}
 \end{enginesteps}
 \end{frame}
+\begin{frame}{A quote}
+\begin{enginequote}[role=accent]{R. Hamming, 1962}
+The purpose of computing is insight, not numbers.
+\end{enginequote}
+\begin{enginequote}{}
+No attribution, its own color.
+\end{enginequote}
+\begin{enginecards}{2}
+\begin{enginecard}{IN A CARD}{}
+\begin{enginequote}[role=nosuchrole]{Them}A quote in a card.\end{enginequote}
+\end{enginecard}
+\begin{enginecard}{OTHER}{}Text.\end{enginecard}
+\end{enginecards}
+\end{frame}
+\sectionsubtitle{Its subtitle}
+\section{Numbered}
+\begin{frame}{In the section}A slide.\end{frame}
+\enginesectionunnumbered{Backup}{A subtitle}
+\section{Second}
+\begin{frame}{Where we are}\engineagenda\end{frame}
 \end{document}
 """
 
@@ -176,12 +198,45 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 7, "the pick=<2> and the \\uncover<2-> frames are two pages, the other three one each"
+    assert len(texts) == 13, "the pick=<2> and the \\uncover<2-> frames are two pages, the other nine one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
     assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
     for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
         assert all(w in t for w in ("Propose", "Six weeks.", "Scale", "Q1 2025", "Proposal accepted", "2026")), t
     assert "Review" in texts[6] and {"4", "5"} <= set(texts[6].split()), "start=4: the badges read 4 and 5"
+
+
+def test_quote(deck):
+    """enginequote: its lines and the attribution after "— " on the frame, none without one; in a
+    card too; a role= that is neither a role nor a color warns and takes the bar's color."""
+    d, log = deck
+    t = " ".join(pages(d / "deck.pdf")[7].split())
+    assert "The purpose of computing is insight, not numbers. — R. Hamming, 1962" in t, t
+    assert "No attribution, its own color." in t and "— No" not in t
+    assert "A quote in a card. — Them" in t, t
+    assert "role=nosuchrole is not a role of the livery or a color" in " ".join(log.split()), "the warning"
+
+
+def test_unnumbered_divider(deck):
+    """\\enginesectionunnumbered draws a divider outside the count: no eyebrow, its subtitle, and
+    the next \\section is still section 2."""
+    d, _ = deck
+    texts = pages(d / "deck.pdf")[8:]
+    words = [" ".join(t.replace("TEST MARKING", "").split()) for t in texts]
+    assert words[0] == "SECTION 1 Numbered Its subtitle" and "In the section" in words[1], words
+    assert words[2] == "Backup A subtitle", words[2]
+    assert words[3] == "SECTION 2 Second", words[3]
+
+
+def test_agenda(deck):
+    """\\engineagenda: the numbered sections from beamer's table of contents (latexmk's second run),
+    each once, a hand author's \\sectionsubtitle under its title (the aux file's copy), the
+    unnumbered Backup absent."""
+    d, _ = deck
+    t = " ".join(pages(d / "deck.pdf")[-1].replace("TEST MARKING", "").split())
+    assert t.startswith("Where we are"), t
+    assert t.count("Numbered") == 1 and t.count("Second") == 1 and "Its subtitle" in t, t
+    assert "Backup" not in t, t
 
 
 def test_role_warns_and_falls_back(deck):
