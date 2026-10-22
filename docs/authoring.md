@@ -344,7 +344,9 @@ With `{.full}` the cells fill the slide, and this line is the caption.
 - **Where it goes.** Under the title, a gallery takes the body; text above it takes its own height
   and the cells share the rest. **`height=0.6`** gives the gallery that share of the body instead.
   The PDF cannot measure what is above the gallery, so give `height=` whenever there is text above
-  it, or it runs past the foot there. On a `{.wide}` slide the gallery takes the wider body; on a
+  it, or it runs past the foot there. Text after a gallery (a `†` footnote) needs `height=` too:
+  without it the cells take the whole body and the text lands under them (squeezed into the pptx's
+  foot, over the last row in HTML, past the foot in the PDF). On a `{.wide}` slide the gallery takes the wider body; on a
   `{.full}` slide it fills the slide (no title, logo or rule) and the paragraph after it is the
   slide's caption, as for a full-slide figure.
 - **Limits:** at most twelve images; image files only (`png`, `jpg`, `svg`), each its own paragraph
@@ -360,7 +362,7 @@ With `{.full}` the cells fill the slide, and this line is the caption.
   crops each picture in place, so PowerPoint's crop tool restores it. An SVG image becomes a PNG
   of it there.
 - In HTML a slide's gallery fills the body to its foot, so a `†` slide footnote on the same slide
-  sits over its last row: put the remark in a caption instead.
+  sits over its last row: give the gallery `height=`, or put the remark in a caption.
 - The same slides in LaTeX are [latex/authoring.md "Galleries"](../latex/authoring.md#galleries).
 
 ## Notes under a figure
