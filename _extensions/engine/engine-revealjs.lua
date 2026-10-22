@@ -325,12 +325,71 @@ local function rails(blocks, livery)
   end)
 end
 
+-- An image gallery (C.gallery_items()): raw tags, a grid the scss lays out (--engine-gallery-cols and
+-- -rows equal tracks, the boxes.gallery gap), per image a <figure> holding the Image itself (pandoc
+-- writes the <img>, so embed-resources inlines it; its width= and height= the reader dropped) and,
+-- when any image has a caption, a <figcaption> in every one (&nbsp; for none: the row's pictures and
+-- captions line up); the fit and a height= share as custom properties
+local function gallery_html(g)
+  local raw = function(t) return pandoc.RawInline("html", t) end
+  local style = string.format("--engine-gallery-cols: %d; --engine-gallery-rows: %d; --engine-gallery-fit: %s",
+    g.cols, g.rows, g.fit) .. (g.height and string.format("; --engine-gallery-height: %s", g.height) or "")
+  local out = pandoc.Blocks({ html(string.format('<div class="engine-gallery%s" style="%s">',
+    g.height and " engine-gallery-sized" or "", style)) })
+  for _, it in ipairs(g.items) do
+    local il = pandoc.Inlines({ raw('<figure class="engine-gallery-item">'), it.image })
+    if g.captioned then
+      il:insert(raw("<figcaption>"))
+      if it.caption then il:extend(it.caption) else il:insert(raw("&nbsp;")) end
+      il:insert(raw("</figcaption>"))
+    end
+    il:insert(raw("</figure>"))
+    out:insert(pandoc.Plain(il))
+  end
+  out:insert(html("</div>"))
+  return out
+end
+
+-- Each content slide's galleries (C.top_galleries(): at its top level; a {.full} slide's is the
+-- .full branch's): drawn by gallery_html(), and a slide holding one gets its body (less notes) in
+-- .engine-gallery-body, the body box in slide pixels (the scss: a flex column to
+-- --engine-body-bottom), so the rows share what the text above leaves; unwrap_layout() makes it raw
+-- tags. After rails() (which reads the slide's top level), before wrap_layout(), so a {.wide} slide's
+-- .engine-body wraps outside it.
+local function galleries(blocks)
+  local out, i = pandoc.Blocks({}), 1
+  while i <= #blocks do
+    local blk = blocks[i]
+    out:insert(blk)
+    i = i + 1
+    if C.content_heading(blk, slide_level) then
+      local slide, drawn = pandoc.Blocks({}), false
+      while i <= #blocks and not is_slide_break(blocks[i]) do slide:insert(blocks[i]); i = i + 1 end
+      slide = C.top_galleries(slide, "engine-revealjs", function(g) drawn = true; return gallery_html(g) end)
+      if drawn then   -- the body (less notes) in the wrapper, the notes after it
+        local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
+        for _, b in ipairs(slide) do
+          if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
+        end
+        out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-gallery-body" })))
+        out:extend(notes)
+      else
+        out:extend(slide)   -- as it was, in its order
+      end
+    end
+  end
+  return out
+end
+
+local UNWRAP = { ["engine-body"] = true, ["engine-gallery-body"] = true }
+
 local function unwrap_layout(blocks)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and has_class(b, "engine-body") then
-      out:insert(html('<div class="engine-body">'))
-      out:extend(b.content)
+    local cls = b.t == "Div" and b.classes[1]
+    if cls and UNWRAP[cls] then   -- a gallery body inside a {.wide} slide's body too
+      out:insert(html('<div class="' .. cls .. '">'))
+      out:extend(unwrap_layout(b.content))
       out:insert(html("</div>"))
     else
       out:insert(b)
@@ -689,7 +748,7 @@ function Pandoc(doc)
   doc.blocks = cited
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery), livery))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(galleries(rails(doc.blocks, livery)))), livery), livery), livery))), 0
   local secs = C.sections(blocks, slide_level)   -- the dividers, for an agenda slide
   local total = 0   -- the numbered ones, for section.progress
   for _, sec in ipairs(secs) do if sec.number then total = total + 1 end end
@@ -765,12 +824,14 @@ function Pandoc(doc)
         i = i + 1
       end
       local fig, caption, rest = C.split_full(slide)
+      local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-revealjs")
+      if fig and C.is_gallery(fig) and not gallery then fig = nil end   -- refused, warned of: an ordinary slide
       if fig then
         if #caption > 0 then blk.classes:insert("engine-captioned") end
         out:insert(blk)
         -- raw tags, not a Div (the <section> trap; see the feature body)
         out:insert(html('<div class="engine-full-figure">'))
-        out:insert(fig)
+        if gallery then out:extend(gallery_html(gallery)) else out:insert(fig) end
         out:insert(html("</div>"))
         if #caption > 0 then
           out:insert(html('<div class="engine-full-caption">'))
@@ -780,7 +841,7 @@ function Pandoc(doc)
         out:extend(rest)
       else
         quarto.log.warning("engine-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
-          .. "\" needs one figure, then only paragraphs; drawn as an ordinary slide")
+          .. "\" needs one figure or a gallery, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
         if content_art then out:insert(html(content_art)) end

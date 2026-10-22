@@ -256,6 +256,52 @@ Publish the HTML; hand out the pptx and PDF.
 - **2027** First review
 :::
 
+## Six views of the quickstart
+
+A line above a gallery takes its own height; the cells share what is left (PDF: give `height=`).
+
+::: {.gallery cols=3 rows=2 height=0.75}
+![The cover](images/gallery-1.png)
+![A divider](images/gallery-2.png)
+![Text, rotated](images/gallery-3.png)
+![Columns](images/gallery-4.png)
+![Cards](images/gallery-5.png)
+![Cards, rotated](images/gallery-6.png)
+:::
+
+::: {.notes}
+`fit=contain`, the default: each picture whole in its cell, so the two rotated shots stand
+letterboxed. Any caption reserves the caption line in every cell, so a row lines up.
+:::
+
+## A strip of six {.wide}
+
+::: {.gallery cols=6 rows=1 fit=cover}
+![](images/gallery-1.png)
+![](images/gallery-2.png)
+![](images/gallery-3.png)
+![](images/gallery-4.png)
+![](images/gallery-5.png)
+![](images/gallery-6.png)
+:::
+
+::: {.notes}
+`fit=cover` crops each picture to fill its cell; `{.wide}` widens the body, and the strip with it.
+:::
+
+## The quickstart, six ways {.full}
+
+::: {.gallery cols=3 rows=2 fit=cover}
+![](images/gallery-1.png)
+![](images/gallery-2.png)
+![](images/gallery-3.png)
+![](images/gallery-4.png)
+![](images/gallery-5.png)
+![](images/gallery-6.png)
+:::
+
+With `{.full}` the cells fill the slide, and this line is the caption.
+
 ## Image embed
 
 ![A caption for the figure](images/example.jpg){width=60%}

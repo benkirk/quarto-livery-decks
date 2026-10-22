@@ -29,6 +29,16 @@ A release's entry is written here before its tag is pushed, and becomes its note
   Limits: six items at most, text only, on the slide itself (not in a card or a column); anything
   else warns and stays a plain list. A longer process goes on over a second slide whose list
   starts at `7.`: the badges follow the list's numbers. `docs/authoring.md` "Steps and timelines".
+- Image galleries: `::: {.gallery}` around image files (each `![Caption](path)` or `![](path)`)
+  draws them as a grid of equal cells, close together with no frame, a one-line caption under each
+  picture in the caption look (any caption reserves the line in every cell, so a row lines up).
+  `cols=` and `rows=` set the grid (by default as square as the count allows: five images are
+  3 by 2), `fit=cover` crops each picture to fill its cell where the default `contain` shows it
+  whole, and `height=0.6` gives the gallery that share of the body. Text above a gallery takes its
+  own height and the cells share the rest; on a `{.wide}` slide the gallery takes the wider body,
+  and on a `{.full}` slide the whole slide, the paragraph after it the slide's caption. In HTML.
+  Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
+  itself (not in a column or a card); anything else warns and leaves the pictures as they were.
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx

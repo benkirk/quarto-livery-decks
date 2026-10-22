@@ -587,6 +587,63 @@ $mermaid-label-fg-color: $engine-primary;
     > .engine-rail-title + * { margin-top: 0.25em; }
   }
 }
+// image galleries (engine-revealjs.lua gallery_html()): equal cells, --engine-gallery-cols and -rows
+// tracks, the boxes.gallery gap; each cell a picture over its caption (a caption's look, one line),
+// the picture contained or cropped (--engine-gallery-fit). A content slide holding one has its body
+// in .engine-gallery-body, the body box in slide pixels (its top to --engine-body-bottom), a flex
+// column: what is above the gallery takes its own height, the gallery the rest, or with height= its
+// share of the box. The box is fixed, so the autofit script never fires here: long text above
+// squeezes the rows instead.
+.reveal .slides section .engine-gallery-body {
+  display: flex;
+  flex-direction: column;
+  height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150px));
+  > * { flex: none; }
+  > .engine-gallery { flex: 1 1 0; min-height: 0; }
+  > .engine-gallery-sized {
+    flex: none;
+    height: calc(var(--engine-gallery-height) * (var(--engine-body-bottom, 830px) - var(--engine-body-top, 150px)));
+  }
+}
+.reveal .slides section .engine-gallery {
+  display: grid;
+  grid-template-columns: repeat(var(--engine-gallery-cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--engine-gallery-rows), minmax(0, 1fr));
+  gap: var(--engine-gallery-gap);
+  margin: 0;
+}
+.reveal .slides section .engine-gallery-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: var(--engine-gallery-pad);
+  box-sizing: border-box;
+  background: var(--engine-gallery-fill);
+  img {   // reveal's img margins and 95% caps overridden: the cell sizes the picture
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    object-fit: var(--engine-gallery-fit, contain);
+  }
+  figcaption {
+    flex: none;
+    margin-top: var(--engine-gallery-pad-y);
+    color: var(--engine-muted);
+    font-size: calc(var(--engine-type-caption, 0.7) * 1em);
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+.reveal .slides section.slide.full .engine-full-figure > .engine-gallery { width: 100%; height: 100%; }
+
 // status items (- [x] ✓, - [!] ⚠, - [-] ✗ in a card or a ::: {.status} list): the glyph is the
 // bullet, set where the dot was, bold in its status color (livery.css: boxes.status), as the
 // pptx's buChar and beamer's \item[...]; a failed item's text muted
@@ -1032,11 +1089,11 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 }
 // every wrapper Quarto puts round a figure hands the box down to it; the
 // empty paragraphs it leaves beside one would take a share of the width
-// (not inside the svg: mermaid's labels are divs too)
-.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(:has(svg, img)) {
+// (not inside the svg: mermaid's labels are divs too; not a gallery's, whose grid sizes its cells)
+.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(.engine-gallery, .engine-gallery *):not(:has(svg, img)) {
   display: none;
 }
-.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):has(svg, img) {
+.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(.engine-gallery, .engine-gallery *):has(svg, img) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1044,7 +1101,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   height: 100%;
   margin: 0;
 }
-.reveal .slides section.slide.full .engine-full-figure :is(svg, img):not(svg *) {
+.reveal .slides section.slide.full .engine-full-figure :is(svg, img):not(svg *):not(.engine-gallery *) {
   width: 100%;
   height: 100%;
   max-width: 100% !important;
