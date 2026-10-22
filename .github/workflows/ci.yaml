@@ -447,6 +447,8 @@ jobs:
           rm -rf /tmp/overleaf && mkdir /tmp/overleaf && unzip -q "decks/quickstart/$LIVERY-overleaf.zip" -d /tmp/overleaf
           (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error talk.tex)
           (cd /tmp/overleaf && env -u TEXINPUTS -u TTFONTS latexmk -xelatex -interaction=nonstopmode -halt-on-error sample.tex)   # the cookbook, every livery
+          # into the tree for the artifact: an absolute path in the upload list makes / its root
+          cp /tmp/overleaf/sample.pdf "decks/quickstart/$LIVERY-cookbook.pdf"
           family=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['typography']['fonts'][0]['family'])" "liveries/$LIVERY/build/livery.json")
           pdffonts /tmp/overleaf/talk.pdf | tee /dev/stderr | grep -c "${family// /}" >/dev/null
           if pdffonts /tmp/overleaf/talk.pdf | grep -c HelveticaNeue >/dev/null; then
@@ -500,7 +502,7 @@ jobs:
             decks/quickstart/quickstart.pdf
             decks/quickstart/${{ matrix.livery }}-overleaf.zip
             decks/quickstart/${{ matrix.livery }}-charts.zip
-            /tmp/overleaf/sample.pdf
+            decks/quickstart/${{ matrix.livery }}-cookbook.pdf
             decks/quickstart/_qa/
             decks/fixtures/_qa/measure.tsv
             decks/fixtures/_qa/compositions-${{ matrix.livery }}.png
