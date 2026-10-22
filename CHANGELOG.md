@@ -19,6 +19,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
 ## [Unreleased]
 
 ### Decks
+- `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
+  markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
+  text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
+  no longer adds a "Notes" slide at the end, and HTML no longer draws Quarto's own numbered aside.
+  A paragraph starting with `§` or `¶` is a slide footnote too. A note in the speaker notes stays
+  as it was; a fifth note on a slide, or one holding more than paragraphs, warns and stays.
 - PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
   livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
   instead of the brand's; lists, labels and strips in a card colored themselves and were right.

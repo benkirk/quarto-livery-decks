@@ -87,6 +87,7 @@ local function add_frameoption(el, opt)
 end
 
 local function latex(s) return pandoc.RawBlock("latex", s) end
+local function latex_inline(s) return pandoc.RawInline("latex", s) end
 
 local function inlines_to_latex(inlines)
   local doc = pandoc.Pandoc({ pandoc.Plain(inlines) })
@@ -95,13 +96,23 @@ end
 
 local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
 
--- slide footnotes: † / ‡ paragraphs, lifted to the frame's foot
+-- slide footnotes: † ‡ § ¶ paragraphs and ^[...] notes (C.take_footnotes()), lifted to the frame's foot
 
--- The footnote is a raw block, so pandoc cannot see a Code inline in it when it
--- decides on [fragile]; fine with \texttt, NOT with `listings: true` (\lstinline).
-local function footnote_latex(p)
-  return "\\enginefootnote{" .. footnote_marker(p) .. "}{"
-    .. inlines_to_latex(strip_marker(p.content)) .. "}"
+-- A footnote as \enginefootnote{<marker>}{<text>} with its text left as pandoc's inlines, so a
+-- citation in it reaches citeproc (which runs after this filter) and a Code inline in it makes
+-- the frame [fragile] as pandoc decides.
+local function footnote_block(p)
+  local inl = pandoc.Inlines({ latex_inline("\\enginefootnote{" .. footnote_marker(p) .. "}{") })
+  inl:extend(strip_marker(p.content))
+  inl:insert(latex_inline("}"))
+  return pandoc.Plain(inl)
+end
+
+-- a lifted note's mark in the text: superscript, in the theme's footnote mark color
+local function noteref(s)
+  if has_class(s, "engine-noteref") then
+    return latex_inline("\\textsuperscript{\\usebeamercolor[fg]{footnote mark}" .. pandoc.utils.stringify(s) .. "}")
+  end
 end
 
 local function hoist_footnotes(blocks)
@@ -118,16 +129,15 @@ local function hoist_footnotes(blocks)
       end
       local kept, notes = C.take_footnotes(slide)
       local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
-      for _, b in ipairs(kept) do
+      for _, b in ipairs(kept:walk({ Span = noteref })) do
         if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
       end
       if #notes > 0 then
         out:insert(latex("\\enginefootnotespring"))
         out:extend(body)
-        local tex = pandoc.List({ "\\enginefootnotespring", "\\begin{enginefootnotes}" })
-        for _, p in ipairs(notes) do tex:insert(footnote_latex(p)) end
-        tex:insert("\\end{enginefootnotes}")
-        out:insert(latex(table.concat(tex, "\n")))
+        out:insert(latex("\\enginefootnotespring\n\\begin{enginefootnotes}"))
+        for _, p in ipairs(notes) do out:insert(footnote_block(p)) end
+        out:insert(latex("\\end{enginefootnotes}"))
       else
         out:extend(body)
       end

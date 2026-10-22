@@ -2,7 +2,8 @@
 """Restyle on-slide footnotes in a pandoc-rendered pptx.
 
 pandoc's pptx writer ignores inline size and color, so a footnote authored in the .qmd (a
-paragraph starting with `†`, or `‡` for a second; `*† text*` works too) renders like any
+paragraph starting with `†`, `‡`, `§` or `¶`; `*† text*` works too; a `^[...]` note, which
+inline-footnotes.lua writes as one) renders like any
 paragraph. This finds each such paragraph, or a caption line that holds one, and restyles it
 left-aligned in the livery's muted color at a smaller size, a little space above, the marker
 in the accent slot (accent4). HTML and PDF draw the same and also move footnotes to the
@@ -21,7 +22,7 @@ import livery as livery_mod
 
 from .common import K, LIVERY
 
-MARKERS     = ("†", "‡")               # dagger, double dagger
+MARKERS     = ("†", "‡", "§", "¶")     # the printer's order (engine-common.lua MARKERS)
 FOOT_SIZE   = Pt(livery_mod.type_pt(LIVERY, "footnote"))   # the themes' footnote size (livery.json type)
 FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 MARK_COLOR  = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))   # the accent slot

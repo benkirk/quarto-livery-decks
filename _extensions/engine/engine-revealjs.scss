@@ -501,8 +501,11 @@ $mermaid-label-fg-color: $engine-primary;
   margin-right: auto;
 }
 
-// slide footnotes (paragraphs that start with † or ‡; engine-revealjs.lua lifts
-// them here): on the floor of the slide, under a short rule, with the marker
+// a lifted ^[...] note's mark in the text (engine-common.lua lift_footnotes())
+.reveal .slides section .engine-noteref { color: var(--engine-accent); }
+
+// slide footnotes (paragraphs that start with † ‡ § ¶, and ^[...] notes; engine-revealjs.lua
+// lifts them here): on the floor of the slide, under a short rule, with the marker
 // hanging in the accent color.  The autofit script reserves their height, so
 // the body shrinks above them rather than running underneath.
 .reveal .slides section .engine-footnotes {
