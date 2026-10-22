@@ -31,7 +31,6 @@ cover with the title and body in its column. Footnote paragraphs
 number keeps it."""
 
 import copy
-import io
 import sys
 from pathlib import Path
 
@@ -48,7 +47,7 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
-from .common import BOXES, GEOM, K, LIVERY, SLACK, fit_table, is_body, is_picture, is_table, pads, ppr_place, rect, rpr, take_marker
+from .common import BOXES, GEOM, K, LIVERY, SLACK, contain_box, fit_picture, fit_table, is_body, is_picture, is_table, pads, ppr_place, rect, rpr, take_marker
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
@@ -288,11 +287,7 @@ def full_slide(slide, width, height):
                 r.font.size, r.font.color.rgb = CAP_SIZE, CAP_COLOR
         floor += cap
     box_w, box_h = width - 2 * pad, height - pad - floor
-    iw, ih = pic.image.size
-    k = min(box_w / iw, box_h / ih)
-    pic.width, pic.height = int(iw * k), int(ih * k)
-    pic.left = pad + (box_w - pic.width) // 2
-    pic.top = pad + (box_h - pic.height) // 2
+    pic.left, pic.top, pic.width, pic.height = contain_box(*pic.image.size, pad, pad, box_w, box_h)
     return True
 
 
@@ -342,12 +337,7 @@ def _frame(shape, x, y, w, h, width, height):
 def _back_picture(slide, photo, x, y, w, h):
     """The photo cropped to cover the box, at the back of the slide (above the layout's shapes)."""
     tree = slide.shapes._spTree
-    pic = slide.shapes.add_picture(io.BytesIO(photo), x, y, w, h)
-    iw, ih = pic.image.size
-    if iw * h > ih * w:
-        pic.crop_left = pic.crop_right = (1 - (w / h) / (iw / ih)) / 2
-    else:
-        pic.crop_top = pic.crop_bottom = (1 - (iw / ih) / (w / h)) / 2
+    pic = fit_picture(slide, photo, x, y, w, h, "cover")
     tree.remove(pic._element)
     tree.insert(2, pic._element)   # after nvGrpSpPr and grpSpPr: the back of the slide
     return pic

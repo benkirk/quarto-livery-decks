@@ -33,12 +33,14 @@ def _xml(root):
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
 
 
-def _rasterize(svg: bytes) -> bytes:
+def rasterize_svg(svg: bytes, dpi: int) -> bytes:
+    """An SVG's PNG at dpi, by rsvg-convert (this step's plots; gallery.py's .svg files). Here, not in
+    common.py: this step reads no livery."""
     exe = shutil.which("rsvg-convert")
     if exe is None:
-        raise SystemExit("svg_fallback: rsvg-convert not found (conda-forge librsvg, in "
-                         "conda-env.yaml): an SVG picture needs its PNG fallback")
-    return subprocess.run([exe, "--dpi-x", str(DPI), "--dpi-y", str(DPI), "-f", "png"],
+        raise SystemExit("pptx: rsvg-convert not found (conda-forge librsvg, in conda-env.yaml): "
+                         "an SVG picture in a pptx is drawn from a PNG of it")
+    return subprocess.run([exe, "--dpi-x", str(dpi), "--dpi-y", str(dpi), "-f", "png"],
                           input=svg, capture_output=True, check=True).stdout
 
 
@@ -66,7 +68,7 @@ def run(parts: dict, name: str) -> None:
             if svg not in pngs:
                 pngs[svg] = "ppt/media/image%d.png" % nxt
                 nxt += 1
-                parts[pngs[svg]] = _rasterize(parts[svg])
+                parts[pngs[svg]] = rasterize_svg(parts[svg], DPI)
             new = "rId%d" % (max(ids, default=0) + 1)
             ids.add(int(new[3:]))
             etree.SubElement(rels, "{%s}Relationship" % PR, Id=new, Type=IMAGE,

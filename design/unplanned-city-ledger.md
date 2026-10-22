@@ -58,6 +58,12 @@ branched from, not a window read).
   prose batch; a state line on each finished `design/` handoff; the two heuristics below
 - Done after (#129, the LaTeX-first-class sprint, 2026-10-21): `\cmark`/`\xmark`/`\pmark` and pifont
   retired from `engine_livery.sty`; `enginestatus` and `\engineglyph` are the one status idiom
+- Done after (the gallery sprint, `design/gallery-handoff.md` commit 1, 2026-10-22): the lift the
+  steps handoff asked for once `grid.py` passed ~600 lines (753 after the quote and the agenda):
+  `body_box`, `group`, `shape`, `style_runs` and `para_text` moved to `pptx_steps/common.py`, with
+  the picture recipes `slide_layout.py` kept privately (`contain_box`, `cover_crop`,
+  `fit_picture`); `svg_fallback.py`'s rasterizer public as `rasterize_svg(svg, dpi)` (it stays
+  there: that step reads no livery, and common.py loads one); `grid.run()` takes the deck's path
 - Tried and dropped: none
 - Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
   `wrap_layout` and `hoist_footnotes`, beamer does not: a `.full` frame with `scale=` is scaled in
