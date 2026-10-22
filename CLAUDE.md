@@ -413,6 +413,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   opens a plain frame (an empty-titled slide heading: a raw block between slides lands in the
   slide before) holding the theme's `\enginesectionunnumbered{Title}{Sub}` (no `\section`, no toc
   line, no bookmark; its state global until shipout, where the background draws the stack).
+  `section.progress` (default off) reads "SECTION 3 of 5": pptx counts the numbered dividers,
+  HTML's filter writes `data-engine-section-total`, beamer's writes `\enginesectiontotal{n}`.
   In pptx the blue field, logo and waves are the template's Section Header
   layout, which `livery template` generates with the rest of the
   template from the livery's data (`make livery` after a livery change, never edit

@@ -69,6 +69,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
   reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white and 1.6:1 on
   ucar's, under the 3:1 a mark needs.
+- `section.progress` (default false): a numbered divider's eyebrow reads "SECTION 3 OF 5", its
+  number of the deck's numbered sections, in every format.
 - `boxes.agenda` (`number-color`, `current-color`): the agenda's section numbers and its current
   section's title, both `primary-contrast` by default (text on the content background: the
   divider's eyebrow color and the primary do not read there on every livery).
@@ -99,6 +101,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the title, the `\sectionsubtitle` under it; the section the frame sits in current, the earlier
   ones muted). The theme's table-of-contents templates draw a plain `\tableofcontents` the same
   way. The cookbook has an Agenda frame and a "Where we are" one, and its Backup is unnumbered.
+- `\enginesectiontotal{<n>}` in the preamble: the numbered sections' count, for a livery's
+  `section.progress` eyebrow ("SECTION 3 OF 5"); the Quarto filter writes it.
 - `\enginesectionunnumbered{Title}{Subtitle}` draws a divider outside the count (an appendix,
   the backup slides): the divider's look without the eyebrow, and no `\section`, so no counter
   step, no table-of-contents line and no PDF bookmark (`\section*` is no substitute: it steps

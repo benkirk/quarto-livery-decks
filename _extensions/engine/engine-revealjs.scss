@@ -833,6 +833,9 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   justify-content: var(--engine-cmp-column-justify);
   padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x);
   text-align: var(--engine-cmp-column-align, left);
+  &[data-engine-section][data-engine-section-total]::before {   // section.progress: the filter writes the total (two attributes: it outweighs the rule below)
+    content: var(--engine-cmp-eyebrow-label) attr(data-engine-section) " of " attr(data-engine-section-total);
+  }
   &[data-engine-section]::before {
     content: var(--engine-cmp-eyebrow-label) attr(data-engine-section);
     display: var(--engine-cmp-eyebrow-display, block);   // none: section.label is null

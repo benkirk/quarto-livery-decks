@@ -23,6 +23,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Section divider | `\section{...}` |
 | Divider subtitle | `\sectionsubtitle{...}` before `\section` |
 | Agenda: the numbered sections, a row each, each `\sectionsubtitle` under its title; in a section, that one current | `\begin{frame}{Agenda}\engineagenda\end{frame}` (from the table of contents: `latexmk` runs LaTeX twice); a plain `\tableofcontents` draws the same rows, none current |
+| "SECTION 3 OF 5" over a divider, under a livery with `section.progress` | `\enginesectiontotal{5}` in the preamble: the numbered sections' count (a livery without it ignores the line) |
 | Divider outside the count (an appendix, the backup slides) | `\enginesectionunnumbered{Backup}{A subtitle}` between frames, `{}` for no subtitle: no eyebrow, and no `\section`, so no counter step, table-of-contents line or PDF bookmark (`\section*` still steps beamer's counter) |
 | Slide | `\begin{frame}{Title}` |
 | Blocks | `block`, `exampleblock`, `alertblock` |

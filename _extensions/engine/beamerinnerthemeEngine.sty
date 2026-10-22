@@ -112,8 +112,11 @@
       {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
     \fi}%
   \engine@ctab\@tempboxa}
-% the livery's word (section.label), as HTML and pptx set it
-\def\insertsectionnumberlabel{\engine@cv{eyebrow@label}~\insertsectionnumber}
+% the livery's word (section.label), as HTML and pptx set it; with section.progress, "of" the total
+% of numbered sections, \enginesectiontotal{<n>} in the preamble (the Quarto filter writes it)
+\newcommand\enginesectiontotal[1]{\gdef\engine@sectiontotal{#1}}
+\def\insertsectionnumberlabel{\engine@cv{eyebrow@label}~\insertsectionnumber
+  \engine@ifc{eyebrow@progress}{\ifdefined\engine@sectiontotal~of~\engine@sectiontotal\fi}{}}
 \defbeamertemplate*{subsection page}{Engine}{%
   \vbox{\raggedright
     {\usebeamerfont{section number}\usebeamercolor[fg]{structure}%

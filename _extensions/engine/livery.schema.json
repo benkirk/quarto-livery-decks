@@ -259,7 +259,8 @@
           "$ref": "#/$defs/role-or-hex",
           "description": "The eyebrow's color, a role or a hex.",
           "default": "secondary"
-        }
+        },
+        "progress": {"type": "boolean", "default": false, "description": "The eyebrow reads \"SECTION 3 of 5\": the divider's number of the numbered sections, in every format (LaTeX: \\enginesectiontotal{5} in the preamble; the Quarto filter writes it)."}
       }
     },
     "art": {

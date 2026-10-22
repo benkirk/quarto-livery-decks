@@ -79,6 +79,8 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
 - `# Backup {.unnumbered}` is a section divider outside the count, in every format: no
   "SECTION n" over it, and the dividers after it keep their numbers. A paragraph right after it
   is its subtitle, as under any divider. In the PDF it has no bookmark.
+  A livery with `section: {progress: true}` reads "SECTION 3 OF 5" over a numbered divider: its
+  number of the numbered sections.
 - `## Thank you! {.closing}` makes a closing slide.
 - `### Heading {.example}` / `{.alert}` give block variants.
 - `[text]{.alert}` emphasizes text.

@@ -842,5 +842,10 @@ function Pandoc(doc)
     hi:insert(pandoc.Blocks(subtitles))
     doc.meta["header-includes"] = hi
   end
+  if section > 0 then   -- the numbered sections' total, for a livery's section.progress ("SECTION 3 of 5")
+    local hi = header_includes(doc)
+    hi:insert(pandoc.Blocks({ latex("\\enginesectiontotal{" .. section .. "}") }))
+    doc.meta["header-includes"] = hi
+  end
   return doc
 end

@@ -139,6 +139,7 @@ Section slides.
 | `label` | string or null | `"Section"` | The eyebrow's word over the heading, as "SECTION n" (each format sets it in capitals); null: no eyebrow. |
 | `tab` | boolean | `true` | The accent tab beside the heading. |
 | `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex. |
+| `progress` | boolean | `false` | The eyebrow reads "SECTION 3 of 5": the divider's number of the numbered sections, in every format (LaTeX: \enginesectiontotal{5} in the preamble; the Quarto filter writes it). |
 
 ### `art`
 

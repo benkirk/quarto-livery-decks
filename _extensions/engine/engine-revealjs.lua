@@ -691,6 +691,10 @@ function Pandoc(doc)
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery), livery))), 0
   local secs = C.sections(blocks, slide_level)   -- the dividers, for an agenda slide
+  local total = 0   -- the numbered ones, for section.progress
+  for _, sec in ipairs(secs) do if sec.number then total = total + 1 end end
+  local eyebrow = comps.section.eyebrow
+  local progress = type(eyebrow) == "table" and eyebrow.progress == true
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then
@@ -701,6 +705,7 @@ function Pandoc(doc)
       if not has_class(blk, "unnumbered") then
         section = section + 1
         blk.attributes["data-engine-section"] = tostring(section)
+        if progress then blk.attributes["data-engine-section-total"] = tostring(total) end   -- "3 of 5"
       end
       out:insert(blk)
       out:insert(html(comp_art(comps.section, r)))

@@ -562,7 +562,8 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
                           "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
                "eyebrow": {"label": dv.get("label", "Section"),   # section.label-color, a role or a hex, as hex
-                           "color": (lambda c: c if c.startswith("#") else out["roles"][c])(dv.get("label-color", "secondary"))}
+                           "color": (lambda c: c if c.startswith("#") else out["roles"][c])(dv.get("label-color", "secondary")),
+                           "progress": bool(dv.get("progress", False))}   # "SECTION 3 of 5"
                           if dv.get("label", "Section") else None}   # section.label: null, no eyebrow
     feature = {**empty,
                "photo": {"box": _box(0, 0, 1, 1)},
@@ -991,6 +992,8 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
         if c["eyebrow"]:
             e = c["eyebrow"]
             d("eyebrow@label", e["label"])
+            if e["progress"]:   # \insertsectionnumberlabel adds "of <total>" (\enginesectiontotal)
+                d("eyebrow@progress", "true")
             L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")   # hex: compositions() resolved it
         for k in ("mark", "signoff"):   # its files, the composition's own (compositions())
             if c[k] and c[k].get("img"):

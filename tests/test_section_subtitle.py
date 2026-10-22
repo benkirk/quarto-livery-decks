@@ -25,7 +25,7 @@ import zipfile
 
 import pytest
 
-from conftest import ROOT
+from conftest import ROOT, run
 
 ENGINE = ROOT / "_extensions" / "engine"
 LEVEL = ("--slide-level=2",)   # Quarto's; pandoc alone guesses 1 from a divider with a subtitle
@@ -152,3 +152,48 @@ def test_unnumbered_title_takes_the_eyebrows_room(tmp_path, pandoc_deck, run_ste
     pandoc_deck(tmp_path, '---\nengine-unnumbered: "2"\n---\n\n' + BODY, "a.pptx", *LEVEL)
     pandoc_deck(tmp_path, BODY, "b.pptx", *LEVEL)
     assert run_step(tmp_path / "a.pptx")[1][2] < run_step(tmp_path / "b.pptx")[1][2]
+
+
+@pytest.fixture(scope="module")
+def progress(tmp_path_factory):
+    """decks/fixtures/photo.qmd (one numbered divider, then the unnumbered Backup) rendered in every
+    format under a tmp flavor of ncar with section.progress (as test_cover_field.py renders)."""
+    tmp = tmp_path_factory.mktemp("progress")
+    liv = tmp / "liveries"
+    shutil.copytree(ROOT / "liveries" / "ncar", liv / "ncar", ignore=shutil.ignore_patterns("reference"))
+    d = liv / "progress"; d.mkdir()
+    (d / "_brand.yml").write_text("{}\n")
+    (d / "livery.yml").write_text("schema: 1\nname: progress\nextends: ncar\nsection: {progress: true}\n")
+    assert run("build", d).returncode == 0
+    assert run("template", d).returncode == 0   # the pptx's template, the livery's own
+    deck = tmp / "deck"; deck.mkdir()
+    src = ROOT / "decks" / "fixtures"
+    for f in ("photo.qmd", "_body.qmd"):
+        shutil.copy(src / f, deck / f)
+    shutil.copytree(src / "images", deck / "images")
+    (deck / "Makefile").write_text(f"DECKS := photo\ninclude {ROOT / 'Make.common'}\n")
+    env = {k: v for k, v in os.environ.items() if k not in ("LIVERY", "LIVERY_DIR")}
+    r = subprocess.run(["make", "-C", str(deck), "all", f"LIVERY_DIR={d}"], env=env, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout[-1500:] + r.stderr[-1500:]
+    return deck
+
+
+def test_progress_pptx(progress):
+    labels = [label for _t, label, _y in dividers(progress / "photo.pptx")]
+    assert labels == ["Section 1 of 1", None], labels
+
+
+def test_progress_pdf(progress):
+    texts = [subprocess.run(["pdftotext", "-f", str(k), "-l", str(k), str(progress / "photo.pdf"), "-"],
+                            capture_output=True, text=True).stdout for k in range(1, 10)]
+    divs = [" ".join(t.split()) for t in texts if "A divider" in t.split("\n")[0:3] or "Backup" in t.split("\n")[0:3]]
+    assert any(t.startswith("SECTION 1 OF 1 A divider") for t in divs), divs
+    assert any(t.startswith("Backup") for t in divs), divs
+
+
+def test_progress_html(progress):
+    html = (progress / "photo.html").read_text()
+    head = re.search(r'<section[^>]*engine-section[^>]*>\s*<h1>A divider', html)
+    assert head and 'data-engine-section="1"' in head.group(0) and 'data-engine-section-total="1"' in head.group(0), head
+    backup = re.search(r'<section[^>]*>\s*<h1>Backup', html)
+    assert backup and "data-engine-section" not in backup.group(0), backup.group(0)

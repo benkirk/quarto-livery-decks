@@ -71,7 +71,8 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
      hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover (nsi);
-     `feature.style`; `compositions` to move any box of the composed slides.
+     `feature.style`; `section: {progress: true}` for "SECTION 3 OF 5" over the dividers;
+     `compositions` to move any box of the composed slides.
    - **Bullets.** `bullets:` (`glyphs` per level, `color`) when the brand's template draws its own
      list glyphs; the glyphs must exist in `pptx.typeface`.
    - **Art.** `art`: wave curves (`common/utils/fit-waves.py` fits them to the brand's cover

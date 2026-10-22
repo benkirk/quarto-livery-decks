@@ -702,7 +702,8 @@
       },
       "eyebrow": {
         "color": "#011837",
-        "label": "Section"
+        "label": "Section",
+        "progress": false
       },
       "field": {
         "box": [
