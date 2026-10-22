@@ -18,6 +18,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.8] - 2026-10-22
+
 ### Decks
 - PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
   livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
@@ -391,7 +393,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.7...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.8...HEAD
+[26.10.8]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.8
 [26.10.7]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.7
 [26.10.6]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.6
 [26.10.5]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.5
