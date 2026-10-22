@@ -84,6 +84,13 @@ def lines(paragraphs, font, width):
     return n
 
 
+def block_height(strings, family, weight, pt, width, line, spacing=1.0):
+    """The height in px of `strings` (paragraphs in one face at pt points) wrapped in `width` px:
+    their lines (lines()) at `line` em of the size, times the paragraph's line spacing (a
+    layout's lnSpc); section_subtitle's divider block."""
+    return lines(strings, font(family, weight, pt), width) * line * spacing * pt / PT_PX
+
+
 def runs_lines(pieces, width):
     """How many lines one paragraph of (text, face) pieces wraps to in `width` px; a "\v" (a
     line break) starts a new line."""

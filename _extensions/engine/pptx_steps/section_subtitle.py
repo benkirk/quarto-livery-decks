@@ -43,7 +43,9 @@ EYEBROW = LIVERY["compositions"]["section"]["eyebrow"]   # {label, color}: "Sect
 LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
 LABEL_GAP = 10                              # margin-bottom 0.5em
 BODY_GAP = 22                               # .engine-subtitle margin-top 0.7em
-LINE = 1.4                                  # ascent + descent of the heading font, in em
+HEAD_LINE = 1.4                             # a divider line's height in em: ascent + descent of the heading font
+                                            # (measure.LINE, 1.2, is a body line's)
+BLOCK_SLACK = 4                             # px grown onto a measured title or subtitle block
 DECOR = ("engine-section-label", "engine-section-tab")
 
 
@@ -187,14 +189,14 @@ def _dress(root, layout_root, number, of=None):
 
     def height(style, sp, family, weight):
         _x, w, pt, spacing = style
-        return measure.lines(_paragraphs(sp), measure.font(family, weight, pt), w) * LINE * spacing * pt / PT_PX
+        return measure.block_height(_paragraphs(sp), family, weight, pt, w, HEAD_LINE, spacing)
 
     labelled = EYEBROW and number is not None
-    label_h = LINE * LABEL_PT / PT_PX if labelled else 0
+    label_h = HEAD_LINE * LABEL_PT / PT_PX if labelled else 0
     label_gap = LABEL_GAP if labelled else 0
-    title_h = height(t_style, title, measure.TITLE, 700) + 4   # the face the pptx sets titles in
+    title_h = height(t_style, title, measure.TITLE, 700) + BLOCK_SLACK   # the face the pptx sets titles in
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
-    body_h = height(b_style, body, measure.BODY, 400) + 4 if body_text else 0
+    body_h = height(b_style, body, measure.BODY, 400) + BLOCK_SLACK if body_text else 0
     total = label_h + label_gap + title_h + (BODY_GAP + body_h if body_text else 0)
     y = BLOCK_TOP if COLUMN["anchor"] == "top" else (BLOCK_TOP + BLOCK_BOTTOM - total) / 2   # column.anchor
 
