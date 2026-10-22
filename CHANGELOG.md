@@ -25,7 +25,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   a thin rail with a numbered badge per step in the role, each step's first bold run its title and
   the rest its text below; `::: {.timeline}` around a bullet list draws milestones as dots on the
   rail, the bold run the date above the dot and the rest the label below, `- [x]` a filled dot
-  and a plain item a hollow one. HTML only for now.
+  and a plain item a hollow one. In the pptx each is native shapes, one group ("Steps",
+  "Timeline"), the badges and dots PowerPoint circles. HTML and pptx for now.
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx

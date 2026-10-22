@@ -24,6 +24,10 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:big⟧`; a `.strip` (in a card or on its own) is `⟦engine:strip role=accent⟧` ...
   `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
   drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
+- Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
+  (kind=timeline), per item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done milestone), its title
+  or date a paragraph led by `⟦engine:title⟧`, its text, `⟦engine:end⟧`, and a last `⟦engine:end⟧`;
+  a slide with one is a grid slide. A div rail_items() refuses (warned of) stays as it is.
 
 Plain pandoc, no Quarto API, so a test can run it.
 ]]
@@ -128,11 +132,22 @@ end
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
   for _, b in ipairs(blocks) do
+    local kind = C.rail_kind(b)
+    local rail = kind and C.rail_items(b, kind, nil, "grid-pptx.lua")
     if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
       flow({ b }, title, out)
     elseif b.t == "Div" and C.has_class(b, "lead") then
       out:insert(marker("lead"))
       flow(C.split_lines(b.content), title, out)
+      out:insert(marker("end"))
+    elseif rail then
+      out:insert(marker("rail kind=" .. kind .. " role=" .. rail.role))
+      for _, item in ipairs(rail.items) do
+        out:insert(marker(item.done and "item done" or "item"))
+        if item.title then out:insert(prefixed("title", item.title)) end
+        flow(item.body, title, out)
+        out:insert(marker("end"))
+      end
       out:insert(marker("end"))
     elseif b.t == "Div" and C.has_class(b, "columns") and C.is_grid(b, blocks) then
       out:extend(flatten(b, title))

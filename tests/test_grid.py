@@ -34,6 +34,9 @@ CARDS = ('## Cards\n\n:::: {.columns}\n'
 DEFAULTS = ('## Default roles\n\n:::: {.columns}\n' + ''.join(f'::: {{.column .card}}\n### {t}\nText.\n:::\n' for t in 'ABCD')
             + '::::\n')
 WIDE = "\n::: notes\nengine-layout: wide\n:::\n"
+RAILS = ('## Steps\n\n::: {.steps role="secondary"}\n1. **Propose** A one-page case.\n2. **Pilot** Six weeks.\n'
+         '   A second line.\n3. **Scale** The allocation.\n:::\n\n'
+         '## Timeline\n\n::: {.timeline}\n- [x] **Q1 2025** Accepted\n- **2026** Full allocation\n:::\n')
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -41,7 +44,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
       '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
-      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE)
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS)
 STEP = """
 import sys
 from pathlib import Path
@@ -155,9 +158,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 9, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 11, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -223,6 +226,60 @@ def test_cards(deck):
     big = next(p for p in body if p.text == "$20M")
     assert label.runs[0]._r.find("{*}rPr").get("cap") == "all", "the label in caps"
     assert big.runs[0].font.size.pt == livery_mod.half_pt(livery["type"]["roles"]["display"]["pt"]), "the big number's size"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_rail(deck):
+    """Steps and a timeline: one group each; the items at the formula's frames (equal shares), the
+    text boxes one height; a step's badge a circle in its role with its number, bold, in the
+    subhead size and primary-text; the rail boxes.rail.line of the height in line-color, through
+    the marks' middle from the first mark to the row's edge; a done milestone's dot filled in the
+    role, a pending one the background in a ring of it; the titles bold in the subhead size; no
+    marker left."""
+    import livery as livery_mod
+    livery, prs, _ = deck
+    rail, H = livery["boxes"]["rail"], prs.slide_height
+    role = lambda r: livery["roles"][r][1:]
+    subhead = livery_mod.half_pt(livery["type"]["roles"]["subhead"]["pt"])
+    slide = prs.slides[9]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert by["Steps"].shape_type == 6 and {"Rail", "Step 1 badge", "Step 3 text"} <= {sh.name for sh in flat(by["Steps"].shapes)}, \
+        "the steps one group of their shapes"
+    texts = [by[f"Step {k} text"] for k in (1, 2, 3)]
+    for t, (x, w) in zip(texts, boxes(livery, prs.slide_width, [1 / 3] * 3)):
+        assert abs(t.left - x) <= 2 and abs(t.width - w) <= 2, f"{t.name} {t.left, t.width}, want {x, w}"
+    assert len({t.height for t in texts}) == 1 and len({t.top for t in texts}) == 1, "the steps one height"
+    badge = by["Step 1 badge"]
+    assert badge._element.find(".//{*}prstGeom").get("prst") == "ellipse", "the badge a circle"
+    assert badge.width == badge.height == round(rail["badge"] * H), "the badge's diameter"
+    assert str(badge.fill.fore_color.rgb) == role("secondary"), "the badge in the role"
+    run = badge.text_frame.paragraphs[0].runs[0]
+    assert run.text == "1" and run.font.bold and run.font.size.pt == subhead and str(run.font.color.rgb) == role("primary-text"), \
+        "the badge's number"
+    assert by["Step 3 badge"].text_frame.text == "3"
+    line = by["Rail"]
+    assert line.height == round(rail["line"] * H) and str(line.fill.fore_color.rgb) == rail["line-color"][1:], "the rail"
+    assert abs(line.top + line.height / 2 - (badge.top + badge.height / 2)) <= 1, "the rail through the badges' middle"
+    assert line.left == badge.left + badge.width // 2 and line.left + line.width == texts[2].left + texts[2].width, \
+        "the rail from the first badge to the row's edge"
+    assert badge.top + badge.height == texts[0].top, "the text under the badge"
+    title = texts[0].text_frame.paragraphs[0]
+    assert title.text == "Propose" and title.runs[0].font.bold and title.runs[0].font.size.pt == subhead, "a step's title"
+    assert [p.text for p in texts[1].text_frame.paragraphs] == ["Pilot", "Six weeks.", "A second line."], "a source line a line"
+    assert "Step 1 cell" not in by, "no cell without boxes.rail.fill"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+    slide = prs.slides[10]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert by["Timeline"].shape_type == 6, "the timeline one group"
+    done, pending = by["Milestone 1 dot"], by["Milestone 2 dot"]
+    assert str(done.fill.fore_color.rgb) == role("primary") and done.line.fill.type == 5, "a done milestone filled in the role, no line"   # MSO_FILL_TYPE.BACKGROUND
+    assert str(pending.fill.fore_color.rgb) == role("background") and str(pending.line.color.rgb) == role("primary"), \
+        "a pending one hollow, ringed in the role"
+    date = by["Milestone 1 title"]
+    assert date.text_frame.text == "Q1 2025" and date.text_frame.paragraphs[0].runs[0].font.bold, "the date"
+    assert date.top + date.height == by["Rail"].top + by["Rail"].height // 2 - round(rail["dot"] * H) // 2, "the date above the dot"
+    assert by["Milestone 2 text"].text_frame.text == "Full allocation", "the label under it"
     assert "⟦" not in slide._element.xml, "a marker left"
 
 

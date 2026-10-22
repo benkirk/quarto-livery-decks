@@ -114,3 +114,22 @@ def test_card_marked(pandoc_deck, tmp_path):
     for want in ("⟦engine:column card role=secondary pick⟧", "⟦engine:title⟧OPTION 1", "⟦engine:sub⟧The sub",
                  "⟦engine:label⟧LABEL", "⟦engine:big⟧$20M", "⟦engine:column⟧"):
         assert want in paras, f"{want!r} not a paragraph: {paras}"
+
+
+def test_rail_marked(tmp_path):
+    """Steps and a timeline: a rail marker with the kind and the role, an item marker per item
+    (`done` on a done milestone), the title or date a ⟦engine:title⟧ paragraph, the text after it,
+    every marker closed."""
+    md = ('## Steps\n\n::: {.steps role="secondary"}\n1. **Propose** A case.\n2. **Pilot** Six weeks.\n:::\n\n'
+          '## Timeline\n\n::: {.timeline}\n- [x] **Q1** Accepted\n- **2026** Full\n:::\n')
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "r.pptx"
+    subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
+    with zipfile.ZipFile(out) as z:
+        slides = [z.read(f"ppt/slides/slide{n}.xml").decode() for n in (1, 2)]
+    paras = [["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", x)] for x in slides]
+    paras = [[p for p in ps if p not in ("Steps", "Timeline")] for ps in paras]   # the titles
+    assert paras[0] == ["⟦engine:rail kind=steps role=secondary⟧", "⟦engine:item⟧", "⟦engine:title⟧Propose", "A case.",
+                        "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧Pilot", "Six weeks.", "⟦engine:end⟧", "⟦engine:end⟧"], paras[0]
+    assert paras[1] == ["⟦engine:rail kind=timeline role=primary⟧", "⟦engine:item done⟧", "⟦engine:title⟧Q1", "Accepted",
+                        "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧2026", "Full", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]
