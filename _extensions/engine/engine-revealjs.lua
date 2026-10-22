@@ -357,10 +357,9 @@ local function galleries(blocks)
   while i <= #blocks do
     local blk = blocks[i]
     out:insert(blk)
-    i = i + 1
+    local slide, drawn
+    slide, i = C.slide_from(blocks, i + 1, slide_level)
     if C.content_heading(blk, slide_level) then
-      local slide, drawn
-      slide, i = C.slide_from(blocks, i, slide_level)
       slide = C.top_galleries(slide, "engine-revealjs", function(g) drawn = true; return gallery_html(g) end)
       if drawn then   -- the body (less notes) in the wrapper, the notes after it
         local body, notes = C.split_notes(slide)
@@ -369,6 +368,9 @@ local function galleries(blocks)
       else
         out:extend(slide)   -- as it was, in its order
       end
+    else
+      local where = C.composed_kind(blk, slide_level)   -- nil for a .full slide: its branch draws the gallery
+      out:extend(where and C.unwrap_galleries(slide, "engine-revealjs", where) or slide)
     end
   end
   return out

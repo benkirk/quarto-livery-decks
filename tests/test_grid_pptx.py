@@ -220,7 +220,8 @@ def test_gallery_marked(tmp_path):
         shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / name)
     md = ('## Gallery\n\n::: {.gallery cols=2 height=0.6}\n![The cover](g1.png)\n\n![](<g 2=x.png>)\n:::\n\n'
           '## Full\n\n::: {.gallery fit=cover}\n![](g1.png)\n:::\n\nThe caption.\n\n::: notes\nengine-layout: full\n:::\n\n'
-          '## Refused\n\n::: {.gallery cols=1 rows=1}\n![](g1.png)\n\n![](g1.png)\n:::\n')
+          '## Refused\n\n::: {.gallery cols=1 rows=1}\n![](g1.png)\n\n![](g1.png)\n:::\n\n'
+          '## Thanks\n\n::: {.gallery}\n![](g1.png)\n:::\n\n::: notes\nengine-layout: closing\n:::\n')
     pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
     out = tmp_path / "g.pptx"
     r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True,
@@ -234,6 +235,10 @@ def test_gallery_marked(tmp_path):
     assert "<p:pic>" not in slides[0] and "<p:pic>" not in slides[1], "the files are gallery.py's to read, not pandoc's"
     assert paras[1][1:4] == ["⟦engine:gallery cols=1 rows=1 fit=cover full⟧", "⟦engine:item src=g1.png⟧", "⟦engine:end⟧"], paras[1]
     assert "The caption." in paras[1], "the slide caption after the gallery, for grid.py"
-    refused = slides[next(k for k, x in enumerate(slides) if "Refused" in x):]   # it and pandoc's continuations
+    first = next(k for k, x in enumerate(slides) if "Refused" in x)
+    closing = next(k for k, x in enumerate(slides) if "Thanks" in x)
+    refused = slides[first:closing]   # it and pandoc's continuations
     assert "⟦engine:" not in "".join(refused) and "".join(refused).count("<p:pic>") == 2, "a refused gallery: pandoc's pictures"
     assert 'grid-pptx.lua: slide "Refused": a .gallery of 2 images does not fit cols=1 rows=1' in r.stderr, r.stderr
+    assert "⟦engine:" not in slides[closing] and "<p:pic>" in slides[closing], "a closing slide's gallery: pandoc's picture"
+    assert 'grid-pptx.lua: slide "Thanks": a .gallery on a closing slide is not drawn; left as its pictures' in r.stderr, r.stderr

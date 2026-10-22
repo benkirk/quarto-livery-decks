@@ -912,6 +912,35 @@ local function top_galleries(blocks, who, draw)
                    function(b) return gallery_items(b, who) end, draw, who, "pictures")
 end
 
+-- The slide a heading opens, when it is not a content slide: "feature" or "closing" (the composed
+-- slides, whose bodies are the composition's), "divider" (a heading above the slide level),
+-- "untitled" (no heading: the blocks before the first, or after a rule); nil for a content slide
+-- (a .full one included: its figure is the format's .full branch's).
+local function composed_kind(blk, level)
+  if blk.t ~= "Header" then return "untitled" end
+  if blk.level < level then return "divider" end
+  for _, c in ipairs(blk.classes) do
+    if c == "feature" or c == "closing" then return c end
+  end
+  return nil
+end
+
+-- A gallery outside a content slide (composed_kind(): where) is not drawn in any format: each
+-- top-level .gallery div of the slide is warned of and unwrapped into its paragraphs (pandoc's pptx
+-- writer draws no picture held in a Div), so the pictures stay.
+local function unwrap_galleries(blocks, who, where)
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    if is_gallery(b) then
+      warn(who .. ": a .gallery on a " .. where .. " slide is not drawn; left as its pictures")
+      out:extend(b.content)
+    else
+      out:insert(b)
+    end
+  end
+  return out
+end
+
 -- Every bullet list's status items normalized (status_item()), marked ones inside a card column or
 -- a .status div; fn(list, kinds) then returns the list as a format draws it (kinds: the items'
 -- statuses, nil for a plain item), or nil to keep it.
@@ -958,5 +987,6 @@ return {
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
+  composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file,
 }

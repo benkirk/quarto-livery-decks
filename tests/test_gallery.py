@@ -62,6 +62,20 @@ if arg[2] == "bag" then   -- latex_file(): a media-bag item (an .svg's PDF, as Q
   io.write(C.latex_file("images/vec.pdf", arg[3]) .. "\n" .. C.latex_file("pics/my%20pic.jpg", arg[3]) .. "\n")
   return
 end
+if arg[2] == "composed" then   -- composed_kind() per slide heading, unwrap_galleries() on the slide after one
+  local i = 1
+  while i <= #doc.blocks do
+    local blk, slide = doc.blocks[i], nil
+    slide, i = C.slide_from(doc.blocks, i + 1, 2)
+    local where = C.composed_kind(blk, 2)
+    if where then slide = C.unwrap_galleries(slide, "t", where) end
+    local n = 0
+    for _, b in ipairs(slide) do if C.is_gallery(b) then n = n + 1 end end
+    io.write(pandoc.json.encode({ where = where or false, galleries = n, blocks = #slide }) .. "\n")
+  end
+  for _, w in ipairs(warnings) do io.write("WARNING: " .. w .. "\n") end
+  return
+end
 if arg[2] == "top" then   -- top_galleries(): each drawn gallery a paragraph naming it, the rest as it was
   local out = C.top_galleries(doc.blocks, "t", function(g) return { pandoc.Para("GALLERY " .. #g.items) } end)
   io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
@@ -190,6 +204,19 @@ def test_size_attributes_dropped(tmp_path):
 def test_refused(tmp_path, md, why):
     out, warnings = read(tmp_path, md)
     assert out[-1].get("nil") and len(warnings) == 1 and why in warnings[0], (out, warnings)   # the outer last (bottom-up)
+
+
+def test_content_slides_only(tmp_path):
+    """A gallery is drawn on a content slide only (a .full slide's is its branch's): on a feature or
+    closing slide, after a divider or on an untitled slide it is warned of and unwrapped into its
+    paragraphs, so the pictures stay in every format (composed_kind(), unwrap_galleries())."""
+    md = ("# Part\n\n" + gallery(2) + "## Content\n\n" + gallery(2) + "## Full {.full}\n\n" + gallery(2)
+          + "## Photo {.feature}\n\n" + gallery(2) + "## Thanks {.closing}\n\nA line.\n\n" + gallery(2))
+    slides, warnings = read(tmp_path, md, "composed")
+    assert [(s["where"], s["galleries"], s["blocks"]) for s in slides] == [
+        ("divider", 0, 2), (False, 1, 1), (False, 1, 1), ("feature", 0, 2), ("closing", 0, 3)], slides
+    assert [w.split(": ", 1)[1] for w in warnings] == [f"a .gallery on a {k} slide is not drawn; left as its pictures"
+                                                        for k in ("divider", "feature", "closing")], warnings
 
 
 def test_top_level_only(tmp_path):

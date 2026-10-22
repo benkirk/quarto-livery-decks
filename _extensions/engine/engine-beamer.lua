@@ -421,7 +421,20 @@ end
 -- raw LaTeX first (the reader drops the attribute: the cell sizes the picture). A {.full} slide's
 -- is full_frames()'.
 local function galleries(blocks)
-  return C.top_galleries(blocks, "engine-beamer", gallery_latex)
+  local out, i = pandoc.Blocks({}), 1
+  while i <= #blocks do
+    local blk = blocks[i]
+    out:insert(blk)
+    local slide
+    slide, i = C.slide_from(blocks, i + 1, slide_level)
+    local where = C.composed_kind(blk, slide_level)   -- a content frame's are drawn (a .full frame's too)
+    if where then
+      out:extend(C.unwrap_galleries(slide, "engine-beamer", where))
+    else
+      out:extend(C.top_galleries(slide, "engine-beamer", gallery_latex))
+    end
+  end
+  return out
 end
 
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph

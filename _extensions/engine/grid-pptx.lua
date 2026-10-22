@@ -191,8 +191,12 @@ local function agenda_marks(blocks, title, secs, current)
 end
 
 -- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
-local function mark(blocks, title)
+local function mark(blocks, title, level)
   local words = layout_words(blocks)
+  -- a gallery on a composed slide (slide-layout.lua's words), a divider or an untitled slide is not
+  -- drawn in any format (C.composed_kind(); the kind classes are off the heading here, so the words)
+  local where = (words.feature and "feature") or (words.closing and "closing") or C.composed_kind(blocks[1] or {}, level)
+  if where then blocks = C.unwrap_galleries(blocks, string.format("grid-pptx.lua: slide %q", title), where) end
   local out, wide = pandoc.Blocks({}), words.wide
   local grid, kept = {}, {}   -- which columns divs are a grid slide's, read before the quotes become markers;
   for k, b in ipairs(blocks) do   -- a plain one's quotes (beside a picture or table) stay pandoc's, warned of
@@ -281,7 +285,7 @@ function Pandoc(doc)
   local secs, current = C.sections(doc.blocks, level), 0   -- current: the numbered dividers so far
   local function one(slide, title)
     if slide[1] and C.is_agenda(slide[1], level) then return agenda_marks(slide, title, secs, current) end
-    return mark(slide, title)
+    return mark(slide, title, level)
   end
   local out, slide, title = pandoc.Blocks({}), pandoc.Blocks({}), "(before the first slide)"
   for _, blk in ipairs(doc.blocks) do
