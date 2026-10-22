@@ -471,7 +471,9 @@ it does, by area, beyond the format notes above:
   `REFERENCE.md` current too), `test_docs.py` (every relative link and `#anchor` in the tracked
   `*.md` files resolves, every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a
   heading that exists, `design/` exempt; the consumer example's release pins and the changelog's
-  link block), and the rest of `tests/test_*.py`, one per pptx step or engine area). pytest's
+  link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
+  Overfull, a moving pick's pages, the `role=` warning, the share error; skipped without TeX),
+  and the rest of `tests/test_*.py`, one per pptx step or engine area). pytest's
   discovery is the one list of tests, and CI's latex job runs `make test`. One test:
   `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under
   `tmp_path`, never the tree, and never changes directory or the environment in-process
