@@ -195,7 +195,7 @@ def text_height(shape, slide, family=None, weight=None, gap=None):
     body's by default), one LINE per line, plus the template's space before the paragraph
     (livery.SPC_BEFORE of the body type, by its level), or gap (EMU) when given."""
     tf = shape.text_frame
-    width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
+    width = shape.width - tf.margin_left - tf.margin_right - Pt(livery_mod.BODY_INDENT_PT * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
         size = para_size(p, shape, slide)

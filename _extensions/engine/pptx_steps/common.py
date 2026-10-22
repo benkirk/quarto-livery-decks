@@ -1,6 +1,7 @@
 """What the pptx steps share: the livery and the numbers every step reads from it, the shape and run
 helpers each step wrote for itself (text boxes in the body's style, groups, card shapes, a picture
-fitted to a box), and the shape tests.
+fitted to a box), the idioms the drawers share (an em in EMU, a frame's insets, a paragraph's space
+before, a slide's title for a warning), and the shape tests.
 
 The livery is read once here (livery.load(): $LIVERY_DIR, exported by Make.common, else a `_livery`
 link in the current directory) and every step imports it, so one deck's steps agree on it. The
@@ -123,10 +124,38 @@ def column_frames(left, width, shares, slide_width):
     return out
 
 
+def em(v, pt=BODY_PT):
+    """v em of a type size (pt, the body's by default) in EMU, rounded (Pt() truncates 91439.99)."""
+    return Emu(round(v * pt * 12700))
+
+
 def pads(box, key="pad"):
     """A box's pads, (vertical, horizontal) in EMU: its em times the body type."""
     v, h = BOXES[box][key]
-    return Emu(round(v * BODY_PT * 12700)), Emu(round(h * BODY_PT * 12700))   # round: Pt() truncates 91439.99
+    return em(v), em(h)
+
+
+def inset(tf, v, h):
+    """A text frame's four insets: v (EMU) top and bottom, h left and right."""
+    tf.margin_top = tf.margin_bottom = v; tf.margin_left = tf.margin_right = h
+
+
+def slide_title(slide):
+    """The slide's title text, for a warning; "" when it has no title."""
+    t = slide.shapes.title
+    return t.text_frame.text if t is not None else ""
+
+
+def space_before(p, pts):
+    """A paragraph's space before (a:spcBef), in points."""
+    ppr = p.find(qn("a:pPr"))
+    if ppr is None:
+        ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
+    for old in ppr.findall(qn("a:spcBef")):
+        ppr.remove(old)
+    bef = etree.Element(qn("a:spcBef"))
+    etree.SubElement(bef, qn("a:spcPts")).set("val", str(round(pts * 100)))
+    ppr_place(ppr, bef)
 
 
 def fit_table(shape, left, width):
@@ -208,12 +237,14 @@ def group(slide, shapes, name):
     return g
 
 
-def shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_only=False):
-    """A card's rectangle, rounded when radius (EMU) > 0 (top_only: its top corners, a head band's);
-    fill a six-digit hex or None; line (hex, width EMU) an outline; behind: a shape it goes under.
-    Its own shape, not rect(): the preset geometry differs."""
-    kind = (MSO_SHAPE.ROUND_2_SAME_RECTANGLE if top_only else MSO_SHAPE.ROUNDED_RECTANGLE) if radius > 0 else MSO_SHAPE.RECTANGLE
-    r = slide.shapes.add_shape(kind, Emu(x), Emu(y), Emu(w), Emu(h))
+def shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_only=False, preset=None):
+    """A card's rectangle, rounded when radius (EMU) > 0 (top_only: its top corners, a head band's),
+    or another preset (MSO_SHAPE.OVAL, a rail's marks); fill a six-digit hex or None; line (hex,
+    width EMU) an outline; behind: a shape it goes under. Its own shape, not rect(): the preset
+    geometry differs."""
+    if preset is None:
+        preset = (MSO_SHAPE.ROUND_2_SAME_RECTANGLE if top_only else MSO_SHAPE.ROUNDED_RECTANGLE) if radius > 0 else MSO_SHAPE.RECTANGLE
+    r = slide.shapes.add_shape(preset, Emu(x), Emu(y), Emu(w), Emu(h))
     if radius > 0:
         r.adjustments[0] = min(0.5, round(radius / min(w, h), 5))
         if top_only:

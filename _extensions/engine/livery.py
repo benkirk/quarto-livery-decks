@@ -38,6 +38,9 @@ from pathlib import Path
 # level, then the deeper ones (livery_template.py writes it as a:spcBef; the steps that cut a box
 # to its measured text add the same, pptx_steps/measure.py)
 SPC_BEFORE = (0.5, 0.3)
+# the template's body indent (a:lvl1pPr marL, the bullet's), points on its 540 pt canvas: the
+# template builder writes it, and measure.py takes it off a text box's width
+BODY_INDENT_PT = 18
 
 
 def livery_dir(path: str | os.PathLike | None = None) -> Path:

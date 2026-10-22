@@ -48,8 +48,8 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
-from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, fit_picture, fit_table, is_body, is_picture, is_table, pads,
-                     para_text, ppr_place, rect, rpr, take_marker)
+from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
+                     pads, para_text, ppr_place, rect, rpr, slide_title, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
@@ -111,9 +111,8 @@ def _biggest(table, other):
 def caution_box(slide, shape, vcenter):
     """The body text box on the soft yellow field, a brand-yellow bar at its left, cut down to
     about its text (pandoc gives it the whole content area); 10% slack keeps autofit idle."""
-    tf = shape.text_frame
     vpad, hpad = pads("caution")
-    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    inset(shape.text_frame, vpad, hpad)
     left, top, width, height = shape.left, shape.top, shape.width, shape.height
     est = int(text_height(shape, slide) * SLACK)
     if est < height:
@@ -150,7 +149,7 @@ def lay_out(slide, words, width):
                 _scale_paragraphs(shape.text_frame.paragraphs, scale,
                                   lambda lvl, s=shape: inherited(s, slide, lvl))
             if vcenter:
-                shape.text_frame._txBody.find(qn("a:bodyPr")).set("anchor", "ctr")
+                shape.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         elif is_table(shape):
             other = other_size(slide)
             rows = list(shape.table.rows)
@@ -224,7 +223,7 @@ def note_style(slide):
 def references_style(slide):
     """references: each body paragraph (a citeproc entry) in the footnote size, hanging by REF_HANG
     em, REF_BEFORE em above it. Before lay_out, whose scale= then sizes it with the rest."""
-    hang = round(REF_HANG * REF_PT * 12700)
+    hang = em(REF_HANG, REF_PT)
     for shape in [sh for sh in slide.shapes if is_body(sh)]:
         for p in shape.text_frame.paragraphs:
             ppr = p._p.get_or_add_pPr()
@@ -622,9 +621,8 @@ def draw_feature(slide, width, height, photo):
         px, py, pw, ph = c["panel"]["box"]
         for shape in body:
             _frame(shape, px, py, pw, ph, width, height)
-            tf = shape.text_frame
             vpad, hpad = pads("panel")
-            tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+            inset(shape.text_frame, vpad, hpad)
             est = min(int(text_height(shape, slide) * SLACK), int(ph * height))
             panel = _rect(slide, [px, py, pw, est / height], width, height, livery_mod.hex(LIVERY, c["panel"]["role"]), c["panel"]["opacity"], "Feature panel")
             tree = slide.shapes._spTree
@@ -712,10 +710,8 @@ def run(prs, pptx: Path) -> None:
             if has_gallery(slide):   # grid.py fills the slide with the gallery and its caption
                 hide_furniture(slide)
             elif not full_slide(slide, w, h):
-                title = slide.shapes.title
                 print("slide_layout: WARNING: {.full} slide %r needs one picture and at most a "
-                      "caption; left as it is" % (title.text_frame.text if title else ""),
-                      file=sys.stderr)
+                      "caption; left as it is" % slide_title(slide), file=sys.stderr)
         else:
             note = "note" in words and note_style(slide)
             if "references" in words:

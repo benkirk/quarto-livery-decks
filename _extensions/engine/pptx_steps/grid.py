@@ -35,17 +35,17 @@ import sys
 from pathlib import Path
 
 from lxml import etree
-from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import MSO_ANCHOR
 from pptx.oxml.ns import qn
-from pptx.util import Emu, Pt
+from pptx.util import Pt
 
 import livery as livery_mod
 
 from .columns import rules
 from .gallery import draw_gallery
-from .common import (BODY_PT, BOXES, GEOM, LIVERY, SLACK, body_box, column_frames, group, is_body, pads, para_text, ppr_place,
-                     rect, rpr, shape, style_runs)
+from .common import (BODY_PT, BOXES, GEOM, LIVERY, SLACK, body_box, column_frames, em, group, inset, is_body, pads, para_text,
+                     rect, rpr, shape, slide_title, space_before, style_runs)
 from .measure import text_height
 
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
@@ -124,8 +124,7 @@ def draw_lead(slide, x, y, w, room, paras, slide_height):
     bar = round(lead["bar"] * slide_height)
     vpad, hpad = pads("lead")
     tb = body_box(slide, x + bar, y, w - bar, room, paras, "Lead text")
-    tf = tb.text_frame
-    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    inset(tb.text_frame, vpad, hpad)
     h = min(int(text_height(tb, slide) * SLACK), room)
     tb.height = h
     fill = rect(slide, x, y, w, h, _hex(lead["fill"]), "Lead fill", behind=tb)
@@ -153,22 +152,10 @@ def _prefix(p):
     return m.group(1)
 
 
-def _space_before(p, pts):
-    """A paragraph's space before (a:spcBef), in points."""
-    ppr = p.find(qn("a:pPr"))
-    if ppr is None:
-        ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
-    for old in ppr.findall(qn("a:spcBef")):
-        ppr.remove(old)
-    bef = etree.Element(qn("a:spcBef"))
-    etree.SubElement(bef, qn("a:spcPts")).set("val", str(round(pts * 100)))
-    ppr_place(ppr, bef)
-
-
 def _close(p):
     """A card paragraph's space before: CARD_GAP of the master body's (a:spcBef), as beamer's card
     lines sit close (HTML uses reveal's block margin); type_step scales it with the sizes."""
-    _space_before(p, BODY_GAP)
+    space_before(p, BODY_GAP)
 
 
 def _card_height(tb, slide):
@@ -217,8 +204,7 @@ def draw_strip(slide, x, y, w, room, paras, role, solid, name):
     (text box, rectangle) at y, its measured height."""
     vpad, hpad = pads("strip")
     tb = body_box(slide, x, y, w, room, paras, f"{name} text")
-    tf = tb.text_frame
-    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    inset(tb.text_frame, vpad, hpad)
     if solid:
         for p in paras:
             style_runs(p, color=_hex("primary-text"))
@@ -269,8 +255,7 @@ def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
                 if QUOTE_FACE:
                     _latin(el, QUOTE_FACE)
     tb = body_box(slide, x + bar, y, max(w - bar, 0), room, paras, f"{name} text")
-    tf = tb.text_frame
-    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    inset(tb.text_frame, vpad, hpad)
     tb.height = min(int(text_height(tb, slide) * SLACK), room)
     return tb, rect(slide, x, y, bar, tb.height, color, f"{name} bar", behind=tb)
 
@@ -291,7 +276,7 @@ def draw_agenda(slide, x, y, w, room, items):
     subtitle under it (the caption size, muted); each cut to its text, measured. When the rows run
     past the room, the subtitles go (the room is what a slide has: no autofit on native boxes).
     One group, "Agenda", of "Agenda k number" and "Agenda k text". The height it takes."""
-    gap, col = Emu(round(0.55 * BODY_PT * 12700)), Emu(round(2 * BODY_PT * 12700))
+    gap, col = em(0.55), em(2)
     rows = []
     for k, (_, attrs, paras) in enumerate(items, 1):
         title, sub = [], []
@@ -300,7 +285,7 @@ def draw_agenda(slide, x, y, w, room, items):
         state = attrs.get("state", "next")
         for p in title:
             style_runs(p, livery_mod.type_pt(LIVERY, "subhead"), state == "current", AGENDA_COLORS.get(state))
-            _space_before(p, 0)
+            space_before(p, 0)
         for p in sub:
             style_runs(p, livery_mod.type_pt(LIVERY, "caption"), color=_hex("muted"))
             _close(p)
@@ -323,7 +308,7 @@ def draw_agenda(slide, x, y, w, room, items):
             tb.height = int(th * SLACK)   # the box with its slack (no fill: an overlap does not show), the row its text
             nb = body_box(slide, x, cy, col, tb.height, [num], f"Agenda {k} number")
             # the number on the title's first line: down by the difference of the two sizes' ascents
-            nb.text_frame.margin_top = round((livery_mod.type_pt(LIVERY, "subhead") - livery_mod.type_pt(LIVERY, "eyebrow")) * 0.8 * 12700)
+            nb.text_frame.margin_top = em(0.8, livery_mod.type_pt(LIVERY, "subhead") - livery_mod.type_pt(LIVERY, "eyebrow"))
             nb.text_frame.margin_bottom = 0
             shapes += [nb, tb]
             cy += th
@@ -332,9 +317,8 @@ def draw_agenda(slide, x, y, w, room, items):
     if h > room and any(sub for *_, sub in rows):   # past the room: drop the subtitles and lay out again
         for sh in shapes:
             sh._element.getparent().remove(sh._element)
-        title = slide.shapes.title
-        print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: the agenda runs past the slide; "
-              "its subtitles dropped", file=sys.stderr)
+        print(f"grid: WARNING: slide {slide_title(slide)!r}: the agenda runs past the slide; its subtitles dropped",
+              file=sys.stderr)
         shapes, h = lay(False)
     if shapes:
         group(slide, shapes, "Agenda")
@@ -392,9 +376,8 @@ def _pick_role(attrs, default, slide):
     r = attrs.get("role", default)
     if r == default or r in LIVERY["roles"] or r in LIVERY["blends"]:
         return r
-    title = slide.shapes.title
-    print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: role={r!r} is not a role or a blend "
-          f"of the livery; {default}", file=sys.stderr)
+    print(f"grid: WARNING: slide {slide_title(slide)!r}: role={r!r} is not a role or a blend of the livery; {default}",
+          file=sys.stderr)
     return default
 
 
@@ -421,15 +404,13 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         head, items = _card_text(paras, solid)
         hb = body_box(slide, x, y, w, room, head, f"Card {n_col} title") if head else None
         if hb is not None:
-            hb.text_frame.margin_top = hb.text_frame.margin_bottom = hv
-            hb.text_frame.margin_left = hb.text_frame.margin_right = hh
+            inset(hb.text_frame, hv, hh)
         parts, run, n_strip, n_quote = [], [], 0, 0   # the body: text boxes, strips and quotes, in order
         def text_part():
             nonlocal run
             if run or not parts:
                 tb = body_box(slide, x, y, w, room, run, f"Card {n_col} body" + (f" {len(parts) + 1}" if parts else ""))
-                tb.text_frame.margin_top = tb.text_frame.margin_bottom = bv
-                tb.text_frame.margin_left = tb.text_frame.margin_right = bh
+                inset(tb.text_frame, bv, bh)
                 parts.append(("text", tb, None, _card_height(tb, slide)))
             run = []
         for it in items:
@@ -483,16 +464,8 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
 def _oval(slide, x, y, d, fill, name, line=None):
     """A circle of diameter d (EMU) at x, y: fill a six-digit hex, line (hex, width EMU) an outline
     inside its edge (the circle shrinks by half the width, as HTML's border-box), no shadow."""
-    inset = line[1] // 2 if line else 0
-    o = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(x + inset), Emu(y + inset), Emu(d - 2 * inset), Emu(d - 2 * inset))
-    o.fill.solid(); o.fill.fore_color.rgb = RGBColor.from_string(fill)
-    if line:
-        o.line.color.rgb = RGBColor.from_string(line[0]); o.line.width = Emu(line[1])
-    else:
-        o.line.fill.background()
-    o.shadow.inherit = False
-    o.name = name
-    return o
+    edge = line[1] // 2 if line else 0
+    return shape(slide, x + edge, y + edge, d - 2 * edge, d - 2 * edge, 0, fill, name, line=line, preset=MSO_SHAPE.OVAL)
 
 
 def _badge(slide, x, y, d, fill, k, name):
@@ -500,9 +473,9 @@ def _badge(slide, x, y, d, fill, k, name):
     knocked out in the background color (the shape's own text frame, no insets, no wrap)."""
     o = _oval(slide, x, y, d, fill, name)
     tf = o.text_frame
-    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0   # left first: the attributes' order in the XML
     tf.word_wrap = False
-    tf._txBody.find(qn("a:bodyPr")).set("anchor", "ctr")
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
     p = tf.paragraphs[0]
     p._p.get_or_add_pPr().set("algn", "ctr")
     p.add_run().text = str(k)
@@ -544,12 +517,11 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
             db = body_box(slide, cx, y, cw, room, title, f"{noun} {k} title")
             db.text_frame.margin_top = 0; db.text_frame.margin_bottom = vpad
             db.text_frame.margin_left = db.text_frame.margin_right = hpad
-            db.text_frame._txBody.find(qn("a:bodyPr")).set("anchor", "b")
+            db.text_frame.vertical_anchor = MSO_ANCHOR.BOTTOM
             dates.append(db)
             title = []
         tb = body_box(slide, cx, y, cw, room, title + body, f"{noun} {k} text")
-        tf = tb.text_frame
-        tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+        inset(tb.text_frame, vpad, hpad)
         texts.append((k, cx, cw, iattrs, tb))
     date_h = max((_card_height(db, slide) for db in dates), default=0)
     for db in dates:
