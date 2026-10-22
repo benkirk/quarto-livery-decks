@@ -226,7 +226,8 @@ beamer theme in `_extensions/engine/` (until 2026-10 its own repository,
 - **You need TeX with XeLaTeX.** Quarto's own TinyTeX (`quarto install
   tinytex`) works and installs missing LaTeX packages on the fly. So does a
   system TeX Live. (Plain-LaTeX decks, not Quarto ones, can also be written
-  on Overleaf: [`latex/README.md`](../latex/README.md).)
+  on Overleaf: [`latex/README.md`](../latex/README.md); the same slide patterns by hand:
+  [`latex/authoring.md`](../latex/authoring.md).)
 - **No fonts to install** (see "About the fonts").
 - **Theme options and slide kinds** are the deck's, in every format: [authoring.md "Front matter and
   slide kinds"](authoring.md#front-matter-and-slide-kinds).

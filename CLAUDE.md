@@ -54,7 +54,8 @@ not in git. A livery without `pptx.fonts` embeds nothing (`embed_fonts.py` says 
 the deck alone); a livery without `art.waves` gets straight-edged title fields in every format.
 
 `latex/` is the engine's pure-LaTeX side (the starter `talk.tex`, a link to the
-extension's copy; `examples/` and their variants; `make latex`), and `tests/` holds the
+extension's copy; the cookbook `examples/sample.tex`, the sample deck's twin, and the guide
+`latex/authoring.md`; `examples/` and their variants; `make latex`), and `tests/` holds the
 engine's tests (`make test`), both parity harnesses ("The engine" below) and `app-open.sh`,
 the release's check in Keynote and PowerPoint ("Version" below).
 
@@ -464,7 +465,24 @@ it does, by area, beyond the format notes above:
 - **LaTeX**: `latex/Makefile` (`default` talk.pdf, `examples`, `variants`, `html`,
   `previews`, `diagrams`, `overleaf`) sets `TEXINPUTS`/`TTFONTS` (above); its
   `latexmkrc` does the same for a bare `latexmk`. `variants` are `examples/template.tex` under
-  the `\enginethemeoptions`/`\engineaspectratio` hooks.
+  the `\enginethemeoptions`/`\engineaspectratio` hooks, and `examples/sample.tex` under cu,
+  nasa-dark and 4:3.
+- **LaTeX authoring** (`latex/authoring.md`): the inner theme's layer is what a hand author
+  writes and what the filter writes through, no private macro in a preamble: `enginecolumns{2,1}`
+  with `\enginecolumn` (over `\enginecolshare`/`\enginecolrule`, which the filter keeps for
+  pandoc's columns), `enginelead`, `enginecards{<shares>}` holding `enginecard[role=,pick,
+  pick=<spec>,solid,plain]{Title}{Sub}` (the shares: a count or weights, `\engine@shares`; a
+  `role=` resolves through livery.sty's `\engine@role@<name>`, else a defined color, else a
+  `Package Engine Warning` and the default by place in `\engine@boxes@card@roles`),
+  `enginestrip[role=]`, `enginestatus` with `\done`/`\warn`/`\fail` (local to it) and
+  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking{}`. The
+  cookbook `latex/examples/sample.tex` is the sample deck slide for slide plus three frames on
+  overlays (a moving pick, steps inside cards, a stepped status list); `make variants` builds it
+  under cu, nasa-dark and 4:3, `make previews` the committed `latex/sample.png` (`sheet.py`:
+  rebuild and commit it when those slides change); CI fails on an Overfull line in `sample.log`
+  (the 4:3 variant's two are deferred, on the ledger). `tests/test_latex.py` compiles a deck on
+  the layer; every livery's Overleaf zip carries `sample.tex` with its photo, diagrams and
+  session, and CI builds it there; `parity-latex` snapshots the four cookbook PDFs.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
   livery, then pytest over `tests/`, `-n auto --dist loadfile`: `test_compositions.py`, whose
   `EXPECTED_DELTAS` names every decided change of a box, `test_schema.py` (the generated

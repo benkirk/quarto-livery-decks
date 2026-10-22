@@ -58,6 +58,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   sample.tex` builds it in the unpacked zip, and CI does so for every livery.
 - `latex/sample.png`, the cookbook's contact sheet (four pattern slides under ncar, cu and
   nasa-dark), from `make previews` in `latex/` (`sheet.py`).
+- `latex/authoring.md`: writing slides in LaTeX, every pattern of the Quarto decks by hand (the
+  table moved from `latex/README.md` and grown), the cards, strips and status lists walked
+  through on the Options slide with the overlay notes, and what stays Quarto's with the LaTeX
+  way to do it (diagrams, executable cells, plots, the linked-image footer, callouts, autofit).
 
 ## [26.10.7] - 2026-10-21
 
