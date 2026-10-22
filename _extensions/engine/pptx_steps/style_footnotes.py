@@ -6,8 +6,9 @@ paragraph starting with `†`, `‡`, `§` or `¶`; `*† text*` works too; a `^
 inline-footnotes.lua writes as one) renders like any
 paragraph. This finds each such paragraph, or a caption line that holds one, and restyles it
 left-aligned in the livery's muted color at a smaller size, a little space above, the marker
-in the accent slot (accent4). HTML and PDF draw the same and also move footnotes to the
-slide's foot, which pptx cannot do without splitting the slide.
+in the accent slot (accent4); a lifted note's mark in the text (a superscript marker) takes the
+accent too. HTML and PDF draw the same and also move footnotes to the slide's foot, which pptx
+cannot do without splitting the slide.
 
 Idempotent; a deck with no footnotes is untouched."""
 
@@ -80,13 +81,27 @@ def style(para) -> bool:
     return True
 
 
+def noteref(para) -> int:
+    """A lifted ^[...] note's mark in the text (inline-footnotes.lua: a superscript holding one
+    marker) colored as the footnote's marker is, since HTML (.engine-noteref) and PDF (footnote
+    mark) set it in the accent and pandoc drops inline color; the count colored."""
+    marks = 0
+    for run in para.runs:
+        rpr = run._r.find(qn("a:rPr"))
+        if rpr is not None and int(rpr.get("baseline") or 0) > 0 and run.text.strip() in MARKERS:
+            run.font.color.rgb = MARK_COLOR
+            marks += 1
+    return marks
+
+
 def run(prs, name: str) -> None:
     """The open deck, changed in place; name for the message."""
-    styled = 0
+    styled, marks = 0, 0
     for slide in prs.slides:
         for shape in slide.shapes:
             if not shape.has_text_frame:
                 continue
             for para in shape.text_frame.paragraphs:
                 styled += style(para)
-    print(f"style_footnotes: restyled {styled} footnote paragraph(s) → {name}")
+                marks += noteref(para)
+    print(f"style_footnotes: restyled {styled} footnote paragraph(s), {marks} mark(s) in the text → {name}")

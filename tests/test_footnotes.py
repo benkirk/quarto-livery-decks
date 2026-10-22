@@ -120,6 +120,16 @@ def test_pptx_filter(tmp_path):
     assert any("† A note." in t for t in texts[0]), texts[0]
     right = [t for t in texts[1] if t.startswith("Right")]
     assert right and "† In a column." in right[0], texts[1]
+    # the step: the mark in the text (a superscript †) takes the accent, as HTML and PDF set it
+    import json
+    from pptx.oxml.ns import qn
+    env = {**os.environ, "LIVERY_DIR": str(NCAR), "PYTHONPATH": str(ENGINE)}
+    subprocess.run([sys.executable, "-c", STEP, str(out)], env=env, check=True, capture_output=True)
+    accent = json.loads((NCAR / "build" / "livery.json").read_text())["pptx"]["scheme"]["accent4"].lstrip("#").upper()
+    marks = [r for s in Presentation(str(out)).slides for sh in s.placeholders if sh.has_text_frame
+             for p in sh.text_frame.paragraphs for r in p.runs
+             if r.text == "†" and (r._r.find(qn("a:rPr")) is not None and r._r.find(qn("a:rPr")).get("baseline"))]
+    assert len(marks) == 2 and all(str(r.font.color.rgb) == accent for r in marks), [(r.text, r.font.color.rgb) for r in marks]
 
 
 STEP = """
