@@ -450,18 +450,21 @@ local function is_quote(b)
   return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
 end
 
--- A grid slide: the columns div has a .card column, a column holding a quote, or more than two
--- columns, or the slide (its blocks) has a .lead, a .steps, a .timeline or a quote of its own. pptx draws one from marker paragraphs
--- (grid-pptx.lua, pptx_steps/grid.py); pandoc's two placeholders cannot hold it.
+-- A grid slide: the columns div has a .card column, a column holding a quote (unless a column holds
+-- a picture or table, which a grid column cannot: the slide stays pandoc's, the quote its own), or
+-- more than two columns, or the slide (its blocks) has a .lead, a .steps, a .timeline or a quote of
+-- its own. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py); pandoc's two
+-- placeholders cannot hold it.
 local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
+  local quoted, pictured = false, false   -- a quote in a column: its box is grid.py's to draw
   for _, c in ipairs(cols) do
     if has_class(c, "card") then return true end
-    local quoted = false   -- a quote in a column: its box is grid.py's to draw
-    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
-    if quoted then return true end
+    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end,
+             Image = function() pictured = true end, Table = function() pictured = true end })
   end
+  if quoted and not pictured then return true end
   for _, b in ipairs(blocks or {}) do
     if b.t == "Div" and (has_class(b, "lead") or has_class(b, "steps") or has_class(b, "timeline")) then return true end
     if is_quote(b) then return true end

@@ -194,3 +194,18 @@ def test_agenda_marked(tmp_path):
     later = next(t for t in texts if t and t[0] == "Where we are")
     assert "⟦engine:agenda current=2⟧" in later and "⟦engine:item n=1 state=done⟧" in later and "⟦engine:item n=2 state=current⟧" in later
     assert not any("Backup" in x for x in front + later), "an unnumbered divider is not on the agenda"
+
+
+def test_quote_beside_a_picture(tmp_path):
+    """A two-column slide with a quote in one column and a picture in the other stays pandoc's (a grid
+    column cannot hold the picture): no marker, the quote pandoc's own blockquote, and a warning."""
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / "p.png")
+    md = "## Beside\n\n:::: {.columns}\n" + COL.format("", "> Quoted\n> -- Them") + COL.format("", "![](p.png)") + "::::\n"
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "b.pptx"
+    r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True,
+                       capture_output=True, cwd=tmp_path)
+    assert "a quote beside a picture or table in a two-column slide is not drawn in pptx" in r.stderr, r.stderr
+    with zipfile.ZipFile(out) as z:
+        xml = z.read("ppt/slides/slide1.xml").decode()
+    assert "⟦engine:" not in xml and "Quoted" in xml and "<p:pic>" in xml, "pandoc's own slide, the picture in it"

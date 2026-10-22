@@ -25,7 +25,9 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:end⟧`; a quote (`::: {.quote}` or a bare `>`, on its own, in a column or in a card) is
   `⟦engine:quote role=r⟧` (role= only when it names one), its lines, an attribution paragraph led by
   `⟦engine:attribution⟧`, `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
-  drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
+  drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns. So a
+  two-column slide holding a quote beside a picture or table stays pandoc's (is_grid() false), its
+  quote pandoc's own blockquote, warned of.
 - Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
   (kind=timeline; `start=4` when the ordered list begins past 1: the badges count from it), per
   item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done milestone), its title
@@ -176,11 +178,22 @@ end
 -- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
-  local grid = {}   -- which columns divs are a grid slide's, read before the quotes become markers
-  for k, b in ipairs(blocks) do
-    if b.t == "Div" and C.has_class(b, "columns") then grid[k] = C.is_grid(b, blocks) end
+  local grid, kept = {}, {}   -- which columns divs are a grid slide's, read before the quotes become markers;
+  for k, b in ipairs(blocks) do   -- a plain one's quotes (beside a picture or table) stay pandoc's, warned of
+    if b.t == "Div" and C.has_class(b, "columns") then
+      grid[k] = C.is_grid(b, blocks)
+      if not grid[k] then
+        local quoted = false
+        b:walk({ Div = function(d) if C.is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
+        if quoted then
+          warn(title, "a quote beside a picture or table in a two-column slide is not drawn in pptx; pandoc's own")
+          kept[k] = b
+        end
+      end
+    end
   end
   blocks = C.quote_blocks(blocks, nil, "grid-pptx.lua", quote_marks)   -- one block for one: k still names it
+  for k, b in pairs(kept) do blocks[k] = b end
   for k, b in ipairs(blocks) do
     local kind = C.rail_kind(b)
     local rail = kind and C.rail_items(b, kind, nil, "grid-pptx.lua")

@@ -52,7 +52,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   with no fill; a last line starting with `—`, `–` or `--` is the attribution, under it at the
   caption size, muted. On its own, in a column or in a card; inside a lead or a strip it warns and
   stays as its lines. In the pptx it is a text box and a bar, one group ("Quote"), and a quote in
-  a column makes the slide a card slide. HTML's old blockquote look (a muted paragraph, a thin
+  a column makes the slide a card slide (beside a picture or table, the slide stays pandoc's and the
+  quote pandoc's own, warned). HTML's old blockquote look (a muted paragraph, a thin
   border) and the PDF's plain italic quote are gone. `docs/authoring.md` "Quotes".
 - An unnumbered divider (`# Backup {.unnumbered}`) is outside the count in every format: pptx and
   PDF no longer give it a number, as HTML already did, so the dividers after it keep the numbers

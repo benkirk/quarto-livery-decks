@@ -626,7 +626,8 @@ it does, by area, beyond the format notes above:
   `typography.fonts` family or null, `style`) and the `quote` type role; `pptx.quote-typeface`
   names PowerPoint's face. pptx: `⟦engine:quote role=⟧` ... `⟦engine:attribution⟧` ...
   `⟦engine:end⟧` in a `.engine-quote-marks` Div; a quote in a column makes a grid slide
-  (`is_grid()`); `grid.py`'s `draw_quote()` (group "Quote"; in a card inside its pads, in a plain
+  (`is_grid()`, unless a column holds a picture or table: pandoc's slide and blockquote then, warned);
+  `grid.py`'s `draw_quote()` (group "Quote"; in a card inside its pads, in a plain
   column between its text boxes, `_plain_column()`/`_place()`). HTML: `.engine-quote`, the pads on
   the box, the sizes on its paragraphs. PDF: `enginequote` on `\engine@barbox` with an empty fill,
   the theme's own `engine quote` font (beamer's `quote` untouched: a hand `quote` environment).

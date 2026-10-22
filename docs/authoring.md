@@ -214,7 +214,9 @@ The purpose of computing is insight, not numbers.
   strip it is not drawn (those are boxes of lines already): a warning, and its lines stay. In the
   speaker notes a `>` stays as it is.
 - pptx draws it as a text box and a bar, one group ("Quote"); a quote in a column makes the slide
-  a card slide (drawn by the engine, like three columns), so keep pictures and tables off it.
+  a card slide (drawn by the engine, like three columns). Beside a picture or table in a two-column
+  slide the slide stays pandoc's and the quote is pandoc's plain blockquote there, with a warning
+  (HTML and the PDF draw the box).
 - In LaTeX it is `\begin{enginequote}[role=accent]{Richard Hamming, 1962}`
   ([latex/authoring.md](../latex/authoring.md#the-patterns)).
 
