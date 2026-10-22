@@ -18,6 +18,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+- PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
+  livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
+  instead of the brand's; lists, labels and strips in a card colored themselves and were right.
+
 ### LaTeX
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
   color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the

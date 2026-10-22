@@ -576,12 +576,14 @@
     toptitle=\the\dimexpr\engine@boxes@card@headpady em\relax,bottomtitle=\the\dimexpr\engine@boxes@card@headpady em\relax,
     colbacktitle=\engine@crole,
     \ifdim\engine@boxes@card@radius\paperheight=\z@ sharp corners\else arc=\the\dimexpr\engine@boxes@card@radius\paperheight\relax\fi}%
+  % coltext: tcolorbox's default is black, which a dark livery's card fill hides (lists and strips
+  % color their own text; a paragraph took the default)
   \engine@hasopt{plain}%
-  \ifin@\engine@add{opacityback=0,opacityframe=0}%
+  \ifin@\engine@add{opacityback=0,opacityframe=0,coltext=BrandText}%
   \else
     \engine@hasopt{solid}%
     \ifin@\edef\engine@tmpb{colback=\engine@crole,coltext=BrandPrimaryText,colframe=\engine@crole}%
-    \else\def\engine@tmpb{colback=EngineBoxesCardFill,colframe=EngineBoxesCardFill}\fi
+    \else\def\engine@tmpb{colback=EngineBoxesCardFill,colframe=EngineBoxesCardFill,coltext=BrandText}\fi
     \expandafter\engine@add\expandafter{\engine@tmpb}%
     \ifx\engine@ctitle\@empty\else\engine@add{title={\engine@cardtitle}}\fi
   \fi
