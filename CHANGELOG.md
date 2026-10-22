@@ -18,6 +18,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.7] - 2026-10-21
+
 ### Decks
 - A `{.shrink}` slide keeps its text color in the PDF. Beamer's shrink box reset it to black,
   so a dark livery's shrunk slide (the quickstart's equations) was black on black, and a light
@@ -344,7 +346,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.6...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.7...HEAD
+[26.10.7]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.7
 [26.10.6]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.6
 [26.10.5]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.5
 [26.10.4]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.4
