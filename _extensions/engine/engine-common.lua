@@ -1,10 +1,12 @@
 -- engine-common.lua -- what the format filters share (engine-revealjs.lua, engine-beamer.lua, and
--- pptx's slide-layout.lua, single-body.lua and grid-pptx.lua): loaded with
--- dofile(quarto.utils.resolve_path("engine-common.lua")), or under plain pandoc beside
--- PANDOC_SCRIPT_FILE, returning a table. A function here reads the same in every format (the slide
--- breaks and kinds, the layout classes, the footnotes, a .full slide's parts, the theme options,
--- the livery); what a format does with the result stays in its filter (wrap_layout,
--- hoist_footnotes, size_plots, the cards and strips).
+-- pptx's slide-layout.lua, single-body.lua, inline-footnotes.lua, grid-pptx.lua, notes-last.lua,
+-- linked-images.lua and diagram-dark.lua): loaded with dofile() beside the filter (the directory of
+-- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
+-- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
+-- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
+-- rails, quotes, galleries and the agenda, the theme options, the livery. What a format does with
+-- the result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
+-- strips, rails, galleries, quotes and the agenda's rows).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do

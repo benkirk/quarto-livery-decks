@@ -80,9 +80,10 @@ end
 
 local W, H = 1600, 900
 
--- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step, the
--- livery, the slide breaks and kinds, the layout classes, the footnotes, a .full slide's parts,
--- the theme options, the cards' and strips' reading.
+-- Shared with the other format's filter (engine-common.lua): the readers of every element (cards,
+-- strips, status lists, rails, quotes, galleries, the agenda, footnotes and citations, sections),
+-- the slide walk, breaks and kinds, the layout classes, the deck's type step, the theme options,
+-- the livery. This filter draws what they read.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
 local has_class, deck_type_scale = C.has_class, C.deck_type_scale
 local footnote_marker, strip_marker, is_note = C.footnote_marker, C.strip_marker, C.is_note
