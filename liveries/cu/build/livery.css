@@ -118,6 +118,8 @@
   --engine-rail-dot: 18px;
   --engine-rail-fill: transparent;
   --engine-rail-pad: 0.4em 0.4em;
+  --engine-rail-pad-y: 0.4em;
+  --engine-rail-pad-x: 0.4em;
 }
 /* chart colors (livery.json charts) */
 :root {

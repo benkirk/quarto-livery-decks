@@ -1133,7 +1133,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     rail = b["rail"]
     p += [f"--engine-rail-line: {px(rail['line'])};", f"--engine-rail-line-color: {rail['line-color']};",
           f"--engine-rail-badge: {px(rail['badge'])};", f"--engine-rail-dot: {px(rail['dot'])};",
-          f"--engine-rail-fill: {rail['fill'] or 'transparent'};", f"--engine-rail-pad: {pad(rail['pad'])};"]
+          f"--engine-rail-fill: {rail['fill'] or 'transparent'};", f"--engine-rail-pad: {pad(rail['pad'])};",
+          f"--engine-rail-pad-y: {rail['pad'][0]:g}em;", f"--engine-rail-pad-x: {rail['pad'][1]:g}em;"]   # a mark and a date line up with the text
     return p
 
 

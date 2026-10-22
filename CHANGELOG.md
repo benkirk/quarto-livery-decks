@@ -21,6 +21,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 ## [26.10.8] - 2026-10-22
 
 ### Decks
+- Steps and timelines: `::: {.steps role="secondary"}` around an ordered list draws a process as
+  a thin rail with a numbered badge per step in the role, each step's first bold run its title and
+  the rest its text below; `::: {.timeline}` around a bullet list draws milestones as dots on the
+  rail, the bold run the date above the dot and the rest the label below, `- [x]` a filled dot
+  and a plain item a hollow one. HTML only for now.
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx

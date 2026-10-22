@@ -221,6 +221,24 @@ Publish the HTML; hand out the pptx and PDF.
 :::
 ::::
 
+## A process, step by step
+
+::: {.steps role="secondary"}
+1. **Propose** A one-page case; the review board reads it in a week.
+2. **Pilot** Six weeks on the shared system.
+   A second source line is a second line, as in a card.
+3. **Scale** The allocation follows the pilot's numbers.
+:::
+
+## A timeline
+
+::: {.timeline}
+- [x] **Q1 2025** Proposal accepted
+- [x] **Q3 2025** Pilot complete
+- **2026** Full allocation
+- **2027** First review
+:::
+
 ## Image embed
 
 ![A caption for the figure](images/example.jpg){width=60%}

@@ -478,6 +478,82 @@ $mermaid-label-fg-color: $engine-primary;
   background: var(--engine-strip-role);
   &, p, li, strong { color: var(--engine-primary-text); }
 }
+// steps and timelines (::: {.steps} / ::: {.timeline}): a grid of --engine-rail-n equal columns,
+// the livery's column gap between them; each item's parts are its cells (the item is display:
+// contents), so a row's parts line up: a step's mark over its text, a milestone's date over its mark
+// over its label. Each mark cell draws its stretch of the rail (boxes.rail.line in line-color) through
+// its middle and across the gap after it, from the first mark's middle to the row's right edge; the badge (a step's number, primary-text on the role) and
+// the dot (a milestone's: the role's when done, else hollow in the role) sit on it at the text's left
+// edge. The text's cell is padded by boxes.rail.pad on the rail's fill (none by default); a row's
+// cells are one height. (livery.css: boxes.rail)
+.reveal .slides section .engine-rail {
+  display: grid;
+  grid-template-columns: repeat(var(--engine-rail-n), minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  column-gap: var(--engine-column-gap);
+  margin: 0;
+  --engine-rail-mark: var(--engine-rail-badge);
+  &.engine-timeline { grid-template-rows: auto auto auto; --engine-rail-mark: var(--engine-rail-dot); }
+  .engine-rail-item { display: contents; }
+  .engine-rail-mark {
+    position: relative;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--engine-rail-pad-x);
+    &::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      left: 0;
+      right: calc(-1 * var(--engine-column-gap));
+      top: 50%;
+      height: var(--engine-rail-line);
+      transform: translateY(-50%);
+      background: var(--engine-rail-line-color);
+    }
+  }
+  // the rail from the first mark's middle to the row's right edge
+  .engine-rail-item:first-child .engine-rail-mark::before { left: calc(var(--engine-rail-pad-x) + 0.5 * var(--engine-rail-mark)); }
+  .engine-rail-item:last-child .engine-rail-mark::before { right: 0; }
+  .engine-rail-badge {
+    flex: none;
+    width: var(--engine-rail-badge);
+    height: var(--engine-rail-badge);
+    border-radius: 50%;
+    background: var(--engine-rail-role);
+    color: var(--engine-primary-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: calc(var(--engine-type-subhead) * 1em);
+    line-height: 1;
+  }
+  .engine-rail-dot {
+    flex: none;
+    box-sizing: border-box;
+    width: var(--engine-rail-dot);
+    height: var(--engine-rail-dot);
+    border-radius: 50%;
+    background: var(--engine-background);
+    border: calc(var(--engine-rail-dot) * 0.2) solid var(--engine-rail-role);
+  }
+  .engine-done .engine-rail-dot { background: var(--engine-rail-role); }
+  .engine-rail-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
+  &.engine-timeline > .engine-rail-item > .engine-rail-title {   // the date, above its dot
+    align-self: end;
+    padding: 0 calc(var(--engine-rail-pad-x) / var(--engine-type-subhead)) calc(var(--engine-rail-pad-y) / var(--engine-type-subhead));   // em of the body
+  }
+  .engine-rail-body {
+    background: var(--engine-rail-fill);
+    padding: var(--engine-rail-pad);
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+    > .engine-rail-title + * { margin-top: 0.25em; }
+  }
+}
 // status items (- [x] ✓, - [!] ⚠, - [-] ✗ in a card or a ::: {.status} list): the glyph is the
 // bullet, set where the dot was, bold in its status color (livery.css: boxes.status), as the
 // pptx's buChar and beamer's \item[...]; a failed item's text muted
