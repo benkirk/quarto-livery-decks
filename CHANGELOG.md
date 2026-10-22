@@ -37,6 +37,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   colors, a failed item muted to its end; `\engineglyph{done|warn|fail}` is the glyph anywhere.
   The three names exist only inside the environment. `\cmark`, `\xmark` and `\pmark` (and the
   pifont they loaded) are retired.
+- Columns for a hand author: `\begin{enginecolumns}{2,1}` with `\enginecolumn` opening each column
+  at its share of the text width less the livery's gap (and its rule, when it draws one), over
+  beamer's `columns`; `\enginecolshare` and `\enginecolrule` stay as the primitives.
+- `\begin{enginescale}{1.4}` scales a body (its lists, tables and code with it), and
+  `\enginemarking{CUI}` in the preamble sets the marking strip's text (`{}` for none): the
+  filter's private preamble macros for `scale=` and `marking:` are theme commands.
 
 ## [26.10.7] - 2026-10-21
 

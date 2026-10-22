@@ -333,7 +333,8 @@
 % ---------------------------------------------------------------------------
 % columns: \enginecolshare{<share>}{<n columns>}\linewidth is a column's width, its share of the line
 % width less the n - 1 gaps (livery.sty's boxes.columns.gap); the Quarto filter has pandoc write
-% \begin{columns}[T,onlytextwidth], whose \hfill between columns is then the gap
+% \begin{columns}[T,onlytextwidth], whose \hfill between columns is then the gap; enginecolumns
+% below is the same for a hand author
 % {.wide}: \begin{enginewide} sets the body \paperwidth less geometry.wide-margin a side
 % ---------------------------------------------------------------------------
 \newcommand\enginecolshare[2]{\fpeval{#1*(1-(#2-1)*\engine@boxes@columns@gap*\paperwidth/\linewidth)}}
@@ -349,6 +350,40 @@
 \newenvironment{enginewide}{\par\vskip-\parskip\noindent\hspace*{-\engine@wideout}%   % at the body's top
   \begin{minipage}[t]{\dimexpr\paperwidth-2\dimexpr\engine@geom@widemargin\paperwidth\relax\relax}}%
   {\end{minipage}\hspace*{-\engine@wideout}\par}
+% \begin{enginecolumns}{<shares>} \enginecolumn ... \enginecolumn ... \end{enginecolumns}: beamer's
+% columns[T,onlytextwidth] with \column per \enginecolumn at its share (\engine@shares: {2} two
+% equal, {2,1} weights, {0.55,0.45} shares) and \enginecolrule before each but the first; one
+% column too many is an error. The Quarto filter keeps pandoc's columns on the primitives above
+% (pandoc's writer scopes a heading's block to its column).
+\newcount\engine@ncols
+\newenvironment{enginecolumns}[1]{\engine@shares{cols}{#1}\engine@ncols=\z@
+  \begin{columns}[T,onlytextwidth]}{\end{columns}}
+\newcommand\enginecolumn{%
+  \global\advance\engine@ncols\@ne
+  \ifnum\engine@ncols>\engine@cols@n\relax
+    \PackageError{Engine}{enginecolumns{\engine@cols@n}: column \the\engine@ncols\space has no share}%
+      {The row was opened for \engine@cols@n\space columns: give \string\begin{enginecolumns} the number of columns, or a weight per column.}%
+  \fi
+  \beamer@colclose\def\beamer@colclose{}%   the previous column closed here, so the rule sits in the gap
+  \ifnum\engine@ncols>\@ne\enginecolrule\fi
+  \column{\enginecolshare{\csname engine@cols@share@\the\engine@ncols\endcsname}{\engine@cols@n}\linewidth}}
+
+
+% ---------------------------------------------------------------------------
+% scale: \begin{enginescale}{S} ... \end{enginescale} sets the body at S times the current size
+% (the Quarto filter writes it for scale="S"). Under the engine's font theme every role (tables,
+% code, captions, the sub-item levels, list spacing) is a share of \engine@typebody, read when it
+% is used, so scaling that scales them all; without it, the sub-item sizes (absolute \small,
+% \footnotesize) are scaled by hand, expanded when the group opens (inside it, \f@size is already
+% scaled). No autofit here: look at the PDF.
+% ---------------------------------------------------------------------------
+\def\engine@size#1#2{\noexpand\fontsize{\fpeval{#1*#2*\f@size}pt}{\fpeval{#1*#2*\strip@pt\dimexpr\f@baselineskip\relax}pt}}
+\newenvironment{enginescale}[1]{%
+  \ifdefined\engine@typebody \engine@typebody=#1\engine@typebody \else
+  \edef\engine@sub{\engine@size{#1}{0.9}}\edef\engine@subsub{\engine@size{#1}{0.8}}%
+  \setbeamerfont{itemize/enumerate subbody}{size=\engine@sub}%
+  \setbeamerfont{itemize/enumerate subsubbody}{size=\engine@subsub}\fi
+  \edef\engine@body{\engine@size{#1}{1}}\engine@body\selectfont}{}
 
 % ---------------------------------------------------------------------------
 % role=: a card's or strip's role, as HTML and the pptx read it. \engine@rolecolor{<name>}{<default
@@ -464,9 +499,10 @@
 \newbox\engine@cardboxiv \newbox\engine@cardboxv \newbox\engine@cardboxvi
 \def\engine@cardbox#1{\csname engine@cardbox\romannumeral#1\endcsname}
 \def\engine@labelcolor{BrandMuted}\def\engine@bigcolor{BrandPrimaryContrast}
-% (each its own paragraph, ended inside the font's group: the line takes the font's leading)
-\newcommand\enginelabel[1]{{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}\par}}
-\newcommand\enginebig[1]{{\usebeamerfont{display}\color{\engine@bigcolor}#1\par}}
+% (each its own paragraph, opened by \par so a text line before it needs no blank line, and ended
+% inside the font's group: the line takes the font's leading)
+\newcommand\enginelabel[1]{\par{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}\par}}
+\newcommand\enginebig[1]{\par{\usebeamerfont{display}\color{\engine@bigcolor}#1\par}}
 \newenvironment{enginecards}[1]{\par\engine@shares{cards}{#1}%
   \global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
   {\engine@drawcards\par}

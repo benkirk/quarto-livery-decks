@@ -366,10 +366,12 @@
   \end{tikzpicture}}
 
 % the marking strip (livery.yml marking:), on every frame, over everything: the deck's text
-% (\enginemarkingtext, from engine-beamer.lua's marking:; empty for `none`), else the livery's default
+% (\enginemarking{<text>} in the preamble, which the Quarto filter writes for marking:; {} for
+% none), else the livery's default
 \providecommand\engine@marking@default{}
+\newcommand\enginemarking[1]{\gdef\engine@markingtext{#1}}
 \def\engine@drawmarking{%
-  \ifdefined\enginemarkingtext\let\engine@mk\enginemarkingtext\else\let\engine@mk\engine@marking@default\fi
+  \ifdefined\engine@markingtext\let\engine@mk\engine@markingtext\else\let\engine@mk\engine@marking@default\fi
   \ifx\engine@mk\@empty\else\@ifundefined{engine@marking@x}{}{%
     \engine@bw=\engine@marking@w\paperwidth \engine@bh=\engine@marking@h\paperheight
     \engine@bx=\engine@marking@x\paperwidth
