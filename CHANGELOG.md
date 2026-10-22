@@ -43,6 +43,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `\begin{enginescale}{1.4}` scales a body (its lists, tables and code with it), and
   `\enginemarking{CUI}` in the preamble sets the marking strip's text (`{}` for none): the
   filter's private preamble macros for `scale=` and `marking:` are theme commands.
+- `latex/examples/sample.tex` is the LaTeX cookbook: the twin of the Quarto sample deck slide for
+  slide (columns, cards with a moving pick, steps inside cards, status lists, the caution box,
+  notes, scale, footnotes, feature and full frames, captured output, pre-rendered diagrams),
+  built by `make examples` in `latex/`; `make variants` adds it under cu, under the dark livery
+  nasa-dark and at 4:3. CI compiles it and fails on an overfull line in it.
 
 ## [26.10.7] - 2026-10-21
 

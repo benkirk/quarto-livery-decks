@@ -2,8 +2,10 @@
 #
 #   make            talk.pdf             (the starter: talk.tex, XeLaTeX via latexmk)
 #   make html       examples/quarto-demo.html  (revealjs, needs quarto)
-#   make examples   examples/{template,paper,mathfonts,quarto-demo}.pdf
-#   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex
+#   make examples   examples/{template,sample,paper,mathfonts,quarto-demo}.pdf (sample.tex: the
+#                   cookbook, the twin of decks/sample/sample.qmd; latex/authoring.md)
+#   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex,
+#                   and sample.tex under cu, nasa-dark and at 4:3
 #   make previews   math-fonts.png from the specimen (needs poppler's pdftoppm)
 #   make diagrams   examples/diagrams/*.pdf from their .dot/.mmd (needs Graphviz, npx)
 #   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (livery zip)
@@ -24,7 +26,7 @@ TEXENV  := TEXINPUTS=$(THEME)//:$(ROOT)/liveries//:$(ROOT)/:$(CURDIR)/: TTFONTS=
 LATEXMK := latexmk -interaction=nonstopmode -halt-on-error
 
 VARIANTS := template-ucar template-ucp template-ncarucar template-light template-43 template-pdflatex \
-            template-mathpoppins
+            template-mathpoppins sample-nasa-dark sample-cu sample-43
 
 # latexmk tracks \input files, images and the theme itself -- always ask it (FORCE)
 default: talk.pdf
@@ -37,7 +39,7 @@ html: examples/quarto-demo.html
 examples/quarto-demo.html: examples/quarto-demo.qmd FORCE
 	cd examples && quarto render quarto-demo.qmd --to engine-revealjs
 
-examples: examples/template.pdf examples/paper.pdf examples/mathfonts.pdf examples/quarto-demo.pdf
+examples: examples/template.pdf examples/sample.pdf examples/paper.pdf examples/mathfonts.pdf examples/quarto-demo.pdf
 
 examples/%.pdf: examples/%.tex FORCE
 	cd examples && $(TEXENV) $(LATEXMK) -$(ENGINE) $*.tex
@@ -62,6 +64,17 @@ examples/template-%.pdf: examples/template.tex FORCE
 	cd examples && $(TEXENV) $(LATEXMK) -$(or $(engine_template-$*),$(ENGINE)) -jobname=template-$* \
 	  -usepretex='\def\enginethemeoptions{$(opts_template-$*)}\def\engineaspectratio{$(or $(aspect_template-$*),169)}' \
 	  template.tex
+
+# the cookbook under a dark livery, under cu, and at 4:3 (the same hooks in examples/sample.tex)
+opts_sample-nasa-dark := livery=liveries/nasa-dark,fonts=bundled
+opts_sample-cu        := livery=liveries/cu,fonts=bundled
+opts_sample-43        :=
+aspect_sample-43      := 43
+
+examples/sample-%.pdf: examples/sample.tex FORCE
+	cd examples && $(TEXENV) $(LATEXMK) -$(ENGINE) -jobname=sample-$* \
+	  -usepretex='\def\enginethemeoptions{$(opts_sample-$*)}\def\engineaspectratio{$(or $(aspect_sample-$*),169)}' \
+	  sample.tex
 
 # the README's math-font specimen: the summary slide of examples/mathfonts.pdf
 previews: math-fonts.png
@@ -92,7 +105,7 @@ clean:
 	latexmk -C -quiet talk.tex 2>/dev/null
 	rm -f engine-beamer-overleaf.zip
 	rm -rf examples/quarto-demo_files examples/quarto-demo.html
-	cd examples && latexmk -C -quiet template.tex paper.tex $(addsuffix .tex,$(VARIANTS)) 2>/dev/null; \
+	cd examples && latexmk -C -quiet template.tex sample.tex paper.tex $(addsuffix .tex,$(VARIANTS)) 2>/dev/null; \
 	  rm -f *.pdf *.nav *.snm *.vrb *.xdv quarto-demo.tex
 
 FORCE:
