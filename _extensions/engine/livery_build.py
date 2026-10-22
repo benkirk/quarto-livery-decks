@@ -1126,7 +1126,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-lead-gap: {lead['pad'][0]:g}em;"]   # under it: its vertical pad, as the pptx and beamer leave
     quote = b["quote"]
     p += [f"--engine-quote-bar: {px(quote['bar'])};", f"--engine-quote-bar-color: {quote['bar-color']};",
-          f"--engine-quote-pad: {pad(quote['pad'])};"]
+          f"--engine-quote-pad: {pad(quote['pad'])};", f"--engine-quote-gap: {quote['pad'][0]:g}em;"]   # above and below it: its vertical pad
     p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
           f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",

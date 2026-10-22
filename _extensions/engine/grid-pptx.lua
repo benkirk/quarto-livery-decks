@@ -5,7 +5,7 @@ pandoc's pptx writer lays a `.columns` div out on the Two Content layout, two pl
 template's half width each, keeps the first two `.column`s (dropping the rest, silently: pandoc
 3.8.3) and drops their `width=`. Two tiers:
 
-- A plain columns slide (two columns, no card, no lead; engine-common.lua's is_grid() false)
+- A plain columns slide (two columns, no card, lead or quote; engine-common.lua's is_grid() false)
   stays pandoc's: this leaves a notes line, `engine-columns: 0.55 0.45` (the shares,
   column_shares(), as HTML and PDF lay them out; `wide` added on a `{.wide}` slide, which
   slide-layout.lua has written on its own notes line), after the columns div, so the body still
@@ -22,7 +22,9 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:column card role=primary pick solid⟧` (card_attrs()), its band's title and sub and its
   label and big lines paragraphs led by `⟦engine:title⟧`, `⟦engine:sub⟧`, `⟦engine:label⟧`,
   `⟦engine:big⟧`; a `.strip` (in a card or on its own) is `⟦engine:strip role=accent⟧` ...
-  `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
+  `⟦engine:end⟧`; a quote (`::: {.quote}` or a bare `>`, on its own, in a column or in a card) is
+  `⟦engine:quote role=r⟧` (role= only when it names one), its lines, an attribution paragraph led by
+  `⟦engine:attribution⟧`, `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
   drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns.
 - Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
   (kind=timeline; `start=4` when the ordered list begins past 1: the badges count from it), per
@@ -86,6 +88,17 @@ local function prefixed(word, inlines)   -- a paragraph led by a prefix marker, 
   return pandoc.Para(il)
 end
 
+-- a quote (C.quote_blocks()): `⟦engine:quote⟧` (`role=r` when it names one; grid.py checks it, the
+-- box's bar-color by default), its lines, the attribution a paragraph led by `⟦engine:attribution⟧`,
+-- `⟦engine:end⟧`; in a Div of its own (.engine-quote-marks), which flow() and pandoc unwrap
+local function quote_marks(q)
+  local out = pandoc.Blocks({ marker("quote" .. (q.role and (" role=" .. q.role) or "")) })
+  out:extend(q.body)
+  if q.attribution then out:insert(prefixed("attribution", q.attribution)) end
+  out:insert(marker("end"))
+  return pandoc.Div(out, pandoc.Attr("", { "engine-quote-marks" }))
+end
+
 -- a column's blocks, its divs unwrapped (the flow has no divs), a [..]{.label} or [..]{.big} line
 -- led by its prefix marker, its pictures and tables warned of
 local function flow(blocks, title, out)
@@ -138,7 +151,12 @@ end
 -- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
 local function mark(blocks, title)
   local out, wide = pandoc.Blocks({}), is_wide(blocks)
-  for _, b in ipairs(blocks) do
+  local grid = {}   -- which columns divs are a grid slide's, read before the quotes become markers
+  for k, b in ipairs(blocks) do
+    if b.t == "Div" and C.has_class(b, "columns") then grid[k] = C.is_grid(b, blocks) end
+  end
+  blocks = C.quote_blocks(blocks, nil, "grid-pptx.lua", quote_marks)   -- one block for one: k still names it
+  for k, b in ipairs(blocks) do
     local kind = C.rail_kind(b)
     local rail = kind and C.rail_items(b, kind, nil, "grid-pptx.lua")
     if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
@@ -157,7 +175,9 @@ local function mark(blocks, title)
         out:insert(marker("end"))
       end
       out:insert(marker("end"))
-    elseif b.t == "Div" and C.has_class(b, "columns") and C.is_grid(b, blocks) then
+    elseif b.t == "Div" and C.has_class(b, "engine-quote-marks") then   -- a quote on its own
+      out:extend(b.content)
+    elseif b.t == "Div" and C.has_class(b, "columns") and grid[k] then
       out:extend(flatten(b, title))
     else
       out:insert(b)

@@ -38,6 +38,11 @@ RAILS = ('## Steps\n\n::: {.steps role="secondary"}\n1. **Propose** A one-page c
          '   A second line.\n3. **Scale** The allocation.\n:::\n\n'
          '## Timeline\n\n::: {.timeline}\n- [x] **Q1 2025** Accepted\n- **2026** Full allocation\n:::\n\n'
          '## Later steps\n\n::: {.steps}\n4. **Review** The board reads it.\n5. **Decide** Yes or no.\n:::\n')
+QUOTES = ('## Quote\n\n::: {.quote role="accent"}\nThe purpose of computing\nis insight.\n— R. Hamming, 1962\n:::\n\n'
+          '## Quote in a card\n\n:::: {.columns}\n::: {.column .card}\n### OPTION 1\nAbove.\n\n> Quoted in a card.\n\nBelow.\n:::\n'
+          '::: {.column .card}\n### OPTION 2\nOther.\n:::\n::::\n\n'
+          '## Quote in a column\n\n:::: {.columns}\n::: {.column}\n- one\n- two\n:::\n::: {.column}\nBefore.\n\n'
+          '> In a plain column.\n\nAfter.\n:::\n::::\n')
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -45,7 +50,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
       '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
-      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS)
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES)
 STEP = """
 import sys
 from pathlib import Path
@@ -159,9 +164,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 12, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 15, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -324,6 +329,45 @@ def test_strip(deck):
     above, below = by["Card 1 body"], by["Card 1 body 3"]
     assert above.top + above.height <= strip.top and strip.top + strip.height <= below.top, "the strip between the body's text"
     assert "one" in below.text_frame.text and "$20M" in above.text_frame.text, "the text on each side"
+
+
+def test_quote(deck):
+    """A quote: one group ("Quote") of a bar and a text box, no fill; the bar boxes.quote.bar wide in
+    its role= (else the box's bar-color), the text box beside it padded by boxes.quote.pad, its lines
+    in the quote size, the attribution "— " and its name at the caption size in muted; no marker.
+    In a card it sits inside the body's pads between the text above and below it; in a plain column
+    between that column's text boxes, at the column's left."""
+    import livery as livery_mod
+    livery, prs, _ = deck
+    q, sh = livery["boxes"]["quote"], prs.slide_height
+    size = lambda p: {r._r.get_or_add_rPr().get("sz") for r in p.runs}
+    by = {s.name: s for s in flat(prs.slides[12].shapes)}
+    g = by["Quote"]
+    assert g.shape_type == 6 and {s.name for s in g.shapes} == {"Quote bar", "Quote text"}, "one group, a bar and its text, no fill"
+    bar, text = by["Quote bar"], by["Quote text"]
+    assert str(bar.fill.fore_color.rgb) == livery["roles"]["accent"][1:], "role= colors the bar"
+    assert bar.width == round(q["bar"] * sh) and text.left == bar.left + bar.width and bar.height == text.height
+    assert text.text_frame.margin_left == round(q["pad"][1] * livery_mod.type_pt(livery, "body") * 12700), "padded by boxes.quote.pad"
+    paras = text.text_frame.paragraphs
+    assert [p.text for p in paras] == ["The purpose of computing", "is insight.", "— R. Hamming, 1962"], "a source line a line"
+    pt = lambda role: str(round(livery_mod.half_pt(livery_mod.type_pt(livery, role)) * 100))
+    assert size(paras[0]) == {pt("quote")} and size(paras[2]) == {pt("caption")}, "the quote and caption sizes"
+    assert {str(r.font.color.rgb) for r in paras[2].runs} == {livery["roles"]["muted"][1:]}, "the attribution muted"
+    assert "⟦" not in prs.slides[12]._element.xml, "a marker left"
+    pads = livery_mod.type_pt(livery, "body") * 12700
+    by = {s.name: s for s in flat(prs.slides[13].shapes)}
+    bar, card = by["Card 1 quote 1 bar"], by["Card 1 fill"]
+    assert str(bar.fill.fore_color.rgb) == q["bar-color"][1:], "a bare > in the box's bar-color"
+    assert abs(bar.left - (card.left + round(livery["boxes"]["card"]["pad"][1] * pads))) <= 1, "inside the card's pads"
+    above, below = by["Card 1 body"], by["Card 1 body 3"]
+    assert above.top + above.height <= bar.top and bar.top + bar.height <= below.top, "between the body's text"
+    assert by["Card 1 quote 1 text"].text_frame.text == "Quoted in a card."
+    by = {s.name: s for s in flat(prs.slides[14].shapes)}
+    bar, (x, _w) = by["Column 2 quote 1 bar"], boxes(livery, prs.slide_width, [0.5, 0.5])[1]
+    assert by["Column 2 quote 1"].shape_type == 6 and abs(bar.left - x) <= 6, "a group at the column's left"
+    assert by["Column 2"].text_frame.text == "Before." and by["Column 2 3"].text_frame.text == "After."
+    assert by["Column 2"].top + by["Column 2"].height <= bar.top <= bar.top + bar.height <= by["Column 2 3"].top
+    assert "⟦" not in prs.slides[13]._element.xml + prs.slides[14]._element.xml, "a marker left"
 
 
 def test_default_roles(deck):

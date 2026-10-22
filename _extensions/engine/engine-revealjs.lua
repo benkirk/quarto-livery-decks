@@ -203,6 +203,25 @@ local function strips(blocks, livery)
   end })
 end
 
+-- Quote blocks (C.quote_blocks(): ::: {.quote}, or a bare `>`), at any depth: raw tags round its
+-- lines, its role= a custom property (the scss falls back on the box's bar-color), its attribution
+-- a paragraph led by "— "; the scss draws the bar, the sizes and the muted attribution
+local function quote_boxes(blocks, livery)
+  return C.quote_blocks(blocks, livery, "engine-revealjs", function(q)
+    local style = q.role and string.format(' style="--engine-quote-role: var(--engine-%s)"', q.role) or ""
+    local out = pandoc.Blocks({ html('<div class="engine-quote"' .. style .. '>') })
+    out:extend(q.body)
+    if q.attribution then
+      local il = pandoc.Inlines({ pandoc.RawInline("html", '<p class="engine-attribution">'), pandoc.Str("—"), pandoc.Space() })
+      il:extend(q.attribution)
+      il:insert(pandoc.RawInline("html", "</p>"))
+      out:insert(pandoc.Plain(il))
+    end
+    out:insert(html("</div>"))
+    return out
+  end)
+end
+
 -- Status items (C.status_lists()): the glyph a span of its status (⚠ with U+FE0E: no emoji), which
 -- the scss sets where the bullet was (the bullet dropped), a failed item's text a span it mutes
 local function status_items(blocks)
@@ -670,7 +689,7 @@ function Pandoc(doc)
   doc.blocks = cited
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery), livery))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

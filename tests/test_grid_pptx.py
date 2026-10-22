@@ -153,3 +153,21 @@ def test_unnumbered_in_the_metadata(tmp_path):
     prop = re.search(r'name="engine-unnumbered"[^>]*>.*?<vt:lpwstr>([^<]*)</vt:lpwstr>', custom(md), re.S)
     assert prop and prop.group(1) == "2 4", custom(md)
     assert "engine-unnumbered" not in custom(md.replace(" {.unnumbered}", ""))
+
+
+def test_quote_marked(tmp_path):
+    """A quote: `⟦engine:quote⟧` (role= only when it names one), a paragraph per source line, the
+    attribution a paragraph led by `⟦engine:attribution⟧` without its dash, `⟦engine:end⟧`; a bare
+    `>` the same. A quote in a column makes a two-column slide a grid slide (its columns flattened),
+    and a quote on its own is marked too."""
+    md = ('## Quote\n\n::: {.quote role="accent"}\nOne line\nanother\n— Who, 1962\n:::\n\n'
+          '## Column\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\n> Right\n> -- Them\n:::\n::::\n')
+    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    out = tmp_path / "q.pptx"
+    subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
+    with zipfile.ZipFile(out) as z:
+        slides = [z.read(f"ppt/slides/slide{n}.xml").decode() for n in (1, 2)]
+    paras = [["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", x)] for x in slides]
+    assert paras[0][1:] == ["⟦engine:quote role=accent⟧", "One line", "another", "⟦engine:attribution⟧Who, 1962", "⟦engine:end⟧"], paras[0]
+    assert paras[1][1:] == ["⟦engine:columns widths=0.5,0.5⟧", "⟦engine:column⟧", "Left", "⟦engine:end⟧", "⟦engine:column⟧",
+                            "⟦engine:quote⟧", "Right", "⟦engine:attribution⟧Them", "⟦engine:end⟧", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]

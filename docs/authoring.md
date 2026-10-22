@@ -183,6 +183,33 @@ Each trades local capacity against a share of the consortium system.
   `.caution` and `.vcenter` do not apply in pptx.
 - The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).
 
+## Quotes
+
+A quotation is a `quote` div, or a bare `>` blockquote, anywhere in a slide's body:
+
+```markdown
+::: {.quote role="accent"}
+The purpose of computing is insight, not numbers.
+— Richard Hamming, 1962
+:::
+
+> A bare blockquote is the same box, in the livery's bar color.
+```
+
+- Its lines are set in the livery's `quote` size (24 pt on the default canvas) beside a bar at
+  its left, with no fill. `role=` colors the bar (any livery role or blend); without it the bar
+  takes the livery's `boxes.quote.bar-color`. Each source line is a line, as in a lead.
+- A last line that starts with `—`, `–` or `--` is the **attribution**: set under the quote at the
+  caption size, muted, after "— ". A last line that begins with a dash for another reason is
+  read the same way, so reword it.
+- A quote works on its own, in a column and in a card (inside the card's pads). Inside a lead or a
+  strip it is not drawn (those are boxes of lines already): a warning, and its lines stay. In the
+  speaker notes a `>` stays as it is.
+- pptx draws it as a text box and a bar, one group ("Quote"); a quote in a column makes the slide
+  a card slide (drawn by the engine, like three columns), so keep pictures and tables off it.
+- In LaTeX it is `\begin{enginequote}[role=accent]{Richard Hamming, 1962}`
+  ([latex/authoring.md](../latex/authoring.md#the-patterns)).
+
 ## Steps and timelines
 
 A process, step by step, is an ordered list in a `steps` div; milestones are a bullet list in a

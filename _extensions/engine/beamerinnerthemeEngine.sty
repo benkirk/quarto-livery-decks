@@ -339,8 +339,9 @@
 \@ifundefined{\string\color@enginecautionfill}{\colorlet{enginecautionfill}{BrandWarning!18!BrandBackground}}{}
 % \engine@barbox{<box>} ... \endengine@barbox{<fill>}{<bar color>}: the body set in a minipage the
 % line width less the bar and the pads (livery.sty's \engine@boxes@<box>@bar, @padx, @pady; a box
-% without a bar has none), on the fill with the bar at its left. \colorbox's one \fboxsep is 0: the
-% pads are explicit, the vertical and the horizontal apart. The caution box and the lead are on it.
+% without a bar has none), on the fill with the bar at its left; an empty fill, none. \colorbox's one
+% \fboxsep is 0: the pads are explicit, the vertical and the horizontal apart. The caution box, the
+% lead, the strip and the quote are on it.
 \newsavebox\engine@barboxbox
 \newdimen\engine@padx \newdimen\engine@pady \newdimen\engine@barw
 \def\engine@barboxin{}   % after \noindent: a strip in a card moves out to the card's edge
@@ -354,9 +355,11 @@
   \begin{lrbox}{\engine@barboxbox}%
   \begin{minipage}{\dimexpr\linewidth-\engine@barw-2\engine@padx\relax}\parskip=\engine@outerparskip\relax}
 \def\endengine@barbox#1#2{\end{minipage}\end{lrbox}%
+  \setbox\engine@barboxbox=\vbox{\vskip\engine@pady
+    \hbox{\hskip\engine@padx\usebox\engine@barboxbox\hskip\engine@padx}\vskip\engine@pady}%
   \hbox{{\color{#2}\vrule width \engine@barw}%
-    {\setlength\fboxsep{0pt}\colorbox{#1}{\vbox{\vskip\engine@pady
-      \hbox{\hskip\engine@padx\usebox\engine@barboxbox\hskip\engine@padx}\vskip\engine@pady}}}}\engine@barboxout\par}
+    \ifx\relax#1\relax\box\engine@barboxbox
+    \else{\setlength\fboxsep{0pt}\colorbox{#1}{\box\engine@barboxbox}}\fi}\engine@barboxout\par}
 \newenvironment{enginecaution}{\engine@barbox{caution}}{\endengine@barbox{enginecautionfill}{BrandWarning}}
 
 % ---------------------------------------------------------------------------
@@ -428,14 +431,16 @@
 % livery's exported palette, a document's own \definecolor), else the default role, with a warning.
 % ---------------------------------------------------------------------------
 \RequirePackage{pgfkeys}   % (tikz's; the keys of enginecard and enginestrip)
-\def\engine@rolecolor#1#2{%
+\def\engine@rolecolor#1#2{\engine@rolecolorelse{#1}{\csname engine@role@#2\endcsname}{#2}}
+% \engine@rolecolorelse{<name>}{<default color>}{<its word in the warning>}: the same, the default a color
+\def\engine@rolecolorelse#1#2#3{%
   \ifcsname engine@role@#1\endcsname
     \edef\engine@rolename{\csname engine@role@#1\endcsname}%
   \else\ifcsname\string\color@#1\endcsname
     \edef\engine@rolename{#1}%
   \else
-    \PackageWarning{Engine}{role=#1 is not a role of the livery or a color; #2}%
-    \edef\engine@rolename{\csname engine@role@#2\endcsname}%
+    \PackageWarning{Engine}{role=#1 is not a role of the livery or a color; #3}%
+    \edef\engine@rolename{#2}%
   \fi\fi}
 % \engine@nthrole{<k>}: \engine@nthrolename is the k-th of livery.sty's \engine@boxes@card@roles,
 % around again past its end (a card's default role, by its place in the row)
@@ -502,6 +507,25 @@
   \fi
   \engine@barbox{strip}}%
   {\endengine@barbox{engine@strip}{engine@strip}}
+
+% ---------------------------------------------------------------------------
+% quote: \begin{enginequote}[role=<role>]{<attribution>} ... \end{enginequote} (the Quarto filter
+% writes it for ::: {.quote} and a bare `>`): its lines in the quote font with a bar at its left in
+% the role (default the box's bar-color, livery.sty's boxes.quote), no fill, padded by its pads; the
+% attribution, when not {}, under them at the caption size, muted, after "— ". In a card or a
+% column too, as wide as its line.
+% ---------------------------------------------------------------------------
+\pgfkeys{/engine/quote/.cd, role/.store in=\engine@quoterole}
+\newenvironment{enginequote}[2][]{%
+  \def\engine@quoterole{}\pgfkeys{/engine/quote/.cd,#1}%
+  \ifx\engine@quoterole\@empty\def\engine@rolename{EngineBoxesQuoteBarColor}%
+  \else\engine@rolecolorelse{\engine@quoterole}{EngineBoxesQuoteBarColor}{the quote bar's color}\fi
+  \colorlet{engine@quotebar}{\engine@rolename}%
+  \def\engine@quotewho{#2}%
+  \engine@barbox{quote}\usebeamerfont{quote}}%
+  {\ifx\engine@quotewho\@empty\else
+     \par\vskip0.6ex{\usebeamerfont{caption}\color{BrandMuted}— \engine@quotewho\par}\fi
+   \endengine@barbox{}{engine@quotebar}\vskip\engine@pady}
 
 % ---------------------------------------------------------------------------
 % cards: a row \begin{enginecards}{<shares>} of \begin{enginecard}[<keys>]{<title>}{<sub>} ...

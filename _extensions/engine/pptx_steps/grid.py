@@ -1,4 +1,4 @@
-"""A grid slide (three or more columns, a lead box, cards, strips, steps, a timeline) redrawn from
+"""A grid slide (three or more columns, a lead box, cards, strips, quotes, steps, a timeline) redrawn from
 grid-pptx.lua's markers.
 
 grid-pptx.lua flattens a grid slide's columns into one text flow, which pandoc writes into the
@@ -6,12 +6,15 @@ Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:
 `⟦engine:columns widths=a,b,c⟧`, then per column `⟦engine:column⟧` ... `⟦engine:end⟧`, and a last
 `⟦engine:end⟧` closing the columns; `⟦engine:lead⟧` ... `⟦engine:end⟧` a lead box;
 `⟦engine:rail kind=steps|timeline role=r⟧`, per item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done
-milestone) ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, steps or a timeline (draw_rail()). This
+milestone) ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, steps or a timeline (draw_rail());
+`⟦engine:quote role=r⟧` ... `⟦engine:end⟧` a quote (draw_quote(): its lines in the quote size, an
+`⟦engine:attribution⟧` line at the caption size, muted, beside a bar; on its own, in a card inside
+its pads, or in a plain column between its text boxes). This
 parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
-placeholder, cut to its measured height; the columns are free text boxes (Column 1, Column 2, ...; a card, a lead or a strip is one group of
-its shapes, "Card n", "Lead", "Strip", so a click in PowerPoint selects it whole)
+placeholder, cut to its measured height; the columns are free text boxes (Column 1, Column 2, ...; a card, a lead, a strip or a quote is one group of
+its shapes, "Card n", "Lead", "Strip", "Quote", so a click in PowerPoint selects it whole)
 at columns.py's frames (each its share of the box less boxes.columns.gap, a livery's
 boxes.columns.rule in each gap), their list style the master's body style, so pandoc's paragraphs,
 moved into them with their own properties, keep the template's bullets and sizes; a lead is its
@@ -39,7 +42,7 @@ from .common import BODY_PT, BOXES, GEOM, LIVERY, SLACK, column_frames, is_body,
 from .measure import text_height
 
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
-PREFIX = re.compile(r"^⟦engine:(title|sub|label|big)⟧")   # a card's lines (grid-pptx.lua)
+PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
 
@@ -58,7 +61,8 @@ def _attrs(rest):
 
 
 def parse(paragraphs):
-    """The flow as segments: ("text", [p]), ("lead", attrs, [p]), ("columns", shares, [(attrs, [p])]),
+    """The flow as segments: ("text", [p]), ("lead", attrs, [p]), ("strip" or "quote", attrs, [p]),
+    ("columns", shares, [(attrs, [p])]; a strip or quote in a column one of its items),
     ("rail", attrs, [("item", attrs, [p])]); None when it holds no marker of a box (not a grid
     slide). Markers nest: a column inside its columns, an item inside its rail, each closed by its
     `end`."""
@@ -94,8 +98,8 @@ def parse(paragraphs):
         elif kind == "lead" and not stack:
             seg = ("lead", attrs, [])
             segs.append(seg); stack.append(seg)
-        elif kind == "strip":   # in a column, an item of its flow; else a segment of its own
-            seg = ("strip", attrs, [])
+        elif kind in ("strip", "quote"):   # in a column, an item of its flow; else a segment of its own
+            seg = (kind, attrs, [])
             if stack and stack[-1][0] == "column":
                 stack[-1][2].append(seg)
             elif not stack:
@@ -257,8 +261,8 @@ def _card_text(paras, solid):
     head, body = [], []
     on_role = _hex("primary-text")
     for p in paras:
-        if isinstance(p, tuple):   # a strip: its own lines styled as a card's body
-            body.append((p[0], p[1], _card_text(p[2], solid)[1]))
+        if isinstance(p, tuple):   # a strip: its own lines styled as a card's body; a quote: draw_quote's
+            body.append(p if p[0] == "quote" else (p[0], p[1], _card_text(p[2], solid)[1]))
             continue
         kind = _prefix(p)
         _close(p)
@@ -301,6 +305,85 @@ def draw_strip(slide, x, y, w, room, paras, role, solid, name):
     return tb, rect(slide, x, y, w, tb.height, fill, name, behind=tb)
 
 
+def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
+    """A quote: its lines in the quote size, the attribution (led by ⟦engine:attribution⟧) at the
+    caption size in muted after "— ", in a text box padded by boxes.quote.pad beside a bar of
+    boxes.quote.bar of the color at its left, no fill, cut to its text. (text box, bar) at y."""
+    bar = round(BOXES["quote"]["bar"] * slide_height)
+    vpad, hpad = pads("quote")
+    for p in paras:
+        if _prefix(p) == "attribution":
+            t = p.find(".//" + qn("a:t"))
+            if t is not None:
+                t.text = "— " + (t.text or "")
+            _style(p, livery_mod.type_pt(LIVERY, "caption"), color=_hex("muted"))
+        else:
+            _style(p, livery_mod.type_pt(LIVERY, "quote"))
+    tb = body_box(slide, x + bar, y, max(w - bar, 0), room, paras, f"{name} text")
+    tf = tb.text_frame
+    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    tb.height = min(int(text_height(tb, slide) * SLACK), room)
+    return tb, rect(slide, x, y, bar, tb.height, color, f"{name} bar", behind=tb)
+
+
+def _quote_color(attrs, slide):
+    """A quote marker's role= as a hex when it is a role or a blend of the livery; else (none, or a
+    name that is neither, warned of as engine-common.lua's quote_parts does) the box's bar-color."""
+    r = attrs.get("role")
+    if r in LIVERY["roles"] or r in LIVERY["blends"]:
+        return _hex(r)
+    if r is not None:
+        title = slide.shapes.title
+        print(f"grid: WARNING: slide {title.text_frame.text if title else ''!r}: role={r!r} is not a role or a blend "
+              "of the livery; the quote bar's color", file=sys.stderr)
+    return _hex(BOXES["quote"]["bar-color"])
+
+
+def _plain_column(slide, x, y, w, room, items, name, slide_height):
+    """A plain column's flow (a strip's lines as text: a plain column draws no strip) as its parts,
+    [(kind, text box, bar or None)]: one text box, or, when it holds a quote, its text runs and its
+    quotes (draw_quote(), at the column's width) in order, each at y; _place() stacks them."""
+    if not any(isinstance(it, tuple) and it[0] == "quote" for it in items):
+        return [("text", body_box(slide, x, y, w, room, _flat(items), name), None)]
+    parts, run = [], []
+
+    def text():
+        nonlocal run
+        if run:
+            parts.append(("text", body_box(slide, x, y, w, room, run, name if not parts else f"{name} {len(parts) + 1}"), None))
+        run = []
+    for it in items:
+        if isinstance(it, tuple) and it[0] == "quote":
+            text()
+            tb, bar = draw_quote(slide, x, y, w, room, it[2], _quote_color(it[1], slide), slide_height,
+                                 f"{name} quote {sum(1 for p in parts if p[0] == 'quote') + 1}")
+            parts.append(("quote", tb, bar))
+        else:
+            run.extend(it[2] if isinstance(it, tuple) else [it])
+    text()
+    return parts
+
+
+def _column_height(parts, slide):
+    """A plain column's measured height: its text runs' and its quotes' heights added."""
+    return sum(tb.height if kind == "quote" else int(text_height(tb, slide)) for kind, tb, _ in parts)
+
+
+def _place(slide, parts, y, h):
+    """A plain column's parts stacked from y, each text run its measured height and the last running
+    to y + h (one text box: at y, h tall, as before quotes); a quote grouped once in place ("<name>")."""
+    cy = y
+    for i, (kind, tb, bar) in enumerate(parts):
+        if kind == "quote":
+            tb.top = bar.top = cy
+            group(slide, [bar, tb], tb.name[:-len(" text")])
+            cy += tb.height
+            continue
+        th = max(y + h - cy, 0) if i == len(parts) - 1 else int(text_height(tb, slide) * SLACK)
+        tb.top, tb.height = cy, th
+        cy += th
+
+
 def _pick_role(attrs, default, slide):
     """A marker's role= when it is a role or a blend of the livery, else the default, warned of
     (engine-common.lua's box_role, for HTML and PDF)."""
@@ -330,7 +413,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     for k, ((_, attrs, paras), (x, w)) in enumerate(zip(columns, frames), 1):
         n_col += 1
         if not attrs.get("card"):
-            cards.append(dict(plain=body_box(slide, x, y, w, room, _flat(paras), f"Column {n_col}"), attrs=attrs))
+            cards.append(dict(plain=_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height), attrs=attrs))
             continue
         solid = attrs.get("solid")
         head, items = _card_text(paras, solid)
@@ -338,7 +421,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         if hb is not None:
             hb.text_frame.margin_top = hb.text_frame.margin_bottom = hv
             hb.text_frame.margin_left = hb.text_frame.margin_right = hh
-        parts, run, n_strip = [], [], 0   # the body: text boxes and strips, in order
+        parts, run, n_strip, n_quote = [], [], 0, 0   # the body: text boxes, strips and quotes, in order
         def text_part():
             nonlocal run
             if run or not parts:
@@ -348,14 +431,20 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
                 parts.append(("text", tb, None, _card_height(tb, slide)))
             run = []
         for it in items:
-            if isinstance(it, tuple):
+            if isinstance(it, tuple) and it[0] == "quote":   # inside the body's pads, as HTML's and the PDF's
+                text_part() if run else None
+                n_quote += 1
+                tb, r = draw_quote(slide, x + bh, y, w - 2 * bh, room, it[2], _quote_color(it[1], slide), slide_height,
+                                   f"Card {n_col} quote {n_quote}")
+                parts.append(("quote", tb, r, tb.height))
+            elif isinstance(it, tuple):
                 text_part() if run else None
                 n_strip += 1
                 tb, r = draw_strip(slide, x, y, w, room, it[2], _pick_role(it[1], "accent", slide), solid, f"Card {n_col} strip {n_strip}")
                 parts.append(("strip", tb, r, tb.height))
             else:
                 run.append(it)
-        if run or not parts or parts[-1][0] == "strip":
+        if run or not parts or parts[-1][0] in ("strip", "quote"):
             text_part()
         first = hb if hb is not None else parts[0][1]
         head_h = _card_height(hb, slide) if hb is not None else 0
@@ -364,7 +453,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     total = min(int(max(c["h"] for c in cards if "plain" not in c) * SLACK), room)   # the slack once, at the foot
     for c in cards:
         if "plain" in c:
-            c["plain"].top, c["plain"].height = y, total
+            _place(slide, c["plain"], y, total)
             continue
         attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
         role, solid = _hex(_pick_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)], slide)), attrs.get("solid")
@@ -514,6 +603,11 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             y += draw_rail(slide, left, y, width, max(bottom - y, 0), seg[1].get("kind", "steps"), seg[2], seg[1],
                            slide_width, slide_height)
             continue
+        if seg[0] == "quote":   # on its own: as wide as the body, a vertical pad under it
+            tb, bar = draw_quote(slide, left, y, width, max(bottom - y, 0), seg[2], _quote_color(seg[1], slide), slide_height)
+            group(slide, [bar, tb], "Quote")
+            y += tb.height + pads("quote")[0]
+            continue
         if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
             tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _pick_role(seg[1], "accent", slide), False, "Strip fill")
             tb.name = "Strip text"
@@ -528,16 +622,16 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             rules(slide, frames, y, h, slide_width, slide_height)
             y += h
             continue
-        boxes = []
+        cols = []
         for (_, attrs, paras), (x, w) in zip(columns, frames):
             n_col += 1
-            boxes.append(body_box(slide, x, y, w, room, _flat(paras), f"Column {n_col}"))
+            cols.append(_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height))
         h = room
-        tallest = min(max(int(text_height(b, slide)) for b in boxes), room)
+        tallest = min(max(_column_height(c, slide) for c in cols), room)
         if any(s[0] == "text" for s in later):   # text below: the row as tall as its tallest column
             h = min(int(tallest * SLACK), room)
-            for b in boxes:
-                b.height = h
+        for c in cols:
+            _place(slide, c, y, h)
         rules(slide, frames, y, tallest, slide_width, slide_height)
         y += h
     if not keep:

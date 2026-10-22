@@ -41,6 +41,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
   directory is a prerequisite, so editing one rebuilds the deck.
+- Quotes: `::: {.quote}` or a bare `>` blockquote sets its lines in the livery's new `quote` size
+  beside a bar at its left (`role=` colors it; by default the livery's `boxes.quote.bar-color`),
+  with no fill; a last line starting with `—`, `–` or `--` is the attribution, under it at the
+  caption size, muted. On its own, in a column or in a card; inside a lead or a strip it warns and
+  stays as its lines. In the pptx it is a text box and a bar, one group ("Quote"), and a quote in
+  a column makes the slide a card slide. HTML's old blockquote look (a muted paragraph, a thin
+  border) and the PDF's plain italic quote are gone. `docs/authoring.md` "Quotes".
 - An unnumbered divider (`# Backup {.unnumbered}`) is outside the count in every format: pptx and
   PDF no longer give it a number, as HTML already did, so the dividers after it keep the numbers
   HTML shows. The PDF draws it with its subtitle (it drew no divider at all before, and the
@@ -70,6 +77,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `backend=biber`), and every livery's Overleaf zip carries the bibliography.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
+- `\begin{enginequote}[role=]{Attribution} ... \end{enginequote}`: a quote, its lines in the quote
+  size beside a bar in the role (by default the livery's quote bar color), the attribution under it
+  after "— " (`{}` for none); in a card or a column too. The cookbook has "A pull quote".
 - `\enginesectionunnumbered{Title}{Subtitle}` draws a divider outside the count (an appendix,
   the backup slides): the divider's look without the eyebrow, and no `\section`, so no counter
   step, no table-of-contents line and no PDF bookmark (`\section*` is no substitute: it steps

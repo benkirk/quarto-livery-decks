@@ -371,6 +371,18 @@ local function strips(blocks, livery)
   end })
 end
 
+-- Quote blocks (C.quote_blocks(): ::: {.quote}, or a bare `>`), at any depth:
+-- \begin{enginequote}[role=<role>]{<attribution>} round its lines (no role=: the box's bar-color)
+local function quote_boxes(blocks, livery)
+  return C.quote_blocks(blocks, livery, "engine-beamer", function(q)
+    local who = q.attribution and inlines_to_latex(q.attribution) or ""
+    local out = pandoc.Blocks({ latex("\\begin{enginequote}" .. (q.role and ("[role=" .. q.role .. "]") or "") .. "{" .. who .. "}") })
+    out:extend(q.body)
+    out:insert(latex("\\end{enginequote}"))
+    return out
+  end)
+end
+
 -- Steps and timelines (C.rail_items()): \begin{enginesteps}[role=<role>]{<n>} with a
 -- \begin{enginestep}{<title>} round each step's text (as a card's body: \enginelabel and \enginebig
 -- lines), or \begin{enginetimeline}[role=<role>]{<n>} with \enginemilestone[done]{<date>}{<label>}
@@ -413,7 +425,7 @@ end
 -- A frame whose body opens with a paragraph: \vskip-\parskip before it, so it starts at the body's
 -- top as HTML's and the pptx's do (TeX puts \parskip, the parskip package's half line, before every
 -- paragraph; a list opens at its own \topsep, which already matches). Frames are top-aligned
--- (beamerthemeEngine.sty), so the space showed. A caution or lead box opens a paragraph too; the
+-- (beamerthemeEngine.sty), so the space showed. A caution, lead or quote box opens a paragraph too; the
 -- footnote spring and a scale group are looked past; a wide body cancels its own.
 local function opens_paragraph(b)   -- true, false, or nil: look at the next block
   if b.t == "Para" or b.t == "Plain" then return true end
@@ -422,6 +434,7 @@ local function opens_paragraph(b)   -- true, false, or nil: look at the next blo
   if t == "\\enginefootnotespring" or t:match("^\\begin{enginescale}{[^}]*}$") then return nil end
   if t:find("\\begin{enginewide}", 1, true) or t:find("\\begin{varwidth}", 1, true) then return false end
   return t:find("\\begin{enginecaution}", 1, true) ~= nil or t:find("\\begin{enginelead}", 1, true) ~= nil
+    or t:find("\\begin{enginequote}", 1, true) ~= nil
 end
 
 local function first_paragraph(blocks)
@@ -807,7 +820,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(rails(note_frames(unwrap_layout(hoist_footnotes(out))), LIVERY)), LIVERY)), LIVERY)))
+  doc.blocks = first_paragraph(lead_boxes(strips(quote_boxes(beamer_columns(card_rows(status_items(rails(note_frames(unwrap_layout(hoist_footnotes(out))), LIVERY)), LIVERY)), LIVERY), LIVERY)))
   if used.hcenter then
     local hi = header_includes(doc)
     hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") }))
