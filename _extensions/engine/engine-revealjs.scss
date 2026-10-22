@@ -93,7 +93,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   color: var(--engine-muted);
   font-size: calc(var(--engine-type-caption, 0.7) * 1em);
   @if $block {
-    line-height: 1.3;
+    line-height: var(--engine-leading-caption, 1.3);
     text-align: center;
   }
 }
@@ -167,7 +167,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   color: var(--engine-marking-text);
   font-weight: var(--engine-marking-weight, 400);
   font-size: var(--engine-type-marking, 15px);
-  line-height: 1.2;
+  line-height: var(--engine-leading-marking, 1.2);
   margin: 0;
   z-index: 10;
   pointer-events: none;
@@ -188,7 +188,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   justify-content: var(--engine-title-justify, flex-start);   // the livery's frametitle.align
   text-align: var(--engine-title-text-align, left);
   font-size: var(--engine-type-frametitle, 46px);  // fixed: {.smaller} and the autofit script shrink only the body
-  line-height: 1.15;
+  line-height: var(--engine-leading-frametitle, 1.15);
   // the tab: flush with the paper's left edge, as tall as the title (frametitle.tab)
   &::before {
     display: var(--engine-title-tab, block);
@@ -324,7 +324,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
 // figcaption; centred under it with a note's spacing, as the PDF and pptx set it
 .reveal .slides section img.quarto-figure-center + p.caption {
   text-align: center;
-  line-height: 1.3;
+  line-height: var(--engine-leading-caption, 1.3);
   margin: 0.4em 0 0;
 }
 // ::: note (engine-revealjs.lua's .engine-note): a remark under a figure or table, in the .full
@@ -430,7 +430,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   padding: var(--engine-quote-pad);
   margin: var(--engine-quote-gap) 0;
   > p {   // its face: boxes.quote.family (else the body's) and style
-    font-size: calc(var(--engine-type-quote) * 1em); line-height: 1.3; margin: 0;
+    font-size: calc(var(--engine-type-quote) * 1em); line-height: var(--engine-leading-quote, 1.3); margin: 0;
     font-family: var(--engine-quote-family, inherit); font-style: var(--engine-quote-style, normal);
   }
   > p + p { margin-top: 0.25em; }
@@ -454,10 +454,10 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   > li { display: contents; }
   .engine-agenda-number {
     font-size: calc(var(--engine-type-eyebrow) * 1em); font-weight: 700; color: var(--engine-agenda-number);
-    line-height: calc(1.2 * var(--engine-type-subhead) / var(--engine-type-eyebrow));   // on the title's first line
+    line-height: calc(var(--engine-leading-subhead, 1.2) * var(--engine-type-subhead) / var(--engine-type-eyebrow));   // on the title's first line
     min-width: 2em;
   }
-  .engine-agenda-title { display: block; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
+  .engine-agenda-title { display: block; font-size: calc(var(--engine-type-subhead) * 1em); line-height: var(--engine-leading-subhead, 1.2); }
   .engine-agenda-sub { display: block; font-size: calc(var(--engine-type-caption) * 1em); color: var(--engine-muted); margin-top: 0.15em; }
   > li[data-engine-state="done"] .engine-agenda-title { color: var(--engine-muted); }
   > li[data-engine-state="current"] .engine-agenda-title { color: var(--engine-agenda-current); font-weight: 700; }
@@ -496,7 +496,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
     display: block;
     font-size: calc(var(--engine-type-display) * 1em);
     font-weight: 700;
-    line-height: 1.08;
+    line-height: var(--engine-leading-display, 1.08);
     color: var(--engine-primary-contrast);
   }
   &.engine-solid {
@@ -597,7 +597,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
 }
 // a card's and a rail item's title: bold, the subhead size
 .reveal .slides section .engine-card .engine-card-title,
-.reveal .slides section .engine-rail .engine-rail-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
+.reveal .slides section .engine-rail .engine-rail-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: var(--engine-leading-subhead, 1.2); }
 // image galleries (engine-revealjs.lua gallery_html()): equal cells, --engine-gallery-cols and -rows
 // tracks, the boxes.gallery gap; each cell a picture over its caption (a caption's look, one line),
 // the picture contained or cropped (--engine-gallery-fit). A content slide holding one has its body
@@ -701,7 +701,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   padding-top: 0.55em;
   color: var(--engine-muted);
   font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
-  line-height: 1.35;
+  line-height: var(--engine-leading-footnote, 1.35);
   text-align: left;
   &::before {
     content: "";
@@ -841,7 +841,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   h1.title {
     position: relative;
     font-size: calc(var(--engine-type-title, 2.3) * 1em);
-    line-height: 1.12;
+    line-height: var(--engine-leading-title, 1.12);
     margin: 0 0 0.35em;
     // the accent bar at the paper edge, beside the title
     &::before {
@@ -858,7 +858,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   .subtitle {
     font-size: calc(var(--engine-type-subtitle, 1) * 1em);
     font-weight: 700;
-    line-height: 1.3;
+    line-height: var(--engine-leading-subtitle, 1.3);
     margin: 0 0 0.6em;
   }
   .engine-title-rule {
@@ -881,10 +881,10 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     flex-direction: column;
     justify-content: var(--engine-cmp-fineprint-justify);
     font-size: calc(var(--engine-type-fineprint, 0.4) * 1em);
-    line-height: 1.4;
+    line-height: var(--engine-leading-fineprint, 1.4);
     opacity: 0.85;
     color: var(--engine-cmp-fineprint-color);
-    p { margin: 0; line-height: 1.4; }
+    p { margin: 0; line-height: var(--engine-leading-fineprint, 1.4); }
   }
   &, h1, a { color: var(--engine-cmp-text); }
 }
@@ -914,7 +914,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   h1 {
     position: relative;
     font-size: calc(var(--engine-type-section, 2.6) * 1em);
-    line-height: 1.08;
+    line-height: var(--engine-leading-section, 1.08);
     margin: 0;
     text-align: var(--engine-cmp-column-align, left);
     &::before {
@@ -952,7 +952,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     min-height: 0;
     display: block;
     font-size: calc(var(--engine-type-closing, 2.6) * 1em);
-    line-height: 1.08;
+    line-height: var(--engine-leading-closing, 1.08);
     margin: 0 0 0.4em;
     color: var(--engine-cmp-text);
     text-align: var(--engine-cmp-column-align, left);   // not the content titles' frametitle.align

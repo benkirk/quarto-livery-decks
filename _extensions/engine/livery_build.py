@@ -1060,6 +1060,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
     for k, v in ty["roles"].items():
         if k not in ("body", "frametitle", "pagenumber", "footer", "marking"):
             props.append(f"--engine-type-{k}: {v['size']};")
+    for k, v in ty["roles"].items():   # each role's leading (a line-height factor), as the beamer theme reads it
+        props.append(f"--engine-leading-{k}: {v['leading']};")
     lv = ty["levels"]
     for i in range(1, len(lv)):
         props.append(f"--engine-type-level{i + 1}: {round(lv[i] / lv[i - 1], 4)};")
