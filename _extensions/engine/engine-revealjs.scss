@@ -83,6 +83,26 @@ $mermaid-label-fg-color: $engine-primary;
 // beside the brand
 // roles (--engine-primary, ...); engine-revealjs.lua attaches it
 
+// the body box: --engine-body-top to --engine-body-bottom of the 900px slide (livery.css; the
+// fallbacks are ncar's), as every slide's padding (below the mark, above the foot) and as a height
+$slide-padding: var(--engine-body-top, 150px) var(--engine-margin) calc(900px - var(--engine-body-bottom, 830px));
+$body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150px));
+// the caption look, as the PDF and pptx set it: the caption role, muted, its leading, centered;
+// a site that shares only the type takes caption($block: false) and sets its own lines
+@mixin caption($block: true) {
+  color: var(--engine-muted);
+  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
+  @if $block {
+    line-height: 1.3;
+    text-align: center;
+  }
+}
+// a box's first and last children shed their outer margins, so its pads are the box's
+@mixin trim($first: true, $last: true) {
+  @if $first { > :first-child { margin-top: 0; } }
+  @if $last { > :last-child { margin-bottom: 0; } }
+}
+
 // ---------------------------------------------------------------------------
 // every slide: a 1600x900 box with the brand margins
 // ---------------------------------------------------------------------------
@@ -93,7 +113,7 @@ $mermaid-label-fg-color: $engine-primary;
   height: 100%;
   box-sizing: border-box;
   isolation: isolate;  // keeps the z-index:-1 waves above the slide background in print
-  padding: var(--engine-body-top, 150px) var(--engine-margin) calc(900px - var(--engine-body-bottom, 830px));   // below the mark (livery.css)
+  padding: $slide-padding;
 }
 
 // the mark on content slides: top right unless the livery's geometry.logo.corner says
@@ -298,10 +318,7 @@ $mermaid-label-fg-color: $engine-primary;
 
 // captions, footnotes (a quote block is .engine-quote, below)
 .reveal .slides section figcaption,
-.reveal .slides section .caption {
-  color: var(--engine-muted);
-  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
-}
+.reveal .slides section .caption { @include caption($block: false); }
 .reveal .slides section .quarto-figure-center figcaption { text-align: center; }
 // a lone image's caption: Quarto writes it as a p.caption after the stretched img, not a
 // figcaption; centred under it with a note's spacing, as the PDF and pptx set it
@@ -313,10 +330,7 @@ $mermaid-label-fg-color: $engine-primary;
 // ::: note (engine-revealjs.lua's .engine-note): a remark under a figure or table, in the .full
 // caption's look
 .reveal .slides section .engine-note {
-  color: var(--engine-muted);
-  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
-  line-height: 1.3;
-  text-align: center;
+  @include caption;
   margin-top: 0.4em;
   p { margin: 0; }
 }
@@ -404,8 +418,7 @@ $mermaid-label-fg-color: $engine-primary;
   border-left: var(--engine-lead-bar) solid var(--engine-lead-bar-color);
   padding: var(--engine-lead-pad);
   margin: 0 0 var(--engine-lead-gap);
-  > :first-child { margin-top: 0; }
-  > :last-child { margin-bottom: 0; }
+  @include trim;
 }
 // ::: {.quote} and a bare `>` (a <blockquote> no more: the filter writes this box): a bar at its
 // left in its role= (else the box's bar-color), no fill, its lines in the quote role and face, the
@@ -422,10 +435,10 @@ $mermaid-label-fg-color: $engine-primary;
   }
   > p + p { margin-top: 0.25em; }
   > p.engine-attribution {   // in the body's face, upright
-    font-size: calc(var(--engine-type-caption) * 1em); color: var(--engine-muted); margin-top: 0.6em;
-    font-family: inherit; font-style: normal;
+    @include caption($block: false);
+    margin-top: 0.6em; font-family: inherit; font-style: normal;
   }
-  > :first-child { margin-top: 0; }
+  @include trim($last: false);
 }
 // ## Agenda {.agenda}: the numbered sections, a row each, the number (the eyebrow size, bold,
 // boxes.agenda.number-color) beside the title (subhead) and the divider's subtitle (caption, muted);
@@ -466,12 +479,10 @@ $mermaid-label-fg-color: $engine-primary;
     color: var(--engine-primary-text);
     padding: var(--engine-card-head-pad);
   }
-  .engine-card-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
   .engine-card-body {
     flex: 1;
     padding: var(--engine-card-pad);
-    > :first-child { margin-top: 0; }
-    > :last-child { margin-bottom: 0; }
+    @include trim;
   }
   .engine-label {
     display: block;
@@ -500,8 +511,7 @@ $mermaid-label-fg-color: $engine-primary;
   background: color-mix(in srgb, var(--engine-strip-role) var(--engine-strip-tint), var(--engine-background));
   padding: var(--engine-strip-pad);
   margin: var(--engine-strip-gap) 0;
-  > :first-child { margin-top: 0; }
-  > :last-child { margin-bottom: 0; }
+  @include trim;
 }
 .reveal .slides section .engine-card .engine-strip {
   margin-left: calc(-1 * var(--engine-card-pad-x));
@@ -574,7 +584,6 @@ $mermaid-label-fg-color: $engine-primary;
     border: calc(var(--engine-rail-dot) * 0.2) solid var(--engine-rail-role);
   }
   .engine-done .engine-rail-dot { background: var(--engine-rail-role); }
-  .engine-rail-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
   &.engine-timeline > .engine-rail-item > .engine-rail-title {   // the date, above its dot
     align-self: end;
     padding: 0 calc(var(--engine-rail-pad-x) / var(--engine-type-subhead)) calc(var(--engine-rail-pad-y) / var(--engine-type-subhead));   // em of the body
@@ -582,11 +591,13 @@ $mermaid-label-fg-color: $engine-primary;
   .engine-rail-body {
     background: var(--engine-rail-fill);
     padding: var(--engine-rail-pad);
-    > :first-child { margin-top: 0; }
-    > :last-child { margin-bottom: 0; }
+    @include trim;
     > .engine-rail-title + * { margin-top: 0.25em; }
   }
 }
+// a card's and a rail item's title: bold, the subhead size
+.reveal .slides section .engine-card .engine-card-title,
+.reveal .slides section .engine-rail .engine-rail-title { font-weight: 700; font-size: calc(var(--engine-type-subhead) * 1em); line-height: 1.2; }
 // image galleries (engine-revealjs.lua gallery_html()): equal cells, --engine-gallery-cols and -rows
 // tracks, the boxes.gallery gap; each cell a picture over its caption (a caption's look, one line),
 // the picture contained or cropped (--engine-gallery-fit). A content slide holding one has its body
@@ -597,12 +608,12 @@ $mermaid-label-fg-color: $engine-primary;
 .reveal .slides section .engine-gallery-body {
   display: flex;
   flex-direction: column;
-  height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150px));
+  height: $body-height;
   > * { flex: none; }
   > .engine-gallery { flex: 1 1 0; min-height: 0; }
   > .engine-gallery-sized {
     flex: none;
-    height: calc(var(--engine-gallery-height) * (var(--engine-body-bottom, 830px) - var(--engine-body-top, 150px)));
+    height: calc(var(--engine-gallery-height) * $body-height);
   }
 }
 .reveal .slides section .engine-gallery {
@@ -634,10 +645,7 @@ $mermaid-label-fg-color: $engine-primary;
   figcaption {
     flex: none;
     margin-top: var(--engine-gallery-pad-y);
-    color: var(--engine-muted);
-    font-size: calc(var(--engine-type-caption, 0.7) * 1em);
-    line-height: 1.3;
-    text-align: center;
+    @include caption;
     white-space: nowrap;
     overflow: hidden;
   }
@@ -1031,7 +1039,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   background: var(--engine-cmp-panel-fill);
   &, p, li, strong { color: #fff; }
   h3, .alert, a { color: var(--engine-secondary); }
-  > :last-child { margin-bottom: 0; }
+  @include trim($first: false);
   ul > li::before { background: var(--engine-secondary); }
   :not(pre) > code { background: rgba(#fff, 0.14); color: var(--engine-warning); }
 }
@@ -1117,10 +1125,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: var(--engine-muted);
-  font-size: calc(var(--engine-type-caption, 0.7) * 1em);
-  line-height: 1.3;
-  text-align: center;
+  @include caption;
   p { margin: 0; }
 }
 
@@ -1152,7 +1157,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 // reveal's print stylesheet zeroes every section's padding (!important);
 // restate each slide type's (more specific, so these win)
 html.reveal-print .reveal .slides {
-  section.slide, section.engine-title { padding: var(--engine-body-top, 150px) var(--engine-margin) calc(900px - var(--engine-body-bottom, 830px)) !important; }
+  section.slide, section.engine-title { padding: $slide-padding !important; }
   section.engine-title.quarto-title-block { padding: 0 !important; }
   section.slide.engine-section, section.slide.level2.closing {
     padding: var(--engine-cmp-column-y) var(--engine-cmp-column-r) var(--engine-cmp-column-b) var(--engine-cmp-column-x) !important;
