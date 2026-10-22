@@ -304,13 +304,38 @@ local function ensure_refs(blocks, meta, level)
   return blocks
 end
 
+-- Quarto's PDF shape of a captioned image on its own paragraph (`![Caption](path)`, a Figure): its
+-- filters turn one into a classless Div holding raw `\begin{figure}[H]`, a paragraph of `{\centering`,
+-- the Image (its alt emptied) and `}`, a paragraph of `\caption` `{` the caption's inlines `}` and
+-- `\end{figure}` before any engine filter runs (HTML and pptx keep the Figure). The one Image and the
+-- caption's inlines, or nil.
+local function latex_figure(blk)
+  if blk.t ~= "Div" or #blk.classes > 0 or not blk.content[1] then return nil end
+  local first = blk.content[1]
+  if not (first.t == "RawBlock" and first.text:find("\\begin{figure}", 1, true)) then return nil end
+  local imgs, caption = {}, nil
+  blk:walk({ Image = function(im) table.insert(imgs, im) end })
+  if #imgs ~= 1 then return nil end
+  for _, b in ipairs(blk.content) do
+    local ils = b.content
+    if (b.t == "Para" or b.t == "Plain") and ils[1] and ils[1].t == "RawInline" and ils[1].text:find("^\\caption") then
+      local from, to = 1, #ils   -- past `\caption` and `{`, before the closing `}`
+      while from <= to and ils[from].t == "RawInline" do from = from + 1 end
+      if to >= from and ils[to].t == "RawInline" and ils[to].text == "}" then to = to - 1 end
+      caption = pandoc.Inlines({})
+      for k = from, to do caption:insert(ils[k]) end
+    end
+  end
+  return imgs[1], caption
+end
+
 -- .full: the slide's one figure, the caption paragraphs after it, and its
 -- notes; nil when the body is anything else.  A † paragraph is caption too.
 local function is_figure(blk)
   if blk.t == "Figure" then return true end
   if blk.t == "Div" then
     return has_class(blk, "cell") or has_class(blk, "cell-output-display")
-      or has_class(blk, "quarto-figure") or has_class(blk, "quarto-float")
+      or has_class(blk, "quarto-figure") or has_class(blk, "quarto-float") or latex_figure(blk) ~= nil
   end
   if blk.t ~= "Para" and blk.t ~= "Plain" then return false end
   local n = 0
@@ -762,7 +787,8 @@ local function gallery_items(div, who)
     elseif is_gallery(b) then
       return refuse("inside a .gallery is not drawn")
     else
-      imgs, linked = para_images(b)
+      local img, cap = latex_figure(b)   -- the PDF's shape of ![Caption](path) (Quarto rewrites the Figure first)
+      if img then imgs, long = { img }, cap else imgs, linked = para_images(b) end
     end
     if linked then return refuse("image inside a link is not drawn (links round gallery images are deferred)") end
     if not imgs then return refuse("holds image files, each its own paragraph; a plot or diagram is not drawn") end

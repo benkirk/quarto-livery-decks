@@ -43,6 +43,20 @@ local warnings = {}
 quarto = { log = { warning = function(s) table.insert(warnings, s) end }, json = { decode = pandoc.json.decode } }
 local C = dofile(arg[1])
 local doc = pandoc.read(io.read("a"), "markdown")
+if arg[2] == "latexfig" then   -- Quarto's PDF shape of ![Caption](path): a classless Div round raw \begin{figure}
+  doc = doc:walk({ Figure = function(f)
+    local img
+    f = f:walk({ Image = function(im) im.caption = pandoc.Inlines({}); img = im; return im end })
+    local cap = pandoc.Inlines({ pandoc.RawInline("latex", "\\caption"), pandoc.RawInline("latex", "{") })
+    cap:extend(pandoc.utils.blocks_to_inlines(f.caption.long)); cap:insert(pandoc.RawInline("latex", "}"))
+    return pandoc.Div({ pandoc.RawBlock("latex-merge", "\\begin{figure}[H]"),
+      pandoc.Para({ pandoc.RawInline("latex", "{\\centering "), img, pandoc.RawInline("latex", "\n\n}"), pandoc.RawInline("latex", "\n") }),
+      pandoc.Para(cap), pandoc.RawBlock("latex-merge", "\\end{figure}%") })
+  end })
+  for _, b in ipairs(doc.blocks) do   -- the shape is a .full slide's figure too
+    if C.is_gallery(b) then io.write(pandoc.json.encode({ full = C.split_full(pandoc.Blocks({ b.content[1] })) ~= nil }) .. "\n") end
+  end
+end
 if arg[2] == "top" then   -- top_galleries(): each drawn gallery a paragraph naming it, the rest as it was
   local out = C.top_galleries(doc.blocks, "t", function(g) return { pandoc.Para("GALLERY " .. #g.items) } end)
   io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
@@ -88,9 +102,9 @@ def harness(tmp_path, md, *mode):
                           input=md, text=True, capture_output=True, check=True).stdout
 
 
-def read(tmp_path, md):
+def read(tmp_path, md, *mode):
     """The harness's output on md: (the galleries, the warnings)."""
-    lines = harness(tmp_path, md).splitlines()
+    lines = harness(tmp_path, md, *mode).splitlines()
     return ([json.loads(x) for x in lines if not x.startswith("WARNING: ")],
             [x[len("WARNING: "):] for x in lines if x.startswith("WARNING: ")])
 
@@ -125,6 +139,17 @@ def test_fit_and_height(tmp_path):
     assert g["fit"] == "cover" and g["height"] == 0.6 and not warnings
     (g,), warnings = read(tmp_path, gallery(4, ' fit=fill'))
     assert g["fit"] == "contain" and len(warnings) == 1 and "fit=fill is contain or cover; contain" in warnings[0], warnings
+
+
+def test_quarto_latex_figure(tmp_path):
+    """Under Quarto's PDF filters a captioned image on its own paragraph reaches the reader as a
+    classless Div round raw \\begin{figure} ... \\caption{...} (the Figure is gone, the alt emptied):
+    its image and caption are read, and the shape is a figure to split_full (a .full slide's)."""
+    md = "::: {.gallery cols=2}\n![One](g1.png)\n\n![](g2.png)\n:::\n"
+    (full, g), warnings = read(tmp_path, md, "latexfig")
+    assert not warnings, warnings
+    assert full == {"full": True}
+    assert [(i["src"], i["caption"]) for i in g["items"]] == [("g1.png", "One"), ("g2.png", None)] and g["captioned"] is True
 
 
 def test_size_attributes_dropped(tmp_path):
