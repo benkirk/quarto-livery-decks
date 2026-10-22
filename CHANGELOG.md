@@ -32,6 +32,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the row; a strip's accent). `pick=<2>` draws the outline on those steps only, its width kept on
   every step. The old positional form (`{<TeX color>}{<share>}{<n>}`) is gone; the Quarto filter
   writes the new one.
+- Status lists: `\begin{enginestatus}` with `\done`, `\warn` and `\fail` items (an overlay spec as
+  on `\item`: `\warn<2->`) and plain `\item`s, ✓ ⚠ ✗ as the bullets in the livery's status
+  colors, a failed item muted to its end; `\engineglyph{done|warn|fail}` is the glyph anywhere.
+  The three names exist only inside the environment. `\cmark`, `\xmark` and `\pmark` (and the
+  pifont they loaded) are retired.
 
 ## [26.10.7] - 2026-10-21
 

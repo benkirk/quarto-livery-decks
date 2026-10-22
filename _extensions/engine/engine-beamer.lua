@@ -320,27 +320,21 @@ local function card_rows(blocks, livery)
   return out
 end
 
--- Status items (C.status_lists()): a list holding one becomes beamer's itemize, each status item's
--- glyph its \item[...] label (where the bullet is, as HTML's and the pptx's), bold in its status
--- color (livery.sty's EngineGlyph*), a failed item's text muted; the other items keep the bullet.
-local STATUS_TEX = { done = "EngineGlyphDone", warn = "EngineGlyphWarn", fail = "EngineGlyphFail" }
+-- Status items (C.status_lists()): a list holding one becomes the theme's enginestatus (beamer's
+-- itemize whose \done, \warn and \fail items carry the glyph as the label, where the bullet is,
+-- as HTML's and the pptx's, bold in its status color, a failed item's text muted); the other
+-- items keep the bullet (\item). The glyph and its space come off the item's inlines.
+local STATUS_TEX = { done = "\\done ", warn = "\\warn ", fail = "\\fail " }
 
 local function status_items(blocks)
   return C.status_lists(blocks, function(l, kinds)
-    local out = pandoc.Blocks({ latex("\\begin{itemize}") })
+    local out = pandoc.Blocks({ latex("\\begin{enginestatus}") })
     for k, item in ipairs(l.content) do
       local kind, blocks2 = kinds[k], pandoc.Blocks(item)
       local first = blocks2[1]
       if kind then
-        local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\item[{\\textcolor{" .. STATUS_TEX[kind] .. "}{\\bfseries "
-          .. first.content[1].text .. "}}] ") })
-        local rest = pandoc.Inlines({})
-        for j = 3, #first.content do rest:insert(first.content[j]) end
-        if kind == "fail" then
-          il:insert(pandoc.RawInline("latex", "\\textcolor{BrandMuted}{")); il:extend(rest); il:insert(pandoc.RawInline("latex", "}"))
-        else
-          il:extend(rest)
-        end
+        local il = pandoc.Inlines({ pandoc.RawInline("latex", STATUS_TEX[kind]) })
+        for j = 3, #first.content do il:insert(first.content[j]) end
         blocks2[1] = pandoc.Plain(il)
       elseif first and (first.t == "Plain" or first.t == "Para") then
         local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\item ") })
@@ -351,7 +345,7 @@ local function status_items(blocks)
       end
       out:extend(blocks2)
     end
-    out:insert(latex("\\end{itemize}"))
+    out:insert(latex("\\end{enginestatus}"))
     return out
   end)
 end

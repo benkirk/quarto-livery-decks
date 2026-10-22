@@ -46,6 +46,8 @@ branched from, not a window read).
   the template's own paragraph spacing (`livery.SPC_BEFORE`; the caution, lead, panel and note
   boxes grow 2–9 pt, nsi's band title stack moves 2 pt; shipped on the contact sheet); the
   prose batch; a state line on each finished `design/` handoff; the two heuristics below
+- Done after (the LaTeX-first-class sprint, 2026-10-21): `\cmark`/`\xmark`/`\pmark` and pifont
+  retired from `engine_livery.sty`; `enginestatus` and `\engineglyph` are the one status idiom
 - Tried and dropped: none
 - Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
   `wrap_layout` and `hoist_footnotes`, beamer does not: a `.full` frame with `scale=` is scaled in
@@ -103,8 +105,6 @@ branched from, not a window read).
   the compositions' boxes.
 - scss line-heights as literals (some 16 sites) against `livery.json`'s leading.
 - `build-decks.yaml`: a `framework:` input picking the submodule's tag, so a consumer pins one thing.
-- `\cmark`/`\xmark`/`\pmark` (`engine_livery.sty`): a second status-mark idiom beside the glyph
-  colors.
 - `deck_qa.py`'s `h * 0.16` for the title line (nsi and nasa-jsc-eg sit lower).
 - A table's height: `CELL_PAD` in one estimate, `2 * CELL_MAR` in the other (`slide_layout.py`).
 - `livery.canvas_scale()` bypassed by `livery_template.py`'s own `self.k`; `livery_build.half` beside
