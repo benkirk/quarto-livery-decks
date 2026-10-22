@@ -1,5 +1,7 @@
 # Sprint handoff: image galleries
 
+**State (2026-10-22):** landed as #135, squash `f493a70`. Departures: `svg_fallback.py`'s rasterizer became the public `rasterize_svg()` but stays there (common.py loads a livery at import, which that step must not); `boxes.gallery` is `gap: 0.006`, `pad: [0.15, 0.15]` (Ben's pick from the first ncar render, the tighter of three walls); a paragraph of several images is accepted, one item each (pandoc reads consecutive lines as one paragraph); HTML's `galleries()` runs after `rails()`, not innermost; `unwrap_layout` is recursive; a refused gallery or one in a column is unwrapped into its paragraphs, since pandoc's pptx writer draws no picture held in a Div; the review's four fixes (6d2a28c, 44de156, 69bf5f2, fe6e176). The open questions below are answered: those numbers, the names kept, no quickstart gallery.
+
 **For a fresh session.** The fourth sprint after #129 (`citations-handoff.md` #131,
 `steps-timelines-handoff.md` #132, `agenda-quote-handoff.md`, then this). One PR against `main`
 (branch `decks/gallery` from `origin/main` **after the agenda-quote PR merges**: commit 1 moves

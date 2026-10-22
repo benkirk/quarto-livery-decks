@@ -1,5 +1,7 @@
 # Sprint handoff: process steps and milestone timelines
 
+**State (2026-10-22):** landed as #132, squash `cc79d84`. Departures: the marks default to `primary-contrast` with the number knocked out in the background color (Ben's pick after a side-by-side; the handoff's `primary` all but vanished on nasa-dark and cu); `rails()` runs first in the HTML and beamer chains, so a literal ✓ in a milestone is its status; the rail starts at the first mark's middle; a rail is drawn at the slide's top level only, enforced (`top_rails()`); the review's fix, badges numbered from the list's start (c55c2f5).
+
 **For a fresh session.** The second of three sprints planned on 2026-10-22 after #129
 (`citations-handoff.md` first, this, then `agenda-quote-handoff.md`). One PR against `main`
 (branch `rail/steps-timelines` from `origin/main` once the citations PR is merged), a commit per

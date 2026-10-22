@@ -1,5 +1,7 @@
 # Sprint handoff: citations and references in every format
 
+**State (2026-10-22):** landed as #131, squash `3f20a94`. Departures: the review's two fixes (the pptx noteref mark d19cdc8, one footnote rule 2ef11e4); its em constants stayed. The deferred list below moved to the ledger's Untriaged (`unplanned-city-ledger.md`), the one home.
+
 **For a fresh session.** The first of three sprints planned on 2026-10-22 after #129 (this, then
 `steps-timelines-handoff.md`, then `agenda-quote-handoff.md`). One PR against `main` (branch
 `cite/every-format` from `origin/main` once #129 is merged), a commit per item in the order below,
@@ -245,13 +247,10 @@ list comment in `_extension.yml`. `make test`'s docs gate.
 - biblatex is absent from the image until the Dockerfile lands and the image rebuilds: commit 3's
   CI run is the proof of that too.
 
-## Deferred, for all three sprints (recorded here once; the ledger's Open list when this PR opens)
+## Deferred, for all three sprints
 
-Chevron steps (`style="chevron"`), alternating timeline labels, subsections in the agenda,
-`agenda: each`, the quote's quotation-mark glyph, `current=` on the agenda, a note-style CSL
-(needs citeproc in the filter), callouts reaching pptx as a native shape, stat tiles as a card
-preset, an image grid with captions (after the grid step's picture limit), editable pptx charts
-from data, icons in pptx.
+On the ledger's Untriaged list (`unplanned-city-ledger.md`), the one home for deferred
+items; the image grid with captions on it is done (#135, `gallery-handoff.md`).
 
 ## Memory for the fresh session
 

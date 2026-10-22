@@ -1,5 +1,7 @@
 # Sweep handoff: unplanned-city window #105–#126
 
+**State (2026-10-22):** landed as #127, squash `f2fd66d` (Ben's picks 1–14 and 17; the rest on the ledger's Untriaged), released as 26.10.7 (#128).
+
 **For a fresh session.** One PR against `main` (branch `sweep/105-126` from `origin/main` at
 `ba36ec5`, the #126 squash), a commit per finding in the order below, squash-merged once, no
 version bump (the 26.10.7 release is its own small PR after; ask before any tag). Start by
