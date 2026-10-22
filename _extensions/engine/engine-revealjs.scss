@@ -482,7 +482,7 @@ $mermaid-label-fg-color: $engine-primary;
 // the livery's column gap between them; each item's parts are its cells (the item is display:
 // contents), so a row's parts line up: a step's mark over its text, a milestone's date over its mark
 // over its label. Each mark cell draws its stretch of the rail (boxes.rail.line in line-color) through
-// its middle and across the gap after it, from the first mark's middle to the row's right edge; the badge (a step's number, primary-text on the role) and
+// its middle and across the gap after it, from the first mark's middle to the row's right edge; the badge (a step's number knocked out in the background color) and
 // the dot (a milestone's: the role's when done, else hollow in the role) sit on it at the text's left
 // edge. The text's cell is padded by boxes.rail.pad on the rail's fill (none by default); a row's
 // cells are one height. (livery.css: boxes.rail)
@@ -523,7 +523,7 @@ $mermaid-label-fg-color: $engine-primary;
     height: var(--engine-rail-badge);
     border-radius: 50%;
     background: var(--engine-rail-role);
-    color: var(--engine-primary-text);
+    color: var(--engine-background);   // knocked out: as legible as the badge is on the slide
     display: flex;
     align-items: center;
     justify-content: center;

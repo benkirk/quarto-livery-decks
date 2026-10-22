@@ -406,7 +406,7 @@ def _oval(slide, x, y, d, fill, name, line=None):
 
 def _badge(slide, x, y, d, fill, k, name):
     """A step's badge: a circle in the role, its number centered in it, the subhead size, bold,
-    primary-text (the shape's own text frame, no insets, no wrap)."""
+    knocked out in the background color (the shape's own text frame, no insets, no wrap)."""
     o = _oval(slide, x, y, d, fill, name)
     tf = o.text_frame
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
@@ -415,14 +415,14 @@ def _badge(slide, x, y, d, fill, k, name):
     p = tf.paragraphs[0]
     p._p.get_or_add_pPr().set("algn", "ctr")
     p.add_run().text = str(k)
-    _style(p._p, livery_mod.type_pt(LIVERY, "subhead"), True, _hex("primary-text"))
+    _style(p._p, livery_mod.type_pt(LIVERY, "subhead"), True, _hex("background"))
     return o
 
 
 def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_height):
     """Steps or a timeline: the items in equal columns (column_frames(), the columns' gap), a rail
     of boxes.rail.line in line-color through the marks, from the first mark's middle to the row's
-    right edge; a step's badge (badge of the height, the role's, its number primary-text) over a
+    right edge; a step's badge (badge of the height, the role's, its number in the background color) over a
     text box of its title (the subhead size, bold) and text, or a milestone's date (subhead, bold,
     to the box's foot) over its dot (dot of the height, the role's when done, else the background
     in a ring of the role) over its label. The text boxes padded by boxes.rail.pad, a mark and a
@@ -432,7 +432,7 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
     rail = BOXES["rail"]
     steps = kind == "steps"
     noun = "Step" if steps else "Milestone"
-    role = _hex(_pick_role(attrs, "primary", slide))
+    role = _hex(_pick_role(attrs, "primary-contrast", slide))
     mark = round(rail["badge" if steps else "dot"] * slide_height)
     vpad, hpad = pads("rail")
     frames = column_frames(x, w, [1 / len(items)] * len(items), slide_width)

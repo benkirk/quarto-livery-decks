@@ -223,7 +223,7 @@ Publish the HTML; hand out the pptx and PDF.
 
 ## A process, step by step
 
-::: {.steps role="secondary"}
+::: {.steps}
 1. **Propose** A one-page case; the review board reads it in a week.
 2. **Pilot** Six weeks on the shared system.
    A second source line is a second line, as in a card.

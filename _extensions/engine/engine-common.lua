@@ -488,7 +488,10 @@ end
 -- line and its other blocks the rest, the source lines lines (split_lines()); a milestone's `- [x]`
 -- (status_item(), marked) is done, a plain item (or `- [ ]`) pending, `[!]` and `[-]` warned of and
 -- drawn as pending. role= is taken off (HTML's ARIA attribute) and checked by box_role() when a
--- livery is given (pptx's grid.py checks its own), default primary. nil, warned of, for anything
+-- livery is given (pptx's grid.py checks its own), default primary-contrast: a mark is a small
+-- shape on the slide, so it takes the primary that reads on the background (a dark livery's
+-- primary does not), and a badge's number is knocked out in the background color, so a mark
+-- that shows has a number that reads. nil, warned of, for anything
 -- else: the wrong list or more than one block, more than RAIL_MAX items, a picture or table inside.
 local RAIL_MAX = 6   -- beamer's six save boxes (the cards'); every format holds to it
 local RAIL_LIST = { steps = "OrderedList", timeline = "BulletList" }
@@ -503,7 +506,7 @@ end
 local function rail_items(div, kind, livery, who)
   local role = div.attributes["role"]
   div.attributes["role"] = nil
-  role = livery and box_role(livery, role, "primary", who) or role or "primary"
+  role = livery and box_role(livery, role, "primary-contrast", who) or role or "primary-contrast"
   local list = #div.content == 1 and div.content[1] or nil
   local what = kind == "steps" and "ordered list (1. 2. 3.)" or "bullet list (- [x] done, - pending)"
   if not list or list.t ~= RAIL_LIST[kind] then

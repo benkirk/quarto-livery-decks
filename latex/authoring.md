@@ -128,7 +128,7 @@ The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
   \begin{enginestep}{Scale} The allocation follows the pilot's numbers. \end{enginestep}
 \end{enginesteps}
 
-\begin{enginetimeline}{3}                          % role= too; default primary
+\begin{enginetimeline}{3}                          % role= too
   \enginemilestone[done]{Q1 2025}{Proposal accepted}   % [done]: a filled dot
   \enginemilestone[done]{Q3 2025}{Pilot complete}
   \enginemilestone{2026}{Full allocation}               % a hollow dot
@@ -139,9 +139,11 @@ The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
   the livery's column gap between them; an item beyond n is an error, and six is the most. A
   thin rail (the livery's `boxes.rail`: the `rule` blend by default) runs through the marks from
   the first to the row's right edge. `role=` colors the badges and dots as it colors a card's band
-  (a role, a blend or a defined color; default `primary`).
-- **`enginestep{Title}`** is a step: its badge (the number, in the primary text color on the
-  role), its title bold under the badge, its text below. The text is set into a box first, as a
+  (a role, a blend or a defined color). The default is `primary-contrast`, the primary that reads
+  on the background: a mark is a small shape, and on a dark livery the primary itself does not
+  show. A `role=` you pick should read on the background too.
+- **`enginestep{Title}`** is a step: its badge (the number knocked out in the background color, so
+  it reads wherever the badge does), its title bold under the badge, its text below. The text is set into a box first, as a
   card's body, so overlays work inside it (`\uncover` keeps the row one height across the steps).
 - **`\enginemilestone[done]{Date}{Label}`** is a milestone: its date bold above its dot, its label
   under it; `[done]` fills the dot in the role, else the dot is hollow, ringed in it.

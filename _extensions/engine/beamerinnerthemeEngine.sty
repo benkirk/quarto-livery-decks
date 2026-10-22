@@ -617,13 +617,14 @@
 % ::: {.timeline}). The items share the row equally (\engine@shares: {n}), the livery's column gap
 % between them; an item beyond n is an error, and six is the most (the cards' save boxes). role=
 % colors the badges and dots (a role, a blend or a defined color, \engine@rolecolor; default
-% primary). Each item's text is set first into a box, at its width less boxes.rail.pad (a step's
-% title in the block title font, bold, over its text; overlays work, as in a card), and \end draws
-% the row as one tikzpicture: a rail of boxes.rail.line in its color (EngineBoxesRailLineColor)
-% through the marks' middle, from the first mark to the row's right edge; a step's badge (badge
-% of the paper's height, the role's, its number in primary-text) or a milestone's dot (dot of the
-% height, the role's with [done], else the background in a ring of the role) at the text's left;
-% a milestone's date (the block title font, bold) above its dot; the texts under the marks, the
+% primary-contrast, the primary that reads on the background). Each item's text is set first into
+% a box, at its width less boxes.rail.pad (a step's title in the block title font, bold, over its
+% text; overlays work, as in a card), and \end draws the row as one tikzpicture: a rail of
+% boxes.rail.line in its color (EngineBoxesRailLineColor) through the marks' middle, from the
+% first mark to the row's right edge; a step's badge (badge of the paper's height, the role's, its
+% number knocked out in the background color) or a milestone's dot (dot of the height, the role's
+% with [done], else the background in a ring of the role) at the text's left; a milestone's date
+% (the block title font, bold) above its dot; the texts under the marks, the
 % row's cells one height, on boxes.rail.fill when the livery sets one (EngineBoxesRailFill).
 % ---------------------------------------------------------------------------
 \pgfkeys{/engine/rail/.cd, role/.store in=\engine@railrole}
@@ -640,8 +641,8 @@
       {A row of steps or milestones holds at most six: split it over two slides.}%
   \fi
   \def\engine@railrole{}\pgfkeys{/engine/rail/.cd,#2}%
-  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@primary\endcsname}%
-  \else\engine@rolecolor{\engine@railrole}{primary}\fi
+  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@primary-contrast\endcsname}%
+  \else\engine@rolecolor{\engine@railrole}{primary-contrast}\fi
   \let\engine@railcolor\engine@rolename
   \global\engine@nrail=\z@ \global\engine@railbody=\z@ \global\engine@raildate=\z@}
 \newenvironment{enginesteps}[2][]{\engine@railbegin{steps}{#1}{#2}}{\engine@drawrail\par}
@@ -704,7 +705,7 @@
           rectangle \engine@railpt{\engine@railx+\engine@railw}{-\engine@railtop-\engine@railmark-\engine@railcell};
       \fi
       \ifx\engine@railkind\engine@railsteps
-        \node[circle, fill=\engine@railcolor, text=BrandPrimaryText, minimum size=\the\engine@railmark, inner sep=0pt,
+        \node[circle, fill=\engine@railcolor, text=BrandBackground, minimum size=\the\engine@railmark, inner sep=0pt,
           font=\usebeamerfont{block title}\bfseries]
           at \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid} {\the\engine@railk};
       \else

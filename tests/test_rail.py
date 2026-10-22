@@ -28,7 +28,7 @@ HARNESS = r"""
 local warnings = {}
 quarto = { log = { warning = function(s) table.insert(warnings, s) end }, json = { decode = pandoc.json.decode } }
 local C = dofile(arg[1])
-local livery = arg[2] and { roles = { primary = "#000000", secondary = "#111111" }, blends = { rule = "#222222" } } or nil
+local livery = arg[2] and { roles = { ["primary-contrast"] = "#000000", secondary = "#111111" }, blends = { rule = "#222222" } } or nil
 local doc = pandoc.read(io.read("a"), "markdown")
 local function md(blocks) return (pandoc.write(pandoc.Pandoc(blocks), "markdown", { wrap_text = "none" }):gsub("%s+$", "")) end
 doc.blocks:walk({ Div = function(d)
@@ -93,7 +93,7 @@ def test_steps(tmp_path):
 
 def test_timeline(tmp_path):
     (r,), warnings = rails(tmp_path, TIMELINE)
-    assert r["kind"] == "timeline" and r["role"] == "primary", "the default role"
+    assert r["kind"] == "timeline" and r["role"] == "primary-contrast", "the default role"
     assert [i["title"] for i in r["items"]] == ["Q1 2025", "Q3 2025", "2026", "2027"]
     assert [i["done"] for i in r["items"]] == [True, False, False, False], "[x] done; [ ], plain and [!] pending"
     assert [i["body"] for i in r["items"]] == ["Proposal accepted", "Pilot complete", "Full allocation", "Review"], \
@@ -103,7 +103,7 @@ def test_timeline(tmp_path):
 
 def test_role_checked(tmp_path):
     (r,), warnings = rails(tmp_path, STEPS.replace("secondary", "nope"), livery=True)
-    assert r["role"] == "primary" and len(warnings) == 1 and 'role="nope"' in warnings[0], (r, warnings)
+    assert r["role"] == "primary-contrast" and len(warnings) == 1 and 'role="nope"' in warnings[0], (r, warnings)
     (r,), warnings = rails(tmp_path, STEPS.replace("secondary", "rule"), livery=True)
     assert r["role"] == "rule" and not warnings, "a blend is a role="
 

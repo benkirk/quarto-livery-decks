@@ -131,5 +131,5 @@ def test_rail_marked(tmp_path):
     paras = [[p for p in ps if p not in ("Steps", "Timeline")] for ps in paras]   # the titles
     assert paras[0] == ["⟦engine:rail kind=steps role=secondary⟧", "⟦engine:item⟧", "⟦engine:title⟧Propose", "A case.",
                         "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧Pilot", "Six weeks.", "⟦engine:end⟧", "⟦engine:end⟧"], paras[0]
-    assert paras[1] == ["⟦engine:rail kind=timeline role=primary⟧", "⟦engine:item done⟧", "⟦engine:title⟧Q1", "Accepted",
+    assert paras[1] == ["⟦engine:rail kind=timeline role=primary-contrast⟧", "⟦engine:item done⟧", "⟦engine:title⟧Q1", "Accepted",
                         "⟦engine:end⟧", "⟦engine:item⟧", "⟦engine:title⟧2026", "Full", "⟦engine:end⟧", "⟦engine:end⟧"], paras[1]

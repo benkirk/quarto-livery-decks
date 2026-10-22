@@ -232,7 +232,7 @@ def test_cards(deck):
 def test_rail(deck):
     """Steps and a timeline: one group each; the items at the formula's frames (equal shares), the
     text boxes one height; a step's badge a circle in its role with its number, bold, in the
-    subhead size and primary-text; the rail boxes.rail.line of the height in line-color, through
+    subhead size, knocked out in the background color; the rail boxes.rail.line of the height in line-color, through
     the marks' middle from the first mark to the row's edge; a done milestone's dot filled in the
     role, a pending one the background in a ring of it; the titles bold in the subhead size; no
     marker left."""
@@ -254,7 +254,7 @@ def test_rail(deck):
     assert badge.width == badge.height == round(rail["badge"] * H), "the badge's diameter"
     assert str(badge.fill.fore_color.rgb) == role("secondary"), "the badge in the role"
     run = badge.text_frame.paragraphs[0].runs[0]
-    assert run.text == "1" and run.font.bold and run.font.size.pt == subhead and str(run.font.color.rgb) == role("primary-text"), \
+    assert run.text == "1" and run.font.bold and run.font.size.pt == subhead and str(run.font.color.rgb) == role("background"), \
         "the badge's number"
     assert by["Step 3 badge"].text_frame.text == "3"
     line = by["Rail"]
@@ -273,8 +273,8 @@ def test_rail(deck):
     by = {sh.name: sh for sh in flat(slide.shapes)}
     assert by["Timeline"].shape_type == 6, "the timeline one group"
     done, pending = by["Milestone 1 dot"], by["Milestone 2 dot"]
-    assert str(done.fill.fore_color.rgb) == role("primary") and done.line.fill.type == 5, "a done milestone filled in the role, no line"   # MSO_FILL_TYPE.BACKGROUND
-    assert str(pending.fill.fore_color.rgb) == role("background") and str(pending.line.color.rgb) == role("primary"), \
+    assert str(done.fill.fore_color.rgb) == role("primary-contrast") and done.line.fill.type == 5, "a done milestone filled in the role, no line"   # MSO_FILL_TYPE.BACKGROUND
+    assert str(pending.fill.fore_color.rgb) == role("background") and str(pending.line.color.rgb) == role("primary-contrast"), \
         "a pending one hollow, ringed in the role"
     date = by["Milestone 1 title"]
     assert date.text_frame.text == "Q1 2025" and date.text_frame.paragraphs[0].runs[0].font.bold, "the date"
