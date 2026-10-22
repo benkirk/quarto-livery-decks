@@ -13,6 +13,12 @@ local function has_class(el, cls)
   return false
 end
 
+-- A warning, led by its filter's name (who) and the slide's title where one is known: quarto's log,
+-- or stderr under plain pandoc (the pptx filters, the tests).
+local function warn(s)   -- quarto's log, or stderr under plain pandoc (the pptx filters, the tests)
+  if quarto and quarto.log then quarto.log.warning(s) else io.stderr:write("WARNING: " .. s .. "\n") end
+end
+
 -- The deck's size step: `type-body: <pt>` (the body in points; every size scales by it over the
 -- livery's body, type.roles.body.pt) or `type-scale: <factor>`; type-body wins. 1 without either.
 local function deck_type_scale(meta, body_pt, who)
@@ -20,7 +26,7 @@ local function deck_type_scale(meta, body_pt, who)
     if meta[k] == nil then return nil end
     local v = tonumber(pandoc.utils.stringify(meta[k]))
     if not v or v <= 0 then
-      quarto.log.warning(who .. ": " .. k .. " is not a positive number; ignored")
+      warn(who .. ": " .. k .. " is not a positive number; ignored")
       return nil
     end
     return v
@@ -143,7 +149,7 @@ local function take_layout(blk, who)
     blk.attributes["scale"] = nil
     found = true
     if not tonumber(scale) then
-      quarto.log.warning(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
+      warn(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
       scale = nil
     end
   end
@@ -204,10 +210,6 @@ local function strip_marker(inlines)
     for k = 2, #inlines do out:insert(inlines[k]) end
   end
   return out
-end
-
-local function warn(s)   -- quarto's log, or stderr under plain pandoc (the pptx filters, the tests)
-  if quarto and quarto.log then quarto.log.warning(s) else io.stderr:write("WARNING: " .. s .. "\n") end
 end
 
 -- One slide's ^[...] notes as slide footnotes: every Note outside a .notes div, in order, becomes a
@@ -591,7 +593,7 @@ end
 local function box_role(livery, role, default, who)
   if role == nil or role == default then return default end
   if livery.roles[role] or (livery.blends and livery.blends[role]) then return role end
-  quarto.log.warning(who .. ": role=\"" .. role .. "\" is not a role or a blend of the livery; " .. default)
+  warn(who .. ": role=\"" .. role .. "\" is not a role or a blend of the livery; " .. default)
   return default
 end
 
@@ -937,7 +939,7 @@ local function status_lists(blocks, fn)
 end
 
 return {
-  has_class = has_class, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
+  has_class = has_class, warn = warn, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,

@@ -678,7 +678,7 @@ function Pandoc(doc)
   local band = livery.title and livery.title.style == "band"
   local light = (opts.title == "light")
   if band and light then
-    quarto.log.warning("engine-revealjs: themeoptions title=light is ignored under the livery's band title")
+    C.warn("engine-revealjs: themeoptions title=light is ignored under the livery's band title")
     light = false
   end
   -- a composition's field: the slide's background color, and .engine-field unless it is the page
@@ -818,7 +818,7 @@ function Pandoc(doc)
         end
         out:extend(rest)
       else
-        quarto.log.warning("engine-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
+        C.warn("engine-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
           .. "\" needs one figure or a gallery, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)

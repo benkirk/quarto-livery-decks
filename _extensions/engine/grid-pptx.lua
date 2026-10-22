@@ -67,8 +67,8 @@ end
 local C = dofile(here("engine-common.lua"))
 local MARK = "engine-columns:"
 
-local function warn(title, msg)
-  io.stderr:write(string.format("grid-pptx.lua: WARNING: slide %q: %s\n", title, msg))
+local function warn(title, msg)   -- this filter's warnings name the slide (C.warn)
+  C.warn(string.format("grid-pptx.lua: slide %q: %s", title, msg))
 end
 
 -- the words of slide-layout.lua's notes line on this slide (`wide`, `full`, ...), as a set
@@ -228,8 +228,9 @@ local function mark(blocks, title)
   for k, b in pairs(kept) do blocks[k] = b end
   for k, b in ipairs(blocks) do
     local kind = C.rail_kind(b)
-    local rail = kind and C.rail_items(b, kind, nil, "grid-pptx.lua")
-    local gallery = C.is_gallery(b) and C.gallery_items(b, string.format("grid-pptx.lua: slide %q", title))
+    local who = string.format("grid-pptx.lua: slide %q", title)
+    local rail = kind and C.rail_items(b, kind, nil, who)
+    local gallery = C.is_gallery(b) and C.gallery_items(b, who)
     if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
       flow({ b }, title, out)
     elseif b.t == "Div" and C.has_class(b, "lead") then

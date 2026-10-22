@@ -278,7 +278,7 @@ local function card_rows(blocks, livery)
     end
     if not any then return nil end
     if tabled then
-      quarto.log.warning("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
+      C.warn("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
       return nil
     end
     local spec = {}
@@ -502,7 +502,7 @@ local function load_theme(doc)
     extdir = pandoc.path.join({ pandoc.system.get_working_directory(), extdir })
   end
   if extdir:find("[%s%%#]") then
-    quarto.log.warning("engine-beamer: extension path contains spaces or special "
+    C.warn("engine-beamer: extension path contains spaces or special "
       .. "characters, which LaTeX's \\input@path cannot handle: " .. extdir)
   end
   local _, opts = C.theme_options(doc.meta)   -- the items as written, for \usetheme
@@ -639,7 +639,7 @@ local function full_frames(blocks)
         end
         out:extend(rest)
       else
-        quarto.log.warning("engine-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
+        C.warn("engine-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
           .. "\" needs one figure or a gallery, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
