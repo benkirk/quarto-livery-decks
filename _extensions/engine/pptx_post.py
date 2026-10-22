@@ -59,7 +59,7 @@ def post(path: Path) -> None:
     link_captions.run(prs, path)            # a linked picture's URL, a box pandoc cannot add
     slide_layout.run(prs, path)             # layout classes, covers, closings, slide numbers
     columns.run(prs, path)                  # a two-column slide's widths and gap (grid-pptx.lua's line)
-    grid.run(prs, path)                     # a grid slide (3+ columns) drawn from grid-pptx.lua's markers
+    grid.run(prs, path)                     # a grid slide (what is_grid() counts) drawn from grid-pptx.lua's markers, its gallery by gallery.py
     status_glyphs.run(prs, path)            # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
     style_tables.run(prs, path)
     marking.run(prs, path)                  # the marking strip, on every slide
