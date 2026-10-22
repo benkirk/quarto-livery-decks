@@ -102,10 +102,10 @@ override LIVERY_DIR := $(SHARED_LIVERIES)/$(LIVERY)
 endif
 export LIVERY_DIR
 
-# Included fragments, frozen data, images, deck-local Lua filters and directory
-# metadata: {{< include >}}, ![](...), filters: and _metadata.yml are invisible to
-# make, so an edit to any of them rebuilds every deck in the directory.
-FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua)
+# Included fragments, frozen data, images, deck-local Lua filters, bibliographies, CSL styles and
+# directory metadata: {{< include >}}, ![](...), filters:, bibliography: and _metadata.yml are
+# invisible to make, so an edit to any of them rebuilds every deck in the directory.
+FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua) $(wildcard *.bib) $(wildcard *.csl)
 # The livery's files (build/, template, fonts, logos, art, its parent's too): the _livery link's
 # mtime does not change when a file in the livery does.
 LIVERY_FILES := $(shell python3 $(LIVERY_PY) deps $(LIVERY_DIR))

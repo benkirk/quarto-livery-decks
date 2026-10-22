@@ -68,7 +68,10 @@ Per deck, `make pptx` runs:
    - `strip-raw-figure.lua`, `notes-last.lua` and `single-body.lua` keep pandoc from
      demoting or splitting slides (raw `<figure>` wrappers, notes before columns, text or a
      `::: note` after a table or image, which joins its caption box);
-   - `slide-layout.lua` carries a slide's layout classes over as a notes line for `slide_layout`;
+   - `slide-layout.lua` carries a slide's layout classes (and the references slide) over as a
+     notes line for `slide_layout`;
+   - `inline-footnotes.lua` makes a slide's `^[...]` notes slide footnotes (a mark in the text, a
+     paragraph led by its marker) in place of pandoc's "Notes" slide;
    - `grid-pptx.lua` carries a two-column slide's widths over as a notes line for `columns`, and
      flattens a slide of more than two columns (pandoc's pptx keeps the first two), cards, a lead
      box or a strip into one text flow with marker paragraphs for `grid`;
@@ -94,7 +97,8 @@ Per deck, `make pptx` runs:
      on overflow" (see [authoring.md "About text autofit"](authoring.md#about-text-autofit)).
    - `embed_fonts`: re-injects the livery's font variants as `<p:embeddedFont>` entries,
      which pandoc strips, so the font travels with the file (see "About the fonts").
-   - `style_footnotes`: restyles body paragraphs that start with `†` or `‡` as footnotes
+   - `style_footnotes`: restyles body paragraphs that start with `†`, `‡`, `§` or `¶` (a
+     `^[...]` note too, which `inline-footnotes.lua` writes as one) as footnotes
      (smaller, the livery's muted color, the marker in its accent), since pandoc ignores
      inline size and color. HTML and PDF go further: the theme moves them to the slide's foot.
    - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,

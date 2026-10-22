@@ -112,7 +112,7 @@ clean:
 	rm -f engine-beamer-overleaf.zip
 	rm -rf examples/quarto-demo_files examples/quarto-demo.html
 	cd examples && latexmk -C -quiet template.tex sample.tex paper.tex $(addsuffix .tex,$(VARIANTS)) 2>/dev/null; \
-	  rm -f *.pdf *.nav *.snm *.vrb *.xdv quarto-demo.tex
+	  rm -f *.pdf *.nav *.snm *.vrb *.xdv *.bbl *.blg *.run.xml *-blx.bib quarto-demo.tex
 
 FORCE:
 .PHONY: default html examples variants previews diagrams overleaf clean FORCE

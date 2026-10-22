@@ -56,6 +56,8 @@ contributes:
       #   strip-raw-figure  quarto's raw-HTML <figure> wrappers: pandoc counts them as text when
       #                     choosing a layout, demoting a columns slide with a diagram to Comparison
       #   slide-layout      the theme's .center/scale= etc. as a notes line, for slide_layout.py
+      #   inline-footnotes  a slide's ^[...] notes as slide footnotes († ‡ § ¶ after its dagger
+      #                     lines), in place of pandoc's Notes slide; style_footnotes.py styles them
       #   grid-pptx         a two-column slide's shares as a notes line, for columns.py; a grid
       #                     slide (three or more columns, a .card, a .lead) flattened into marker
       #                     paragraphs, for grid.py: pandoc's pptx keeps two columns and drops the rest
@@ -73,6 +75,7 @@ contributes:
       filters:
         - strip-raw-figure.lua
         - slide-layout.lua
+        - inline-footnotes.lua
         - grid-pptx.lua
         - notes-last.lua
         - single-body.lua

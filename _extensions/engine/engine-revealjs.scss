@@ -501,8 +501,22 @@ $mermaid-label-fg-color: $engine-primary;
   margin-right: auto;
 }
 
-// slide footnotes (paragraphs that start with † or ‡; engine-revealjs.lua lifts
-// them here): on the floor of the slide, under a short rule, with the marker
+// the references slide (engine-revealjs.lua: the slide holding ::: {#refs}): Quarto marks it
+// .smaller, which the list's own size replaces; the list in the footnote size, each entry hanging
+.reveal .slides section.engine-references { font-size: 1em; }
+.reveal .slides section #refs {
+  font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
+  text-align: left;
+  margin-left: 0;     // pandoc's div.hanging-indent hangs the whole list too; the entries hang here
+  text-indent: 0;
+  .csl-entry { padding-left: 1.5em; text-indent: -1.5em; margin: 0.4em 0; }
+}
+
+// a lifted ^[...] note's mark in the text (engine-common.lua lift_footnotes())
+.reveal .slides section .engine-noteref { color: var(--engine-accent); }
+
+// slide footnotes (paragraphs that start with † ‡ § ¶, and ^[...] notes; engine-revealjs.lua
+// lifts them here): on the floor of the slide, under a short rule, with the marker
 // hanging in the accent color.  The autofit script reserves their height, so
 // the body shrinks above them rather than running underneath.
 .reveal .slides section .engine-footnotes {

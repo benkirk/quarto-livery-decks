@@ -28,7 +28,7 @@ COOKBOOK = "examples/sample.tex"
 # the cookbook's files, as it names them (TEXINPUTS reaches latex/ and latex/examples/ in the tree;
 # the zip's root is both)
 COOKBOOK_FILES = ["images/wallpaper/mesa_lab.jpg", "examples/diagrams/render.pdf", "examples/diagrams/systems.pdf",
-                  "examples/snippets/terminal/whoami.session"]
+                  "examples/snippets/terminal/whoami.session", "examples/references.bib"]
 LATEXMKRC = """\
 # latexmk reads this file when run from this directory -- Overleaf does.  It
 # points TeX at the theme in _extensions/engine/ and at the livery's logos and

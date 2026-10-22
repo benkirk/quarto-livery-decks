@@ -630,6 +630,12 @@ function Pandoc(doc)
   if marking then meta["engine-marking"] = pandoc.RawInline("html", marking) end
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
+  -- the references slide (a deck that cites without one gets it last): .engine-references (the scss)
+  local cited = C.ensure_refs(doc.blocks, meta, slide_level)
+  local refs = C.refs_heading(cited, slide_level)
+  if refs then cited[refs].classes:insert("engine-references") end
+  doc.blocks = cited
+
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks)), livery), livery))), 0
   while i <= #blocks do

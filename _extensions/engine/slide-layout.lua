@@ -5,7 +5,8 @@
 --   engine-layout: hcenter vcenter scale=1.4
 -- which that script applies, and removes, after rendering. Pandoc merges
 -- every notes Div on a slide, so the line joins any notes the author wrote.
--- .closing becomes `closing` (the template's Closing layout); themeoptions title=light becomes
+-- .closing becomes `closing` (the template's Closing layout), the slide holding ::: {#refs}
+-- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
 -- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty).
 
 if not quarto.doc.is_format("pptx") then
@@ -20,9 +21,9 @@ local C = dofile(here("engine-common.lua"))
 
 -- the layout controls (C.take_layout, as the other formats read them) and the slide kinds
 -- (C.SLIDE_KINDS), as the words of the notes line, in one order
-local WORDS = { "hcenter", "vcenter", "fill", "full", "caution", "feature", "closing", "wide" }
+local WORDS = { "hcenter", "vcenter", "fill", "full", "caution", "feature", "closing", "wide", "references" }
 
-local function take_layout(blk)
+local function take_layout(blk, refs)
   local lay = C.take_layout(blk, "slide-layout")
   local have, kept = {}, pandoc.List({})
   for _, c in ipairs(blk.classes) do
@@ -32,6 +33,7 @@ local function take_layout(blk)
   if lay then
     have.hcenter, have.vcenter, have.fill, have.caution, have.wide = lay.h, lay.v, lay.fill, lay.caution, lay.wide
   end
+  have.references = refs   -- the slide holding ::: {#refs} (C.refs_heading())
   local words = {}
   for _, w in ipairs(WORDS) do
     if have[w] then table.insert(words, w) end
@@ -71,6 +73,8 @@ function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   byline_meta(doc.meta)
   local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
+  local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
+  local refs = C.refs_heading(blocks, level)
   local out, pending = pandoc.Blocks({}), nil
   local function flush()
     if pending then
@@ -78,9 +82,9 @@ function Pandoc(doc)
       pending = nil
     end
   end
-  for _, b in ipairs(doc.blocks) do
+  for k, b in ipairs(blocks) do
     if C.is_slide_break(b, level) then flush() end
-    if b.t == "Header" and b.level == level then pending = take_layout(b) end
+    if b.t == "Header" and b.level == level then pending = take_layout(b, k == refs) end
     out:insert(b)
   end
   flush()

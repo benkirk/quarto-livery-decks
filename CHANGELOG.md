@@ -21,11 +21,32 @@ A release's entry is written here before its tag is pushed, and becomes its note
 ## [26.10.8] - 2026-10-22
 
 ### Decks
+- `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
+  markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
+  text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
+  no longer adds a "Notes" slide at the end, and HTML no longer draws Quarto's own numbered aside.
+  A paragraph starting with `§` or `¶` is a slide footnote too. A note in the speaker notes stays
+  as it was; a fifth note on a slide, or one holding more than paragraphs, warns and stays.
+- Citations (`bibliography:` and `[@key]`): the slide holding `::: {#refs}` is the references slide
+  in every format, its entries in the footnote size with a 1.5 em hanging indent and 0.4 em
+  between them; in the PDF its frame breaks across pages as the list needs. A deck that cites but
+  has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
+  warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
+  directory is a prerequisite, so editing one rebuilds the deck.
 - PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
   livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
   instead of the brand's; lists, labels and strips in a card colored themselves and were right.
 
 ### LaTeX
+- Citations with biblatex: `\printbibliography` no longer stops the compile (the theme's
+  `bibliography item` called `\insertbiblabel`, which biblatex never defines), and its list is
+  set as the Quarto decks' (the footnote size, a 1.5 em hanging indent, 0.4 em between entries).
+  beamer's own `\footnote` and biblatex's `\footcite` take the slide footnotes' look: the text
+  muted, the mark bold in the accent, under the theme's short rule. The cookbook cites (a "Citing
+  sources" frame and a References frame, `examples/references.bib`, biblatex on bibtex; biber is
+  `backend=biber`), and every livery's Overleaf zip carries the bibliography.
+- A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
+  runs to more than one page; a one-page frame's title stands alone.
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
   color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
   theme resolves a `role=` itself.
