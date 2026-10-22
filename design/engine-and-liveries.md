@@ -1,5 +1,14 @@
 # One engine, many liveries
 
+The engine is a design framework for technical presentations. An element (a card, a strip, a
+status list, a lead, a caution box, a steps row, a quote, an agenda) is a brand-neutral structure
+that meets three rules: one reader (`engine-common.lua`) that turns the author's Markdown into the
+element's data; one drawer per format (the revealjs scss and Lua, the beamer theme, a pptx step)
+that draws it from that data; and every number and color it draws from the livery (`roles`,
+`type`, `boxes`), never from the drawer. The Quarto filter and a hand LaTeX author are two clients
+of the same layer: the theme's environments are written as a person writes them, and the filter
+writes through them.
+
 A design for taking this framework from one brand (NSF NCAR) to many: CU Boulder,
 NASA, and a family of NASA program flavors, each onboarded from a reference
 PowerPoint the customer supplies. It is written to be the founding design of two

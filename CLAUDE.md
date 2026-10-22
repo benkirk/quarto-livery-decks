@@ -21,6 +21,9 @@ out-of-range value fails the build with its path); `liveries/REFERENCE.md` is ge
 schema (`livery schema --doc`; `tests/test_schema.py` holds it current). A key is renamed only with Ben's
 agreement.
 
+The engine is a design framework for technical presentations: an element is one reader, one
+drawer per format, every number from the livery (`design/engine-and-liveries.md`, the head).
+
 **The `livery` command** is `_extensions/engine/livery.py` (argparse subcommands; README for
 owners: `liveries/README.md`), launched as `bin/livery` (on PATH after `source etc/config_env.sh`
 and in the image; it follows links to itself; the Makefiles call `python3 $(LIVERY_PY)` and need
