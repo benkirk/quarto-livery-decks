@@ -303,27 +303,27 @@ A process, step by step, is an ordered list in a `steps` div; milestones are a b
 A grid of pictures is a `gallery` div of image files:
 
 ```markdown
-## Six views of the quickstart
+## Six views from orbit and beyond
 
 A line above a gallery takes its own height; the cells share what is left (PDF: give `height=`).
 
 ::: {.gallery cols=3 rows=2 height=0.75}
-![The cover](images/gallery-1.png)
-![A divider](images/gallery-2.png)
-![Text, rotated](images/gallery-3.png)
-![Columns](images/gallery-4.png)
-![Cards](images/gallery-5.png)
-![Cards, rotated](images/gallery-6.png)
+![The Blue Marble](images/gallery-1.jpg)
+![Earthrise](images/gallery-2.jpg)
+![Artemis I](images/gallery-3.jpg)
+![Aurora](images/gallery-4.jpg)
+![Helene](images/gallery-5.jpg)
+![Liftoff](images/gallery-6.jpg)
 :::
 
 ## A strip of six {.wide}
 
 ::: {.gallery cols=6 rows=1 fit=cover}
-![](images/gallery-1.png)
+![](images/gallery-1.jpg)
 ...
 :::
 
-## The quickstart, six ways {.full}
+## Earth and space, six ways {.full}
 
 ::: {.gallery cols=3 rows=2 fit=cover}
 ...

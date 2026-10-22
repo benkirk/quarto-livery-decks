@@ -29,7 +29,7 @@ COOKBOOK = "examples/sample.tex"
 # the zip's root is both)
 COOKBOOK_FILES = ["images/wallpaper/mesa_lab.jpg", "examples/diagrams/render.pdf", "examples/diagrams/systems.pdf",
                   "examples/snippets/terminal/whoami.session", "examples/references.bib",
-                  *(f"images/gallery-{k}.png" for k in range(1, 7))]   # the gallery's: links to the sample deck's
+                  *(f"images/gallery-{k}.jpg" for k in range(1, 7))]   # the gallery's: links to the sample deck's
 LATEXMKRC = """\
 # latexmk reads this file when run from this directory -- Overleaf does.  It
 # points TeX at the theme in _extensions/engine/ and at the livery's logos and

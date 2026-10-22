@@ -164,8 +164,8 @@ The cookbook's three gallery slides, as the Quarto ones in
 
 ```latex
 \begin{enginegallery}[cols=3,rows=2,height=0.75]   % under a line of text: give height=
-  \engineimage[The cover]{images/gallery-1.png}
-  \engineimage{images/gallery-2.png}               % no caption: the line is kept
+  \engineimage[The Blue Marble]{images/gallery-1.jpg}
+  \engineimage{images/gallery-2.jpg}               % no caption: the line is kept
   ...
 \end{enginegallery}
 

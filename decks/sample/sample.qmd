@@ -256,48 +256,49 @@ Publish the HTML; hand out the pptx and PDF.
 - **2027** First review
 :::
 
-## Six views of the quickstart
+## Six views from orbit and beyond
 
 A line above a gallery takes its own height; the cells share what is left (PDF: give `height=`).
 
 ::: {.gallery cols=3 rows=2 height=0.75}
-![The cover](images/gallery-1.png)
-![A divider](images/gallery-2.png)
-![Text, rotated](images/gallery-3.png)
-![Columns](images/gallery-4.png)
-![Cards](images/gallery-5.png)
-![Cards, rotated](images/gallery-6.png)
+![The Blue Marble](images/gallery-1.jpg)
+![Earthrise](images/gallery-2.jpg)
+![Artemis I](images/gallery-3.jpg)
+![Aurora](images/gallery-4.jpg)
+![Helene](images/gallery-5.jpg)
+![Liftoff](images/gallery-6.jpg)
 :::
 
 ::: {.notes}
-`fit=contain`, the default: each picture whole in its cell, so the two rotated shots stand
-letterboxed. Any caption reserves the caption line in every cell, so a row lines up.
+`fit=contain`, the default: each picture whole in its cell, so the tall launch and the panorama
+stand letterboxed. Any caption reserves the caption line in every cell, so a row lines up. The
+images are NASA's (images/CREDITS.md).
 :::
 
 ## A strip of six {.wide}
 
 ::: {.gallery cols=6 rows=1 fit=cover}
-![](images/gallery-1.png)
-![](images/gallery-2.png)
-![](images/gallery-3.png)
-![](images/gallery-4.png)
-![](images/gallery-5.png)
-![](images/gallery-6.png)
+![](images/gallery-1.jpg)
+![](images/gallery-2.jpg)
+![](images/gallery-3.jpg)
+![](images/gallery-4.jpg)
+![](images/gallery-5.jpg)
+![](images/gallery-6.jpg)
 :::
 
 ::: {.notes}
 `fit=cover` crops each picture to fill its cell; `{.wide}` widens the body, and the strip with it.
 :::
 
-## The quickstart, six ways {.full}
+## Earth and space, six ways {.full}
 
 ::: {.gallery cols=3 rows=2 fit=cover}
-![](images/gallery-1.png)
-![](images/gallery-2.png)
-![](images/gallery-3.png)
-![](images/gallery-4.png)
-![](images/gallery-5.png)
-![](images/gallery-6.png)
+![](images/gallery-1.jpg)
+![](images/gallery-2.jpg)
+![](images/gallery-3.jpg)
+![](images/gallery-4.jpg)
+![](images/gallery-5.jpg)
+![](images/gallery-6.jpg)
 :::
 
 With `{.full}` the cells fill the slide, and this line is the caption.
