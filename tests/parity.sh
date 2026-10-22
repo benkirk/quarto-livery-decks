@@ -22,7 +22,8 @@
 # rename can be checked with its nouns folded; apply it to an existing _baseline/ by hand.
 #
 # TRAP: `date: last-modified` renders the .qmd's mtime, so baseline and check must run on
-# the same checkout on the same day, or the title slide differs for that reason alone.
+# the same checkout on the same day, or the title slide differs for that reason alone. The
+# pptx's SVG plots carry matplotlib's render time (<dc:date>), folded here to DATE.
 set -euo pipefail
 : "${NORMALIZE:=}"
 
@@ -64,6 +65,9 @@ snapshot() {   # <deck dir> <deck name> <out dir> <livery>, after build
   # sed -i with a backup suffix works on both GNU and BSD sed (GNU rejects -i '')
   [ -z "$NORMALIZE" ] || { find "$out/pptx" \( -name '*.xml' -o -name '*.rels' \) -exec sed -i.orig -E "$NORMALIZE" {} + &&
     find "$out/pptx" -name '*.orig' -delete; }
+  # the SVG plots' <dc:date> is the render time (matplotlib's metadata): folded, or every plot differs
+  [ -d "$out/pptx/ppt/media" ] && { find "$out/pptx/ppt/media" -name '*.svg' -exec sed -i.orig -E 's#<dc:date>[^<]*</dc:date>#<dc:date>DATE</dc:date>#' {} + &&
+    find "$out/pptx/ppt/media" -name '*.orig' -delete; }
 }
 
 bad=0
