@@ -248,7 +248,7 @@ from pathlib import Path
 from pptx import Presentation
 from pptx_steps import columns, grid, slide_layout
 p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); columns.run(prs, p.name); grid.run(prs, p); prs.save(p)
+slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); prs.save(p)
 """   # the driver's order
 
 

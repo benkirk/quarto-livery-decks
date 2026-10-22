@@ -19,6 +19,7 @@ style_tables and type_step.
 """
 
 import sys
+from pathlib import Path
 
 from pptx.util import Emu
 
@@ -105,7 +106,7 @@ def frame_slide(slide, words, width, height):
     return True
 
 
-def run(prs, name: str) -> None:
+def run(prs, path: Path) -> None:
     done = 0
     for slide in prs.slides:
         words = take_marker(slide, KEY)
@@ -117,4 +118,4 @@ def run(prs, name: str) -> None:
             print(f"columns: WARNING: slide {prs.slides.index(slide) + 1}: columns laid out on "
                   f"{slide.slide_layout.name!r}, not Two Content; their widths are not applied", file=sys.stderr)
     if done:
-        print(f"columns: framed {done} two-column slide(s) → {name}")
+        print(f"columns: framed {done} two-column slide(s) → {path.name}")

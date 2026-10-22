@@ -661,8 +661,8 @@ def add_slide_number(slide):
     return False
 
 
-def run(prs, pptx: Path) -> None:
-    """The open deck, changed in place; pptx its path (a titlegraphic: is relative to its directory)."""
+def run(prs, path: Path) -> None:
+    """The open deck, changed in place; path the pptx's (a titlegraphic: is relative to its directory)."""
     w, h = prs.slide_width, prs.slide_height
     done = 0
     light = docprops.prop(prs, "engine-title") == "light"
@@ -672,7 +672,7 @@ def run(prs, pptx: Path) -> None:
     if light and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
         if not use_layout(prs, prs.slides[0], "Title Slide (light)"):
             print("slide_layout: WARNING: title=light, but the template has no Title Slide (light)", file=sys.stderr)
-    graphic = _title_graphic(prs, pptx.parent)
+    graphic = _title_graphic(prs, path.parent)
     default = LIVERY.get("art", {}).get("titlegraphic")
     if graphic is None and default and not BAND:   # the band's layout carries the default itself
         graphic = Path(LIVERY["dir"]) / default
@@ -725,4 +725,4 @@ def run(prs, pptx: Path) -> None:
     if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
         cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
         cover_byline(prs, prs.slides[0], COMP[cover], w, h)
-    print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")
+    print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {path.name}")

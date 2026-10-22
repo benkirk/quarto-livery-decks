@@ -26,7 +26,7 @@ import sys
 from pathlib import Path
 from pptx import Presentation
 from pptx_steps import marking, type_step
-prs = Presentation(sys.argv[1]); marking.run(prs, "t.pptx"); type_step.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
+p = Path(sys.argv[1]); prs = Presentation(p); marking.run(prs, p); type_step.run(prs, p); prs.save(p)
 """   # the driver's order: the strip before the size step, which scales it as HTML and PDF do
 
 

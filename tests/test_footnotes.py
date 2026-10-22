@@ -134,9 +134,10 @@ def test_pptx_filter(tmp_path):
 
 STEP = """
 import sys
+from pathlib import Path
 from pptx import Presentation
 from pptx_steps import style_footnotes
-prs = Presentation(sys.argv[1]); style_footnotes.run(prs, "t"); prs.save(sys.argv[1])
+prs = Presentation(sys.argv[1]); style_footnotes.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
 """
 
 

@@ -29,9 +29,10 @@ MD = ("## Status\n\n::: {.status}\n- [x] Done thing\n- [!] Risky thing\n- [-] Fa
       "## ⚠︎ Careful\n\n✓ A paragraph, not an item\n")
 STEP = """
 import sys
+from pathlib import Path
 from pptx import Presentation
 from pptx_steps import status_glyphs
-prs = Presentation(sys.argv[1]); status_glyphs.run(prs, "t"); prs.save(sys.argv[1])
+prs = Presentation(sys.argv[1]); status_glyphs.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
 """
 
 

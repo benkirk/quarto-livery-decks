@@ -10,6 +10,7 @@ top. A deck without either is left alone. Last in pptx_post.py; it marks
 the deck (engine-type-step in custom.xml), so a second run changes nothing."""
 
 import sys
+from pathlib import Path
 
 from lxml import etree
 from pptx.oxml.ns import qn
@@ -50,7 +51,7 @@ def scale(root, f):
     return n
 
 
-def run(prs, path) -> None:
+def run(prs, path: Path) -> None:
     """The open deck, changed in place; path for the messages."""
     part = docprops.part(prs)
     if part is None:
@@ -60,11 +61,11 @@ def run(prs, path) -> None:
     if f is None or abs(f - 1) < 1e-6:
         return
     if "engine-type-step" in props:
-        print(f"type_step: {path} already stepped ({props['engine-type-step']})")
+        print(f"type_step: {path.name} already stepped ({props['engine-type-step']})")
         return
     n = sum(scale(x._element, f) for x in (*prs.slide_masters, *prs.slide_layouts, *prs.slides))
     pid = max((int(p.get("pid")) for p in root if p.get("pid")), default=1) + 1
     mark = etree.SubElement(root, f"{{{CP}}}property", fmtid=FMTID, pid=str(pid), name="engine-type-step")
     etree.SubElement(mark, f"{{{VT}}}lpwstr").text = f"{f:.4f}"
     part._blob = serialize(root)
-    print(f"type_step: sizes x {f:.4f} ({n} runs and styles, to the half point) -> {path}")
+    print(f"type_step: sizes x {f:.4f} ({n} runs and styles, to the half point) → {path.name}")

@@ -10,6 +10,8 @@ row filled with the table-band blend; columns left alone when pandoc took widths
 source, else re-split in proportion to each column's longest cell, each 10-60% wide.
 Run after slide_layout has scaled the runs (pptx_post.py). Idempotent."""
 
+from pathlib import Path
+
 from lxml import etree
 from pptx.oxml.ns import qn
 
@@ -113,8 +115,8 @@ def style_table(tbl, base):
     _rebalance(tbl)
 
 
-def run(prs, name: str) -> None:
-    """The open deck, changed in place; name for the message."""
+def run(prs, path: Path) -> None:
+    """The open deck, changed in place; path for the message."""
     styled = 0
     for slide in prs.slides:
         base = other_size(slide)
@@ -122,4 +124,4 @@ def run(prs, name: str) -> None:
             if is_table(shape):
                 style_table(shape.table._tbl, base)
                 styled += 1
-    print(f"style_tables: styled {styled} table(s) → {name}")
+    print(f"style_tables: styled {styled} table(s) → {path.name}")
