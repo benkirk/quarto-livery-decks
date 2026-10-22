@@ -129,6 +129,7 @@ end
 local slide_level = 2
 
 local function html(s) return pandoc.RawBlock("html", s) end
+local function html_inline(s) return pandoc.RawInline("html", s) end
 
 -- Slide footnotes: a paragraph that starts with † (or ‡) is an aside.  Every
 -- one on a content slide, columns included, moves to the slide's foot, in order, under
@@ -141,7 +142,7 @@ local function dagger(p)
   return pandoc.Para(inl)
 end
 
--- Per-slide layout controls (C.take_layout, C.LAYOUT_CLASSES).  The body is wrapped in a Div here,
+-- Per-slide layout controls (C.take_layout).  The body is wrapped in a Div here,
 -- before the footnote hoist (which reaches into it), and becomes raw tags afterwards
 -- (unwrap_layout), since pandoc turns a Div that starts with a heading into a
 -- <section>.  The classes go on the slide; the script and the scss act on them.
@@ -326,19 +327,18 @@ end
 -- when any image has a caption, a <figcaption> in every one (&nbsp; for none: the row's pictures and
 -- captions line up); the fit and a height= share as custom properties
 local function gallery_html(g)
-  local raw = function(t) return pandoc.RawInline("html", t) end
   local style = string.format("--engine-gallery-cols: %d; --engine-gallery-rows: %d; --engine-gallery-fit: %s",
     g.cols, g.rows, g.fit) .. (g.height and string.format("; --engine-gallery-height: %s", g.height) or "")
   local out = pandoc.Blocks({ html(string.format('<div class="engine-gallery%s" style="%s">',
     g.height and " engine-gallery-sized" or "", style)) })
   for _, it in ipairs(g.items) do
-    local il = pandoc.Inlines({ raw('<figure class="engine-gallery-item">'), it.image })
+    local il = pandoc.Inlines({ html_inline('<figure class="engine-gallery-item">'), it.image })
     if g.captioned then
-      il:insert(raw("<figcaption>"))
-      if it.caption then il:extend(it.caption) else il:insert(raw("&nbsp;")) end
-      il:insert(raw("</figcaption>"))
+      il:insert(html_inline("<figcaption>"))
+      if it.caption then il:extend(it.caption) else il:insert(html_inline("&nbsp;")) end
+      il:insert(html_inline("</figcaption>"))
     end
-    il:insert(raw("</figure>"))
+    il:insert(html_inline("</figure>"))
     out:insert(pandoc.Plain(il))
   end
   out:insert(html("</div>"))
@@ -672,8 +672,7 @@ function Pandoc(doc)
     WAVES, SHIFT = livery.art.waves.lines, livery.art.waves.shift
   end
   local r = livery.roles
-  local c = { primary = r.primary, primary_text = r["primary-text"], secondary = r.secondary,
-              surface = r.surface, dark = r.dark }
+  local c = { surface = r.surface, dark = r.dark }
   local comps = livery.compositions
   local band = livery.title and livery.title.style == "band"
   local light = (opts.title == "light")
@@ -838,15 +837,14 @@ function Pandoc(doc)
       local notes = C.agenda_notes(body, "engine-revealjs", pandoc.utils.stringify(blk.content))
       out:insert(html('<ol class="engine-agenda">'))
       for _, row in ipairs(C.agenda_rows(secs, section)) do
-        local raw = function(t) return pandoc.RawInline("html", t) end
-        local il = pandoc.Inlines({ raw(string.format('<li data-engine-state="%s"><span class="engine-agenda-number">%d</span>'
+        local il = pandoc.Inlines({ html_inline(string.format('<li data-engine-state="%s"><span class="engine-agenda-number">%d</span>'
           .. '<span class="engine-agenda-text"><span class="engine-agenda-title">', row.state, row.number)) })
         il:extend(row.title)
-        il:insert(raw("</span>"))
+        il:insert(html_inline("</span>"))
         if row.sub then
-          il:insert(raw('<span class="engine-agenda-sub">')); il:extend(row.sub); il:insert(raw("</span>"))
+          il:insert(html_inline('<span class="engine-agenda-sub">')); il:extend(row.sub); il:insert(html_inline("</span>"))
         end
-        il:insert(raw("</span></li>"))
+        il:insert(html_inline("</span></li>"))
         out:insert(pandoc.Plain(il))
       end
       out:insert(html("</ol>"))

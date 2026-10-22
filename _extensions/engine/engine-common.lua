@@ -943,18 +943,18 @@ local function status_lists(blocks, fn)
 end
 
 return {
-  has_class = has_class, warn = warn, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
-  lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  has_class = has_class, warn = warn, column_shares = column_shares, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
+  lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, holds_shape = holds_shape, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
   slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, split_notes = split_notes,
-  divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote, quote_parts = quote_parts,
+  divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
-  LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
+  content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
-  has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
-  rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
-  is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
+  refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
+  rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
+  is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
   latex_file = latex_file,
 }

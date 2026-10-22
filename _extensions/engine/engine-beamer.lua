@@ -576,15 +576,14 @@ end
 -- Tables in the theme's style (beamerinnerthemeEngine.sty, "tables"): each
 -- header cell in \engineth, and every second body row starting with \rowcolor,
 -- which colortbl requires to be the first thing in the row
-local function raw(s) return pandoc.RawInline("latex", s) end
 
 function Table(tbl)
   for _, row in ipairs(tbl.head.rows) do
     for _, cell in ipairs(row.cells) do
       for _, blk in ipairs(cell.contents) do
         if blk.t == "Plain" or blk.t == "Para" then
-          blk.content:insert(1, raw("\\engineth{"))
-          blk.content:insert(raw("}"))
+          blk.content:insert(1, latex_inline("\\engineth{"))
+          blk.content:insert(latex_inline("}"))
         end
       end
     end
@@ -595,9 +594,9 @@ function Table(tbl)
       if k % 2 == 0 and first then
         local blk = first.contents[1]
         if blk and (blk.t == "Plain" or blk.t == "Para") then
-          blk.content:insert(1, raw("\\rowcolor{enginetableband}"))
+          blk.content:insert(1, latex_inline("\\rowcolor{enginetableband}"))
         else
-          first.contents:insert(1, pandoc.Plain({ raw("\\rowcolor{enginetableband}") }))
+          first.contents:insert(1, pandoc.Plain({ latex_inline("\\rowcolor{enginetableband}") }))
         end
       end
     end
