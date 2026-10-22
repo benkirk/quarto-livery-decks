@@ -18,8 +18,6 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
-## [26.10.8] - 2026-10-22
-
 ### Decks
 - Steps and timelines: `::: {.steps}` around an ordered list draws a process as a thin rail with
   a numbered badge per step, each step's first bold run its title and the rest its text below;
@@ -42,9 +40,6 @@ A release's entry is written here before its tag is pushed, and becomes its note
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
   directory is a prerequisite, so editing one rebuilds the deck.
-- PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
-  livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
-  instead of the brand's; lists, labels and strips in a card colored themselves and were right.
 
 ### Liveries
 - `boxes.rail` (`line`, `line-color`, `badge`, `dot`, `fill`, `pad`): the look of the new steps and
@@ -66,6 +61,15 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `backend=biber`), and every livery's Overleaf zip carries the bibliography.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
+
+## [26.10.8] - 2026-10-22
+
+### Decks
+- PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
+  livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
+  instead of the brand's; lists, labels and strips in a card colored themselves and were right.
+
+### LaTeX
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
   color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
   theme resolves a `role=` itself.
