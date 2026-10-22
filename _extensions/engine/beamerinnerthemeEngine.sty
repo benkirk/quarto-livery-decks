@@ -351,14 +351,79 @@
   {\end{minipage}\hspace*{-\engine@wideout}\par}
 
 % ---------------------------------------------------------------------------
-% strip: ::: {.strip role=...} in a card or on its own (the Quarto filter writes
-% \begin{enginestrip}{<role color>}): a band the strip tint of its role over the background, no
-% bar; in a card as wide as the card (its pads taken back), on a solid card the role itself
+% role=: a card's or strip's role, as HTML and the pptx read it. \engine@rolecolor{<name>}{<default
+% role>} sets \engine@rolename to the color: a role or blend of the livery (livery.sty's
+% \engine@role@<name>: primary, secondary, accent, table-band, ...), else any defined color (the
+% livery's exported palette, a document's own \definecolor), else the default role, with a warning.
 % ---------------------------------------------------------------------------
+\RequirePackage{pgfkeys}   % (tikz's; the keys of enginecard and enginestrip)
+\def\engine@rolecolor#1#2{%
+  \ifcsname engine@role@#1\endcsname
+    \edef\engine@rolename{\csname engine@role@#1\endcsname}%
+  \else\ifcsname\string\color@#1\endcsname
+    \edef\engine@rolename{#1}%
+  \else
+    \PackageWarning{Engine}{role=#1 is not a role of the livery or a color; #2}%
+    \edef\engine@rolename{\csname engine@role@#2\endcsname}%
+  \fi\fi}
+% \engine@nthrole{<k>}: \engine@nthrolename is the k-th of livery.sty's \engine@boxes@card@roles,
+% around again past its end (a card's default role, by its place in the row)
+\newcount\engine@tmpcnt
+\def\engine@nthrole#1{%
+  \engine@tmpcnt=\z@
+  \@for\engine@tmpb:=\engine@boxes@card@roles\do{\advance\engine@tmpcnt\@ne}%
+  \@tempcnta=#1\relax \advance\@tempcnta\m@ne
+  \@tempcntb=\@tempcnta \divide\@tempcntb\engine@tmpcnt \multiply\@tempcntb\engine@tmpcnt
+  \advance\@tempcnta-\@tempcntb   % (k - 1) mod n
+  \engine@tmpcnt=\z@
+  \@for\engine@tmpb:=\engine@boxes@card@roles\do{%
+    \ifnum\engine@tmpcnt=\@tempcnta\edef\engine@nthrolename{\engine@tmpb}\fi\advance\engine@tmpcnt\@ne}}
+
+% ---------------------------------------------------------------------------
+% shares: \engine@shares{<set>}{<spec>} reads a row's argument (enginecards', enginecolumns'): a
+% lone integer n is n equal shares; a comma list is weights, kept as shares of the row when they
+% add to 1 or less, else divided by their sum (engine-common.lua's column_shares() rule, so the
+% Quarto filter's shares, written to 4 places, round-trip). \engine@<set>@n, and
+% \engine@<set>@share@<k> for k from 1, globally: the row's members read them from their own groups.
+% ---------------------------------------------------------------------------
+\newcount\engine@sharecnt \newif\ifengine@equalshares
+\def\engine@shares#1#2{%
+  \engine@sharecnt=\z@ \def\engine@sharesum{0}%
+  \@for\engine@tmpa:=#2\do{\advance\engine@sharecnt\@ne
+    \edef\engine@sharesum{\fpeval{\engine@sharesum+(\engine@tmpa)}}}%
+  \engine@equalsharesfalse
+  \ifnum\engine@sharecnt=\@ne
+    \ifnum\fpeval{(\engine@sharesum > 1) && (\engine@sharesum == trunc(\engine@sharesum))}=1 \engine@equalsharestrue\fi
+  \fi
+  \ifengine@equalshares
+    \engine@sharecnt=\fpeval{trunc(\engine@sharesum)}\relax
+    \expandafter\xdef\csname engine@#1@n\endcsname{\the\engine@sharecnt}%
+    \@tempcnta=\z@
+    \loop\advance\@tempcnta\@ne
+      \expandafter\xdef\csname engine@#1@share@\the\@tempcnta\endcsname{\fpeval{1/\engine@sharecnt}}%
+    \ifnum\@tempcnta<\engine@sharecnt\repeat
+  \else
+    \expandafter\xdef\csname engine@#1@n\endcsname{\the\engine@sharecnt}%
+    \ifnum\fpeval{\engine@sharesum > 1}=1 \let\engine@sharediv\engine@sharesum \else\def\engine@sharediv{1}\fi
+    \engine@sharecnt=\z@
+    \@for\engine@tmpa:=#2\do{\advance\engine@sharecnt\@ne
+      \expandafter\xdef\csname engine@#1@share@\the\engine@sharecnt\endcsname{\fpeval{(\engine@tmpa)/\engine@sharediv}}}%
+  \fi}
+
+% ---------------------------------------------------------------------------
+% strip: \begin{enginestrip}[role=<role>] ... \end{enginestrip}, in a card or on its own (the Quarto
+% filter writes it for ::: {.strip role=}): a band the strip tint of its role (default accent) over
+% the background, no bar; in a card as wide as the card (its pads taken back), on a solid card the
+% role itself
+% ---------------------------------------------------------------------------
+\pgfkeys{/engine/strip/.cd, role/.store in=\engine@striprole}
 \newif\ifengine@incard \newif\ifengine@solidcard
-\newenvironment{enginestrip}[1]{%
-  \ifengine@solidcard\colorlet{engine@strip}{#1}\color{BrandPrimaryText}%
-  \else\colorlet{engine@strip}{#1!\fpeval{round(100*\engine@boxes@strip@tint)}!BrandBackground}\fi
+\newenvironment{enginestrip}[1][]{%
+  \def\engine@striprole{}\pgfkeys{/engine/strip/.cd,#1}%
+  \ifx\engine@striprole\@empty\edef\engine@rolename{\csname engine@role@accent\endcsname}%
+  \else\engine@rolecolor{\engine@striprole}{accent}\fi
+  \ifengine@solidcard\colorlet{engine@strip}{\engine@rolename}\color{BrandPrimaryText}%
+  \else\colorlet{engine@strip}{\engine@rolename!\fpeval{round(100*\engine@boxes@strip@tint)}!BrandBackground}\fi
   \ifengine@incard
     \advance\linewidth by 2\dimexpr\engine@boxes@card@padx em\relax
     \edef\engine@barboxin{\noexpand\hspace*{-\the\dimexpr\engine@boxes@card@padx em\relax}}%
@@ -368,18 +433,31 @@
   {\endengine@barbox{engine@strip}{engine@strip}}
 
 % ---------------------------------------------------------------------------
-% cards: a row of \begin{enginecard}[pick,solid|plain]{<role color>}{<share>}{<n>}{<title>}{<sub>}
-% ... \end{enginecard} inside \begin{enginecards} ... \end{enginecards} (the Quarto filter writes
-% them for ::: {.column .card}). Each body is set first into a box (as the feature panel's: verbatim
-% works), its width the card's share of the line less the gaps, its pads and outline; the row then
-% draws every card as a tcolorbox one height, the tallest body and head (one run, no aux; each
-% head its own text's height, as HTML's and the pptx's): a head
-% band in the role (the title in the block title font, bold, its sub in the body's) over the body
-% on the card fill, rounded by boxes.card.radius, a pick outlined in outline-color, a solid card all
-% the role's with its text in primary-text; plain (a column beside cards) has no fill or band.
-% \enginelabel and \enginebig are a card's small-caps label and big number.
+% cards: a row \begin{enginecards}{<shares>} of \begin{enginecard}[<keys>]{<title>}{<sub>} ...
+% \end{enginecard} (the Quarto filter writes them for ::: {.column .card}). The row's argument is
+% the number of equal cards ({3}) or a weight per card ({2,1,1}; shares of the row when they add
+% to 1 or less, \engine@shares); a card beyond them is an error. The keys: role=<role> (the head
+% band's color: a role, a blend or a defined color, \engine@rolecolor; default the card's place in
+% boxes.card.roles), pick (the outline, in outline-color) or pick=<overlay> (the outline on those
+% steps only, its width reserved on every step so the body does not move: \alt at \begin, which
+% beamer runs once per step), solid (all the role's, its text in primary-text) and plain (a column
+% beside cards: no fill, no band). {} for no sub-line. Each body is set first into a box (as the
+% feature panel's: verbatim works), its width the card's share of the line less the gaps, its
+% pads and outline; the row then draws every card as a tcolorbox one height, the tallest body and
+% head (one run, no aux; each head its own text's height, as HTML's and the pptx's): a head band
+% in the role (the title in the block title font, bold, its sub in the body's) over the body on
+% the card fill, rounded by boxes.card.radius. \enginelabel and \enginebig are a card's small-caps
+% label and big number.
 % ---------------------------------------------------------------------------
 \RequirePackage{tcolorbox}\tcbuselibrary{skins,breakable}   % breakable: Quarto's callouts, which load it after this
+\newif\ifengine@cardpick \newif\ifengine@cardpicked \newif\ifengine@cardsolid \newif\ifengine@cardplain
+\pgfkeys{/engine/card/.cd,
+  role/.store in=\engine@cardrole,
+  pick/.code={\engine@cardpicktrue\def\engine@tmpa{#1}\ifx\engine@tmpa\@empty\engine@cardpickedtrue
+    \else\alt#1{\engine@cardpickedtrue}{\engine@cardpickedfalse}\fi},
+  pick/.default=,
+  solid/.is if=engine@cardsolid,
+  plain/.is if=engine@cardplain}
 \newcount\engine@ncards
 \newdimen\engine@cardbody \newdimen\engine@cardhead \newdimen\engine@cardw \newdimen\engine@cardrule
 \newbox\engine@cardboxi \newbox\engine@cardboxii \newbox\engine@cardboxiii
@@ -389,22 +467,34 @@
 % (each its own paragraph, ended inside the font's group: the line takes the font's leading)
 \newcommand\enginelabel[1]{{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}\par}}
 \newcommand\enginebig[1]{{\usebeamerfont{display}\color{\engine@bigcolor}#1\par}}
-\newenvironment{enginecards}{\par\global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
+\newenvironment{enginecards}[1]{\par\engine@shares{cards}{#1}%
+  \global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
   {\engine@drawcards\par}
-\newcommand\enginecard[6][]{%
+\newcommand\enginecard[3][]{%
   \global\advance\engine@ncards\@ne
-  \expandafter\xdef\csname engine@card@opts@\the\engine@ncards\endcsname{#1}%
-  \expandafter\xdef\csname engine@card@role@\the\engine@ncards\endcsname{#2}%
-  \expandafter\gdef\csname engine@card@title@\the\engine@ncards\endcsname{#5}%
-  \expandafter\gdef\csname engine@card@sub@\the\engine@ncards\endcsname{#6}%
-  \engine@cardw=\dimexpr#3\dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(#4-1)\relax\relax
+  \ifnum\engine@ncards>\engine@cards@n\relax
+    \PackageError{Engine}{enginecards{\engine@cards@n}: card \the\engine@ncards\space has no share}%
+      {The row was opened for \engine@cards@n\space cards: give \string\begin{enginecards} the number of cards, or a weight per card.}%
+  \fi
+  \engine@cardpickfalse\engine@cardpickedfalse\engine@cardsolidfalse\engine@cardplainfalse\def\engine@cardrole{}%
+  \pgfkeys{/engine/card/.cd,#1}%
+  \engine@nthrole{\the\engine@ncards}%
+  \ifx\engine@cardrole\@empty\edef\engine@rolename{\csname engine@role@\engine@nthrolename\endcsname}%
+  \else\engine@rolecolor{\engine@cardrole}{\engine@nthrolename}\fi
+  \expandafter\xdef\csname engine@card@opts@\the\engine@ncards\endcsname{%
+    \ifengine@cardpicked pick,\fi\ifengine@cardsolid solid,\fi\ifengine@cardplain plain,\fi}%
+  \expandafter\xdef\csname engine@card@role@\the\engine@ncards\endcsname{\engine@rolename}%
+  \expandafter\gdef\csname engine@card@title@\the\engine@ncards\endcsname{#2}%
+  \expandafter\gdef\csname engine@card@sub@\the\engine@ncards\endcsname{#3}%
+  \engine@cardw=\dimexpr\csname engine@cards@share@\the\engine@ncards\endcsname
+    \dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(\engine@cards@n-1)\relax\relax
   \expandafter\xdef\csname engine@card@w@\the\engine@ncards\endcsname{\the\engine@cardw}%
-  \engine@cardrule=\z@ \in@{pick}{#1}\ifin@\engine@cardrule=\engine@boxes@card@outline\paperheight\fi
+  \engine@cardrule=\z@ \ifengine@cardpick\engine@cardrule=\engine@boxes@card@outline\paperheight\fi
   \expandafter\xdef\csname engine@card@rule@\the\engine@ncards\endcsname{\the\engine@cardrule}%
-  \def\engine@tmpa{#5#6}\ifx\engine@tmpa\@empty\else   % the head's height, the row's tallest
+  \def\engine@tmpa{#2#3}\ifx\engine@tmpa\@empty\else   % the head's height, the row's tallest
     \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@headpadx em\relax\relax
-      \raggedright{\usebeamerfont{block title}\bfseries\strut#5\par}%
-      \def\engine@tmpa{#6}\ifx\engine@tmpa\@empty\else{\normalsize\mdseries\strut#6\par}\fi}%
+      \raggedright{\usebeamerfont{block title}\bfseries\strut#2\par}%
+      \def\engine@tmpa{#3}\ifx\engine@tmpa\@empty\else{\normalsize\mdseries\strut#3\par}\fi}%
     \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\engine@cardhead
       \global\engine@cardhead=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax\fi
   \fi
@@ -412,11 +502,11 @@
   \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
     \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
     \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % card lines sit close, as the pptx's (grid.py CARD_GAP); HTML uses reveal's block margin
-    \engine@incardtrue\in@{solid}{#1}\ifin@\engine@solidcardtrue\else\engine@solidcardfalse\fi
+    \engine@incardtrue\ifengine@cardsolid\engine@solidcardtrue\else\engine@solidcardfalse\fi
     \raggedright\usebeamerfont{normal text}%
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put
     % \parskip over the first paragraph, which an empty list does not get)
-    \in@{solid}{#1}\ifin@\setbeamercolor{normal text}{fg=BrandPrimaryText}%
+    \ifengine@cardsolid\setbeamercolor{normal text}{fg=BrandPrimaryText}%
       \def\engine@labelcolor{BrandPrimaryText}\def\engine@bigcolor{BrandPrimaryText}\fi}
 \def\endenginecard{\par\egroup
   \ifdim\dimexpr\ht\engine@cardbox{\engine@ncards}+\dp\engine@cardbox{\engine@ncards}\relax>\engine@cardbody

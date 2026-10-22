@@ -45,8 +45,10 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       overhang into the margins; \enginecolshare)
 
   ::: {.lead}, ::: {.column .card}, ::: {.strip role=}, status items
-      the lead box (\engine@barbox), cards (tcolorbox, \begin{enginecard}),
-      strips and ✓ ⚠ ✗ items as HTML and pptx draw them, from livery.sty's boxes
+      the lead box (enginelead), cards (enginecards, enginecard), strips
+      (enginestrip) and ✓ ⚠ ✗ items as HTML and pptx draw them, from
+      livery.sty's boxes; the theme's own environments, written as a hand
+      author writes them (latex/authoring.md)
 
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
@@ -241,12 +243,13 @@ local function beamer_columns(blocks)
   end })
 end
 
--- A row with a card (C.card_attrs()): \begin{enginecards}, then per column
--- \begin{enginecard}[pick,solid]{<role's color>}{<share>}{<n>}{<title>}{<sub>} round its body (a plain
--- column beside cards is a card with no fill, `plain`), [..]{.label} and [..]{.big} lines as
--- \enginelabel and \enginebig; beamerinnerthemeEngine.sty sets the bodies first, so the row's cards
--- take one height. A table cannot sit in a box (longtable): the row stays plain columns, warned of.
--- A role's TeX color is livery.json's latex.roles (livery.sty defines them), through C.box_role().
+-- A row with a card (C.card_attrs()): \begin{enginecards}{<the columns' shares>}, then per column
+-- \begin{enginecard}[role=<role>,pick,solid]{<title>}{<sub>} round its body (a plain column beside
+-- cards is [plain]{}{}), [..]{.label} and [..]{.big} lines as \enginelabel and \enginebig;
+-- beamerinnerthemeEngine.sty sets the bodies first, so the row's cards take one height. A table
+-- cannot sit in a box (longtable): the row stays plain columns, warned of. A column's role= is
+-- checked here (C.box_role(): all three formats warn alike on an unknown name) and reaches the
+-- theme as the role's name; a column without one writes no key, the theme's default by place.
 
 local function card_body(blocks)
   local out = pandoc.Blocks({})
@@ -265,7 +268,7 @@ local function card_body(blocks)
 end
 
 local function card_rows(blocks, livery)
-  local roles, tex = livery.boxes.card.roles, livery.latex.roles
+  local roles = livery.boxes.card.roles
   local title = ""
   local function row(d)
     if not has_class(d, "columns") then return nil end
@@ -280,21 +283,24 @@ local function card_rows(blocks, livery)
       quarto.log.warning("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
       return nil
     end
-    local out = pandoc.Blocks({ latex("\\begin{enginecards}") })
+    local spec = {}
+    for k = 1, #cols do spec[k] = string.format("%.4f", shares[k]) end
+    local out = pandoc.Blocks({ latex("\\begin{enginecards}{" .. table.concat(spec, ",") .. "}") })
     for k, col in ipairs(cols) do
       local default = roles[(k - 1) % #roles + 1]   -- by its place in the row
+      local given = col.attributes["role"]           -- (card_attrs takes it off)
       local c = C.card_attrs(col, default)
-      local opts, role, head, sub, body = "plain", tex.background, "", "", col.content
+      local keys, head, sub, body = { "plain" }, "", "", col.content
       if c then
-        local o = {}
-        if c.pick then table.insert(o, "pick") end
-        if c.solid then table.insert(o, "solid") end
-        opts = table.concat(o, ",")
-        role, body = tex[C.box_role(livery, c.role, default, "engine-beamer")], c.body
+        keys = {}
+        if given then table.insert(keys, "role=" .. C.box_role(livery, c.role, default, "engine-beamer")) end
+        if c.pick then table.insert(keys, "pick") end
+        if c.solid then table.insert(keys, "solid") end
+        body = c.body
         head = c.title and inlines_to_latex(c.title) or ""
         sub = c.sub and inlines_to_latex(c.sub) or ""
       end
-      out:insert(latex(string.format("\\begin{enginecard}[%s]{%s}{%.4f}{%d}{%s}{%s}", opts, role, shares[k], #cols, head, sub)))
+      out:insert(latex(string.format("\\begin{enginecard}[%s]{%s}{%s}", table.concat(keys, ","), head, sub)))
       out:extend(card_body(body))
       out:insert(latex("\\end{enginecard}"))
     end
@@ -350,12 +356,12 @@ local function status_items(blocks)
   end)
 end
 
--- A .strip: \begin{enginestrip}{<role color>} round its blocks, its source lines each a paragraph
+-- A .strip: \begin{enginestrip}[role=<role>] round its blocks, its source lines each a paragraph
 local function strips(blocks, livery)
   return blocks:walk({ Div = function(d)
     if not has_class(d, "strip") then return nil end
     local role = C.box_role(livery, d.attributes["role"], "accent", "engine-beamer")
-    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. livery.latex.roles[role] .. "}") })
+    local out = pandoc.Blocks({ latex("\\begin{enginestrip}[role=" .. role .. "]") })
     out:extend(C.split_lines(d.content))
     out:insert(latex("\\end{enginestrip}"))
     return out

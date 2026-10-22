@@ -211,8 +211,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
-    # the TeX name of each role and blend (livery.sty defines them), the one table the beamer filter
-    # reads for a card's or strip's role=
+    # the TeX name of each role and blend (livery.sty defines them, and carries this table as
+    # \engine@role@<name> for a card's or strip's role=; the filters check a role= against it)
     out.setdefault("latex", {})["roles"] = {**{r: t for r, t in ROLE_TEX.items() if r in roles},
                                             **{b: tex_name("brand-" + b, {}) for b in blends}}
     g = out.setdefault("geometry", {})   # the margin, a {.wide} slide's side margin, and the body's foot

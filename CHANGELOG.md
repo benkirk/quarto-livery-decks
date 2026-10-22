@@ -25,6 +25,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A strip inside a card no longer sets an overfull line (6 pt at ncar's body): the strip widened
   its line by the card's pad and took back only the left one. Nothing moves on the page; the
   `Overfull \hbox` goes from the log.
+- Cards and strips take keys: `\begin{enginecards}{3}` (or weights, `{2,1,1}`) holds
+  `\begin{enginecard}[role=secondary, pick, solid]{Title}{Sub}` (`{}` for no sub-line; `plain` for
+  a column beside cards), and `\begin{enginestrip}[role=accent]`. A `role=` is a role or blend of
+  the livery by name, else any defined color, else a warning and the default (a card's place in
+  the row; a strip's accent). `pick=<2>` draws the outline on those steps only, its width kept on
+  every step. The old positional form (`{<TeX color>}{<share>}{<n>}`) is gone; the Quarto filter
+  writes the new one.
 
 ## [26.10.7] - 2026-10-21
 
