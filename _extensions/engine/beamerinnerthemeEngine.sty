@@ -196,6 +196,15 @@
 \AtBeginDocument{\@ifpackageloaded{caption}{\captionsetup{labelformat=empty,labelsep=none,
   justification=centering}}{}}
 \setbeamertemplate{bibliography item}{\insertbiblabel}
+% the reference list (Quarto's citations partial: CSLReferences, {hanging}{entry spacing}) set as
+% HTML and pptx set it: in the footnote size, a 1.5 em hanging indent, and the style's entry spacing
+% (1 in most) in steps of 0.4 em rather than of a line
+\AtBeginDocument{\ifdefined\cslhangindent
+  \setlength\cslhangindent{1.5em}%
+  \renewenvironment{CSLReferences}[2]{\usebeamerfont{bibliography entry author}\begin{list}{}{%
+    \setlength{\itemindent}{0pt}\setlength{\leftmargin}{0pt}\setlength{\parsep}{0pt}%
+    \ifodd #1\relax\setlength{\leftmargin}{\cslhangindent}\setlength{\itemindent}{-1\cslhangindent}\fi
+    \setlength{\itemsep}{#2\dimexpr0.4em\relax}}}{\end{list}}\fi}
 
 % ---------------------------------------------------------------------------
 % blocks: square, flat (no shadows/gradients -- Brand Guide p25)
@@ -645,7 +654,8 @@
 % ---------------------------------------------------------------------------
 % misc
 % ---------------------------------------------------------------------------
-\setbeamertemplate{frametitle continuation}{\,(\insertcontinuationcount)}
+% an allowframebreaks frame's pages numbered, (1), (2), only when it runs to more than one
+\setbeamertemplate{frametitle continuation}[singleframecheck][\,(\insertcontinuationcount)]
 \setbeamertemplate{footnote}{%
   \parindent 0em\noindent\raggedright
   \hbox to 1.2em{\hfil\insertfootnotemark\,}\insertfootnotetext\par}

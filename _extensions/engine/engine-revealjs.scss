@@ -501,6 +501,15 @@ $mermaid-label-fg-color: $engine-primary;
   margin-right: auto;
 }
 
+// the references slide (engine-revealjs.lua: the slide holding ::: {#refs}): Quarto marks it
+// .smaller, which the list's own size replaces; the list in the footnote size, each entry hanging
+.reveal .slides section.engine-references { font-size: 1em; }
+.reveal .slides section #refs {
+  font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
+  text-align: left;
+  .csl-entry { padding-left: 1.5em; text-indent: -1.5em; margin: 0.4em 0; }
+}
+
 // a lifted ^[...] note's mark in the text (engine-common.lua lift_footnotes())
 .reveal .slides section .engine-noteref { color: var(--engine-accent); }
 

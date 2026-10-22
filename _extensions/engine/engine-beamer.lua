@@ -686,6 +686,13 @@ function Pandoc(doc)
     doc.meta["header-includes"] = hi
   end
 
+  -- the references slide (a deck that cites without one gets it last): its frame breaks across
+  -- pages as the list needs
+  local cited = C.ensure_refs(doc.blocks, doc.meta, slide_level)
+  local refs = C.refs_heading(cited, slide_level)
+  if refs then add_frameoption(cited[refs], "allowframebreaks") end
+  doc.blocks = cited
+
   local out = pandoc.Blocks({})
   local i, blocks = 1, wrap_layout(doc.blocks)
   local section, subtitles = 0, pandoc.List({})

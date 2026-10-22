@@ -25,11 +25,19 @@ A release's entry is written here before its tag is pushed, and becomes its note
   no longer adds a "Notes" slide at the end, and HTML no longer draws Quarto's own numbered aside.
   A paragraph starting with `§` or `¶` is a slide footnote too. A note in the speaker notes stays
   as it was; a fifth note on a slide, or one holding more than paragraphs, warns and stays.
+- Citations (`bibliography:` and `[@key]`): the slide holding `::: {#refs}` is the references slide
+  in every format, its entries in the footnote size with a 1.5 em hanging indent and 0.4 em
+  between them; in the PDF its frame breaks across pages as the list needs. A deck that cites but
+  has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
+  warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
+  directory is a prerequisite, so editing one rebuilds the deck.
 - PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
   livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
   instead of the brand's; lists, labels and strips in a card colored themselves and were right.
 
 ### LaTeX
+- A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
+  runs to more than one page; a one-page frame's title stands alone.
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
   color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
   theme resolves a `role=` itself.

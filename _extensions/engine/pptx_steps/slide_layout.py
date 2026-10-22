@@ -12,6 +12,9 @@ art, pandoc's caption box centered under it in the muted color, the slide number
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
 paragraph, the note's in the caption size and muted color, centred, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
+references (slide-layout.lua's word for the slide holding ::: {#refs}, which citeproc fills): every
+body paragraph in the footnote size with a hanging indent and a little space above, as HTML and
+PDF set the list.
 wide: the body placeholders and a table take the slide less geometry.wide-margin a side (a columns
 slide's are columns.py's); a picture keeps its size, as HTML's does.
 closing: the slide moves onto the template's Closing layout (Closing (light) under themeoptions
@@ -45,7 +48,7 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
-from .common import BOXES, GEOM, K, LIVERY, SLACK, fit_table, is_body, is_picture, is_table, pads, rect, rpr, take_marker
+from .common import BOXES, GEOM, K, LIVERY, SLACK, fit_table, is_body, is_picture, is_table, pads, ppr_place, rect, rpr, take_marker
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
@@ -56,6 +59,9 @@ FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as 
 CAP_SIZE   = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the themes' caption size, the muted color
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 NOTE_GAP   = Pt(6 * K)    # note: between the picture or table and the note under it
+REF_PT     = livery_mod.type_pt(LIVERY, "footnote")   # references: the list in the footnote size,
+REF_HANG   = 1.5          # a hanging indent of 1.5 em of it, 0.4 em above each entry (HTML, PDF)
+REF_BEFORE = 0.4
 CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = livery_mod.color(LIVERY, "warning")
@@ -212,6 +218,24 @@ def note_style(slide):
         for r in p.runs:
             r.font.size, r.font.color.rgb = CAP_SIZE, CAP_COLOR
     return True
+
+
+def references_style(slide):
+    """references: each body paragraph (a citeproc entry) in the footnote size, hanging by REF_HANG
+    em, REF_BEFORE em above it. Before lay_out, whose scale= then sizes it with the rest."""
+    hang = round(REF_HANG * REF_PT * 12700)
+    for shape in [sh for sh in slide.shapes if is_body(sh)]:
+        for p in shape.text_frame.paragraphs:
+            ppr = p._p.get_or_add_pPr()
+            ppr.set("marL", str(hang))
+            ppr.set("indent", str(-hang))
+            for old in ppr.findall(qn("a:buChar")) + ppr.findall(qn("a:buAutoNum")):
+                ppr.remove(old)
+            if ppr.find(qn("a:buNone")) is None:
+                ppr_place(ppr, etree.Element(qn("a:buNone")))
+            p.space_before = Pt(REF_BEFORE * REF_PT)
+            for r in p.runs:
+                r.font.size = Pt(REF_PT)
 
 
 def note_place(slide):
@@ -689,6 +713,8 @@ def run(prs, pptx: Path) -> None:
                       file=sys.stderr)
         else:
             note = "note" in words and note_style(slide)
+            if "references" in words:
+                references_style(slide)
             lay_out(slide, words, w)
             if note:   # after scale=: the box is cut to the note at the size it is set in
                 note_place(slide)

@@ -212,6 +212,68 @@ local function take_footnotes(blocks)
   return kept, found
 end
 
+-- Citations ([@key] with a bibliography:): citeproc runs after the engine's filters and fills the
+-- deck's ::: {#refs} div, so every filter sees the Cite inlines and the author's empty div. The
+-- slide holding the div is the references slide in every format.
+
+-- Quarto's cross-reference prefixes: a [@fig-x] is a cross-reference, not a citation
+local CROSSREF = { fig = true, tbl = true, lst = true, sec = true, eq = true, thm = true, lem = true,
+  cor = true, prp = true, cnj = true, def = true, exm = true, exr = true, sol = true, rem = true,
+  tip = true, nte = true, wrn = true, imp = true, cau = true }
+
+-- Whether the document cites: a bibliography (or inline references) and a Cite of a key that is
+-- not a cross-reference, or a nocite:.
+local function has_cites(doc)
+  local meta = doc.meta
+  if not (meta["bibliography"] or meta["references"]) then return false end
+  if meta["nocite"] then return true end
+  local found = false
+  doc.blocks:walk({ Cite = function(c)
+    for _, cit in ipairs(c.citations) do
+      local prefix = cit.id:match("^(%a+)%-")
+      if not (prefix and CROSSREF[prefix]) then found = true end
+    end
+  end })
+  return found
+end
+
+-- The ::: {#refs} div among the blocks (at any depth), or nil.
+local function refs_div(blocks)
+  local div
+  pandoc.Blocks(blocks):walk({ Div = function(d) if d.identifier == "refs" then div = div or d end end })
+  return div
+end
+
+-- The index among the blocks of the heading (at the slide level) whose slide holds the #refs div,
+-- or nil.
+local function refs_heading(blocks, level)
+  local heading
+  for k, b in ipairs(blocks) do
+    if is_slide_break(b, level) then
+      heading = (b.t == "Header" and b.level == level) and k or nil
+    elseif heading and refs_div({ b }) then
+      return heading
+    end
+  end
+  return nil
+end
+
+-- The blocks with a references slide last when the deck cites but has no #refs div (a warning
+-- says so): a heading at the slide level (reference-section-title:, else "References") and the
+-- empty div citeproc fills. Untouched under suppress-bibliography:.
+local function ensure_refs(blocks, meta, level)
+  blocks = pandoc.Blocks(blocks)
+  if refs_div(blocks) or not has_cites(pandoc.Pandoc(blocks, meta)) then return blocks end
+  if meta["suppress-bibliography"] and pandoc.utils.stringify(meta["suppress-bibliography"]) == "true" then
+    return blocks
+  end
+  local title = meta["reference-section-title"] and pandoc.utils.stringify(meta["reference-section-title"]) or "References"
+  warn("engine: [@..] cited but no ::: {#refs}; a References slide was added last")
+  blocks:insert(pandoc.Header(level, pandoc.Inlines(title)))
+  blocks:insert(pandoc.Div({}, pandoc.Attr("refs")))
+  return blocks
+end
+
 -- .full: the slide's one figure, the caption paragraphs after it, and its
 -- notes; nil when the body is anything else.  A † paragraph is caption too.
 local function is_figure(blk)
@@ -457,4 +519,5 @@ return {
   is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
+  has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
 }
