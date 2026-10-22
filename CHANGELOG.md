@@ -28,6 +28,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   one. The marks take `role=`, by default the livery's `primary-contrast` (the primary that reads
   on the background), and a badge's number is knocked out in the background color. In the pptx
   each is native shapes, one group ("Steps", "Timeline"), the badges and dots PowerPoint circles.
+  Limits: six items at most, text only, on the slide itself (not in a card or a column); anything
+  else warns and stays a plain list. `docs/authoring.md` "Steps and timelines".
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx

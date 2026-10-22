@@ -119,7 +119,7 @@ The cookbook's Options slide, as the Quarto one in [docs/authoring.md "Cards and
 ## Steps and timelines
 
 The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
-[the sample deck](../decks/sample/sample.qmd):
+[docs/authoring.md "Steps and timelines"](../docs/authoring.md#steps-and-timelines):
 
 ```latex
 \begin{enginesteps}[role=secondary]{3}            % three equal steps; role= as a card's

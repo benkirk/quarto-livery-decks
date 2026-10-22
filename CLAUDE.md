@@ -568,9 +568,10 @@ it does, by area, beyond the format notes above:
   `grid-pptx.lua` writes the shares on a notes line (`engine-columns: 0.55 0.45`) and `columns.py`
   frames the placeholders, moving a column's picture or table with them. Never a marker paragraph
   there: beside a picture or table it demotes the slide. A *grid* slide (`is_grid()`: more than
-  two columns, a `.card`, a `.lead`) is flattened on purpose into one placeholder with marker
-  paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`, `⟦engine:end⟧`), which `grid.py`
-  redraws as text boxes carrying the master's body list style and deletes. First-cut limit: a
+  two columns, a `.card`, a `.lead`, a `.steps` or `.timeline`) is flattened on purpose into one
+  placeholder with marker paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`,
+  `⟦engine:end⟧`), which `grid.py` redraws as text boxes carrying the master's body list style
+  and deletes. First-cut limit: a
   picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits the
   slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
   pandoc, silently, in either tier.
@@ -590,6 +591,21 @@ it does, by area, beyond the format notes above:
   PDF: `\engine@barbox` (caution, lead, strip), tcolorbox cards set in one run (bodies boxed
   first, the feature panel's pattern), a status list beamer's itemize with `\item[✓]`. PDF frames
   are top-aligned (`t`, without beamer's 0.2 cm; a paragraph-first body cancels its `\parskip`).
+- **Steps and timelines, the rail** (`::: {.steps role=}` round an ordered list, `::: {.timeline}`
+  round a bullet list, `- [x]` a done milestone; at most six items, text only, at a slide's top
+  level: `top_rails()` warns of one in a column and leaves its list):
+  `engine-common.lua`'s `rail_kind()`/`rail_items()` read them once (an item's first bold run its
+  title or date, the rest its text, split_lines()), each filter's `rails()` first in its chain (a
+  literal ✓ in a milestone is its status), every number `boxes.rail` (`line`, `line-color`, the
+  `rule` blend by default, `badge`, `dot`, a nullable `fill`, `pad`). The marks default to
+  `primary-contrast` (a dark livery's primary vanishes on its background) and a badge's number is
+  knocked out in the background color, so a visible mark has a readable number. HTML: a grid whose
+  items are `display: contents`, so a row's parts line up. pptx: a grid slide, `⟦engine:rail
+  kind=steps role=...⟧`, `⟦engine:item⟧`/`⟦engine:item done⟧` ... `⟦engine:end⟧`; `grid.py`'s
+  `draw_rail()` draws an `MSO_SHAPE.OVAL` badge with its own text frame (Keynote and PowerPoint
+  open it) or dot, a rail rectangle and `body_box` texts, one group ("Steps", "Timeline"). PDF:
+  `enginesteps`/`enginestep`, `enginetimeline`/`\enginemilestone[done]` on the cards' six save
+  boxes, drawn by one tikzpicture at `\end`.
 - **Speaker notes can go anywhere.** Pandoc only picks Two Content when the
   body *starts* with the columns div, so notes written before columns split the
   slide; `notes-last.lua` (engine-pptx) moves
