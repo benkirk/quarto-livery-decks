@@ -26,7 +26,7 @@ from .common import K, LIVERY
 MARKERS     = ("†", "‡", "§", "¶")     # the printer's order (engine-common.lua MARKERS)
 FOOT_SIZE   = Pt(livery_mod.type_pt(LIVERY, "footnote"))   # the themes' footnote size (livery.json type)
 FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
-MARK_COLOR  = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))   # the accent slot
+MARK_COLOR  = RGBColor.from_string(livery_mod.hex(LIVERY, "accent"))   # the accent role, as HTML (--engine-accent) and beamer (BrandAccent)
 FOOT_BEFORE = Pt(10 * K)               # vertical gap above the footnote (7.5 in's 10 pt)
 
 

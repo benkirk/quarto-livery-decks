@@ -634,10 +634,10 @@ def draw_feature(slide, width, height, photo):
     else:
         draw_cover(slide, width, height, photo, c)
         if c["column"]["tab"]:
-            _rect(slide, [0, y, GEOM["tab-width"], 0.16], width, height, livery_mod.scheme(LIVERY, "accent4"), name="Title tab")
+            _rect(slide, [0, y, GEOM["tab-width"], 0.16], width, height, livery_mod.hex(LIVERY, "accent"), name="Title tab")
         if c["column"]["rule"]:
             _rect(slide, [x, y + 0.185, c["column"]["rule"][0], c["column"]["rule"][1]], width, height,
-                  livery_mod.scheme(LIVERY, "accent1"), name="Title rule")
+                  livery_mod.hex(LIVERY, "secondary"), name="Title rule")
         if title is not None:
             _frame(title, x, y, w, 0.16, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
