@@ -43,7 +43,8 @@ BLENDS = [
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
-# livery role -> the LaTeX color the themes read (engine_livery.sty's six, plus the four new)
+# livery role -> the LaTeX color the themes read (the 13 roles; livery.json latex.roles carries them
+# and the blends' names to the beamer filter)
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "primary-contrast": "BrandPrimaryContrast", "secondary": "BrandSecondary",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
@@ -210,8 +211,13 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
-    g = out.setdefault("geometry", {})   # a {.wide} slide's side margin, and the body's foot
-    g.setdefault("wide-margin", round(g.get("margin", 0.06) / 2, 4))
+    # the TeX name of each role and blend (livery.sty defines them), the one table the beamer filter
+    # reads for a card's or strip's role=
+    out.setdefault("latex", {})["roles"] = {**{r: t for r, t in ROLE_TEX.items() if r in roles},
+                                            **{b: tex_name("brand-" + b, {}) for b in blends}}
+    g = out.setdefault("geometry", {})   # the margin, a {.wide} slide's side margin, and the body's foot
+    g.setdefault("margin", 0.06)
+    g.setdefault("wide-margin", round(g["margin"] / 2, 4))
     g.setdefault("body-bottom", BODY_BOTTOM)
     out["frametitle"] = {**FRAMETITLE, **(data.get("frametitle") or {})}
     if out["frametitle"]["align"] not in ("left", "center"):
@@ -239,6 +245,11 @@ def resolve(d: Path) -> tuple[dict, dict]:
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's
                          lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
+    # derived, not yml keys: the content body's box (the template's placeholder, the plots' size) and
+    # the Two Content column's width (the template's halves, the shares' reference in columns.py)
+    m, top = g["margin"], out["frametitle"]["body"]
+    g["body"] = [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)]
+    g["half"] = round((1 - 2 * m - out["boxes"]["columns"]["gap"]) / 2, 4)
     b = data.get("bullets")   # list glyphs per level; null keeps each format's own shapes
     out["bullets"] = None if not b else {
         "glyphs": list(b["glyphs"]),
@@ -269,7 +280,7 @@ def marking(m: dict, out: dict, hexof) -> dict:
     m["color"] = hexof(m["color"], "color")
     if m["fill"]:
         m["fill"] = hexof(m["fill"], "fill")
-    margin = out.get("geometry", {}).get("margin", 0.06)
+    margin = out["geometry"]["margin"]
     x = {"center": (1 - m["width"]) / 2, "left": margin, "right": 1 - margin - m["width"]}[m["align"]]
     y = m["offset"] if m["edge"] == "top" else 1 - m["offset"] - m["height"]
     m["box"] = [round(x, 4), round(y, 4), m["width"], m["height"]]
@@ -415,7 +426,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     each format's drawer picks a name and applies no variant logic. Derived from the geometry,
     title, signoff and art knobs; livery.yml `compositions: {<name>: {<key>: ...}}` overrides,
     an override on title reaching its photo and light variants, one on closing its light one."""
-    g = out.get("geometry", {}); m = g.get("margin", 0.06); logo = g.get("logo", {})
+    g = out["geometry"]; m = g["margin"]; logo = g.get("logo", {})
     hw = slide_hw(out)   # a height as a fraction of the width
     art = out.get("art") or {}
     has_art = lambda k: isinstance(art.get(k), str)
@@ -535,7 +546,8 @@ def compositions(name: str, data: dict, out: dict) -> dict:
                "signoff": signoff("primary"),
                "column": {"box": _box(m, div.get("top", 0.1333), 0.62, 1 - div.get("top", 0.1333) - div.get("bottom", 0.0889)),
                           "anchor": "middle", "role": "primary-text", "tab": bool(dv.get("tab", True)), "rule": None},
-               "eyebrow": {"label": dv.get("label", "Section"), "color": dv.get("label-color", "secondary")}
+               "eyebrow": {"label": dv.get("label", "Section"),   # section.label-color, a role or a hex, as hex
+                           "color": (lambda c: c if c.startswith("#") else out["roles"][c])(dv.get("label-color", "secondary"))}
                           if dv.get("label", "Section") else None}   # section.label: null, no eyebrow
     feature = {**empty,
                "photo": {"box": _box(0, 0, 1, 1)},
@@ -767,7 +779,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for k, tex in (("base", "base"), ("headings", "head")):
             for face, names in installed.get(k, {}).get("faces", {}).items():
                 L.append(f"\\def\\engine@installed@{tex}@{face}{{{names[0]}}}")
-    ft = livery.get("frametitle", {**FRAMETITLE, "body": BODY_TOP})
+    ft = livery["frametitle"]
     if ft != {**FRAMETITLE, "body": BODY_TOP}:   # the content title, when not the engine's (left, tab, rule)
         L.append("% the content slides' title: alignment, accent tab, hairline, the body's top (frametitle)")
         L.append(f"\\def\\engine@ft@align{{{ft['align']}}}")
@@ -849,7 +861,8 @@ def tex_camel(key: str) -> str:
 def emit_sty_boxes(livery: dict) -> list[str]:
     """The boxes (livery.json boxes): \\engine@boxes@<box>@<key> for each number (fractions of the paper,
     tint a share), @pady and @padx for each pad (em, so the factor goes before `em`), and a color per
-    color key, EngineBoxes<Box><Key> (the status glyphs' EngineStatus<Key>), as hex."""
+    color key, EngineBoxes<Box><Key> (the status glyphs' EngineGlyph<Key>: EngineStatus* are the
+    charts'), as hex."""
     L = ["% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),",
          "% its pads (@pady, @padx: em of the body type) and colors"]
     for box, v in livery["boxes"].items():
@@ -858,7 +871,7 @@ def emit_sty_boxes(livery: dict) -> list[str]:
             if k == "roles":   # role names, read from livery.json by the filters
                 continue
             if k in BOX_COLORS.get(box, ()):
-                tex = f"EngineStatus{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
+                tex = f"EngineGlyph{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
                 L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{val[1:]}}}")
             elif isinstance(val, list):   # [vertical, horizontal]
                 L.append(f"\\def\\engine@boxes@{box}@{name}y{{{val[0]}}}\\def\\engine@boxes@{box}@{name}x{{{val[1]}}}")
@@ -934,10 +947,7 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
         if c["eyebrow"]:
             e = c["eyebrow"]
             d("eyebrow@label", e["label"])
-            if str(e["color"]).startswith("#"):
-                L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")
-            else:
-                L.append(f"\\colorlet{{EngineC{n}Eyebrow}}{{{tex(e['color'])}}}")
+            L.append(f"\\definecolor{{EngineC{n}Eyebrow}}{{HTML}}{{{e['color'][1:].upper()}}}")   # hex: compositions() resolved it
         for k in ("mark", "signoff"):   # its files, the composition's own (compositions())
             if c[k] and c[k].get("img"):
                 d(f"{k}@img", stem(c[k].get("img-print", c[k]["img"])))
@@ -1008,7 +1018,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
     props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
     props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
     props.append(f"--engine-logo-content: {'none' if corner == 'none' else '\"\"'};")
-    ft = livery.get("frametitle", {**FRAMETITLE, "body": BODY_TOP})
+    ft = livery["frametitle"]
     if ft["body"] != BODY_TOP:
         props.append(f"--engine-body-top: {px(ft['body'])};")
     if ft["align"] == "center":
@@ -1107,7 +1117,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-card-pad-x: {card['pad'][1]:g}em;"]   # a strip reaches the card's edges by it
     p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};",
           f"--engine-strip-gap: {strip['pad'][0]:g}em;"]   # above and below it: its vertical pad
-    p += [f"--engine-status-{k}: {c};" for k, c in b["status"].items()]
+    p += [f"--engine-glyph-{k}: {c};" for k, c in b["status"].items()]   # the ✓ ⚠ ✗ glyphs (--engine-status-* are the charts')
     return p
 
 
@@ -1287,7 +1297,7 @@ def emit_css_compositions(livery: dict) -> list[str]:
                 op = c[k].get("opacity", 1)
                 props.append(f"--engine-cmp-{k}-fill: " + (fill if op == 1 else f"color-mix(in srgb, {fill} {op * 100:g}%, transparent)") + ";")
         if c["eyebrow"]:
-            props.append(f"--engine-cmp-eyebrow: {role(c['eyebrow']['color'])};")
+            props.append(f"--engine-cmp-eyebrow: {c['eyebrow']['color']};")   # hex: compositions() resolved it
             props.append(f'--engine-cmp-eyebrow-label: "{c["eyebrow"]["label"]} ";')
         props.append(f"--engine-cmp-eyebrow-display: {'block' if c['eyebrow'] else 'none'};")
         art = livery.get("art", {}).get(c["art"]) if c["art"] else None   # the art under the field, or none

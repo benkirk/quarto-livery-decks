@@ -1300,12 +1300,19 @@
     "tab": false
   },
   "geometry": {
+    "body": [
+      0.028,
+      0.1852,
+      0.944,
+      0.737
+    ],
     "body-bottom": 0.9222,
     "full": {
       "caption": 0.06,
       "footline": 0.075,
       "pad": 0.025
     },
+    "half": 0.457,
     "logo": {
       "aspect": 1.2146,
       "closing-height": 0.129,
@@ -1383,6 +1390,26 @@
       "sky": "NASASky",
       "white": "NASAWhite",
       "yellow": "NASAYellow"
+    },
+    "roles": {
+      "accent": "BrandAccent",
+      "alert-text": "BrandAlertText",
+      "background": "BrandBackground",
+      "caution-fill": "BrandCautionFill",
+      "code-text": "BrandCodeText",
+      "dark": "BrandDark",
+      "foreground": "BrandText",
+      "highlight": "BrandHighlight",
+      "muted": "BrandMuted",
+      "primary": "BrandPrimary",
+      "primary-contrast": "BrandPrimaryContrast",
+      "primary-text": "BrandPrimaryText",
+      "rule": "BrandRule",
+      "secondary": "BrandSecondary",
+      "surface": "BrandSurface",
+      "table-band": "BrandTableBand",
+      "table-rule": "BrandTableRule",
+      "warning": "BrandWarning"
     }
   },
   "logo": {

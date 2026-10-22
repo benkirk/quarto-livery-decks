@@ -109,9 +109,9 @@
   --engine-strip-tint: 18%;
   --engine-strip-pad: 0.3em 0.8em;
   --engine-strip-gap: 0.3em;
-  --engine-status-done: #096FAE;
-  --engine-status-warn: #CFB87C;
-  --engine-status-fail: #CFB87C;
+  --engine-glyph-done: #096FAE;
+  --engine-glyph-warn: #CFB87C;
+  --engine-glyph-fail: #CFB87C;
 }
 /* chart colors (livery.json charts) */
 :root {
@@ -1032,7 +1032,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-rule-display: none;
   --engine-cmp-rule-w: 0px;
   --engine-cmp-rule-h: 0px;
-  --engine-cmp-eyebrow: var(--engine-secondary);
+  --engine-cmp-eyebrow: #565A5C;
   --engine-cmp-eyebrow-label: "Section ";
   --engine-cmp-eyebrow-display: block;
   background: none;

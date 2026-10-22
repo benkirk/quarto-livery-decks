@@ -94,7 +94,8 @@ def today(L: dict) -> dict:
                "mark": mark(72 / H, logo["section-height"], "primary"), "signoff": signoff("primary"),
                "column": {"box": box(m, dv["top"], 0.62 * pad, 1 - dv["top"] - dv["bottom"]), "anchor": "middle",
                           "role": "primary-text", "tab": d.get("tab", True), "rule": None},
-               "eyebrow": {"label": d.get("label", "Section"), "color": d.get("label-color", "secondary")}
+               "eyebrow": {"label": d.get("label", "Section"),   # label-color resolved to a hex at build
+                           "color": (lambda c: c if c.startswith("#") else L["roles"][c])(d.get("label-color", "secondary"))}
                           if d.get("label", "Section") else None}
     # feature: the h2 a 180px bar (flex-centred, padding 0 m), the body a 52% panel from 230px to the 70px padding
     feature = {**empty, "photo": {"box": box(0, 0, 1, 1)},

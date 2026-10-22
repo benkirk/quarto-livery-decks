@@ -22,7 +22,8 @@ doing" is an acceptable report.
 
 ## 1. Pick the mode
 
-- **Window.** Read everything merged since the ledger's newest end commit, or the PRs Ben names.
+- **Window.** Read everything merged since the ledger's newest *window* entry's end commit (an
+  area entry's is where it branched, not where the reading stopped), or the PRs Ben names.
   `main` takes squash merges, so each commit is one PR: find the range with
   `git log --oneline <end>..origin/main`, then read each PR body (`gh pr view N --json body`)
   and the combined diff (`git diff <end>..origin/main`).
@@ -103,6 +104,8 @@ Run each pass and collect findings. The examples are real.
 - **Delete.** Dead scss (a class nothing in the Lua or the templates emits), a Lua function
   nothing calls, a compatibility shim or alias whose callers are gone (none should exist:
   memory `no-compat-shims`), an option no caller passes, a Makefile variable nothing reads.
+  A keyword parameter with a comment and no caller: grep each `name=` parameter's call sites;
+  `grid.py`'s `top_only` was documented at its one call site, which never passed it (#105–#126).
 - **Retire plans.** `design/` holds this repository's plans, handoffs and progress logs. A plan
   whose PRs have merged and whose next step is done is marked so (its progress section names
   the state) or folded into the roadmap, `design/engine-and-liveries.md`; a dated handoff
@@ -117,6 +120,8 @@ Run each pass and collect findings. The examples are real.
   regrow. Models: `tests/test_docs.py` (every link and section pointer resolves),
   `tests/test_compositions.py`'s `EXPECTED_DELTAS` (every decided move of a box is a row),
   `livery build --check` (the generated files match). Only ratchet a count that is going down.
+  A doc example pinned to a release (`@vX.Y.Z`, an image tag in prose): hold it to
+  `_extension.yml`'s version, as `tests/test_docs.py` holds docs/other-repos.md's.
 
 ## 5. Report
 

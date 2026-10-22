@@ -25,13 +25,6 @@
 \def\engine@fineprint{}
 \newcommand\titlefineprint[1]{\def\engine@fineprint{#1}}
 
-% vertical accent bar spanning box #1, flush with the paper's left edge
-\def\engine@accentbar#1{%
-  \hbox{\hskip-\beamer@leftmargin
-    {\usebeamercolor[fg]{frametitle tab}%
-     \vrule width\engine@tabwidth height\ht#1 depth\dp#1}%
-    \hskip\dimexpr\beamer@leftmargin-\engine@tabwidth\relax
-    \box#1}}
 % the composition column's text alignment (column.align: left | center; \engine@calignof{<comp>}
 % where \engine@comp is not set, as in the closing's body)
 \def\engine@calignof#1{\engine@ifcorner{\csname engine@c@#1@column@align\endcsname}{center}{\centering}{\raggedright}}
@@ -93,9 +86,6 @@
     \@for\engine@el:=\engine@els\do{\csname engine@el@\engine@el\endcsname}%
     \engine@pending}}
 \def\engine@titlestack{\engine@textstack{column}}
-% keep the title frame free of frame numbering by default
-\def\engine@titlepageframe{%
-  {\setbeamertemplate{footline}{}\begin{frame}[plain,noframenumbering]\titlepage\end{frame}}}
 
 % ---------------------------------------------------------------------------
 % section divider;  \sectionsubtitle{...} before \section{...} adds a line
@@ -399,7 +389,6 @@
 \newcommand\enginebig[1]{{\usebeamerfont{display}\color{\engine@bigcolor}#1\par}}
 \newenvironment{enginecards}{\par\global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
   {\engine@drawcards\par}
-\def\engine@cardval#1{\csname engine@card@#1@\the\engine@ncards\endcsname}
 \newcommand\enginecard[6][]{%
   \global\advance\engine@ncards\@ne
   \expandafter\xdef\csname engine@card@opts@\the\engine@ncards\endcsname{#1}%
@@ -420,7 +409,7 @@
   \edef\engine@outerparskip{\the\parskip}%
   \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
     \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
-    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % HTML's card lines sit close
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % card lines sit close, as the pptx's (grid.py CARD_GAP); HTML uses reveal's block margin
     \engine@incardtrue\in@{solid}{#1}\ifin@\engine@solidcardtrue\else\engine@solidcardfalse\fi
     \raggedright\usebeamerfont{normal text}%
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put

@@ -8,7 +8,9 @@ numbers, footnotes, covers, tables in the livery's style), so Make.common's pptx
 after rendering. Each deck is read once, the steps in pptx_steps/ run in the order below, and it
 is saved once: the first five on the zip's parts (text and lxml), the rest on one python-pptx
 Presentation. The livery comes from $LIVERY_DIR (Make.common exports it), else a `_livery` link
-in the current directory (the engine's livery.py)."""
+in the current directory (the engine's livery.py), read once by pptx_steps/common.py, which holds
+what the steps share (the livery's numbers, the shape and run helpers); measure.py measures text
+in the livery's faces."""
 
 import io
 import sys
@@ -29,9 +31,10 @@ def post(path: Path) -> None:
         parts = {i.filename: z.read(i.filename) for i in z.infolist()}
 
     # The zip's parts. svg_fallback first: every later step, python-pptx's picture.image among
-    # them (slide_layout's full slides), then sees a PNG picture, never a bare SVG. section_subtitle
-    # next: it merges each divider's orphaned subtitle and deletes the slide pandoc split it onto,
-    # before embed_fonts rewrites presentation.xml.
+    # them (slide_layout's full slides), then sees a PNG picture, never a bare SVG. notes_clrmap
+    # second (Keynote refuses a notes slide without it). section_subtitle third: it merges each
+    # divider's orphaned subtitle and deletes the slide pandoc split it onto, before embed_fonts
+    # rewrites presentation.xml.
     svg_fallback.run(parts, path.name)      # an SVG plot's PNG fallback, PowerPoint's own shape
     notes_clrmap.run(parts, path.name)      # notes slides as PowerPoint writes them (Keynote)
     section_subtitle.run(parts, path.name)
@@ -46,9 +49,10 @@ def post(path: Path) -> None:
 
     # One Presentation. Footnotes are styled before slide_layout, whose scale= leaves them at
     # their size; columns after it, which leaves a columns slide's frames alone (its {.wide} words
-    # are its own line's); tables after both, re-split inside their final frames; the marking strip before type_step, so a
-    # deck's type step scales it as HTML and PDF do; type_step last, since it multiplies every
-    # size the steps before it set.
+    # are its own line's); grid after columns (its frames and rules), status_glyphs after grid (the
+    # cards' text boxes); tables after all of those, re-split inside their final frames; the
+    # marking strip before type_step, so a deck's type step scales it as HTML and PDF do;
+    # type_step last, since it multiplies every size the steps before it set.
     style_footnotes.run(prs, path.name)
     link_captions.run(prs, path.name)       # a linked picture's URL, a box pandoc cannot add
     slide_layout.run(prs, path.resolve())   # layout classes, covers, closings, slide numbers

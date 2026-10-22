@@ -17,8 +17,8 @@ from pptx.oxml.ns import qn
 import livery as livery_mod
 
 from . import docprops
+from .common import LIVERY
 
-LIVERY = livery_mod.load()
 SIZED = (qn("a:rPr"), qn("a:defRPr"), qn("a:endParaRPr"))
 CP = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"
 VT = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"

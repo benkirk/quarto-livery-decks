@@ -8,8 +8,8 @@
 %   sign-off lockup at the foot when it has one (signoff.*).
 %
 % Every page is drawn by the `background' template according to a page
-% style: normal | title | section | closing | feature.
-%   * frame keys (enginebg=, engineclosing) set \engine@framestyle locally, so the
+% style: normal | title | section | closing | feature | full.
+%   * frame keys (enginebg=, enginefull=, engineclosing) set \engine@framestyle locally, so the
 %     style holds for every overlay of that frame;
 %   * the title/section page templates set \engine@bodystyle globally from
 %     inside the frame body; it is reset after each shipout.
@@ -31,8 +31,6 @@
 \def\engine@ifstyle#1{%
   \edef\engine@tmpa{\engine@style}\def\engine@tmpb{#1}%
   \ifx\engine@tmpa\engine@tmpb\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
-\def\engine@ifplainstyle#1#2{% true for everything except normal frames
-  \engine@ifstyle{normal}{#2}{#1}}
 
 % ---------------------------------------------------------------------------
 % geometry (relative to the paper, so 16:9, 16:10 and 4:3 all work)

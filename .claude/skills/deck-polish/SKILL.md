@@ -43,6 +43,7 @@ short slide". Don't restate them; use them.
 | a diagram that is a thin strip | reshape toward 2–3:1. A wide chain becomes a snake or a grid: Graphviz `layout=neato` with pinned `pos="x,y!"` (clusters are lost under neato). A column holding a diagram wants one taller than wide |
 | a diagram too detailed for the room under a title | `{.full}` on the heading: it gets the whole slide, and a paragraph after it is a one-line caption (`make qa` fails one that wraps) |
 | a warning slide (`## ⚠︎ ...`) | `{.caution}` with its other layout controls: the body on the soft yellow box |
+| pptx count one higher on a grid or card slide (three or more columns, a `.card`, a `.lead`) holding a picture or table | a picture or table is not drawn in a grid column yet (the render warns): make it a two-column slide, or move the picture out of the columns |
 
 ## Rules
 
@@ -62,9 +63,6 @@ short slide". Don't restate them; use them.
 
 - **No ignore list.** A deliberately dense demo slide (the sample's "Wall of Text") is
   reported on every run. If that gets noisy, add a `qa-ignore.txt` of `slide kind` pairs.
-- **Sample deck overflows** found by the first `make qa`: p3 (the numbered list meets the
-  frame number), p9 (a paragraph runs off the page) and the `_quarto.yml` slide (code plus
-  column). Fix them, or ignore them once that list exists.
 - **The table-column rule is heuristic.** It needs three lines starting at the same x, and it
   skips right-aligned number columns. It was tuned on this theme's longtable output. A
   different table style may need the threshold raised, or its own rule.
@@ -76,8 +74,6 @@ short slide". Don't restate them; use them.
   HTML autofit hint and the contact sheet catch them.
 - **pptx overflow is not checked.** PowerPoint autofit hides most of it. A LibreOffice
   render through the PDF checks would be the next step, with font fallback as the caveat.
-- **Not in CI**, which would need a browser and TeX. A PDF-only mode (`--no-html`) is the
-  likely first step.
 - **Speed:** about 0.4 s a slide for the HTML pass. If decks grow, skip the screenshots or
   run in parallel.
 - **Theme follow-ups seen in the SAMuel pass:**

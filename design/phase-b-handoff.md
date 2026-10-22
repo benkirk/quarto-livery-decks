@@ -1,5 +1,9 @@
 # Handoff: #57 Phase B, the pptx format made whole
 
+**State:** done; the first release was 26.10.0 (2026-10-18). "Open after Phase B" below is of
+its day: v1.1.0 was withdrawn for the calendar version, `VERSION` left `engine-revealjs.lua`
+for `_extension.yml` (#108), #58 is closed; #66 stays open.
+
 Written 2026-10-18 at the end of the charts work, for a fresh session. Read this, then
 `CLAUDE.md`, then issue #57's "Phase B" section (`gh issue view 57`; its paths predate the
 flatten: `docs/common/...` is now `common/...`, `docs/Make.common` is `Make.common`), then the

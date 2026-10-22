@@ -1,5 +1,7 @@
 # Handoff: the README as a front page, the details in companion guides
 
+**State:** done (#84, in 26.10.1).
+
 Written 2026-10-18, at the end of #58 (the customer surface) and the first release, v26.10.0, for
 a fresh session. Read this, then `CLAUDE.md`, then the README itself. Decided with Ben the same
 day: the homes, the length and this form (a handoff plus an issue). Conventions are as ever: one

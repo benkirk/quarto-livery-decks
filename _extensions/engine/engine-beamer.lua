@@ -44,8 +44,15 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       (boxes.columns.gap), as HTML and pptx lay them out (onlytextwidth: no
       overhang into the margins; \enginecolshare)
 
+  ::: {.lead}, ::: {.column .card}, ::: {.strip role=}, status items
+      the lead box (\engine@barbox), cards (tcolorbox, \begin{enginecard}),
+      strips and ✓ ⚠ ✗ items as HTML and pptx draw them, from livery.sty's boxes
+
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
+
+  metadata `marking: "CUI"`
+      the marking strip on every frame (\enginemarkingtext; the livery places it)
 
   metadata `themeoptions: [title=light, footer=full, ...]`
       options for \usetheme{Engine} (see beamerthemeEngine.sty)
@@ -62,12 +69,15 @@ end
 
 local slide_level = 2
 
--- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step,
--- the default livery, the slide-footnote markers, the one-figure test and the note test.
+-- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step, the
+-- livery, the slide breaks and kinds, the layout classes, the footnotes, a .full slide's parts,
+-- the theme options, the cards' and strips' reading.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
-local has_class, deck_type_scale, default_livery = C.has_class, C.deck_type_scale, C.default_livery
-local footnote_marker, strip_marker, is_figure = C.footnote_marker, C.strip_marker, C.is_figure
-local is_note = C.is_note
+local has_class, deck_type_scale = C.has_class, C.deck_type_scale
+local footnote_marker, strip_marker, is_note = C.footnote_marker, C.strip_marker, C.is_note
+-- a content frame here: not a feature or closing frame; a .full frame keeps its layout classes and
+-- footnotes in the PDF (HTML leaves them out; the unplanned-city ledger has the divergence)
+local CONTENT_KINDS = { feature = true, closing = true }
 
 local function add_frameoption(el, opt)
   local cur = el.attributes["frameoptions"]
@@ -81,9 +91,7 @@ local function inlines_to_latex(inlines)
   return (pandoc.write(doc, "latex"):gsub("%s+$", ""))
 end
 
-local function is_slide_break(blk)
-  return (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule"
-end
+local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
 
 -- slide footnotes: † / ‡ paragraphs, lifted to the frame's foot
 
@@ -100,20 +108,16 @@ local function hoist_footnotes(blocks)
     local blk = blocks[i]
     out:insert(blk)
     i = i + 1
-    if blk.t == "Header" and blk.level == slide_level
-        and not has_class(blk, "feature") and not has_class(blk, "closing") then
-      local body, notes, tail = pandoc.Blocks({}), pandoc.List({}), pandoc.Blocks({})
-      local filter = { Para = function(p) if footnote_marker(p) then notes:insert(p); return {} end end }
+    if C.content_heading(blk, slide_level, CONTENT_KINDS) then
+      local slide = pandoc.Blocks({})
       while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then
-          tail:insert(b)
-        elseif footnote_marker(b) then
-          notes:insert(b)
-        else
-          body:insert(pandoc.walk_block(b, filter))
-        end
+        slide:insert(blocks[i])
         i = i + 1
+      end
+      local kept, notes = C.take_footnotes(slide)
+      local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
+      for _, b in ipairs(kept) do
+        if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
       end
       if #notes > 0 then
         out:insert(latex("\\enginefootnotespring"))
@@ -131,39 +135,9 @@ local function hoist_footnotes(blocks)
   return out
 end
 
--- Per-slide layout controls: the body goes in a Div before the footnote hoist
--- (which reaches into it) and becomes raw LaTeX afterwards (unwrap_layout).
-local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true,
-                         caution = true, wide = true }
+-- Per-slide layout controls (C.take_layout; .fill means nothing here): the body goes in a Div
+-- before the footnote hoist (which reaches into it) and becomes raw LaTeX afterwards (unwrap_layout).
 local used = { scale = false, hcenter = false }
-
-local function take_layout(blk)
-  local h, v, caution, wide, found = false, false, false, false, false
-  local kept = pandoc.List({})
-  for _, c in ipairs(blk.classes) do
-    if LAYOUT_CLASSES[c] then
-      found = true
-      h = h or c == "hcenter" or c == "center"
-      v = v or c == "vcenter" or c == "center"
-      caution = caution or c == "caution"
-      wide = wide or c == "wide"
-    else
-      kept:insert(c)
-    end
-  end
-  local scale = blk.attributes["scale"]
-  if scale then
-    blk.attributes["scale"] = nil
-    found = true
-    if not tonumber(scale) then
-      quarto.log.warning("engine-beamer: scale=\"" .. scale .. "\" is not a number; ignored")
-      scale = nil
-    end
-  end
-  if not found then return nil end
-  blk.classes = kept
-  return { h = h, v = v, caution = caution, wide = wide, scale = scale }
-end
 
 local function wrap_layout(blocks)
   local out, i = pandoc.Blocks({}), 1
@@ -171,8 +145,7 @@ local function wrap_layout(blocks)
     local blk = blocks[i]
     out:insert(blk)
     i = i + 1
-    local lay = blk.t == "Header" and blk.level == slide_level
-      and not has_class(blk, "feature") and not has_class(blk, "closing") and take_layout(blk)
+    local lay = C.content_heading(blk, slide_level, CONTENT_KINDS) and C.take_layout(blk, "engine-beamer")
     if lay then
       if lay.v then add_frameoption(blk, "c") end
       local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
@@ -273,10 +246,7 @@ end
 -- column beside cards is a card with no fill, `plain`), [..]{.label} and [..]{.big} lines as
 -- \enginelabel and \enginebig; beamerinnerthemeEngine.sty sets the bodies first, so the row's cards
 -- take one height. A table cannot sit in a box (longtable): the row stays plain columns, warned of.
-local function role_tex(role)
-  if role == "foreground" then return "BrandText" end
-  return "Brand" .. (role:gsub("(%a)([%w]*)", function(a, b) return a:upper() .. b end):gsub("%-", ""))
-end
+-- A role's TeX color is livery.json's latex.roles (livery.sty defines them), through C.box_role().
 
 local function card_body(blocks)
   local out = pandoc.Blocks({})
@@ -294,7 +264,8 @@ local function card_body(blocks)
   return out
 end
 
-local function card_rows(blocks, roles)
+local function card_rows(blocks, livery)
+  local roles, tex = livery.boxes.card.roles, livery.latex.roles
   local title = ""
   local function row(d)
     if not has_class(d, "columns") then return nil end
@@ -311,14 +282,15 @@ local function card_rows(blocks, roles)
     end
     local out = pandoc.Blocks({ latex("\\begin{enginecards}") })
     for k, col in ipairs(cols) do
-      local c = C.card_attrs(col, roles[(k - 1) % #roles + 1])   -- by its place in the row
-      local opts, role, head, sub, body = "plain", "BrandBackground", "", "", col.content
+      local default = roles[(k - 1) % #roles + 1]   -- by its place in the row
+      local c = C.card_attrs(col, default)
+      local opts, role, head, sub, body = "plain", tex.background, "", "", col.content
       if c then
         local o = {}
         if c.pick then table.insert(o, "pick") end
         if c.solid then table.insert(o, "solid") end
         opts = table.concat(o, ",")
-        role, body = role_tex(c.role), c.body
+        role, body = tex[C.box_role(livery, c.role, default, "engine-beamer")], c.body
         head = c.title and inlines_to_latex(c.title) or ""
         sub = c.sub and inlines_to_latex(c.sub) or ""
       end
@@ -344,8 +316,8 @@ end
 
 -- Status items (C.status_lists()): a list holding one becomes beamer's itemize, each status item's
 -- glyph its \item[...] label (where the bullet is, as HTML's and the pptx's), bold in its status
--- color (livery.sty's EngineStatus*), a failed item's text muted; the other items keep the bullet.
-local STATUS_TEX = { done = "EngineStatusDone", warn = "EngineStatusWarn", fail = "EngineStatusFail" }
+-- color (livery.sty's EngineGlyph*), a failed item's text muted; the other items keep the bullet.
+local STATUS_TEX = { done = "EngineGlyphDone", warn = "EngineGlyphWarn", fail = "EngineGlyphFail" }
 
 local function status_items(blocks)
   return C.status_lists(blocks, function(l, kinds)
@@ -379,10 +351,11 @@ local function status_items(blocks)
 end
 
 -- A .strip: \begin{enginestrip}{<role color>} round its blocks, its source lines each a paragraph
-local function strips(blocks)
+local function strips(blocks, livery)
   return blocks:walk({ Div = function(d)
     if not has_class(d, "strip") then return nil end
-    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. role_tex(d.attributes["role"] or "accent") .. "}") })
+    local role = C.box_role(livery, d.attributes["role"], "accent", "engine-beamer")
+    local out = pandoc.Blocks({ latex("\\begin{enginestrip}{" .. livery.latex.roles[role] .. "}") })
     out:extend(C.split_lines(d.content))
     out:insert(latex("\\end{enginestrip}"))
     return out
@@ -467,7 +440,6 @@ local LIVERY   -- build/livery.json, read by load_theme
 -- canvas width, as a share of the paper (beamer's paper is not the pptx canvas), and
 -- \pandocbounded still keeps an oversized one inside its column and the frame.
 local function size_plots(doc)
-  if not (LIVERY and LIVERY.type and LIVERY.type.canvas) then return doc end
   local plots = dofile(quarto.utils.resolve_path("engine-plots.lua"))
   local canvas_in = LIVERY.type.canvas.w / 72
   return doc:walk({
@@ -490,16 +462,8 @@ local function load_theme(doc)
     quarto.log.warning("engine-beamer: extension path contains spaces or special "
       .. "characters, which LaTeX's \\input@path cannot handle: " .. extdir)
   end
-  local opts = {}
-  local to = doc.meta["themeoptions"]
-  if to then
-    if pandoc.utils.type(to) == "List" then
-      for _, o in ipairs(to) do table.insert(opts, pandoc.utils.stringify(o)) end
-    else
-      table.insert(opts, pandoc.utils.stringify(to))
-    end
-    doc.meta["themeoptions"] = nil -- consumed here; the template would ignore it
-  end
+  local _, opts = C.theme_options(doc.meta)   -- the items as written, for \usetheme
+  doc.meta["themeoptions"] = nil -- consumed here; the template would ignore it
   -- Quarto's own `mathfont:` key (\setmathfont in the template, before the
   -- theme loads) wins over the theme's default math font
   if doc.meta["mathfont"] then
@@ -509,28 +473,16 @@ local function load_theme(doc)
     end
     if not set then table.insert(opts, "mathfont=keep") end
   end
-  -- the livery: `livery:` in the metadata (a directory, relative to the project), else
-  -- the bundled liveries/ncar beside _extensions/
-  local livery = doc.meta["livery"] and pandoc.utils.stringify(doc.meta["livery"])
-  if livery then
-    if not pandoc.path.is_absolute(livery) then
-      livery = pandoc.path.join({ pandoc.system.get_working_directory(), livery })
-    end
-  else
-    livery = default_livery(extdir)
-    doc.meta["livery"] = livery   -- for the filters after this one (linked-images, diagram-dark)
-  end
-  table.insert(opts, "livery=" .. livery)
+  -- the livery (C.load_livery): `livery:` in the metadata, else the bundled liveries/ncar
+  LIVERY = C.load_livery(doc.meta, extdir, "engine-beamer")
+  if not doc.meta["livery"] then doc.meta["livery"] = LIVERY.dir end   -- for the filters after this one (linked-images, diagram-dark)
+  table.insert(opts, "livery=" .. LIVERY.dir)
   -- the deck's size step as typescale= (a deck's own typescale= in themeoptions wins)
   local has_scale = false
   for _, o in ipairs(opts) do if o:match("^%s*typescale%s*=") then has_scale = true end end
-  local jf = io.open(pandoc.path.join({ livery, "build", "livery.json" }))
-  if jf then
-    LIVERY = quarto.json.decode(jf:read("a")); jf:close()
-    if not has_scale then
-      local f = deck_type_scale(doc.meta, LIVERY.type.roles.body.pt, "engine-beamer")
-      if f ~= 1 then table.insert(opts, "typescale=" .. string.format("%.4f", f)) end
-    end
+  if not has_scale then
+    local f = deck_type_scale(doc.meta, LIVERY.type.roles.body.pt, "engine-beamer")
+    if f ~= 1 then table.insert(opts, "typescale=" .. string.format("%.4f", f)) end
   end
   local tex = table.concat({
     "\\makeatletter",
@@ -610,23 +562,10 @@ function Table(tbl)
   return tbl
 end
 
--- .full: the one figure (is_figure, engine-common.lua), its caption paragraphs and its notes.
+-- .full: the one figure's image path (C.split_full), its caption paragraphs and its notes.
 -- Runs before bound_sized_images, which turns the image into raw LaTeX.
 local function split_full(blocks)
-  local fig, caption, rest = nil, pandoc.List({}), pandoc.Blocks({})
-  for _, b in ipairs(blocks) do
-    if b.t == "Div" and (has_class(b, "notes") or has_class(b, "hidden")) then
-      rest:insert(b)
-    elseif not fig and is_figure(b) then
-      fig = b
-    elseif fig and (b.t == "Para" or b.t == "Plain") then
-      caption:insert(b)
-    elseif fig and is_note(b) then   -- a note is the caption here
-      caption:extend(b.content)
-    else
-      return nil
-    end
-  end
+  local fig, caption, rest = C.split_full(blocks)
   if not fig then return nil end
   local src
   pandoc.walk_block(fig, { Image = function(im) src = src or im.src end })
@@ -842,7 +781,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY.boxes.card.roles)))))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY)), LIVERY)))
   if used.scale or used.hcenter then
     local hi = header_includes(doc)
     if used.hcenter then hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") })) end

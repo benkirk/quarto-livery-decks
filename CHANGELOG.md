@@ -3,8 +3,9 @@
 What each release changes for the people who use it, newest first, in the
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) shape: **Decks** (what a deck author
 sees), **Liveries** (what a livery owner must do), **Plots** (what a plot author sees) and
-**LaTeX** (the theme's options and commands). The engineering narrative is
-`design/engine-and-liveries.md`, section 10.
+**LaTeX** (the theme's options and commands). The engineering narrative up to the first release
+is `design/engine-and-liveries.md`, section 10; since then the PR bodies and
+`design/unplanned-city-ledger.md`.
 
 **Versions are calendar versions, `YY.MM.N`**: the year and month of the release, the month
 unpadded, and `N`, from 0, the month's release count (`26.10.0`, `26.10.1`, ..., `26.11.0`). The
@@ -68,12 +69,21 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - A strip, `::: {.strip role="accent"}`, in a card or on its own: a band tinted in its role
   (`boxes.strip.tint` over the background) at the card's full width; on a solid card the role
   itself. Every format.
+- A card's or strip's `role=` may be a role or a blend of the livery (`table-band`, `rule`); a
+  name that is neither warns once per format, naming the slide, and takes the default (the
+  card's place in its row, a strip's accent). Before, HTML drew the name as given, the PDF
+  failed on an undefined color, and the pptx fell to primary without a word.
 - Status items: in a card or a `::: {.status}` list, `- [x]`, `- [!]` and `- [-]` show ✓, ⚠ and ✗
   in the livery's status colors (`boxes.status`), where the bullet was, a failed item's text
   muted; a literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays a task list's box.
 - The sample deck shows each of these (a 2/3 and 1/3 split, three plain columns, four on a wide
   slide, option cards with a lead, a strip and status items, solid cards), and the quickstart a
   card slide, in the README. docs/authoring.md "Columns" and "Cards and lead boxes".
+- `make measure` skips a composition's empty box instead of stopping on it.
+- pptx: a card's head band is square at its foot on a livery with rounded cards (ncar and its
+  family); it was rounded all round, so the card's fill showed at the band's lower corners.
+- pptx: a box cut to its text (caution, lead, the feature panel, a note under a figure) is sized
+  with the template's own paragraph spacing; it was a little short, and the slack covered it.
 
 ### Liveries
 - The `livery` command: `inspect` without `-o` prints its report; `new --from <deck> --extends
@@ -122,8 +132,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
   band, lab photo and patches on white, the text black.
 - `geometry.wide-margin` (default half the margin), a `{.wide}` slide's side margin, and
   `geometry.body-bottom`, the content body's foot, which the template and the plots' size read.
+- A photo cover may have `field: null` (no field under the text); it stopped the pptx and HTML
+  renders before.
 
 ### LaTeX
+- The theme states its requirements: a LaTeX kernel of 2022-06-01 or later (`\NeedsTeXFormat`
+  in `engine_livery.sty`, which every theme file loads through) and `tcolorbox` with `skins` and
+  `breakable`, which the cards made unconditional. latex/README.md names both.
 - Frames are top-aligned (the class option `t`, without beamer's 0.2 cm under the title); give a
   frame `[c]` to center it.
 
@@ -329,7 +344,10 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.3...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.6...HEAD
+[26.10.6]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.6
+[26.10.5]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.5
+[26.10.4]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.4
 [26.10.3]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.3
 [26.10.2]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.2
 [26.10.1]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.1

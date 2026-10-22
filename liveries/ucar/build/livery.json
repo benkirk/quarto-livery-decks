@@ -1103,12 +1103,19 @@
     "tab": true
   },
   "geometry": {
+    "body": [
+      0.06,
+      0.1667,
+      0.88,
+      0.7555
+    ],
     "body-bottom": 0.9222,
     "full": {
       "caption": 0.06,
       "footline": 0.075,
       "pad": 0.025
     },
+    "half": 0.425,
     "logo": {
       "aspect": 3.95,
       "closing-height": 0.1,
@@ -1138,6 +1145,26 @@
       "ucar-aqua-contrast": "UCARAquaContrast",
       "white": "BrandWhite",
       "yellow": "BrandYellow"
+    },
+    "roles": {
+      "accent": "BrandAccent",
+      "alert-text": "BrandAlertText",
+      "background": "BrandBackground",
+      "caution-fill": "BrandCautionFill",
+      "code-text": "BrandCodeText",
+      "dark": "BrandDark",
+      "foreground": "BrandText",
+      "highlight": "BrandHighlight",
+      "muted": "BrandMuted",
+      "primary": "BrandPrimary",
+      "primary-contrast": "BrandPrimaryContrast",
+      "primary-text": "BrandPrimaryText",
+      "rule": "BrandRule",
+      "secondary": "BrandSecondary",
+      "surface": "BrandSurface",
+      "table-band": "BrandTableBand",
+      "table-rule": "BrandTableRule",
+      "warning": "BrandWarning"
     }
   },
   "logo": {

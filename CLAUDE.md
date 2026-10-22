@@ -146,7 +146,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   top Makefile, kept by `clobber`) holds `DECKS_BINDS ?= /glade /lustre/desc1 /gpfs/csfs1
   /local_scratch` (NCAR's file systems appear under two names). Lmod module support is deferred.
 - **Cloud**: `.devcontainer/devcontainer.json` runs the image in GitHub Codespaces (`:main`, the
-  checkout's own image; the `sshd` feature layered at creation for `gh codespace ssh`, nothing
+  image of main's head whatever branch is opened; the `sshd` feature layered at creation for `gh codespace ssh`, nothing
   added to the Dockerfile; `postCreateCommand` calls the entrypoint with `true` for the matplotlib
   seed, since dev containers replace the entrypoint, and writes a `profile.d` line putting the
   checkout's `bin/` first on PATH (`remoteEnv` reaches VS Code's shells, not an ssh login); docs/container.md "In GitHub Codespaces":
@@ -171,12 +171,14 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
-  python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver. Text
+  python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
+  steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
+  measuring (`text_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
   that sizes a box (dividers, caution boxes, feature panels, centred tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a
   `pptx.heading-typeface`, Courier and other unbundled faces at 0.6 em a character). pandoc gets `-M monofont=<family>` when the livery bundles a
-  code face (`typography.monospace`, `livery.py mono`), and the pptx format takes the
+  code face (`typography.monospace`) or names `pptx.code-typeface` (`livery.py mono`), and the pptx format takes the
   livery's highlight theme (`_livery/build/livery.theme`) like HTML and PDF.
 - **Publishing**: `make site` gathers the HTML decks into `_site/` (one shared
   `libs/`, `images/`, `SITE_EXTRA` directories, an index from `site_index.py` in
@@ -292,7 +294,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   same band as HTML and pptx (it sat higher before).
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
-  pandoc's `monofont` in pptx (nasa: DM Mono). The other liveries keep the defaults.
+  pandoc's `monofont` in pptx (nasa: DM Mono); `pptx.code-typeface` overrides the pptx's with an
+  installed face (nasa-jsc-eg: Courier New). The other liveries keep the defaults.
 - **Title photo**: a deck's `titlegraphic:`, else the livery's `art.titlegraphic` (ncar: the
   Mesa Lab, inherited by its family; nsi: the campus; nasa: the Earth limb); `titlegraphic:
   none` keeps the plain cover (both engine filters and `slide_layout.py`; beamer
@@ -464,11 +467,11 @@ it does, by area, beyond the format notes above:
   the `\enginethemeoptions`/`\engineaspectratio` hooks.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
   livery, then pytest over `tests/`, `-n auto --dist loadfile`: `test_compositions.py`, whose
-  `EXPECTED_DELTAS` names every decided change of a box, `test_type.py`, `test_svg_fallback.py`,
-  `test_notes_clrmap.py`, `test_charts.py`, `test_schema.py` (the generated `REFERENCE.md`
-  current too), `test_cli.py`, `test_new_deck.py`, `test_docs.py`: every relative link and
-  `#anchor` in the tracked `*.md` files resolves, and every `README "X"` or `<guide>.md "X"`
-  pointer in a tracked file names a heading that exists; `design/` is exempt). pytest's
+  `EXPECTED_DELTAS` names every decided change of a box, `test_schema.py` (the generated
+  `REFERENCE.md` current too), `test_docs.py` (every relative link and `#anchor` in the tracked
+  `*.md` files resolves, every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a
+  heading that exists, `design/` exempt; the consumer example's release pins and the changelog's
+  link block), and the rest of `tests/test_*.py`, one per pptx step or engine area). pytest's
   discovery is the one list of tests, and CI's latex job runs `make test`. One test:
   `python3 -m pytest tests -k <name>` (serial, plain output). A test writes only under
   `tmp_path`, never the tree, and never changes directory or the environment in-process
@@ -487,8 +490,9 @@ it does, by area, beyond the format notes above:
   (`release.yml` checks). `engine-revealjs.lua` reads it from there and names the HTML dependency
   by it (`engine-revealjs-<version>`), so a bump changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
-  liveries/*/` in the same PR (CI's `--check`), and `livery deps` warns a deck build when a
-  livery's stamp is another version. **Tags are immutable**: another release in the month is
+  liveries/*/` in the same PR (CI's `--check`) and the consumer example's `@v<version>` and
+  image tag in docs/other-repos.md (`tests/test_docs.py` holds them to it), and `livery deps`
+  warns a deck build when a livery's stamp is another version. **Tags are immutable**: another release in the month is
   the next `N`; `release.yml` refuses a tag whose release exists, that is not `YY.MM.N`, or whose
   month is still to come. `CHANGELOG.md` (Decks, Liveries, Plots,
   LaTeX; Keep a Changelog) gets every user-visible change under `[Unreleased]` in the PR that
@@ -707,15 +711,17 @@ cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries 
 size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSIDE that image at
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
-`livery build --check`, the sample deck in every format with its theme greps, quickstart and
-fixtures `all`, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `reusable`
+`livery build --check`, the sample deck in every format with its theme greps and its notes and
+captions check, the sample's `make qa`, quickstart and fixtures `all` with every notes slide's
+`clrMapOvr` checked, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `reusable`
 (`build-decks.yaml` on the quickstart), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new
 livery joins by existing): `livery check --qa` (the engine's checks, then
 `make -C decks/quickstart qa LIVERY=<name>`: all three formats and `deck_qa.py`), the
 livery-applied greps, the Overleaf zip compiled in a clean directory with TeX's paths unset and
-`pdffonts` showing its bundled family, and `make measure` report-only (`MEASURE_FAIL=`). A
+`pdffonts` showing its bundled family, the charts bundle unpacked and tried, and `make measure`
+report-only (`MEASURE_FAIL=`). A
 fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
 the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
 more; a tool the decks need goes into the Dockerfile. `runtimes` (`runtimes.yaml`, reusable, also weekly and on

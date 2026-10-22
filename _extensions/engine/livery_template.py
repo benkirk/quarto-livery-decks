@@ -88,7 +88,7 @@ class Builder:
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]
         t = livery["type"]   # type sizes in points on the livery's canvas (hundredths in the xml)
-        self.sz = lambda role, scale=1: round(t["roles"][role]["pt"] * scale * 2) * 50
+        self.sz = lambda role: round(t["roles"][role]["pt"] * 2) * 50   # a role's size, to the half point
         self.levels = [round(p * 100) for p in t["levels"]]
         # absolute lengths drawn for the 540 pt canvas (indents, insets), scaled onto this one
         self.k = H_EMU / 6858000
@@ -166,8 +166,9 @@ class Builder:
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab-width"]
-        title_top, rule_y, body_bottom = 0.049, 0.1444, g["body-bottom"]
-        body_top = self.L.get("frametitle", {}).get("body", 0.1667)   # below a taller mark
+        title_top, rule_y = 0.049, 0.1444
+        _, body_top, _, body_h = g["body"]   # the content body (geometry.body: below a taller mark, to body-bottom)
+        body_bottom = body_top + body_h
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
         corner = self.logo_corner
         inset = g["logo"].get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
@@ -185,8 +186,8 @@ class Builder:
         body_lvls = ""
         for i, (sz, (bfont, bchar)) in enumerate(zip(sizes, bullets), 1):
             mar = ind * i
-            # the space before an item, as HTML's list-item margins: a share of the body
-            spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * (0.5 if i == 1 else 0.3))}"/></a:spcBef>'
+            # the space before an item, as HTML's list-item margins: a share of the body (livery.SPC_BEFORE)
+            spc = f'<a:spcBef><a:spcPts val="{round(sizes[0] * livery_mod.SPC_BEFORE[0 if i == 1 else 1])}"/></a:spcBef>'
             body_lvls += (f'<a:lvl{i}pPr marL="{mar}" indent="-{ind}" algn="l" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
                           f'latinLnBrk="0" hangingPunct="1"><a:lnSpc><a:spcPct val="100000"/></a:lnSpc>{spc}{buclr}'
                           f'<a:buFont typeface="{bfont}"/><a:buChar char="{bchar}"/><a:defRPr sz="{sz}" kern="1200">'
@@ -355,12 +356,11 @@ class Builder:
 
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
-        body_top, body_bottom = self.L.get("frametitle", {}).get("body", 0.1667), g["body-bottom"]
-        h = body_bottom - body_top
+        _, body_top, _, h = g["body"]   # the content body's box (geometry.body)
+        body_bottom = body_top + h
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
-        gap = self.L["boxes"]["columns"]["gap"]   # every format's column gap (livery.json boxes)
-        half = (1 - 2 * m - gap) / 2
+        gap, half = self.L["boxes"]["columns"]["gap"], g["half"]   # the column gap and the Two Content half (livery.json)
         if name == "Title and Content":
             shapes.append(self.ph("Content Placeholder 2", None, 1, xfrm(m, body_top, 1 - 2 * m, h), 'vert="horz"', "", "Click to edit Master text styles"))
         elif name == "Two Content":

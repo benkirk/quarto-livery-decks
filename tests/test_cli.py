@@ -208,3 +208,30 @@ def test_mono_code_typeface(tmp_path):
     assert run("mono", d).stdout.strip() == "Courier New", "code-typeface not taken"
     assert run("mono", t / "nasa").stdout.strip() == "DM Mono", "the bundled code face"
     assert run("mono", ROOT / "liveries" / "ncar").stdout.strip() == "", "a livery without a code face"
+
+
+def test_no_private_imports():
+    """A step or tool imports no other module's `_private` name: what two modules need is public in
+    pptx_steps/common.py, measure.py or livery.py (the #126 sweep found grid.py and columns.py on
+    slide_layout's)."""
+    hits = []
+    for f in sorted((ENGINE).rglob("*.py")):
+        for n, line in enumerate(f.read_text().splitlines(), 1):
+            if re.match(r"\s*from \S+ import .*\b_[a-z]", line):
+                hits.append(f"{f.relative_to(ROOT)}:{n}: {line.strip()}")
+    assert not hits, "\n".join(hits)
+
+
+def test_slide_kinds_agree():
+    """The slide kinds a composition draws (feature, closing, full) are named once in Lua
+    (engine-common.lua SLIDE_KINDS) and must appear in the two lists that cannot read it: the HTML
+    autofit's NEVER selector (engine-revealjs.js) and livery_build's content-art selector."""
+    lua = (ENGINE / "engine-common.lua").read_text()
+    kinds = set(re.findall(r"(\w+) = true", re.search(r"SLIDE_KINDS = \{([^}]*)\}", lua).group(1)))
+    assert kinds == {"feature", "closing", "full"}, kinds
+    js = (ENGINE / "engine-revealjs.js").read_text()
+    never = set(re.findall(r"\.([\w-]+)", re.search(r'NEVER = "([^"]*)"', js).group(1)))
+    assert kinds <= never, f"engine-revealjs.js NEVER lacks {kinds - never}"
+    py = (ENGINE / "livery_build.py").read_text()
+    sel = set(re.findall(r":not\(\.([\w-]+)\)", re.search(r'sel = "([^"]*level2[^"]*)"', py).group(1)))
+    assert kinds <= sel, f"livery_build's content-art selector lacks {kinds - sel}"

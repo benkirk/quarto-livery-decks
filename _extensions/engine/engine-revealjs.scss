@@ -481,19 +481,19 @@ $mermaid-label-fg-color: $engine-primary;
 // status items (- [x] ✓, - [!] ⚠, - [-] ✗ in a card or a ::: {.status} list): the glyph is the
 // bullet, set where the dot was, bold in its status color (livery.css: boxes.status), as the
 // pptx's buChar and beamer's \item[...]; a failed item's text muted
-.reveal .slides section li:has(> .engine-status-done, > .engine-status-warn, > .engine-status-fail,
-    > p:first-child > .engine-status-done, > p:first-child > .engine-status-warn, > p:first-child > .engine-status-fail) {
+.reveal .slides section li:has(> .engine-glyph-done, > .engine-glyph-warn, > .engine-glyph-fail,
+    > p:first-child > .engine-glyph-done, > p:first-child > .engine-glyph-warn, > p:first-child > .engine-glyph-fail) {
   &::before { content: none !important; display: none !important; }
 }
-.reveal .slides section :is(.engine-status-done, .engine-status-warn, .engine-status-fail) {
+.reveal .slides section :is(.engine-glyph-done, .engine-glyph-warn, .engine-glyph-fail) {
   position: absolute;
   left: -1.05em;
   font-weight: 700;
 }
-.reveal .slides section .engine-status-done { color: var(--engine-status-done); }
-.reveal .slides section .engine-status-warn { color: var(--engine-status-warn); }
-.reveal .slides section .engine-status-fail { color: var(--engine-status-fail); }
-.reveal .slides section .engine-status-fail ~ .engine-status-text { color: var(--engine-muted); }
+.reveal .slides section .engine-glyph-done { color: var(--engine-glyph-done); }
+.reveal .slides section .engine-glyph-warn { color: var(--engine-glyph-warn); }
+.reveal .slides section .engine-glyph-fail { color: var(--engine-glyph-fail); }
+.reveal .slides section .engine-glyph-fail ~ .engine-glyph-text { color: var(--engine-muted); }
 .reveal .slides section.engine-hcenter > .engine-body {
   width: fit-content;
   max-width: 100%;

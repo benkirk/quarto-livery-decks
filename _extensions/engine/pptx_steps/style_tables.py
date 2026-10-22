@@ -15,9 +15,10 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-LIVERY      = livery_mod.load()
+from .common import LIVERY, is_table, rpr
+from .measure import PX   # EMU per revealjs px (1600 px wide)
+
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
-PX          = LIVERY["type"]["canvas"]["w"] * 12700 / 1600   # EMU per revealjs px (1600 px wide)
 HEAD_RULE   = (3 * PX, livery_mod.scheme(LIVERY, "dk2"))        # 3px solid var(--engine-primary)
 ROW_RULE    = (1 * PX, livery_mod.blend(LIVERY, "table-rule"))  # mix(foreground, surface, 20%)
 BAND_FILL   = livery_mod.blend(LIVERY, "table-band")            # surface at 60% on white
@@ -62,10 +63,7 @@ def _style_cell(tc, rule, fill):
 
 def _header_runs(tc, base):
     for r in tc.iter(qn("a:r")):
-        r_pr = r.find(qn("a:rPr"))
-        if r_pr is None:
-            r_pr = etree.Element(qn("a:rPr"))
-            r.insert(0, r_pr)
+        r_pr = rpr(r)
         if r_pr.get("cap") != "all":   # idempotent: scale the size only once
             size = int(r_pr.get("sz") or base) * HEAD_SCALE
             r_pr.set("sz", str(round(size)))
@@ -123,7 +121,7 @@ def run(prs, name: str) -> None:
         other = master.find(".//" + qn("p:otherStyle") + "/" + qn("a:lvl1pPr") + "/" + qn("a:defRPr"))
         base = int(other.get("sz")) if other is not None and other.get("sz") else 1800
         for shape in slide.shapes:
-            if getattr(shape, "has_table", False):
+            if is_table(shape):
                 style_table(shape.table._tbl, base)
                 styled += 1
     print(f"style_tables: styled {styled} table(s) → {name}")

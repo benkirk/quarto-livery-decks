@@ -89,6 +89,9 @@ did not.
   scan the slide XML for decimals in integer attributes (`unzip -p deck.pptx 'ppt/slides/*.xml' |
   grep -oE '\b(x|y|cx|cy|w|h|sz|marL|indent)="[0-9]+\.[0-9]+"'`); only PowerPoint judges
   (memory `pptx-repair-bisect`: cumulative post-step copies Ben opens; never script keystrokes).
+  The proof for a `pptx_steps/` or template change is `tests/app-open.sh` on Ben's Mac: it opens
+  every built deck in Keynote and PowerPoint by their own AppleScript (CLAUDE.md's Version bullet
+  under "The engine").
 - **The runtime matrix.** Native, docker, podman, apptainer (#95). macOS's `/usr/bin/make` is
   GNU make 3.81 and must parse `Make.common`'s header, `common/image.mk` and
   `common/Make.container`; a `$(shell ...)` with a `case` needs `(pattern)` or its `)` ends the

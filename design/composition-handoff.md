@@ -1,5 +1,7 @@
 # Handoff: compositions as boxes
 
+**State:** done (engine 3.5.0, 2026-10-17; `tests/test_compositions.py` holds the boxes).
+
 Written 2026-10-17, after the docs handoff (framework #28-#32, engine 3.4.0), for a fresh
 session. Read this, `CLAUDE.md`, and the newest entries of `docs/design/engine-and-liveries.md`
 section 10. The repos, environment and conventions (one step per PR, CI green, merge

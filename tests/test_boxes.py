@@ -46,7 +46,8 @@ def test_every_key(livery):
     css = (livery / "build" / "livery.css").read_text()
     sty = (livery / "build" / "livery.sty").read_text()
     assert f"--engine-caution-pad: {b['caution']['pad'][0]:g}em {b['caution']['pad'][1]:g}em;" in css
-    assert f"--engine-status-done: {b['status']['done']};" in css
+    assert f"--engine-glyph-done: {b['status']['done']};" in css   # the glyphs'; --engine-status-* are the charts'
+    assert f"\\definecolor{{EngineGlyphDone}}{{HTML}}{{{b['status']['done'][1:]}}}" in sty
     assert f"\\def\\engine@boxes@caution@padx{{{b['caution']['pad'][1]}}}" in sty
     assert f"\\definecolor{{EngineBoxesCardOutlineColor}}{{HTML}}{{{b['card']['outline-color'][1:]}}}" in sty
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
@@ -143,3 +144,15 @@ def test_bullets(livery, tmp_path):
     want = [glyphs[min(i, len(glyphs) - 1)] for i in range(5)]
     assert chars[:5] == want, f"the master's bullets {chars[:5]}, want {want}"
     assert f'<a:buClr><a:srgbClr val="{j["bullets"]["color"][1:]}"/></a:buClr>' in master, "their color"
+
+
+def test_geometry_derived(livery):
+    """livery.json carries the content body's box and the Two Content half (geometry.body, geometry.half),
+    derived once by livery build from the margin, frametitle.body, body-bottom and the column gap; the
+    template, the plots' figsize and columns.py read them."""
+    import json
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    g, m = j["geometry"], j["geometry"]["margin"]
+    top = j["frametitle"]["body"]
+    assert g["body"] == [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)], f"{livery.name}: geometry.body"
+    assert g["half"] == round((1 - 2 * m - j["boxes"]["columns"]["gap"]) / 2, 4), f"{livery.name}: geometry.half"

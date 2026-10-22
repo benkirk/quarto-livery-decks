@@ -19,7 +19,7 @@ the framework's scripts.
 `make livery LIVERY=<name>` (or LIVERY_DIR=), which runs `livery all`. The subcommands import
 their modules only when run, so `zip` needs nothing beyond Python and the engine.
 
-    import livery as livery_mod     load, color, scheme, blend, mix, font_file, mark, files
+    import livery as livery_mod     load, color, hex, scheme, blend, mix, font_file, mark, files
 
 The reader's directory comes from the argument, else $LIVERY_DIR (exported by the framework's
 Make.common), else a `_livery` link in the current directory. `deps` prints
@@ -32,6 +32,12 @@ import math
 import os
 import sys
 from pathlib import Path
+
+
+# the pptx template's space before a body paragraph, as a share of the body type: the first list
+# level, then the deeper ones (livery_template.py writes it as a:spcBef; the steps that cut a box
+# to its measured text add the same, pptx_steps/measure.py)
+SPC_BEFORE = (0.5, 0.3)
 
 
 def livery_dir(path: str | os.PathLike | None = None) -> Path:
@@ -73,6 +79,14 @@ def contrast(a: str, b: str) -> float:
 def color(livery: dict, role: str) -> str:
     """A role's hex without '#', as the pptx scripts write it."""
     return livery["roles"][role].lstrip("#").upper()
+
+
+def hex(livery: dict, value: str) -> str:
+    """A role's or a blend's, or a '#RRGGBB' value's, six digits upper: the one color form the pptx
+    steps write (a box's color in livery.json is a hex, a role= attribute a role)."""
+    if not value.startswith("#"):
+        value = livery["roles"].get(value) or livery["blends"][value]
+    return value.lstrip("#").upper()
 
 
 def scheme(livery: dict, slot: str) -> str:

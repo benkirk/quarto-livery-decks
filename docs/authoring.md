@@ -1,7 +1,7 @@
 # Writing a deck
 
 A new deck directory, the front matter and the slide kinds, the per-slide controls (linked
-images, notes under a figure, centering and scaling, shell chunks), the text sizes and autofit, and `make qa`. The quickstart deck
+images, notes under a figure, centering and scaling, columns, cards and lead boxes, shell chunks), the text sizes and autofit, and `make qa`. The quickstart deck
 (`decks/quickstart/quickstart.qmd`) is the one to copy; `decks/sample/sample.qmd` shows every pattern.
 
 ## Adding a new deck
@@ -264,7 +264,8 @@ brand's own template or deck. ncar uses the NSF NCAR template's 10 x 5.625 in sl
 body, 12/11/10/9/8 pt list levels, 20 pt slide titles and a 22 pt cover title. cu and nsi use
 the NSI deck's 13.33 x 7.5 in slide, with a 16 pt body, 32 pt titles and 60 pt dividers. nasa
 and nasa-dark use the NASA Science public-engagement deck's 10 x 5.625 in slide, with a 12 pt
-body and 22 pt titles. So a slide copied from a built pptx into a hand-made deck on that
+body and 22 pt titles; nasa-jsc-eg its division template's 13.33 x 7.5 in slide, with a 16 pt
+body and 32 pt titles, in Arial. So a slide copied from a built pptx into a hand-made deck on that
 template keeps its geometry and its round sizes. HTML and PDF set the same sizes as the same
 share of the slide, so a slide fits, or overflows, alike in all three. `scale="S"` on a slide
 sizes it in every format, and PowerPoint's sizes round to the half point.

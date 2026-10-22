@@ -206,6 +206,10 @@ def test_cards(deck):
     role = lambda r: livery["roles"][r][1:]
     assert str(by["Card 1 head"].fill.fore_color.rgb) == role("primary"), "the head band in its role"
     assert str(by["Card 2 head"].fill.fore_color.rgb) == role("secondary")
+    geom = lambda sh: sh._element.find(".//{*}prstGeom").get("prst")   # rounded cards: the head square at its foot
+    rounded = livery["boxes"]["card"]["radius"] > 0
+    assert geom(by["Card 1 fill"]) == ("roundRect" if rounded else "rect"), "the card's corners"
+    assert geom(by["Card 1 head"]) == ("round2SameRect" if rounded else "rect"), "the head band's corners"
     assert "Card 3 head" not in by and str(by["Card 3 fill"].fill.fore_color.rgb) == role("accent"), "a solid card is its role"
     ol = by["Card 1 outline"]
     assert str(ol.line.color.rgb) == livery["boxes"]["card"]["outline-color"][1:], "the pick's outline color"

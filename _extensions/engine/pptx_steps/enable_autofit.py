@@ -6,13 +6,11 @@ Pandoc emits `<a:bodyPr />` (empty) for body placeholders, which means
 contains a bare `<a:normAutofit/>` — i.e. flips the "Shrink text on
 overflow" dropdown to ON.
 
-Note: PowerPoint computes the actual fontScale on edit, not on load.
-For real shrink-to-fit at render time, follow this with the AppleScript
-driver (autofit_powerpoint.applescript) which opens the file in
-PowerPoint, touches each text frame to force scale recomputation, and
-saves. Without that step, this script alone won't visibly shrink
-overflowing text — it just primes the placeholder so a single click
-inside the cell triggers the recompute.
+Note: PowerPoint computes the actual fontScale on edit, not on load, so
+this alone does not visibly shrink overflowing text; it primes the
+placeholder so a click inside it triggers the recompute. The engine keeps
+its own boxes within their text by measuring them (pptx_steps/measure.py),
+not by a driver that touches each frame.
 
 Idempotent: any bodyPr that already contains an autofit child
 (`normAutofit`, `spAutoFit`, `noAutofit`) is left alone."""

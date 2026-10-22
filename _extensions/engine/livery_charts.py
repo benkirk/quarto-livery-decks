@@ -566,11 +566,8 @@ def figsize(livery: dict) -> dict:
     """The content area in canvas inches (livery_template.py's body frame), whole and one of two
     columns, so a figure at this size carries slide-sized text."""
     w, h = livery["type"]["canvas"]["w"] / 72, livery["type"]["canvas"]["h"] / 72
-    m = (livery.get("geometry") or {}).get("margin", 0.06)
-    top = (livery.get("frametitle") or {}).get("body", 0.1667)
-    height = (livery["geometry"]["body-bottom"] - top) * h
-    full = (1 - 2 * m) * w
-    half = (1 - 2 * m - livery["boxes"]["columns"]["gap"]) / 2 * w
+    g = livery["geometry"]   # the body box and the Two Content half (geometry.body, geometry.half)
+    height, full, half = g["body"][3] * h, g["body"][2] * w, g["half"] * w
     return {"full": [round(full, 2), round(height, 2)], "half": [round(half, 2), round(height, 2)]}
 
 

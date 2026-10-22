@@ -58,9 +58,11 @@ This directory holds the engine's own LaTeX decks; build them here:
 `make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
 MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and
 `TTFONTS` at `_extensions/engine/`, `liveries/` and the repo root, where the theme and the
-liveries' bundled fonts are, as an Overleaf zip's `latexmkrc` does. With a
-minimal TeX Live, the demo's callouts need `fontawesome5` (`texlive-fonts-extra` on Debian
-and Ubuntu). The demo names no `livery:`, so it shows the default: Quarto finds
+liveries' bundled fonts are, as an Overleaf zip's `latexmkrc` does. The theme needs a LaTeX
+kernel of 2022-06-01 or later (`\fpeval`; TeX Live 2022 on) and `tcolorbox` with its `skins`
+and `breakable` libraries (`texlive-latex-extra` on Debian and Ubuntu; it refuses to load
+without them). With a minimal TeX Live, the demo's callouts need `fontawesome5`
+(`texlive-fonts-extra`). The demo names no `livery:`, so it shows the default: Quarto finds
 `liveries/ncar` beside `_extensions/`, a link in `examples/`.
 
 ## An existing LaTeX deck

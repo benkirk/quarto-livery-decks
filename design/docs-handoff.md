@@ -1,5 +1,7 @@
 # Handoff: the READMEs, and LaTeX/Overleaf for any livery
 
+**State:** done (this repo #28–#32, engine 3.4.0).
+
 Written 2026-10-17, after the post-NSI refactor (engine 3.3.0, this repo #27), for a fresh
 session. Read this, `CLAUDE.md`, and the newest entries of `docs/design/engine-and-liveries.md`
 section 10. The repos, environment and conventions (one step per PR, CI green, merge

@@ -3,7 +3,8 @@
 The record of the `unplanned-city-sweep` skill (`.claude/skills/unplanned-city-sweep/SKILL.md`):
 each sweep over a window of merged PRs or an area of the tree adds an entry, newest first, and
 the findings nobody picked wait in **Untriaged** until a later sweep takes them up or drops them.
-Window mode starts from the newest entry's end commit.
+Window mode starts from the newest window entry's end commit (an area entry records where it
+branched from, not a window read).
 
 ## Entry format
 
@@ -19,6 +20,41 @@ Window mode starts from the newest entry's end commit.
 ```
 
 ## Entries
+
+## 2026-10-21: window #105–#126
+
+- Mode: window
+- Range: `62d6568..ba36ec5` (#105 consumer friction, #108 the first sweep, #109–#121 the Google
+  Slides waves, notes under figures, SVG plots, Keynote notes, pytest, captions, app-open,
+  Codespaces and tables, #123 nasa-jsc-eg and its engine sprint, #126 columns and cards); read in
+  three area passes (engine-py; Lua and themes; docs, design, CI and make), 24 findings, Ben picked
+  1–14 and 17 (`design/sweep-105-126-handoff.md`)
+- End commit: `ba36ec5`
+- Done (#127): ncar's pptx card head square at its foot (`top_only` never passed: a defect); the
+  consumer workflow example pinned to a release that has the workflow, with `tests/test_docs.py`
+  holding its pins to `_extension.yml`; runtimes.yaml's PPA add inside its own fallback; the
+  changelog's link block caught up, with a ratchet; `pptx_steps/common.py` (the livery once, the
+  shape and run helpers, the shape tests; `text_height` into measure.py; `livery.hex()`; a
+  private-import ratchet); `livery.json latex.roles` and one unknown-`role=` check for all three
+  formats (`C.box_role`, `grid._pick_role`; blends now reach the pptx); the Lua lifts
+  (`is_slide_break`, `split_full`, `take_layout`, `LAYOUT_CLASSES`/`SLIDE_KINDS`/`content_heading`,
+  `theme_options`, `take_footnotes`, `load_livery`; a test holds the JS and css kind lists to the
+  Lua table); the glyph colors renamed `--engine-glyph-*`/`EngineGlyph*` (the `boxes.status` key
+  stays); `section.label-color` resolved to a hex at build (untriaged item c); `geometry.body` and
+  `geometry.half` derived once; dead code (four TeX macros, `engine-sub`, two parameters); the TeX
+  requirements stated (`\NeedsTeXFormat` 2022-06-01, tcolorbox); the pptx text-height estimate on
+  the template's own paragraph spacing (`livery.SPC_BEFORE`; the caution, lead, panel and note
+  boxes grow 2–9 pt, nsi's band title stack moves 2 pt; shipped on the contact sheet); the
+  prose batch; a state line on each finished `design/` handoff; the two heuristics below
+- Tried and dropped: none
+- Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
+  `wrap_layout` and `hoist_footnotes`, beamer does not: a `.full` frame with `scale=` is scaled in
+  the PDF only; `CONTENT_KINDS` in engine-beamer.lua marks it); `notes-last.lua` and
+  `linked-images.lua` keep their own one-line slide-break test (neither loads engine-common);
+  the sprint-124 handoff's three follow-ups (a status-color contrast warning in `livery check`,
+  `a:latin` on the ⚠ run if PowerPoint draws an emoji, the pptx box pads `type_step` does not
+  scale); stress-test-findings' measuring scripts as a `utils/` tool; the unpicked findings, now
+  under Untriaged
 
 ## 2026-10-20: area tests
 
@@ -51,15 +87,32 @@ Window mode starts from the newest entry's end commit.
 
 ## Untriaged
 
-- `engine-revealjs.scss`: the section, closing and feature-cover slides carry one identical
-  flex-column declaration block each (`display: flex !important` and the column padding); a mixin
-  candidate, cosmetic.
-- The six Lua functions that share a name across the two format filters with format-specific
-  bodies (`take_layout`, `wrap_layout`, `unwrap_layout`, `hoist_footnotes`, `split_full`,
-  `size_plots`): a consolidate candidate if their bodies converge; read before touching.
-- Two idioms for a color knob that takes a role or a hex (#123's review): `section.label-color`
-  (`$defs/role-or-hex`) stays as written in `livery.json` and each drawer resolves it
-  (`section_subtitle._eyebrow_hex`, `comp_measure.py`'s eyebrow mask, `emit_css`'s `role()`);
-  `marking.fill`/`color` (`$defs/color-or-role`) are resolved to hex once by
-  `livery_build.marking()`, so every drawer reads a hex. One should win; build-time resolution
-  is the simpler one for the drawers.
+- `engine-revealjs.scss` mixin candidates: the section, closing and feature-cover slides' identical
+  flex-column block (×3, with its `html.reveal-print` restatements), the title tab (×2) and the
+  field-code rule (×2); cosmetic.
+- White by hand on dark fields: `#fff`/`white` literals in the scss (the feature bar's number, the
+  closing, the band), the inner and outer beamer themes and `slide_layout.py` (the feature bar's
+  number and panel text), where the composition's column role already reaches every format.
+- Small-caps tracking per format: HTML 0.1em/0.08/0.04 by element, beamer `LetterSpace=4`, pptx
+  `spc="100"` (grid.py), 0.1em (section_subtitle.py) and none (style_tables.py); one `livery.json`
+  number would do.
+- Strip spacing per format: the scss, `grid.py` and the inner theme each set the gap above and
+  below a strip on their own numbers.
+- The title-stack fractions (`livery_template.py`'s band stack and `slide_layout.py`'s
+  `band_stack`/`draw_feature`): hand numbers (0.04, 0.01, 0.015, 0.02, 0.16, 0.185, 0.21) beside
+  the compositions' boxes.
+- scss line-heights as literals (some 16 sites) against `livery.json`'s leading.
+- `build-decks.yaml`: a `framework:` input picking the submodule's tag, so a consumer pins one thing.
+- `\cmark`/`\xmark`/`\pmark` (`engine_livery.sty`): a second status-mark idiom beside the glyph
+  colors.
+- `deck_qa.py`'s `h * 0.16` for the title line (nsi and nasa-jsc-eg sit lower).
+- A table's height: `CELL_PAD` in one estimate, `2 * CELL_MAR` in the other (`slide_layout.py`).
+- `livery.canvas_scale()` bypassed by `livery_template.py`'s own `self.k`; `livery_build.half` beside
+  `livery.half_pt`.
+- The `PX`, namespace and serialize copies the common.py commit did not take (section_subtitle's
+  own namespace strings, svg_fallback's).
+- The sprint-124 handoff's three follow-ups and the stress-test measuring scripts (this window's
+  open list).
+- The `version:` line's three shell readers (`image.mk`, `release.yml`, `ci.yaml`), which must
+  stay shell since the host side runs without Python; `livery_mpl.py` keeps its own reader because
+  it ships alone in the charts zip.

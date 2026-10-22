@@ -17,7 +17,8 @@ if not quarto.doc.is_format("pptx") then
   return {}
 end
 
-local is_note = dofile(quarto.utils.resolve_path("engine-common.lua")).is_note
+local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
+local is_note = C.is_note
 
 -- Speaker notes, and the hidden div quarto appends, stay outside the wrapper.
 local function is_aside(blk)
@@ -199,7 +200,7 @@ function Pandoc(doc)
     body, notes = pandoc.Blocks({}), pandoc.Blocks({})
   end
   for _, blk in ipairs(doc.blocks) do
-    if (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule" then
+    if C.is_slide_break(blk, level) then
       flush()
       out:insert(blk)
       in_slide = blk.t == "Header" and blk.level == level

@@ -100,9 +100,11 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    gallery` it into the README, and its entry to [`CHANGELOG.md`](../CHANGELOG.md) under
    *Liveries*. A release is the engine's version, a calendar version `YY.MM.N` (the month
    unpadded, `N` the month's release count from 0, CHANGELOG.md's preamble): set `version:` in
-   `_extensions/engine/_extension.yml` and `VERSION` in `engine-revealjs.lua` (which names the
-   HTML dependency), `livery build liveries/*/` (each `build/livery.json` records the version),
-   rename the changelog's `[Unreleased]` to `[<version>] - <date>`, merge, then tag `v<version>`.
+   `_extensions/engine/_extension.yml` (the revealjs filter reads it there to name the HTML
+   dependency), `livery build liveries/*/` (each `build/livery.json` records the version), bump the
+   consumer example's `@v<version>` and image tag in docs/other-repos.md (`make test` holds them
+   to the version), rename the changelog's `[Unreleased]` to `[<version>] - <date>`, merge, then
+   tag `v<version>`.
    Tags are never moved: another release in the month is the next `N`. The release workflow
    refuses a tag that is not the version or not `YY.MM.N`, a month still to come, one that was
    released before and one without a changelog entry; it

@@ -12,52 +12,36 @@ if not quarto.doc.is_format("pptx") then
   return {}
 end
 
-local CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, full = true,
-                  caution = true, feature = true, closing = true, wide = true }
+local function here(f)   -- this file's directory: Quarto's resolver, else plain pandoc's script path
+  if quarto and quarto.utils then return quarto.utils.resolve_path(f) end
+  return pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), f })
+end
+local C = dofile(here("engine-common.lua"))
+
+-- the layout controls (C.take_layout, as the other formats read them) and the slide kinds
+-- (C.SLIDE_KINDS), as the words of the notes line, in one order
+local WORDS = { "hcenter", "vcenter", "fill", "full", "caution", "feature", "closing", "wide" }
 
 local function take_layout(blk)
-  local words, kept = {}, pandoc.List({})
-  local h, v, fill, full, caution, feature, closing, wide = false, false, false, false, false, false, false, false
+  local lay = C.take_layout(blk, "slide-layout")
+  local have, kept = {}, pandoc.List({})
   for _, c in ipairs(blk.classes) do
-    if CLASSES[c] then
-      h = h or c == "hcenter" or c == "center"
-      v = v or c == "vcenter" or c == "center"
-      fill = fill or c == "fill"
-      full = full or c == "full"
-      caution = caution or c == "caution"
-      feature = feature or c == "feature"
-      closing = closing or c == "closing"
-      wide = wide or c == "wide"
-    else
-      kept:insert(c)
-    end
-  end
-  if h then table.insert(words, "hcenter") end
-  if v then table.insert(words, "vcenter") end
-  if fill then table.insert(words, "fill") end
-  if full then table.insert(words, "full") end
-  if caution then table.insert(words, "caution") end
-  if feature then table.insert(words, "feature") end
-  if closing then table.insert(words, "closing") end
-  if wide then table.insert(words, "wide") end
-  local scale = blk.attributes["scale"]
-  if scale then
-    blk.attributes["scale"] = nil
-    if tonumber(scale) then table.insert(words, "scale=" .. scale) end
+    if C.SLIDE_KINDS[c] then have[c] = true else kept:insert(c) end
   end
   blk.classes = kept
+  if lay then
+    have.hcenter, have.vcenter, have.fill, have.caution, have.wide = lay.h, lay.v, lay.fill, lay.caution, lay.wide
+  end
+  local words = {}
+  for _, w in ipairs(WORDS) do
+    if have[w] then table.insert(words, w) end
+  end
+  if lay and lay.scale then table.insert(words, "scale=" .. lay.scale) end
   return #words > 0 and ("engine-layout: " .. table.concat(words, " ")) or nil
 end
 
 local function light_title(meta)
-  local to = meta["themeoptions"]
-  if not to then return false end
-  for _, it in ipairs(pandoc.utils.type(to) == "List" and to or { to }) do
-    for kv in pandoc.utils.stringify(it):gmatch("[^,%s]+") do
-      if kv == "title=light" then return true end
-    end
-  end
-  return false
+  return C.theme_options(meta).title == "light"
 end
 
 -- the cover's author and institute lines as strings (one per line): pandoc's pptx writer joins the
@@ -95,7 +79,7 @@ function Pandoc(doc)
     end
   end
   for _, b in ipairs(doc.blocks) do
-    if (b.t == "Header" and b.level <= level) or b.t == "HorizontalRule" then flush() end
+    if C.is_slide_break(b, level) then flush() end
     if b.t == "Header" and b.level == level then pending = take_layout(b) end
     out:insert(b)
   end

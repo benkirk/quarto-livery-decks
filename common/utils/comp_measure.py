@@ -336,8 +336,7 @@ def measure(im, comp, L, fmt):
         cut.append([f["box"][0] + f["box"][2], 0, 1 - f["box"][0] - f["box"][2], 1])
     mask = mask_of(im, g, rgb(roles[col["role"]]), near=True, cut=cut)
     if comp["eyebrow"]:   # the divider's stack starts with its eyebrow, in a color of its own
-        e = comp["eyebrow"]["color"]
-        mask = ImageChops.lighter(mask, mask_of(im, g, rgb(e if e.startswith("#") else roles[e]), near=True, cut=cut))
+        mask = ImageChops.lighter(mask, mask_of(im, g, rgb(comp["eyebrow"]["color"]), near=True, cut=cut))   # a hex (livery_build)
     b = bbox(mask, g, 2)
     if col.get("align") == "center":   # column.align: the ink centered across the box, not at its left
         add("column", "center-x", x + w / 2, b and (b[0] + b[2]) / 2, TOL)

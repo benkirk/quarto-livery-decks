@@ -157,7 +157,7 @@ function Pandoc(doc)
   if level == 0 then level = 2 end
   local out, slide, title = pandoc.Blocks({}), pandoc.Blocks({}), "(before the first slide)"
   for _, blk in ipairs(doc.blocks) do
-    if (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule" then
+    if C.is_slide_break(blk, level) then
       out:extend(mark(slide, title))
       slide = pandoc.Blocks({})
       if blk.t == "Header" then title = pandoc.utils.stringify(blk.content) end

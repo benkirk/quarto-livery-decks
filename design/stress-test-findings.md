@@ -231,3 +231,6 @@ Open:
 2. **For the SAMuel author** (not changed here): the `scale="1.15"` slides could go to about
    1.4-1.5 to look as they did in the old PDF, or the deck could take `type-scale: 1.2` and
    keep its per-slide values.
+
+(2026-10-21: item 1 is on `unplanned-city-ledger.md`'s Untriaged list; item 2 is the deck
+author's call, not the framework's, and is dropped here.)
