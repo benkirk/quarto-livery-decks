@@ -18,6 +18,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### LaTeX
+- `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
+  color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
+  theme resolves a `role=` itself.
+
 ## [26.10.7] - 2026-10-21
 
 ### Decks

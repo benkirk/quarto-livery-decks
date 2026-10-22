@@ -51,6 +51,12 @@ def test_every_key(livery):
     assert f"\\def\\engine@boxes@caution@padx{{{b['caution']['pad'][1]}}}" in sty
     assert f"\\definecolor{{EngineBoxesCardOutlineColor}}{{HTML}}{{{b['card']['outline-color'][1:]}}}" in sty
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
+    # the theme resolves a role= and the card roles by place through the role table, in the sty too
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    assert f"\\def\\engine@boxes@card@roles{{{','.join(b['card']['roles'])}}}" in sty
+    for role, tex in j["latex"]["roles"].items():
+        assert f"\\expandafter\\def\\csname engine@role@{role}\\endcsname{{{tex}}}" in sty, \
+            f"{livery.name}: {role} is not in the sty's role table"
 
 
 def test_merge_box_by_box():
