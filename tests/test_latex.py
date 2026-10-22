@@ -1,17 +1,18 @@
 """Compile a deck written on the theme's LaTeX layer (latex/authoring.md): cards on keys, strips,
-status lists, columns, a caution box, a note, a scale group and the marking.
+status lists, columns, a caution box, a note, a scale group, steps, a timeline and the marking.
 
     python3 -m pytest tests/test_latex.py
 
 A small deck on every environment (a status list nested in a status list among them, which once
 looped TeX) compiles with XeLaTeX through latexmk, TEXINPUTS and TTFONTS set as latex/Makefile
-sets them (the theme, the liveries and the root), and its log has no Overfull line; the frame whose pick moves (`pick=<2>`) is two pages; a `role=` that is neither a
-role nor a color leaves the theme's warning in the log and takes the default; the marking is on
-every page; a third card on a row opened for two is the share error. A second deck cites with
-biblatex (author-year, bibtex, as the cookbook): the citation reads on its frame, `\footcite` sets
-beamer's footnote there, the entries are on the References frame, and its log has no Overfull
-line; skipped without biblatex. Skipped without xelatex (CI's latex job runs in the image, which
-has TeX).
+sets them (the theme, the liveries and the root), and its log has no Overfull line; the frame
+whose pick moves (`pick=<2>`) is two pages, and the frame whose step holds an `\\uncover<2->`; a
+`role=` that is neither a role nor a color leaves the theme's warning in the log and takes the
+default; the marking is on every page; a third card or step on a row opened for two is the share
+error. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
+on its frame, `\footcite` sets beamer's footnote there, the entries are on the References frame,
+and its log has no Overfull line; skipped without biblatex. Skipped without xelatex (CI's latex
+job runs in the image, which has TeX).
 """
 
 import os
@@ -69,6 +70,32 @@ On a solid card.
 \begin{frame}[c]{Caution}
 \begin{enginescale}{1.15}\begin{enginecaution}Careful.\end{enginecaution}\end{enginescale}
 \enginenote{A note under it.}
+\end{frame}
+\begin{frame}{Steps and a timeline}
+\begin{enginesteps}[role=secondary]{3}
+\begin{enginestep}{Propose} A one-page case. \end{enginestep}
+\begin{enginestep}{Pilot} Six weeks. \par A second line. \uncover<2->{Overlays work.} \end{enginestep}
+\begin{enginestep}{Scale} The allocation follows the pilot's numbers. \end{enginestep}
+\end{enginesteps}
+\begin{enginetimeline}{3}
+\enginemilestone[done]{Q1 2025}{Proposal accepted}
+\enginemilestone{Q3 2025}{Pilot complete}
+\enginemilestone{2026}{Full allocation}
+\end{enginetimeline}
+\end{frame}
+\end{document}
+"""
+
+TOO_MANY_STEPS = r"""
+\documentclass[aspectratio=169]{beamer}
+\usetheme[livery=liveries/ncar,fonts=bundled]{Engine}
+\begin{document}
+\begin{frame}{Three on two}
+\begin{enginesteps}{2}
+\begin{enginestep}{One} a \end{enginestep}
+\begin{enginestep}{Two} b \end{enginestep}
+\begin{enginestep}{Three} c \end{enginestep}
+\end{enginesteps}
 \end{frame}
 \end{document}
 """
@@ -143,8 +170,11 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 4, "the pick=<2> frame is two pages, the other two one each"
+    assert len(texts) == 6, "the pick=<2> and the \\uncover<2-> frames are two pages, the other two one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
+    assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
+    for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
+        assert all(w in t for w in ("Propose", "Six weeks.", "Scale", "Q1 2025", "Proposal accepted", "2026")), t
 
 
 def test_role_warns_and_falls_back(deck):
@@ -162,6 +192,12 @@ def test_too_many_cards(deck):
     d, _ = deck
     r, log = compile_tex(d, "toomany", TOO_MANY)
     assert r.returncode != 0 and "enginecards{2}: card 3 has no share" in log, log[-1500:]
+
+
+def test_too_many_steps(deck):
+    d, _ = deck
+    r, log = compile_tex(d, "toomanysteps", TOO_MANY_STEPS)
+    assert r.returncode != 0 and "enginesteps{2}: item 3 has no share" in log, log[-1500:]
 
 
 @pytest.fixture(scope="module")

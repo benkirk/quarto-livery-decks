@@ -611,6 +611,125 @@
   \expandafter\engine@begincard\expandafter{\engine@ckeys}\box\engine@cardbox{#1}\end{tcolorbox}}
 
 % ---------------------------------------------------------------------------
+% steps and timelines, the rail: \begin{enginesteps}[role=<role>]{<n>} of n
+% \begin{enginestep}{<title>} ... \end{enginestep}, and \begin{enginetimeline}[role=<role>]{<n>} of
+% n \enginemilestone[done]{<date>}{<label>} (the Quarto filter writes them for ::: {.steps} and
+% ::: {.timeline}). The items share the row equally (\engine@shares: {n}), the livery's column gap
+% between them; an item beyond n is an error, and six is the most (the cards' save boxes). role=
+% colors the badges and dots (a role, a blend or a defined color, \engine@rolecolor; default
+% primary). Each item's text is set first into a box, at its width less boxes.rail.pad (a step's
+% title in the block title font, bold, over its text; overlays work, as in a card), and \end draws
+% the row as one tikzpicture: a rail of boxes.rail.line in its color (EngineBoxesRailLineColor)
+% through the marks' middle, from the first mark to the row's right edge; a step's badge (badge
+% of the paper's height, the role's, its number in primary-text) or a milestone's dot (dot of the
+% height, the role's with [done], else the background in a ring of the role) at the text's left;
+% a milestone's date (the block title font, bold) above its dot; the texts under the marks, the
+% row's cells one height, on boxes.rail.fill when the livery sets one (EngineBoxesRailFill).
+% ---------------------------------------------------------------------------
+\pgfkeys{/engine/rail/.cd, role/.store in=\engine@railrole}
+\newif\ifengine@milestonedone
+\pgfkeys{/engine/milestone/.cd, done/.is if=engine@milestonedone}
+\newcount\engine@nrail \newcount\engine@railk
+\newdimen\engine@railbody \newdimen\engine@raildate \newdimen\engine@railw \newdimen\engine@railmark
+\newdimen\engine@railtop \newdimen\engine@railcell \newdimen\engine@railx \newdimen\engine@railpx \newdimen\engine@railpy
+\newdimen\engine@railline
+\def\engine@railsteps{steps}
+\def\engine@railbegin#1#2#3{\par\engine@shares{rail}{#3}\def\engine@railkind{#1}%
+  \ifnum\engine@rail@n>6
+    \PackageError{Engine}{engine#1{\engine@rail@n}: more than six items}%
+      {A row of steps or milestones holds at most six: split it over two slides.}%
+  \fi
+  \def\engine@railrole{}\pgfkeys{/engine/rail/.cd,#2}%
+  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@primary\endcsname}%
+  \else\engine@rolecolor{\engine@railrole}{primary}\fi
+  \let\engine@railcolor\engine@rolename
+  \global\engine@nrail=\z@ \global\engine@railbody=\z@ \global\engine@raildate=\z@}
+\newenvironment{enginesteps}[2][]{\engine@railbegin{steps}{#1}{#2}}{\engine@drawrail\par}
+\newenvironment{enginetimeline}[2][]{\engine@railbegin{timeline}{#1}{#2}}{\engine@drawrail\par}
+% an item: its number, its width (its share of the line less the gaps) and its title, globally
+\def\engine@railitem#1{%
+  \global\advance\engine@nrail\@ne
+  \ifnum\engine@nrail>\engine@rail@n\relax
+    \PackageError{Engine}{engine\engine@railkind{\engine@rail@n}: item \the\engine@nrail\space has no share}%
+      {The row was opened for \engine@rail@n\space items: give \string\begin{engine\engine@railkind} the number of items.}%
+  \fi
+  \engine@railw=\dimexpr\csname engine@rail@share@\the\engine@nrail\endcsname
+    \dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(\engine@rail@n-1)\relax\relax
+  \expandafter\xdef\csname engine@rail@w@\the\engine@nrail\endcsname{\the\engine@railw}%
+  \expandafter\gdef\csname engine@rail@title@\the\engine@nrail\endcsname{#1}}
+\def\engine@railtitle#1{{\usebeamerfont{block title}\bfseries\strut#1\par}}
+% the item's text into its box (a card's: \engine@cardbox{k}), its lines close as a card's
+\def\engine@railbox{\edef\engine@outerparskip{\the\parskip}%
+  \global\setbox\engine@cardbox{\engine@nrail}=\vbox\bgroup
+    \hsize=\dimexpr\engine@railw-2\dimexpr\engine@boxes@rail@padx em\relax\relax
+    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip
+    \raggedright\usebeamerfont{normal text}}
+\def\engine@railboxend{\par\egroup
+  \ifdim\dimexpr\ht\engine@cardbox{\engine@nrail}+\dp\engine@cardbox{\engine@nrail}\relax>\engine@railbody
+    \global\engine@railbody=\dimexpr\ht\engine@cardbox{\engine@nrail}+\dp\engine@cardbox{\engine@nrail}\relax\fi}
+\newenvironment{enginestep}[1]{\engine@railitem{#1}\engine@railbox
+  \def\engine@tmpa{#1}\ifx\engine@tmpa\@empty\else\engine@railtitle{#1}\fi}{\engine@railboxend}
+\newcommand\enginemilestone[3][]{\engine@railitem{#2}%
+  \engine@milestonedonefalse\pgfkeys{/engine/milestone/.cd,#1}%
+  \expandafter\xdef\csname engine@rail@done@\the\engine@nrail\endcsname{\ifengine@milestonedone 1\else 0\fi}%
+  \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@railw-2\dimexpr\engine@boxes@rail@padx em\relax\relax
+    \raggedright\engine@railtitle{#2}}%   the date row: the tallest date
+  \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\engine@raildate
+    \global\engine@raildate=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax\fi
+  \engine@railbox#3\engine@railboxend}
+% the row: one tikzpicture, (0,0) its top left, y up; the marks' row at -\engine@railtop (a
+% timeline's dates above it, a pad between), the cells under it
+\def\engine@railpt#1#2{(\the\dimexpr#1\relax,\the\dimexpr#2\relax)}
+\def\engine@drawrail{%
+  \engine@railpx=\engine@boxes@rail@padx em\relax \engine@railpy=\engine@boxes@rail@pady em\relax
+  \engine@railline=\engine@boxes@rail@line\paperheight
+  \ifx\engine@railkind\engine@railsteps
+    \engine@railmark=\engine@boxes@rail@badge\paperheight \engine@railtop=\z@
+  \else
+    \engine@railmark=\engine@boxes@rail@dot\paperheight \engine@railtop=\dimexpr\engine@raildate+\engine@railpy\relax
+  \fi
+  \engine@railcell=\dimexpr\engine@railbody+2\engine@railpy\relax
+  \def\engine@railmid{-\engine@railtop-.5\engine@railmark}%
+  \hbox{\begin{tikzpicture}[x=1pt,y=1pt]
+    \useasboundingbox \engine@railpt{0pt}{0pt} rectangle
+      \engine@railpt{\linewidth}{-\engine@railtop-\engine@railmark-\engine@railcell};
+    \fill[EngineBoxesRailLineColor]
+      \engine@railpt{\engine@railpx+.5\engine@railmark}{\engine@railmid+.5\engine@railline}
+      rectangle \engine@railpt{\linewidth}{\engine@railmid-.5\engine@railline};
+    \engine@railx=\z@ \engine@railk=\z@
+    \loop\advance\engine@railk\@ne
+      \engine@railw=\csname engine@rail@w@\the\engine@railk\endcsname\relax
+      \ifcsname\string\color@EngineBoxesRailFill\endcsname
+        \fill[EngineBoxesRailFill] \engine@railpt{\engine@railx}{-\engine@railtop-\engine@railmark}
+          rectangle \engine@railpt{\engine@railx+\engine@railw}{-\engine@railtop-\engine@railmark-\engine@railcell};
+      \fi
+      \ifx\engine@railkind\engine@railsteps
+        \node[circle, fill=\engine@railcolor, text=BrandPrimaryText, minimum size=\the\engine@railmark, inner sep=0pt,
+          font=\usebeamerfont{block title}\bfseries]
+          at \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid} {\the\engine@railk};
+      \else
+        \ifnum\csname engine@rail@done@\the\engine@railk\endcsname=\@ne
+          \fill[\engine@railcolor] \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
+            circle[radius=\the\dimexpr.5\engine@railmark\relax];
+        \else
+          \fill[BrandBackground] \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
+            circle[radius=\the\dimexpr.5\engine@railmark\relax];
+          \draw[\engine@railcolor, line width=\the\dimexpr.2\engine@railmark\relax]
+            \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
+            circle[radius=\the\dimexpr.4\engine@railmark\relax];
+        \fi
+        \node[anchor=south west, inner sep=0pt] at \engine@railpt{\engine@railx+\engine@railpx}{-\engine@raildate}
+          {\vbox{\hsize=\dimexpr\engine@railw-2\engine@railpx\relax\raggedright
+            \engine@railtitle{\csname engine@rail@title@\the\engine@railk\endcsname}}};
+      \fi
+      \node[anchor=north west, inner sep=0pt]
+        at \engine@railpt{\engine@railx+\engine@railpx}{-\engine@railtop-\engine@railmark-\engine@railpy}
+        {\box\engine@cardbox{\engine@railk}};
+      \advance\engine@railx by \dimexpr\engine@railw+\engine@boxes@columns@gap\paperwidth\relax
+    \ifnum\engine@railk<\engine@nrail\repeat
+  \end{tikzpicture}}}
+
+% ---------------------------------------------------------------------------
 % status lists: \begin{enginestatus} \done ... \warn<2-> ... \fail ... \item ... \end{enginestatus}
 % (the Quarto filter writes it for - [x] / [!] / [-] items in a card or a .status list): beamer's
 % itemize, each status item's glyph as its label (where the bullet is, as HTML's and the pptx's),

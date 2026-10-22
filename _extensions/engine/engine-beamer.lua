@@ -371,6 +371,35 @@ local function strips(blocks, livery)
   end })
 end
 
+-- Steps and timelines (C.rail_items()): \begin{enginesteps}[role=<role>]{<n>} with a
+-- \begin{enginestep}{<title>} round each step's text (as a card's body: \enginelabel and \enginebig
+-- lines), or \begin{enginetimeline}[role=<role>]{<n>} with \enginemilestone[done]{<date>}{<label>}
+-- per milestone; beamerinnerthemeEngine.sty sets the texts first and draws the row. Before the
+-- status items, so a literal ✓ first in a milestone is its status, as in the other formats.
+local function rails(blocks, livery)
+  return blocks:walk({ Div = function(d)
+    local kind = C.rail_kind(d)
+    if not kind then return nil end
+    local r = C.rail_items(d, kind, livery, "engine-beamer")
+    if not r then return nil end
+    local out = pandoc.Blocks({ latex(string.format("\\begin{engine%s}[role=%s]{%d}", kind, r.role, #r.items)) })
+    for _, it in ipairs(r.items) do
+      local title = it.title and inlines_to_latex(it.title) or ""
+      if kind == "steps" then
+        out:insert(latex("\\begin{enginestep}{" .. title .. "}"))
+        out:extend(card_body(it.body))
+        out:insert(latex("\\end{enginestep}"))
+      else
+        out:insert(latex("\\enginemilestone" .. (it.done and "[done]" or "") .. "{" .. title .. "}{"))
+        out:extend(it.body)
+        out:insert(latex("}"))
+      end
+    end
+    out:insert(latex("\\end{engine" .. kind .. "}"))
+    return out
+  end })
+end
+
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
 -- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
 local function lead_boxes(blocks)
@@ -778,7 +807,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY)), LIVERY)))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(rails(note_frames(unwrap_layout(hoist_footnotes(out))), LIVERY)), LIVERY)), LIVERY)))
   if used.hcenter then
     local hi = header_includes(doc)
     hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") }))

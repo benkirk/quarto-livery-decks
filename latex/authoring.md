@@ -31,6 +31,8 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Lead box over a row of cards, or alone | `\begin{enginelead} ... \end{enginelead}`; each line its own paragraph (`\par`) |
 | Cards, side by side at one height | `\begin{enginecards}{3}` holding `\begin{enginecard}[<keys>]{Title}{Sub}` (next section) |
 | A strip, in a card or on its own | `\begin{enginestrip}[role=accent] ... \end{enginestrip}` |
+| Steps of a process on a rail, a numbered badge each | `\begin{enginesteps}[role=secondary]{3}` holding `\begin{enginestep}{Title} ... \end{enginestep}` (["Steps and timelines"](#steps-and-timelines)) |
+| A timeline: milestones on a rail, the date above each dot | `\begin{enginetimeline}{4}` holding `\enginemilestone[done]{Q1 2025}{Label}`; without `[done]` the dot is hollow |
 | Status list: ✓ ⚠ ✗ as the bullets | `\begin{enginestatus}` with `\done`, `\warn`, `\fail` items (and plain `\item`); `\engineglyph{done}` is the glyph anywhere |
 | Warning slide: the body on the soft yellow field with the brand-yellow bar | `\begin{enginecaution} ... \end{enginecaution}` |
 | Note under a figure or table (the caption's look: small, muted, centered) | `\enginenote{...}` |
@@ -113,6 +115,38 @@ The cookbook's Options slide, as the Quarto one in [docs/authoring.md "Cards and
 - **Overlays inside cards** work as anywhere in beamer: `\item<+->`, `\pause`, `\uncover<2->{...}`.
   `\uncover` keeps the row one height across the steps; `\only` would make it jump. The
   cookbook's "Steps inside cards" has all three.
+
+## Steps and timelines
+
+The cookbook's "A process, step by step" and "A timeline", as the Quarto ones in
+[the sample deck](../decks/sample/sample.qmd):
+
+```latex
+\begin{enginesteps}[role=secondary]{3}            % three equal steps; role= as a card's
+  \begin{enginestep}{Propose} A one-page case; the review board reads it in a week. \end{enginestep}
+  \begin{enginestep}{Pilot} Six weeks. \par \uncover<2->{A second line, at step 2.} \end{enginestep}
+  \begin{enginestep}{Scale} The allocation follows the pilot's numbers. \end{enginestep}
+\end{enginesteps}
+
+\begin{enginetimeline}{3}                          % role= too; default primary
+  \enginemilestone[done]{Q1 2025}{Proposal accepted}   % [done]: a filled dot
+  \enginemilestone[done]{Q3 2025}{Pilot complete}
+  \enginemilestone{2026}{Full allocation}               % a hollow dot
+\end{enginetimeline}
+```
+
+- **`enginesteps[role=]{<n>}`** and **`enginetimeline[role=]{<n>}`** open a row of n equal items,
+  the livery's column gap between them; an item beyond n is an error, and six is the most. A
+  thin rail (the livery's `boxes.rail`: the `rule` blend by default) runs through the marks from
+  the first to the row's right edge. `role=` colors the badges and dots as it colors a card's band
+  (a role, a blend or a defined color; default `primary`).
+- **`enginestep{Title}`** is a step: its badge (the number, in the primary text color on the
+  role), its title bold under the badge, its text below. The text is set into a box first, as a
+  card's body, so overlays work inside it (`\uncover` keeps the row one height across the steps).
+- **`\enginemilestone[done]{Date}{Label}`** is a milestone: its date bold above its dot, its label
+  under it; `[done]` fills the dot in the role, else the dot is hollow, ringed in it.
+- Keep a step to two or three lines: the row is as tall as its tallest step, and beamer does not
+  shrink a frame to fit.
 
 ## Out of scope for LaTeX
 

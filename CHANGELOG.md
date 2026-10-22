@@ -26,7 +26,7 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the rest its text below; `::: {.timeline}` around a bullet list draws milestones as dots on the
   rail, the bold run the date above the dot and the rest the label below, `- [x]` a filled dot
   and a plain item a hollow one. In the pptx each is native shapes, one group ("Steps",
-  "Timeline"), the badges and dots PowerPoint circles. HTML and pptx for now.
+  "Timeline"), the badges and dots PowerPoint circles.
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
@@ -50,6 +50,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `rule` blend with no cell.
 
 ### LaTeX
+- Steps and timelines: `\begin{enginesteps}[role=]{n}` holding `\begin{enginestep}{Title} ...
+  \end{enginestep}`, and `\begin{enginetimeline}[role=]{n}` holding
+  `\enginemilestone[done]{Date}{Label}`: a rail through numbered badges or dots, at most six items,
+  overlays working inside a step. The cookbook (`latex/examples/sample.tex`) has both.
 - Citations with biblatex: `\printbibliography` no longer stops the compile (the theme's
   `bibliography item` called `\insertbiblabel`, which biblatex never defines), and its list is
   set as the Quarto decks' (the footnote size, a 1.5 em hanging indent, 0.4 em between entries).
