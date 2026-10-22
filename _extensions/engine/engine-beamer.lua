@@ -616,17 +616,8 @@ function Table(tbl)
   return tbl
 end
 
--- .full: the one figure's image path (C.split_full), its caption paragraphs and its notes.
--- Runs before bound_sized_images, which turns the image into raw LaTeX.
-local function split_full(blocks)
-  local fig, caption, rest = C.split_full(blocks)
-  if not fig then return nil end
-  local src
-  pandoc.walk_block(fig, { Image = function(im) src = src or im.src end })
-  if not src then return nil end
-  return src, caption, rest
-end
-
+-- .full: the one figure (C.split_full: an image, whose path the frame key takes, or a gallery), its
+-- caption paragraphs and its notes. Runs before bound_sized_images, which turns the image into raw LaTeX.
 local function full_frames(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
@@ -638,11 +629,12 @@ local function full_frames(blocks)
         slide:insert(blocks[i])
         i = i + 1
       end
-      local src, caption, rest = split_full(slide)
-      local fig = C.split_full(slide)
+      local fig, caption, rest = C.split_full(slide)
       local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-beamer")
-      if fig and C.is_gallery(fig) and not gallery then   -- refused, warned of: an ordinary frame of its pictures
-        src = nil
+      local src   -- a figure's image path; nil for a gallery (the bare key) or a refused one
+      if fig and not C.is_gallery(fig) then
+        pandoc.walk_block(fig, { Image = function(im) src = src or im.src end })
+      elseif fig and not gallery then   -- refused, warned of: an ordinary frame of its pictures
         fig.classes = fig.classes:filter(function(c) return c ~= "gallery" end)   -- read once: galleries() passes it
       end
       if gallery or src then
