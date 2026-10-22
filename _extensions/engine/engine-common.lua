@@ -304,13 +304,38 @@ local function ensure_refs(blocks, meta, level)
   return blocks
 end
 
+-- Quarto's PDF shape of a captioned image on its own paragraph (`![Caption](path)`, a Figure): its
+-- filters turn one into a classless Div holding raw `\begin{figure}[H]`, a paragraph of `{\centering`,
+-- the Image (its alt emptied) and `}`, a paragraph of `\caption` `{` the caption's inlines `}` and
+-- `\end{figure}` before any engine filter runs (HTML and pptx keep the Figure). The one Image and the
+-- caption's inlines, or nil.
+local function latex_figure(blk)
+  if blk.t ~= "Div" or #blk.classes > 0 or not blk.content[1] then return nil end
+  local first = blk.content[1]
+  if not (first.t == "RawBlock" and first.text:find("\\begin{figure}", 1, true)) then return nil end
+  local imgs, caption = {}, nil
+  blk:walk({ Image = function(im) table.insert(imgs, im) end })
+  if #imgs ~= 1 then return nil end
+  for _, b in ipairs(blk.content) do
+    local ils = b.content
+    if (b.t == "Para" or b.t == "Plain") and ils[1] and ils[1].t == "RawInline" and ils[1].text:find("^\\caption") then
+      local from, to = 1, #ils   -- past `\caption` and `{`, before the closing `}`
+      while from <= to and ils[from].t == "RawInline" do from = from + 1 end
+      if to >= from and ils[to].t == "RawInline" and ils[to].text == "}" then to = to - 1 end
+      caption = pandoc.Inlines({})
+      for k = from, to do caption:insert(ils[k]) end
+    end
+  end
+  return imgs[1], caption
+end
+
 -- .full: the slide's one figure, the caption paragraphs after it, and its
 -- notes; nil when the body is anything else.  A † paragraph is caption too.
 local function is_figure(blk)
   if blk.t == "Figure" then return true end
   if blk.t == "Div" then
     return has_class(blk, "cell") or has_class(blk, "cell-output-display")
-      or has_class(blk, "quarto-figure") or has_class(blk, "quarto-float")
+      or has_class(blk, "quarto-figure") or has_class(blk, "quarto-float") or latex_figure(blk) ~= nil
   end
   if blk.t ~= "Para" and blk.t ~= "Plain" then return false end
   local n = 0
@@ -331,13 +356,14 @@ local function is_note(blk)
 end
 
 -- A .full slide's blocks as (figure, caption paragraphs, the notes and hidden divs), or nil when the
--- body holds anything else; a ::: note after the figure is caption.
+-- body holds anything else; a ::: note after the figure is caption. The figure may be a .gallery div
+-- (is_gallery(); its cells fill the slide).
 local function split_full(blocks)
   local fig, caption, rest = nil, pandoc.Blocks({}), pandoc.Blocks({})
   for _, b in ipairs(blocks) do
     if b.t == "Div" and (has_class(b, "notes") or has_class(b, "hidden")) then
       rest:insert(b)
-    elseif not fig and is_figure(b) then
+    elseif not fig and (is_figure(b) or (b.t == "Div" and has_class(b, "gallery"))) then   -- a gallery fills the slide too
       fig = b
     elseif fig and (b.t == "Para" or b.t == "Plain") then
       caption:insert(b)
@@ -452,8 +478,8 @@ end
 
 -- A grid slide: the columns div has a .card column, a column holding a quote (unless a column holds
 -- a picture or table, which a grid column cannot: the slide stays pandoc's, the quote its own), or
--- more than two columns, or the slide (its blocks) has a .lead, a .steps, a .timeline or a quote of
--- its own. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py); pandoc's two
+-- more than two columns, or the slide (its blocks) has a .lead, a .steps, a .timeline, a .gallery or a
+-- quote of its own. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py); pandoc's two
 -- placeholders cannot hold it.
 local function is_grid(div, blocks)
   local cols = column_shares(div)
@@ -466,7 +492,7 @@ local function is_grid(div, blocks)
   end
   if quoted and not pictured then return true end
   for _, b in ipairs(blocks or {}) do
-    if b.t == "Div" and (has_class(b, "lead") or has_class(b, "steps") or has_class(b, "timeline")) then return true end
+    if b.t == "Div" and (has_class(b, "lead") or has_class(b, "steps") or has_class(b, "timeline") or has_class(b, "gallery")) then return true end
     if is_quote(b) then return true end
   end
   return false
@@ -718,6 +744,136 @@ local function top_rails(blocks, livery, who, draw)
   return out
 end
 
+-- Image galleries (::: {.gallery cols= rows= fit= height=}): a div of image files, each its own paragraph
+-- (`![Caption](path)` a Figure, `![](path)` a Para of one Image), drawn as a grid of equal cells in every
+-- format. gallery_items() reads one: { cols, rows, fit, height = number|nil, items = { { src, caption =
+-- inlines|nil }, ... }, captioned } or nil, warned of: anything but an image paragraph (a plot or a
+-- diagram cell among them), an image under a figure-*/ or *_files/ directory (an executed cell's plot or
+-- a baked diagram: pptx reads the files from disk after the render, where those are not), a link round
+-- an image, a gallery inside it, more than GALLERY_MAX images or more than cols*rows, a cols or rows
+-- that is not a positive integer, a height outside (0, 1]. cols defaults to ceil(sqrt(n)), rows to
+-- ceil(n/cols) (rows alone given: cols = ceil(n/rows)); fit is contain or cover (anything else warned
+-- of: contain). A per-image width= or height= is dropped: the cell sizes the picture.
+local GALLERY_MAX = 12   -- every format holds to it (beamer stores the items one macro each)
+
+local function is_gallery(b)
+  return b.t == "Div" and has_class(b, "gallery")
+end
+
+-- a Para or Plain of images alone (spaces and line breaks between them): the images, else nil; linked
+-- true when an image inside a link is the reason
+local function para_images(b)
+  if b.t ~= "Para" and b.t ~= "Plain" then return nil end
+  local imgs = {}
+  for _, il in ipairs(b.content) do
+    if il.t == "Image" then table.insert(imgs, il)
+    elseif il.t == "Link" and #il.content == 1 and il.content[1].t == "Image" then return nil, true
+    elseif il.t ~= "Space" and il.t ~= "SoftBreak" and il.t ~= "LineBreak" then return nil end
+  end
+  return #imgs > 0 and imgs or nil
+end
+
+local function gallery_items(div, who)
+  local function refuse(why)
+    warn(who .. ": a .gallery " .. why .. "; left as it is")
+    return nil
+  end
+  local items = {}
+  for _, b in ipairs(div.content) do
+    local imgs, linked, long
+    if b.t == "Figure" and #b.content == 1 then   -- ![Caption](path): its caption the Figure's
+      imgs, linked = para_images(b.content[1])
+      long = pandoc.utils.blocks_to_inlines(b.caption.long or {})
+    elseif is_gallery(b) then
+      return refuse("inside a .gallery is not drawn")
+    else
+      local img, cap = latex_figure(b)   -- the PDF's shape of ![Caption](path) (Quarto rewrites the Figure first)
+      if img then imgs, long = { img }, cap else imgs, linked = para_images(b) end
+    end
+    if linked then return refuse("image inside a link is not drawn (links round gallery images are deferred)") end
+    if not imgs then return refuse("holds image files, each its own paragraph; a plot or diagram is not drawn") end
+    for _, img in ipairs(imgs) do
+      if img.src:match("figure%-[%w%-]+/") or img.src:match("_files/") then
+        return refuse("holds image files; " .. img.src .. " is an executed cell's plot or a baked diagram, not drawn")
+      end
+      img.attributes["width"], img.attributes["height"] = nil, nil   -- the cell sizes the picture
+      local caption = (#imgs == 1 and long and #long > 0) and long or (#img.caption > 0 and img.caption or nil)
+      table.insert(items, { src = img.src, caption = caption, image = img })
+    end
+  end
+  local n = #items
+  if n == 0 then return refuse("holds no image") end
+  if n > GALLERY_MAX then return refuse("has " .. n .. " images, more than " .. GALLERY_MAX) end
+  local function count(key)
+    local v = div.attributes[key]
+    if v == nil then return true, nil end
+    local k = tonumber(v)
+    if not k or k < 1 or k ~= math.floor(k) then return false end
+    return true, math.floor(k)
+  end
+  local okc, cols = count("cols")
+  local okr, rows = count("rows")
+  if not okc then return refuse("cols=" .. div.attributes["cols"] .. " is not a positive whole number") end
+  if not okr then return refuse("rows=" .. div.attributes["rows"] .. " is not a positive whole number") end
+  if not cols then cols = rows and math.ceil(n / rows) or math.ceil(math.sqrt(n)) end
+  if not rows then rows = math.ceil(n / cols) end
+  if n > cols * rows then return refuse("of " .. n .. " images does not fit cols=" .. cols .. " rows=" .. rows) end
+  local height = div.attributes["height"]
+  if height ~= nil then
+    local h = tonumber(height)
+    if not h or h <= 0 or h > 1 then return refuse("height=" .. height .. " is not a share of the body in (0, 1]") end
+    height = h
+  end
+  local fit = div.attributes["fit"] or "contain"
+  if fit ~= "contain" and fit ~= "cover" then
+    warn(who .. ": a .gallery's fit=" .. fit .. " is contain or cover; contain")
+    fit = "contain"
+  end
+  local captioned = false
+  for _, it in ipairs(items) do if it.caption then captioned = true end end
+  return { cols = cols, rows = rows, fit = fit, height = height, items = items, captioned = captioned }
+end
+
+-- The file a raw \includegraphics names for an image src: percent-decoded (pandoc writes a space as
+-- %20), and a media-bag item written to disk first. Quarto's pdfImages filter converts an .svg to a
+-- PDF with rsvg-convert, puts it in pandoc's media bag and names it in the src (vec.svg -> vec.pdf);
+-- pandoc writes a bag item out only where an Image references it, and a gallery's images are raw
+-- LaTeX (engine-beamer.lua's \engineimage), so this writes it where pandoc would,
+-- <output>_files/mediabag/<src> (out: the output file, PANDOC_STATE.output_file), and names that.
+-- Beamer's alone; here so tests/test_gallery.py reaches it.
+local function latex_file(src, out)
+  local file = src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+  local _, bytes = pandoc.mediabag.lookup(src)
+  if not bytes then return file end
+  local stem = (out or "index.tex"):gsub("%.[^.%/]*$", "")
+  local path = pandoc.path.join({ stem .. "_files", "mediabag", file })
+  pandoc.system.make_directory(pandoc.path.directory(path), true)
+  local f = assert(io.open(path, "wb"), "engine-common: cannot write " .. path)
+  f:write(bytes); f:close()
+  return path
+end
+
+-- The slide's galleries drawn: each top-level .gallery div that gallery_items() reads becomes draw(g)
+-- (blocks); one inside another div (a column, a card) is not drawn, in any format (pptx flattens a
+-- column), and is warned of and left as its pictures (top_rails' shape; a gallery has no role).
+local function top_galleries(blocks, who, draw)
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    local g = is_gallery(b) and gallery_items(b, who)
+    if g then
+      out:extend(draw(g))
+    else
+      if b.t == "Div" and not is_gallery(b) then
+        b.content:walk({ Div = function(d)
+          if is_gallery(d) then warn(who .. ": a .gallery inside a column or another div is not drawn; left as its pictures") end
+        end })
+      end
+      out:insert(b)
+    end
+  end
+  return out
+end
+
 -- Every bullet list's status items normalized (status_item()), marked ones inside a card column or
 -- a .status div; fn(list, kinds) then returns the list as a format draws it (kinds: the items'
 -- statuses, nil for a plain item), or nil to keep it.
@@ -762,4 +918,6 @@ return {
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
+  is_gallery = is_gallery, gallery_items = gallery_items, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
+  latex_file = latex_file,
 }

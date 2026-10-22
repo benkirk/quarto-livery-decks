@@ -29,6 +29,19 @@ A release's entry is written here before its tag is pushed, and becomes its note
   Limits: six items at most, text only, on the slide itself (not in a card or a column); anything
   else warns and stays a plain list. A longer process goes on over a second slide whose list
   starts at `7.`: the badges follow the list's numbers. `docs/authoring.md` "Steps and timelines".
+- Image galleries: `::: {.gallery}` around image files (each `![Caption](path)` or `![](path)`)
+  draws them as a grid of equal cells, close together with no frame, a one-line caption under each
+  picture in the caption look (any caption reserves the line in every cell, so a row lines up).
+  `cols=` and `rows=` set the grid (by default as square as the count allows: five images are
+  3 by 2), `fit=cover` crops each picture to fill its cell where the default `contain` shows it
+  whole, and `height=0.6` gives the gallery that share of the body. Text above a gallery takes its
+  own height and the cells share the rest; on a `{.wide}` slide the gallery takes the wider body,
+  and on a `{.full}` slide the whole slide, the paragraph after it the slide's caption. In every
+  format; in the pptx the pictures are cropped or fitted in place, one group ("Gallery"), and an SVG
+  image is a PNG of it; in the PDF a gallery under text needs `height=` (TeX cannot measure what is
+  above it). Limits: twelve images, image files only (a plot or diagram cell is refused), on the slide
+  itself (not in a column or a card); anything else warns and leaves the pictures as they were.
+  `docs/authoring.md` "Image galleries".
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
@@ -65,6 +78,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   timelines, the rail's thickness and color, a step's badge, a milestone's dot, an optional cell
   behind each item. Every livery keeps its look with no change; the defaults draw the rail in the
   `rule` blend with no cell.
+- `boxes.gallery` (`gap`, `pad`, `fill`): the look of the new image galleries, the gap between the
+  cells (of the slide's width), a cell's inset and its caption's distance under the picture, an
+  optional cell behind each picture. Nothing to do: the defaults draw a close wall of pictures
+  with no cell.
 - `boxes.quote` (`bar`, `bar-color`, `pad`) and the `quote` type role (24 pt on the default canvas,
   scaling with the body): the look of the new quote block, a bar at its left in `bar-color`
   and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
@@ -81,6 +98,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   family's name). A family the livery does not bundle fails the build with its path.
 
 ### LaTeX
+- `enginegallery` with `\engineimage[caption]{file}`: an image gallery in equal cells, `cols=`,
+  `rows=`, `fit=contain|cover` and `height=` (a share of the body box) as its keys; the bare
+  `[enginefull]` frame key (no image of its own) fills the slide with the gallery in its body.
+  `latex/authoring.md` "Galleries"; the cookbook has the three gallery slides, and every Overleaf
+  zip carries their six images.
 - Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...
   \end{enginestep}`, and `\begin{enginetimeline}[role=]{n}` holding
   `\enginemilestone[done]{Date}{Label}`: a rail through numbered badges or dots, at most six items

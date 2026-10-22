@@ -381,7 +381,8 @@
       font={\engine@fs{marking}\selectfont\@ifundefined{engine@marking@bold}{}{\bfseries}},text=EngineMarkingText] at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};}\fi}
 
 % full frame: the image contained (never cropped) between a thin margin and
-% the footline, with the caption line, if any, just above the footline
+% the footline, with the caption line, if any, just above the footline; or, on a
+% bare [enginefull] frame, a gallery's cells in that box
 \newdimen\engine@fullpad    \engine@fullpad=\engine@geom@fullpad\paperwidth
 \newdimen\engine@fullfloor
 \def\engine@drawfullbg{%
@@ -391,11 +392,18 @@
       font={\engine@fs{caption}\selectfont},text=BrandMuted] at (0.5\paperwidth,\engine@fullfloor) {\engine@fullcaption};
     \advance\engine@fullfloor \engine@geom@fullcaption\paperheight
   \fi
-  \node[anchor=center,inner sep=0pt]
-    at (0.5\paperwidth,{0.5*(\paperheight-\engine@fullpad+\engine@fullfloor)})
-    {\includegraphics[width=\dimexpr\paperwidth-2\engine@fullpad\relax,
-      height=\dimexpr\paperheight-\engine@fullpad-\engine@fullfloor\relax,
-      keepaspectratio]{\engine@fullimage}};}
+  \ifx\engine@fullimage\@empty   % the bare [enginefull]: a gallery's images (enginegallery), if any
+    \ifnum\engine@galn>\z@
+      \engine@gallerycells{\engine@fullpad}{\paperheight-\engine@fullpad}{\paperwidth-2\engine@fullpad}%
+        {\paperheight-\engine@fullpad-\engine@fullfloor}%
+    \fi
+  \else
+    \node[anchor=center,inner sep=0pt]
+      at (0.5\paperwidth,{0.5*(\paperheight-\engine@fullpad+\engine@fullfloor)})
+      {\includegraphics[width=\dimexpr\paperwidth-2\engine@fullpad\relax,
+        height=\dimexpr\paperheight-\engine@fullpad-\engine@fullfloor\relax,
+        keepaspectratio]{\engine@fullimage}};
+  \fi}
 
 % ---------------------------------------------------------------------------
 % frame keys
@@ -427,7 +435,7 @@ block body example,block title alerted,block body alerted}
         \csname #1\engine@s @\engine@c\endcsname}}}
 \AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}}
 \def\engine@resetframe{%
-  \def\engine@framestyle{normal}\global\engine@haspanelfalse
+  \def\engine@framestyle{normal}\global\engine@haspanelfalse\global\engine@galn=\z@   % no gallery carried over
   % the text color too: a field's hook (\engine@fieldcolors) sets it where the frame's group
   % does not undo it, so the frame after a closing slide had white body text
   \def\engine@framehook{\usebeamercolor[fg]{normal text}}%
@@ -444,8 +452,10 @@ block body example,block title alerted,block body alerted}
     \engine@featureblocks}}
 % [enginefull=<image>]: the image fills the frame; no title, logo, rule or
 % waves, the frame number kept.  \enginefullcaption{...} in the body (global:
-% the background is drawn after the body) adds a caption line.
-\define@key{beamerframe}{enginefull}{%
+% the background is drawn after the body) adds a caption line.  The bare
+% [enginefull]: the same frame with no image of its own; an enginegallery in
+% its body fills it.
+\define@key{beamerframe}{enginefull}[]{%
   \def\engine@framestyle{full}\def\engine@fullimage{#1}\gdef\engine@fullcaption{}}
 \def\engine@fullcaption{}
 \newcommand\enginefullcaption[1]{\gdef\engine@fullcaption{#1}}

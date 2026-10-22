@@ -6,7 +6,8 @@ table_overruns reports a cell that runs into the next column (pdftotext merges t
 cells into one line spanning the next column's edge), in any row, the last included; a table's
 caption above it and a note under it are wider than its columns but are not cells, and a
 right-aligned column of numbers has no edge of its own. The lines are made up, laid out as the
-sample's "Tables" page: (x0, y0, x1, y1, text) in points on a 362 x 204 page.
+sample's "Tables" page: (x0, y0, x1, y1, text) in points on a 362 x 204 page. html_findings fails a
+gallery caption that runs past its cell (MEASURE_JS's galleryCapOver), on a content or a {.full} slide.
 """
 
 import importlib.util
@@ -52,3 +53,13 @@ def test_a_merged_cell_is_reported(deck_qa, at):
     rows[at] = row(88 + 8 * (at - 1), (120, 180, "Casper-with-a-long-name DAV"), (228, 240, "36"))
     out = deck_qa.table_overruns(lines(CAPTION, HEADER, *rows, NOTE), W, H)
     assert out == [("runs into the next table column", repr("Casper-with-a-long-name DAV"))]
+
+
+@pytest.mark.parametrize("kind", ["figure", "full"])
+def test_a_gallery_caption_past_its_cell_fails(deck_qa, kind):
+    slide = dict(level2=True, title="Six views", cls="slide level2", kind=kind, use=0.9, fit=1, scale=1,
+                 overRight=False, galleryCapOver=True)
+    fails, _ = deck_qa.html_findings([slide])
+    assert fails == ['s1 "Six views": a gallery caption runs past its cell; shorten it']
+    fails, _ = deck_qa.html_findings([{**slide, "galleryCapOver": False}])
+    assert fails == []

@@ -135,8 +135,8 @@ def test_face_in_pptx(faced, tmp_path):
     md = '## Quote\n\n::: {.quote}\nThe purpose of computing\n— R. Hamming\n:::\n'
     subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(ROOT / "liveries" / "cu" / "template.pptx"),
                     "-o", str(out)], input=md, text=True, check=True, capture_output=True, cwd=tmp_path)
-    step = ("import sys\nfrom pptx import Presentation\nfrom pptx_steps import grid\n"
-            "prs = Presentation(sys.argv[1]); grid.run(prs, 'q'); prs.save(sys.argv[1])\n")
+    step = ("import sys\nfrom pathlib import Path\nfrom pptx import Presentation\nfrom pptx_steps import grid\n"
+            "prs = Presentation(sys.argv[1]); grid.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])\n")
     subprocess.run([sys.executable, "-c", step, str(out)], env={**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)},
                    check=True, capture_output=True)
     with zipfile.ZipFile(out) as z:

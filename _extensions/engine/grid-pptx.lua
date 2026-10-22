@@ -34,6 +34,18 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   or date a paragraph led by `⟦engine:title⟧`, its text, `⟦engine:end⟧`, and a last `⟦engine:end⟧`;
   a slide with one is a grid slide. A div rail_items() refuses (warned of) stays as it is.
 
+- An image gallery (engine-common.lua's gallery_items(), a top-level `::: {.gallery}`) is
+  `⟦engine:gallery cols=3 rows=2 fit=contain|cover⟧` (` height=0.6` with height=, ` full` on a
+  `{.full}` slide, from slide-layout.lua's notes line), per image `⟦engine:item src=<path>⟧` (the
+  path percent-encoded where it holds white space, `=`, `⟦` or `⟧`, as pandoc's URL form already
+  writes a space), its caption a paragraph,
+  `⟦engine:end⟧`, and a last `⟦engine:end⟧`: text, so pandoc embeds no picture and keeps Title and
+  Content; pptx_steps/gallery.py reads the files from the deck's directory. A gallery the reader
+  refuses (warned of, naming the slide), or one in a column (warned of), is unwrapped into its
+  pictures (pandoc's pptx writer draws no picture held in a Div): on the slide itself pandoc draws
+  them and splits the slide over them, which `make qa`'s count catches; in a column it keeps the
+  first and drops the rest silently, so the warning is the one signal.
+
 An agenda slide (`## Agenda {.agenda}`, an empty body) is `⟦engine:agenda current=n⟧`, per numbered
 section `⟦engine:item n=k state=done|current|next⟧` with its title and subtitle led by
 `⟦engine:title⟧` and `⟦engine:sub⟧`, `⟦engine:end⟧`, and a last `⟦engine:end⟧`.
@@ -59,15 +71,24 @@ local function warn(title, msg)
   io.stderr:write(string.format("grid-pptx.lua: WARNING: slide %q: %s\n", title, msg))
 end
 
--- slide-layout.lua's notes line on this slide says `wide`
-local function is_wide(blocks)
+-- the words of slide-layout.lua's notes line on this slide (`wide`, `full`, ...), as a set
+local function layout_words(blocks)
+  local set = {}
   for _, b in ipairs(blocks) do
     if b.t == "Div" and C.has_class(b, "notes") then
       local words = pandoc.utils.stringify(b):match("engine%-layout:([^\n]*)")
-      if words and (" " .. words .. " "):find("%swide%s") then return true end
+      for w in (words or ""):gmatch("%S+") do set[w] = true end
     end
   end
-  return false
+  return set
+end
+
+-- a gallery item's path in its marker, percent-encoded where it would break the marker's grammar
+-- (white space, `=`, `⟦`, `⟧`); pandoc has already written a space in it as %20 (a src is a URL), and
+-- gallery.py decodes the lot once, so a file's own name comes back
+local function encode(src)
+  return (src:gsub("[%s=]", function(c) return string.format("%%%02X", c:byte()) end)
+    :gsub("⟦", "%%E2%%9F%%A6"):gsub("⟧", "%%E2%%9F%%A7"))
 end
 
 local function share(v)
@@ -119,6 +140,9 @@ local function flow(blocks, title, out)
     elseif C.rail_kind(b) then
       warn(title, "a ." .. C.rail_kind(b) .. " inside a column or another div is not drawn; left as its list")
       flow(b.content, title, out)
+    elseif C.is_gallery(b) then   -- unwrapped: pandoc's pptx writer draws no picture inside a Div
+      warn(title, "a .gallery inside a column or another div is not drawn; left as its pictures")
+      out:extend(b.content)
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
@@ -177,12 +201,20 @@ end
 
 -- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
 local function mark(blocks, title)
-  local out, wide = pandoc.Blocks({}), is_wide(blocks)
+  local words = layout_words(blocks)
+  local out, wide = pandoc.Blocks({}), words.wide
   local grid, kept = {}, {}   -- which columns divs are a grid slide's, read before the quotes become markers;
   for k, b in ipairs(blocks) do   -- a plain one's quotes (beside a picture or table) stay pandoc's, warned of
     if b.t == "Div" and C.has_class(b, "columns") then
       grid[k] = C.is_grid(b, blocks)
       if not grid[k] then
+        b = b:walk({ Div = function(d)   -- a plain columns slide stays pandoc's: a gallery in a column its pictures,
+          if C.is_gallery(d) then        -- unwrapped (pandoc draws no picture held in a Div)
+            warn(title, "a .gallery inside a column or another div is not drawn; left as its pictures")
+            return d.content
+          end
+        end })
+        blocks[k] = b
         local quoted = false
         b:walk({ Div = function(d) if C.is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
         if quoted then
@@ -197,6 +229,7 @@ local function mark(blocks, title)
   for k, b in ipairs(blocks) do
     local kind = C.rail_kind(b)
     local rail = kind and C.rail_items(b, kind, nil, "grid-pptx.lua")
+    local gallery = C.is_gallery(b) and C.gallery_items(b, string.format("grid-pptx.lua: slide %q", title))
     if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
       flow({ b }, title, out)
     elseif b.t == "Div" and C.has_class(b, "lead") then
@@ -213,6 +246,17 @@ local function mark(blocks, title)
         out:insert(marker("end"))
       end
       out:insert(marker("end"))
+    elseif gallery then
+      out:insert(marker(string.format("gallery cols=%d rows=%d fit=%s", gallery.cols, gallery.rows, gallery.fit)
+        .. (gallery.height and (" height=" .. gallery.height) or "") .. (words.full and " full" or "")))
+      for _, it in ipairs(gallery.items) do
+        out:insert(marker("item src=" .. encode(it.src)))
+        if it.caption then out:insert(pandoc.Para(it.caption)) end
+        out:insert(marker("end"))
+      end
+      out:insert(marker("end"))
+    elseif C.is_gallery(b) then   -- refused (warned of): its pictures, unwrapped, which pandoc draws (a Div's it drops)
+      out:extend(b.content)
     elseif b.t == "Div" and C.has_class(b, "engine-quote-marks") then   -- a quote on its own
       out:extend(b.content)
     elseif b.t == "Div" and C.has_class(b, "columns") and grid[k] then

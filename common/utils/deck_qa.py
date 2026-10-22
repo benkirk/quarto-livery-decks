@@ -8,7 +8,7 @@ Reads the already-built <deck>.{html,pdf,pptx} and writes to _qa/:
   <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png the same for the PDF
 Failures (exit 1): slide counts that differ between formats, PDF text past the right margin,
 into the footer band or overlapping other text, HTML content past the right edge, a {.full}
-caption or a ::: note paragraph that wraps in HTML, and a bare
+caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), and a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
 Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
@@ -41,6 +41,9 @@ MEASURE_JS = r"""
   const h = s.querySelector(':scope > h2');
   if (!s.classList.contains('level2') || !h) return {level2: false};
   const cls = [...s.classList];
+  // a gallery caption past its cell (one line, nowrap: its text overflows the box)
+  const galleryCapOver = [...s.querySelectorAll('.engine-gallery-item figcaption')].some(
+    c => c.scrollWidth > c.clientWidth + 1);
   if (s.classList.contains('full')) {
     // use: the drawn figure's share of its box (it keeps its shape, so one axis is full)
     const box = s.querySelector(':scope > .engine-full-figure');
@@ -57,7 +60,7 @@ MEASURE_JS = r"""
     }
     return {level2: true, title: h.textContent.trim(), cls: cls.join(' '), kind: 'full',
             use, fit: 1, scale: 1, overRight: false,
-            capOver: !!cap && cap.scrollHeight > cap.clientHeight + 1, noFigure: !fig};
+            capOver: !!cap && cap.scrollHeight > cap.clientHeight + 1, noFigure: !fig, galleryCapOver};
   }
   const sr = s.getBoundingClientRect(), cs = getComputedStyle(s);
   const shift = parseFloat(s.style.getPropertyValue('--engine-shift')) || 0;
@@ -87,7 +90,7 @@ MEASURE_JS = r"""
           // the right edge: the padding, or on a {.wide} slide the wide margin the body widens to
           overRight: right > sr.width - (s.classList.contains('engine-wide')
             ? parseFloat(cs.getPropertyValue('--engine-wide-margin')) : parseFloat(cs.paddingRight)) + 16,  // inline-code padding overhangs
-          noteWrap};
+          noteWrap, galleryCapOver};
 }
 """
 
@@ -334,6 +337,8 @@ def html_findings(slides):
         if s.get("noteWrap"):
             fails.append("%s: a ::: note paragraph wraps; shorten it, or split it into "
                          "paragraphs (each a caption line)" % tag)
+        if s.get("galleryCapOver"):
+            fails.append("%s: a gallery caption runs past its cell; shorten it" % tag)
         if s.get("noFigure"):
             fails.append("%s: {.full} slide without a drawn figure" % tag)
         # (Quarto marks the references slide .smaller itself; the theme sets that list's size)

@@ -1,5 +1,6 @@
 """What the pptx steps share: the livery and the numbers every step reads from it, the shape and run
-helpers each step wrote for itself, and the shape tests.
+helpers each step wrote for itself (text boxes in the body's style, groups, card shapes, a picture
+fitted to a box), and the shape tests.
 
 The livery is read once here (livery.load(): $LIVERY_DIR, exported by Make.common, else a `_livery`
 link in the current directory) and every step imports it, so one deck's steps agree on it. The
@@ -8,6 +9,9 @@ geometry blocks of livery.json, the body type in points, and SLACK, the share a 
 height is grown by so PowerPoint's autofit stays idle. measure.py holds the text measuring
 (text_height); this module holds no measuring.
 """
+
+import copy
+import io
 
 from lxml import etree
 from pptx.dml.color import RGBColor
@@ -133,3 +137,133 @@ def fit_table(shape, left, width):
     for c in cols:   # integers: a float makes PowerPoint repair the deck
         c.set("w", str(round(int(c.get("w")) * width / total)))
     shape.left, shape.top, shape.width, shape.height = Emu(left), shape.top, Emu(width), shape.height
+
+
+def para_text(p):
+    """A paragraph's (a:p) text, every run's."""
+    return "".join(t.text or "" for t in p.iter(qn("a:t")))
+
+
+def style_runs(p, size=None, bold=None, color=None, caps=False):
+    """Every run of the paragraph at a size (pt), bold, a six-digit color, small caps' tracking."""
+    for r in p.iter(qn("a:r")):
+        el = rpr(r)
+        if size is not None:
+            el.set("sz", str(round(livery_mod.half_pt(size) * 100)))
+        if bold is not None:
+            el.set("b", "1" if bold else "0")
+        if caps:
+            el.set("cap", "all"); el.set("spc", "100")
+        if color is not None:
+            set_fill(el, color)
+
+
+def body_box(slide, x, y, w, h, paragraphs, name):
+    """A text box that renders as the body placeholder does: the master's body list style (bullets,
+    sizes, spacing per level) in its lstStyle and its insets, word wrap, shrink on overflow; the
+    paragraphs moved into it with their own properties."""
+    tb = slide.shapes.add_textbox(Emu(x), Emu(y), Emu(w), Emu(h))
+    tb.name = name
+    tf = tb.text_frame
+    tf.word_wrap = True
+    body = tf._txBody
+    bp = body.find(qn("a:bodyPr"))
+    for fit in list(bp):
+        if fit.tag in (qn("a:spAutoFit"), qn("a:noAutofit"), qn("a:normAutofit")):
+            bp.remove(fit)
+    etree.SubElement(bp, qn("a:normAutofit"))
+    master = slide.slide_layout.slide_master._element
+    for sp in master.iter(qn("p:sp")):   # the body placeholder's insets (a text box's default is 0.1 in)
+        ph = sp.find(".//" + qn("p:ph"))
+        mbp = sp.find(".//" + qn("a:bodyPr"))
+        if ph is not None and ph.get("type") == "body" and mbp is not None:
+            for k in ("lIns", "tIns", "rIns", "bIns"):
+                if mbp.get(k) is not None:
+                    bp.set(k, mbp.get(k))
+            break
+    lst = body.find(qn("a:lstStyle"))
+    style = master.find(".//" + qn("p:bodyStyle"))
+    for lvl in (style if style is not None else []):
+        if lvl.tag.endswith("pPr"):
+            lst.append(copy.deepcopy(lvl))
+    for p in body.findall(qn("a:p")):
+        body.remove(p)
+    for p in paragraphs:
+        body.append(p)   # moves it
+    if not paragraphs:
+        etree.SubElement(body, qn("a:p"))
+    return tb
+
+
+def group(slide, shapes, name):
+    """The shapes as one PowerPoint group, named: a click selects the whole box (a card, a lead),
+    a second click a part. At the first shape's place in the stacking (python-pptx appends a
+    group on top); its child coordinates are the slide's (recalculate_extents)."""
+    tree = slide.shapes._spTree
+    shapes = sorted((sh for sh in shapes if sh is not None), key=lambda sh: list(tree).index(sh._element))
+    at = list(tree).index(shapes[0]._element)
+    g = slide.shapes.add_group_shape(shapes)
+    tree.remove(g._element); tree.insert(at, g._element)
+    g.name = name
+    return g
+
+
+def shape(slide, x, y, w, h, radius, fill, name, line=None, behind=None, top_only=False):
+    """A card's rectangle, rounded when radius (EMU) > 0 (top_only: its top corners, a head band's);
+    fill a six-digit hex or None; line (hex, width EMU) an outline; behind: a shape it goes under.
+    Its own shape, not rect(): the preset geometry differs."""
+    kind = (MSO_SHAPE.ROUND_2_SAME_RECTANGLE if top_only else MSO_SHAPE.ROUNDED_RECTANGLE) if radius > 0 else MSO_SHAPE.RECTANGLE
+    r = slide.shapes.add_shape(kind, Emu(x), Emu(y), Emu(w), Emu(h))
+    if radius > 0:
+        r.adjustments[0] = min(0.5, round(radius / min(w, h), 5))
+        if top_only:
+            r.adjustments[1] = 0.0
+    if fill:
+        r.fill.solid(); r.fill.fore_color.rgb = RGBColor.from_string(fill)
+    else:
+        r.fill.background()
+    if line:
+        r.line.color.rgb = RGBColor.from_string(line[0]); r.line.width = Emu(line[1])
+    else:
+        r.line.fill.background()
+    r.shadow.inherit = False
+    r.name = name
+    if behind is not None:
+        behind._element.addprevious(r._element)
+    return r
+
+
+def contain_box(iw, ih, x, y, w, h):
+    """The largest box of an iw x ih image's aspect inside the box (x, y, w, h EMU), centered in it:
+    (x, y, w, h) in integer EMU."""
+    k = min(w / iw, h / ih)
+    cw, ch = int(iw * k), int(ih * k)
+    return x + (w - cw) // 2, y + (h - ch) // 2, cw, ch
+
+
+def cover_crop(iw, ih, w, h):
+    """The symmetric crop, (left and right, top and bottom) shares of an iw x ih image, that makes it
+    cover a w x h box with its aspect kept: one of the two is 0."""
+    if iw * h > ih * w:
+        return (1 - (w / h) / (iw / ih)) / 2, 0.0
+    return 0.0, (1 - (iw / ih) / (w / h)) / 2
+
+
+def fit_picture(slide, src, x, y, w, h, fit, name=None):
+    """A picture of src (a path or the file's bytes) in the box (x, y, w, h EMU): fit "contain", the
+    whole image at its aspect, centered (contain_box()); "cover", the box filled, the image cropped
+    symmetrically (cover_crop(), the picture's a:srcRect). The picture."""
+    pic = slide.shapes.add_picture(io.BytesIO(src) if isinstance(src, bytes) else str(src), Emu(x), Emu(y), Emu(w), Emu(h))
+    iw, ih = pic.image.size
+    if fit == "cover":
+        lr, tb = cover_crop(iw, ih, w, h)
+        if lr:
+            pic.crop_left = pic.crop_right = lr
+        else:
+            pic.crop_top = pic.crop_bottom = tb
+    else:
+        pic.left, pic.top, pic.width, pic.height = (Emu(v) for v in contain_box(iw, ih, x, y, w, h))
+    if name:
+        pic.name = name
+    return pic
+

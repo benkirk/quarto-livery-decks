@@ -354,6 +354,41 @@ mpirun -n 4 ./a.out
   \end{enginetimeline}
 \end{frame}
 
+\begin{frame}{Six views from orbit and beyond}
+  % enginegallery: \engineimage[caption]{file} per picture, in equal cells; cols= and rows= (by
+  % default as square as the count allows), fit=contain (whole, the default) or cover (cropped to
+  % fill), height= a share of the body box: give it under text, which TeX cannot measure
+  A line above a gallery takes its own height; here \texttt{height=0.75} leaves it room.
+  \begin{enginegallery}[cols=3,rows=2,height=0.75]
+    \engineimage[The Blue Marble]{images/gallery-1.jpg}
+    \engineimage[Earthrise]{images/gallery-2.jpg}
+    \engineimage[Artemis I]{images/gallery-3.jpg}
+    \engineimage[Aurora]{images/gallery-4.jpg}
+    \engineimage[Helene]{images/gallery-5.jpg}
+    \engineimage[Liftoff]{images/gallery-6.jpg}
+  \end{enginegallery}
+\end{frame}
+
+\begin{frame}{A strip of six}
+  % in enginewide, the wider body; fit=cover crops each picture to its cell
+  \begin{enginewide}
+  \begin{enginegallery}[cols=6,rows=1,fit=cover]
+    \engineimage{images/gallery-1.jpg}\engineimage{images/gallery-2.jpg}\engineimage{images/gallery-3.jpg}
+    \engineimage{images/gallery-4.jpg}\engineimage{images/gallery-5.jpg}\engineimage{images/gallery-6.jpg}
+  \end{enginegallery}
+  \end{enginewide}
+\end{frame}
+
+\begin{frame}[enginefull]
+  % the bare enginefull key: a full frame with no picture of its own; the gallery in it fills
+  % the slide less its pads, and \enginefullcaption is its caption line
+  \enginefullcaption{With \texttt{[enginefull]} the cells fill the slide, and this line is the caption.}
+  \begin{enginegallery}[cols=3,rows=2,fit=cover]
+    \engineimage{images/gallery-1.jpg}\engineimage{images/gallery-2.jpg}\engineimage{images/gallery-3.jpg}
+    \engineimage{images/gallery-4.jpg}\engineimage{images/gallery-5.jpg}\engineimage{images/gallery-6.jpg}
+  \end{enginegallery}
+\end{frame}
+
 \begin{frame}{Status items, step by step}
   % enginestatus on its own: ✓ ⚠ ✗ as the bullets, in the livery's status colors; a failed
   % item's text muted. \engineglyph{done|warn|fail} is the glyph anywhere (a table cell).

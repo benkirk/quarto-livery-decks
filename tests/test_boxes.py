@@ -38,7 +38,7 @@ def test_every_key(livery):
             if k == "roles":
                 assert v and all(r in json.loads((livery / "build" / "livery.json").read_text())["roles"] for r in v), f"{where}: not roles"
             elif k in lb.BOX_COLORS.get(box, ()):
-                assert (v is None and (box, k) == ("rail", "fill")) or HEX.match(v), f"{where} is not #RRGGBB"
+                assert (v is None and lb.BOXES[box][k] is None) or HEX.match(v), f"{where} is not #RRGGBB"   # a nullable color
             elif (box, k) == ("quote", "family"):   # a bundled family, or null: the body's
                 assert v is None or isinstance(v, str), f"{where} is not a family or null"
             elif (box, k) == ("quote", "style"):
@@ -57,6 +57,14 @@ def test_every_key(livery):
     assert f"--engine-rail-line-color: {b['rail']['line-color']};" in css
     assert f"--engine-rail-fill: {b['rail']['fill'] or 'transparent'};" in css
     assert ("EngineBoxesRailFill" in sty) == (b["rail"]["fill"] is not None), "a null fill defines no color"
+    g = b["gallery"]   # the gallery: its gap, pads and fill in the css, its gap in the sty; the geometry it reads
+    assert f"--engine-gallery-pad: {g['pad'][0]:g}em {g['pad'][1]:g}em;" in css and f"--engine-gallery-pad-y: {g['pad'][0]:g}em;" in css
+    assert re.search(r"--engine-gallery-gap: [\d.]+px;", css) and f"--engine-gallery-fill: {g['fill'] or 'transparent'};" in css
+    assert f"\\def\\engine@boxes@gallery@gap{{{g['gap']}}}" in sty
+    assert ("EngineBoxesGalleryFill" in sty) == (g["fill"] is not None), "a null fill defines no color"
+    geom = json.loads((livery / "build" / "livery.json").read_text())["geometry"]
+    assert f"--engine-body-bottom: {round(geom['body-bottom'] * 900, 1):g}px;" in css
+    assert f"\\def\\engine@geom@bodyheight{{{geom['body'][3]}}}" in sty
     assert "\\def\\engine@type@display{" in sty and "--engine-type-display:" in css
     q = b["quote"]   # the quote block: its bar, its color and pads in every format's file, its type role
     assert f"--engine-quote-bar-color: {q['bar-color']};" in css and f"--engine-quote-pad: {q['pad'][0]:g}em {q['pad'][1]:g}em;" in css
@@ -101,9 +109,14 @@ def test_colors_resolve(tmp_path):
     assert j["boxes"]["status"]["done"] == j["roles"]["highlight"], "the default, a role"
     assert j["boxes"]["rail"]["line-color"] == j["blends"]["rule"], "the default, a blend"
     assert j["boxes"]["rail"]["fill"] is None, "the default, null: no cell"
+    assert j["boxes"]["gallery"]["fill"] is None, "the default, null: no cell"
     rc, err, j = tmp_livery(tmp_path / "fill", "  rail: {fill: surface, line-color: muted}\n")
     assert rc == 0, err
     assert j["boxes"]["rail"]["fill"] == j["roles"]["surface"] and j["boxes"]["rail"]["line-color"] == j["roles"]["muted"], "a cell"
+    rc, err, j = tmp_livery(tmp_path / "gallery", "  gallery: {fill: surface, gap: 0.02}\n")
+    assert rc == 0, err
+    assert j["boxes"]["gallery"]["fill"] == j["roles"]["surface"] and j["boxes"]["gallery"]["gap"] == 0.02, "a tile look"
+    assert j["boxes"]["gallery"]["pad"] == lb.BOXES["gallery"]["pad"], "its other keys the defaults"
 
 
 @pytest.mark.parametrize("boxes, expect", [

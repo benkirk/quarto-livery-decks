@@ -39,6 +39,7 @@
   --engine-margin: 96px;
   --engine-tab-width: 28.8px;
   --engine-wide-margin: 48px;
+  --engine-body-bottom: 830px;
   --engine-full-pad: 40px;
   --engine-full-footline: 67.5px;
   --engine-full-caption: 54px;
@@ -132,6 +133,10 @@
   --engine-rail-pad: 0.4em 0.4em;
   --engine-rail-pad-y: 0.4em;
   --engine-rail-pad-x: 0.4em;
+  --engine-gallery-gap: 9.6px;
+  --engine-gallery-pad: 0.15em 0.15em;
+  --engine-gallery-pad-y: 0.15em;
+  --engine-gallery-fill: transparent;
 }
 /* chart colors (livery.json charts) */
 :root {
