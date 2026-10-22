@@ -96,9 +96,10 @@ COVERS = ("title", "title-photo", "title-light", "title-photo-light", "title-ban
 ELEMENTS = ("date", "title", "subtitle", "author", "institute")   # a cover's text, in the column's default order
 BYLINE = ("author", "institute", "date")   # a byline's default elements
 # Boxes (livery.yml boxes:): one set of numbers for every format's columns and boxes. Units: gap of the
-# slide's width; bar, rule, outline and radius of its height; pad [vertical, horizontal] in em of the
-# body type; tint a share of the role over the background; the colors a role, a palette name or a hex
-# (hex in livery.json, as marking's). A livery's block merges over these one box at a time.
+# slide's width; bar, rule, outline, radius, line, badge and dot of its height; pad [vertical,
+# horizontal] in em of the body type; tint a share of the role over the background; the colors a
+# role, a blend, a palette name or a hex (hex in livery.json, as marking's). A livery's block merges
+# over these one box at a time.
 BOXES = {
     "columns": {"gap": 0.03, "rule": 0},   # rule: its width, 0 for none
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
@@ -109,8 +110,13 @@ BOXES = {
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
     "strip": {"tint": 0.18, "pad": [0.3, 0.8]},   # 0.18: caution-fill's share (BLENDS), one tint recipe
     "status": {"done": "highlight", "warn": "warning", "fail": "accent"},   # the ✓ ⚠ ✗ glyphs
+    # steps and timelines: line, badge and dot of the height (the rail's thickness, a step's badge's
+    # and a milestone's dot's diameter); fill a cell behind each item, null for none
+    "rail": {"line": 0.004, "line-color": "rule", "badge": 0.05, "dot": 0.02, "fill": None, "pad": [0.4, 0.4]},
 }
-BOX_COLORS = {"lead": ("fill", "bar-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail")}
+# a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
+BOX_COLORS = {"lead": ("fill", "bar-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
+              "rail": ("line-color", "fill")}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -243,8 +249,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["marks"] = marks(d.name, data, out)
     out["marking"] = marking(data.get("marking") or {}, out,   # its colors as hex: a role, a palette name or a hex
                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
-    out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's
-                         lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
+    out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's (a blend too: the rail's rule)
+                         lambda c, k: roles.get(c) or blends.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
     # derived, not yml keys: the content body's box (the template's placeholder, the plots' size) and
     # the Two Content column's width (the template's halves, the shares' reference in columns.py)
     m, top = g["margin"], out["frametitle"]["body"]
@@ -294,7 +300,7 @@ def boxes(b: dict, hexof, roles=()) -> dict:
     for box, defaults in BOXES.items():
         v = {**defaults, **(b.get(box) or {})}
         for k in BOX_COLORS.get(box, ()):
-            v[k] = hexof(v[k], f"{box}.{k}")
+            v[k] = None if v[k] is None else hexof(v[k], f"{box}.{k}")
         for i, r in enumerate(v.get("roles", [])):   # role names: every format names the role's own color
             hexof(r, f"{box}.roles[{i}]")
             if roles and (r.startswith("#") or r not in roles):
@@ -865,8 +871,8 @@ def emit_sty_boxes(livery: dict) -> list[str]:
     """The boxes (livery.json boxes): \\engine@boxes@<box>@<key> for each number (fractions of the paper,
     tint a share), @pady and @padx for each pad (em, so the factor goes before `em`), and a color per
     color key, EngineBoxes<Box><Key> (the status glyphs' EngineGlyph<Key>: EngineStatus* are the
-    charts'), as hex; the card roles as their names (the theme resolves them through
-    \\engine@role@<name>)."""
+    charts'), as hex, none for a null one (a rail's fill); the card roles as their names (the theme
+    resolves them through \\engine@role@<name>)."""
     L = ["% boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),",
          "% its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row"]
     for box, v in livery["boxes"].items():
@@ -875,6 +881,8 @@ def emit_sty_boxes(livery: dict) -> list[str]:
             if k == "roles":
                 L.append(f"\\def\\engine@boxes@{box}@{name}{{{','.join(val)}}}")
             elif k in BOX_COLORS.get(box, ()):
+                if val is None:   # none (a rail's fill): the theme tests \ifcsname
+                    continue
                 tex = f"EngineGlyph{tex_camel(k)}" if box == "status" else f"EngineBoxes{tex_camel(box)}{tex_camel(k)}"
                 L.append(f"\\definecolor{{{tex}}}{{HTML}}{{{val[1:]}}}")
             elif isinstance(val, list):   # [vertical, horizontal]
@@ -1122,6 +1130,11 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};",
           f"--engine-strip-gap: {strip['pad'][0]:g}em;"]   # above and below it: its vertical pad
     p += [f"--engine-glyph-{k}: {c};" for k, c in b["status"].items()]   # the ✓ ⚠ ✗ glyphs (--engine-status-* are the charts')
+    rail = b["rail"]
+    p += [f"--engine-rail-line: {px(rail['line'])};", f"--engine-rail-line-color: {rail['line-color']};",
+          f"--engine-rail-badge: {px(rail['badge'])};", f"--engine-rail-dot: {px(rail['dot'])};",
+          f"--engine-rail-fill: {rail['fill'] or 'transparent'};", f"--engine-rail-pad: {pad(rail['pad'])};",
+          f"--engine-rail-pad-y: {rail['pad'][0]:g}em;", f"--engine-rail-pad-x: {rail['pad'][1]:g}em;"]   # a mark and a date line up with the text
     return p
 
 

@@ -54,6 +54,11 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
       ::: {.strip role=} and status items (- [x] ✓, - [!] ⚠, - [-] ✗) are drawn
       from livery.css's boxes (engine-common.lua reads them for every format)
 
+  ::: {.steps role=} (an ordered list) / ::: {.timeline role=} (a bullet list)
+      a rail across the row: a numbered badge per step, its bold title and
+      text below; a dot per milestone (filled when - [x]), its bold date above
+      and its label below (boxes.rail)
+
   metadata `marking: "CUI"`
       the marking strip on every slide (the livery places and colors it)
 
@@ -271,6 +276,34 @@ local function card_columns(blocks, livery)
     for k, col in ipairs(C.column_shares(d)) do card(col, k) end
     return d
   end })
+end
+
+-- Steps and timelines (C.rail_items()): raw tags, a grid the scss lays out (--engine-rail-n columns,
+-- one row per part: a step's badge over its title and text, a milestone's date over its dot over
+-- its label), the role a custom property (role= is ARIA's attribute); each item's parts are the
+-- grid's cells (.engine-rail-item is display: contents), so a row's parts line up across the items
+-- and the rail runs through the marks. The scss draws it from livery.css's boxes.rail. At the
+-- slide's top level only (C.top_rails()): one in a column is warned of and stays a list.
+local function rails(blocks, livery)
+  return C.top_rails(blocks, livery, "engine-revealjs", function(kind, r)
+    local out = pandoc.Blocks({ html(string.format('<div class="engine-rail engine-%s" style="--engine-rail-role: var(--engine-%s); --engine-rail-n: %d">',
+      kind, r.role, #r.items)) })
+    for k, it in ipairs(r.items) do
+      local title = '<div class="engine-rail-title">' .. (it.title and inline_html(it.title) or "") .. "</div>"
+      local mark = '<div class="engine-rail-mark">' .. (kind == "steps" and ('<div class="engine-rail-badge">' .. (k + r.start - 1) .. "</div>")
+        or '<div class="engine-rail-dot"></div>') .. "</div>"
+      local open = '<div class="engine-rail-item' .. (it.done and " engine-done" or "") .. '">'
+      if kind == "steps" then   -- the badge, then the title in the text's cell
+        out:insert(html(open .. mark .. '<div class="engine-rail-body">' .. title))
+      else                      -- the date above the dot, the label in the cell
+        out:insert(html(open .. title .. mark .. '<div class="engine-rail-body">'))
+      end
+      out:extend(it.body)
+      out:insert(html("</div></div>"))
+    end
+    out:insert(html("</div>"))
+    return out
+  end)
 end
 
 local function unwrap_layout(blocks)
@@ -637,7 +670,7 @@ function Pandoc(doc)
   doc.blocks = cited
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(doc.blocks)), livery), livery))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(flex_columns(status_items(rails(doc.blocks, livery))), livery), livery))), 0
   while i <= #blocks do
     local blk = blocks[i]
     if blk.t == "Header" and blk.level == 1 and slide_level > 1 then

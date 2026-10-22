@@ -18,9 +18,17 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
-## [26.10.8] - 2026-10-22
-
 ### Decks
+- Steps and timelines: `::: {.steps}` around an ordered list draws a process as a thin rail with
+  a numbered badge per step, each step's first bold run its title and the rest its text below;
+  `::: {.timeline}` around a bullet list draws milestones as dots on the rail, the bold run the
+  date above the dot and the rest the label below, `- [x]` a filled dot and a plain item a hollow
+  one. The marks take `role=`, by default the livery's `primary-contrast` (the primary that reads
+  on the background), and a badge's number is knocked out in the background color. In the pptx
+  each is native shapes, one group ("Steps", "Timeline"), the badges and dots PowerPoint circles.
+  Limits: six items at most, text only, on the slide itself (not in a card or a column); anything
+  else warns and stays a plain list. A longer process goes on over a second slide whose list
+  starts at `7.`: the badges follow the list's numbers. `docs/authoring.md` "Steps and timelines".
 - `^[...]` footnotes are slide footnotes in every format: each takes the next of the printer's
   markers after the slide's own dagger lines (`† ‡ § ¶`), a superscript mark in the accent in the
   text, and joins the slide's footnotes under the rule (HTML, PDF) or in place, muted (pptx). pptx
@@ -33,11 +41,19 @@ A release's entry is written here before its tag is pushed, and becomes its note
   has no `::: {#refs}` gets a References slide last (`reference-section-title:` names it), with a
   warning. A citation inside a slide footnote reaches the PDF too. A `.bib` or `.csl` in the deck's
   directory is a prerequisite, so editing one rebuilds the deck.
-- PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
-  livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
-  instead of the brand's; lists, labels and strips in a card colored themselves and were right.
+
+### Liveries
+- `boxes.rail` (`line`, `line-color`, `badge`, `dot`, `fill`, `pad`): the look of the new steps and
+  timelines, the rail's thickness and color, a step's badge, a milestone's dot, an optional cell
+  behind each item. Every livery keeps its look with no change; the defaults draw the rail in the
+  `rule` blend with no cell.
 
 ### LaTeX
+- Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...
+  \end{enginestep}`, and `\begin{enginetimeline}[role=]{n}` holding
+  `\enginemilestone[done]{Date}{Label}`: a rail through numbered badges or dots, at most six items
+  (`start=7` numbers a second frame's badges on), overlays working inside a step. The cookbook
+  (`latex/examples/sample.tex`) has both.
 - Citations with biblatex: `\printbibliography` no longer stops the compile (the theme's
   `bibliography item` called `\insertbiblabel`, which biblatex never defines), and its list is
   set as the Quarto decks' (the footnote size, a 1.5 em hanging indent, 0.4 em between entries).
@@ -47,6 +63,15 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `backend=biber`), and every livery's Overleaf zip carries the bibliography.
 - A frame that breaks across pages (`allowframebreaks`) numbers its title `(1)`, `(2)` only when it
   runs to more than one page; a one-page frame's title stands alone.
+
+## [26.10.8] - 2026-10-22
+
+### Decks
+- PDF: a card's paragraphs are set in the text color. They took tcolorbox's black, which a dark
+  livery's card fill hid (nasa-dark: invisible prose in a card) and a light one showed as black
+  instead of the brand's; lists, labels and strips in a card colored themselves and were right.
+
+### LaTeX
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
   color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
   theme resolves a `role=` itself.

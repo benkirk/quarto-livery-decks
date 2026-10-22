@@ -1,10 +1,13 @@
-"""A grid slide (three or more columns, a lead box, cards, strips) redrawn from grid-pptx.lua's markers.
+"""A grid slide (three or more columns, a lead box, cards, strips, steps, a timeline) redrawn from
+grid-pptx.lua's markers.
 
 grid-pptx.lua flattens a grid slide's columns into one text flow, which pandoc writes into the
 Title and Content body placeholder, with marker paragraphs (a run of `⟦engine:...⟧`):
 `⟦engine:columns widths=a,b,c⟧`, then per column `⟦engine:column⟧` ... `⟦engine:end⟧`, and a last
-`⟦engine:end⟧` closing the columns; `⟦engine:lead⟧` ... `⟦engine:end⟧` a lead box. This parses the
-placeholder's paragraphs into segments, text and columns, and lays them top down from the
+`⟦engine:end⟧` closing the columns; `⟦engine:lead⟧` ... `⟦engine:end⟧` a lead box;
+`⟦engine:rail kind=steps|timeline role=r⟧`, per item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done
+milestone) ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, steps or a timeline (draw_rail()). This
+parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
 placeholder, cut to its measured height; the columns are free text boxes (Column 1, Column 2, ...; a card, a lead or a strip is one group of
@@ -55,9 +58,10 @@ def _attrs(rest):
 
 
 def parse(paragraphs):
-    """The flow as segments: ("text", [p]), ("lead", attrs, [p]), ("columns", shares, [(attrs, [p])]);
-    None when it holds no marker of a box (not a grid slide). Markers nest: a column inside its
-    columns, each closed by its `end`."""
+    """The flow as segments: ("text", [p]), ("lead", attrs, [p]), ("columns", shares, [(attrs, [p])]),
+    ("rail", attrs, [("item", attrs, [p])]); None when it holds no marker of a box (not a grid
+    slide). Markers nest: a column inside its columns, an item inside its rail, each closed by its
+    `end`."""
     segs, stack = [], []   # stack: the open containers, innermost last
 
     def text(p):
@@ -69,7 +73,7 @@ def parse(paragraphs):
         m = MARK.match(_para_text(p).strip())
         if m is None:
             top = stack[-1] if stack else None
-            if top is None or top[0] == "columns":   # a stray paragraph between columns: text
+            if top is None or top[0] in ("columns", "rail"):   # a stray paragraph between columns or items: text
                 text(p)
             else:
                 top[-1].append(p)
@@ -81,6 +85,12 @@ def parse(paragraphs):
         elif kind == "column" and stack and stack[-1][0] == "columns":
             col = ("column", attrs, [])
             stack[-1][2].append(col); stack.append(col)
+        elif kind == "rail" and not stack:
+            seg = ("rail", attrs, [])
+            segs.append(seg); stack.append(seg)
+        elif kind == "item" and stack and stack[-1][0] == "rail":
+            item = ("item", attrs, [])
+            stack[-1][2].append(item); stack.append(item)
         elif kind == "lead" and not stack:
             seg = ("lead", attrs, [])
             segs.append(seg); stack.append(seg)
@@ -379,6 +389,103 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     return total, n_col
 
 
+def _oval(slide, x, y, d, fill, name, line=None):
+    """A circle of diameter d (EMU) at x, y: fill a six-digit hex, line (hex, width EMU) an outline
+    inside its edge (the circle shrinks by half the width, as HTML's border-box), no shadow."""
+    inset = line[1] // 2 if line else 0
+    o = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(x + inset), Emu(y + inset), Emu(d - 2 * inset), Emu(d - 2 * inset))
+    o.fill.solid(); o.fill.fore_color.rgb = RGBColor.from_string(fill)
+    if line:
+        o.line.color.rgb = RGBColor.from_string(line[0]); o.line.width = Emu(line[1])
+    else:
+        o.line.fill.background()
+    o.shadow.inherit = False
+    o.name = name
+    return o
+
+
+def _badge(slide, x, y, d, fill, k, name):
+    """A step's badge: a circle in the role, its number centered in it, the subhead size, bold,
+    knocked out in the background color (the shape's own text frame, no insets, no wrap)."""
+    o = _oval(slide, x, y, d, fill, name)
+    tf = o.text_frame
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.word_wrap = False
+    tf._txBody.find(qn("a:bodyPr")).set("anchor", "ctr")
+    p = tf.paragraphs[0]
+    p._p.get_or_add_pPr().set("algn", "ctr")
+    p.add_run().text = str(k)
+    _style(p._p, livery_mod.type_pt(LIVERY, "subhead"), True, _hex("background"))
+    return o
+
+
+def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_height):
+    """Steps or a timeline: the items in equal columns (column_frames(), the columns' gap), a rail
+    of boxes.rail.line in line-color through the marks, from the first mark's middle to the row's
+    right edge; a step's badge (badge of the height, the role's, its number in the background color,
+    counted from the marker's start=, the list's first number) over a
+    text box of its title (the subhead size, bold) and text, or a milestone's date (subhead, bold,
+    to the box's foot) over its dot (dot of the height, the role's when done, else the background
+    in a ring of the role) over its label. The text boxes padded by boxes.rail.pad, a mark and a
+    date at the text's left; a cell of boxes.rail.fill behind each text box when the livery sets
+    one; the text boxes one height, the tallest measured, capped at the room. One group, "Steps"
+    or "Timeline"; the height it takes, a pad's gap under it included."""
+    rail = BOXES["rail"]
+    steps = kind == "steps"
+    noun = "Step" if steps else "Milestone"
+    role = _hex(_pick_role(attrs, "primary-contrast", slide))
+    start = int(attrs.get("start", 1))
+    mark = round(rail["badge" if steps else "dot"] * slide_height)
+    vpad, hpad = pads("rail")
+    frames = column_frames(x, w, [1 / len(items)] * len(items), slide_width)
+    subhead = livery_mod.type_pt(LIVERY, "subhead")
+    shapes, texts, dates = [], [], []
+    for k, ((_, iattrs, paras), (cx, cw)) in enumerate(zip(items, frames), 1):
+        title, body = [], []
+        for p in paras:
+            kind_ = _prefix(p)
+            _close(p)
+            if kind_ == "title":
+                _style(p, subhead, True); title.append(p)
+            else:
+                body.append(p)
+        if not steps:   # the date, a box of its own above the dot
+            db = body_box(slide, cx, y, cw, room, title, f"{noun} {k} title")
+            db.text_frame.margin_top = 0; db.text_frame.margin_bottom = vpad
+            db.text_frame.margin_left = db.text_frame.margin_right = hpad
+            db.text_frame._txBody.find(qn("a:bodyPr")).set("anchor", "b")
+            dates.append(db)
+            title = []
+        tb = body_box(slide, cx, y, cw, room, title + body, f"{noun} {k} text")
+        tf = tb.text_frame
+        tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+        texts.append((k, cx, cw, iattrs, tb))
+    date_h = max((_card_height(db, slide) for db in dates), default=0)
+    for db in dates:
+        db.top, db.height = y, date_h
+    my = y + date_h   # the marks' row
+    ty = my + mark    # the text boxes' top
+    text_h = min(int(max(_card_height(tb, slide) for *_, tb in texts) * SLACK), max(y + room - ty, 0))
+    line = round(rail["line"] * slide_height)
+    x0 = frames[0][0] + hpad + mark // 2
+    shapes.append(rect(slide, x0, my + (mark - line) // 2, x + w - x0, line, _hex(rail["line-color"]), "Rail"))
+    for k, cx, cw, iattrs, tb in texts:
+        tb.top, tb.height = ty, text_h
+        if rail["fill"]:
+            shapes.append(rect(slide, cx, ty, cw, text_h, _hex(rail["fill"]), f"{noun} {k} cell", behind=tb))
+        if steps:
+            shapes.append(_badge(slide, cx + hpad, my, mark, role, k + start - 1, f"{noun} {k} badge"))
+        elif iattrs.get("done"):
+            shapes.append(_oval(slide, cx + hpad, my, mark, role, f"{noun} {k} dot"))
+        else:
+            shapes.append(_oval(slide, cx + hpad, my, mark, _hex("background"), f"{noun} {k} dot",
+                                line=(role, max(round(0.2 * mark), 1))))
+        shapes.append(tb)
+    shapes += dates
+    group(slide, shapes, "Steps" if steps else "Timeline")
+    return ty + text_h - y + vpad
+
+
 def lay_out(slide, ph, segs, slide_width, slide_height):
     left, top, width = ph.left, ph.top, ph.width
     bottom = round(GEOM["body-bottom"] * slide_height)
@@ -402,6 +509,10 @@ def lay_out(slide, ph, segs, slide_width, slide_height):
             continue
         if seg[0] == "lead":
             y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
+            continue
+        if seg[0] == "rail":
+            y += draw_rail(slide, left, y, width, max(bottom - y, 0), seg[1].get("kind", "steps"), seg[2], seg[1],
+                           slide_width, slide_height)
             continue
         if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
             tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _pick_role(seg[1], "accent", slide), False, "Strip fill")

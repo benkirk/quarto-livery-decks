@@ -60,6 +60,17 @@
         0.9
       ]
     },
+    "rail": {
+      "badge": 0.05,
+      "dot": 0.02,
+      "fill": null,
+      "line": 0.004,
+      "line-color": "#E1E1E1",
+      "pad": [
+        0.4,
+        0.4
+      ]
+    },
     "status": {
       "done": "#00BC71",
       "fail": "#F93A1D",

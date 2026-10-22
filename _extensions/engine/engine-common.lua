@@ -373,8 +373,8 @@ local function column_shares(div)
 end
 
 -- A grid slide: the columns div has a .card column or more than two columns, or the slide (its
--- blocks) has a .lead. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py);
--- pandoc's two placeholders cannot hold it.
+-- blocks) has a .lead, a .steps or a .timeline. pptx draws one from marker paragraphs
+-- (grid-pptx.lua, pptx_steps/grid.py); pandoc's two placeholders cannot hold it.
 local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
@@ -382,7 +382,7 @@ local function is_grid(div, blocks)
     if has_class(c, "card") then return true end
   end
   for _, b in ipairs(blocks or {}) do
-    if b.t == "Div" and has_class(b, "lead") then return true end
+    if b.t == "Div" and (has_class(b, "lead") or has_class(b, "steps") or has_class(b, "timeline")) then return true end
   end
   return false
 end
@@ -480,6 +480,107 @@ local function status_item(item, marked)
   return kind, out
 end
 
+-- Steps and timelines, the rail: a ::: {.steps role=} div holding one ordered list, a ::: {.timeline}
+-- one bullet list. rail_kind(div): "steps", "timeline" or nil. rail_items(div, kind, livery, who):
+-- { role, start, items = { { title = inlines|nil, body = blocks, done = bool|nil }, ... } }, as every
+-- format draws it (start: the ordered list's first number, a step's badges count from it, so a
+-- process split over two slides goes on at `7.`; nil for a timeline): an item's first bold run (a
+-- Strong first in its first paragraph) is its title (a step's)
+-- or its date (a milestone's), the Space after it dropped, the rest of that paragraph its first body
+-- line and its other blocks the rest, the source lines lines (split_lines()); a milestone's `- [x]`
+-- (status_item(), marked) is done, a plain item (or `- [ ]`) pending, `[!]` and `[-]` warned of and
+-- drawn as pending. role= is taken off (HTML's ARIA attribute) and checked by box_role() when a
+-- livery is given (pptx's grid.py checks its own), default primary-contrast: a mark is a small
+-- shape on the slide, so it takes the primary that reads on the background (a dark livery's
+-- primary does not), and a badge's number is knocked out in the background color, so a mark
+-- that shows has a number that reads. nil, warned of, for anything
+-- else: the wrong list or more than one block, more than RAIL_MAX items, a picture or table inside.
+local RAIL_MAX = 6   -- beamer's six save boxes (the cards'); every format holds to it
+local RAIL_LIST = { steps = "OrderedList", timeline = "BulletList" }
+
+local function rail_kind(div)
+  if div.t ~= "Div" then return nil end
+  if has_class(div, "steps") then return "steps" end
+  if has_class(div, "timeline") then return "timeline" end
+  return nil
+end
+
+local function rail_items(div, kind, livery, who)
+  local role = div.attributes["role"]
+  div.attributes["role"] = nil
+  role = livery and box_role(livery, role, "primary-contrast", who) or role or "primary-contrast"
+  local list = #div.content == 1 and div.content[1] or nil
+  local what = kind == "steps" and "ordered list (1. 2. 3.)" or "bullet list (- [x] done, - pending)"
+  if not list or list.t ~= RAIL_LIST[kind] then
+    warn(who .. ": a ." .. kind .. " div holds one " .. what .. " and nothing else; left as it is")
+    return nil
+  end
+  if #list.content > RAIL_MAX then
+    warn(who .. ": a ." .. kind .. " div has " .. #list.content .. " items, more than " .. RAIL_MAX .. "; left as it is")
+    return nil
+  end
+  local shape = false
+  pandoc.Blocks({ list }):walk({ Image = function() shape = true end, Table = function() shape = true end,
+                                 Figure = function() shape = true end })
+  if shape then
+    warn(who .. ": a ." .. kind .. " item holds a picture or table, which a rail does not draw; left as it is")
+    return nil
+  end
+  local items = {}
+  for _, item in ipairs(list.content) do
+    local done, glyph = nil, false
+    if kind == "timeline" then
+      local status, norm = status_item(item, true)
+      if status then
+        item, glyph = norm, true
+        if status ~= "done" then
+          warn(who .. ": a milestone is done (- [x]) or pending (a plain item); " .. GLYPHS[status] .. " drawn as pending")
+        end
+      end
+      done = status == "done"
+    end
+    local first = item[1]
+    local il = (first and (first.t == "Plain" or first.t == "Para")) and first.content:clone() or nil
+    if il and il[1] and (glyph or (kind == "timeline" and il[1].t == "Str" and il[1].text == "☐")) then
+      il:remove(1)   -- the glyph, or an unchecked box (- [ ]: pending)
+      if il[1] and il[1].t == "Space" then il:remove(1) end
+    end
+    local title
+    if il and il[1] and il[1].t == "Strong" then
+      title = il[1].content
+      il:remove(1)
+      if il[1] and il[1].t == "Space" then il:remove(1) end
+    end
+    local body = pandoc.Blocks({})
+    if il and #il > 0 then body:insert(pandoc.Para(il)) end
+    for k = il and 2 or 1, #item do body:insert(item[k]) end
+    table.insert(items, { title = title, body = split_lines(body), done = done })
+  end
+  return { role = role, start = kind == "steps" and (list.start or 1) or nil, items = items }
+end
+
+-- The slide's rails drawn: each top-level .steps or .timeline div that rail_items() reads becomes
+-- draw(kind, rail) (blocks); one inside another div (a column, a card) is not drawn, in any format
+-- (beamer's save boxes are a card's; pptx flattens a column), and is warned of and left as its list.
+local function top_rails(blocks, livery, who, draw)
+  local out = pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    local kind = rail_kind(b)
+    local rail = kind and rail_items(b, kind, livery, who)
+    if rail then
+      out:extend(draw(kind, rail))
+    else
+      if b.t == "Div" and not kind then
+        b.content:walk({ Div = function(d)
+          if rail_kind(d) then warn(who .. ": a ." .. rail_kind(d) .. " inside a column or another div is not drawn; left as its list") end
+        end })
+      end
+      out:insert(b)
+    end
+  end
+  return out
+end
+
 -- Every bullet list's status items normalized (status_item()), marked ones inside a card column or
 -- a .status div; fn(list, kinds) then returns the list as a format draws it (kinds: the items'
 -- statuses, nil for a plain item), or nil to keep it.
@@ -520,4 +621,5 @@ return {
   LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
+  rail_kind = rail_kind, rail_items = rail_items, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
 }

@@ -180,6 +180,52 @@ Each trades local capacity against a share of the consortium system.
   `.caution` and `.vcenter` do not apply in pptx.
 - The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).
 
+## Steps and timelines
+
+A process, step by step, is an ordered list in a `steps` div; milestones are a bullet list in a
+`timeline` div:
+
+```markdown
+## A process, step by step
+
+::: {.steps}
+1. **Propose** A one-page case; the review board reads it in a week.
+2. **Pilot** Six weeks on the shared system.
+   A second source line is a second line, as in a card.
+3. **Scale** The allocation follows the pilot's numbers.
+:::
+
+## A timeline
+
+::: {.timeline}
+- [x] **Q1 2025** Proposal accepted
+- [x] **Q3 2025** Pilot complete
+- **2026** Full allocation
+:::
+```
+
+- Both draw a thin rail across the row, the items at equal widths with the columns' gap between
+  them. A step gets a numbered badge on the rail, its title bold under the badge and its text
+  below; a milestone gets a dot, its date bold above the dot and its label below.
+- **The first bold run of an item is its title** (a step's) **or its date** (a milestone's); the
+  rest of the item is the text, and in it each source line is a line, as in a card.
+- **`- [x]`** marks a milestone done: its dot is filled. A plain item (or `- [ ]`) is still to
+  come: its dot is hollow. `[!]` and `[-]` mean nothing on a timeline; they warn and draw hollow.
+- **`role=`** colors the badges and dots. Without it they take the livery's `primary-contrast`,
+  the primary that reads on the slide's background (on a dark livery the primary itself does
+  not), and a badge's number is knocked out in the background color. A role you pick should read
+  on the background too: a light one on a light livery makes faint marks.
+- **Limits:** at most six items; text only (a list in a step is fine, a picture or table is not);
+  never inside a card or a column. Anything else in the div, the wrong kind of list or a seventh
+  item, warns and leaves the div as plain content. A longer process goes on over a second slide
+  whose list starts at `7.`: the badges follow the list's numbers. Keep a step to two or three lines: the row is
+  as tall as its tallest step, and a long one crowds the slide in pptx and overflows in the PDF.
+- pptx draws each as native shapes, one group ("Steps", "Timeline"; inside it "Step 1 badge",
+  "Step 1 text", "Milestone 1 dot", "Milestone 1 title", "Rail"), so a click selects the whole
+  row and a second click a part. A slide with one is a grid slide, as a lead makes it: a picture
+  or table beside it splits the slide.
+- The same slides in LaTeX are [latex/authoring.md "Steps and timelines"](../latex/authoring.md#steps-and-timelines).
+
 ## Notes under a figure
 
 A remark that belongs to a figure or table, a summary line or where its numbers come from, goes

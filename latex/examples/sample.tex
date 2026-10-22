@@ -310,6 +310,36 @@ mpirun -n 4 ./a.out
   \end{enginecards}
 \end{frame}
 
+\begin{frame}{A process, step by step}
+  % enginesteps{n}: n equal steps on a rail, a numbered badge each in role= (default
+  % primary-contrast, the primary that reads on the background);
+  % each step's text is boxed before the row is drawn, as a card's, so overlays work inside it
+  \begin{enginesteps}{3}
+    \begin{enginestep}{Propose}
+      A one-page case; the review board reads it in a week.
+    \end{enginestep}
+    \begin{enginestep}{Pilot}
+      Six weeks on the shared system.
+
+      \uncover<2->{A second line, at step 2.}
+    \end{enginestep}
+    \begin{enginestep}{Scale}
+      The allocation follows the pilot's numbers.
+    \end{enginestep}
+  \end{enginesteps}
+\end{frame}
+
+\begin{frame}{A timeline}
+  % enginetimeline{n}: n milestones on a rail, the date above each dot and the label below;
+  % [done] fills the dot in role=, a milestone without it is hollow
+  \begin{enginetimeline}{4}
+    \enginemilestone[done]{Q1 2025}{Proposal accepted}
+    \enginemilestone[done]{Q3 2025}{Pilot complete}
+    \enginemilestone{2026}{Full allocation}
+    \enginemilestone{2027}{First review}
+  \end{enginetimeline}
+\end{frame}
+
 \begin{frame}{Status items, step by step}
   % enginestatus on its own: ✓ ⚠ ✗ as the bullets, in the livery's status colors; a failed
   % item's text muted. \engineglyph{done|warn|fail} is the glyph anywhere (a table cell).

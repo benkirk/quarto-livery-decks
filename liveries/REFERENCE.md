@@ -426,6 +426,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
+| `rail` | object |  | Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below. |
 
 ### `boxes.columns`
 
@@ -496,6 +497,19 @@ The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors.
 | `done` | color or role | `"highlight"` | ✓, a role, a palette name or a hex. |
 | `warn` | color or role | `"warning"` | ⚠, a role, a palette name or a hex. |
 | `fail` | color or role | `"accent"` | ✗, a role, a palette name or a hex. |
+
+### `boxes.rail`
+
+Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below.
+
+| key | type | default | |
+|---|---|---|---|
+| `line` | fraction | `0.004` | The rail's thickness (of the slide's height). |
+| `line-color` | color or role | `"rule"` | The rail's color, a role, a blend, a palette name or a hex. |
+| `badge` | fraction | `0.05` | A step's numbered badge, its diameter (of the slide's height). |
+| `dot` | fraction | `0.02` | A milestone's dot, its diameter (of the slide's height). |
+| `fill` | null or color or role | `null` | A cell behind each item's text, a role, a blend, a palette name or a hex; null for none. |
+| `pad` | [vertical, horizontal] em | `[0.4, 0.4]` | Each item's text's distance from its cell's edges, in em of the body type. |
 
 ### `bullets`
 

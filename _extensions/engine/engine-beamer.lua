@@ -371,6 +371,33 @@ local function strips(blocks, livery)
   end })
 end
 
+-- Steps and timelines (C.rail_items()): \begin{enginesteps}[role=<role>]{<n>} with a
+-- \begin{enginestep}{<title>} round each step's text (as a card's body: \enginelabel and \enginebig
+-- lines), or \begin{enginetimeline}[role=<role>]{<n>} with \enginemilestone[done]{<date>}{<label>}
+-- per milestone; beamerinnerthemeEngine.sty sets the texts first and draws the row. At the slide's
+-- top level only (C.top_rails(): a card's save boxes are the rail's too). Before the
+-- status items, so a literal ✓ first in a milestone is its status, as in the other formats.
+local function rails(blocks, livery)
+  return C.top_rails(blocks, livery, "engine-beamer", function(kind, r)
+    local keys = "role=" .. r.role .. (r.start and r.start ~= 1 and (",start=" .. r.start) or "")   -- the list's first number
+    local out = pandoc.Blocks({ latex(string.format("\\begin{engine%s}[%s]{%d}", kind, keys, #r.items)) })
+    for _, it in ipairs(r.items) do
+      local title = it.title and inlines_to_latex(it.title) or ""
+      if kind == "steps" then
+        out:insert(latex("\\begin{enginestep}{" .. title .. "}"))
+        out:extend(card_body(it.body))
+        out:insert(latex("\\end{enginestep}"))
+      else
+        out:insert(latex("\\enginemilestone" .. (it.done and "[done]" or "") .. "{" .. title .. "}{"))
+        out:extend(it.body)
+        out:insert(latex("}"))
+      end
+    end
+    out:insert(latex("\\end{engine" .. kind .. "}"))
+    return out
+  end)
+end
+
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
 -- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
 local function lead_boxes(blocks)
@@ -778,7 +805,7 @@ function Pandoc(doc)
       i = i + 1
     end
   end
-  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(note_frames(unwrap_layout(hoist_footnotes(out)))), LIVERY)), LIVERY)))
+  doc.blocks = first_paragraph(lead_boxes(strips(beamer_columns(card_rows(status_items(rails(note_frames(unwrap_layout(hoist_footnotes(out))), LIVERY)), LIVERY)), LIVERY)))
   if used.hcenter then
     local hi = header_includes(doc)
     hi:insert(pandoc.Blocks({ latex("\\usepackage{varwidth}") }))

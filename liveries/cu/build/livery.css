@@ -112,6 +112,14 @@
   --engine-glyph-done: #096FAE;
   --engine-glyph-warn: #CFB87C;
   --engine-glyph-fail: #CFB87C;
+  --engine-rail-line: 3.6px;
+  --engine-rail-line-color: #AAA8A3;
+  --engine-rail-badge: 45px;
+  --engine-rail-dot: 18px;
+  --engine-rail-fill: transparent;
+  --engine-rail-pad: 0.4em 0.4em;
+  --engine-rail-pad-y: 0.4em;
+  --engine-rail-pad-x: 0.4em;
 }
 /* chart colors (livery.json charts) */
 :root {
