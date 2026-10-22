@@ -475,7 +475,8 @@
 % band's color: a role, a blend or a defined color, \engine@rolecolor; default the card's place in
 % boxes.card.roles), pick (the outline, in outline-color) or pick=<overlay> (the outline on those
 % steps only, its width reserved on every step so the body does not move: \alt at \begin, which
-% beamer runs once per step), solid (all the role's, its text in primary-text) and plain (a column
+% beamer runs once per step; a spec with a comma in braces, pick={<1,3>}, since pgfkeys splits the
+% list at commas), solid (all the role's, its text in primary-text) and plain (a column
 % beside cards: no fill, no band). {} for no sub-line. Each body is set first into a box (as the
 % feature panel's: verbatim works), its width the card's share of the line less the gaps, its
 % pads and outline; the row then draws every card as a tcolorbox one height, the tallest body and

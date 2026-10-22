@@ -97,7 +97,8 @@ The cookbook's Options slide, as the Quarto one in [docs/authoring.md "Cards and
   primary text color; `plain` is a column beside cards, no fill, no band.
 - **`pick=<overlay>`** moves the pick across steps: `pick=<1>` on the first card, `pick=<2>` on
   the second. The outline's width is reserved on every step, so nothing moves between them. The
-  cookbook's "Options, the pick moving across steps" is the three-step version.
+  cookbook's "Options, the pick moving across steps" is the three-step version. A spec with a
+  comma goes in braces, `pick={<1,3>}`: the keys are split at commas.
 - **`\enginelabel{...}`** is the small-caps label and **`\enginebig{...}`** the big number, each
   a line of its own.
 - **`enginestrip[role=]`** is a band in its role's tint (default `accent`), as wide as the card
