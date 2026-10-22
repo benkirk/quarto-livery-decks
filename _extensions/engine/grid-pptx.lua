@@ -101,12 +101,7 @@ end
 
 -- a picture or table: pandoc draws it as a shape of its own, outside any column's text
 local function is_shape(b)
-  if b.t == "Table" or C.is_figure(b) then return true end
-  local found = false
-  if b.t == "Div" then
-    b:walk({ Image = function() found = true end, Table = function() found = true end })
-  end
-  return found
+  return b.t == "Table" or C.is_figure(b) or (b.t == "Div" and C.holds_shape(b))
 end
 
 local function prefixed(word, inlines)   -- a paragraph led by a prefix marker, for grid.py

@@ -46,6 +46,14 @@ local function default_livery(extdir)
   return pandoc.path.join({ root, "liveries", "ncar" })
 end
 
+-- Whether a block holds a picture or a table anywhere inside it: pandoc's pptx writer draws either
+-- as a shape of its own, outside any text, so a card, a rail item or a grid column cannot hold one.
+local function holds_shape(blk)
+  local found = false
+  pandoc.walk_block(blk, { Image = function() found = true end, Table = function() found = true end })
+  return found
+end
+
 -- A slide boundary: a heading at or above the slide level, or a rule.
 local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
@@ -519,8 +527,8 @@ local function is_grid(div, blocks)
   local quoted, pictured = false, false   -- a quote in a column: its box is grid.py's to draw
   for _, c in ipairs(cols) do
     if has_class(c, "card") then return true end
-    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end,
-             Image = function() pictured = true end, Table = function() pictured = true end })
+    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
+    if holds_shape(c) then pictured = true end
   end
   if quoted and not pictured then return true end
   for _, b in ipairs(blocks or {}) do
@@ -714,10 +722,7 @@ local function rail_items(div, kind, livery, who)
     warn(who .. ": a ." .. kind .. " div has " .. #list.content .. " items, more than " .. RAIL_MAX .. "; left as it is")
     return nil
   end
-  local shape = false
-  pandoc.Blocks({ list }):walk({ Image = function() shape = true end, Table = function() shape = true end,
-                                 Figure = function() shape = true end })
-  if shape then
+  if holds_shape(list) then
     warn(who .. ": a ." .. kind .. " item holds a picture or table, which a rail does not draw; left as it is")
     return nil
   end
@@ -941,7 +946,7 @@ return {
   has_class = has_class, warn = warn, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
-  is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  is_note = is_note, split_full = split_full, holds_shape = holds_shape, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
   slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, split_notes = split_notes,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote, quote_parts = quote_parts,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
@@ -950,6 +955,6 @@ return {
   theme_options = theme_options, load_livery = load_livery,
   has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
-  is_gallery = is_gallery, gallery_items = gallery_items, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
+  is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
   latex_file = latex_file,
 }
