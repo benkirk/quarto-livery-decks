@@ -237,3 +237,30 @@ def test_slide_kinds_agree():
     py = (ENGINE / "livery_build.py").read_text()
     sel = set(re.findall(r":not\(\.([\w-]+)\)", re.search(r'sel = "([^"]*level2[^"]*)"', py).group(1)))
     assert kinds <= sel, f"livery_build's content-art selector lacks {kinds - sel}"
+
+
+def test_theme_literal_counts_only_fall():
+    """The themes' hand literals the sweeps count (design/unplanned-city-ledger.md): a scss line-height
+    not read from --engine-leading-<role>, a white by hand (#fff, white) and a letter-spacing in the
+    scss, a `white` in the beamer themes. Each count may only go down: a new element reads the
+    livery's number (type.roles.*.leading, a role) instead of restating one."""
+    scss = re.sub(r"//[^\n]*", "", (ENGINE / "engine-revealjs.scss").read_text())   # comments out
+    sty = re.sub(r"(?<!\\)%[^\n]*", "", "".join(f.read_text() for f in sorted(ENGINE.glob("beamer*themeEngine.sty"))))
+    counts = {
+        "scss line-height literals": len(re.findall(r"line-height:\s*[0-9.]+\s*;", scss)),
+        "scss #fff/white": len(re.findall(r"#fff\b|\bwhite\b", scss)) - len(re.findall(r"white-space", scss)),
+        "scss letter-spacing": scss.count("letter-spacing"),
+        "beamer white": len(re.findall(r"\bwhite\b", sty)),
+    }
+    ceiling = {"scss line-height literals": 3, "scss #fff/white": 16, "scss letter-spacing": 4, "beamer white": 7}
+    over = {k: (v, ceiling[k]) for k, v in counts.items() if v > ceiling[k]}
+    assert not over, f"a theme literal pile grew (now, ceiling): {over}"
+
+
+def test_svg_dpi_is_the_quarto_fig_dpi():
+    """svg_fallback.DPI (the PNG twin of an SVG plot) equals common/_quarto.yml's fig-dpi for the
+    pptx format, which it hand-copies."""
+    yml = (ROOT / "common" / "_quarto.yml").read_text()
+    dpi = int(re.search(r"fig-dpi:\s*(\d+)", yml).group(1))
+    src = (ENGINE / "pptx_steps" / "svg_fallback.py").read_text()
+    assert int(re.search(r"^DPI\s*=\s*(\d+)", src, re.M).group(1)) == dpi
