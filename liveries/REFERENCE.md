@@ -473,7 +473,7 @@ A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no 
 | key | type | default | |
 |---|---|---|---|
 | `bar` | fraction | `0.0089` | The bar at its left, its width (of the slide's height). |
-| `bar-color` | color or role | `"secondary"` | The bar's color when the quote names no role=, a role, a palette name or a hex. |
+| `bar-color` | color or role | `"primary-contrast"` | The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default. |
 | `pad` | [vertical, horizontal] em | `[0.3, 1.0]` | Its text's distance from its edges, in em of the body type. |
 
 ### `boxes.card`

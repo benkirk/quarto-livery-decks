@@ -105,7 +105,8 @@ BOXES = {
     "caution": {"bar": 0.0089, "pad": [0.55, 0.9]},   # 8 px of 900, HTML's
     "panel": {"pad": [0.6, 0.9]},   # the feature panel
     "lead": {"fill": "surface", "bar": 0.0089, "bar-color": "accent", "pad": [0.55, 0.9]},
-    "quote": {"bar": 0.0089, "bar-color": "secondary", "pad": [0.3, 1.0]},   # a quote block: a bar, no fill
+    "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0]},   # a quote block: a bar, no fill
+    # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row

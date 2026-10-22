@@ -60,7 +60,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   `rule` blend with no cell.
 - `boxes.quote` (`bar`, `bar-color`, `pad`) and the `quote` type role (24 pt on the default canvas,
   scaling with the body): the look of the new quote block, a bar at its left in `bar-color`
-  (`secondary` by default) and its text in the `quote` size.
+  and its text in the `quote` size. The bar is `primary-contrast` by default, the primary that
+  reads on the background: a thin bar in `secondary` reads at 2.1:1 on ncar's white and 1.6:1 on
+  ucar's, under the 3:1 a mark needs.
 
 ### LaTeX
 - Steps and timelines: `\begin{enginesteps}[role=,start=]{n}` holding `\begin{enginestep}{Title} ...

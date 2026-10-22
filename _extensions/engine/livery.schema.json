@@ -581,7 +581,7 @@
           "additionalProperties": false,
           "properties": {
             "bar": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0089, "description": "The bar at its left, its width (of the slide's height)."},
-            "bar-color": {"$ref": "#/$defs/color-or-role", "default": "secondary", "description": "The bar's color when the quote names no role=, a role, a palette name or a hex."},
+            "bar-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default."},
             "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 1.0], "description": "Its text's distance from its edges, in em of the body type."}
           }
         },

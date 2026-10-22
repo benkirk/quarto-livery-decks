@@ -175,3 +175,21 @@ def test_geometry_derived(livery):
     top = j["frametitle"]["body"]
     assert g["body"] == [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)], f"{livery.name}: geometry.body"
     assert g["half"] == round((1 - 2 * m - j["boxes"]["columns"]["gap"]) / 2, 4), f"{livery.name}: geometry.half"
+
+
+def _contrast(a, b):
+    """WCAG contrast of two #RRGGBB colors."""
+    def lum(h):
+        c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_quote_bar_reads(livery):
+    """The quote's default bar, a thin mark with no fill behind it, reads on the livery's background:
+    3:1 at least (WCAG's non-text contrast). secondary did not (ncar 2.1, ucar 1.6)."""
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    c = _contrast(j["boxes"]["quote"]["bar-color"], j["roles"]["background"])
+    assert c >= 3, f"{livery.name}: the quote bar {j['boxes']['quote']['bar-color']} on {j['roles']['background']} is {c:.1f}:1"

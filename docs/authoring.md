@@ -198,7 +198,9 @@ The purpose of computing is insight, not numbers.
 
 - Its lines are set in the livery's `quote` size (24 pt on the default canvas) beside a bar at
   its left, with no fill. `role=` colors the bar (any livery role or blend); without it the bar
-  takes the livery's `boxes.quote.bar-color`. Each source line is a line, as in a lead.
+  takes the livery's `boxes.quote.bar-color`, by default `primary-contrast` (the primary that reads
+  on the background). A `role=` you pick should read on the background too: a thin bar in a light
+  role fades on white. Each source line is a line, as in a lead.
 - A last line that starts with `—`, `–` or `--` is the **attribution**: set under the quote at the
   caption size, muted, after "— ". A last line that begins with a dash for another reason is
   read the same way, so reword it.
