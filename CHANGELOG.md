@@ -22,6 +22,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `build/livery.sty` carries the livery's roles and blends by name (`\engine@role@<name>`, the
   color each stands for) and the card roles by place in a row (`\engine@boxes@card@roles`), so the
   theme resolves a `role=` itself.
+- A strip inside a card no longer sets an overfull line (6 pt at ncar's body): the strip widened
+  its line by the card's pad and took back only the left one. Nothing moves on the page; the
+  `Overfull \hbox` goes from the log.
 
 ## [26.10.7] - 2026-10-21
 

@@ -308,6 +308,7 @@
 \newsavebox\engine@barboxbox
 \newdimen\engine@padx \newdimen\engine@pady \newdimen\engine@barw
 \def\engine@barboxin{}   % after \noindent: a strip in a card moves out to the card's edge
+\def\engine@barboxout{}  % after the box: the strip takes that back, so its line measures \hsize
 \def\engine@barbox#1{%
   \par\noindent\engine@barboxin\engine@padx=\csname engine@boxes@#1@padx\endcsname em%
   \engine@pady=\csname engine@boxes@#1@pady\endcsname em%
@@ -319,7 +320,7 @@
 \def\endengine@barbox#1#2{\end{minipage}\end{lrbox}%
   \hbox{{\color{#2}\vrule width \engine@barw}%
     {\setlength\fboxsep{0pt}\colorbox{#1}{\vbox{\vskip\engine@pady
-      \hbox{\hskip\engine@padx\usebox\engine@barboxbox\hskip\engine@padx}\vskip\engine@pady}}}}\par}
+      \hbox{\hskip\engine@padx\usebox\engine@barboxbox\hskip\engine@padx}\vskip\engine@pady}}}}\engine@barboxout\par}
 \newenvironment{enginecaution}{\engine@barbox{caution}}{\endengine@barbox{enginecautionfill}{BrandWarning}}
 
 % ---------------------------------------------------------------------------
@@ -361,6 +362,7 @@
   \ifengine@incard
     \advance\linewidth by 2\dimexpr\engine@boxes@card@padx em\relax
     \edef\engine@barboxin{\noexpand\hspace*{-\the\dimexpr\engine@boxes@card@padx em\relax}}%
+    \edef\engine@barboxout{\kern-\the\dimexpr\engine@boxes@card@padx em\relax}%   (a kern: \par drops a trailing glue)
   \fi
   \engine@barbox{strip}}%
   {\endengine@barbox{engine@strip}{engine@strip}}
