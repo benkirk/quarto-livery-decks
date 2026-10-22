@@ -9,7 +9,8 @@ Every livery is also a pure-LaTeX beamer theme, with no Quarto in the loop:
 
 Each release of this repo carries one project zip per livery: the theme's `.sty`, the
 livery's fonts, logos and art, a `latexmkrc`, the starter `talk.tex` and the cookbook
-`sample.tex` ([authoring.md](authoring.md): every slide pattern a LaTeX author can use), both on
+`sample.tex` with the files it needs, its bibliography and gallery images among them
+([authoring.md](authoring.md): every slide pattern a LaTeX author can use), both on
 `\usetheme[livery=liveries/<name>, fonts=bundled]{Engine}`. One click opens it
 as a new Overleaf project:
 

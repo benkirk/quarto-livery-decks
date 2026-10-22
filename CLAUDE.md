@@ -193,8 +193,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Overleaf**: `make overleaf LIVERY=<name>` (any deck directory; `LIVERY_DIR=` for a consumer's
   own livery) writes `<name>-overleaf.zip` with `livery zip`: the theme's `.sty`,
   the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
-  `latexmkrc` and a starter on `livery=liveries/<name>, fonts=bundled`; it compiles with
-  `latexmk -xelatex talk.tex` alone. `release.yml` attaches one per livery to a GitHub Release
+  `latexmkrc`, a starter on `livery=liveries/<name>, fonts=bundled`, and the cookbook
+  `sample.tex` with the files it needs (`overleaf_zip.py`'s `COOKBOOK_FILES`); each compiles
+  with `latexmk -xelatex <deck>.tex` alone. `release.yml` attaches one per livery to a GitHub Release
   on a `v*` tag (cut by hand, asked first, never moved: latex/README.md's Overleaf links serve
   `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, `‡`, `§` or `¶`, the printer's order,
@@ -520,8 +521,8 @@ it does, by area, beyond the format notes above:
   under cu, nasa-dark and 4:3, `make previews` the committed `latex/sample.png` (`sheet.py`:
   rebuild and commit it when those slides change); CI fails on an Overfull line in `sample.log`
   under every variant. `tests/test_latex.py` compiles a deck on
-  the layer; every livery's Overleaf zip carries `sample.tex` with its photo, diagrams and
-  session, and CI builds it there; `parity-latex` snapshots the four cookbook PDFs.
+  the layer; every livery's Overleaf zip carries `sample.tex` with the files it needs
+  (`COOKBOOK_FILES`), and CI builds it there; `parity-latex` snapshots the four cookbook PDFs.
 - **Checking a change**: `make test` (`livery build --check` and `livery check` on every
   livery, then pytest over `tests/`, `-n auto --dist loadfile`: `test_compositions.py`, whose
   `EXPECTED_DELTAS` names every decided change of a box, `test_schema.py` (the generated
