@@ -3,9 +3,9 @@ status lists, columns, a caution box, a note, a scale group and the marking.
 
     python3 -m pytest tests/test_latex.py
 
-A small deck on every environment compiles with XeLaTeX through latexmk, TEXINPUTS and TTFONTS
-set as latex/Makefile sets them (the theme, the liveries and the root), and its log has no
-Overfull line; the frame whose pick moves (`pick=<2>`) is two pages; a `role=` that is neither a
+A small deck on every environment (a status list nested in a status list among them, which once
+looped TeX) compiles with XeLaTeX through latexmk, TEXINPUTS and TTFONTS set as latex/Makefile
+sets them (the theme, the liveries and the root), and its log has no Overfull line; the frame whose pick moves (`pick=<2>`) is two pages; a `role=` that is neither a
 role nor a color leaves the theme's warning in the log and takes the default; the marking is on
 every page; a third card on a row opened for two is the share error. Skipped without xelatex
 (CI's latex job runs in the image, which has TeX).
@@ -46,6 +46,14 @@ A body, the glyph in a line: \engineglyph{done}
 \end{enginecard}
 \begin{enginecard}[solid,role=nonesuch]{OPTION 3}{A sub-line}
 On a solid card.
+\begin{enginestatus}
+\fail Failed, with a status list under it
+  \begin{enginestatus}
+  \warn Nested warn
+  \done Nested done
+  \end{enginestatus}
+\done Done again
+\end{enginestatus}
 \end{enginecard}
 \end{enginecards}
 \end{frame}

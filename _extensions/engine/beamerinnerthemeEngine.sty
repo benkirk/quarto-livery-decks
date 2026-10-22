@@ -606,11 +606,14 @@
 \def\engine@statusitem#1{\@ifnextchar<{\engine@statusitem@{#1}}{\engine@statusitem@@{#1}}}
 \def\engine@statusitem@#1<#2>{\item<#2>[\engineglyph{#1}]\csname engine@statusmute@#1\endcsname}
 \def\engine@statusitem@@#1{\item[\engineglyph{#1}]\csname engine@statusmute@#1\endcsname}
+\def\engine@statusitemcmd{\ifnum\@listdepth=\engine@statusdepth\relax\usebeamercolor[fg]{normal text}\fi\engine@item}
 \newenvironment{enginestatus}{%
   \begin{itemize}%
   \edef\engine@statusdepth{\the\@listdepth}%   the list's own items restore the color; a sub-list's do not
-  \let\engine@item\item
-  \def\item{\ifnum\@listdepth=\engine@statusdepth\relax\usebeamercolor[fg]{normal text}\fi\engine@item}%
+  % beamer's \item is saved once: in a status list nested in a status list, \item is already
+  % ours, and saving it again would make \engine@item call itself
+  \ifx\item\engine@statusitemcmd\else\let\engine@item\item\fi
+  \let\item\engine@statusitemcmd
   \def\done{\engine@statusitem{done}}\def\warn{\engine@statusitem{warn}}\def\fail{\engine@statusitem{fail}}}%
   {\end{itemize}}
 
