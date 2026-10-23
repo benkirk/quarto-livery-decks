@@ -13,6 +13,7 @@ height is grown by so PowerPoint's autofit stays idle. measure.py holds the text
 
 import copy
 import io
+import re
 
 from lxml import etree
 from pptx.dml.color import RGBColor
@@ -172,6 +173,50 @@ def fit_table(shape, left, width):
 def para_text(p):
     """A paragraph's (a:p) text, every run's."""
     return "".join(t.text or "" for t in p.iter(qn("a:t")))
+
+
+MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")   # a grid-pptx.lua marker paragraph, on its own
+
+
+def split_br(txBody):
+    """Each paragraph cut at its line breaks (a:br) into paragraphs of their own, each with a copy
+    of the paragraph's properties: pandoc writes a caption single-body.lua folded (a ::: note, a
+    lead's markers and lines) as one paragraph, its lines joined by a:br."""
+    for p in list(txBody.iterchildren(qn("a:p"))):
+        ppr, cur = p.find(qn("a:pPr")), p
+        for el in list(p):
+            if el.tag == qn("a:br"):
+                new = etree.Element(qn("a:p"))
+                if ppr is not None:
+                    new.append(copy.deepcopy(ppr))
+                cur.addnext(new)
+                p.remove(el)
+                cur = new
+            elif cur is not p and el.tag != qn("a:pPr"):
+                cur.append(el)   # moves it, the end-of-paragraph properties too
+
+
+def marker_spans(paragraphs):
+    """The indexes of the paragraphs inside a marker span (an opener `⟦engine:x⟧` to its
+    `⟦engine:end⟧`, both included, nested spans too): what grid.py draws, which another step
+    styling the box leaves alone."""
+    out, depth = set(), 0
+    for i, p in enumerate(paragraphs):
+        m = MARK.match(para_text(p).strip())
+        if m:
+            depth = max(depth - 1, 0) if m.group(1) == "end" else depth + 1
+            out.add(i)
+        elif depth:
+            out.add(i)
+    return out
+
+
+def body_frame(prs, ph):
+    """The Title and Content layout's body frame (left, top, width), the placeholder's own when
+    the template has no such layout."""
+    layout = next((l for l in prs.slide_layouts if l.name == "Title and Content"), None)
+    body = next((sh for sh in layout.placeholders if sh.placeholder_format.idx == 1), None) if layout else None
+    return (body.left, body.top, body.width) if body is not None else (ph.left, ph.top, ph.width)
 
 
 def style_runs(p, size=None, bold=None, color=None, caps=False):
