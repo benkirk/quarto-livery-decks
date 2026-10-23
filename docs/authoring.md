@@ -1,7 +1,9 @@
 # Writing a deck
 
-A new deck directory, the front matter and the slide kinds, the per-slide controls (linked
-images, notes under a figure, centering and scaling, columns, cards and lead boxes, shell chunks), the text sizes and autofit, and `make qa`. The quickstart deck
+A new deck directory, the front matter and the slide kinds, the slide patterns (linked images,
+columns, cards and lead boxes, quotes, the agenda, steps and timelines, image galleries, notes
+under a figure, citations and footnotes), the per-slide controls (centering and scaling, shell
+chunks), the text sizes and autofit, and `make qa`. The quickstart deck
 (`decks/quickstart/quickstart.qmd`) is the one to copy; `decks/sample/sample.qmd` shows every pattern.
 
 ## Adding a new deck
@@ -170,7 +172,7 @@ Each trades local capacity against a share of the consortium system.
   without one takes the livery's `boxes.card.roles` in turn by its place in the row (by default
   primary, secondary, accent), so a row's cards differ. The `###` is the band's title, a `[...]{.sub}` paragraph right after it the band's
   second line. `.pick` outlines the chosen card; `.solid` makes the whole card the role's color,
-  its text white. A row's cards are one height.
+  its text in the livery's primary text color. A row's cards are one height.
 - **`[...]{.label}`** is a small capitals label, **`[...]{.big}`** a big number, each on a line
   of its own.
 - **`::: {.strip role="accent"}`** is a band tinted in its role, across the card (or on its own,

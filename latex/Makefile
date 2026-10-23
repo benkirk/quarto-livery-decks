@@ -7,7 +7,8 @@
 #   make variants   brand/title/aspect-ratio/engine/math-font variants of examples/template.tex,
 #                   and sample.tex under cu, nasa-dark and at 4:3
 #   make previews   math-fonts.png from the specimen, sample.png from the cookbook and two of its
-#                   variants (needs poppler's pdftoppm; sample.png needs Pillow too)
+#                   variants, preview.png from the starter under ncar and cu (needs poppler's
+#                   pdftoppm; the sheets need Pillow too)
 #   make diagrams   examples/diagrams/*.pdf from their .dot/.mmd (needs Graphviz, npx)
 #   make overleaf   engine-beamer-overleaf.zip: talk.tex + the theme + ncar (livery zip)
 #   make clean
@@ -79,13 +80,20 @@ examples/sample-%.pdf: examples/sample.tex FORCE
 
 # the README's math-font specimen: the summary slide of examples/mathfonts.pdf; authoring.md's
 # contact sheet: four pattern slides of the cookbook under ncar, cu and nasa-dark (sheet.py finds
-# them by title). Both are committed: rebuild sample.png whenever the cookbook's pattern slides
-# change, look at it, and commit it (as the README images rule for the quickstart).
-previews: math-fonts.png sample.png
+# them by title); the README's preview: the starter's title, divider, content and closing slides
+# under ncar and cu (talk-cu.tex is talk.tex with its livery swapped, written here). All three are
+# committed: rebuild them whenever the slides they show change (a theme change moves every one),
+# look at them, and commit them (as the README images rule for the quickstart).
+previews: math-fonts.png sample.png preview.png
 math-fonts.png: examples/mathfonts.pdf
 	pdftoppm -r 150 -f 9 -l 9 -singlefile -png $< math-fonts
 sample.png: examples/sample.pdf examples/sample-cu.pdf examples/sample-nasa-dark.pdf sheet.py
 	python3 sheet.py $(filter %.pdf,$^) -o $@
+preview.png: talk.pdf talk-cu.pdf sheet.py
+	python3 sheet.py --pages 1,2,3,-1 $(filter %.pdf,$^) -o $@
+talk-cu.pdf: talk.tex FORCE
+	sed 's|livery=liveries/ncar|livery=liveries/cu|' talk.tex > talk-cu.tex
+	$(TEXENV) $(LATEXMK) -$(ENGINE) talk-cu.tex
 
 # One source per example diagram: quarto-demo.qmd renders it itself, and
 # template.tex includes the PDF built here (committed, so `make examples`
@@ -108,8 +116,8 @@ engine-beamer-overleaf.zip: talk.tex FORCE
 	python3 $(THEME)/livery.py zip $(ROOT)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
 
 clean:
-	latexmk -C -quiet talk.tex 2>/dev/null
-	rm -f engine-beamer-overleaf.zip
+	latexmk -C -quiet talk.tex talk-cu.tex 2>/dev/null
+	rm -f engine-beamer-overleaf.zip talk-cu.tex
 	rm -rf examples/quarto-demo_files examples/quarto-demo.html
 	cd examples && latexmk -C -quiet template.tex sample.tex paper.tex $(addsuffix .tex,$(VARIANTS)) 2>/dev/null; \
 	  rm -f *.pdf *.nav *.snm *.vrb *.xdv *.bbl *.blg *.run.xml *-blx.bib quarto-demo.tex

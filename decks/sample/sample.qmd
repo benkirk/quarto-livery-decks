@@ -28,8 +28,8 @@ emphasized in the PDF and HTML decks; pptx renders it as plain text.
 Bulleted list:
 
 - First point
-- Second point with `code`.  This point needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing woks for wrapped bullets.
-  - Especialy when there are multiple. And one also needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing woks for wrapped sub-bullets.
+- Second point with `code`.  This point needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing works for wrapped bullets.
+  - Especially when there are multiple. And one also needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing works for wrapped sub-bullets.
   - Sub-bullets
 - Third point
 
@@ -59,7 +59,7 @@ $$
 
 where $f$ is the parallel fraction and $p$ is the processor count. PPTX
 renders these natively as OMML equations. The PDF sets math in a serif math
-font beside Poppins; `themeoptions: [fonts=bundled, mathfont=stix]` (or
+font beside the text font; `themeoptions: [fonts=bundled, mathfont=stix]` (or
 `lm`, `pagella`, `sans`, `poppins`) picks another.
 
 ## A pull quote
@@ -308,8 +308,7 @@ With `{.full}` the cells fill the slide, and this line is the caption.
 ![A caption for the figure](images/example.jpg){width=60%}
 
 ::: note
-Width can also be set in pixels (`{width=400}`) or with a `height=`
-attribute. PNG, JPG, and SVG all work for HTML/PDF; PPTX prefers PNG/JPG.
+Width can also be set in pixels (`{width=400}`) or with a `height=` attribute. PNG, JPG and SVG work in every format.
 :::
 
 ## A linked screenshot
@@ -342,8 +341,8 @@ No title, logo or rule is drawn; the title stays in the source.
 
 ## Dark slide, step by step {.brand-dark}
 
-`{.brand-dark}` sets an HTML slide on Space with white text; pptx and PDF
-draw an ordinary slide.
+`{.brand-dark}` sets an HTML slide on the livery's dark role, its text in the `on-dark`
+role; pptx and PDF draw an ordinary slide.
 
 ::: {.incremental}
 - `::: {.incremental}` reveals a list one item at a time
@@ -353,7 +352,7 @@ draw an ordinary slide.
 
 ## ⚠︎ A warning slide {.caution .vcenter scale="1.15"}
 
-- `{.caution}` on the heading sets the body on a soft yellow field, with a brand-yellow bar.
+- `{.caution}` on the heading sets the body on a soft field with a bar, in the livery's warning role.
 - Keep it for the slides that warn: the brand asks for accents in small amounts.
 - It combines with the other layout controls, here `.vcenter` and `scale=`.
 
@@ -503,9 +502,8 @@ without one gets it last, with a warning.
 
 ## Thank you! {.closing}
 
-The `.closing` class makes the PDF and HTML decks a closing slide on the
-brand field, with this text under the headline; pptx renders it as an
-ordinary slide.
+The `.closing` class makes a closing slide on the brand field in every format, with
+this text under the headline (pptx: the template's Closing layout).
 
 Questions: your.name@ucar.edu
 

@@ -56,7 +56,7 @@ This directory holds the engine's own LaTeX decks; build them here:
 | every feature: `examples/template.tex`; the cookbook `sample.tex` ([authoring.md](authoring.md)); `paper.tex`, a document that is not slides; `mathfonts.tex`, the math-font specimen; `quarto-demo.qmd` | `make examples` | `examples/*.pdf` |
 | `template.tex` under UCAR, UCP, NCAR-UCAR, the light title, 4:3, pdfLaTeX and `mathfont=poppins`; `sample.tex` under cu, the dark livery nasa-dark and 4:3 | `make variants` | `examples/template-*.pdf`, `examples/sample-*.pdf` |
 | the Quarto demo as an HTML deck | `make html` | `examples/quarto-demo.html` |
-| the README's math-font specimen and the cookbook's contact sheet | `make previews` | `math-fonts.png`, `sample.png` |
+| the README's math-font specimen and starter preview, and the cookbook's contact sheet | `make previews` | `math-fonts.png`, `preview.png`, `sample.png` |
 
 `make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
 MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and
@@ -88,7 +88,8 @@ latexmk -xelatex my-talk.tex
 ## Writing slides in LaTeX
 
 [authoring.md](authoring.md): every slide pattern of the Quarto decks written by hand (columns,
-cards, strips, status lists, the caution box, notes, scaling, the marking strip), the cookbook
+cards, strips, status lists, quotes, the agenda, steps and timelines, galleries, the caution box,
+notes, footnotes and citations, scaling, the marking strip), the cookbook
 `examples/sample.tex` that shows each one, and what stays Quarto's and the LaTeX way to do it.
 
 ## Theme options
@@ -96,7 +97,7 @@ cards, strips, status lists, the caution box, notes, scaling, the marking strip)
 | option | values | default | |
 |---|---|---|---|
 | `livery` | a directory holding `build/livery.sty`; a bundled one is `liveries/<name>`, found through `TEXINPUTS` | `liveries/ncar` | the brand: colors, fonts, logos, geometry, art; in Quarto the `livery:` metadata key, a directory relative to the project (this framework sets `livery: _livery`; without one, `liveries/ncar` beside `_extensions/`) |
-| `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or white with the full-color logo (the brand's own light cover) |
+| `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or the background color with the full-color logo (the brand's own light cover) |
 | `fonts` | `brand`, `bundled`, `helvetica` | `brand` (`helvetica` under pdfLaTeX) | `brand` uses the livery's installed fonts when this machine has them, else its bundled files; `bundled` always the bundled files (reproducible; what Overleaf gets); `helvetica` the sanctioned substitute, and the only choice under pdfLaTeX |
 | `footer` | `minimal`, `full` | `minimal` | page number only, or also the section, short title and date |
 | `sectionpages` | `true`, `false` | `true` | a branded divider slide at each section |
@@ -152,9 +153,10 @@ the specimen above.
 The themes read only **roles**, which the livery sets: `BrandPrimary`,
 `BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`,
 `BrandHighlight` (a second small-text accent: examples, tips, strings),
-`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and
-`BrandDark`, plus the blends the builder derives (`BrandTableRule`, `BrandCautionFill`,
-...). Use those in your own slides and they follow the livery. The chart colors are
+`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning`,
+`BrandDark` and `BrandOnDark` (text on the dark role), plus the blends the builder derives
+(`BrandTableRule`, `BrandCautionFill`, ...). Use those in your own slides and they follow the
+livery. The chart colors are
 `EngineData1`, `EngineData2`, ..., `EngineDataMuted` and `EngineStatusGood`/`Warning`/`Serious`/
 `Critical`; a document that loads pgfplots plots in them by default (the `livery` cycle list). Code is set in
 `BrandCodeText`, which is `BrandDark` unless the livery names another color: on a dark
@@ -163,9 +165,11 @@ same roles: `engine.theme` is the template, each livery's `build/livery.theme` t
 copy, and a Quarto project points `highlight-style` at it.
 
 Each livery also exports its **palette by name** (`latex.colors` in its
-`livery.yml`), for slides that will only ever wear that brand:
-- **ncar**: `NCARBlue`, `DarkBlue`, `Space`, `LightBlue`, `LightGray`, `BrandOrange`, `BrandYellow`
-- **ucar**, **ucp**, **ncarucar**: those plus `UCARAqua`, `UCARAquaContrast`, `LightAqua`
+`livery.yml`; a flavor inherits its parent's and may add its own), for slides that will only
+ever wear that brand. The full list is each livery's `build/livery.sty`:
+- **ncar**, **ucar**, **ucp**, **ncarucar** (one list): `NCARBlue`, `DarkBlue`, `Space`, `LightBlue`,
+  `LightGray`, `UCARAqua`, `UCARAquaContrast`, `LightAqua`, `BrandOrange`, `BrandYellow`, `BrandWhite`
 - **cu**, **nsi**: `CUGold`, `CUBlack`, `CUDarkGray`, `CULightGray`, `CUAccessibleGold`, `CUSkyBlue`, ...
-- **nasa**, **nasa-dark**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...
+- **nasa**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...; **nasa-dark** adds
+  `Graphite`, `LightBlue`, `Cyan`, `LightRed`, `Steel`, `Frost`
 - **nasa-jsc-eg**: those plus `EgYellow`, `EgNavy`, `EgRed`, `EgOrange`, `EgBlue`, `EgGreen`, ...

@@ -76,7 +76,7 @@ print(f"\n::: note\n{used} used of {size}.\n:::\n")
 ```
 ````
 
-Every format sets it as the plot's caption: small, muted, centred, just under the plot
+Every format sets it as the plot's caption: small, muted, centered, just under the plot
 ([docs/authoring.md "Notes under a figure"](../../docs/authoring.md#notes-under-a-figure)). Draw
 the plot a little short of the content height (`height=0.9`) so the note fits the PDF, which has
 no autofit.

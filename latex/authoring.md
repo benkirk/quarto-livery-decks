@@ -2,8 +2,9 @@
 
 The theme is beamer with a livery; everything beamer does works. What this page adds is the
 layer the engine draws the framework's slide patterns with, written as a hand author writes it:
-columns at shares, a lead box, cards, strips, status lists, a caution box, notes, a scale group,
-image galleries, the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
+columns at shares, a lead box, cards, strips, status lists, quotes, the agenda, steps and
+timelines, image galleries, a caution box, notes, slide footnotes and citations, a scale group,
+the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
 `decks/sample/sample.qmd` slide for slide (`make examples` here); `make variants` builds it under
 `cu`, under the dark livery `nasa-dark` and at 4:3. Four of its pattern slides under three
 liveries:
@@ -39,7 +40,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | A timeline: milestones on a rail, the date above each dot | `\begin{enginetimeline}{4}` holding `\enginemilestone[done]{Q1 2025}{Label}`; without `[done]` the dot is hollow |
 | An image gallery: equal cells of pictures, a caption under each | `\begin{enginegallery}[cols=3,rows=2,fit=cover,height=0.6]` holding `\engineimage[Caption]{file.png}` per picture (["Galleries"](#galleries)) |
 | Status list: ✓ ⚠ ✗ as the bullets | `\begin{enginestatus}` with `\done`, `\warn`, `\fail` items (and plain `\item`); `\engineglyph{done}` is the glyph anywhere |
-| Warning slide: the body on the soft yellow field with the brand-yellow bar | `\begin{enginecaution} ... \end{enginecaution}` |
+| Warning slide: the body on a soft field with a bar, both in the livery's warning role | `\begin{enginecaution} ... \end{enginecaution}` |
 | Note under a figure or table (the caption's look: small, muted, centered) | `\enginenote{...}` |
 | Scale the body (its lists, tables and code with it) | `\begin{enginescale}{1.4} ... \end{enginescale}`; beamer's `[shrink]` goes the other way, down to fit |
 | Center a short slide's body | `\begin{frame}[c]`; a list as a block: `\begin{center}\begin{varwidth}{\linewidth}` (the `varwidth` package) |

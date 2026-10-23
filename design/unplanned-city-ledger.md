@@ -21,6 +21,33 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-10-23: area docs (the user-facing docs after #138)
+
+- Mode: area (`docs`, the user-facing part: README.md, docs/*.md, liveries/README.md,
+  latex/README.md, latex/authoring.md, decks/plots/README.md, the quickstart's and sample's
+  prose, the changelog's Unreleased section; CLAUDE.md, design/, the generated REFERENCE.md,
+  code and tests out of scope), read against the code as it stands after #138; the Untriaged
+  list held no docs item to start from
+- Range: the area
+- End commit: `c0ac0be` (#138, the branch point)
+- Done (#139): American spelling (judgment, license, labeling, centered); the guides' intros
+  listing the element sprints' patterns; liveries/README's ragged lines and the cookbook's
+  filler typos; text on a field named by its role (a solid card's text, `.brand-dark`,
+  title=light: "white" and "Space" gone); latex/README's roles (`BrandOnDark`) and exported
+  palette names (one list per family, nasa-dark's and nasa-jsc-eg's extras); the sample's
+  closing-in-pptx and SVG-in-pptx claims; livery-neutral prose for the caution slide's role and
+  the text face; the quickstart's pipeline diagram with every filter and step; the README shots
+  #138 moved (tracking, the gallery's dividers) reshot; `make previews` making `latex/preview.png`
+  (shot by hand at the flatten until now, `sheet.py --pages`)
+- Tried and dropped: none
+- Open: `decks/plots/screenshots/liveries.png` (shot at #70) sees only #138's 1 → 1.4 px
+  hairline, not worth six HTML builds until the plots change; `01-title.png` and `pdf.png` carry
+  `date: last-modified`, so every reshoot after an edit churns them by the date alone (the
+  screenshot recipe could pin the date); CLAUDE.md "The engine" names `sample.png` as what `make
+  previews` makes, now three images (out of this sweep's scope); the Unreleased section's "white
+  as before on every bundled livery" wording is right but the README's livery table still says
+  "the white-rule insignia" for nasa's mark (a mark's own color, left)
+
 ## 2026-10-22: area themes (the "one look, one key" sprint)
 
 - Mode: area (`themes`: the beamer `*.sty`, the revealjs `*.scss`, the pptx steps that draw the same

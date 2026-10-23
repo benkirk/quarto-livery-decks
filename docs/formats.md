@@ -183,7 +183,7 @@ installed-fonts:
 - **pptx**: nothing to do; the theme names `pptx.typeface` (Helvetica Neue) already.
 
 The framework never copies the font. Embedding an installed font in a PDF you hand out is a
-question for that font's licence: macOS's covers using its fonts, not redistributing the
+question for that font's license: macOS's covers using its fonts, not redistributing the
 files, which this never does; check before you publish a PDF built this way.
 
 ## Template constraints
@@ -255,8 +255,8 @@ and keep `<deck>_files/` beside it.
 - **Presenting:** `s` speaker view (notes), `m` slide menu, `b`/`c`
   whiteboard / draw on the slide, `f` full screen.
 - **HTML-only extras:**
-  - `## Title {.brand-dark}` puts a content slide on the livery's dark color with
-    white text (under a dark livery, every content slide already is); pptx and PDF
+  - `## Title {.brand-dark}` puts a content slide on the livery's dark role, its text in
+    the `on-dark` role (under a dark livery, every content slide already is); pptx and PDF
     draw an ordinary slide.
   - Overflowing content slides shrink to fit (see [authoring.md "About text autofit"](authoring.md#about-text-autofit)).
   - Mermaid and Graphviz draw live in the browser; mermaid uses the livery's

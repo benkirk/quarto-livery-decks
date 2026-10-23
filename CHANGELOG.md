@@ -66,6 +66,10 @@ owner changes a band, a hairline or a footnote rule once.
   footline and slide number, the blocks on a feature frame in the PDF, a `.brand-dark` slide and
   the code tints on dividers and closings in HTML. White as before on every bundled livery; the
   PDF's feature title takes the feature composition's column role, as HTML and pptx did.
+- The cookbook and the quickstart say what the code does (the docs sweep): the closing slide
+  and SVG images are pptx's too, the pipeline diagram lists every filter and step, and the
+  prose names a role or the text face where it named ncar's yellow, Space and Poppins. The
+  README images show #138's tracking and divider gaps.
 
 ### Liveries
 
@@ -103,6 +107,13 @@ owner changes a band, a hairline or a footnote rule once.
   nothing moves); `roles.on-dark` names one instead. The themes' last hand-written whites read
   it (the scss keeps Quarto's four compile-time Sass defaults, overridden at runtime). Nothing
   to do.
+
+### LaTeX
+
+- `make previews` in `latex/` also writes `preview.png`, the README's starter deck under ncar
+  and cu (`sheet.py --pages`); it had been shot by hand at the flatten and showed the old
+  hairline. latex/README.md names `BrandOnDark` among the roles and the exported palette names
+  as each `build/livery.sty` defines them.
 
 ## [26.10.9] - 2026-10-22
 
