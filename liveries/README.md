@@ -71,10 +71,9 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      footnotes (their rule, width, hang, gap and step), and the quote block (its bar, its
      attribution's gap, and a face of its own: `boxes.quote.family`, a bundled family, and
      `style`); the divider stack's gaps are `section.eyebrow-gap` and `section.subtitle-gap`. Set
-     only
-     what differs from the engine's
-     (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
-     its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
+     only what differs from the engine's (REFERENCE.md has every key): ncar rounds its cards and
+     keeps its warn and fail glyphs off its yellow, which is unreadable as text on white;
+     nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
      hairline `rule` with its `rule-width` and `rule-color`, and the band's `top`, `height` and
      `rule-y` as fractions of the height, one set every format draws); `title: {style: band, ...}`

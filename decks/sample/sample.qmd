@@ -28,8 +28,8 @@ emphasized in the PDF and HTML decks; pptx renders it as plain text.
 Bulleted list:
 
 - First point
-- Second point with `code`.  This point needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing woks for wrapped bullets.
-  - Especialy when there are multiple. And one also needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing woks for wrapped sub-bullets.
+- Second point with `code`.  This point needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing works for wrapped bullets.
+  - Especially when there are multiple. And one also needs to be expounded upon very very verbosely to force a line wrap so we can see how spacing works for wrapped sub-bullets.
   - Sub-bullets
 - Third point
 
