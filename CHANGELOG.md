@@ -59,6 +59,9 @@ owner changes a band, a hairline or a footnote rule once.
   PDF: labels and table headers from 4 % to 8 %, the eyebrow and the date gain tracking (they
   had none). pptx: a card's label from a fixed 1 pt, a table header from 0.04 em, the eyebrow
   from 0.1, the date gains it.
+- HTML: a picked card's outline (`.pick`) is whole. It was an inset shadow on the card, which the
+  head's fill and a strip, both running to the card's edges, painted over; it is an overlay above
+  the content now, as the PDF and pptx always drew it.
 - Text on dark fields reads one role (`on-dark`) in every format: the feature slide's panel text,
   footline and slide number, the blocks on a feature frame in the PDF, a `.brand-dark` slide and
   the code tints on dividers and closings in HTML. White as before on every bundled livery; the

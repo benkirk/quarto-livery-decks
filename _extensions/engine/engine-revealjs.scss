@@ -463,17 +463,27 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   > li[data-engine-state="current"] .engine-agenda-title { color: var(--engine-agenda-current); font-weight: 700; }
 }
 // cards (::: {.column .card role=...}): a head band in the card's role over a body on the card
-// fill, the row's cards one height (the columns' flex stretch); .pick outlined (inset: no layout
-// shift, and it follows the radius); .solid all of it the role's (livery.css: boxes.card)
+// fill, the row's cards one height (the columns' flex stretch); .pick outlined by an overlay
+// above the content (inset, so no layout shift, and it follows the radius; the head's fill and
+// a strip run to the card's edges and would paint over an inset shadow on the card itself, as
+// the PDF and pptx never did); .solid all of it the role's (livery.css: boxes.card)
 .reveal .slides section .engine-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
+  position: relative;
   background: var(--engine-card-fill);
   border-radius: var(--engine-card-radius);
   overflow: hidden;
-  &.engine-pick { box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color); }
+  &.engine-pick::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color);
+    pointer-events: none;
+  }
   .engine-card-head {
     background: var(--engine-card-role);
     color: var(--engine-primary-text);
