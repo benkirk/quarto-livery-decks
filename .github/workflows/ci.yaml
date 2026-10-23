@@ -171,8 +171,9 @@ jobs:
         run: |
           cd decks/sample
           for c in engine-rail engine-quote engine-agenda engine-gallery; do grep -q "$c" sample.html || { echo "no $c in sample.html"; exit 1; }; done
-          pdftotext sample.pdf - | grep -q 'Richard Hamming'
-          pdftotext sample.pdf - | grep -q 'Earthrise'
+          pdftotext sample.pdf sample.txt   # into a file: `| grep -q` closes the pipe on its first match, and
+          grep -q 'Richard Hamming' sample.txt   # pipefail then fails the step on pdftotext's SIGPIPE (141)
+          grep -q 'Earthrise' sample.txt
           python3 - <<'EOF'
           from pptx import Presentation
           from pptx.enum.shapes import MSO_SHAPE_TYPE
