@@ -47,7 +47,10 @@ branched from, not a window read).
   which nothing knows before PowerPoint opens the file); HTML's title hairline fixed at `rule-y`
   where beamer's follows a two-line title (pptx's cannot: a static layout); the pptx `::: note`
   keeps its measured placement, not `boxes.note.gap`; the four Sass defaults (`$body-bg`,
-  `$dark-bg-text-color`, the mermaid pair) stay compile-time whites overridden at runtime
+  `$dark-bg-text-color`, the mermaid pair) stay compile-time whites overridden at runtime; the
+  feature panel's heading is `secondary` in HTML and the PDF but the panel's text color (white)
+  in the pptx (`slide_layout.py` recolors every run), and on cu the secondary gray reads muted on
+  the dark panel: a known look, left alone (Ben, 2026-10-23)
 
 ## 2026-10-22: window #127–#135
 
