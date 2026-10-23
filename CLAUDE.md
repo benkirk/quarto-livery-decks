@@ -167,8 +167,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
   which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
   `svg_fallback` (a PNG for each SVG plot, the SVG on Office's `svgBlip` extension, by
-  `rsvg-convert`: conda-forge librsvg), `png_clean` (every PNG's `sBIT` chunk dropped: PowerPoint
-  showed two screenshots carrying one as blank), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
+  `rsvg-convert`: conda-forge librsvg), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its

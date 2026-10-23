@@ -86,9 +86,6 @@ Per deck, `make pptx` runs:
      SVG rides on Office's `svgBlip` extension, so PowerPoint draws vector and an app that
      ignores the extension (Google Slides' import) the PNG. First, so every later step sees a
      PNG picture.
-   - `png_clean`: drops the `sBIT` chunk from every PNG picture (a chunk walk, nothing
-     re-encoded): PowerPoint showed two screenshots carrying one as blank on screen while its PDF
-     export drew them.
    - `notes_clrmap`: gives each notes slide the `<p:clrMapOvr>` PowerPoint writes (the notes
      master's colors), which pandoc leaves out. Keynote refuses a deck with one notes slide
      that lacks it, as an invalid file; PowerPoint and Google Slides open it either way.

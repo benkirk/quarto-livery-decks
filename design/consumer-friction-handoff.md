@@ -10,8 +10,9 @@ sub-rows: the fy27 hierarchy table), after a start-merging version proved unsoun
 absorbed a real column); the fy27 deck's `make qa` is clean with three real pptx hints (a dense
 0.7-scale table at the footer, two captions at the margin). Parity: quickstart, fixtures and plots
 unchanged under ncar, cu and nsi; the sample differs by its two new slides alone (every baseline
-page matched by content). `make test`: 383 passed. Item 13's PowerPoint look is still Ben's: the
-two decks are in the session's scratchpad (`sbit-deck-original-pngs.pptx`, `sbit-deck-cleaned.pptx`).
+page matched by content). `make test`: 383 passed. Item 13 did not reproduce: the two
+original PNGs (`sBIT` and all) drew fine in PowerPoint (Ben, 2026-10-23), so the `png_clean` commit
+was dropped from the branch and the item closes as not reproduced.
 Open questions taken at the defaults (10b out, 8 a follow-up, 5 as hints).
 
 **For a fresh session.** One PR against `main` (branch `decks/consumer-friction` from `origin/main`
@@ -48,7 +49,7 @@ cannot see. Issue #133 lists 14 items. The triage, with the rationale:
 | 4 | `make qa` ignores "markers left" | the check that would have caught 1; the grep already exists in CI for the sample deck | S |
 | 6 | engine edits do not rebuild a deck | one `wildcard` in `DEPS`; every engine sprint has hit it | S |
 | 9 | ′ missing in PDF and plots | one `\newunicodechar` line; one rc line (`font.family` as a list) | S |
-| 13 | PNG with `sBIT` blank in PowerPoint | the chunk is the only difference between the broken and fixed files (checked); a 20-line chunk filter | S, verify |
+| 13 | PNG with `sBIT` blank in PowerPoint | the chunk is the only difference between the broken and fixed files (checked); a 20-line chunk filter | S, verify (did not reproduce: dropped) |
 | 11 | "runs into the next table column" false positive | standing noise on four fy27 slides and every table-beside-bullets slide; the HTML already knows the table's box | M |
 | 10a | image not pullable mid-release | a pre-check and one message; the failure today is docker's own | S |
 | 5 | no pptx overflow check | `comp_measure.shoot_pptx()` already does the LibreOffice conversion; lifting it is most of the work. Hints first, failures when the numbers prove quiet | M, may slip |

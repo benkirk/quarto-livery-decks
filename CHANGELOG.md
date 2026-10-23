@@ -41,8 +41,6 @@ seams a 42-slide deck found that `make qa` could not see, and the checks that se
 - An edit to the engine (a filter, a theme file, a pptx step) rebuilds the decks: the engine's
   sources are prerequisites of every format.
 - `′` and `″` draw in the PDF (borrowed from DejaVu Sans, as the arrows and ⚠ are).
-- A PNG picture's `sBIT` chunk is dropped as the deck is post-processed: PowerPoint showed two
-  screenshots carrying one as blank on screen.
 - A container build whose image is not pullable (between a version bump and its tag) says so
   and names the ways out, instead of the runtime's "manifest unknown".
 - Quarto's `::: {.content-visible when-format=…}` divs are documented as unsupported inside the
