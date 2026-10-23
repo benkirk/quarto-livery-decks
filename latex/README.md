@@ -153,9 +153,10 @@ the specimen above.
 The themes read only **roles**, which the livery sets: `BrandPrimary`,
 `BrandPrimaryText`, `BrandPrimaryContrast`, `BrandSecondary`, `BrandAccent`,
 `BrandHighlight` (a second small-text accent: examples, tips, strings),
-`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning` and
-`BrandDark`, plus the blends the builder derives (`BrandTableRule`, `BrandCautionFill`,
-...). Use those in your own slides and they follow the livery. The chart colors are
+`BrandText`, `BrandBackground`, `BrandMuted`, `BrandSurface`, `BrandWarning`,
+`BrandDark` and `BrandOnDark` (text on the dark role), plus the blends the builder derives
+(`BrandTableRule`, `BrandCautionFill`, ...). Use those in your own slides and they follow the
+livery. The chart colors are
 `EngineData1`, `EngineData2`, ..., `EngineDataMuted` and `EngineStatusGood`/`Warning`/`Serious`/
 `Critical`; a document that loads pgfplots plots in them by default (the `livery` cycle list). Code is set in
 `BrandCodeText`, which is `BrandDark` unless the livery names another color: on a dark
@@ -164,9 +165,11 @@ same roles: `engine.theme` is the template, each livery's `build/livery.theme` t
 copy, and a Quarto project points `highlight-style` at it.
 
 Each livery also exports its **palette by name** (`latex.colors` in its
-`livery.yml`), for slides that will only ever wear that brand:
-- **ncar**: `NCARBlue`, `DarkBlue`, `Space`, `LightBlue`, `LightGray`, `BrandOrange`, `BrandYellow`
-- **ucar**, **ucp**, **ncarucar**: those plus `UCARAqua`, `UCARAquaContrast`, `LightAqua`
+`livery.yml`; a flavor inherits its parent's and may add its own), for slides that will only
+ever wear that brand. The full list is each livery's `build/livery.sty`:
+- **ncar**, **ucar**, **ucp**, **ncarucar** (one list): `NCARBlue`, `DarkBlue`, `Space`, `LightBlue`,
+  `LightGray`, `UCARAqua`, `UCARAquaContrast`, `LightAqua`, `BrandOrange`, `BrandYellow`, `BrandWhite`
 - **cu**, **nsi**: `CUGold`, `CUBlack`, `CUDarkGray`, `CULightGray`, `CUAccessibleGold`, `CUSkyBlue`, ...
-- **nasa**, **nasa-dark**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...
+- **nasa**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...; **nasa-dark** adds
+  `Graphite`, `LightBlue`, `Cyan`, `LightRed`, `Steel`, `Frost`
 - **nasa-jsc-eg**: those plus `EgYellow`, `EgNavy`, `EgRed`, `EgOrange`, `EgBlue`, `EgGreen`, ...
