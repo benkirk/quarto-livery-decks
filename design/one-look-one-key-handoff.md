@@ -195,7 +195,10 @@ From the side-by-sides, each before its commit (the row filled in as Ben picks):
    sheet shows 0.1, 0.08 and 0.05; at 0.1 pdftotext splits the PDF's tracked words into letters,
    "S E C T I O N", measured on Poppins Bold at 8 pt: 8 % keeps them whole; the table header
    changes most).
-7. The feature panel's text role and key: —
+7. The feature panel's text role and key: **a derived role, `roles.on-dark`** (whichever of
+   background and foreground reads better on `dark`; white on every bundled livery, so the sheet
+   is flat), read by the panel, the feature footline and number, the feature blocks, `.brand-dark`
+   and the code tints; the key name is Ben's to confirm (provisional).
 
 ## Memory for the fresh session
 

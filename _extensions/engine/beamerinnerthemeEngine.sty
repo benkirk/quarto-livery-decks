@@ -271,12 +271,12 @@
 
 % blocks on photo ("feature") frames: dark titles over white bodies, on the panel
 \def\engine@featureblocks{%
-  \setbeamercolor{block title}{fg=white,bg=BrandDark}%
-  \setbeamercolor{block body}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block title}{fg=BrandOnDark,bg=BrandDark}%
+  \setbeamercolor{block body}{fg=BrandDark,bg=BrandBackground}%
   \setbeamercolor{block title example}{fg=BrandDark,bg=BrandSecondary}%
-  \setbeamercolor{block body example}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block body example}{fg=BrandDark,bg=BrandBackground}%
   \setbeamercolor{block title alerted}{fg=BrandDark,bg=BrandAccent}%
-  \setbeamercolor{block body alerted}{fg=white,bg=BrandDark}}
+  \setbeamercolor{block body alerted}{fg=BrandOnDark,bg=BrandDark}}
 
 % ---------------------------------------------------------------------------
 % feature frames: \begin{enginefeaturepanel} ... \end{enginefeaturepanel} (the Quarto filter
@@ -294,7 +294,7 @@
 \def\enginefeaturepanel{\global\engine@haspaneltrue
   \global\setbox\engine@panelbox=\vbox\bgroup
     \ifcsname engine@c@feature@panel@w\endcsname
-      \engine@hsize{\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax}\colorlet{EngineFeatureText}{white}%
+      \engine@hsize{\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax}\colorlet{EngineFeatureText}{BrandOnDark}%
     \else
       \engine@hsize{\engine@c@feature@column@w\paperwidth}\colorlet{EngineFeatureText}{EngineCfeatureText}%
     \fi

@@ -43,13 +43,13 @@ BLENDS = [
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
-# livery role -> the LaTeX color the themes read (the 13 roles; livery.json latex.roles carries them
-# and the blends' names to the beamer filter)
+# livery role -> the LaTeX color the themes read (the 14 roles; livery.json latex.roles carries them
+# and the blends' names to the beamer filter); on-dark is derived unless a livery names it
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "primary-contrast": "BrandPrimaryContrast", "secondary": "BrandSecondary",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
             "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark",
-            "code-text": "BrandCodeText"}
+            "code-text": "BrandCodeText", "on-dark": "BrandOnDark"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
 # art.<kind> files: backgrounds per slide kind, and titlegraphic, the title photo a deck sets none of
 ART_KINDS = ("title", "title-light", "section", "closing", "content", "titlegraphic")
@@ -235,6 +235,11 @@ def resolve(d: Path) -> tuple[dict, dict]:
             return ("livery.yml", f"roles.{k}")
         return ("_brand.yml", f"color.{k}") if k in color else ("livery.yml", "roles.dark")
     roles = {k: hex_of(v, role_key(k)) for k, v in sources.items()}
+    if "on-dark" not in roles and {"dark", "background", "foreground"} <= set(roles):
+        # text on the dark role (the feature panel and bar, a .brand-dark slide): whichever of the
+        # background and the foreground reads better on it, unless a livery names one (roles.on-dark)
+        lighter = max(("background", "foreground"), key=lambda r: livery_mod.contrast(roles[r], roles["dark"]))
+        roles["on-dark"], sources["on-dark"] = roles[lighter], sources[lighter]
     blends = {k: livery_mod.mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
     blends.update({k: hex_of(v, ("livery.yml", f"blends.{k}")) for k, v in data.get("blends", {}).items()})
     out = {

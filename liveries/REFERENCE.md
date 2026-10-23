@@ -60,6 +60,7 @@ Which palette color plays each part of the slides. A value is a _brand.yml palet
 | `warning` | color |  | The bar of a caution slide; its soft fill is the caution-fill blend. |
 | `dark` | color |  | The darkest field: the feature slide's bar and panel, dark slides, and code text unless code-text says otherwise. |
 | `code-text` | color |  | Code text (default: the dark role; a dark livery's dark is a field, so it names a light color). |
+| `on-dark` | color |  | Text on the dark role: the feature slide's bar and panel, a `.brand-dark` slide (default: whichever of the background and the foreground reads better on dark). |
 
 ### `blends`
 

@@ -59,6 +59,10 @@ owner changes a band, a hairline or a footnote rule once.
   PDF: labels and table headers from 4 % to 8 %, the eyebrow and the date gain tracking (they
   had none). pptx: a card's label from a fixed 1 pt, a table header from 0.04 em, the eyebrow
   from 0.1, the date gains it.
+- Text on dark fields reads one role (`on-dark`) in every format: the feature slide's panel text,
+  footline and slide number, the blocks on a feature frame in the PDF, a `.brand-dark` slide and
+  the code tints on dividers and closings in HTML. White as before on every bundled livery; the
+  PDF's feature title takes the feature composition's column role, as HTML and pptx did.
 
 ### Liveries
 
@@ -90,6 +94,12 @@ owner changes a band, a hairline or a footnote rule once.
   (a card's label, a divider's eyebrow, the title's date, a table header) in every format. Above
   0.08 pdftotext splits the PDF's tracked words into letters ("S E C T I O N"), so search and
   copy break. Nothing to do.
+- A fourteenth role, `on-dark`: text on the `dark` role (the feature slide's bar and panel, the
+  blocks on a feature frame, a `.brand-dark` slide, the code tints on a field). Derived: whichever
+  of the background and the foreground reads better on dark (white on every bundled livery, so
+  nothing moves); `roles.on-dark` names one instead. The themes' last hand-written whites read
+  it (the scss keeps Quarto's four compile-time Sass defaults, overridden at runtime). Nothing
+  to do.
 
 ## [26.10.9] - 2026-10-22
 

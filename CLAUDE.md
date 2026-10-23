@@ -314,7 +314,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   sets a size, reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
-  since a dark livery's `dark` stays a field color; beamer mixes its tints toward
+  since a dark livery's `dark` stays a field color; the `on-dark` role (derived: whichever of
+  background and foreground reads better on `dark`, `roles.on-dark` to name one) is text on the
+  dark role in every format (the feature bar and panel, a `.brand-dark` slide, the code tints on
+  a field): no theme writes `white` by hand (`test_cli.py`'s ratchet holds the counts at the
+  scss's four Sass defaults and zero in beamer); beamer mixes its tints toward
   `BrandBackground`, not white; `livery.css` gains callout title tints and a lightness flip
   (CSS filter) for inline Graphviz. Quarto bakes mermaid and dot cells to PNG before any Lua
   filter runs (even `at: pre-ast`), so the engine's `diagram-dark.lua` swaps each baked picture for

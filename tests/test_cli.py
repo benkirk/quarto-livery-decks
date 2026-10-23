@@ -242,7 +242,9 @@ def test_theme_literal_counts_only_fall():
     """The themes' hand literals the sweeps count (design/unplanned-city-ledger.md): a scss line-height
     not read from --engine-leading-<role>, a white by hand (#fff, white) and a letter-spacing in the
     scss, a `white` in the beamer themes. Each count may only go down: a new element reads the
-    livery's number (type.roles.*.leading, a role) instead of restating one."""
+    livery's number (type.roles.*.leading, a role, roles.on-dark for text on a dark field) instead
+    of restating one. The four scss whites left are Quarto's compile-time Sass defaults ($body-bg,
+    $dark-bg-text-color, the two mermaid colors), overridden at runtime by the roles."""
     scss = re.sub(r"//[^\n]*", "", (ENGINE / "engine-revealjs.scss").read_text())   # comments out
     sty = re.sub(r"(?<!\\)%[^\n]*", "", "".join(f.read_text() for f in sorted(ENGINE.glob("beamer*themeEngine.sty"))))
     counts = {
@@ -251,7 +253,7 @@ def test_theme_literal_counts_only_fall():
         "scss letter-spacing literals": len(re.findall(r"letter-spacing:\s*[0-9.]+em", scss)),
         "beamer white": len(re.findall(r"\bwhite\b", sty)),
     }
-    ceiling = {"scss line-height literals": 3, "scss #fff/white": 16, "scss letter-spacing literals": 0, "beamer white": 7}
+    ceiling = {"scss line-height literals": 3, "scss #fff/white": 4, "scss letter-spacing literals": 0, "beamer white": 0}
     over = {k: (v, ceiling[k]) for k, v in counts.items() if v > ceiling[k]}
     assert not over, f"a theme literal pile grew (now, ceiling): {over}"
 

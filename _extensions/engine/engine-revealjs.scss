@@ -933,7 +933,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     margin-top: var(--engine-section-subtitle-gap);   // section.subtitle-gap, em of the subtitle
     font-size: calc(var(--engine-type-sectionsubtitle, 1.1) * 1em);
     p { margin: 0 0 0.4em; }
-    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
+    :not(pre) > code { background: color-mix(in srgb, var(--engine-on-dark) 16%, transparent); color: var(--engine-cmp-text); }
   }
   &, h1, .engine-subtitle, a { color: var(--engine-cmp-text); }
 }
@@ -963,7 +963,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   &.engine-field {
     a { color: var(--engine-cmp-text); }
     ul > li::before { background: var(--engine-cmp-text); }
-    :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }
+    :not(pre) > code { background: color-mix(in srgb, var(--engine-on-dark) 16%, transparent); color: var(--engine-cmp-text); }
   }
 }
 
@@ -1038,32 +1038,32 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   box-sizing: border-box;
   padding: var(--engine-panel-pad);
   background: var(--engine-cmp-panel-fill);
-  &, p, li, strong { color: #fff; }
+  &, p, li, strong { color: var(--engine-on-dark); }   // text on the dark panel (roles.on-dark)
   h3, .alert, a { color: var(--engine-secondary); }
   @include trim($first: false);
   ul > li::before { background: var(--engine-secondary); }
-  :not(pre) > code { background: rgba(#fff, 0.14); color: var(--engine-warning); }
+  :not(pre) > code { background: color-mix(in srgb, var(--engine-on-dark) 14%, transparent); color: var(--engine-warning); }
 }
 
 // ---------------------------------------------------------------------------
 // .brand-dark: a content slide on Space
 // ---------------------------------------------------------------------------
 .reveal .slides section.slide.brand-dark {
-  &, h2, h3, p, li, td, th, strong, .alert { color: #fff; }
+  &, h2, h3, p, li, td, th, strong, .alert { color: var(--engine-on-dark); }   // roles.on-dark
   h3, .alert { color: var(--engine-secondary); }
   a { color: var(--engine-secondary); }
   ul > li::before { background: var(--engine-secondary); }
   ul ul > li::before { background: none; border-color: var(--engine-secondary); }
   ul ul ul > li::before { background: var(--engine-secondary); }
   ol > li::marker { color: var(--engine-secondary); }
-  table th { color: #fff; border-bottom-color: var(--engine-secondary) !important; }
-  table td { border-bottom-color: rgba(#fff, 0.25) !important; }
-  table tbody tr:nth-child(even) { background: rgba(#fff, 0.06); }
-  :not(pre) > code { background: rgba(#fff, 0.12); color: var(--engine-warning); }
+  table th { color: var(--engine-on-dark); border-bottom-color: var(--engine-secondary) !important; }
+  table td { border-bottom-color: color-mix(in srgb, var(--engine-on-dark) 25%, transparent) !important; }
+  table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--engine-on-dark) 6%, transparent); }
+  :not(pre) > code { background: color-mix(in srgb, var(--engine-on-dark) 12%, transparent); color: var(--engine-warning); }
   // the hairline, lightened
   &::before {
     content: "" !important;
-    background: rgba(#fff, 0.25) !important;
+    background: color-mix(in srgb, var(--engine-on-dark) 25%, transparent) !important;
   }
 }
 
@@ -1146,7 +1146,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   font-size: var(--engine-type-pagenumber, 14px);
   a { color: inherit; }
 }
-.reveal.has-dark-background .slide-number { color: #fff; }
+.reveal.has-dark-background .slide-number { color: var(--engine-on-dark); }   // roles.on-dark
 .reveal .footer {
   color: var(--engine-muted);
   font-size: var(--engine-type-footer, 14px);
@@ -1187,7 +1187,7 @@ html.reveal-print .reveal .slides {
   --r-heading-color: var(--engine-foreground);
   --r-link-color: var(--engine-primary-contrast);
   --r-link-color-dark: color-mix(in srgb, var(--engine-primary-contrast) 70%, black);
-  --r-link-color-hover: color-mix(in srgb, var(--engine-primary-contrast) 75%, white);
+  --r-link-color-hover: color-mix(in srgb, var(--engine-primary-contrast) 75%, var(--engine-background));
   --r-selection-background-color: var(--engine-secondary);
   --r-selection-color: var(--engine-dark);
   --quarto-body-color: var(--engine-foreground);

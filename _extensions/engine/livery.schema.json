@@ -67,6 +67,10 @@
         "code-text": {
           "$ref": "#/$defs/color",
           "description": "Code text (default: the dark role; a dark livery's dark is a field, so it names a light color)."
+        },
+        "on-dark": {
+          "$ref": "#/$defs/color",
+          "description": "Text on the dark role: the feature slide's bar and panel, a `.brand-dark` slide (default: whichever of the background and the foreground reads better on dark)."
         }
       }
     },

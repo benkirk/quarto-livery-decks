@@ -44,7 +44,9 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Palette and roles.** `_brand.yml`: the palette under the brand's own names (the scaffold
      names the colors after the theme slots) and `primary`/`secondary`/`foreground`/`background`.
      `livery.yml` `roles`: `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`,
-     `surface`, `warning`, `dark`, and `code-text` when code should not be the `dark` role. A
+     `surface`, `warning`, `dark`, `code-text` when code should not be the `dark` role, and
+     `on-dark` when text on the dark role should not be whichever of the background and the
+     foreground reads better on it. A
      background darker than the foreground makes a dark livery ("Dark liveries" below).
    - **Fonts.** The brand's font files in `_brand.yml` in place of the stand-in (free,
      bundleable; a proprietary face is named in the pptx and stood in for elsewhere),

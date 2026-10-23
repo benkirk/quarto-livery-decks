@@ -609,10 +609,10 @@ def draw_feature(slide, width, height, photo):
         bar = _rect(slide, c["bar"]["box"], width, height, livery_mod.hex(LIVERY, c["bar"]["role"]), c["bar"]["opacity"], "Feature bar")
         tree = slide.shapes._spTree
         tree.remove(bar._element); tree.insert(3, bar._element)   # over the photo, under the text
-        for sh in slide.placeholders:   # the number on the photo, white as HTML's
+        for sh in slide.placeholders:   # the number on the photo: the on-dark role, as HTML's and the PDF's
             if sh.placeholder_format.type == PP_PLACEHOLDER.SLIDE_NUMBER:
                 for para in sh.text_frame.paragraphs:
-                    para.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+                    para.font.color.rgb = _rgb("on-dark")
         if title is not None:
             _frame(title, x, y, w, h, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE if c["column"]["anchor"] == "middle" else MSO_ANCHOR.TOP
@@ -628,7 +628,7 @@ def draw_feature(slide, width, height, photo):
             tree = slide.shapes._spTree
             tree.remove(panel._element); tree.insert(list(tree).index(shape._element), panel._element)
             shape.height = est
-            _recolor(shape, RGBColor(0xFF, 0xFF, 0xFF))
+            _recolor(shape, _rgb("on-dark"))   # the panel's text: the on-dark role, as HTML's and the PDF's
     else:
         draw_cover(slide, width, height, photo, c)
         if c["column"]["tab"]:

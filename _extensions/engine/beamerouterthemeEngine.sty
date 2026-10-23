@@ -155,7 +155,7 @@
 \defbeamertemplate*{footline}{Engine}{%
   \engine@ifstyle{normal}{\engine@footline}{%
     \engine@ifstyle{full}{\engine@footline}{%
-    \engine@ifstyle{feature}{{\color{white}\engine@footline}}{%
+    \engine@ifstyle{feature}{{\color{BrandOnDark}\engine@footline}}{%   % on the photo's bar (roles.on-dark)
       \vbox to 0.075\paperheight{\vfil}}}}}
 \def\engine@footline{%
   \engine@userlogorow
@@ -449,7 +449,7 @@ block body example,block title alerted,block body alerted}
 \define@key{beamerframe}{enginebg}{%
   \def\engine@framestyle{feature}\def\engine@featureimage{#1}%
   \engine@atframe{%
-    \setbeamercolor{frametitle}{fg=white}%
+    \setbeamercolor{frametitle}{fg=EngineCfeatureText}%   the feature composition's column role, as HTML and pptx
     \setbeamercolor{framesubtitle}{fg=BrandSecondary}%
     \engine@featureblocks}}
 % [enginefull=<image>]: the image fills the frame; no title, logo, rule or
