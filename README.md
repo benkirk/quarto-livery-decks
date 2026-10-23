@@ -113,7 +113,7 @@ livery can be a *flavor* of another (`extends:`), naming only what differs.
 
 `make <format> LIVERY=<name>` picks one of `liveries/` (`ncar` is the default);
 `LIVERY_DIR=<path>` takes a livery from anywhere (a repo's own, say). Each livery's
-`reference/notes.md` records its sources and every judgement call, and CI builds the
+`reference/notes.md` records its sources and every judgment call, and CI builds the
 quickstart deck under each one.
 
 ## Adding a livery

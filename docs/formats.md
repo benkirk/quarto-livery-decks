@@ -183,7 +183,7 @@ installed-fonts:
 - **pptx**: nothing to do; the theme names `pptx.typeface` (Helvetica Neue) already.
 
 The framework never copies the font. Embedding an installed font in a PDF you hand out is a
-question for that font's licence: macOS's covers using its fonts, not redistributing the
+question for that font's license: macOS's covers using its fonts, not redistributing the
 files, which this never does; check before you publish a PDF built this way.
 
 ## Template constraints

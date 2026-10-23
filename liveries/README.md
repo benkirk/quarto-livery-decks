@@ -38,7 +38,7 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
 
 1. **Scaffold it.** `livery new liveries/<name> --from <deck.pptx>` (or without `--from`, from a
    brand guide). The deck stays out of git; `reference/report.md` is its reading.
-2. **Decide the data**, writing the judgement calls into `reference/notes.md` as you make them.
+2. **Decide the data**, writing the judgment calls into `reference/notes.md` as you make them.
    The build refuses a key or a value the schema does not allow, naming its path;
    [REFERENCE.md](REFERENCE.md) says what each key does on the slide.
    - **Palette and roles.** `_brand.yml`: the palette under the brand's own names (the scaffold
