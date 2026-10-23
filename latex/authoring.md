@@ -2,8 +2,9 @@
 
 The theme is beamer with a livery; everything beamer does works. What this page adds is the
 layer the engine draws the framework's slide patterns with, written as a hand author writes it:
-columns at shares, a lead box, cards, strips, status lists, a caution box, notes, a scale group,
-image galleries, the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
+columns at shares, a lead box, cards, strips, status lists, quotes, the agenda, steps and
+timelines, image galleries, a caution box, notes, slide footnotes and citations, a scale group,
+the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
 `decks/sample/sample.qmd` slide for slide (`make examples` here); `make variants` builds it under
 `cu`, under the dark livery `nasa-dark` and at 4:3. Four of its pattern slides under three
 liveries:

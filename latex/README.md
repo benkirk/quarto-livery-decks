@@ -88,7 +88,8 @@ latexmk -xelatex my-talk.tex
 ## Writing slides in LaTeX
 
 [authoring.md](authoring.md): every slide pattern of the Quarto decks written by hand (columns,
-cards, strips, status lists, the caution box, notes, scaling, the marking strip), the cookbook
+cards, strips, status lists, quotes, the agenda, steps and timelines, galleries, the caution box,
+notes, footnotes and citations, scaling, the marking strip), the cookbook
 `examples/sample.tex` that shows each one, and what stays Quarto's and the LaTeX way to do it.
 
 ## Theme options
