@@ -116,7 +116,7 @@ engine-beamer-overleaf.zip: talk.tex FORCE
 	python3 $(THEME)/livery.py zip $(ROOT)/liveries/ncar -o $@ --photo images/wallpaper/mesa_lab_sunset.jpg
 
 clean:
-	latexmk -C -quiet talk.tex talk-cu.tex 2>/dev/null
+	latexmk -C -quiet talk.tex $(wildcard talk-cu.tex) 2>/dev/null
 	rm -f engine-beamer-overleaf.zip talk-cu.tex
 	rm -rf examples/quarto-demo_files examples/quarto-demo.html
 	cd examples && latexmk -C -quiet template.tex sample.tex paper.tex $(addsuffix .tex,$(VARIANTS)) 2>/dev/null; \
