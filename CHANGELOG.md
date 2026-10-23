@@ -66,6 +66,10 @@ owner changes a band, a hairline or a footnote rule once.
   footline and slide number, the blocks on a feature frame in the PDF, a `.brand-dark` slide and
   the code tints on dividers and closings in HTML. White as before on every bundled livery; the
   PDF's feature title takes the feature composition's column role, as HTML and pptx did.
+- The cookbook and the quickstart say what the code does (the docs sweep): the closing slide
+  and SVG images are pptx's too, the pipeline diagram lists every filter and step, and the
+  prose names a role or the text face where it named ncar's yellow, Space and Poppins. The
+  README images show #138's tracking and divider gaps.
 
 ### Liveries
 
