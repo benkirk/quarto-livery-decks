@@ -86,6 +86,9 @@ Per deck, `make pptx` runs:
      SVG rides on Office's `svgBlip` extension, so PowerPoint draws vector and an app that
      ignores the extension (Google Slides' import) the PNG. First, so every later step sees a
      PNG picture.
+   - `png_clean`: drops the `sBIT` chunk from every PNG picture (a chunk walk, nothing
+     re-encoded): PowerPoint showed two screenshots carrying one as blank on screen while its PDF
+     export drew them.
    - `notes_clrmap`: gives each notes slide the `<p:clrMapOvr>` PowerPoint writes (the notes
      master's colors), which pandoc leaves out. Keynote refuses a deck with one notes slide
      that lacks it, as an invalid file; PowerPoint and Google Slides open it either way.
@@ -131,6 +134,10 @@ Per deck, `make pptx` runs:
 
 `make html` (revealjs) and `make pdf` (beamer) run step 1 with the engine's own format and
 filters, which draw everything step 2 adds to the pptx.
+
+Every output depends on the deck's fragments and the livery's files, and on the engine's own
+sources (its filters, themes, pptx steps and plot helper), so an edit to any of them rebuilds the
+decks; a consumer that pins the framework sees the rebuild when the pin moves.
 
 ## About the fonts
 

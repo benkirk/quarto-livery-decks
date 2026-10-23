@@ -22,8 +22,10 @@ short slide". Don't restate them; use them.
    first. Then read both contact sheets yourself: the checks find overflow, not ugliness.
 3. Work through the `hint` lines.
 4. Rebuild and rerun until the report is clean. Then look at the sheets once more.
-5. pptx is only counted. For a look, `soffice --headless --convert-to pdf deck.pptx`
-   gives a contact sheet; the fonts will fall back to serif, so judge layout only.
+5. The pptx is checked too: a slide still holding a grid marker fails, and the deck as
+   LibreOffice draws it (the livery's faces in a private profile) runs through the PDF's edge,
+   footer and overlap checks as `hint pptx` lines, with `_qa/<deck>-pptx.png` to read them
+   against (LibreOffice applies no autofit; `QA_PPTX_FAIL=1` makes them failures).
 
 ## Known fixes
 
@@ -64,16 +66,18 @@ short slide". Don't restate them; use them.
 - **No ignore list.** A deliberately dense demo slide (the sample's "Wall of Text") is
   reported on every run. If that gets noisy, add a `qa-ignore.txt` of `slide kind` pairs.
 - **The table-column rule is heuristic.** It needs three lines starting at the same x, and it
-  skips right-aligned number columns. It was tuned on this theme's longtable output. A
-  different table style may need the threshold raised, or its own rule.
+  skips right-aligned number columns. It was tuned on this theme's longtable output, and reads
+  only the table's own span (the HTML's measure of it), so bullets or a plot beside the table
+  are not its columns. A different table style may need the threshold raised, or its own rule.
 - **The PDF right edge** is 1 − margin (0.94 W on ncar), columns included (they keep to the
   text width), and 1 − `geometry.wide-margin` on a `{.wide}` slide (`EDGE` / `WIDE_EDGE`).
 - **Overlays:** incremental pages map to one frame by the printed frame number. An
   unnumbered frame with overlays would miscount.
 - **Diagrams are invisible to the PDF text checks** when they are mermaid PNGs. Only the
   HTML autofit hint and the contact sheet catch them.
-- **pptx overflow is not checked.** PowerPoint autofit hides most of it. A LibreOffice
-  render through the PDF checks would be the next step, with font fallback as the caveat.
+- **The pptx checks are hints.** LibreOffice's render is not PowerPoint's (no autofit, its own
+  face substitutions); promote them to failures (`QA_PPTX_FAIL=1` by default) once the sample,
+  quickstart, fixtures and a consumer deck run quiet on the Mac and in the image.
 - **Speed:** about 0.4 s a slide for the HTML pass. If decks grow, skip the screenshots or
   run in parallel.
 - **Theme follow-ups seen in the SAMuel pass:**
