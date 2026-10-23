@@ -110,7 +110,7 @@ The $F$ terms are physics, subgrid mixing and filters. The slide leaves out
 the curvature terms ($1/r_e$) and the Coriolis terms in $e = 2\Omega_e\cos\psi$.
 
 The math is ordinary LaTeX between `$$`: OMML equations in pptx, MathJax in
-HTML, a serif math font beside Poppins in the PDF.
+HTML, a serif math font beside the text font in the PDF.
 :::
 
 ## Code, static and live {scale="1.15"}

@@ -59,7 +59,7 @@ $$
 
 where $f$ is the parallel fraction and $p$ is the processor count. PPTX
 renders these natively as OMML equations. The PDF sets math in a serif math
-font beside Poppins; `themeoptions: [fonts=bundled, mathfont=stix]` (or
+font beside the text font; `themeoptions: [fonts=bundled, mathfont=stix]` (or
 `lm`, `pagella`, `sans`, `poppins`) picks another.
 
 ## A pull quote
@@ -352,7 +352,7 @@ role; pptx and PDF draw an ordinary slide.
 
 ## ⚠︎ A warning slide {.caution .vcenter scale="1.15"}
 
-- `{.caution}` on the heading sets the body on a soft yellow field, with a brand-yellow bar.
+- `{.caution}` on the heading sets the body on a soft field with a bar, in the livery's warning role.
 - Keep it for the slides that warn: the brand asks for accents in small amounts.
 - It combines with the other layout controls, here `.vcenter` and `scale=`.
 
