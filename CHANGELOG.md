@@ -16,7 +16,7 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
-## [Unreleased]
+## [26.10.9] - 2026-10-22
 
 ### Decks
 - Steps and timelines: `::: {.steps}` around an ordered list draws a process as a thin rail with
@@ -525,7 +525,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.8...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.9...HEAD
+[26.10.9]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.9
 [26.10.8]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.8
 [26.10.7]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.7
 [26.10.6]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.6
