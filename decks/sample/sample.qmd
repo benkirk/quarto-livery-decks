@@ -342,8 +342,8 @@ No title, logo or rule is drawn; the title stays in the source.
 
 ## Dark slide, step by step {.brand-dark}
 
-`{.brand-dark}` sets an HTML slide on Space with white text; pptx and PDF
-draw an ordinary slide.
+`{.brand-dark}` sets an HTML slide on the livery's dark role, its text in the `on-dark`
+role; pptx and PDF draw an ordinary slide.
 
 ::: {.incremental}
 - `::: {.incremental}` reveals a list one item at a time

@@ -97,7 +97,7 @@ notes, footnotes and citations, scaling, the marking strip), the cookbook
 | option | values | default | |
 |---|---|---|---|
 | `livery` | a directory holding `build/livery.sty`; a bundled one is `liveries/<name>`, found through `TEXINPUTS` | `liveries/ncar` | the brand: colors, fonts, logos, geometry, art; in Quarto the `livery:` metadata key, a directory relative to the project (this framework sets `livery: _livery`; without one, `liveries/ncar` beside `_extensions/`) |
-| `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or white with the full-color logo (the brand's own light cover) |
+| `title` | `dark`, `light` | `dark` | title/closing slide field: the primary color with the reversed logo, or the background color with the full-color logo (the brand's own light cover) |
 | `fonts` | `brand`, `bundled`, `helvetica` | `brand` (`helvetica` under pdfLaTeX) | `brand` uses the livery's installed fonts when this machine has them, else its bundled files; `bundled` always the bundled files (reproducible; what Overleaf gets); `helvetica` the sanctioned substitute, and the only choice under pdfLaTeX |
 | `footer` | `minimal`, `full` | `minimal` | page number only, or also the section, short title and date |
 | `sectionpages` | `true`, `false` | `true` | a branded divider slide at each section |
