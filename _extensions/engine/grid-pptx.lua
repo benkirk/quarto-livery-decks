@@ -60,22 +60,18 @@ if FORMAT ~= "pptx" then
   return {}
 end
 
-local function here(f)   -- this file's directory: Quarto's resolver, else plain pandoc's script path
-  if quarto and quarto.utils then return quarto.utils.resolve_path(f) end
-  return pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), f })
-end
-local C = dofile(here("engine-common.lua"))
+local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "engine-common.lua" }))   -- beside this filter
 local MARK = "engine-columns:"
 
-local function warn(title, msg)
-  io.stderr:write(string.format("grid-pptx.lua: WARNING: slide %q: %s\n", title, msg))
+local function warn(title, msg)   -- this filter's warnings name the slide (C.warn)
+  C.warn(string.format("grid-pptx.lua: slide %q: %s", title, msg))
 end
 
 -- the words of slide-layout.lua's notes line on this slide (`wide`, `full`, ...), as a set
 local function layout_words(blocks)
   local set = {}
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and C.has_class(b, "notes") then
+    if C.is_notes(b) then
       local words = pandoc.utils.stringify(b):match("engine%-layout:([^\n]*)")
       for w in (words or ""):gmatch("%S+") do set[w] = true end
     end
@@ -101,12 +97,7 @@ end
 
 -- a picture or table: pandoc draws it as a shape of its own, outside any column's text
 local function is_shape(b)
-  if b.t == "Table" or C.is_figure(b) then return true end
-  local found = false
-  if b.t == "Div" then
-    b:walk({ Image = function() found = true end, Table = function() found = true end })
-  end
-  return found
+  return b.t == "Table" or C.is_figure(b) or (b.t == "Div" and C.holds_shape(b))
 end
 
 local function prefixed(word, inlines)   -- a paragraph led by a prefix marker, for grid.py
@@ -146,7 +137,7 @@ local function flow(blocks, title, out)
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
-    elseif b.t == "Div" and not C.has_class(b, "notes") then
+    elseif b.t == "Div" and not C.is_notes(b) then
       flow(b.content, title, out)
     else
       out:insert(b)
@@ -200,8 +191,12 @@ local function agenda_marks(blocks, title, secs, current)
 end
 
 -- one slide's blocks: a plain columns slide marked on a notes line, a grid slide flattened
-local function mark(blocks, title)
+local function mark(blocks, title, level)
   local words = layout_words(blocks)
+  -- a gallery on a composed slide (slide-layout.lua's words), a divider or an untitled slide is not
+  -- drawn in any format (C.composed_kind(); the kind classes are off the heading here, so the words)
+  local where = (words.feature and "feature") or (words.closing and "closing") or C.composed_kind(blocks[1] or {}, level)
+  if where then blocks = C.unwrap_galleries(blocks, string.format("grid-pptx.lua: slide %q", title), where) end
   local out, wide = pandoc.Blocks({}), words.wide
   local grid, kept = {}, {}   -- which columns divs are a grid slide's, read before the quotes become markers;
   for k, b in ipairs(blocks) do   -- a plain one's quotes (beside a picture or table) stay pandoc's, warned of
@@ -228,8 +223,9 @@ local function mark(blocks, title)
   for k, b in pairs(kept) do blocks[k] = b end
   for k, b in ipairs(blocks) do
     local kind = C.rail_kind(b)
-    local rail = kind and C.rail_items(b, kind, nil, "grid-pptx.lua")
-    local gallery = C.is_gallery(b) and C.gallery_items(b, string.format("grid-pptx.lua: slide %q", title))
+    local who = string.format("grid-pptx.lua: slide %q", title)
+    local rail = kind and C.rail_items(b, kind, nil, who)
+    local gallery = C.is_gallery(b) and C.gallery_items(b, who)
     if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
       flow({ b }, title, out)
     elseif b.t == "Div" and C.has_class(b, "lead") then
@@ -278,8 +274,7 @@ function Pandoc(doc)
   -- status items (C.status_lists()): the glyph a Str of its own, first in its item, for
   -- pptx_steps/status_glyphs.py to color; before the cards are flattened (it reads the card divs)
   doc.blocks = C.status_lists(doc.blocks, function(l) return l end)
-  local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
-  if level == 0 then level = 2 end
+  local level = C.slide_level()
   -- pandoc's pptx writer drops .unnumbered: the dividers outside the count, by their place among
   -- the deck's dividers (1-based), as `engine-unnumbered: 2 4` for pptx_steps/section_subtitle.py
   local unnumbered = {}
@@ -290,7 +285,7 @@ function Pandoc(doc)
   local secs, current = C.sections(doc.blocks, level), 0   -- current: the numbered dividers so far
   local function one(slide, title)
     if slide[1] and C.is_agenda(slide[1], level) then return agenda_marks(slide, title, secs, current) end
-    return mark(slide, title)
+    return mark(slide, title, level)
   end
   local out, slide, title = pandoc.Blocks({}), pandoc.Blocks({}), "(before the first slide)"
   for _, blk in ipairs(doc.blocks) do

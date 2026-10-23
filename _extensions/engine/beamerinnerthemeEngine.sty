@@ -226,13 +226,13 @@
 \def\engine@agendarow{%
   \edef\engine@tmpa{\ifengine@agenda\ifnum0\inserttocsectionnumber<\c@section done\else
     \ifnum0\inserttocsectionnumber=\c@section current\else next\fi\fi\else next\fi}%
-  \vskip\dimexpr0.55\engine@typebody-\parskip\relax   % HTML's row gap: the paragraph skip taken back
+  \vskip\dimexpr\engine@boxes@agenda@gap\engine@typebody-\parskip\relax   % the row gap: the paragraph skip taken back
   {\raggedright\engine@fs{subhead}\selectfont   % the number on the title's line, the title hung beside it
-   \hangindent2\engine@typebody\noindent\hbox to 2\engine@typebody{\usebeamerfont{eyebrow}%
+   \hangindent\engine@boxes@agenda@numberwidth\engine@typebody\noindent\hbox to \engine@boxes@agenda@numberwidth\engine@typebody{\usebeamerfont{eyebrow}%
      \color{EngineBoxesAgendaNumberColor}\inserttocsectionnumber\hfil}%
    {\csname engine@agenda@\engine@tmpa\endcsname\inserttocsection}\par}%
   \@ifundefined{engine@secsub@\inserttocsectionnumber}{}{\vskip\dimexpr0.15\engine@typebody-\parskip\relax
-    {\raggedright\leftskip2\engine@typebody\usebeamerfont{caption}\color{BrandMuted}%
+    {\raggedright\leftskip\engine@boxes@agenda@numberwidth\engine@typebody\usebeamerfont{caption}\color{BrandMuted}%
      \csname engine@secsub@\inserttocsectionnumber\endcsname\par}}}
 \defbeamertemplate*{section in toc}{Engine}{\engine@agendarow}
 \defbeamertemplate*{section in toc shaded}{Engine}{\engine@agendarow}
@@ -247,7 +247,7 @@
 \setbeamertemplate{bibliography item}{\ifdefined\insertbiblabel\insertbiblabel\fi}
 % biblatex's list (\printbibliography) set as the Quarto list: the footnote size, a 1.5 em hanging
 % indent, 0.4 em between entries
-\AtBeginDocument{\@ifpackageloaded{biblatex}{\setlength\bibhang{1.5em}\setlength\bibitemsep{0.4em}%
+\AtBeginDocument{\@ifpackageloaded{biblatex}{\setlength\bibhang{\engine@boxes@references@hang em}\setlength\bibitemsep{\engine@boxes@references@gap em}%
   \AtBeginBibliography{\usebeamerfont{bibliography entry author}}}{}}
 % the reference list (Quarto's citations partial: CSLReferences, {hanging}{entry spacing}) set as
 % HTML and pptx set it: in the footnote size, a 1.5 em hanging indent, and the style's entry spacing
@@ -255,12 +255,12 @@
 % 1.5 em strut it opens each entry with (\beamer@newblock: spacing for beamer's own bibliography,
 % 0.3 of a line more above every entry here).
 \AtBeginDocument{\ifdefined\cslhangindent
-  \setlength\cslhangindent{1.5em}%
+  \setlength\cslhangindent{\engine@boxes@references@hang em}%
   \renewenvironment{CSLReferences}[2]{\usebeamerfont{bibliography entry author}%
     \patchcmd\beamer@newblock{\ht\beamer@tempbox=1.5em}{}{}{}\begin{list}{}{%
     \setlength{\itemindent}{0pt}\setlength{\leftmargin}{0pt}\setlength{\parsep}{0pt}%
     \ifodd #1\relax\setlength{\leftmargin}{\cslhangindent}\setlength{\itemindent}{-1\cslhangindent}\fi
-    \setlength{\itemsep}{#2\dimexpr0.4em\relax}}}{\end{list}}\fi}
+    \setlength{\itemsep}{#2\dimexpr\engine@boxes@references@gap em\relax}}}{\end{list}}\fi}
 
 % ---------------------------------------------------------------------------
 % blocks: square, flat (no shadows/gradients -- Brand Guide p25)
@@ -287,14 +287,16 @@
 % its pads (livery.sty \engine@boxes@panel@pad*, em, set here as before: in the em of the theme's load)
 \newdimen\engine@panelpady \engine@panelpady=\engine@boxes@panel@pady em
 \newdimen\engine@panelpadx \engine@panelpadx=\engine@boxes@panel@padx em
+% \engine@hsize{<width>}: a box's line width, its blocks and lists set this wide too, not the
+% frame's (beamer's columns and lists read \textwidth, \linewidth and \columnwidth, not \hsize)
+\def\engine@hsize#1{\hsize=#1\relax\textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize}
 \def\enginefeaturepanel{\global\engine@haspaneltrue
   \global\setbox\engine@panelbox=\vbox\bgroup
     \ifcsname engine@c@feature@panel@w\endcsname
-      \hsize=\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax\colorlet{EngineFeatureText}{white}%
+      \engine@hsize{\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax}\colorlet{EngineFeatureText}{white}%
     \else
-      \hsize=\engine@c@feature@column@w\paperwidth\colorlet{EngineFeatureText}{EngineCfeatureText}%
+      \engine@hsize{\engine@c@feature@column@w\paperwidth}\colorlet{EngineFeatureText}{EngineCfeatureText}%
     \fi
-    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize   % blocks and lists are set this wide, not the frame's
     \color{EngineFeatureText}\setbeamercolor{normal text}{fg=EngineFeatureText}%
     % blocks on the panel or the field are a heading over text, as HTML's: no box of their own (a
     % beamer block box takes the frame's margins, not the panel's width)
@@ -404,7 +406,8 @@
 % columns: \enginecolshare{<share>}{<n columns>}\linewidth is a column's width, its share of the line
 % width less the n - 1 gaps (livery.sty's boxes.columns.gap); the Quarto filter has pandoc write
 % \begin{columns}[T,onlytextwidth], whose \hfill between columns is then the gap; enginecolumns
-% below is the same for a hand author
+% below is the same for a hand author (a card's and a rail item's width is the same share as a
+% length, \engine@sharewidth)
 % {.wide}: \begin{enginewide} sets the body \paperwidth less geometry.wide-margin a side
 % ---------------------------------------------------------------------------
 \newcommand\enginecolshare[2]{\fpeval{#1*(1-(#2-1)*\engine@boxes@columns@gap*\paperwidth/\linewidth)}}
@@ -430,10 +433,7 @@
   \begin{columns}[T,onlytextwidth]}{\end{columns}}
 \newcommand\enginecolumn{%
   \global\advance\engine@ncols\@ne
-  \ifnum\engine@ncols>\engine@cols@n\relax
-    \PackageError{Engine}{enginecolumns{\engine@cols@n}: column \the\engine@ncols\space has no share}%
-      {The row was opened for \engine@cols@n\space columns: give \string\begin{enginecolumns} the number of columns, or a weight per column.}%
-  \fi
+  \ifnum\engine@ncols>\engine@cols@n\relax\engine@noshare{enginecolumns}{cols}{column}{\engine@ncols}\fi
   \beamer@colclose\def\beamer@colclose{}%   the previous column closed here, so the rule sits in the gap
   \ifnum\engine@ncols>\@ne\enginecolrule\fi
   \column{\enginecolshare{\csname engine@cols@share@\the\engine@ncols\endcsname}{\engine@cols@n}\linewidth}}
@@ -516,6 +516,14 @@
     \@for\engine@tmpa:=#2\do{\advance\engine@sharecnt\@ne
       \expandafter\xdef\csname engine@#1@share@\the\engine@sharecnt\endcsname{\fpeval{(\engine@tmpa)/\engine@sharediv}}}%
   \fi}
+% \engine@sharewidth{<share>}{<n>}: a row member's width, its share of the line less the n - 1 gaps
+% (boxes.columns.gap; \enginecolshare is the same as a factor of \linewidth, for beamer's \column)
+\def\engine@sharewidth#1#2{\dimexpr#1\dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(#2-1)\relax\relax}
+% \engine@noshare{<environment>}{<set>}{<member>}{<its count>}: the error for a member past the
+% row's shares (the k-th of a row opened for \engine@<set>@n)
+\def\engine@noshare#1#2#3#4{%
+  \PackageError{Engine}{#1{\csname engine@#2@n\endcsname}: #3 \the#4\space has no share}%
+    {The row was opened for \csname engine@#2@n\endcsname\space #3s: give \string\begin{#1} the number of #3s, or a weight per #3.}}
 
 % ---------------------------------------------------------------------------
 % strip: \begin{enginestrip}[role=<role>] ... \end{enginestrip}, in a card or on its own (the Quarto
@@ -599,12 +607,21 @@
 \newenvironment{enginecards}[1]{\par\engine@shares{cards}{#1}%
   \global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
   {\engine@drawcards\par}
+% \engine@tallest{<box>}{<dimen>}: the dimen raised, globally, to the box's height and depth (a
+% row's tallest body, head or date)
+\def\engine@tallest#1#2{\ifdim\dimexpr\ht#1+\dp#1\relax>#2
+  \global#2=\dimexpr\ht#1+\dp#1\relax\fi}
+% \engine@cellbox{<k>}{<width>} ... \endengine@cellbox{<k>}{<dimen>}: a card's or a rail item's body
+% set into the k-th save box (\engine@cardbox{k}) at that width, its lines close, as the pptx's
+% (grid.py CARD_GAP; HTML uses reveal's block margin); the end keeps the row's tallest in the dimen
+\def\engine@cellbox#1#2{%
+  \edef\engine@outerparskip{\the\parskip}%
+  \global\setbox\engine@cardbox{#1}=\vbox\bgroup
+    \engine@hsize{#2}\parskip=\engine@outerparskip\relax\parskip=.25\parskip}
+\def\endengine@cellbox#1#2{\par\egroup\engine@tallest{\engine@cardbox{#1}}{#2}}
 \newcommand\enginecard[3][]{%
   \global\advance\engine@ncards\@ne
-  \ifnum\engine@ncards>\engine@cards@n\relax
-    \PackageError{Engine}{enginecards{\engine@cards@n}: card \the\engine@ncards\space has no share}%
-      {The row was opened for \engine@cards@n\space cards: give \string\begin{enginecards} the number of cards, or a weight per card.}%
-  \fi
+  \ifnum\engine@ncards>\engine@cards@n\relax\engine@noshare{enginecards}{cards}{card}{\engine@ncards}\fi
   \engine@cardpickfalse\engine@cardpickedfalse\engine@cardsolidfalse\engine@cardplainfalse\def\engine@cardrole{}%
   \pgfkeys{/engine/card/.cd,#1}%
   \engine@nthrole{\the\engine@ncards}%
@@ -615,8 +632,7 @@
   \expandafter\xdef\csname engine@card@role@\the\engine@ncards\endcsname{\engine@rolename}%
   \expandafter\gdef\csname engine@card@title@\the\engine@ncards\endcsname{#2}%
   \expandafter\gdef\csname engine@card@sub@\the\engine@ncards\endcsname{#3}%
-  \engine@cardw=\dimexpr\csname engine@cards@share@\the\engine@ncards\endcsname
-    \dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(\engine@cards@n-1)\relax\relax
+  \engine@cardw=\engine@sharewidth{\csname engine@cards@share@\the\engine@ncards\endcsname}{\engine@cards@n}%
   \expandafter\xdef\csname engine@card@w@\the\engine@ncards\endcsname{\the\engine@cardw}%
   \engine@cardrule=\z@ \ifengine@cardpick\engine@cardrule=\engine@boxes@card@outline\paperheight\fi
   \expandafter\xdef\csname engine@card@rule@\the\engine@ncards\endcsname{\the\engine@cardrule}%
@@ -624,22 +640,16 @@
     \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@headpadx em\relax\relax
       \raggedright{\usebeamerfont{block title}\bfseries\strut#2\par}%
       \def\engine@tmpa{#3}\ifx\engine@tmpa\@empty\else{\normalsize\mdseries\strut#3\par}\fi}%
-    \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\engine@cardhead
-      \global\engine@cardhead=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax\fi
+    \engine@tallest{\@tempboxa}{\engine@cardhead}%
   \fi
-  \edef\engine@outerparskip{\the\parskip}%
-  \global\setbox\engine@cardbox{\engine@ncards}=\vbox\bgroup
-    \hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax
-    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip   % card lines sit close, as the pptx's (grid.py CARD_GAP); HTML uses reveal's block margin
+  \engine@cellbox{\engine@ncards}{\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax}%
     \engine@incardtrue\ifengine@cardsolid\engine@solidcardtrue\else\engine@solidcardfalse\fi
     \raggedright\usebeamerfont{normal text}%
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put
     % \parskip over the first paragraph, which an empty list does not get)
     \ifengine@cardsolid\setbeamercolor{normal text}{fg=BrandPrimaryText}%
       \def\engine@labelcolor{BrandPrimaryText}\def\engine@bigcolor{BrandPrimaryText}\fi}
-\def\endenginecard{\par\egroup
-  \ifdim\dimexpr\ht\engine@cardbox{\engine@ncards}+\dp\engine@cardbox{\engine@ncards}\relax>\engine@cardbody
-    \global\engine@cardbody=\dimexpr\ht\engine@cardbox{\engine@ncards}+\dp\engine@cardbox{\engine@ncards}\relax\fi}
+\def\endenginecard{\endengine@cellbox{\engine@ncards}{\engine@cardbody}}
 % the row: each card a tcolorbox, the gap between them; its height the tallest body and head
 \def\engine@drawcards{\hbox{\@tempcnta=\z@   % a box in the vertical list: no paragraph, no \parskip
   \loop\advance\@tempcnta\@ne
@@ -715,8 +725,8 @@
       {A row of steps or milestones holds at most six: split it over two slides (start=7 numbers the second's badges on).}%
   \fi
   \def\engine@railrole{}\def\engine@railstart{1}\pgfkeys{/engine/rail/.cd,#2}%
-  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@primary-contrast\endcsname}%
-  \else\engine@rolecolor{\engine@railrole}{primary-contrast}\fi
+  \ifx\engine@railrole\@empty\edef\engine@rolename{\csname engine@role@\engine@boxes@rail@role\endcsname}%
+  \else\engine@rolecolor{\engine@railrole}{\engine@boxes@rail@role}\fi
   \let\engine@railcolor\engine@rolename
   \global\engine@nrail=\z@ \global\engine@railbody=\z@ \global\engine@raildate=\z@}
 \newenvironment{enginesteps}[2][]{\engine@railbegin{steps}{#1}{#2}}{\engine@drawrail\par}
@@ -724,24 +734,15 @@
 % an item: its number, its width (its share of the line less the gaps) and its title, globally
 \def\engine@railitem#1{%
   \global\advance\engine@nrail\@ne
-  \ifnum\engine@nrail>\engine@rail@n\relax
-    \PackageError{Engine}{engine\engine@railkind{\engine@rail@n}: item \the\engine@nrail\space has no share}%
-      {The row was opened for \engine@rail@n\space items: give \string\begin{engine\engine@railkind} the number of items.}%
-  \fi
-  \engine@railw=\dimexpr\csname engine@rail@share@\the\engine@nrail\endcsname
-    \dimexpr\linewidth-\engine@boxes@columns@gap\paperwidth*(\engine@rail@n-1)\relax\relax
+  \ifnum\engine@nrail>\engine@rail@n\relax\engine@noshare{engine\engine@railkind}{rail}{item}{\engine@nrail}\fi
+  \engine@railw=\engine@sharewidth{\csname engine@rail@share@\the\engine@nrail\endcsname}{\engine@rail@n}%
   \expandafter\xdef\csname engine@rail@w@\the\engine@nrail\endcsname{\the\engine@railw}%
   \expandafter\gdef\csname engine@rail@title@\the\engine@nrail\endcsname{#1}}
 \def\engine@railtitle#1{{\usebeamerfont{block title}\bfseries\strut#1\par}}
-% the item's text into its box (a card's: \engine@cardbox{k}), its lines close as a card's
-\def\engine@railbox{\edef\engine@outerparskip{\the\parskip}%
-  \global\setbox\engine@cardbox{\engine@nrail}=\vbox\bgroup
-    \hsize=\dimexpr\engine@railw-2\dimexpr\engine@boxes@rail@padx em\relax\relax
-    \textwidth=\hsize \linewidth=\hsize \columnwidth=\hsize \parskip=\engine@outerparskip\relax\parskip=.25\parskip
+% the item's text into its box (a card's: \engine@cellbox, \engine@cardbox{k}), less the rail's pads
+\def\engine@railbox{\engine@cellbox{\engine@nrail}{\dimexpr\engine@railw-2\dimexpr\engine@boxes@rail@padx em\relax\relax}%
     \raggedright\usebeamerfont{normal text}}
-\def\engine@railboxend{\par\egroup
-  \ifdim\dimexpr\ht\engine@cardbox{\engine@nrail}+\dp\engine@cardbox{\engine@nrail}\relax>\engine@railbody
-    \global\engine@railbody=\dimexpr\ht\engine@cardbox{\engine@nrail}+\dp\engine@cardbox{\engine@nrail}\relax\fi}
+\def\engine@railboxend{\endengine@cellbox{\engine@nrail}{\engine@railbody}}
 \newenvironment{enginestep}[1]{\engine@railitem{#1}\engine@railbox
   \def\engine@tmpa{#1}\ifx\engine@tmpa\@empty\else\engine@railtitle{#1}\fi}{\engine@railboxend}
 \newcommand\enginemilestone[3][]{\engine@railitem{#2}%
@@ -749,12 +750,13 @@
   \expandafter\xdef\csname engine@rail@done@\the\engine@nrail\endcsname{\ifengine@milestonedone 1\else 0\fi}%
   \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@railw-2\dimexpr\engine@boxes@rail@padx em\relax\relax
     \raggedright\engine@railtitle{#2}}%   the date row: the tallest date
-  \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\engine@raildate
-    \global\engine@raildate=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax\fi
+  \engine@tallest{\@tempboxa}{\engine@raildate}%
   \engine@railbox#3\engine@railboxend}
+% \engine@pt{<x>}{<y>}: a tikz point from two dimen expressions, in the rail's and the gallery's
+% pictures ([x=1pt,y=1pt], (0,0) the top left, y up)
+\def\engine@pt#1#2{(\the\dimexpr#1\relax,\the\dimexpr#2\relax)}
 % the row: one tikzpicture, (0,0) its top left, y up; the marks' row at -\engine@railtop (a
 % timeline's dates above it, a pad between), the cells under it
-\def\engine@railpt#1#2{(\the\dimexpr#1\relax,\the\dimexpr#2\relax)}
 \def\engine@drawrail{%
   \engine@railpx=\engine@boxes@rail@padx em\relax \engine@railpy=\engine@boxes@rail@pady em\relax
   \engine@railline=\engine@boxes@rail@line\paperheight
@@ -766,39 +768,39 @@
   \engine@railcell=\dimexpr\engine@railbody+2\engine@railpy\relax
   \def\engine@railmid{-\engine@railtop-.5\engine@railmark}%
   \hbox{\begin{tikzpicture}[x=1pt,y=1pt]
-    \useasboundingbox \engine@railpt{0pt}{0pt} rectangle
-      \engine@railpt{\linewidth}{-\engine@railtop-\engine@railmark-\engine@railcell};
+    \useasboundingbox \engine@pt{0pt}{0pt} rectangle
+      \engine@pt{\linewidth}{-\engine@railtop-\engine@railmark-\engine@railcell};
     \fill[EngineBoxesRailLineColor]
-      \engine@railpt{\engine@railpx+.5\engine@railmark}{\engine@railmid+.5\engine@railline}
-      rectangle \engine@railpt{\linewidth}{\engine@railmid-.5\engine@railline};
+      \engine@pt{\engine@railpx+.5\engine@railmark}{\engine@railmid+.5\engine@railline}
+      rectangle \engine@pt{\linewidth}{\engine@railmid-.5\engine@railline};
     \engine@railx=\z@ \engine@railk=\z@
     \loop\advance\engine@railk\@ne
       \engine@railw=\csname engine@rail@w@\the\engine@railk\endcsname\relax
       \ifcsname\string\color@EngineBoxesRailFill\endcsname
-        \fill[EngineBoxesRailFill] \engine@railpt{\engine@railx}{-\engine@railtop-\engine@railmark}
-          rectangle \engine@railpt{\engine@railx+\engine@railw}{-\engine@railtop-\engine@railmark-\engine@railcell};
+        \fill[EngineBoxesRailFill] \engine@pt{\engine@railx}{-\engine@railtop-\engine@railmark}
+          rectangle \engine@pt{\engine@railx+\engine@railw}{-\engine@railtop-\engine@railmark-\engine@railcell};
       \fi
       \ifx\engine@railkind\engine@railsteps
         \node[circle, fill=\engine@railcolor, text=BrandBackground, minimum size=\the\engine@railmark, inner sep=0pt,
           font=\usebeamerfont{block title}\bfseries]
-          at \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid} {\the\numexpr\engine@railk+\engine@railstart-1\relax};
+          at \engine@pt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid} {\the\numexpr\engine@railk+\engine@railstart-1\relax};
       \else
         \ifnum\csname engine@rail@done@\the\engine@railk\endcsname=\@ne
-          \fill[\engine@railcolor] \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
+          \fill[\engine@railcolor] \engine@pt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
             circle[radius=\the\dimexpr.5\engine@railmark\relax];
         \else
-          \fill[BrandBackground] \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
+          \fill[BrandBackground] \engine@pt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
             circle[radius=\the\dimexpr.5\engine@railmark\relax];
-          \draw[\engine@railcolor, line width=\the\dimexpr.2\engine@railmark\relax]
-            \engine@railpt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
-            circle[radius=\the\dimexpr.4\engine@railmark\relax];
+          \draw[\engine@railcolor, line width=\the\dimexpr\engine@boxes@rail@ring\engine@railmark\relax]
+            \engine@pt{\engine@railx+\engine@railpx+.5\engine@railmark}{\engine@railmid}
+            circle[radius=\the\dimexpr(\engine@railmark-\engine@boxes@rail@ring\engine@railmark)/2\relax];
         \fi
-        \node[anchor=south west, inner sep=0pt] at \engine@railpt{\engine@railx+\engine@railpx}{-\engine@raildate}
+        \node[anchor=south west, inner sep=0pt] at \engine@pt{\engine@railx+\engine@railpx}{-\engine@raildate}
           {\vbox{\hsize=\dimexpr\engine@railw-2\engine@railpx\relax\raggedright
             \engine@railtitle{\csname engine@rail@title@\the\engine@railk\endcsname}}};
       \fi
       \node[anchor=north west, inner sep=0pt]
-        at \engine@railpt{\engine@railx+\engine@railpx}{-\engine@railtop-\engine@railmark-\engine@railpy}
+        at \engine@pt{\engine@railx+\engine@railpx}{-\engine@railtop-\engine@railmark-\engine@railpy}
         {\box\engine@cardbox{\engine@railk}};
       \advance\engine@railx by \dimexpr\engine@railw+\engine@boxes@columns@gap\paperwidth\relax
     \ifnum\engine@railk<\engine@nrail\repeat
@@ -847,7 +849,7 @@
     \engine@galh=\engine@galheight\dimexpr\engine@geom@bodyheight\paperheight\relax
     \ifdim\engine@galh>\engine@bodyroom \engine@galh=\engine@bodyroom \fi
     \noindent\hbox{\begin{tikzpicture}[x=1pt,y=1pt]
-      \useasboundingbox \engine@railpt{0pt}{0pt} rectangle \engine@railpt{\linewidth}{-\engine@galh};
+      \useasboundingbox \engine@pt{0pt}{0pt} rectangle \engine@pt{\linewidth}{-\engine@galh};
       \engine@gallerycells{0pt}{0pt}{\linewidth}{\engine@galh}%
     \end{tikzpicture}}\par
   \fi}
@@ -873,7 +875,7 @@
   \fi
   \xdef\engine@galfitg{\engine@galfit}}
 % \engine@gallerycells{<x>}{<y>}{<w>}{<h>}: the stored images in that box (tikz commands; (x, y) its
-% top left, y up, \engine@railpt's points), the pads in em of the body type
+% top left, y up, \engine@pt's points), the pads in em of the body type
 \def\engine@gallerycells#1#2#3#4{%
   \begingroup\usebeamerfont{normal text}%
   \engine@galx=\dimexpr#1\relax \engine@galy=\dimexpr#2\relax \engine@galw=\dimexpr#3\relax \engine@galh=\dimexpr#4\relax
@@ -893,14 +895,14 @@
     \engine@galcx=\dimexpr\engine@galx+(\engine@galcw+\engine@galgap)*\engine@galcol\relax
     \engine@galcy=\dimexpr\engine@galy-(\engine@galch+\engine@galgap)*\engine@galrow\relax
     \ifcsname\string\color@EngineBoxesGalleryFill\endcsname
-      \fill[EngineBoxesGalleryFill] \engine@railpt{\engine@galcx}{\engine@galcy}
-        rectangle \engine@railpt{\engine@galcx+\engine@galcw}{\engine@galcy-\engine@galch};
+      \fill[EngineBoxesGalleryFill] \engine@pt{\engine@galcx}{\engine@galcy}
+        rectangle \engine@pt{\engine@galcx+\engine@galcw}{\engine@galcy-\engine@galch};
     \fi
     \expandafter\engine@galpicture\expandafter{\csname engine@gal@src@\the\engine@galk\endcsname}%
     \ifengine@galcap
       \node[anchor=north, inner sep=0pt, text width=\the\engine@galpw, align=center,
         font={\engine@fs{caption}\selectfont}, text=BrandMuted]
-        at \engine@railpt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-2\engine@galpy-\engine@galph}
+        at \engine@pt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-2\engine@galpy-\engine@galph}
         {\strut\csname engine@gal@cap@\the\engine@galk\endcsname};
     \fi
     \advance\engine@galcol\@ne
@@ -915,15 +917,15 @@
     \ifnum\fpeval{\strip@pt\dimen@ * \strip@pt\engine@galph > \strip@pt\dimen@ii * \strip@pt\engine@galpw}=\@ne
       \edef\engine@galopt{height=\the\engine@galph}\else\edef\engine@galopt{width=\the\engine@galpw}\fi
     \begin{scope}
-      \clip \engine@railpt{\engine@galcx+\engine@galpx}{\engine@galcy-\engine@galpy}
-        rectangle \engine@railpt{\engine@galcx+\engine@galpx+\engine@galpw}{\engine@galcy-\engine@galpy-\engine@galph};
+      \clip \engine@pt{\engine@galcx+\engine@galpx}{\engine@galcy-\engine@galpy}
+        rectangle \engine@pt{\engine@galcx+\engine@galpx+\engine@galpw}{\engine@galcy-\engine@galpy-\engine@galph};
       \node[anchor=center, inner sep=0pt]
-        at \engine@railpt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-\engine@galpy-.5\engine@galph}
+        at \engine@pt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-\engine@galpy-.5\engine@galph}
         {\expandafter\includegraphics\expandafter[\engine@galopt]{#1}};
     \end{scope}
   \else
     \node[anchor=center, inner sep=0pt]
-      at \engine@railpt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-\engine@galpy-.5\engine@galph}
+      at \engine@pt{\engine@galcx+\engine@galpx+.5\engine@galpw}{\engine@galcy-\engine@galpy-.5\engine@galph}
       {\includegraphics[width=\the\engine@galpw, height=\the\engine@galph, keepaspectratio]{#1}};
   \fi}
 

@@ -3,7 +3,7 @@ the pptx dividers' numbers (pptx_steps/section_subtitle.py).
 
     python3 -m pytest tests/test_section_subtitle.py
 
-The reader (under `pandoc lua` with a `quarto` shim, test_footnotes.py's harness) lists every `#`
+The reader (under `pandoc lua` with a `quarto` shim, conftest's lua_common) lists every `#`
 divider in order, a `.unnumbered` one without a number and outside the count, each with the
 paragraphs alone before the next slide as its subtitle (none when anything else follows them).
 pandoc's pptx writer drops `.unnumbered`, so grid-pptx.lua writes the dividers outside the count
@@ -25,9 +25,8 @@ import zipfile
 
 import pytest
 
-from conftest import ROOT, run
+from conftest import ENGINE, ROOT, lua_common, run
 
-ENGINE = ROOT / "_extensions" / "engine"
 LEVEL = ("--slide-level=2",)   # Quarto's; pandoc alone guesses 1 from a divider with a subtitle
 BODY = "# One\n\n## A\n\nx\n\n# Backup\n\nIts subtitle.\n\n## B\n\ny\n\n# Two\n\n## C\n\nz\n"
 STEP = """
@@ -44,8 +43,6 @@ with zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED) as z:
 
 
 READER = r"""
-quarto = { log = { warning = function(s) end } }
-local C = dofile(arg[1])
 local doc = pandoc.read(io.read("a"), "markdown")
 local out = {}
 for _, s in ipairs(C.sections(doc.blocks, 2)) do
@@ -57,23 +54,15 @@ io.write(pandoc.json.encode(out))
 
 
 def test_sections_read(tmp_path):
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not exe:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
-    script = tmp_path / "reader.lua"
-    script.write_text(READER)
     md = (BODY.replace("# Backup", "# Backup {.unnumbered}")
           + "\n# Not a subtitle\n\nA paragraph.\n\n- then a list\n\n## D\n\nw\n")
-    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua")], input=md, text=True,
-                       capture_output=True, check=True)
-    got = [(s["number"], s["title"], s["sub"], s["unnumbered"]) for s in json.loads(r.stdout)]
+    out, _ = lua_common(tmp_path, READER, md)
+    got = [(s["number"], s["title"], s["sub"], s["unnumbered"]) for s in json.loads(out)]
     assert got == [(1, "One", None, False), (None, "Backup", "Its subtitle.", True), (2, "Two", None, False),
                    (3, "Not a subtitle", None, False)]
 
 
 AGENDA_READER = r"""
-quarto = { log = { warning = function(s) end } }
-local C = dofile(arg[1])
 local doc = pandoc.read(io.read("a"), "markdown")
 local secs = C.sections(doc.blocks, 2)
 local out = {}
@@ -90,13 +79,9 @@ io.write(pandoc.json.encode(out))
 def test_agenda_rows(tmp_path):
     """agenda_rows(): the numbered sections only (the Backup left out), each with its subtitle; up
     front (0) all next; from section 2, 1 done, 2 current, 3 next."""
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    script = tmp_path / "agenda.lua"
-    script.write_text(AGENDA_READER)
     md = BODY.replace("# Backup", "# Backup {.unnumbered}") + "\n# Three\n\nIts own subtitle.\n\n## D\n\nw\n"
-    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua")], input=md, text=True,
-                       capture_output=True, check=True)
-    got = [(x["cur"], x["number"], x["title"], x["sub"], x["state"]) for x in json.loads(r.stdout)]
+    out, _ = lua_common(tmp_path, AGENDA_READER, md)
+    got = [(x["cur"], x["number"], x["title"], x["sub"], x["state"]) for x in json.loads(out)]
     assert got == [(0, 1, "One", None, "next"), (0, 2, "Two", None, "next"), (0, 3, "Three", "Its own subtitle.", "next"),
                    (2, 1, "One", None, "done"), (2, 2, "Two", None, "current"), (2, 3, "Three", "Its own subtitle.", "next")], got
 

@@ -10,6 +10,8 @@ as HTML's and beamer's do; a failed item's text is muted. Idempotent: a paragrap
 is already a status glyph is left alone. After grid (the cards' text boxes), before type_step.
 """
 
+from pathlib import Path
+
 from lxml import etree
 from pptx.oxml.ns import qn
 
@@ -60,10 +62,10 @@ def mark(p) -> bool:
     return True
 
 
-def run(prs, name: str) -> None:
+def run(prs, path: Path) -> None:
     n = 0
     for slide in prs.slides:
         for p in slide._element.iter(qn("a:p")):
             n += mark(p)
     if n:
-        print(f"status_glyphs: {n} status item(s) → {name}")
+        print(f"status_glyphs: {n} status item(s) → {path.name}")

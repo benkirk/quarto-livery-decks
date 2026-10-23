@@ -6,6 +6,8 @@ livery's box, over everything on the slide: no insets, the text centered on its 
 type role's size, its color and weight, a solid fill behind it when the livery names one. The
 template has no placeholder for it (pandoc fills none it does not know)."""
 
+from pathlib import Path
+
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Pt
@@ -19,7 +21,7 @@ MARKING = LIVERY.get("marking") or {}   # its colors hexes: livery_build.marking
 ALIGN = {"center": PP_ALIGN.CENTER, "left": PP_ALIGN.LEFT, "right": PP_ALIGN.RIGHT}
 
 
-def run(prs, name: str) -> None:
+def run(prs, path: Path) -> None:
     deck = docprops.prop(prs, "marking")
     text = None if deck == "none" else deck or MARKING.get("text")
     if not text or not MARKING.get("box"):
@@ -43,4 +45,4 @@ def run(prs, name: str) -> None:
         r.font.size = Pt(livery_mod.type_pt(LIVERY, "marking"))
         r.font.color.rgb = RGBColor.from_string(livery_mod.hex(LIVERY, MARKING.get("color", "muted")))
         r.font.bold = bool(MARKING.get("bold"))
-    print(f"marking: the marking strip on {len(prs.slides)} slide(s) → {name}")
+    print(f"marking: the marking strip on {len(prs.slides)} slide(s) → {path.name}")

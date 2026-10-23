@@ -10,7 +10,7 @@ default, cover, anything else warned of (contain); height= a share in (0, 1]. Re
 warning each, the div left alone: more than cols*rows, a paragraph, a plot under figure-*/, a link
 round an image, a gallery inside it, thirteen images, a cols= that is not a positive whole number, a
 height out of range. One inside a column is not drawn (top_galleries()), warned of. engine-common.lua
-runs under `pandoc lua` with a `quarto` shim (test_footnotes.py's harness).
+runs under `pandoc lua` with a `quarto` shim (conftest's lua_common).
 
 The pptx half: pandoc writes a deck with grid-pptx.lua (slide-layout.lua's notes lines by hand), the
 driver's slide_layout, columns and grid steps draw it under ncar, and the gallery is one group of
@@ -32,16 +32,13 @@ import zipfile
 
 import pytest
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT, flat, lua_common, pandoc_exe
 
-ENGINE = ROOT / "_extensions" / "engine"
 
 # gallery_items() on every gallery div of the markdown from stdin, as JSON lines: {cols, rows, fit,
-# height, captioned, items: [{src, caption, attrs}]} or {nil: true}; each warning a line "WARNING: ..."
+# height, captioned, items: [{src, caption, attrs}]} or {nil: true} (conftest's lua_common: the
+# quarto shim, C, the warnings)
 HARNESS = r"""
-local warnings = {}
-quarto = { log = { warning = function(s) table.insert(warnings, s) end }, json = { decode = pandoc.json.decode } }
-local C = dofile(arg[1])
 local doc = pandoc.read(io.read("a"), "markdown")
 if arg[2] == "latexfig" then   -- Quarto's PDF shape of ![Caption](path): a classless Div round raw \begin{figure}
   doc = doc:walk({ Figure = function(f)
@@ -62,10 +59,22 @@ if arg[2] == "bag" then   -- latex_file(): a media-bag item (an .svg's PDF, as Q
   io.write(C.latex_file("images/vec.pdf", arg[3]) .. "\n" .. C.latex_file("pics/my%20pic.jpg", arg[3]) .. "\n")
   return
 end
+if arg[2] == "composed" then   -- composed_kind() per slide heading, unwrap_galleries() on the slide after one
+  local i = 1
+  while i <= #doc.blocks do
+    local blk, slide = doc.blocks[i], nil
+    slide, i = C.slide_from(doc.blocks, i + 1, 2)
+    local where = C.composed_kind(blk, 2)
+    if where then slide = C.unwrap_galleries(slide, "t", where) end
+    local n = 0
+    for _, b in ipairs(slide) do if C.is_gallery(b) then n = n + 1 end end
+    io.write(pandoc.json.encode({ where = where or false, galleries = n, blocks = #slide }) .. "\n")
+  end
+  return
+end
 if arg[2] == "top" then   -- top_galleries(): each drawn gallery a paragraph naming it, the rest as it was
   local out = C.top_galleries(doc.blocks, "t", function(g) return { pandoc.Para("GALLERY " .. #g.items) } end)
   io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
-  for _, w in ipairs(warnings) do io.write("\nWARNING: " .. w) end
   return
 end
 doc.blocks:walk({ Div = function(d)
@@ -85,7 +94,6 @@ doc.blocks:walk({ Div = function(d)
   end
   io.write(pandoc.json.encode(out) .. "\n")
 end })
-for _, w in ipairs(warnings) do io.write("WARNING: " .. w .. "\n") end
 """
 
 
@@ -97,21 +105,10 @@ def gallery(n, attrs="", **kw):
     return f"::: {{.gallery{attrs}}}\n" + images(n, **kw) + ":::\n"
 
 
-def harness(tmp_path, md, *mode):
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not exe:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
-    script = tmp_path / "harness.lua"
-    script.write_text(HARNESS)
-    return subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua"), *mode],
-                          input=md, text=True, capture_output=True, check=True).stdout
-
-
 def read(tmp_path, md, *mode):
     """The harness's output on md: (the galleries, the warnings)."""
-    lines = harness(tmp_path, md, *mode).splitlines()
-    return ([json.loads(x) for x in lines if not x.startswith("WARNING: ")],
-            [x[len("WARNING: "):] for x in lines if x.startswith("WARNING: ")])
+    out, warnings = lua_common(tmp_path, HARNESS, md, *mode)
+    return [json.loads(x) for x in out.splitlines()], warnings
 
 
 @pytest.mark.parametrize("n, attrs, cols, rows", [
@@ -161,7 +158,7 @@ def test_latex_file(tmp_path):
     """The file a gallery's \\engineimage names: an .svg's PDF, which Quarto converts into pandoc's
     media bag (pandoc writes a bag item out only where an Image references it), written where pandoc
     would put it, <output>_files/mediabag/<src>; any other src percent-decoded to the file's name."""
-    bag, plain = harness(tmp_path, "", "bag", str(tmp_path / "deck.tex")).splitlines()
+    bag, plain = lua_common(tmp_path, HARNESS, "", "bag", str(tmp_path / "deck.tex"))[0].splitlines()
     assert bag == str(tmp_path / "deck_files" / "mediabag" / "images" / "vec.pdf"), bag
     assert (tmp_path / "deck_files" / "mediabag" / "images" / "vec.pdf").read_bytes() == b"%PDF-1.4 fake"
     assert plain == "pics/my pic.jpg"
@@ -192,11 +189,24 @@ def test_refused(tmp_path, md, why):
     assert out[-1].get("nil") and len(warnings) == 1 and why in warnings[0], (out, warnings)   # the outer last (bottom-up)
 
 
+def test_content_slides_only(tmp_path):
+    """A gallery is drawn on a content slide only (a .full slide's is its branch's): on a feature or
+    closing slide, after a divider or on an untitled slide it is warned of and unwrapped into its
+    paragraphs, so the pictures stay in every format (composed_kind(), unwrap_galleries())."""
+    md = ("# Part\n\n" + gallery(2) + "## Content\n\n" + gallery(2) + "## Full {.full}\n\n" + gallery(2)
+          + "## Photo {.feature}\n\n" + gallery(2) + "## Thanks {.closing}\n\nA line.\n\n" + gallery(2))
+    slides, warnings = read(tmp_path, md, "composed")
+    assert [(s["where"], s["galleries"], s["blocks"]) for s in slides] == [
+        ("divider", 0, 2), (False, 1, 1), (False, 1, 1), ("feature", 0, 2), ("closing", 0, 3)], slides
+    assert [w.split(": ", 1)[1] for w in warnings] == [f"a .gallery on a {k} slide is not drawn; left as its pictures"
+                                                        for k in ("divider", "feature", "closing")], warnings
+
+
 def test_top_level_only(tmp_path):
     """A gallery at the slide's top level is drawn; one in a column is warned of and left as its
     pictures."""
     md = gallery(3) + "\n:::: {.columns}\n::: {.column}\n" + gallery(2) + ":::\n::::\n"
-    text, *warnings = harness(tmp_path, md, "top").split("\nWARNING: ")
+    text, warnings = lua_common(tmp_path, HARNESS, md, "top")
     assert "GALLERY 3" in text and "GALLERY 2" not in text, text
     assert "g2.png" in text, "the nested gallery kept as its pictures"
     assert len(warnings) == 1 and ".gallery inside a column or another div is not drawn" in warnings[0], warnings
@@ -221,16 +231,14 @@ from pathlib import Path
 from pptx import Presentation
 from pptx_steps import columns, grid, slide_layout
 p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); columns.run(prs, p.name); grid.run(prs, p); prs.save(p)
+slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); prs.save(p)
 """   # the driver's order
 
 
 @pytest.fixture(scope="module")
 def pptx_deck(tmp_path_factory):
     from PIL import Image
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not pandoc:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
+    pandoc = pandoc_exe()
     assert shutil.which("rsvg-convert"), "rsvg-convert not found (conda-forge librsvg)"
     tmp = tmp_path_factory.mktemp("gallery")
     shutil.copy(ROOT / "decks" / "quickstart" / "images" / "example.jpg", tmp / "p.jpg")
@@ -246,13 +254,6 @@ def pptx_deck(tmp_path_factory):
     from pptx import Presentation
     livery = json.loads((d / "build" / "livery.json").read_text())
     return livery, Presentation(out), out, r.stderr
-
-
-def flat(shapes):
-    for sh in shapes:
-        yield sh
-        if sh.shape_type == 6:   # a group
-            yield from flat(sh.shapes)
 
 
 ORDER = {"Captioned": 0, "Cover": 1, "Half": 2, "Wide": 3, "Full": 4, "Missing": 5}

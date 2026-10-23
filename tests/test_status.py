@@ -13,33 +13,30 @@ LIVERY_DIR. Needs pandoc ($QUARTO_PANDOC).
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 import zipfile
 
 import pytest
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT, pandoc_exe
 
-ENGINE = ROOT / "_extensions" / "engine"
 NCAR = ROOT / "liveries" / "ncar"
 MD = ("## Status\n\n::: {.status}\n- [x] Done thing\n- [!] Risky thing\n- [-] Failed thing\n- [ ] Open thing\n:::\n\n"
       "## Plain\n\n- [x] A task outside\n- ✓ A literal glyph\n\n"
       "## ⚠︎ Careful\n\n✓ A paragraph, not an item\n")
 STEP = """
 import sys
+from pathlib import Path
 from pptx import Presentation
 from pptx_steps import status_glyphs
-prs = Presentation(sys.argv[1]); status_glyphs.run(prs, "t"); prs.save(sys.argv[1])
+prs = Presentation(sys.argv[1]); status_glyphs.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
 """
 
 
 @pytest.fixture(scope="module")
 def deck(tmp_path_factory):
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not pandoc:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
+    pandoc = pandoc_exe()
     out = tmp_path_factory.mktemp("status") / "t.pptx"
     subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(NCAR / "template.pptx"),
                     "-o", str(out)], input=MD, text=True, check=True, capture_output=True)

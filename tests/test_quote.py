@@ -8,7 +8,7 @@ source line a line; a last line starting with —, – or -- (pandoc's smart quo
 dash) the attribution, its dash and the space after it dropped. quote_blocks() finds a quote at any
 depth (a column, a card) but not in the speaker notes; inside a .lead or a .strip it is warned of
 and left as its lines. engine-common.lua runs under `pandoc lua` with a `quarto` shim
-(test_footnotes.py's harness). The face: cu copied with boxes.quote {family: TeX Gyre Heros Cn,
+(conftest's lua_common). The face: cu copied with boxes.quote {family: TeX Gyre Heros Cn,
 style: italic} carries it into livery.css and livery.sty; the pptx sets a quote's lines in it,
 italic, and its attribution in the body's face, upright; the PDF embeds the family's italic. A
 family the livery does not bundle fails the build with its path. Needs pandoc ($QUARTO_PANDOC); the
@@ -25,17 +25,12 @@ import zipfile
 
 import pytest
 
-from conftest import ROOT
-from test_boxes import tmp_livery
-
-ENGINE = ROOT / "_extensions" / "engine"
+from conftest import ENGINE, ROOT, lua_common, pandoc_exe
 
 # quote_blocks() over the markdown from stdin: each quote drawn as a JSON line {role, lines, who},
-# the rest of the document after them as markdown, each warning a line "WARNING: ..."
+# the rest of the document after them as markdown (conftest's lua_common: the quarto shim, C, the
+# warnings)
 HARNESS = r"""
-local warnings = {}
-quarto = { log = { warning = function(s) table.insert(warnings, s) end } }
-local C = dofile(arg[1])
 local livery = { roles = { accent = "#000000", secondary = "#111111" }, blends = { rule = "#222222" } }
 local doc = pandoc.read(io.read("a"), "markdown")
 local drawn = {}
@@ -48,21 +43,14 @@ local out = C.quote_blocks(doc.blocks, livery, "t", function(q)
 end)
 for _, d in ipairs(drawn) do io.write(d .. "\n") end
 io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
-for _, w in ipairs(warnings) do io.write("\nWARNING: " .. w) end
 """
 
 
 def read(tmp_path, md):
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not exe:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
-    script = tmp_path / "harness.lua"
-    script.write_text(HARNESS)
-    r = subprocess.run([exe, "lua", str(script), str(ENGINE / "engine-common.lua")], input=md, text=True,
-                       capture_output=True, check=True)
-    quotes = [json.loads(l) for l in r.stdout.splitlines() if l.startswith("{")]
-    rest = "\n".join(l for l in r.stdout.splitlines() if not l.startswith("{") and not l.startswith("WARNING:"))
-    return quotes, rest, [l for l in r.stdout.splitlines() if l.startswith("WARNING:")]
+    """The harness's output on md: (the quotes, the rest as markdown, the warnings)."""
+    out, warnings = lua_common(tmp_path, HARNESS, md)
+    quotes = [json.loads(l) for l in out.splitlines() if l.startswith("{")]
+    return quotes, "\n".join(l for l in out.splitlines() if not l.startswith("{")), warnings
 
 
 def test_div_and_blockquote(tmp_path):
@@ -104,7 +92,7 @@ FACE = "TeX Gyre Heros Cn"   # cu's headings family, bundled
 
 
 @pytest.fixture(scope="module")
-def faced(tmp_path_factory):
+def faced(tmp_path_factory, tmp_livery):
     tmp = tmp_path_factory.mktemp("face")
     rc, err, j = tmp_livery(tmp, f"  quote: {{family: {FACE}, style: italic}}\n", "cu")
     assert rc == 0, err
@@ -121,7 +109,7 @@ def test_face_in_every_file(faced):
     assert f'@font-face {{ font-family: "{FACE}"; font-style: italic;' in css, "the family's faces declared"
 
 
-def test_unbundled_family_refused(tmp_path):
+def test_unbundled_family_refused(tmp_path, tmp_livery):
     rc, err, _ = tmp_livery(tmp_path, "  quote: {family: Nonesuch Serif}\n")
     assert rc != 0 and "boxes.quote.family: 'Nonesuch Serif' is not a typography.fonts family with files" in err, err
 
@@ -130,7 +118,7 @@ def test_face_in_pptx(faced, tmp_path):
     """A quote's lines in the family (no pptx.quote-typeface: its own name), italic; the attribution
     in the body's face (no typeface of its own), upright."""
     _, d, _ = faced
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "q.pptx"
     md = '## Quote\n\n::: {.quote}\nThe purpose of computing\n— R. Hamming\n:::\n'
     subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(ROOT / "liveries" / "cu" / "template.pptx"),

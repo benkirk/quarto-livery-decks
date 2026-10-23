@@ -48,12 +48,11 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
-from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, fit_picture, fit_table, is_body, is_picture, is_table, pads,
-                     para_text, ppr_place, rect, rpr, take_marker)
+from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
+                     pads, para_text, ppr_place, rect, rpr, slide_title, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
-CELL_PAD  = Pt(7.2)       # a cell's default top + bottom margins (0.05 in each)
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
 FULL_FLOOR = LIVERY["geometry"]["full"]["footline"]  # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
@@ -61,8 +60,8 @@ CAP_SIZE   = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the themes' caption s
 CAP_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 NOTE_GAP   = Pt(6 * K)    # note: between the picture or table and the note under it
 REF_PT     = livery_mod.type_pt(LIVERY, "footnote")   # references: the list in the footnote size,
-REF_HANG   = 1.5          # a hanging indent of 1.5 em of it, 0.4 em above each entry (HTML, PDF)
-REF_BEFORE = 0.4
+REF_HANG   = BOXES["references"]["hang"]   # hung and spaced by boxes.references (em of it), as HTML and PDF
+REF_BEFORE = BOXES["references"]["gap"]
 CAUTION_FILL = RGBColor.from_string(livery_mod.blend(LIVERY, "caution-fill"))  # warning at 18% on white
 # the warning role, not the accent5 slot: the ncar template's accent5 (FDD509) is not brand yellow
 CAUTION_BAR  = livery_mod.color(LIVERY, "warning")
@@ -83,10 +82,11 @@ def _scale_paragraphs(paragraphs, scale, size_at):
             r.set("sz", str(round(livery_mod.half_pt(sz * scale / 100) * 100)))   # to the half point
 
 
-def _table_height(table, other, biggest, pad=CELL_PAD):
+def _table_height(table, other, biggest, pad=2 * style_tables.CELL_MAR):
     """A table's height: each row as tall as its cell of most lines, measured in the livery's base
-    face in its column's width (less the cell's margins), at the table's biggest size, plus pad
-    (the cell's top and bottom margins) a row."""
+    face in its column's width (less the cell's margins), at the table's biggest size, plus pad a
+    row: the cell's top and bottom margins as style_tables sets them (it runs after this step, so
+    the cells still carry PowerPoint's defaults here)."""
     widths = [col.width for col in table.columns]
     total = 0
     for row in table.rows:
@@ -111,9 +111,8 @@ def _biggest(table, other):
 def caution_box(slide, shape, vcenter):
     """The body text box on the soft yellow field, a brand-yellow bar at its left, cut down to
     about its text (pandoc gives it the whole content area); 10% slack keeps autofit idle."""
-    tf = shape.text_frame
     vpad, hpad = pads("caution")
-    tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+    inset(shape.text_frame, vpad, hpad)
     left, top, width, height = shape.left, shape.top, shape.width, shape.height
     est = int(text_height(shape, slide) * SLACK)
     if est < height:
@@ -150,7 +149,7 @@ def lay_out(slide, words, width):
                 _scale_paragraphs(shape.text_frame.paragraphs, scale,
                                   lambda lvl, s=shape: inherited(s, slide, lvl))
             if vcenter:
-                shape.text_frame._txBody.find(qn("a:bodyPr")).set("anchor", "ctr")
+                shape.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         elif is_table(shape):
             other = other_size(slide)
             rows = list(shape.table.rows)
@@ -224,7 +223,7 @@ def note_style(slide):
 def references_style(slide):
     """references: each body paragraph (a citeproc entry) in the footnote size, hanging by REF_HANG
     em, REF_BEFORE em above it. Before lay_out, whose scale= then sizes it with the rest."""
-    hang = round(REF_HANG * REF_PT * 12700)
+    hang = em(REF_HANG, REF_PT)
     for shape in [sh for sh in slide.shapes if is_body(sh)]:
         for p in shape.text_frame.paragraphs:
             ppr = p._p.get_or_add_pPr()
@@ -250,8 +249,7 @@ def note_place(slide):
     est = int(text_height(caption, slide) * SLACK)   # the slack keeps autofit idle, as caution_box
     if is_table(fig):
         other = other_size(slide)
-        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other),
-                                         2 * style_tables.CELL_MAR)
+        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other))
     else:
         bottom = fig.top + fig.height
         room = floor - est - NOTE_GAP
@@ -623,9 +621,8 @@ def draw_feature(slide, width, height, photo):
         px, py, pw, ph = c["panel"]["box"]
         for shape in body:
             _frame(shape, px, py, pw, ph, width, height)
-            tf = shape.text_frame
             vpad, hpad = pads("panel")
-            tf.margin_top = tf.margin_bottom = vpad; tf.margin_left = tf.margin_right = hpad
+            inset(shape.text_frame, vpad, hpad)
             est = min(int(text_height(shape, slide) * SLACK), int(ph * height))
             panel = _rect(slide, [px, py, pw, est / height], width, height, livery_mod.hex(LIVERY, c["panel"]["role"]), c["panel"]["opacity"], "Feature panel")
             tree = slide.shapes._spTree
@@ -635,10 +632,10 @@ def draw_feature(slide, width, height, photo):
     else:
         draw_cover(slide, width, height, photo, c)
         if c["column"]["tab"]:
-            _rect(slide, [0, y, GEOM["tab-width"], 0.16], width, height, livery_mod.scheme(LIVERY, "accent4"), name="Title tab")
+            _rect(slide, [0, y, GEOM["tab-width"], 0.16], width, height, livery_mod.hex(LIVERY, "accent"), name="Title tab")
         if c["column"]["rule"]:
             _rect(slide, [x, y + 0.185, c["column"]["rule"][0], c["column"]["rule"][1]], width, height,
-                  livery_mod.scheme(LIVERY, "accent1"), name="Title rule")
+                  livery_mod.hex(LIVERY, "secondary"), name="Title rule")
         if title is not None:
             _frame(title, x, y, w, 0.16, width, height)
             title.text_frame.vertical_anchor = MSO_ANCHOR.TOP
@@ -664,8 +661,8 @@ def add_slide_number(slide):
     return False
 
 
-def run(prs, pptx: Path) -> None:
-    """The open deck, changed in place; pptx its path (a titlegraphic: is relative to its directory)."""
+def run(prs, path: Path) -> None:
+    """The open deck, changed in place; path the pptx's (a titlegraphic: is relative to its directory)."""
     w, h = prs.slide_width, prs.slide_height
     done = 0
     light = docprops.prop(prs, "engine-title") == "light"
@@ -675,7 +672,7 @@ def run(prs, pptx: Path) -> None:
     if light and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":
         if not use_layout(prs, prs.slides[0], "Title Slide (light)"):
             print("slide_layout: WARNING: title=light, but the template has no Title Slide (light)", file=sys.stderr)
-    graphic = _title_graphic(prs, pptx.parent)
+    graphic = _title_graphic(prs, path.parent)
     default = LIVERY.get("art", {}).get("titlegraphic")
     if graphic is None and default and not BAND:   # the band's layout carries the default itself
         graphic = Path(LIVERY["dir"]) / default
@@ -713,10 +710,8 @@ def run(prs, pptx: Path) -> None:
             if has_gallery(slide):   # grid.py fills the slide with the gallery and its caption
                 hide_furniture(slide)
             elif not full_slide(slide, w, h):
-                title = slide.shapes.title
                 print("slide_layout: WARNING: {.full} slide %r needs one picture and at most a "
-                      "caption; left as it is" % (title.text_frame.text if title else ""),
-                      file=sys.stderr)
+                      "caption; left as it is" % slide_title(slide), file=sys.stderr)
         else:
             note = "note" in words and note_style(slide)
             if "references" in words:
@@ -730,4 +725,4 @@ def run(prs, pptx: Path) -> None:
     if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
         cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
         cover_byline(prs, prs.slides[0], COMP[cover], w, h)
-    print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {pptx.name}")
+    print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {path.name}")

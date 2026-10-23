@@ -11,7 +11,6 @@ premise is checked without the filter, and when pandoc writes the third, the fla
 for three columns is gone. Needs pandoc ($QUARTO_PANDOC).
 """
 
-import os
 import re
 import shutil
 import subprocess
@@ -19,9 +18,9 @@ import zipfile
 
 import pytest
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT, pandoc_exe
 
-FILTER = ROOT / "_extensions" / "engine" / "grid-pptx.lua"
+FILTER = ENGINE / "grid-pptx.lua"
 COL = "::: {{.column{}}}\n{}\n:::\n"
 NOTES = "::: notes\nengine-layout: wide\n:::\n"   # slide-layout.lua's line, as it writes it
 LEAD = "## Lead\n\n::: {.lead}\n**Head**\nline\n:::\n\n"
@@ -33,9 +32,7 @@ MD = ("## Three\n\n:::: {.columns}\n" + "".join(COL.format("", w) for w in ("AAA
 
 @pytest.fixture(scope="module")
 def rendered(tmp_path_factory):
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not pandoc:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
+    pandoc = pandoc_exe()
     tmp = tmp_path_factory.mktemp("cols")
     shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp / "p.png")
 
@@ -105,7 +102,7 @@ def test_card_marked(pandoc_deck, tmp_path):
     paragraph (no heading: pandoc would add spcBef), its sub, label and big lines theirs."""
     md = ('## Cards\n\n:::: {.columns}\n::: {.column .card .pick role="secondary"}\n### OPTION 1\n'
           '[The sub]{.sub}\n\n[LABEL]{.label}\n[$20M]{.big}\n:::\n::: {.column}\nPlain\n:::\n::::\n')
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "c.pptx"
     subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
     with zipfile.ZipFile(out) as z:
@@ -123,7 +120,7 @@ def test_rail_marked(tmp_path):
     md = ('## Steps\n\n::: {.steps role="secondary"}\n1. **Propose** A case.\n2. **Pilot** Six weeks.\n:::\n\n'
           '## Timeline\n\n::: {.timeline}\n- [x] **Q1** Accepted\n- **2026** Full\n:::\n\n'
           '## Later\n\n::: {.steps}\n4. **Review** r\n:::\n')
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "r.pptx"
     subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
     with zipfile.ZipFile(out) as z:
@@ -141,7 +138,7 @@ def test_unnumbered_in_the_metadata(tmp_path):
     """pandoc's pptx writer drops `.unnumbered`: the filter writes the dividers outside the count,
     by their places among the dividers, as `engine-unnumbered` (docProps/custom.xml), for
     section_subtitle.py; a deck without one has no such property."""
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
 
     def custom(md):
         out = tmp_path / "u.pptx"
@@ -162,7 +159,7 @@ def test_quote_marked(tmp_path):
     and a quote on its own is marked too."""
     md = ('## Quote\n\n::: {.quote role="accent"}\nOne line\nanother\n— Who, 1962\n:::\n\n'
           '## Column\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\n> Right\n> -- Them\n:::\n::::\n')
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "q.pptx"
     subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True, capture_output=True)
     with zipfile.ZipFile(out) as z:
@@ -179,7 +176,7 @@ def test_agenda_marked(tmp_path):
     subtitle led by their prefixes; the unnumbered Backup absent; a body of its own dropped."""
     md = ("## Agenda {.agenda}\n\nAn author's line.\n\n# One\n\nIts subtitle.\n\n## a\n\nx\n\n"
           "# Two\n\n## Where we are {.agenda}\n\n# Backup {.unnumbered}\n\n## b\n\ny\n")
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "a.pptx"
     r = subprocess.run([pandoc, "--slide-level=2", "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True,
                        check=True, capture_output=True)
@@ -201,7 +198,7 @@ def test_quote_beside_a_picture(tmp_path):
     column cannot hold the picture): no marker, the quote pandoc's own blockquote, and a warning."""
     shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / "p.png")
     md = "## Beside\n\n:::: {.columns}\n" + COL.format("", "> Quoted\n> -- Them") + COL.format("", "![](p.png)") + "::::\n"
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "b.pptx"
     r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True,
                        capture_output=True, cwd=tmp_path)
@@ -220,8 +217,9 @@ def test_gallery_marked(tmp_path):
         shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / name)
     md = ('## Gallery\n\n::: {.gallery cols=2 height=0.6}\n![The cover](g1.png)\n\n![](<g 2=x.png>)\n:::\n\n'
           '## Full\n\n::: {.gallery fit=cover}\n![](g1.png)\n:::\n\nThe caption.\n\n::: notes\nengine-layout: full\n:::\n\n'
-          '## Refused\n\n::: {.gallery cols=1 rows=1}\n![](g1.png)\n\n![](g1.png)\n:::\n')
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+          '## Refused\n\n::: {.gallery cols=1 rows=1}\n![](g1.png)\n\n![](g1.png)\n:::\n\n'
+          '## Thanks\n\n::: {.gallery}\n![](g1.png)\n:::\n\n::: notes\nengine-layout: closing\n:::\n')
+    pandoc = pandoc_exe()
     out = tmp_path / "g.pptx"
     r = subprocess.run([pandoc, "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, check=True,
                        capture_output=True, cwd=tmp_path)
@@ -234,6 +232,10 @@ def test_gallery_marked(tmp_path):
     assert "<p:pic>" not in slides[0] and "<p:pic>" not in slides[1], "the files are gallery.py's to read, not pandoc's"
     assert paras[1][1:4] == ["⟦engine:gallery cols=1 rows=1 fit=cover full⟧", "⟦engine:item src=g1.png⟧", "⟦engine:end⟧"], paras[1]
     assert "The caption." in paras[1], "the slide caption after the gallery, for grid.py"
-    refused = slides[next(k for k, x in enumerate(slides) if "Refused" in x):]   # it and pandoc's continuations
+    first = next(k for k, x in enumerate(slides) if "Refused" in x)
+    closing = next(k for k, x in enumerate(slides) if "Thanks" in x)
+    refused = slides[first:closing]   # it and pandoc's continuations
     assert "⟦engine:" not in "".join(refused) and "".join(refused).count("<p:pic>") == 2, "a refused gallery: pandoc's pictures"
     assert 'grid-pptx.lua: slide "Refused": a .gallery of 2 images does not fit cols=1 rows=1' in r.stderr, r.stderr
+    assert "⟦engine:" not in slides[closing] and "<p:pic>" in slides[closing], "a closing slide's gallery: pandoc's picture"
+    assert 'grid-pptx.lua: slide "Thanks": a .gallery on a closing slide is not drawn; left as its pictures' in r.stderr, r.stderr

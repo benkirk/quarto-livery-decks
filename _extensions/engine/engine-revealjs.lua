@@ -80,9 +80,10 @@ end
 
 local W, H = 1600, 900
 
--- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step, the
--- livery, the slide breaks and kinds, the layout classes, the footnotes, a .full slide's parts,
--- the theme options, the cards' and strips' reading.
+-- Shared with the other format's filter (engine-common.lua): the readers of every element (cards,
+-- strips, status lists, rails, quotes, galleries, the agenda, footnotes and citations, sections),
+-- the slide walk, breaks and kinds, the layout classes, the deck's type step, the theme options,
+-- the livery. This filter draws what they read.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
 local has_class, deck_type_scale = C.has_class, C.deck_type_scale
 local footnote_marker, strip_marker, is_note = C.footnote_marker, C.strip_marker, C.is_note
@@ -129,8 +130,7 @@ end
 local slide_level = 2
 
 local function html(s) return pandoc.RawBlock("html", s) end
-
-local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
+local function html_inline(s) return pandoc.RawInline("html", s) end
 
 -- Slide footnotes: a paragraph that starts with † (or ‡) is an aside.  Every
 -- one on a content slide, columns included, moves to the slide's foot, in order, under
@@ -143,7 +143,7 @@ local function dagger(p)
   return pandoc.Para(inl)
 end
 
--- Per-slide layout controls (C.take_layout, C.LAYOUT_CLASSES).  The body is wrapped in a Div here,
+-- Per-slide layout controls (C.take_layout).  The body is wrapped in a Div here,
 -- before the footnote hoist (which reaches into it), and becomes raw tags afterwards
 -- (unwrap_layout), since pandoc turns a Div that starts with a heading into a
 -- <section>.  The classes go on the slide; the script and the scss act on them.
@@ -162,12 +162,9 @@ local function wrap_layout(blocks)
       if lay.caution then blk.classes:insert("engine-caution") end
       if lay.wide then blk.classes:insert("engine-wide") end
       if lay.scale then blk.attributes["data-engine-scale"] = lay.scale end
-      local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local body, notes = C.split_notes(slide)
       out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-body" })))
       out:extend(notes)
     end
@@ -331,19 +328,18 @@ end
 -- when any image has a caption, a <figcaption> in every one (&nbsp; for none: the row's pictures and
 -- captions line up); the fit and a height= share as custom properties
 local function gallery_html(g)
-  local raw = function(t) return pandoc.RawInline("html", t) end
   local style = string.format("--engine-gallery-cols: %d; --engine-gallery-rows: %d; --engine-gallery-fit: %s",
     g.cols, g.rows, g.fit) .. (g.height and string.format("; --engine-gallery-height: %s", g.height) or "")
   local out = pandoc.Blocks({ html(string.format('<div class="engine-gallery%s" style="%s">',
     g.height and " engine-gallery-sized" or "", style)) })
   for _, it in ipairs(g.items) do
-    local il = pandoc.Inlines({ raw('<figure class="engine-gallery-item">'), it.image })
+    local il = pandoc.Inlines({ html_inline('<figure class="engine-gallery-item">'), it.image })
     if g.captioned then
-      il:insert(raw("<figcaption>"))
-      if it.caption then il:extend(it.caption) else il:insert(raw("&nbsp;")) end
-      il:insert(raw("</figcaption>"))
+      il:insert(html_inline("<figcaption>"))
+      if it.caption then il:extend(it.caption) else il:insert(html_inline("&nbsp;")) end
+      il:insert(html_inline("</figcaption>"))
     end
-    il:insert(raw("</figure>"))
+    il:insert(html_inline("</figure>"))
     out:insert(pandoc.Plain(il))
   end
   out:insert(html("</div>"))
@@ -361,21 +357,20 @@ local function galleries(blocks)
   while i <= #blocks do
     local blk = blocks[i]
     out:insert(blk)
-    i = i + 1
+    local slide, drawn
+    slide, i = C.slide_from(blocks, i + 1, slide_level)
     if C.content_heading(blk, slide_level) then
-      local slide, drawn = pandoc.Blocks({}), false
-      while i <= #blocks and not is_slide_break(blocks[i]) do slide:insert(blocks[i]); i = i + 1 end
       slide = C.top_galleries(slide, "engine-revealjs", function(g) drawn = true; return gallery_html(g) end)
       if drawn then   -- the body (less notes) in the wrapper, the notes after it
-        local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-        for _, b in ipairs(slide) do
-          if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        end
+        local body, notes = C.split_notes(slide)
         out:insert(pandoc.Div(body, pandoc.Attr("", { "engine-gallery-body" })))
         out:extend(notes)
       else
         out:extend(slide)   -- as it was, in its order
       end
+    else
+      local where = C.composed_kind(blk, slide_level)   -- nil for a .full slide: its branch draws the gallery
+      out:extend(where and C.unwrap_galleries(slide, "engine-revealjs", where) or slide)
     end
   end
   return out
@@ -435,17 +430,11 @@ local function hoist_footnotes(blocks)
     out:insert(blk)
     i = i + 1
     if C.content_heading(blk, slide_level) then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local kept, notes = C.take_footnotes(slide)
       if #notes > 0 then
-        local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
-        for _, b in ipairs(kept) do
-          if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
-        end
+        local body, tail = C.split_notes(kept)
         out:extend(body)
         out:insert(html('<div class="engine-footnotes">'))
         for _, p in ipairs(notes) do out:insert(dagger(p)) end
@@ -674,9 +663,7 @@ local function title_slide_attributes(meta, kv)
 end
 
 function Pandoc(doc)
-  if PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level then
-    slide_level = PANDOC_WRITER_OPTIONS.slide_level
-  end
+  slide_level = C.slide_level()
   local meta = doc.meta
   local opts = C.theme_options(meta)
 
@@ -688,13 +675,12 @@ function Pandoc(doc)
     WAVES, SHIFT = livery.art.waves.lines, livery.art.waves.shift
   end
   local r = livery.roles
-  local c = { primary = r.primary, primary_text = r["primary-text"], secondary = r.secondary,
-              surface = r.surface, dark = r.dark }
+  local c = { surface = r.surface, dark = r.dark }
   local comps = livery.compositions
   local band = livery.title and livery.title.style == "band"
   local light = (opts.title == "light")
   if band and light then
-    quarto.log.warning("engine-revealjs: themeoptions title=light is ignored under the livery's band title")
+    C.warn("engine-revealjs: themeoptions title=light is ignored under the livery's band title")
     light = false
   end
   -- a composition's field: the slide's background color, and .engine-field unless it is the page
@@ -802,12 +788,9 @@ function Pandoc(doc)
       local fart = comp_art(comps.feature, r, fimg and photo_img(fimg))
       if fart ~= "" then out:insert(html(fart)) end
       i = i + 1
-      local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local body, notes = C.split_notes(slide)
       -- raw tags, not a Div: pandoc turns a Div that starts with a heading
       -- into a <section>, which reveal would count as a slide of its own
       if #body > 0 then
@@ -818,11 +801,8 @@ function Pandoc(doc)
       out:extend(notes)
     elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "full") then
       i = i + 1
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local fig, caption, rest = C.split_full(slide)
       local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-revealjs")
       if fig and C.is_gallery(fig) and not gallery then fig = nil end   -- refused, warned of: an ordinary slide
@@ -840,7 +820,7 @@ function Pandoc(doc)
         end
         out:extend(rest)
       else
-        quarto.log.warning("engine-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
+        C.warn("engine-revealjs: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
           .. "\" needs one figure or a gallery, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
@@ -855,20 +835,19 @@ function Pandoc(doc)
       out:insert(blk)
       if content_art then out:insert(html(content_art)) end
       i = i + 1
-      local body = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+      local body
+      body, i = C.slide_from(blocks, i, slide_level)
       local notes = C.agenda_notes(body, "engine-revealjs", pandoc.utils.stringify(blk.content))
       out:insert(html('<ol class="engine-agenda">'))
       for _, row in ipairs(C.agenda_rows(secs, section)) do
-        local raw = function(t) return pandoc.RawInline("html", t) end
-        local il = pandoc.Inlines({ raw(string.format('<li data-engine-state="%s"><span class="engine-agenda-number">%d</span>'
+        local il = pandoc.Inlines({ html_inline(string.format('<li data-engine-state="%s"><span class="engine-agenda-number">%d</span>'
           .. '<span class="engine-agenda-text"><span class="engine-agenda-title">', row.state, row.number)) })
         il:extend(row.title)
-        il:insert(raw("</span>"))
+        il:insert(html_inline("</span>"))
         if row.sub then
-          il:insert(raw('<span class="engine-agenda-sub">')); il:extend(row.sub); il:insert(raw("</span>"))
+          il:insert(html_inline('<span class="engine-agenda-sub">')); il:extend(row.sub); il:insert(html_inline("</span>"))
         end
-        il:insert(raw("</span></li>"))
+        il:insert(html_inline("</span></li>"))
         out:insert(pandoc.Plain(il))
       end
       out:insert(html("</ol>"))

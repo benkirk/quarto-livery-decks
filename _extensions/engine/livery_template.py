@@ -176,7 +176,7 @@ class Builder:
         title_w = 1 - 2 * m - (logo_w + 0.025 + inset - m if corner != "none" else 0)
         # the ladder: the livery's five list levels (type.levels), the first the body
         sizes = self.levels
-        ind, tabsz, ins = (round(v * self.k) for v in (228600, 457200, 45720))   # 0.25, 0.5, 0.05 in on 7.5 in
+        ind, tabsz, ins = (round(v * self.k) for v in (livery_mod.BODY_INDENT_PT * 12700, 457200, 45720))   # 18 pt, 0.5 and 0.05 in on 7.5 in
         bullets = [("Arial", "•"), ("Wingdings", "§"), ("Courier New", "o"), ("Arial", "–"), ("Arial", "»")]
         bu, buclr = self.L.get("bullets"), ""
         if bu:   # the livery's glyphs (bullets:), the last repeating, in the pptx typeface and their color

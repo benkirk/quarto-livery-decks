@@ -1,5 +1,7 @@
 # Sprint handoff: LaTeX authors first-class
 
+**State (2026-10-22):** landed as #129, squash `cedc348`, released as 26.10.8 (#130). Departures: the review's three fixes (a16a9de, b48f1ff, 5ce634d); `tests/parity.sh` folds the plots' SVG `<dc:date>` stamp; the cookbook's 4:3 variant sets no overfull line and CI's ratchet covers every `sample*.log`.
+
 **For a fresh session.** One PR against `main` (branch `latex/first-class` from `origin/main` at
 `f54d050`, the 26.10.7 release), a commit per item in the order below, squash-merged once, no
 version bump (the release is its own small PR after; ask before any tag). Start by reading

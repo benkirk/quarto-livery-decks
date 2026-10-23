@@ -5,22 +5,17 @@
 -- recolored, not the diagram source. HTML draws mermaid live in the livery's roles and inlines
 -- graphviz as SVG (the engine's livery.css turns that one); a light livery is left alone.
 
-local livery
-local DIR   -- `livery:` in the metadata (an engine format's filter sets the one it resolved)
+local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "engine-common.lua" }))   -- beside this filter
+local EXTDIR = pandoc.path.directory(PANDOC_SCRIPT_FILE)
 
--- the livery: DIR, else $LIVERY_DIR, else a _livery link; false unless it is dark
+local livery
+local META   -- the document's metadata: `livery:` (an engine format's filter sets the one it resolved)
+
+-- the livery (C.load_livery), or false: a light one, or none (a deck outside the engine's formats)
 local function load_livery()
   if livery ~= nil then return livery end
-  livery = false
-  for _, dir in ipairs({ DIR, os.getenv("LIVERY_DIR"), "_livery" }) do
-    local f = dir and io.open(dir .. "/build/livery.json", "r")
-    if f then
-      local ok, data = pcall(pandoc.json.decode, f:read("a"))
-      f:close()
-      if ok and type(data) == "table" and data.mode == "dark" then livery = data end
-      break
-    end
-  end
+  local ok, data = pcall(C.load_livery, META or {}, EXTDIR, "diagram-dark.lua")
+  livery = ok and type(data) == "table" and data.mode == "dark" and data or false
   return livery
 end
 
@@ -77,6 +72,6 @@ local function Header(el)
 end
 
 return {
-  { Meta = function(meta) DIR = meta.livery and pandoc.utils.stringify(meta.livery) end },
+  { Meta = function(meta) META = meta end },
   { Image = Image, RawInline = raw, RawBlock = raw, Header = Header },
 }

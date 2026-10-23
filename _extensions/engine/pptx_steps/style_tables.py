@@ -10,21 +10,23 @@ row filled with the table-band blend; columns left alone when pandoc took widths
 source, else re-split in proportion to each column's longest cell, each 10-60% wide.
 Run after slide_layout has scaled the runs (pptx_post.py). Idempotent."""
 
+from pathlib import Path
+
 from lxml import etree
 from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .common import LIVERY, is_table, rpr
-from .measure import PX   # EMU per revealjs px (1600 px wide)
+from .common import LIVERY, em, is_table, rpr
+from .measure import PX, other_size   # EMU per revealjs px (1600 px wide)
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
-HEAD_RULE   = (3 * PX, livery_mod.scheme(LIVERY, "dk2"))        # 3px solid var(--engine-primary)
+HEAD_RULE   = (3 * PX, livery_mod.hex(LIVERY, "primary"))       # 3px solid var(--engine-primary)
 ROW_RULE    = (1 * PX, livery_mod.blend(LIVERY, "table-rule"))  # mix(foreground, surface, 20%)
 BAND_FILL   = livery_mod.blend(LIVERY, "table-band")            # surface at 60% on white
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = 0.04                     # letter-spacing: 0.04em
-CELL_MAR    = round(0.4 * livery_mod.type_pt(LIVERY, "table") * 12700)   # EMU: HTML's 0.3em padding, its line height
+CELL_MAR    = em(0.4, livery_mod.type_pt(LIVERY, "table"))   # EMU: HTML's 0.3em padding, its line height
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
 
 
@@ -113,15 +115,13 @@ def style_table(tbl, base):
     _rebalance(tbl)
 
 
-def run(prs, name: str) -> None:
-    """The open deck, changed in place; name for the message."""
+def run(prs, path: Path) -> None:
+    """The open deck, changed in place; path for the message."""
     styled = 0
     for slide in prs.slides:
-        master = slide.slide_layout.slide_master._element
-        other = master.find(".//" + qn("p:otherStyle") + "/" + qn("a:lvl1pPr") + "/" + qn("a:defRPr"))
-        base = int(other.get("sz")) if other is not None and other.get("sz") else 1800
+        base = other_size(slide)
         for shape in slide.shapes:
             if is_table(shape):
                 style_table(shape.table._tbl, base)
                 styled += 1
-    print(f"style_tables: styled {styled} table(s) → {name}")
+    print(f"style_tables: styled {styled} table(s) → {path.name}")

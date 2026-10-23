@@ -71,9 +71,10 @@ end
 
 local slide_level = 2
 
--- Shared with the other format's filter (engine-common.lua): has_class, the deck's type step, the
--- livery, the slide breaks and kinds, the layout classes, the footnotes, a .full slide's parts,
--- the theme options, the cards' and strips' reading.
+-- Shared with the other format's filter (engine-common.lua): the readers of every element (cards,
+-- strips, status lists, rails, quotes, galleries, the agenda, footnotes and citations, sections),
+-- the slide walk, breaks and kinds, the layout classes, the deck's type step, the theme options,
+-- the livery. This filter draws what they read.
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
 local has_class, deck_type_scale = C.has_class, C.deck_type_scale
 local footnote_marker, strip_marker, is_note = C.footnote_marker, C.strip_marker, C.is_note
@@ -93,8 +94,6 @@ local function inlines_to_latex(inlines)
   local doc = pandoc.Pandoc({ pandoc.Plain(inlines) })
   return (pandoc.write(doc, "latex"):gsub("%s+$", ""))
 end
-
-local function is_slide_break(blk) return C.is_slide_break(blk, slide_level) end
 
 -- slide footnotes: † ‡ § ¶ paragraphs and ^[...] notes (C.take_footnotes()), lifted to the frame's foot
 
@@ -122,16 +121,10 @@ local function hoist_footnotes(blocks)
     out:insert(blk)
     i = i + 1
     if C.content_heading(blk, slide_level, CONTENT_KINDS) then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
       local kept, notes = C.take_footnotes(slide)
-      local body, tail = pandoc.Blocks({}), pandoc.Blocks({})
-      for _, b in ipairs(kept:walk({ Span = noteref })) do
-        if b.t == "Div" and has_class(b, "notes") then tail:insert(b) else body:insert(b) end
-      end
+      local body, tail = C.split_notes(kept:walk({ Span = noteref }))
       if #notes > 0 then
         out:insert(latex("\\enginefootnotespring"))
         out:extend(body)
@@ -160,12 +153,9 @@ local function wrap_layout(blocks)
     local lay = C.content_heading(blk, slide_level, CONTENT_KINDS) and C.take_layout(blk, "engine-beamer")
     if lay then
       if lay.v then add_frameoption(blk, "c") end
-      local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        local b = blocks[i]
-        if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-        i = i + 1
-      end
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local body, notes = C.split_notes(slide)
       local attr = {}
       if lay.scale then attr["scale"] = lay.scale end
       if lay.h then attr["hcenter"] = "1" end
@@ -289,7 +279,7 @@ local function card_rows(blocks, livery)
     end
     if not any then return nil end
     if tabled then
-      quarto.log.warning("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
+      C.warn("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
       return nil
     end
     local spec = {}
@@ -431,7 +421,20 @@ end
 -- raw LaTeX first (the reader drops the attribute: the cell sizes the picture). A {.full} slide's
 -- is full_frames()'.
 local function galleries(blocks)
-  return C.top_galleries(blocks, "engine-beamer", gallery_latex)
+  local out, i = pandoc.Blocks({}), 1
+  while i <= #blocks do
+    local blk = blocks[i]
+    out:insert(blk)
+    local slide
+    slide, i = C.slide_from(blocks, i + 1, slide_level)
+    local where = C.composed_kind(blk, slide_level)   -- a content frame's are drawn (a .full frame's too)
+    if where then
+      out:extend(C.unwrap_galleries(slide, "engine-beamer", where))
+    else
+      out:extend(C.top_galleries(slide, "engine-beamer", gallery_latex))
+    end
+  end
+  return out
 end
 
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
@@ -513,7 +516,7 @@ local function load_theme(doc)
     extdir = pandoc.path.join({ pandoc.system.get_working_directory(), extdir })
   end
   if extdir:find("[%s%%#]") then
-    quarto.log.warning("engine-beamer: extension path contains spaces or special "
+    C.warn("engine-beamer: extension path contains spaces or special "
       .. "characters, which LaTeX's \\input@path cannot handle: " .. extdir)
   end
   local _, opts = C.theme_options(doc.meta)   -- the items as written, for \usetheme
@@ -587,15 +590,14 @@ end
 -- Tables in the theme's style (beamerinnerthemeEngine.sty, "tables"): each
 -- header cell in \engineth, and every second body row starting with \rowcolor,
 -- which colortbl requires to be the first thing in the row
-local function raw(s) return pandoc.RawInline("latex", s) end
 
 function Table(tbl)
   for _, row in ipairs(tbl.head.rows) do
     for _, cell in ipairs(row.cells) do
       for _, blk in ipairs(cell.contents) do
         if blk.t == "Plain" or blk.t == "Para" then
-          blk.content:insert(1, raw("\\engineth{"))
-          blk.content:insert(raw("}"))
+          blk.content:insert(1, latex_inline("\\engineth{"))
+          blk.content:insert(latex_inline("}"))
         end
       end
     end
@@ -606,9 +608,9 @@ function Table(tbl)
       if k % 2 == 0 and first then
         local blk = first.contents[1]
         if blk and (blk.t == "Plain" or blk.t == "Para") then
-          blk.content:insert(1, raw("\\rowcolor{enginetableband}"))
+          blk.content:insert(1, latex_inline("\\rowcolor{enginetableband}"))
         else
-          first.contents:insert(1, pandoc.Plain({ raw("\\rowcolor{enginetableband}") }))
+          first.contents:insert(1, pandoc.Plain({ latex_inline("\\rowcolor{enginetableband}") }))
         end
       end
     end
@@ -616,33 +618,22 @@ function Table(tbl)
   return tbl
 end
 
--- .full: the one figure's image path (C.split_full), its caption paragraphs and its notes.
--- Runs before bound_sized_images, which turns the image into raw LaTeX.
-local function split_full(blocks)
-  local fig, caption, rest = C.split_full(blocks)
-  if not fig then return nil end
-  local src
-  pandoc.walk_block(fig, { Image = function(im) src = src or im.src end })
-  if not src then return nil end
-  return src, caption, rest
-end
-
+-- .full: the one figure (C.split_full: an image, whose path the frame key takes, or a gallery), its
+-- caption paragraphs and its notes. Runs before bound_sized_images, which turns the image into raw LaTeX.
 local function full_frames(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
     local blk = blocks[i]
     i = i + 1
     if blk.t == "Header" and blk.level == slide_level and has_class(blk, "full") then
-      local slide = pandoc.Blocks({})
-      while i <= #blocks and not is_slide_break(blocks[i]) do
-        slide:insert(blocks[i])
-        i = i + 1
-      end
-      local src, caption, rest = split_full(slide)
-      local fig = C.split_full(slide)
+      local slide
+      slide, i = C.slide_from(blocks, i, slide_level)
+      local fig, caption, rest = C.split_full(slide)
       local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-beamer")
-      if fig and C.is_gallery(fig) and not gallery then   -- refused, warned of: an ordinary frame of its pictures
-        src = nil
+      local src   -- a figure's image path; nil for a gallery (the bare key) or a refused one
+      if fig and not C.is_gallery(fig) then
+        pandoc.walk_block(fig, { Image = function(im) src = src or im.src end })
+      elseif fig and not gallery then   -- refused, warned of: an ordinary frame of its pictures
         fig.classes = fig.classes:filter(function(c) return c ~= "gallery" end)   -- read once: galleries() passes it
       end
       if gallery or src then
@@ -661,7 +652,7 @@ local function full_frames(blocks)
         end
         out:extend(rest)
       else
-        quarto.log.warning("engine-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
+        C.warn("engine-beamer: {.full} slide \"" .. pandoc.utils.stringify(blk.content)
           .. "\" needs one figure or a gallery, then only paragraphs; drawn as an ordinary slide")
         blk.classes = blk.classes:filter(function(c) return c ~= "full" end)
         out:insert(blk)
@@ -714,9 +705,7 @@ local function bound_sized_images(doc)
 end
 
 function Pandoc(doc)
-  if PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level then
-    slide_level = PANDOC_WRITER_OPTIONS.slide_level
-  end
+  slide_level = C.slide_level()
 
   doc.blocks = galleries(full_frames(doc.blocks))
   doc = bound_sized_images(doc)
@@ -777,8 +766,8 @@ function Pandoc(doc)
         blk.classes = blk.classes:filter(function(c) return c ~= "agenda" end)
         out:insert(blk)
         i = i + 1
-        local body = pandoc.Blocks({})
-        while i <= #blocks and not is_slide_break(blocks[i]) do body:insert(blocks[i]); i = i + 1 end
+        local body
+        body, i = C.slide_from(blocks, i, slide_level)
         local notes = C.agenda_notes(body, "engine-beamer", pandoc.utils.stringify(blk.content))
         out:insert(latex("\\engineagenda"))
         out:extend(notes)
@@ -792,12 +781,9 @@ function Pandoc(doc)
         out:insert(blk)
         i = i + 1
         -- the body on the composition's panel (enginefeaturepanel), the notes outside it
-        local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
-        while i <= #blocks and not is_slide_break(blocks[i]) do
-          local b = blocks[i]
-          if b.t == "Div" and has_class(b, "notes") then notes:insert(b) else body:insert(b) end
-          i = i + 1
-        end
+        local slide
+        slide, i = C.slide_from(blocks, i, slide_level)
+        local body, notes = C.split_notes(slide)
         if #body > 0 then
           -- a heading below the slide's becomes a block here, so it closes inside the panel
           -- (pandoc's own block would run on past the panel's end)
@@ -823,11 +809,9 @@ function Pandoc(doc)
         blk.content = pandoc.Inlines({})
         out:insert(blk)
         out:insert(latex("\\engineclosingcontent{" .. headline .. "}{%"))
-        i = i + 1
-        while i <= #blocks and not is_slide_break(blocks[i]) do
-          out:insert(blocks[i])
-          i = i + 1
-        end
+        local slide
+        slide, i = C.slide_from(blocks, i + 1, slide_level)
+        out:extend(slide)
         out:insert(latex("}"))
       else
         out:insert(blk)

@@ -8,7 +8,7 @@ A slide's `^[...]` notes take the printer's markers after its own dagger lines (
 superscript mark in the text (a Span `.engine-noteref`) and a paragraph led by the marker, which
 the format filters then treat as any slide footnote. A note in the speaker notes stays pandoc's; a
 fifth, or one holding more than paragraphs, warns and stays. engine-common.lua runs under
-`pandoc lua` with a `quarto` shim (the harness below), the pptx filter under plain pandoc, the
+`pandoc lua` with a `quarto` shim (conftest's lua_common), the pptx filter under plain pandoc, the
 step in a subprocess under ncar's LIVERY_DIR. A deck that cites without a `::: {#refs}` gets one
 References slide last, with a warning, and none when it has the div or cites only cross-references;
 on the pptx references slide every entry is in the footnote size, hanging by 1.5 em. Needs pandoc
@@ -17,26 +17,20 @@ on the pptx references slide every entry is in the footnote size, hanging by 1.5
 
 import os
 import re
-import shutil
 import subprocess
 import sys
 import zipfile
 
 import pytest
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT, lua_common, pandoc_exe
 
-ENGINE = ROOT / "_extensions" / "engine"
 NCAR = ROOT / "liveries" / "ncar"
 
 # engine-common.lua's functions on markdown from stdin: `take` prints take_footnotes()'s kept
 # blocks, a rule, the footnotes found; `refs` the blocks after ensure_refs() twice and whether they
-# hold a #refs div; each warning on
-# a line of its own after the markdown
+# hold a #refs div (conftest's lua_common: the quarto shim, C, the warnings)
 HARNESS = r"""
-local warnings = {}
-quarto = { log = { warning = function(s) table.insert(warnings, s) end }, json = { decode = pandoc.json.decode } }
-local C = dofile(arg[1])
 local out = pandoc.Blocks({})
 local doc = pandoc.read(io.read("a"), "markdown")
 if arg[2] == "take" then
@@ -47,25 +41,12 @@ elseif arg[2] == "refs" then   -- twice: the second finds the slide the first ad
   out:insert(pandoc.Para(C.refs_div(out) and "(a refs div)" or "(no refs div)"))   -- the writer drops an empty div last in a document
 end
 io.write(pandoc.write(pandoc.Pandoc(out), "markdown", { wrap_text = "none" }))
-for _, w in ipairs(warnings) do io.write("\nWARNING: " .. w) end
 """
-
-
-def pandoc():
-    exe = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not exe:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
-    return exe
 
 
 def common(tmp_path, verb, md):
     """The harness's output on md: (the markdown, the warnings)."""
-    script = tmp_path / "harness.lua"
-    script.write_text(HARNESS)
-    r = subprocess.run([pandoc(), "lua", str(script), str(ENGINE / "engine-common.lua"), verb],
-                       input=md, text=True, capture_output=True, check=True)
-    text, *warnings = r.stdout.split("\nWARNING: ")
-    return text, warnings
+    return lua_common(tmp_path, HARNESS, md, verb)
 
 
 def test_lifted_after_daggers(tmp_path):
@@ -110,7 +91,7 @@ def test_pptx_filter(tmp_path):
     md = ("## One\n\nText^[A note.]\n\n## Two\n\n:::: {.columns}\n::: {.column}\nLeft^[In a column.]\n:::\n"
           "::: {.column}\nRight\n:::\n::::\n")
     out = tmp_path / "t.pptx"
-    subprocess.run([pandoc(), "--lua-filter", str(ENGINE / "inline-footnotes.lua"),
+    subprocess.run([pandoc_exe(), "--lua-filter", str(ENGINE / "inline-footnotes.lua"),
                     "--reference-doc", str(NCAR / "template.pptx"), "-o", str(out)],
                    input=md, text=True, check=True, capture_output=True)
     assert len(slides_of(out)) == 2, "no Notes slide"
@@ -134,9 +115,10 @@ def test_pptx_filter(tmp_path):
 
 STEP = """
 import sys
+from pathlib import Path
 from pptx import Presentation
 from pptx_steps import style_footnotes
-prs = Presentation(sys.argv[1]); style_footnotes.run(prs, "t"); prs.save(sys.argv[1])
+prs = Presentation(sys.argv[1]); style_footnotes.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
 """
 
 

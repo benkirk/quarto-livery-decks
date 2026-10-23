@@ -13,6 +13,7 @@ cannot do without splitting the slide.
 Idempotent; a deck with no footnotes is untouched."""
 
 import copy
+from pathlib import Path
 
 from pptx.enum.text import PP_ALIGN
 from pptx.oxml.ns import qn
@@ -26,7 +27,7 @@ from .common import K, LIVERY
 MARKERS     = ("†", "‡", "§", "¶")     # the printer's order (engine-common.lua MARKERS)
 FOOT_SIZE   = Pt(livery_mod.type_pt(LIVERY, "footnote"))   # the themes' footnote size (livery.json type)
 FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
-MARK_COLOR  = RGBColor.from_string(livery_mod.scheme(LIVERY, "accent4"))   # the accent slot
+MARK_COLOR  = RGBColor.from_string(livery_mod.hex(LIVERY, "accent"))   # the accent role, as HTML (--engine-accent) and beamer (BrandAccent)
 FOOT_BEFORE = Pt(10 * K)               # vertical gap above the footnote (7.5 in's 10 pt)
 
 
@@ -94,8 +95,8 @@ def noteref(para) -> int:
     return marks
 
 
-def run(prs, name: str) -> None:
-    """The open deck, changed in place; name for the message."""
+def run(prs, path: Path) -> None:
+    """The open deck, changed in place; path for the message."""
     styled, marks = 0, 0
     for slide in prs.slides:
         for shape in slide.shapes:
@@ -104,4 +105,4 @@ def run(prs, name: str) -> None:
             for para in shape.text_frame.paragraphs:
                 styled += style(para)
                 marks += noteref(para)
-    print(f"style_footnotes: restyled {styled} footnote paragraph(s), {marks} mark(s) in the text → {name}")
+    print(f"style_footnotes: restyled {styled} footnote paragraph(s), {marks} mark(s) in the text → {path.name}")

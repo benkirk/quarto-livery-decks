@@ -25,19 +25,8 @@ local function is_aside(blk)
   return blk.t == "Div" and (blk.classes:includes("notes") or blk.classes:includes("hidden"))
 end
 
-local function is_image_para(blk)
-  if blk.t ~= "Para" and blk.t ~= "Plain" then
-    return false
-  end
-  local images = 0
-  for _, il in ipairs(blk.content) do
-    if il.t == "Image" then
-      images = images + 1
-    elseif il.t ~= "Space" and il.t ~= "SoftBreak" and il.t ~= "LineBreak" then
-      return false
-    end
-  end
-  return images > 0
+local function is_image_para(blk)   -- a paragraph of images alone (C.para_images)
+  return C.para_images(blk) ~= nil
 end
 
 local function is_nontext(blk)
@@ -185,7 +174,7 @@ local function fold_trailing(body)
 end
 
 function Pandoc(doc)
-  local level = (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
+  local level = C.slide_level()
   local out = pandoc.Blocks({})
   local body, notes, in_slide = pandoc.Blocks({}), pandoc.Blocks({}), false
   local function flush()

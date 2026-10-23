@@ -21,9 +21,8 @@ import zipfile
 
 import pytest
 
-from conftest import ROOT
+from conftest import ENGINE, ROOT, flat, pandoc_exe
 
-ENGINE = ROOT / "_extensions" / "engine"
 IMAGE = ROOT / "decks" / "quickstart" / "images" / "example.jpg"
 CARDS = ('## Cards\n\n:::: {.columns}\n'
          '::: {.column .card .pick role="primary"}\n### OPTION 1\n[Procure a system]{.sub}\n\n'
@@ -59,16 +58,14 @@ from pathlib import Path
 from pptx import Presentation
 from pptx_steps import columns, grid, slide_layout
 p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); columns.run(prs, p.name); grid.run(prs, p); prs.save(p)
+slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); prs.save(p)
 """   # the driver's order
 
 
 @pytest.fixture(scope="module", params=["ncar", "nasa-jsc-eg"])
 def deck(request, tmp_path_factory):
     name = request.param
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
-    if not pandoc:
-        pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
+    pandoc = pandoc_exe()
     tmp = tmp_path_factory.mktemp(f"grid-{name}")
     shutil.copy(IMAGE, tmp / "p.jpg")
     d = ROOT / "liveries" / name
@@ -89,14 +86,6 @@ def boxes(livery, width, shares, wide=False):
         out.append((x * width, room * s * width))
         x += room * s + gap
     return out
-
-
-def flat(shapes):
-    """Every shape, the ones in groups too (a card, a lead, a strip is a group of its shapes)."""
-    for sh in shapes:
-        yield sh
-        if sh.shape_type == 6:   # a group
-            yield from flat(sh.shapes)
 
 
 def body_placeholders(slide):
@@ -302,7 +291,7 @@ def test_card_type_step(pandoc_deck, tmp_path):
     import livery as livery_mod
     md = "---\ntype-body: 10\n---\n\n" + CARDS
     d = ROOT / "liveries" / "ncar"
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "t.pptx"
     subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(d / "template.pptx"),
                     "-o", str(out)], input=md, text=True, cwd=tmp_path, check=True, capture_output=True)
@@ -414,7 +403,7 @@ def test_comparison_warns(tmp_path):
     md = '## Compare\n\n:::: {.columns}\n::: {.column width="60%"}\nText\n\n![](p.jpg)\n:::\n::: {.column}\nRight\n:::\n::::\n'
     shutil.copy(IMAGE, tmp_path / "p.jpg")
     d = ROOT / "liveries" / "ncar"
-    pandoc = os.environ.get("QUARTO_PANDOC") or shutil.which("pandoc")
+    pandoc = pandoc_exe()
     out = tmp_path / "t.pptx"
     subprocess.run([pandoc, "--lua-filter", str(ENGINE / "grid-pptx.lua"), "--reference-doc", str(d / "template.pptx"),
                     "-o", str(out)], input=md, text=True, cwd=tmp_path, check=True, capture_output=True)

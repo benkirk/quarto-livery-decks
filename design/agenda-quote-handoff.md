@@ -1,5 +1,7 @@
 # Sprint handoff: the quote block, the agenda, and section progress
 
+**State (2026-10-22):** landed as #134, squash `87ebef1`. Departures: the quote bar defaults to `primary-contrast` (the handoff's `secondary` reads at 2.1:1 on ncar), with a test holding every livery's default to 3:1; `boxes.quote.family`, `boxes.quote.style` and `pptx.quote-typeface` (Ben's addition); beamer's own `quote` environment left as it was (a theme font of its own, after parity showed `template.tex`'s plain quote growing); the review's two fixes (a quote beside a picture 5657380, `_quote_color` 1cde377).
+
 **For a fresh session.** The third of three sprints planned on 2026-10-22 after #129
 (`citations-handoff.md`, `steps-timelines-handoff.md`, then this). One PR against `main` (branch
 `decks/agenda-quote` from `origin/main` once the steps PR is merged), a commit per item in the

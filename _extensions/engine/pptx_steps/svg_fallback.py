@@ -19,18 +19,12 @@ import subprocess
 
 from lxml import etree
 
-A = "http://schemas.openxmlformats.org/drawingml/2006/main"
-R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-CT = "http://schemas.openxmlformats.org/package/2006/content-types"
-PR = "http://schemas.openxmlformats.org/package/2006/relationships"
+from .ooxml import A, CT, PR, R, parse, serialize   # livery-free, as this step is
+
 ASVG = "http://schemas.microsoft.com/office/drawing/2016/SVG/main"
 SVG_EXT = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}"   # the a:ext uri Office writes for svgBlip
 IMAGE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
 DPI = 200   # the fallback's resolution: common/_quarto.yml's fig-dpi for engine-pptx
-
-
-def _xml(root):
-    return etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
 
 
 def rasterize_svg(svg: bytes, dpi: int) -> bytes:
@@ -54,10 +48,10 @@ def run(parts: dict, name: str) -> None:
         part = posixpath.join("ppt/slides", posixpath.basename(rels_name)[:-len(".rels")])
         if part not in parts:
             continue
-        rels = etree.fromstring(parts[rels_name])
+        rels = parse(parts[rels_name])
         targets = {r.get("Id"): r.get("Target") for r in rels}
         ids = {int(i[3:]) for i in targets if i.startswith("rId") and i[3:].isdigit()}
-        root = etree.fromstring(parts[part])
+        root = parse(parts[part])
         changed = False
         for blip in root.iter("{%s}blip" % A):
             rid = blip.get("{%s}embed" % R)
@@ -79,12 +73,12 @@ def run(parts: dict, name: str) -> None:
             changed = True
             done += 1
         if changed:
-            parts[rels_name], parts[part] = _xml(rels), _xml(root)
+            parts[rels_name], parts[part] = serialize(rels), serialize(root)
     if done:
-        ct = etree.fromstring(parts["[Content_Types].xml"])
+        ct = parse(parts["[Content_Types].xml"])
         have = {d.get("Extension").lower() for d in ct.findall("{%s}Default" % CT)}
         for ext, mime in (("png", "image/png"), ("svg", "image/svg+xml")):
             if ext not in have:
                 ct.insert(0, etree.Element("{%s}Default" % CT, Extension=ext, ContentType=mime))
-        parts["[Content_Types].xml"] = _xml(ct)
+        parts["[Content_Types].xml"] = serialize(ct)
     print(f"svg_fallback: {done} SVG picture(s), {len(pngs)} PNG fallback(s) at {DPI} dpi → {name}")

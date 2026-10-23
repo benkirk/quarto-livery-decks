@@ -348,8 +348,8 @@ decoding; the customer supplies the TTFs), and vectorizing bitmap art.
    parameterize the post-processors one per commit, add `LIVERY` to Make, and wire CI.
    Every step is parity-checked (section 8).
 2. `beamer-livery-theme`: the engine refactor of section 5 (rename, roles only, geometry from
-   the livery, art files, `livery=`); re-vendor into the framework; `liveries/ncar`
-   becomes a link to the vendored reference livery.
+   the livery, art files, `livery=`). (The theme then merged into this repository with its
+   history, #57, and is edited in place: nothing is vendored.)
 3. CU Boulder: the first foreign livery and the first run of the onboarding tools (no
    waves, other fonts, a template from a reference deck). Joins the CI matrix.
 4. NASA general (done 2026-10-17: `nasa` and its dark flavor `nasa-dark`, engine 3.8.0), then
@@ -371,6 +371,13 @@ composition"; NASA is that, so it goes first: compositions described once as box
 fractions in `livery.json` and drawn by every format (section 5, "Compositions"), in ten PRs
 written up for a fresh session in `docs/design/composition-handoff.md`. Done 2026-10-17
 (engine 3.5.0), with a type-size pass across the formats (section 5, "Type").
+
+**Since the first release (26.10.0)** the record of what ships is `CHANGELOG.md`, and each
+sprint is a dated handoff in this directory with a state line naming its PR: the LaTeX
+authors' layer (`latex-first-class-handoff.md`, #129) and the element series under the goal at
+the head of this document (`citations-handoff.md` #131, `steps-timelines-handoff.md` #132,
+`agenda-quote-handoff.md` #134, `gallery-handoff.md` #135); what the sweeps find is
+`unplanned-city-ledger.md`.
 
 ## 8. Verification
 

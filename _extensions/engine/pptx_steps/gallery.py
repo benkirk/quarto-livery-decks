@@ -25,12 +25,13 @@ import sys
 from urllib.parse import unquote
 
 from lxml import etree
+from pptx.enum.text import MSO_ANCHOR
 from pptx.oxml.ns import qn
 from pptx.util import Emu
 
 import livery as livery_mod
 
-from .common import BOXES, GEOM, LIVERY, SLACK, body_box, fit_picture, group, pads, ppr_place, rect, style_runs
+from .common import BOXES, GEOM, LIVERY, SLACK, body_box, fit_picture, group, pads, rect, slide_title, space_before, style_runs
 from .measure import text_height
 from .svg_fallback import DPI, rasterize_svg   # an .svg item's PNG at the deck's fig-dpi
 
@@ -50,17 +51,8 @@ def _caption(p):
     if ppr is None:
         ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
     ppr.set("algn", "ctr")
-    for old in ppr.findall(qn("a:spcBef")):
-        ppr.remove(old)
-    bef = etree.Element(qn("a:spcBef"))
-    etree.SubElement(bef, qn("a:spcPts")).set("val", "0")
-    ppr_place(ppr, bef)
+    space_before(p, 0)
     style_runs(p, CAPTION_PT, color=MUTED)
-
-
-def _title(slide):
-    t = slide.shapes.title
-    return t.text_frame.text if t is not None else ""
 
 
 def draw_gallery(slide, box, attrs, items, caption, slide_width, slide_height, deck_dir):
@@ -84,7 +76,7 @@ def draw_gallery(slide, box, attrs, items, caption, slide_width, slide_height, d
             for p in caption:
                 _caption(p)
             cb = body_box(slide, pad, slide_height - floor - cap, slide_width - 2 * pad, cap, caption, "Gallery caption")
-            cb.text_frame._txBody.find(qn("a:bodyPr")).set("anchor", "ctr")
+            cb.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
             shapes.append(cb)
     elif attrs.get("height"):
         h = min(h, round(float(attrs["height"]) * GEOM["body"][3] * slide_height))
@@ -111,7 +103,7 @@ def draw_gallery(slide, box, attrs, items, caption, slide_width, slide_height, d
                 data = rasterize_svg(data, DPI)
             shapes.append(fit_picture(slide, data, px, py, pw, ph, fit, name=f"Gallery {k} picture"))
         else:
-            print(f"gallery: WARNING: slide {_title(slide)!r}: {src} not found; its cell left empty", file=sys.stderr)
+            print(f"gallery: WARNING: slide {slide_title(slide)!r}: {src} not found; its cell left empty", file=sys.stderr)
         if cb is not None:
             cb.left, cb.top, cb.width, cb.height = Emu(px), Emu(py + ph), Emu(pw), Emu(cap_h)
             shapes.append(cb)

@@ -84,6 +84,13 @@ def lines(paragraphs, font, width):
     return n
 
 
+def block_height(strings, family, weight, pt, width, line, spacing=1.0):
+    """The height in px of `strings` (paragraphs in one face at pt points) wrapped in `width` px:
+    their lines (lines()) at `line` em of the size, times the paragraph's line spacing (a
+    layout's lnSpc); section_subtitle's divider block."""
+    return lines(strings, font(family, weight, pt), width) * line * spacing * pt / PT_PX
+
+
 def runs_lines(pieces, width):
     """How many lines one paragraph of (text, face) pieces wraps to in `width` px; a "\v" (a
     line break) starts a new line."""
@@ -195,7 +202,7 @@ def text_height(shape, slide, family=None, weight=None, gap=None):
     body's by default), one LINE per line, plus the template's space before the paragraph
     (livery.SPC_BEFORE of the body type, by its level), or gap (EMU) when given."""
     tf = shape.text_frame
-    width = shape.width - tf.margin_left - tf.margin_right - Pt(18 * K)   # less the bullet indent (the template's marL)
+    width = shape.width - tf.margin_left - tf.margin_right - Pt(livery_mod.BODY_INDENT_PT * K)   # less the bullet indent (the template's marL)
     total = tf.margin_top + tf.margin_bottom
     for p in tf.paragraphs:
         size = para_size(p, shape, slide)

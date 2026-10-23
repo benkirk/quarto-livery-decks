@@ -21,15 +21,50 @@ branched from, not a window read).
 
 ## Entries
 
-## 2026-10-22: sprint `decks/agenda-quote` (not a sweep)
+## 2026-10-22: window #127–#135
 
-- Mode: a sprint's own record (`design/agenda-quote-handoff.md`)
-- Done: the divider-subtitle rule, written twice (`engine-revealjs.lua`, `engine-beamer.lua`),
-  is `engine-common.lua`'s `divider_subtitle()`, and pptx reads the dividers through `sections()`
-- Open: pptx draws a quote in a plain column of a grid slide but still flattens a strip there to
-  its text (`grid.py` `_flat()`; `_plain_column()` could take the strip too); `measure.py` measures
-  an italic quote face upright (`font()` takes a weight, no style); the pptx agenda's number sits
-  on its title's line by a hand constant (0.8 of the two sizes' difference)
+- Mode: window
+- Range: `ba36ec5..f493a70` (#127 the sweep of #105–#126, #129 the LaTeX authors' layer, #131
+  citations and footnotes, #132 the rail, #134 sections, quotes, the agenda and the progress mark,
+  #135 image galleries; releases 26.10.7 and 26.10.8); read in four area passes (engine Python; the
+  Lua filters; the beamer and revealjs themes; docs, design, CI and make), 54 leads, 26 findings,
+  Ben picked the recommendation (`design/sweep-129-135-handoff.md`)
+- End commit: `f493a70`
+- Done (#136): a vcentered table centered on the height style_tables gives it (the untriaged
+  `CELL_PAD` vs `CELL_MAR` item was a defect: 1.6 pt a row short; the one output change, named);
+  the pptx steps coloring by role, not theme slot; a gallery drawn on a content slide only in every
+  format (`composed_kind()`, `unwrap_galleries()`: HTML skipped one on a closing or feature slide,
+  PDF and pptx drew it); the beamer `.full` reader run once; `boxes.references {hang, gap}`,
+  `boxes.agenda {gap, number-width}`, `boxes.rail {ring, role}` for numbers three drawers wrote by
+  hand (HTML's agenda title now hangs at the number column as PDF and pptx: its extra 0.9 em
+  column gap dropped, the one look change); `--engine-leading-<role>` from `livery.css`, 16 scss
+  `line-height` literals reading it (21 → 3); the Lua scaffolding (`slide_from`, `split_notes`,
+  `is_notes`, `slide_level`, `warn`, `top_level`, `holds_shape`, one loader line, the small filters
+  on common, dead code); the pptx idioms (`em`, `inset`, `slide_title`, `space_before`,
+  `shape(preset=)`, `ooxml.py`, every Presentation step on `path`, `measure.block_height`); the
+  beamer cell box, share width and share error lifted; the scss caption and trim mixins; the tests'
+  harness in conftest; the records (six handoff state lines, the changelog's gaps, the Overleaf
+  zip's contents named once, the grid-slide definition as `is_grid()`'s list, the small prose); CI
+  checking the rendered sample's elements; two ratchets (the theme literal piles may only fall,
+  `svg_fallback.DPI` = `fig-dpi`); the skill's gate-drift heuristic and its staging and worktree
+  notes
+- Tried and dropped: none
+- Open (this window's, deferred as a "one look, one key" area sprint over the themes after the
+  release, each moving a render): the slide footnotes' numbers (hang 1.1 em beamer / 0.9 em HTML /
+  1.2 em beamer's own `\footnote`; rule 12mm×0.6pt vs 120px×2px; gap 0.8ex vs 0.55em; color
+  `BrandText!30!BrandBackground` vs muted at 0.6 opacity) → `boxes.footnote`; the beamer's new gaps
+  in `ex` where HTML's are `em` (`\enginenote` 0.4ex/0.4em, the quote attribution 0.6ex/.6em, the
+  footnotes; Poppins' ex ≈ 0.55 em, so the PDF's are half); the content title band in four copies
+  (beamer 0.0489/0.0778/0.1444 with `\ifdefined\engine@ft@bodytop` fallbacks twice, scss
+  44px/70px/130px, `livery_template.py`'s `title_top`/`rule_y`) → `geometry.frametitle`; the title
+  hairline's three blends (PDF ≈ #DCE3EA, HTML the `rule` blend #A9B8CB, pptx tx1 at 30 % ≈
+  #B3C3D7; 0.4pt / 1px / 9525 EMU). Also: `grid.py` (676 lines) into `rail.py`, `agenda.py`,
+  `quote.py`; `grid-pptx.lua`'s marker writer composing key=value tails; "of" ×3 →
+  `section.progress-label`; `--engine-logo-aspect` and `--engine-full-footline` emitted and unread
+  (delete, or HTML's full figure reads the footline and moves 60 px up to the PDF's place); the
+  rails-before-status order in `grid-pptx.lua` holding only because the pptx's `fn` is identity;
+  the agenda subtitle's 0.15 em gap in HTML and PDF (pptx has none); a both-filters `local function`
+  whitelist as an equality pin, if the regrowth guard is wanted
 
 ## 2026-10-21: window #105–#126
 
@@ -61,8 +96,8 @@ branched from, not a window read).
 - Done after (the gallery sprint, `design/gallery-handoff.md` commit 1, 2026-10-22): the lift the
   steps handoff asked for once `grid.py` passed ~600 lines (753 after the quote and the agenda):
   `body_box`, `group`, `shape`, `style_runs` and `para_text` moved to `pptx_steps/common.py`, with
-  the picture recipes `slide_layout.py` kept privately (`contain_box`, `cover_crop`,
-  `fit_picture`); `svg_fallback.py`'s rasterizer public as `rasterize_svg(svg, dpi)` (it stays
+  the picture recipes as new public helpers there (`contain_box`, `cover_crop`, `fit_picture`,
+  which `slide_layout.py` and `gallery.py` import); `svg_fallback.py`'s rasterizer public as `rasterize_svg(svg, dpi)` (it stays
   there: that step reads no livery, and common.py loads one); `grid.run()` takes the deck's path
 - Tried and dropped: none
 - Open (this window's): the `.full` divergence (revealjs leaves a `.full` slide out of
@@ -119,14 +154,10 @@ branched from, not a window read).
 - The title-stack fractions (`livery_template.py`'s band stack and `slide_layout.py`'s
   `band_stack`/`draw_feature`): hand numbers (0.04, 0.01, 0.015, 0.02, 0.16, 0.185, 0.21) beside
   the compositions' boxes.
-- scss line-heights as literals (some 16 sites) against `livery.json`'s leading.
 - `build-decks.yaml`: a `framework:` input picking the submodule's tag, so a consumer pins one thing.
 - `deck_qa.py`'s `h * 0.16` for the title line (nsi and nasa-jsc-eg sit lower).
-- A table's height: `CELL_PAD` in one estimate, `2 * CELL_MAR` in the other (`slide_layout.py`).
 - `livery.canvas_scale()` bypassed by `livery_template.py`'s own `self.k`; `livery_build.half` beside
   `livery.half_pt`.
-- The `PX`, namespace and serialize copies the common.py commit did not take (section_subtitle's
-  own namespace strings, svg_fallback's).
 - The sprint-124 handoff's three follow-ups and the stress-test measuring scripts (this window's
   open list).
 - The `version:` line's three shell readers (`image.mk`, `release.yml`, `ci.yaml`), which must
@@ -142,6 +173,11 @@ branched from, not a window read).
   images in pptx (rasterized now: an svgBlip twin per picture is svg_fallback's zip surgery); cells
   of unequal size (spans or weights); a picture or table inside a grid-slide column, which the
   gallery's disk read could now reach.
+- From the agenda-quote sprint (#134): pptx draws a quote in a plain column of a grid slide but
+  still flattens a strip there to its text (`grid.py` `_flat()`; `_plain_column()` could take the
+  strip too); `measure.py` measures an italic quote face upright (`font()` takes a weight, no
+  style); the pptx agenda's number sits on its title's line by a hand constant (0.8 of the two
+  sizes' difference).
 - A citation in a `::: note` is lost in the PDF: `engine-beamer.lua`'s `note_frames()` writes the
   note as raw LaTeX (`pandoc.write`), so citeproc never sees it; the footnote hoist moved to pandoc
   inlines between raw wrappers in the citations sprint, and the note could take the same shape.

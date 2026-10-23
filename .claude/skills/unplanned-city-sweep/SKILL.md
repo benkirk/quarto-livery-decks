@@ -116,6 +116,12 @@ Run each pass and collect findings. The examples are real.
   read under GNU make 3.81, dash and BSD tools; a release step that assumes an artifact the
   same release has not published yet (#101). Each is a trace with the concrete input that
   broke it, or it is not a finding.
+- **Gate drift.** An element's walk is gated on a different slide set per format (`content_heading`
+  with one format's kinds table, every slide in another), so one input parts them: the element on
+  a composed slide, a divider or an untitled slide. Name the input and gate all three alike
+  (`composed_kind()`, #127–#135: a gallery on a `.closing` slide drew in PDF and pptx, not HTML).
+  Its cousin: a format filter calling a common reader twice on the same blocks, the second run on
+  attributes the first mutated (beamer's `.full` frame called `split_full` twice).
 - **Ratchet.** Where a fix is cheap to pin, add an equality ratchet so the city does not
   regrow. Models: `tests/test_docs.py` (every link and section pointer resolves),
   `tests/test_compositions.py`'s `EXPECTED_DELTAS` (every decided move of a box is a row),
@@ -141,7 +147,13 @@ pick.
 ## 6. Do the picked work
 
 - One branch and one PR against `main`, with a commit per finding. Each commit passes its own
-  tests (`make test`; `make -C decks/<deck> qa` for a deck or theme).
+  tests (`make test`; `make -C decks/<deck> qa` for a deck or theme). Stage each commit by file
+  (`git add <files>`, never `-a`): an edit waiting for its own commit rides into the next one
+  otherwise (#127–#135: the CI step landed inside a Python commit and had to be split out).
+  Findings in disjoint files can go to agents in worktrees in parallel (the Python steps, the
+  inner theme, the scss ran beside the Lua work); a worktree is cut from `main`'s head, so the
+  brief names the branch tip to reset to, and each agent takes its own baseline there and proves
+  its commits flat before the lead cherry-picks them.
 - **If output could move**, capture it before and after and compare, by what can move:
   `tests/parity.sh baseline` on `origin/main` and `check` on the branch (every deck of
   quickstart, sample, fixtures and plots under ncar, cu and nsi; same checkout, same day);

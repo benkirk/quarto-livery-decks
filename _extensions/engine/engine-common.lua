@@ -1,16 +1,24 @@
 -- engine-common.lua -- what the format filters share (engine-revealjs.lua, engine-beamer.lua, and
--- pptx's slide-layout.lua, single-body.lua and grid-pptx.lua): loaded with
--- dofile(quarto.utils.resolve_path("engine-common.lua")), or under plain pandoc beside
--- PANDOC_SCRIPT_FILE, returning a table. A function here reads the same in every format (the slide
--- breaks and kinds, the layout classes, the footnotes, a .full slide's parts, the theme options,
--- the livery); what a format does with the result stays in its filter (wrap_layout,
--- hoist_footnotes, size_plots, the cards and strips).
+-- pptx's slide-layout.lua, single-body.lua, inline-footnotes.lua, grid-pptx.lua, notes-last.lua,
+-- linked-images.lua and diagram-dark.lua): loaded with dofile() beside the filter (the directory of
+-- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
+-- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
+-- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
+-- rails, quotes, galleries and the agenda, the theme options, the livery. What a format does with
+-- the result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
+-- strips, rails, galleries, quotes and the agenda's rows).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do
     if c == cls then return true end
   end
   return false
+end
+
+-- A warning, led by its filter's name (who) and the slide's title where one is known: quarto's log,
+-- or stderr under plain pandoc (the pptx filters, the tests).
+local function warn(s)   -- quarto's log, or stderr under plain pandoc (the pptx filters, the tests)
+  if quarto and quarto.log then quarto.log.warning(s) else io.stderr:write("WARNING: " .. s .. "\n") end
 end
 
 -- The deck's size step: `type-body: <pt>` (the body in points; every size scales by it over the
@@ -20,7 +28,7 @@ local function deck_type_scale(meta, body_pt, who)
     if meta[k] == nil then return nil end
     local v = tonumber(pandoc.utils.stringify(meta[k]))
     if not v or v <= 0 then
-      quarto.log.warning(who .. ": " .. k .. " is not a positive number; ignored")
+      warn(who .. ": " .. k .. " is not a positive number; ignored")
       return nil
     end
     return v
@@ -40,9 +48,47 @@ local function default_livery(extdir)
   return pandoc.path.join({ root, "liveries", "ncar" })
 end
 
+-- Whether a block holds a picture or a table anywhere inside it: pandoc's pptx writer draws either
+-- as a shape of its own, outside any text, so a card, a rail item or a grid column cannot hold one.
+local function holds_shape(blk)
+  local found = false
+  pandoc.walk_block(blk, { Image = function() found = true end, Table = function() found = true end })
+  return found
+end
+
 -- A slide boundary: a heading at or above the slide level, or a rule.
 local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
+end
+
+-- The slide level pandoc breaks slides at (slide-level:, which the engine formats set to 2).
+local function slide_level()
+  return (PANDOC_WRITER_OPTIONS and PANDOC_WRITER_OPTIONS.slide_level) or 2
+end
+
+-- The slide's blocks from blocks[i] on, up to the next slide break (its heading is blocks[i - 1],
+-- which the caller has taken), and the index after them: the one walk every filter takes.
+local function slide_from(blocks, i, level)
+  local slide = pandoc.Blocks({})
+  while i <= #blocks and not is_slide_break(blocks[i], level) do
+    slide:insert(blocks[i])
+    i = i + 1
+  end
+  return slide, i
+end
+
+-- speaker notes (::: {.notes})
+local function is_notes(b)
+  return b.t == "Div" and has_class(b, "notes")
+end
+
+-- A slide's body and its speaker notes, each in their order.
+local function split_notes(blocks)
+  local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
+  for _, b in ipairs(blocks) do
+    if is_notes(b) then notes:insert(b) else body:insert(b) end
+  end
+  return body, notes
 end
 
 -- A divider's subtitle: the paragraphs alone between the divider at blocks[i] and the next slide.
@@ -113,7 +159,7 @@ local function take_layout(blk, who)
     blk.attributes["scale"] = nil
     found = true
     if not tonumber(scale) then
-      quarto.log.warning(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
+      warn(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
       scale = nil
     end
   end
@@ -176,10 +222,6 @@ local function strip_marker(inlines)
   return out
 end
 
-local function warn(s)   -- quarto's log, or stderr under plain pandoc (the pptx filters, the tests)
-  if quarto and quarto.log then quarto.log.warning(s) else io.stderr:write("WARNING: " .. s .. "\n") end
-end
-
 -- One slide's ^[...] notes as slide footnotes: every Note outside a .notes div, in order, becomes a
 -- superscript mark in the text (a Span .engine-noteref) and a paragraph led by the same marker,
 -- the markers after the last one the slide's dagger lines use. Returns the blocks with the marks
@@ -188,7 +230,7 @@ end
 local function lift_footnotes(blocks)
   local rank, last = {}, 0
   for k, m in ipairs(MARKERS) do rank[m] = k end
-  local function skip_notes(d) if has_class(d, "notes") then return d, false end end
+  local function skip_notes(d) if is_notes(d) then return d, false end end
   local used = { traverse = "topdown", Div = skip_notes, Para = function(p)
     local m = footnote_marker(p)
     if m and rank[m] > last then last = rank[m] end
@@ -230,7 +272,7 @@ local function take_footnotes(blocks)
   local kept = pandoc.Blocks({})
   local filter = { Para = function(p) if footnote_marker(p) then found:insert(p); return {} end end }
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and has_class(b, "notes") then
+    if is_notes(b) then
       kept:insert(b)
     elseif footnote_marker(b) then
       found:insert(b)
@@ -438,7 +480,7 @@ end
 local function agenda_notes(body, who, title)
   local notes = pandoc.Blocks({})
   for _, b in ipairs(body) do
-    if b.t == "Div" and has_class(b, "notes") then
+    if is_notes(b) then
       notes:insert(b)
     else
       warn(who .. ": the agenda slide \"" .. title .. "\" has a body of its own; the engine writes it, so it is dropped")
@@ -476,19 +518,20 @@ local function is_quote(b)
   return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
 end
 
--- A grid slide: the columns div has a .card column, a column holding a quote (unless a column holds
--- a picture or table, which a grid column cannot: the slide stays pandoc's, the quote its own), or
--- more than two columns, or the slide (its blocks) has a .lead, a .steps, a .timeline, a .gallery or a
--- quote of its own. pptx draws one from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py); pandoc's two
--- placeholders cannot hold it.
+-- A grid slide, the one list (the prose elsewhere says "what is_grid() counts"): the columns div has
+-- more than two columns, a .card column, or a column holding a quote (unless a column holds a picture
+-- or table, which a grid column cannot: the slide stays pandoc's, the quote its own); or the slide (its
+-- blocks) has a .lead, a .strip, a .steps, a .timeline, a .gallery or a quote of its own. pptx draws one
+-- from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py and gallery.py); pandoc's two placeholders
+-- cannot hold it.
 local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
   local quoted, pictured = false, false   -- a quote in a column: its box is grid.py's to draw
   for _, c in ipairs(cols) do
     if has_class(c, "card") then return true end
-    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end,
-             Image = function() pictured = true end, Table = function() pictured = true end })
+    c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
+    if holds_shape(c) then pictured = true end
   end
   if quoted and not pictured then return true end
   for _, b in ipairs(blocks or {}) do
@@ -561,7 +604,7 @@ end
 local function box_role(livery, role, default, who)
   if role == nil or role == default then return default end
   if livery.roles[role] or (livery.blends and livery.blends[role]) then return role end
-  quarto.log.warning(who .. ": role=\"" .. role .. "\" is not a role or a blend of the livery; " .. default)
+  warn(who .. ": role=\"" .. role .. "\" is not a role or a blend of the livery; " .. default)
   return default
 end
 
@@ -619,7 +662,7 @@ local function quote_blocks(blocks, livery, who, draw)
   end
   return blocks:walk({ traverse = "topdown",
     Div = function(d)
-      if has_class(d, "notes") then return d, false end
+      if is_notes(d) then return d, false end
       if has_class(d, "lead") or has_class(d, "strip") then return as_lines(d), false end
       if is_quote(d) then return draw(quote_parts(d, livery, who)), false end
       return nil
@@ -671,7 +714,8 @@ end
 local function rail_items(div, kind, livery, who)
   local role = div.attributes["role"]
   div.attributes["role"] = nil
-  role = livery and box_role(livery, role, "primary-contrast", who) or role or "primary-contrast"
+  local default = livery and livery.boxes and livery.boxes.rail.role or "primary-contrast"   -- boxes.rail.role
+  role = livery and box_role(livery, role, default, who) or role or default
   local list = #div.content == 1 and div.content[1] or nil
   local what = kind == "steps" and "ordered list (1. 2. 3.)" or "bullet list (- [x] done, - pending)"
   if not list or list.t ~= RAIL_LIST[kind] then
@@ -682,10 +726,7 @@ local function rail_items(div, kind, livery, who)
     warn(who .. ": a ." .. kind .. " div has " .. #list.content .. " items, more than " .. RAIL_MAX .. "; left as it is")
     return nil
   end
-  local shape = false
-  pandoc.Blocks({ list }):walk({ Image = function() shape = true end, Table = function() shape = true end,
-                                 Figure = function() shape = true end })
-  if shape then
+  if holds_shape(list) then
     warn(who .. ": a ." .. kind .. " item holds a picture or table, which a rail does not draw; left as it is")
     return nil
   end
@@ -722,26 +763,40 @@ local function rail_items(div, kind, livery, who)
   return { role = role, start = kind == "steps" and (list.start or 1) or nil, items = items }
 end
 
--- The slide's rails drawn: each top-level .steps or .timeline div that rail_items() reads becomes
--- draw(kind, rail) (blocks); one inside another div (a column, a card) is not drawn, in any format
--- (beamer's save boxes are a card's; pptx flattens a column), and is warned of and left as its list.
-local function top_rails(blocks, livery, who, draw)
+-- The slide's elements of one kind drawn at its top level: each top-level block whose kind(b) names
+-- it (".steps", ".gallery"...) and read(b, kind) accepts becomes draw(x, kind) (blocks); one inside
+-- another div (a column, a card) is not drawn, in any format (beamer's save boxes are a card's; pptx
+-- flattens a column), and is warned of and left as it is (left: "list", "pictures"), its role=
+-- dropped (an invalid ARIA role in HTML otherwise).
+local function top_level(blocks, kind_of, read, draw, who, left)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    local kind = rail_kind(b)
-    local rail = kind and rail_items(b, kind, livery, who)
-    if rail then
-      out:extend(draw(kind, rail))
+    local kind = kind_of(b)
+    local x = kind and read(b, kind)
+    if x then
+      out:extend(draw(x, kind))
     else
       if b.t == "Div" and not kind then
-        b.content:walk({ Div = function(d)
-          if rail_kind(d) then warn(who .. ": a ." .. rail_kind(d) .. " inside a column or another div is not drawn; left as its list") end
+        b.content = b.content:walk({ Div = function(d)
+          local inner = kind_of(d)
+          if inner then
+            warn(who .. ": a ." .. inner .. " inside a column or another div is not drawn; left as its " .. left)
+            d.attributes["role"] = nil
+            return d
+          end
         end })
       end
       out:insert(b)
     end
   end
   return out
+end
+
+-- The slide's rails drawn (top_level): each .steps or .timeline div rail_items() reads becomes
+-- draw(kind, rail).
+local function top_rails(blocks, livery, who, draw)
+  return top_level(blocks, rail_kind, function(b, kind) return rail_items(b, kind, livery, who) end,
+                   function(r, kind) return draw(kind, r) end, who, "list")
 end
 
 -- Image galleries (::: {.gallery cols= rows= fit= height=}): a div of image files, each its own paragraph
@@ -853,21 +908,35 @@ local function latex_file(src, out)
   return path
 end
 
--- The slide's galleries drawn: each top-level .gallery div that gallery_items() reads becomes draw(g)
--- (blocks); one inside another div (a column, a card) is not drawn, in any format (pptx flattens a
--- column), and is warned of and left as its pictures (top_rails' shape; a gallery has no role).
+-- The slide's galleries drawn (top_level): each .gallery div gallery_items() reads becomes draw(g).
 local function top_galleries(blocks, who, draw)
+  return top_level(blocks, function(b) return is_gallery(b) and "gallery" end,
+                   function(b) return gallery_items(b, who) end, draw, who, "pictures")
+end
+
+-- The slide a heading opens, when it is not a content slide: "feature" or "closing" (the composed
+-- slides, whose bodies are the composition's), "divider" (a heading above the slide level),
+-- "untitled" (no heading: the blocks before the first, or after a rule); nil for a content slide
+-- (a .full one included: its figure is the format's .full branch's).
+local function composed_kind(blk, level)
+  if blk.t ~= "Header" then return "untitled" end
+  if blk.level < level then return "divider" end
+  for _, c in ipairs(blk.classes) do
+    if c == "feature" or c == "closing" then return c end
+  end
+  return nil
+end
+
+-- A gallery outside a content slide (composed_kind(): where) is not drawn in any format: each
+-- top-level .gallery div of the slide is warned of and unwrapped into its paragraphs (pandoc's pptx
+-- writer draws no picture held in a Div), so the pictures stay.
+local function unwrap_galleries(blocks, who, where)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    local g = is_gallery(b) and gallery_items(b, who)
-    if g then
-      out:extend(draw(g))
+    if is_gallery(b) then
+      warn(who .. ": a .gallery on a " .. where .. " slide is not drawn; left as its pictures")
+      out:extend(b.content)
     else
-      if b.t == "Div" and not is_gallery(b) then
-        b.content:walk({ Div = function(d)
-          if is_gallery(d) then warn(who .. ": a .gallery inside a column or another div is not drawn; left as its pictures") end
-        end })
-      end
       out:insert(b)
     end
   end
@@ -907,17 +976,19 @@ local function status_lists(blocks, fn)
 end
 
 return {
-  has_class = has_class, column_shares = column_shares, status_item = status_item, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
-  lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale, default_livery = default_livery,
+  has_class = has_class, warn = warn, column_shares = column_shares, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
+  lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
-  is_note = is_note, split_full = split_full, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
-  divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote, quote_parts = quote_parts,
+  is_note = is_note, split_full = split_full, holds_shape = holds_shape, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, split_notes = split_notes,
+  divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
-  LAYOUT_CLASSES = LAYOUT_CLASSES, content_heading = content_heading, take_layout = take_layout,
+  content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery,
-  has_cites = has_cites, refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
-  rail_kind = rail_kind, rail_items = rail_items, top_rails = top_rails, RAIL_MAX = RAIL_MAX,
-  is_gallery = is_gallery, gallery_items = gallery_items, top_galleries = top_galleries, GALLERY_MAX = GALLERY_MAX,
+  refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
+  rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
+  is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
+  composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file,
 }
