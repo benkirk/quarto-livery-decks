@@ -7,8 +7,10 @@ Reads the already-built <deck>.{html,pdf,pptx} and writes to _qa/:
   names.txt         plain-text names from qa-names.txt (one per line), if the file exists
   <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png the same for the PDF
 Failures (exit 1): slide counts that differ between formats, PDF text past the right margin,
-into the footer band or overlapping other text, HTML content past the right edge, a {.full}
-caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), and a bare
+into the footer band, overlapping other text or running into the next table column (the table's own
+columns: the HTML says where the table is), HTML content past the right edge, a {.full}
+caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a grid
+marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), and a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
 Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
@@ -82,6 +84,11 @@ MEASURE_JS = r"""
   const has = sel => kids.some(k => k.matches(sel) || k.querySelector(sel));
   const kind = has('table') ? 'table' : has('pre') ? 'code'
     : has('img, svg, .cell-output-display') ? 'figure' : has('.columns') ? 'columns' : 'text';
+  // the table's span across the slide (shares of the width): the PDF's column check reads only
+  // the lines inside it, so bullets beside the table in a .columns slide are not its columns
+  const tbl = kind === 'table' && s.querySelector('table');
+  const tableBox = tbl ? [(tbl.getBoundingClientRect().left - sr.left) / sr.width,
+                          (tbl.getBoundingClientRect().right - sr.left) / sr.width] : null;
   // a ::: note paragraph past one line (layout pixels: reveal's scaling leaves offsetHeight alone)
   const noteWrap = [...s.querySelectorAll('.engine-note p')].some(
     p => p.offsetHeight > 1.5 * parseFloat(getComputedStyle(p).lineHeight));
@@ -90,7 +97,7 @@ MEASURE_JS = r"""
           // the right edge: the padding, or on a {.wide} slide the wide margin the body widens to
           overRight: right > sr.width - (s.classList.contains('engine-wide')
             ? parseFloat(cs.getPropertyValue('--engine-wide-margin')) : parseFloat(cs.paddingRight)) + 16,  // inline-code padding overhangs
-          noteWrap, galleryCapOver};
+          noteWrap, galleryCapOver, tableBox};
 }
 """
 
@@ -163,15 +170,23 @@ def frames(pages):
     return out
 
 
-def table_overruns(lines, w, h):
+SPAN_PAD = 0.02   # of the width: the HTML table's span, widened before the PDF's lines are read against it
+
+
+def table_overruns(lines, w, h, span=None):
     """Lines crossing a column edge, where an edge is an x that three or more lines start at.
 
     pdftotext keeps each table cell a line of its own, and merges two touching cells into one,
     so a cell that overruns its column is a line spanning the next column's edge. Only a cell
     counts: a line that starts at a column edge itself (a merged cell starts at its own column's),
     or sits within the rows of the column it crosses. A table's caption above it, or a note
-    under it, is wider than its columns but neither."""
+    under it, is wider than its columns but neither. `span` is the table's (left, right) as shares
+    of the width, the HTML's measure of the same slide: only the lines reaching into it are read,
+    so a bullet list beside the table (its hanging lines start at an x of their own) is no column."""
     body = [ln for ln in lines if ln[1] > h * 0.16]          # below the frame title
+    if span:
+        x0, x1 = (span[0] - SPAN_PAD) * w, (span[1] + SPAN_PAD) * w
+        body = [ln for ln in body if ln[2] > x0 and ln[0] < x1]
     starts = {}
     for ln in body:
         starts.setdefault(round(ln[0]), []).append(ln)
@@ -227,7 +242,7 @@ def pdf_problems(w, h, words, lines, slide=None):
             if ho > 1.0 and vo > 0.5 * min(ha, hb):
                 out.append(("overlapping text", "%r/%r" % (a[4], b[4])))
     if slide and slide.get("kind") == "table":
-        out += table_overruns(lines, w, h)
+        out += table_overruns(lines, w, h, slide.get("tableBox"))
     return out
 
 

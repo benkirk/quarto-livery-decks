@@ -77,3 +77,23 @@ def test_pptx_scan_counts_slides_and_finds_markers(deck_qa, tmp_path):
         z.writestr("ppt/slideLayouts/slideLayout1.xml", sld % "⟦engine:not a slide⟧")
     assert deck_qa.pptx_scan(str(tmp_path / "d")) == (3, [2])
     assert deck_qa.pptx_scan(str(tmp_path / "missing")) == (None, [])
+
+
+# bullets beside the table (a .columns slide): three lines starting at one x, with wrapped
+# continuations hanging at another, each running past that hang: the shape of a bullet list
+BULLETS = [row(80, (20, 110, "• The first bullet, long")), row(86, (28, 100, "continued here")),
+           row(96, (20, 112, "• The second one, long")), row(102, (28, 98, "and its tail")),
+           row(112, (20, 108, "• The third bullet too")), row(118, (28, 104, "wrapping as well"))]
+SPAN = (120 / W, 240 / W)   # the table's box in the HTML, as a share of the width
+
+
+def test_bullets_beside_a_table_are_not_cells(deck_qa):
+    """The rule reads only the lines inside the table's span (MEASURE_JS's tableBox): a bullet
+    column beside the table, whose hanging lines start at an x of their own, is no table column."""
+    page = lines(CAPTION, HEADER, *ROWS, NOTE, *BULLETS)
+    assert deck_qa.table_overruns(page, W, H) != [], "the premise: unscoped, the bullets read as columns"
+    assert deck_qa.table_overruns(page, W, H, SPAN) == []
+    rows = list(ROWS)
+    rows[1] = row(88, (120, 180, "Casper-with-a-long-name DAV"), (228, 240, "36"))
+    out = deck_qa.table_overruns(lines(CAPTION, HEADER, *rows, NOTE, *BULLETS), W, H, SPAN)
+    assert out == [("runs into the next table column", repr("Casper-with-a-long-name DAV"))], "the table's own overrun still found"
