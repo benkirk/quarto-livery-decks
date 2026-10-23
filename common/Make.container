@@ -73,6 +73,21 @@ else
 $(error DECKS_RUNTIME=$(DECKS_RUNTIME): native, docker, podman, apptainer or auto)
 endif
 
+# Before the run: is the image there? A release's image appears when its tag is cut, so between
+# the version bump and the tag the default (this checkout's version) is not pullable, and the
+# runtime's own "manifest unknown" said nothing of what to do (#133). Docker and Podman look
+# locally, then pull; Apptainer checks a named SIF (a docker:// pull stays its own, cached).
+define image_missing
+{ echo "quarto-livery-decks: image $(or $(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE)) is not available." >&2; \
+  echo "  A release's image appears when its tag is cut. Build with DECKS_IMAGE_TAG=$(firstword $(subst ., ,$(DECKS_IMAGE_TAG))).$(word 2,$(subst ., ,$(DECKS_IMAGE_TAG))) (the month's newest)" >&2; \
+  echo "  or DECKS_IMAGE_TAG=latest, or natively after \`source etc/config_env.sh\` (docs/container.md \"Which image\")." >&2; exit 1; }
+endef
+ifeq ($(DECKS_RUNTIME_USED),apptainer)
+DECKS_CHECK = $(if $(APPTAINER_SIF),test -f $(APPTAINER_SIF) || $(image_missing),true)
+else
+DECKS_CHECK = $(DECKS_RUNTIME_USED) image inspect $(DECKS_CONTAINER_IMAGE) >/dev/null 2>&1 || $(DECKS_RUNTIME_USED) pull $(DECKS_CONTAINER_IMAGE) || $(image_missing)
+endif
+
 # Every goal waits on the one run. publish builds the site inside and pushes from here, where
 # your git credentials are. A QUARTO_DECKS from the environment (new-deck's Makefile reads it) is
 # passed on: the container's environment is the image's, and the deck must include the same
@@ -83,6 +98,7 @@ $(DECKS_GOALS): decks-container
 	@:
 decks-container:
 	@echo "DECKS_RUNTIME=$(DECKS_RUNTIME_USED): $(if $(APPTAINER_SIF),$(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE))" >&2
+	@$(DECKS_CHECK)
 	@mkdir -p $(DECKS_HOME)
 	$(DECKS_RUN) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native \
 	  $(if $(filter environment,$(origin QUARTO_DECKS)),QUARTO_DECKS=$(QUARTO_DECKS))
