@@ -29,6 +29,12 @@ owner changes a band, a hairline or a footnote rule once.
   than PowerPoint placed it (it was centered in the whole space down to the hairline). PDF: the
   accent tab beside the title is the band's height, as HTML's, not the title text's; the body
   sits 0.025 pt lower (the gap under the hairline derived once). HTML unchanged.
+- The hairline under the content title is one color and one weight in every format
+  (`frametitle.rule-color`, `frametitle.rule-width`): the `rule` blend the column rules already
+  use, at the PDF's 0.4 pt. PDF: the hairline darkens from a near-white mix of surface, text and
+  background to that mid gray (ncar #DDE3EA to #A9B8CB), and on a dark livery it appears (nasa-dark
+  drew it near-black on black). HTML: 1.4 px instead of 1 px. pptx: the blend instead of the
+  text color at 30 % alpha, 0.86 pt instead of 0.75.
 
 ### Liveries
 
@@ -38,6 +44,11 @@ owner changes a band, a hairline or a footnote rule once.
   is the band's height; the body starts a fixed 20 px under the hairline, or under a taller mark,
   as before (`frametitle.body` stays derived). Nothing to do: `livery build` writes the keys into
   every `build/`, and `livery template` draws the master from them.
+- `frametitle.rule-width` (a fraction of the height, default 0.0016: the PDF's 0.4 pt, 1.4 px of
+  900) and `frametitle.rule-color` (a role, a blend or a palette name, default the `rule` blend
+  the column rules use) set the hairline under the content title in every format; the PDF's color
+  theme and the pptx template read them (the theme's `frametitle rule` color is
+  `EngineFrametitleRuleColor`). Nothing to do.
 
 ## [26.10.9] - 2026-10-22
 

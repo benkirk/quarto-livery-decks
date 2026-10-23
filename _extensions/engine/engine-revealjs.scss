@@ -210,8 +210,8 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   top: var(--engine-title-rule-y);
   left: var(--engine-margin);
   right: var(--engine-margin);
-  height: 1px;
-  background: var(--engine-rule);
+  height: var(--engine-title-rule-width);
+  background: var(--engine-title-rule-color);
 }
 .reveal .slides section.slide.level2.feature::before,
 .reveal .slides section.slide.level2.closing::before,

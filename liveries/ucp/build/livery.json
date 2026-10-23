@@ -1143,6 +1143,8 @@
     "body": 0.1667,
     "height": 0.0778,
     "rule": true,
+    "rule-color": "#A9B8CB",
+    "rule-width": 0.0016,
     "rule-y": 0.1444,
     "tab": true,
     "top": 0.0489

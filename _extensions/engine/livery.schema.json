@@ -499,6 +499,16 @@
           "type": "number", "minimum": 0, "maximum": 1,
           "description": "The hairline's y, a fraction of the height; the body starts a fixed gap under it, or under a taller mark.",
           "default": 0.1444
+        },
+        "rule-width": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The hairline's thickness, a fraction of the height (0.4 pt on the PDF's paper, 1.4 px of 900).",
+          "default": 0.0016
+        },
+        "rule-color": {
+          "type": "string",
+          "description": "The hairline's color: a role, a blend or a palette name (default: the `rule` blend, as the column rules).",
+          "default": "rule"
         }
       }
     },

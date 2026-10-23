@@ -140,9 +140,9 @@
     \engine@ifstyle{normal}{%
       \ifdefined\engine@ft@norule\else
       \hbox{{\usebeamercolor[fg]{frametitle rule}%
-        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height0.4pt}}\fi
+        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height\engine@ft@rulewidth\paperheight}}\fi
     }{}%
-    \vskip\dimexpr\engine@ft@bodytop\paperheight-\engine@ft@ruley\paperheight-0.4pt\relax}%
+    \vskip\dimexpr\engine@ft@bodytop\paperheight-\engine@ft@ruley\paperheight-\engine@ft@rulewidth\paperheight\relax}%
 }
 
 % ---------------------------------------------------------------------------

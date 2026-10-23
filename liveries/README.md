@@ -71,8 +71,9 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
      its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
-     hairline `rule`, and the band's `top`, `height` and `rule-y` as fractions of the height,
-     one set every format draws); `title: {style: band, ...}` for a band title instead of the cover (nsi);
+     hairline `rule` with its `rule-width` and `rule-color`, and the band's `top`, `height` and
+     `rule-y` as fractions of the height, one set every format draws); `title: {style: band, ...}`
+     for a band title instead of the cover (nsi);
      `feature.style`; `section: {progress: true}` for "SECTION 3 OF 5" over the dividers;
      `compositions` to move any box of the composed slides.
    - **Bullets.** `bullets:` (`glyphs` per level, `color`) when the brand's template draws its own

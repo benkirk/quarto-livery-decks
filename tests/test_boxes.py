@@ -184,6 +184,7 @@ def test_geometry_derived(livery):
     j = json.loads((livery / "build" / "livery.json").read_text())
     g, m, ft = j["geometry"], j["geometry"]["margin"], j["frametitle"]
     assert set(ft) == set(lb.FRAMETITLE) | {"body"}, f"{livery.name}: frametitle keys"
+    assert HEX.match(ft["rule-color"]) and 0 <= ft["rule-width"] <= 1, f"{livery.name}: frametitle.rule-color/rule-width"
     lg = g.get("logo") or {}
     below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
     assert ft["body"] == round(max(ft["rule-y"], below) + lb.BODY_GAP, 4), f"{livery.name}: frametitle.body"
@@ -192,10 +193,14 @@ def test_geometry_derived(livery):
     assert g["half"] == round((1 - 2 * m - j["boxes"]["columns"]["gap"]) / 2, 4), f"{livery.name}: geometry.half"
     with zipfile.ZipFile(livery / "template.pptx") as z:
         master = z.read("ppt/slideMasters/slideMaster1.xml").decode()
-    rule = re.search(r'name="Title rule".*?<a:off x="\d+" y="(\d+)"', master, re.S)
+    rule = re.search(r'name="Title rule".*?<a:off x="\d+" y="(\d+)".*?<a:ln w="(\d+)"><a:solidFill><a:srgbClr val="([0-9A-F]{6})"',
+                     master, re.S)
     h_emu = j["type"]["canvas"]["h"] * 12700   # the livery's pptx canvas (type.canvas, points)
     if ft["rule"]:
-        assert rule and int(rule.group(1)) == round(ft["rule-y"] * h_emu), f"{livery.name}: the master's title rule is not at rule-y"
+        assert rule, f"{livery.name}: the master draws no title rule"
+        assert int(rule.group(1)) == round(ft["rule-y"] * h_emu), f"{livery.name}: the master's title rule is not at rule-y"
+        assert int(rule.group(2)) == round(ft["rule-width"] * h_emu), f"{livery.name}: the master's title rule is not rule-width thick"
+        assert rule.group(3) == ft["rule-color"][1:], f"{livery.name}: the master's title rule is not rule-color"
     else:
         assert not rule, f"{livery.name}: frametitle.rule is off, yet the master draws a title rule"
 

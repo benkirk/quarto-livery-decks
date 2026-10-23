@@ -96,7 +96,9 @@
   --engine-title-top: 44px;
   --engine-title-height: 70px;
   --engine-title-rule-y: 130px;
+  --engine-title-rule-width: 1.4px;
   --engine-body-top: 150px;
+  --engine-title-rule-color: #AAA8A3;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: var(--engine-margin);
   --engine-pagenumber-left: auto;

@@ -400,6 +400,8 @@ Content slides' titles.
 | `top` | fraction | `0.0489` | The band's top, a fraction of the height; the title is centered in the band and a taller one grows down. |
 | `height` | fraction | `0.0778` | The band's height, a fraction of the height (the accent tab's too). |
 | `rule-y` | fraction | `0.1444` | The hairline's y, a fraction of the height; the body starts a fixed gap under it, or under a taller mark. |
+| `rule-width` | fraction | `0.0016` | The hairline's thickness, a fraction of the height (0.4 pt on the PDF's paper, 1.4 px of 900). |
+| `rule-color` | string | `"rule"` | The hairline's color: a role, a blend or a palette name (default: the `rule` blend, as the column rules). |
 
 ### `marking`
 

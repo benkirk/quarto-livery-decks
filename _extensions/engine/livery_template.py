@@ -205,7 +205,8 @@ class Builder:
                   f'</a:prstGeom>{fill("accent4")}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')
         rule = (f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/>'
                 f'<p:nvPr userDrawn="1"/></p:nvCxnSpPr><p:spPr>{xfrm(m, rule_y, 1 - 2 * m, 0)}'
-                f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="9525">{fill("tx1", 30000)}</a:ln></p:spPr></p:cxnSp>')
+                f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="{emu(ft["rule-width"], H_EMU)}">'
+                f'{srgb(ft["rule-color"])}</a:ln></p:spPr></p:cxnSp>')
         title = self.ph("Title Placeholder", "title", None, xfrm(title_x, title_top, title_w, band_h),
                         'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/><a:x',
                         "", "Click to edit Master title style")
