@@ -21,6 +21,34 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-10-22: area themes (the "one look, one key" sprint)
+
+- Mode: area (`themes`: the beamer `*.sty`, the revealjs `*.scss`, the pptx steps that draw the same
+  looks, and `livery_build.py`'s emitters), from the window #127–#135 entry's deferred list and
+  the Untriaged piles of the same kind; the plan is `design/one-look-one-key-handoff.md`
+- Range: the area
+- End commit: `81a3c9d` (release 26.10.9, the branch point)
+- Done (#138): the content title band from `frametitle.top/height/rule-y` (the pptx title centered
+  in the band as HTML and beamer, the PDF's tab the band's height; Ben's pick); the hairline from
+  `frametitle.rule-width/rule-color` (the `rule` blend at beamer's 0.4 pt, pick C; the dark PDF's
+  hairline was near-black on black); the theme's `ex` gaps as em of their element from
+  `boxes.note.gap`, `boxes.quote.attribution-gap`, `section.eyebrow-gap`, `section.subtitle-gap`
+  (the PDF's gaps as keys, HTML shrinks to them; the pptx divider's pixel copies and the
+  attribution's missing gap went with them); `boxes.footnote` (hang 0.9, gap 0.55, step 0.3, the
+  `rule` blend; the pptx hangs the marker, spaces by gap and step, sets the mark bold);
+  `boxes.strip.gap`; `type.tracking` (0.08: at 0.1 pdftotext splits the PDF's tracked words);
+  the derived `on-dark` role for every white written by hand (the scss's four Sass defaults
+  stay; the ratchet's ceilings fell to 4 and 0). Each change of look judged on a before/after
+  contact sheet in all three formats under ncar, cu and nasa-dark; parity named every page and
+  slide that moved, in each commit
+- Tried and dropped: none
+- Open: the pptx footnote rule (a shape drawn at style time is orphaned when `grid.py` or
+  `columns.py` moves the paragraph; a late step would need the paragraph's rendered position,
+  which nothing knows before PowerPoint opens the file); HTML's title hairline fixed at `rule-y`
+  where beamer's follows a two-line title (pptx's cannot: a static layout); the pptx `::: note`
+  keeps its measured placement, not `boxes.note.gap`; the four Sass defaults (`$body-bg`,
+  `$dark-bg-text-color`, the mermaid pair) stay compile-time whites overridden at runtime
+
 ## 2026-10-22: window #127–#135
 
 - Mode: window

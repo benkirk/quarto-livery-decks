@@ -1,5 +1,14 @@
 # Sprint handoff: one look, one key (the themes' hand numbers)
 
+**State (2026-10-23):** open as #138 (`themes/one-look-one-key`, nine commits: the handoff, the
+seven items, the records). Items 1–3 at Ben's picks from the sheets (the band, hairline C, the
+PDF's gaps); items 4–7 committed with the proposal as the default by agreement, his picks pending
+("Picks" below): each is a change of the defaults in `livery_build.py` and the schema, a rebuild,
+a parity check and a fixup of that commit. Departures from the plan: the hairline's weight is
+beamer's 0.0016, not 1 px; the gaps are the PDF's old ex gaps as em, not HTML's; `type.tracking`
+defaults to 0.08 because 0.1 makes pdftotext split the PDF's tracked words; the white pile became
+a derived `on-dark` role rather than a panel text key; the pptx draws no footnote rule.
+
 **For a fresh session.** One PR against `main` from `origin/main` after the release that follows
 #136 (branch `themes/one-look-one-key` from `81a3c9d`, release 26.10.9), a commit per item in the
 order below, squash-merged once, no version bump. Planned 2026-10-22 from the #127–#135 sweep's deferred list
