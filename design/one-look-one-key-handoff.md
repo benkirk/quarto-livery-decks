@@ -1,10 +1,10 @@
 # Sprint handoff: one look, one key (the themes' hand numbers)
 
-**State (2026-10-23):** open as #138 (`themes/one-look-one-key`, nine commits: the handoff, the
-seven items, the records). Items 1–3 at Ben's picks from the sheets (the band, hairline C, the
-PDF's gaps); items 4–7 committed with the proposal as the default by agreement, his picks pending
-("Picks" below): each is a change of the defaults in `livery_build.py` and the schema, a rebuild,
-a parity check and a fixup of that commit. Departures from the plan: the hairline's weight is
+**State (2026-10-23):** open as #138 (`themes/one-look-one-key`: the handoff, the seven items, the
+records, the outline fix). Items 1–3 at Ben's picks from the sheets (the band, hairline C, the
+PDF's gaps); items 4–7 committed with the proposal as the default by agreement overnight and
+confirmed by him from the sheets on 2026-10-23 ("Picks" below). An eleventh commit fixes the
+HTML pick outline he spotted on item 5's sheet (an overlay above the head and the strip). Departures from the plan: the hairline's weight is
 beamer's 0.0016, not 1 px; the gaps are the PDF's old ex gaps as em, not HTML's; `type.tracking`
 defaults to 0.08 because 0.1 makes pdftotext split the PDF's tracked words; the white pile became
 a derived `on-dark` role rather than a panel text key; the pptx draws no footnote rule.
@@ -195,19 +195,19 @@ From the side-by-sides, each before its commit (the row filled in as Ben picks):
 3. ex → em: HTML's values (the PDF grows) or the PDF's (HTML shrinks): **the PDF's** (note 0.3,
    attribution 0.5, eyebrow 0.33, subtitle 0.66 em; "P looks good", 2026-10-22).
 4. The footnotes: hang (0.9 / 1.1 / 1.2 em), gap (0.55 / 0.44), step (0.3 / 0.22), the rule's
-   blend (`rule` / foreground 30 % over background): **the proposal, provisional** (hang 0.9, gap
-   0.55, step 0.3, `rule`; committed as the default overnight, 2026-10-22, by agreement; Ben's
-   pick from the sheet in the morning is a one-line change of the defaults).
-5. The strip's gap: **0.3 em of the body above and below, provisional** (HTML's margin as it was;
-   the PDF and pptx gain it; the sheet also shows no gap).
-6. The tracking (one value, or per element): **one `type.tracking`, 0.08 em, provisional** (the
-   sheet shows 0.1, 0.08 and 0.05; at 0.1 pdftotext splits the PDF's tracked words into letters,
+   blend (`rule` / foreground 30 % over background): **the proposal** (hang 0.9, gap 0.55, step 0.3, `rule`; committed as the default overnight by
+   agreement, confirmed by Ben from the sheets 2026-10-23: "I really can't tell any visible
+   difference on 4-6").
+5. The strip's gap: **0.3 em of the body above and below** (HTML's margin as it was; the PDF and pptx gain it;
+   the sheet also showed no gap; confirmed 2026-10-23).
+6. The tracking (one value, or per element): **one `type.tracking`, 0.08 em** (confirmed 2026-10-23; the
+   sheet showed 0.1, 0.08 and 0.05; at 0.1 pdftotext splits the PDF's tracked words into letters,
    "S E C T I O N", measured on Poppins Bold at 8 pt: 8 % keeps them whole; the table header
    changes most).
 7. The feature panel's text role and key: **a derived role, `roles.on-dark`** (whichever of
    background and foreground reads better on `dark`; white on every bundled livery, so the sheet
    is flat), read by the panel, the feature footline and number, the feature blocks, `.brand-dark`
-   and the code tints; the key name is Ben's to confirm (provisional).
+   and the code tints; the key name confirmed 2026-10-23.
 
 ## Memory for the fresh session
 
