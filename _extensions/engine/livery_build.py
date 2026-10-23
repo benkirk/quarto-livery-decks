@@ -1297,8 +1297,11 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
     small = livery["type"]["levels"][2]
     cff = bool(files) and is_cff(d / files[0]["path"])
     cycle = ", ".join(f"'{h(x)}'" for x in b["categorical"])
+    # the family list names the fallback itself: matplotlib builds its per-glyph chain from
+    # font.family alone, so under a generic `sans-serif` a glyph the base face lacks (′, →) drew
+    # as a box (#133); DejaVu Sans is matplotlib's own, always there
     rc = [
-        ("font.family", "sans-serif"),
+        ("font.family", f"{family}, DejaVu Sans" if family else "DejaVu Sans"),
         ("font.sans-serif", f"{family}, DejaVu Sans" if family else "DejaVu Sans"),
         ("font.size", pt("caption")),
         ("mathtext.fontset", "custom"),
