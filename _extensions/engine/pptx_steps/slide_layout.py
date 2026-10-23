@@ -103,6 +103,13 @@ def _table_height(table, other, biggest, pad=2 * style_tables.CELL_MAR):
     return total
 
 
+def table_height(shape, slide):
+    """A table's measured height on its slide (_table_height at the slide's size): what a note
+    under it or a slide centering it reads, since the frame's own height is pandoc's nominal."""
+    other = other_size(slide)
+    return _table_height(shape.table, other, _biggest(shape.table, other))
+
+
 def _biggest(table, other):
     """The size (hundredths of a point) of a table's biggest run, at least other."""
     return max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
@@ -229,8 +236,7 @@ def note_place(slide):
     floor = caption.top + caption.height
     est = int(text_height(caption, slide) * SLACK)   # the room the note takes, as frame_note sets it
     if is_table(fig):
-        other = other_size(slide)
-        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other))
+        bottom = fig.top + table_height(fig, slide)
     else:
         bottom = fig.top + fig.height
         room = floor - est - NOTE_GAP
