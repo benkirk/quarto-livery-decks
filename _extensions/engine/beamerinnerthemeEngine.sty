@@ -102,14 +102,15 @@
 % and its subtitle, with the tab
 \def\engine@sectionstack{%
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
+    % the gaps are the livery's section.eyebrow-gap and .subtitle-gap, em of the eyebrow's and the
+    % subtitle's own type (livery.sty), as the scss sets them
     \engine@ifc{eyebrow@label}{\ifengine@numbered\ifnum\thesection>0
       {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
-        \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
+        \MakeUppercase{\insertsectionnumberlabel}\par\vskip\engine@section@eyebrowgap em}%
     \fi\fi}{}%
     {\usebeamerfont{section title}\ifengine@numbered\insertsectionhead\else\engine@sectionhead\fi\par}%
     \ifx\engine@sectionsubtitle\@empty\else
-      \vskip1.2ex
-      {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
+      {\usebeamerfont{section subtitle}\vskip\engine@section@subtitlegap em\engine@sectionsubtitle\par}%
     \fi}%
   \engine@ctab\@tempboxa}
 % the livery's word (section.label), as HTML and pptx set it; with section.progress, "of" the total
@@ -304,10 +305,10 @@
     \engine@plainblock{block alerted}{BrandAccent}%
     \raggedright\usebeamerfont{normal text}}
 % \engine@plainblock{<block kind>}{<title color>}: that block kind as a heading over its body
-\def\engine@plainblock#1#2{%
-  \setbeamertemplate{#1 begin}{\par\vskip0.6ex{\usebeamerfont{block title}\color{#2}\insertblocktitle\par}\vskip0.3ex
+\def\engine@plainblock#1#2{%   (the gaps in em of the block title, as every gap of the theme is set in em of its element)
+  \setbeamertemplate{#1 begin}{\par{\usebeamerfont{block title}\vskip0.33em\color{#2}\insertblocktitle\par\vskip0.17em}%
     \usebeamerfont{block body}}%
-  \setbeamertemplate{#1 end}{\par\vskip0.6ex}}
+  \setbeamertemplate{#1 end}{\par{\usebeamerfont{block title}\vskip0.33em}}}
 \def\endenginefeaturepanel{\par\egroup}
 % the bar's title, centred on it: the frame title and subtitle
 \def\engine@featuretitle{\vbox{\hsize=\engine@bw \engine@calign
@@ -360,8 +361,8 @@
 % skip longtable leaves, \LTpost).
 %   \enginenote{121 PiB used of 141 PiB.}
 % ---------------------------------------------------------------------------
-\newcommand\enginenote[1]{%
-  \par\vskip0.4ex{\centering\usebeamerfont{caption}\color{BrandMuted}#1\par}}
+\newcommand\enginenote[1]{%   (boxes.note.gap under the figure, em of the caption type, as the scss)
+  \par{\usebeamerfont{caption}\vskip\engine@boxes@note@gap em\centering\color{BrandMuted}#1\par}}
 
 % ---------------------------------------------------------------------------
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
@@ -563,8 +564,8 @@
   \colorlet{engine@quotebar}{\engine@rolename}%
   \def\engine@quotewho{#2}%
   \engine@barbox{quote}\usebeamerfont{engine quote}}%
-  {\ifx\engine@quotewho\@empty\else   % the attribution in the body's face, upright
-     \par\vskip0.6ex{\normalfont\usebeamerfont{caption}\color{BrandMuted}— \engine@quotewho\par}\fi
+  {\ifx\engine@quotewho\@empty\else   % the attribution in the body's face, upright, boxes.quote.attribution-gap (em of the caption) under the lines
+     \par{\normalfont\usebeamerfont{caption}\vskip\engine@boxes@quote@attributiongap em\color{BrandMuted}— \engine@quotewho\par}\fi
    \endengine@barbox{}{engine@quotebar}\vskip\engine@pady}
 
 % ---------------------------------------------------------------------------

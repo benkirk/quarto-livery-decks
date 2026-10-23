@@ -183,7 +183,8 @@ From the side-by-sides, each before its commit (the row filled in as Ben picks):
    tab the band's height** ("the branch looks great", 2026-10-22).
 2. The hairline's blend and weight (A `rule` at 0.0011 / B a lighter `hairline` blend / C A at
    beamer's 0.0016): **C** (2026-10-22).
-3. ex → em: HTML's values (the PDF grows) or the PDF's (HTML shrinks): —
+3. ex → em: HTML's values (the PDF grows) or the PDF's (HTML shrinks): **the PDF's** (note 0.3,
+   attribution 0.5, eyebrow 0.33, subtitle 0.66 em; "P looks good", 2026-10-22).
 4. The footnotes: hang (0.9 / 1.1 / 1.2 em), gap (0.55 / 0.44), step (0.3 / 0.22), the rule's
    blend (`rule` / foreground 30 % over background): —
 5. The strip's gap: —

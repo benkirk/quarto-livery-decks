@@ -103,6 +103,8 @@
   --engine-title-rule-width: 1.4px;
   --engine-body-top: 150px;
   --engine-title-rule-color: #B0B1B2;
+  --engine-section-eyebrow-gap: 0.33em;
+  --engine-section-subtitle-gap: 0.66em;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
   --engine-pagenumber-left: auto;
@@ -170,6 +172,8 @@
   --engine-gallery-fill: transparent;
   --engine-references-hang: 1.5em;
   --engine-references-gap: 0.4em;
+  --engine-quote-attribution-gap: 0.5em;
+  --engine-note-gap: 0.3em;
 }
 /* chart colors (livery.json charts) */
 :root {

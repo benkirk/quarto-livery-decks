@@ -50,6 +50,8 @@ def test_sets_are_the_engines():
     assert set(P["frametitle"]["properties"]) == set(lb.FRAMETITLE), "frametitle differs from FRAMETITLE"
     for k, v in lb.FRAMETITLE.items():
         assert P["frametitle"]["properties"][k].get("default") == v, f"frametitle.{k}'s default is not FRAMETITLE's {v}"
+    for k, v in lb.SECTION.items():
+        assert P["section"]["properties"][k].get("default") == v, f"section.{k}'s default is not SECTION's {v}"
     assert set(P["boxes"]["properties"]) == set(lb.BOXES), "boxes differ from BOXES"
     for box, keys in lb.BOXES.items():
         B = P["boxes"]["properties"][box]["properties"]

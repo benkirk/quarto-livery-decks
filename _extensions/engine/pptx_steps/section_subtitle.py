@@ -41,8 +41,8 @@ LABEL_ALIGN = '<a:pPr algn="ctr"/>' if COLUMN.get("align") == "center" else ""  
 EYEBROW = LIVERY["compositions"]["section"]["eyebrow"]   # {label, color}: "Section", cap="all"
                                             # sets it in capitals; None: no eyebrow (section.label: null)
 LABEL_PT = livery_mod.type_pt(LIVERY, "eyebrow")   # the eyebrow role (HTML's 0.7em)
-LABEL_GAP = 10                              # margin-bottom 0.5em
-BODY_GAP = 22                               # .engine-subtitle margin-top 0.7em
+SECTION = LIVERY["section"]                 # the stack's gaps (section.eyebrow-gap, .subtitle-gap), em of the
+LABEL_GAP = round(SECTION["eyebrow-gap"] * LABEL_PT / PT_PX)   # eyebrow and of the subtitle, as HTML and the PDF
 HEAD_LINE = 1.4                             # a divider line's height in em: ascent + descent of the heading font
                                             # (measure.LINE, 1.2, is a body line's)
 BLOCK_SLACK = 4                             # px grown onto a measured title or subtitle block
@@ -197,7 +197,8 @@ def _dress(root, layout_root, number, of=None):
     title_h = height(t_style, title, measure.TITLE, 700) + BLOCK_SLACK   # the face the pptx sets titles in
     body_text = body is not None and any(p.strip() for p in _paragraphs(body))
     body_h = height(b_style, body, measure.BODY, 400) + BLOCK_SLACK if body_text else 0
-    total = label_h + label_gap + title_h + (BODY_GAP + body_h if body_text else 0)
+    body_gap = round(SECTION["subtitle-gap"] * b_style[2] / PT_PX)   # em of the subtitle's size (the layout's)
+    total = label_h + label_gap + title_h + (body_gap + body_h if body_text else 0)
     y = BLOCK_TOP if COLUMN["anchor"] == "top" else (BLOCK_TOP + BLOCK_BOTTOM - total) / 2   # column.anchor
 
     ids = [int(e.get("id")) for e in tree.iter("{%s}cNvPr" % P) if (e.get("id") or "").isdigit()]
@@ -221,7 +222,7 @@ def _dress(root, layout_root, number, of=None):
     if TAB:
         tree.append(tab)
     if body_text:
-        _set_xfrm(body, b_style[0], y + title_h + BODY_GAP, b_style[1], body_h)
+        _set_xfrm(body, b_style[0], y + title_h + body_gap, b_style[1], body_h)
 
 
 def run(parts: dict, name: str) -> None:

@@ -332,7 +332,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
 // caption's look
 .reveal .slides section .engine-note {
   @include caption;
-  margin-top: 0.4em;
+  margin-top: var(--engine-note-gap);   // boxes.note.gap, em of the caption type
   p { margin: 0; }
 }
 
@@ -437,7 +437,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   > p + p { margin-top: 0.25em; }
   > p.engine-attribution {   // in the body's face, upright
     @include caption($block: false);
-    margin-top: 0.6em; font-family: inherit; font-style: normal;
+    margin-top: var(--engine-quote-attribution-gap); font-family: inherit; font-style: normal;   // boxes.quote.attribution-gap
   }
   @include trim($last: false);
 }
@@ -909,7 +909,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 0.5em;
+    margin-bottom: var(--engine-section-eyebrow-gap);   // section.eyebrow-gap, em of the eyebrow
   }
   h1 {
     position: relative;
@@ -929,7 +929,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     }
   }
   .engine-subtitle {
-    margin-top: 0.7em;
+    margin-top: var(--engine-section-subtitle-gap);   // section.subtitle-gap, em of the subtitle
     font-size: calc(var(--engine-type-sectionsubtitle, 1.1) * 1em);
     p { margin: 0 0 0.4em; }
     :not(pre) > code { background: rgba(#fff, 0.16); color: var(--engine-cmp-text); }

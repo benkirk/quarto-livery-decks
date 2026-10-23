@@ -69,6 +69,10 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
 FRAMETITLE = {"align": "left", "tab": True, "rule": True, "top": 0.0489, "height": 0.0778, "rule-y": 0.1444,
               "rule-width": 0.0016, "rule-color": "rule"}
 BODY_GAP = 0.0223   # the content body's top under the hairline, or under a taller mark: 20 px of 900 (0.1444 + it rounds to the 0.1667 the formats drew)
+# the divider stack's gaps (livery.yml section:), em of the element above the gap: the eyebrow's under
+# it (of the eyebrow type), the subtitle's above it (of the section subtitle type). These and the note
+# and attribution gaps are the PDF's old ex gaps as em (Ben's pick from the side-by-side, 2026-10-22)
+SECTION = {"eyebrow-gap": 0.33, "subtitle-gap": 0.66}
 BODY_BOTTOM = 0.9222   # its foot (the pptx body placeholder's; 70 px of 900 above the edge, as HTML pads)
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
@@ -114,7 +118,9 @@ BOXES = {
     # space above each row and number-width the number column, em of the body (HTML's 0.55em, 2em)
     "agenda": {"number-color": "primary-contrast", "current-color": "primary-contrast", "gap": 0.55, "number-width": 2},
     "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0],   # a quote block: a bar, no fill,
-              "family": None, "style": "normal"},   # its lines' face: a typography.fonts family (null: the body's), its style
+              "family": None, "style": "normal",   # its lines' face: a typography.fonts family (null: the body's), its style
+              "attribution-gap": 0.5},   # the attribution's distance under the lines, em of the caption type
+    "note": {"gap": 0.3},   # a ::: note under a figure or table: its distance under it, em of the caption type
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
@@ -238,6 +244,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
+    out["section"] = {**SECTION, **(data.get("section") or {})}   # the divider stack's gaps always in the json
     # the TeX name of each role and blend (livery.sty defines them, and carries this table as
     # \engine@role@<name> for a card's or strip's role=; the filters check a role= against it)
     out.setdefault("latex", {})["roles"] = {**{r: t for r, t in ROLE_TEX.items() if r in roles},
@@ -849,6 +856,9 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for k, tex in (("top", "top"), ("height", "height"), ("rule-y", "ruley"), ("rule-width", "rulewidth"), ("body", "bodytop")):
         L.append(f"\\def\\engine@ft@{tex}{{{ft[k]}}}")
     L.append(f"\\definecolor{{EngineFrametitleRuleColor}}{{HTML}}{{{ft['rule-color'][1:]}}}")
+    L.append("% the divider stack's gaps (section:), em of the eyebrow and of the subtitle")
+    for k in SECTION:
+        L.append(f"\\def\\engine@section@{k.replace('-', '')}{{{livery['section'][k]}}}")
     mk = livery.get("marking")
     if mk:   # the marking strip: its box (y down), alignment, colors and the livery's default text
         L.append("% the marking strip (marking:); its text is the deck's \\enginemarking, else this default")
@@ -1101,6 +1111,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
                     ("rule-width", "title-rule-width"), ("body", "body-top")):
         props.append(f"--engine-{name}: {px(ft[k])};")
     props.append(f"--engine-title-rule-color: {ft['rule-color']};")
+    for k in SECTION:   # the divider stack's gaps, em of the eyebrow and of the subtitle (section:)
+        props.append(f"--engine-section-{k}: {livery['section'][k]:g}em;")
     if ft["align"] == "center":
         props.append("--engine-title-justify: center;")
         props.append("--engine-title-text-align: center;")
@@ -1217,6 +1229,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-gallery-fill: {gal['fill'] or 'transparent'};"]
     refs = b["references"]
     p += [f"--engine-references-hang: {refs['hang']:g}em;", f"--engine-references-gap: {refs['gap']:g}em;"]
+    p += [f"--engine-quote-attribution-gap: {quote['attribution-gap']:g}em;",   # em of the caption type: set on the
+          f"--engine-note-gap: {b['note']['gap']:g}em;"]                          # caption-sized element itself
     return p
 
 

@@ -260,7 +260,9 @@
           "description": "The eyebrow's color, a role or a hex.",
           "default": "secondary"
         },
-        "progress": {"type": "boolean", "default": false, "description": "The eyebrow reads \"SECTION 3 of 5\": the divider's number of the numbered sections, in every format (LaTeX: \\enginesectiontotal{5} in the preamble; the Quarto filter writes it)."}
+        "progress": {"type": "boolean", "default": false, "description": "The eyebrow reads \"SECTION 3 of 5\": the divider's number of the numbered sections, in every format (LaTeX: \\enginesectiontotal{5} in the preamble; the Quarto filter writes it)."},
+        "eyebrow-gap": {"type": "number", "minimum": 0, "default": 0.33, "description": "The gap under the eyebrow, above the heading, in em of the eyebrow type."},
+        "subtitle-gap": {"type": "number", "minimum": 0, "default": 0.66, "description": "The gap under the heading, above the subtitle, in em of the section subtitle type."}
       }
     },
     "art": {
@@ -621,7 +623,16 @@
             "bar-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default."},
             "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 1.0], "description": "Its text's distance from its edges, in em of the body type."},
             "family": {"type": ["string", "null"], "minLength": 1, "default": null, "description": "The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface."},
-            "style": {"enum": ["normal", "italic"], "default": "normal", "description": "Its lines' style: normal (upright) or italic."}
+            "style": {"enum": ["normal", "italic"], "default": "normal", "description": "Its lines' style: normal (upright) or italic."},
+            "attribution-gap": {"type": "number", "minimum": 0, "default": 0.5, "description": "The attribution's distance under the lines, in em of the caption type."}
+          }
+        },
+        "note": {
+          "type": "object",
+          "description": "A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look).",
+          "additionalProperties": false,
+          "properties": {
+            "gap": {"type": "number", "minimum": 0, "default": 0.3, "description": "Its distance under the figure or table, in em of the caption type (HTML and PDF; the pptx places it by measure)."}
           }
         },
         "card": {

@@ -35,6 +35,14 @@ owner changes a band, a hairline or a footnote rule once.
   background to that mid gray (ncar #DDE3EA to #A9B8CB), and on a dark livery it appears (nasa-dark
   drew it near-black on black). HTML: 1.4 px instead of 1 px. pptx: the blend instead of the
   text color at 30 % alpha, 0.86 pt instead of 0.75.
+- The gaps the PDF set in `ex` where HTML set `em` read alike (Poppins' ex is 0.55 em, so the
+  PDF's were about half of HTML's): a `::: note` sits 0.3 em of the caption under its figure, a
+  quote's attribution 0.5 em under the lines, a divider's eyebrow 0.33 em above its heading and
+  the subtitle 0.66 em below it, in every format (`boxes.note.gap`, `boxes.quote.attribution-gap`,
+  `section.eyebrow-gap`, `section.subtitle-gap`), the PDF's gaps as they were. HTML: each gap
+  shrinks by 0.1–0.2 em. pptx: the attribution gains the gap (it had none); the divider's stack
+  tightens by a few pixels. PDF as before. The feature panel's block headings keep their gaps,
+  now in em of the heading.
 
 ### Liveries
 
@@ -49,6 +57,11 @@ owner changes a band, a hairline or a footnote rule once.
   the column rules use) set the hairline under the content title in every format; the PDF's color
   theme and the pptx template read them (the theme's `frametitle rule` color is
   `EngineFrametitleRuleColor`). Nothing to do.
+- `boxes.note.gap` (default 0.3, em of the caption type: a `::: note`'s distance under its
+  figure), `boxes.quote.attribution-gap` (0.5, em of the caption: the attribution's under the
+  lines), `section.eyebrow-gap` (0.33, em of the eyebrow, under it) and `section.subtitle-gap`
+  (0.66, em of the subtitle, above it): the gaps HTML had in `em` and the PDF in `ex`, one number
+  each, read by all three formats. Nothing to do.
 
 ## [26.10.9] - 2026-10-22
 

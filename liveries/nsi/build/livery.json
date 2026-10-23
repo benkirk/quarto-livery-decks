@@ -65,6 +65,9 @@
         0.9
       ]
     },
+    "note": {
+      "gap": 0.3
+    },
     "panel": {
       "pad": [
         0.6,
@@ -72,6 +75,7 @@
       ]
     },
     "quote": {
+      "attribution-gap": 0.5,
       "bar": 0.0089,
       "bar-color": "#8D7334",
       "family": null,
@@ -1366,7 +1370,9 @@
   },
   "schema": 1,
   "section": {
+    "eyebrow-gap": 0.33,
     "label": "Section",
+    "subtitle-gap": 0.66,
     "tab": true
   },
   "signoff": {

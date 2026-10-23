@@ -245,7 +245,9 @@ def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
             t = p.find(".//" + qn("a:t"))
             if t is not None:
                 t.text = "— " + (t.text or "")
-            style_runs(p, livery_mod.type_pt(LIVERY, "caption"), color=_hex("muted"))
+            caption_pt = livery_mod.type_pt(LIVERY, "caption")
+            style_runs(p, caption_pt, color=_hex("muted"))
+            space_before(p, BOXES["quote"]["attribution-gap"] * caption_pt)   # under the lines, as HTML and the PDF
         else:
             style_runs(p, livery_mod.type_pt(LIVERY, "quote"))
             for r in p.iter(qn("a:r")):

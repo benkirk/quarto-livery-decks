@@ -140,6 +140,8 @@ Section slides.
 | `tab` | boolean | `true` | The accent tab beside the heading. |
 | `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex. |
 | `progress` | boolean | `false` | The eyebrow reads "SECTION 3 of 5": the divider's number of the numbered sections, in every format (LaTeX: \enginesectiontotal{5} in the preamble; the Quarto filter writes it). |
+| `eyebrow-gap` | number | `0.33` | The gap under the eyebrow, above the heading, in em of the eyebrow type. |
+| `subtitle-gap` | number | `0.66` | The gap under the heading, above the subtitle, in em of the section subtitle type. |
 
 ### `art`
 
@@ -431,6 +433,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
 | `agenda` | object |  | The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows. |
 | `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
+| `note` | object |  | A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look). |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
@@ -497,6 +500,15 @@ A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no 
 | `pad` | [vertical, horizontal] em | `[0.3, 1.0]` | Its text's distance from its edges, in em of the body type. |
 | `family` | string or null | `null` | The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface. |
 | `style` | `normal` \| `italic` | `"normal"` | Its lines' style: normal (upright) or italic. |
+| `attribution-gap` | number | `0.5` | The attribution's distance under the lines, in em of the caption type. |
+
+### `boxes.note`
+
+A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look).
+
+| key | type | default | |
+|---|---|---|---|
+| `gap` | number | `0.3` | Its distance under the figure or table, in em of the caption type (HTML and PDF; the pptx places it by measure). |
 
 ### `boxes.card`
 

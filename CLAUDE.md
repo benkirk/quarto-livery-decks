@@ -223,7 +223,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   bibtex (the image's `texlive-bibtex-extra`; biber is not installed); the theme's `bibliography
   item` must not assume `\insertbiblabel` (biblatex defines none).
 - **Notes under a figure** (`::: note` right after a slide's figure or table): its
-  caption, as the `.full` caption looks (caption role, muted, centered, just under it). HTML
+  caption, as the `.full` caption looks (caption role, muted, centered, `boxes.note.gap` em of the
+  caption under it in HTML and PDF; the pptx places it by measure). HTML
   `.engine-note`, PDF `\enginenote` (both after the † lift, which reaches into it; after a
   table the filter writes `\vskip-\LTpost` first). pptx: `single-body.lua` folds it into the
   caption box and writes `engine-layout: note`; `slide_layout.py` splits the box at its line
@@ -425,6 +426,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   line, no bookmark; its state global until shipout, where the background draws the stack).
   `section.progress` (default off) reads "SECTION 3 of 5": pptx counts the numbered dividers,
   HTML's filter writes `data-engine-section-total`, beamer's writes `\enginesectiontotal{n}`.
+  The stack's gaps are `section.eyebrow-gap` (em of the eyebrow, under it) and
+  `section.subtitle-gap` (em of the subtitle, above it), always in `livery.json` (`SECTION`), read
+  by the inner theme, the scss and `section_subtitle.py` alike; every gap the beamer theme sets
+  is in `em` of its own element's font, selected first, never `ex` (Poppins' ex is 0.55 em, so an
+  `ex` gap read half of HTML's `em`).
   In pptx the blue field, logo and waves are the template's Section Header
   layout, which `livery template` generates with the rest of the
   template from the livery's data (`make livery` after a livery change, never edit
@@ -659,7 +665,8 @@ it does, by area, beyond the format notes above:
   or a strip, where it warns and stays its lines): `engine-common.lua`'s `quote_parts()` (a last
   line led by —, – or -- the attribution) and `quote_blocks()`, the one walk every format uses;
   `boxes.quote` (`bar`, `bar-color` primary-contrast by default, `pad`, `family`: a bundled
-  `typography.fonts` family or null, `style`) and the `quote` type role; `pptx.quote-typeface`
+  `typography.fonts` family or null, `style`, `attribution-gap` em of the caption under the lines,
+  in all three) and the `quote` type role; `pptx.quote-typeface`
   names PowerPoint's face. pptx: `⟦engine:quote role=⟧` ... `⟦engine:attribution⟧` ...
   `⟦engine:end⟧` in a `.engine-quote-marks` Div; a quote in a column makes a grid slide
   (`is_grid()`, unless a column holds a picture or table: pandoc's slide and blockquote then, warned);
