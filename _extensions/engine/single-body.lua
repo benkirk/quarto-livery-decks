@@ -20,10 +20,7 @@ end
 local C = dofile(quarto.utils.resolve_path("engine-common.lua"))
 local is_note = C.is_note
 
--- Speaker notes, and the hidden div quarto appends, stay outside the wrapper.
-local function is_aside(blk)
-  return blk.t == "Div" and (blk.classes:includes("notes") or blk.classes:includes("hidden"))
-end
+local is_aside = C.is_aside   -- speaker notes and Quarto's own divs stay outside the wrapper
 
 local function is_image_para(blk)   -- a paragraph of images alone (C.para_images)
   return C.para_images(blk) ~= nil
