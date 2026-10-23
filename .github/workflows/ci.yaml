@@ -181,9 +181,6 @@ jobs:
           groups = {sh.name for s in prs.slides for sh in s.shapes if sh.shape_type == MSO_SHAPE_TYPE.GROUP}
           missing = {"Steps", "Timeline", "Quote", "Agenda", "Gallery"} - groups
           assert not missing, f"groups not drawn: {missing}"
-          markers = [p.text for s in prs.slides for sh in s.shapes if sh.has_text_frame
-                     for p in sh.text_frame.paragraphs if "⟦engine:" in p.text]
-          assert not markers, markers
           EOF
 
       # the sample's own make qa (docs/authoring.md "Checking a deck"): every slide of every

@@ -63,3 +63,17 @@ def test_a_gallery_caption_past_its_cell_fails(deck_qa, kind):
     assert fails == ['s1 "Six views": a gallery caption runs past its cell; shorten it']
     fails, _ = deck_qa.html_findings([{**slide, "galleryCapOver": False}])
     assert fails == []
+
+
+def test_pptx_scan_counts_slides_and_finds_markers(deck_qa, tmp_path):
+    """pptx_scan: the deck's slide count and the slides whose text still holds a grid marker
+    (`⟦engine:…⟧`, which a step left undrawn): the zip's slide parts alone, no python-pptx."""
+    import zipfile
+    sld = '<p:sld xmlns:p="x" xmlns:a="y"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>%s</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>'
+    with zipfile.ZipFile(tmp_path / "d.pptx", "w") as z:
+        z.writestr("ppt/slides/slide1.xml", sld % "Fine.")
+        z.writestr("ppt/slides/slide2.xml", sld % "⟦engine:lead⟧The headline⟦engine:end⟧")
+        z.writestr("ppt/slides/slide10.xml", sld % "Also fine.")
+        z.writestr("ppt/slideLayouts/slideLayout1.xml", sld % "⟦engine:not a slide⟧")
+    assert deck_qa.pptx_scan(str(tmp_path / "d")) == (3, [2])
+    assert deck_qa.pptx_scan(str(tmp_path / "missing")) == (None, [])

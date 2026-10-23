@@ -358,12 +358,27 @@ def html_findings(slides):
 
 # ------------------------------------------------------------------- pptx, names
 
-def pptx_count(deck):
+MARKER = "⟦engine:"   # grid-pptx.lua's markers, which the pptx steps draw and delete
+
+
+def pptx_scan(deck):
+    """(the pptx's slide count, the slides still holding a grid marker), (None, []) without the
+    file. A marker left in a slide's text is an element the steps did not draw (a lead folded
+    into a figure's caption once reached PowerPoint as its literal text, #133): the steps warn,
+    and this makes it a failure."""
     path = deck + ".pptx"
     if not os.path.exists(path):
-        return None
+        return None, []
+    count, left = 0, []
     with zipfile.ZipFile(path) as z:
-        return sum(1 for f in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", f))
+        for f in z.namelist():
+            m = re.fullmatch(r"ppt/slides/slide(\d+)\.xml", f)
+            if not m:
+                continue
+            count += 1
+            if MARKER in z.read(f).decode("utf-8"):
+                left.append(int(m.group(1)))
+    return count, sorted(left)
 
 
 def plain_names(names):
@@ -461,7 +476,8 @@ def main():
         report += ["source " + h for h in tags]
         html_n, slides = html_res.get(deck, (None, []))
         pdf_n, pdf_lines = check_pdf(deck, qa, slides)
-        counts = {"pptx": pptx_count(deck), "pdf": pdf_n, "html": html_n}
+        pptx_n, markers = pptx_scan(deck)
+        counts = {"pptx": pptx_n, "pdf": pdf_n, "html": html_n}
         known = {k: v for k, v in counts.items() if v is not None}
         same = len(set(known.values())) <= 1
         failed |= not same
@@ -473,6 +489,10 @@ def main():
             title = titles.get(int(m.group(1))) if m else None
             report.append("PDF %s%s" % (line, ' ("%s")' % title if title else ""))
         failed |= any(line.startswith("p") for line in pdf_lines)
+        for n in markers:
+            report.append("pptx s%d: a grid marker left in the text (an element the steps did not draw; "
+                          "see their warnings)%s" % (n, ' ("%s")' % titles[n] if titles.get(n) else ""))
+        failed |= bool(markers)
         fails, hints = html_findings(slides)
         failed |= bool(fails)
         report += ["HTML " + f for f in fails] + ["hint " + h for h in hints]
