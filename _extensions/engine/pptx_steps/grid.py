@@ -44,11 +44,12 @@ import livery as livery_mod
 
 from .columns import rules
 from .gallery import draw_gallery
-from .common import (BODY_PT, BOXES, GEOM, LIVERY, SLACK, body_box, column_frames, em, group, inset, is_body, pads, para_text,
-                     rect, rpr, shape, slide_title, space_before, style_runs)
+from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, em, fit_table, group, inset,
+                     is_body, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title, space_before,
+                     split_br, style_runs)
+from .slide_layout import NOTE_GAP, frame_note, note_style, table_height, use_layout
 from .measure import text_height
 
-MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
@@ -628,6 +629,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
         y += h
     if not keep:
         ph._element.getparent().remove(ph._element)
+    return y
 
 
 def run(prs, path: Path) -> None:
@@ -636,16 +638,50 @@ def run(prs, path: Path) -> None:
     done = 0
     for slide in prs.slides:
         for ph in [sh for sh in slide.shapes if is_body(sh)]:
-            paragraphs = ph.text_frame._txBody.findall(qn("a:p"))
-            if not any(para_text(p).startswith("⟦engine:") for p in paragraphs):
+            txBody = ph.text_frame._txBody
+            if not any("⟦engine:" in para_text(p) for p in txBody.findall(qn("a:p"))):
                 continue
+            # a lead after a figure: single-body.lua folds it into the figure's caption, which pandoc
+            # writes as one centered paragraph, its lines parted by a:br and the markers inline
+            split_br(txBody)
+            paragraphs = txBody.findall(qn("a:p"))
             segs = parse(paragraphs)
             if segs is None:
                 continue
+            for i in marker_spans(paragraphs):   # the fold's centering, off the lines grid draws
+                ppr = paragraphs[i].find(qn("a:pPr"))
+                if ppr is not None:
+                    ppr.attrib.pop("algn", None)
             for p in paragraphs:   # the marker paragraphs go
                 if MARK.match(para_text(p).strip()):
                     p.getparent().remove(p)
-            lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent)
+            above = [sh for sh in slide.shapes if is_picture(sh) and sh.top + sh.height <= ph.top]
+            if above:   # pandoc's caption box, under the picture: the flow starts just below it
+                ph.top = max(sh.top + sh.height for sh in above) + em(0.5)
+            beside = [sh for sh in slide.shapes if is_table(sh) and sh.left >= ph.left + ph.width - em(1)]
+            if beside:   # a lead before a table: pandoc's Content with Caption set them side by side
+                use_layout(prs, slide, "Title and Content")
+                ph.left, ph.top, ph.width = body_frame(prs, ph)
+            left, width = ph.left, ph.width
+            before = {sh._element for sh in slide.shapes}
+            y = lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent)
+            bottom = round(GEOM["body-bottom"] * prs.slide_height)
+            if above and y > bottom:   # the lead needs more room than the caption had: the picture yields
+                over = y - bottom
+                for pic in above:
+                    k, middle = (pic.height - over) / pic.height, pic.left + pic.width // 2
+                    pic.width, pic.height = int(pic.width * k), pic.height - over
+                    pic.left = middle - pic.width // 2
+                for sh in slide.shapes:
+                    if sh._element not in before or sh._element is ph._element:
+                        sh.top -= over
+            for t in beside:   # the table under the flow, as wide as the body, its note under it
+                fit_table(t, left, width)
+                t.top, t.height = y + em(0.5), table_height(t, slide)
+                notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]
+                note_style(slide)   # the note's look, which slide_layout skipped beside two bodies (one is left now)
+                for note in notes:   # under the table, raised when the text would pass the body's foot
+                    frame_note(note, slide, left, width, t.top + t.height + NOTE_GAP, bottom)
             done += 1
         left = [t.text for t in slide._element.iter(qn("a:t")) if t.text and "⟦" in t.text]
         if left:

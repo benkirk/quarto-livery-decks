@@ -87,6 +87,28 @@ Column alignment is set with `:---`, `:---:`, and `---:` in the separator
 row. (Text after a table would split the pptx slide; notes never do.)
 :::
 
+## A lead over a table
+
+::: {.lead}
+**Three systems, one allocation.** The lead says what the table shows; the note under it says how to read the numbers.
+:::
+
+| Resource | Type    | Cores per node | Nodes |
+|:---------|:-------:|---------------:|------:|
+| Derecho  | HPC     |            128 | 2,488 |
+| Casper   | DAV     |             36 |   100 |
+| Gust     | HPC     |            128 |    16 |
+
+::: note
+Cores per node as scheduled; Derecho's GPU nodes are not counted.
+:::
+
+::: {.notes}
+A lead before a table: pandoc would set them side by side (its Content with Caption
+layout); the engine puts the lead over the table at the body's width and the note at
+the foot, as HTML and PDF stack them.
+:::
+
 ## Citing sources
 
 MPAS solves the compressible equations on a C-grid [@skamarock2012]; see also @knuth84.
@@ -309,6 +331,19 @@ With `{.full}` the cells fill the slide, and this line is the caption.
 
 ::: note
 Width can also be set in pixels (`{width=400}`) or with a `height=` attribute. PNG, JPG and SVG work in every format.
+:::
+
+## A lead under a figure
+
+![](images/example.jpg){height="55%" fig-align="center"}
+
+::: {.lead}
+**The picture first, the point under it.** A lead after a figure is drawn under the picture in every format; the picture yields room when the lead needs it.
+:::
+
+::: {.notes}
+In pptx the lead reaches the slide as the figure's caption (anything after a picture
+would split the slide), and the engine draws it from there.
 :::
 
 ## A linked screenshot
