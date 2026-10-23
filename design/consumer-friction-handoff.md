@@ -1,5 +1,19 @@
 # Sprint handoff: the first consumer's friction list (#133)
 
+**State (2026-10-23):** executed on `decks/consumer-friction`, every in-sprint item landed, a commit
+each (items 1 and 2 as one: both live in `grid.run()`). Departures from the plan below: the
+lead-over-table flow puts the note just under the table (HTML's and PDF's place), raised only at
+the body's foot, through `slide_layout.frame_note` and `table_height` (shared with `note_place`);
+a lead under a picture that needs more room shrinks the picture and lifts the flow; the table rule
+got a second refinement (an edge within `INDENT` of a cell's own start is its column's indented
+sub-rows: the fy27 hierarchy table), after a start-merging version proved unsound (a stray line
+absorbed a real column); the fy27 deck's `make qa` is clean with three real pptx hints (a dense
+0.7-scale table at the footer, two captions at the margin). Parity: quickstart, fixtures and plots
+unchanged under ncar, cu and nsi; the sample differs by its two new slides alone (every baseline
+page matched by content). `make test`: 383 passed. Item 13's PowerPoint look is still Ben's: the
+two decks are in the session's scratchpad (`sbit-deck-original-pngs.pptx`, `sbit-deck-cleaned.pptx`).
+Open questions taken at the defaults (10b out, 8 a follow-up, 5 as hints).
+
 **For a fresh session.** One PR against `main` (branch `decks/consumer-friction` from `origin/main`
 at `642be18`, v26.10.10), a commit per item in the order below, squash-merged once, no version bump
 (ask before any tag; the release that follows is 26.10.11). Commit 0 is this file at
