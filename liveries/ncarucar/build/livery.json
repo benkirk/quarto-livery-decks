@@ -1471,7 +1471,8 @@
         "pt": 22,
         "size": 1.8333
       }
-    }
+    },
+    "tracking": 0.08
   },
   "typography": {
     "base": "Poppins",

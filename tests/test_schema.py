@@ -37,7 +37,8 @@ def test_livery_valid(livery: Path):
 
 def test_sets_are_the_engines():
     P = S.load()["properties"]
-    assert set(P["type"]["properties"]) == set(lb.TYPE) | {"levels"}, "type roles differ from TYPE"
+    assert set(P["type"]["properties"]) == set(lb.TYPE) | {"levels", "tracking"}, "type roles differ from TYPE"
+    assert P["type"]["properties"]["tracking"]["default"] == lb.TRACKING, "type.tracking's default is not TRACKING"
     assert set(P["compositions"]["properties"]) == set(lb.COMPOSITIONS), "compositions differ from COMPOSITIONS"
     for name, c in P["compositions"]["properties"].items():
         assert c["$ref"] == "#/$defs/composition", f"compositions.{name} is not a $defs.composition"

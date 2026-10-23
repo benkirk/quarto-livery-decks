@@ -58,7 +58,7 @@
 \def\engine@flush{\engine@pending\let\engine@pending\@empty}
 \def\engine@el@date{\ifx\insertdate\@empty\else
   \ifx\engine@started\@empty\else\vskip0.02\paperheight\fi   % after other lines (a byline's last)
-  \engine@flush{\engine@elcolor{date}\usebeamerfont{date}\MakeUppercase{\insertdate}\par}%
+  \engine@flush{\engine@elcolor{date}\usebeamerfont{date}\engine@tracking\MakeUppercase{\insertdate}\par}%
   \def\engine@pending{\vskip0.02\paperheight}\def\engine@started{1}\fi}
 \def\engine@el@title{\engine@flush
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@palign\engine@part
@@ -105,7 +105,7 @@
     % the gaps are the livery's section.eyebrow-gap and .subtitle-gap, em of the eyebrow's and the
     % subtitle's own type (livery.sty), as the scss sets them
     \engine@ifc{eyebrow@label}{\ifengine@numbered\ifnum\thesection>0
-      {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
+      {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}\engine@tracking
         \MakeUppercase{\insertsectionnumberlabel}\par\vskip\engine@section@eyebrowgap em}%
     \fi\fi}{}%
     {\usebeamerfont{section title}\ifengine@numbered\insertsectionhead\else\engine@sectionhead\fi\par}%
@@ -978,7 +978,8 @@
 \newcommand\engineth[1]{{\usebeamercolor[fg]{normal text}\bfseries
   \fontsize{\fpeval{0.8*\f@size}pt}{\fpeval{0.8*\strip@pt\dimexpr\f@baselineskip\relax}pt}%
   \selectfont\engine@tracking\MakeUppercase{#1}}}
-\def\engine@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=4}}{}}
+% small caps' letter spacing: type.tracking (em; livery.sty), fontspec's LetterSpace is in percent of the em
+\def\engine@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=\fpeval{100*\engine@type@tracking}}}{}}
 % \arrayrulecolor is global, so put it back after each table
 \AddToHook{env/longtable/begin}{%
   \let\engine@arc\CT@arc@

@@ -191,7 +191,10 @@ From the side-by-sides, each before its commit (the row filled in as Ben picks):
    pick from the sheet in the morning is a one-line change of the defaults).
 5. The strip's gap: **0.3 em of the body above and below, provisional** (HTML's margin as it was;
    the PDF and pptx gain it; the sheet also shows no gap).
-6. The tracking (one value, or per element): —
+6. The tracking (one value, or per element): **one `type.tracking`, 0.08 em, provisional** (the
+   sheet shows 0.1, 0.08 and 0.05; at 0.1 pdftotext splits the PDF's tracked words into letters,
+   "S E C T I O N", measured on Poppins Bold at 8 pt: 8 % keeps them whole; the table header
+   changes most).
 7. The feature panel's text role and key: —
 
 ## Memory for the fresh session

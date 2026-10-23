@@ -25,7 +25,7 @@ HEAD_RULE   = (3 * PX, livery_mod.hex(LIVERY, "primary"))       # 3px solid var(
 ROW_RULE    = (1 * PX, livery_mod.blend(LIVERY, "table-rule"))  # mix(foreground, surface, 20%)
 BAND_FILL   = livery_mod.blend(LIVERY, "table-band")            # surface at 60% on white
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
-HEAD_SPC    = 0.04                     # letter-spacing: 0.04em
+HEAD_SPC    = LIVERY["type"]["tracking"]   # the small caps' letter spacing, em (type.tracking, every format)
 CELL_MAR    = em(0.4, livery_mod.type_pt(LIVERY, "table"))   # EMU: HTML's 0.3em padding, its line height
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
 

@@ -256,9 +256,11 @@ class Builder:
                 f'</a:xfrm></p:grpSpPr>{"".join(shapes)}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>')
 
     def field_text(self, size, bold=False, caps=False, role="primary-text", align="l"):
-        """A lstStyle for text on the brand field, in the primary-text role (or another)."""
+        """A lstStyle for text on the brand field, in the primary-text role (or another); small caps
+        tracked by type.tracking (em of the size; a:spc in hundredths of a point)."""
+        caps_attr = f' cap="all" spc="{round(int(self.sz(size)) * self.L["type"]["tracking"])}"' if caps else ""
         return (f'<a:lvl1pPr algn="{align}" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
-                f'<a:defRPr sz="{self.sz(size)}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
+                f'<a:defRPr sz="{self.sz(size)}" b="{1 if bold else 0}"{caps_attr}>'
                 f'{srgb(self.roles[role])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
 
     def column(self, c, kind):

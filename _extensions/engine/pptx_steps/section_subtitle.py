@@ -21,7 +21,7 @@ from lxml import etree
 import livery as livery_mod
 
 from . import docprops, measure
-from .common import GEOM, LIVERY
+from .common import GEOM, LIVERY, TRACKING
 from .measure import PT_PX, PX
 from .ooxml import A, CT, NS, P, PR, R, parse, serialize
 
@@ -207,7 +207,7 @@ def _dress(root, layout_root, number, of=None):
                    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>'
                    '<p:txBody><a:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t">'
                    f'<a:noAutofit/></a:bodyPr><a:lstStyle/><a:p>{LABEL_ALIGN}'
-                   f'<a:r><a:rPr lang="en-US" sz="{round(LABEL_PT * 100)}" b="1" cap="all" spc="{round(LABEL_PT * 10)}">'
+                   f'<a:r><a:rPr lang="en-US" sz="{round(LABEL_PT * 100)}" b="1" cap="all" spc="{round(LABEL_PT * 100 * TRACKING)}">'
                    f'<a:solidFill><a:srgbClr val="{_eyebrow_hex()}"/></a:solidFill>'
                    f'<a:latin typeface="+mn-lt"/></a:rPr><a:t>{EYEBROW["label"] if EYEBROW else ""} {number}{f" of {of}" if EYEBROW and EYEBROW.get("progress") and of else ""}</a:t>'
                    '</a:r></a:p></p:txBody>')

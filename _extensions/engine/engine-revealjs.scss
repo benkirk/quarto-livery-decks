@@ -274,7 +274,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
     color: var(--engine-foreground);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--engine-tracking);   // type.tracking, every small-caps run
     font-size: 0.8em;
     border-bottom: 3px solid var(--engine-primary) !important;
     padding: 0.35em 0.8em;
@@ -488,7 +488,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
     display: block;
     font-size: calc(var(--engine-type-eyebrow) * 1em);
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--engine-tracking);   // type.tracking, every small-caps run
     text-transform: uppercase;
     color: var(--engine-muted);
   }
@@ -835,7 +835,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
   .date {
     font-size: calc(var(--engine-type-date, 0.6) * 1em);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--engine-tracking);   // type.tracking, every small-caps run
     text-transform: uppercase;
     margin: 0 0 0.9em;
   }
@@ -908,7 +908,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     color: var(--engine-cmp-eyebrow);
     font-size: calc(var(--engine-type-eyebrow, 0.7) * 1em);
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--engine-tracking);   // type.tracking, every small-caps run
     text-transform: uppercase;
     margin-bottom: var(--engine-section-eyebrow-gap);   // section.eyebrow-gap, em of the eyebrow
   }

@@ -299,7 +299,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   widened along its rows (`widened()`), so thin type ("Office") is not lost.
 - **Type**: text sizes are **points on the livery's pptx canvas**, whole or
   half points (a pasted slide carries round numbers; nasa: the reference deck's 10 x 5.625 in,
-  body 12, titles 22): `livery.yml` `type:` (role -> pt, `levels`)
+  body 12, titles 22): `livery.yml` `type:` (role -> pt, `levels`, and `tracking`: every
+  small-caps run's letter spacing in em of its size, `\engine@tracking`, `--engine-tracking`,
+  `common.TRACKING`, default 0.08: above it pdftotext splits the PDF's tracked words into
+  letters)
   and `pptx.size` (inches, default 13.333 x 7.5), defaulting to the engine's `TYPE` (the NSF NCAR
   template's guidance carried onto 540 pt). ncar is on the brand template's own canvas, 10 x
   5.625 in, at its guidance (body 12, titles 20; its family inherits); cu's are the NSI master

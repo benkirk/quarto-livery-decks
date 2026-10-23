@@ -248,10 +248,10 @@ def test_theme_literal_counts_only_fall():
     counts = {
         "scss line-height literals": len(re.findall(r"line-height:\s*[0-9.]+\s*;", scss)),
         "scss #fff/white": len(re.findall(r"#fff\b|\bwhite\b", scss)) - len(re.findall(r"white-space", scss)),
-        "scss letter-spacing": scss.count("letter-spacing"),
+        "scss letter-spacing literals": len(re.findall(r"letter-spacing:\s*[0-9.]+em", scss)),
         "beamer white": len(re.findall(r"\bwhite\b", sty)),
     }
-    ceiling = {"scss line-height literals": 3, "scss #fff/white": 16, "scss letter-spacing": 4, "beamer white": 7}
+    ceiling = {"scss line-height literals": 3, "scss #fff/white": 16, "scss letter-spacing literals": 0, "beamer white": 7}
     over = {k: (v, ceiling[k]) for k, v in counts.items() if v > ceiling[k]}
     assert not over, f"a theme literal pile grew (now, ceiling): {over}"
 

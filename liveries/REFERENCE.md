@@ -689,6 +689,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `display` | number | `40` | A card's big number (`[$20M]{.big}`). |
 | `quote` | number | `24` | A quote block's text (its attribution is `caption`). |
 | `footer` | number | `9` | The footer line (footer=full). |
+| `tracking` | number | `0.08` | The letter spacing of every small-caps run (a card's label, the divider's eyebrow, the title's date, a table header), in em of its size, in every format. Above 0.08, pdftotext reads the PDF's tracked words letter by letter. |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 
 ### `charts`

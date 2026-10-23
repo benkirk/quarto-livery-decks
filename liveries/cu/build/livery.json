@@ -1412,7 +1412,8 @@
         "pt": 48,
         "size": 3.0
       }
-    }
+    },
+    "tracking": 0.08
   },
   "typography": {
     "base": "TeX Gyre Heros",

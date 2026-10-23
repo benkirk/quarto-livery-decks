@@ -54,6 +54,11 @@ owner changes a band, a hairline or a footnote rule once.
   (`boxes.strip.gap`, 0.3 em of the body: HTML's margin as it was). PDF: the strip gains the gap
   above and below (it sat flush). pptx: a strip in a card gains it above and below (flush before),
   a strip on its own gains it above (it had its pad's height below only).
+- Every small-caps run is tracked alike, 0.08 em of its size (`type.tracking`). HTML: a table
+  header's spacing grows from 0.04 em, labels and eyebrows tighten from 0.1 (the date was 0.08).
+  PDF: labels and table headers from 4 % to 8 %, the eyebrow and the date gain tracking (they
+  had none). pptx: a card's label from a fixed 1 pt, a table header from 0.04 em, the eyebrow
+  from 0.1, the date gains it.
 
 ### Liveries
 
@@ -81,6 +86,10 @@ owner changes a band, a hairline or a footnote rule once.
 - `boxes.strip.gap` (default 0.3, em of the body type): the space above and below a strip, in a
   card or on its own, in every format (HTML's margin before; the PDF and pptx had their own).
   Nothing to do.
+- `type.tracking` (default 0.08, em of the run's size): the letter spacing of every small-caps run
+  (a card's label, a divider's eyebrow, the title's date, a table header) in every format. Above
+  0.08 pdftotext splits the PDF's tracked words into letters ("S E C T I O N"), so search and
+  copy break. Nothing to do.
 
 ## [26.10.9] - 2026-10-22
 

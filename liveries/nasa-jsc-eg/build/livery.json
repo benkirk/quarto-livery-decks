@@ -1741,7 +1741,8 @@
         "pt": 36,
         "size": 2.25
       }
-    }
+    },
+    "tracking": 0.08
   },
   "typography": {
     "base": "Liberation Sans",

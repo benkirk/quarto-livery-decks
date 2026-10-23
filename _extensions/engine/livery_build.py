@@ -94,6 +94,8 @@ TYPE = {"body": (16, 1.4), "subhead": (20, 1.2), "frametitle": (27, 1.15), "tabl
 LEVELS = (16, 15, 13, 12, 11)   # the body's five list levels, the first the body itself
 # the roles that scale with the body when a livery leaves them out (the rest scale with the canvas)
 BODY_ROLES = ("subhead", "table", "code", "caption", "footnote", "quote")
+TRACKING = 0.08   # small caps' letter spacing (type.tracking), em of the run's size, every format: above 0.08
+                  # pdftotext splits the PDF's tracked words into letters (Poppins Bold at 8 pt)
 # the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
@@ -370,8 +372,11 @@ def type_scale(name: str, data: dict) -> dict:
             sys.exit(f"{name}: pptx.size {size!r} is not [width, height] in inches")
         cw, ch = round(size[0] * 72), round(size[1] * 72)   # whole points: 13.333 in is 960 pt
     t = data.get("type") or {}
-    for k in sorted(set(t) - set(TYPE) - {"levels"}):
+    for k in sorted(set(t) - set(TYPE) - {"levels", "tracking"}):
         print(f"warning: {name}: unknown type: role {k!r} (ignored)", file=sys.stderr)
+    tracking = t.get("tracking", TRACKING)   # every small-caps run's letter spacing, em
+    if not (isinstance(tracking, (int, float)) and tracking >= 0):
+        sys.exit(f"{name}: type.tracking {tracking!r} is not an em length")
     canvas = ch / CANVAS[1]
     body = float(t.get("body", TYPE["body"][0] * canvas))
     by_body = body / TYPE["body"][0]
@@ -393,7 +398,7 @@ def type_scale(name: str, data: dict) -> dict:
             print(f"warning: {name}: type.{role} {v} rounded to {half(v)} pt", file=sys.stderr)
     levels = [half(v) for v in levels]
     b = pts["body"]
-    return {"canvas": {"w": cw, "h": ch}, "body": round(b / ch, 6), "levels": levels,
+    return {"canvas": {"w": cw, "h": ch}, "body": round(b / ch, 6), "levels": levels, "tracking": tracking,
             "roles": {k: {"pt": pts[k], "size": round(pts[k] / b, 4), "leading": TYPE[k][1]} for k in TYPE}}
 
 
@@ -921,6 +926,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)")
     ty = livery["type"]
     L.append(f"\\def\\engine@type@frac{{{ty['body']}}}")
+    L.append(f"\\def\\engine@type@tracking{{{ty['tracking']}}}")   # small caps' letter spacing, em (\engine@tracking)
     for k, v in ty["roles"].items():
         L.append(f"\\def\\engine@type@{k}{{{{{v['size']}}}{{{v['leading']}}}}}")
     b, lead = ty["roles"]["body"]["pt"], ty["roles"]["body"]["leading"]
@@ -1089,6 +1095,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
     # (the deck's size step, --engine-type-scale from engine-revealjs.lua, multiplies the px ones)
     tpx = lambda pt: f"calc({round(pt / ty['canvas']['h'] * H, 2):g}px * var(--engine-type-scale, 1))"
     props.append(f"--engine-type-body: {tpx(ty['roles']['body']['pt'])};")
+    props.append(f"--engine-tracking: {ty['tracking']:g}em;")   # small caps' letter spacing (type.tracking)
     for k in ("frametitle", "pagenumber", "footer", "marking"):   # fixed px: not shrunk with the body
         props.append(f"--engine-type-{k}: {tpx(ty['roles'][k]['pt'])};")
     for k, v in ty["roles"].items():
