@@ -547,6 +547,7 @@ A strip (`::: {.strip}`): a band tinted in its role across a card.
 |---|---|---|---|
 | `tint` | fraction | `0.18` | The role's share in its fill, over the background. |
 | `pad` | [vertical, horizontal] em | `[0.3, 0.8]` | Its text's distance from its edges, in em of the body type. |
+| `gap` | number | `0.3` | The space above and below it, in a card or on its own, in em of the body type. |
 
 ### `boxes.status`
 

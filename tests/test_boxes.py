@@ -26,7 +26,7 @@ HEX = re.compile(r"^#[0-9A-F]{6}$")
 FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
 EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
        ("quote", "attribution-gap"), ("note", "gap"),
-       ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step")}   # em of a type role, not a fraction
+       ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
 
 
 def test_every_key(livery):

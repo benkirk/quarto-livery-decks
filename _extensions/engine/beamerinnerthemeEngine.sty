@@ -551,8 +551,10 @@
     \edef\engine@barboxin{\noexpand\hspace*{-\the\dimexpr\engine@boxes@card@padx em\relax}}%
     \edef\engine@barboxout{\kern-\the\dimexpr\engine@boxes@card@padx em\relax}%   (a kern: \par drops a trailing glue)
   \fi
+  % boxes.strip.gap above and below it, em of the body (the scss's margin, grid.py's room)
+  \par\vskip\engine@boxes@strip@gap em
   \engine@barbox{strip}}%
-  {\endengine@barbox{engine@strip}{engine@strip}}
+  {\endengine@barbox{engine@strip}{engine@strip}\vskip\engine@boxes@strip@gap em}
 
 % ---------------------------------------------------------------------------
 % quote: \begin{enginequote}[role=<role>]{<attribution>} ... \end{enginequote} (the Quarto filter

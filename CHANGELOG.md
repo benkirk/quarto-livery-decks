@@ -50,6 +50,10 @@ owner changes a band, a hairline or a footnote rule once.
   blend (muted at 60 % before) and the block stands on the body's foot. pptx: the marker hangs
   (the text's lines start under the text, not under the marker), is bold as in HTML and the PDF,
   and the spacing above a footnote is the gap or, after another, the step (10 pt before).
+- A strip (`::: {.strip}`) has the same space above and below it in every format
+  (`boxes.strip.gap`, 0.3 em of the body: HTML's margin as it was). PDF: the strip gains the gap
+  above and below (it sat flush). pptx: a strip in a card gains it above and below (flush before),
+  a strip on its own gains it above (it had its pad's height below only).
 
 ### Liveries
 
@@ -74,6 +78,9 @@ owner changes a band, a hairline or a footnote rule once.
   role, blend or palette name; default the `rule` blend), `width` (0.6 of the text width), and
   in em of the footnote type `gap` (0.55, under the rule), `hang` (0.9, the marker's) and `step`
   (0.3, between entries). Nothing to do.
+- `boxes.strip.gap` (default 0.3, em of the body type): the space above and below a strip, in a
+  card or on its own, in every format (HTML's margin before; the PDF and pptx had their own).
+  Nothing to do.
 
 ## [26.10.9] - 2026-10-22
 

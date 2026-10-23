@@ -125,7 +125,8 @@ BOXES = {
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
-    "strip": {"tint": 0.18, "pad": [0.3, 0.8]},   # 0.18: caution-fill's share (BLENDS), one tint recipe
+    "strip": {"tint": 0.18, "pad": [0.3, 0.8], "gap": 0.3},   # 0.18: caution-fill's share (BLENDS), one tint recipe;
+                                                            # gap: above and below it, em of the body
     "status": {"done": "highlight", "warn": "warning", "fail": "accent"},   # the ✓ ⚠ ✗ glyphs
     # steps and timelines: line, badge and dot of the height (the rail's thickness, a step's badge's
     # and a milestone's dot's diameter); fill a cell behind each item, null for none
@@ -1221,7 +1222,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",
           f"--engine-card-pad-x: {card['pad'][1]:g}em;"]   # a strip reaches the card's edges by it
     p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};",
-          f"--engine-strip-gap: {strip['pad'][0]:g}em;"]   # above and below it: its vertical pad
+          f"--engine-strip-gap: {strip['gap']:g}em;"]   # above and below it (boxes.strip.gap)
     p += [f"--engine-glyph-{k}: {c};" for k, c in b["status"].items()]   # the ✓ ⚠ ✗ glyphs (--engine-status-* are the charts')
     rail = b["rail"]
     p += [f"--engine-rail-line: {px(rail['line'])};", f"--engine-rail-line-color: {rail['line-color']};",

@@ -669,7 +669,8 @@
           "additionalProperties": false,
           "properties": {
             "tint": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.18, "description": "The role's share in its fill, over the background."},
-            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 0.8], "description": "Its text's distance from its edges, in em of the body type."}
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 0.8], "description": "Its text's distance from its edges, in em of the body type."},
+            "gap": {"type": "number", "minimum": 0, "default": 0.3, "description": "The space above and below it, in a card or on its own, in em of the body type."}
           }
         },
         "status": {
