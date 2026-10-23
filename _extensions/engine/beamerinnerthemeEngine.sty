@@ -854,10 +854,10 @@
     \end{tikzpicture}}\par
   \fi}
 % the frame's room under a title in the theme's band (the outer theme's \engine@frametitle ends it at
-% the body's top, 0.1667 of the paper or the livery's frametitle.body), less beamer's 0.25em under the
-% title box and the \lineskip TeX puts above a line as tall as a gallery (enginewide's minipage is
-% one): \beamer@frametextheight, which beamer sets only after the body (a fragile frame's reads 0)
-\def\engine@bodyroom{\dimexpr\textheight-\ifdefined\engine@ft@bodytop\engine@ft@bodytop\else0.1667\fi\paperheight-0.25em-\lineskip\relax}
+% the body's top, the livery's frametitle.body), less beamer's 0.25em under the title box and the
+% \lineskip TeX puts above a line as tall as a gallery (enginewide's minipage is one):
+% \beamer@frametextheight, which beamer sets only after the body (a fragile frame's reads 0)
+\def\engine@bodyroom{\dimexpr\textheight-\engine@ft@bodytop\paperheight-0.25em-\lineskip\relax}
 % the grid, globally (a full frame's background reads it after the body): cols and rows derived
 \def\engine@galgrid{%
   \ifnum\engine@galn=\z@

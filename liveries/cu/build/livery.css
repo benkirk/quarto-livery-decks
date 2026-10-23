@@ -93,6 +93,10 @@
   --engine-logo-right: var(--engine-margin);
   --engine-logo-position: right top;
   --engine-logo-content: none;
+  --engine-title-top: 44px;
+  --engine-title-height: 70px;
+  --engine-title-rule-y: 130px;
+  --engine-body-top: 150px;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: var(--engine-margin);
   --engine-pagenumber-left: auto;

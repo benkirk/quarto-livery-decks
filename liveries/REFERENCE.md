@@ -397,6 +397,9 @@ Content slides' titles.
 | `align` | `left` \| `center` | `"left"` | The title's alignment in the room beside the mark. |
 | `tab` | boolean | `true` | The accent tab at the paper's edge beside the title. |
 | `rule` | boolean | `true` | The hairline under the title. |
+| `top` | fraction | `0.0489` | The band's top, a fraction of the height; the title is centered in the band and a taller one grows down. |
+| `height` | fraction | `0.0778` | The band's height, a fraction of the height (the accent tab's too). |
+| `rule-y` | fraction | `0.1444` | The hairline's y, a fraction of the height; the body starts a fixed gap under it, or under a taller mark. |
 
 ### `marking`
 

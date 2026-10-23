@@ -1336,16 +1336,19 @@
   "engine": "26.10.9",
   "frametitle": {
     "align": "left",
-    "body": 0.1852,
+    "body": 0.1853,
+    "height": 0.0778,
     "rule": true,
-    "tab": false
+    "rule-y": 0.1444,
+    "tab": false,
+    "top": 0.0489
   },
   "geometry": {
     "body": [
       0.028,
-      0.1852,
+      0.1853,
       0.944,
-      0.737
+      0.7369
     ],
     "body-bottom": 0.9222,
     "full": {

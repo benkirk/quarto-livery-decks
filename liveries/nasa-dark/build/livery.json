@@ -1295,8 +1295,11 @@
   "frametitle": {
     "align": "left",
     "body": 0.1667,
+    "height": 0.0778,
     "rule": true,
-    "tab": true
+    "rule-y": 0.1444,
+    "tab": true,
+    "top": 0.0489
   },
   "geometry": {
     "body": [

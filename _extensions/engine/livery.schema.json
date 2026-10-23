@@ -484,7 +484,22 @@
           "description": "The accent tab at the paper's edge beside the title.",
           "default": true
         },
-        "rule": {"type": "boolean", "description": "The hairline under the title.", "default": true}
+        "rule": {"type": "boolean", "description": "The hairline under the title.", "default": true},
+        "top": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The band's top, a fraction of the height; the title is centered in the band and a taller one grows down.",
+          "default": 0.0489
+        },
+        "height": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The band's height, a fraction of the height (the accent tab's too).",
+          "default": 0.0778
+        },
+        "rule-y": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The hairline's y, a fraction of the height; the body starts a fixed gap under it, or under a taller mark.",
+          "default": 0.1444
+        }
       }
     },
     "marking": {

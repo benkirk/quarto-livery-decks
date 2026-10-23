@@ -16,6 +16,29 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
+## [Unreleased]
+
+The "one look, one key" theme sprint (`design/one-look-one-key-handoff.md`): the furniture that
+predates the element series drawn from one set of livery numbers in every format, so a livery
+owner changes a band, a hairline or a footnote rule once.
+
+### Decks
+
+- The content title band is one set of numbers in every format (`frametitle.top/height/rule-y`).
+  pptx: the title is centered in the band as HTML and the PDF center it, about 8 px of 900 higher
+  than PowerPoint placed it (it was centered in the whole space down to the hairline). PDF: the
+  accent tab beside the title is the band's height, as HTML's, not the title text's; the body
+  sits 0.025 pt lower (the gap under the hairline derived once). HTML unchanged.
+
+### Liveries
+
+- `frametitle` gains the content title band: `top`, `height` and `rule-y`, fractions of the
+  height (defaults 0.0489, 0.0778 and 0.1444: 44, 70 and 130 px of 900, what every format drew
+  by hand before). The title is centered in the band and a taller one grows down; the accent tab
+  is the band's height; the body starts a fixed 20 px under the hairline, or under a taller mark,
+  as before (`frametitle.body` stays derived). Nothing to do: `livery build` writes the keys into
+  every `build/`, and `livery template` draws the master from them.
+
 ## [26.10.9] - 2026-10-22
 
 ### Decks

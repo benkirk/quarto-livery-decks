@@ -62,9 +62,10 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 # the content slides' title (livery.yml frametitle:): its alignment beside the mark, the accent tab at the
-# paper's edge, the hairline under it
-FRAMETITLE = {"align": "left", "tab": True, "rule": True}
-BODY_TOP = 0.1667   # the content body's top, a fraction of the height (150 px of 900)
+# paper's edge, the hairline under it, and the band as fractions of the height (44, 70 and 130 px of
+# 900): the title centered in top..top+height (a taller one grows down), the hairline at rule-y
+FRAMETITLE = {"align": "left", "tab": True, "rule": True, "top": 0.0489, "height": 0.0778, "rule-y": 0.1444}
+BODY_GAP = 0.0223   # the content body's top under the hairline, or under a taller mark: 20 px of 900 (0.1444 + it rounds to the 0.1667 the formats drew)
 BODY_BOTTOM = 0.9222   # its foot (the pptx body placeholder's; 70 px of 900 above the edge, as HTML pads)
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
@@ -245,10 +246,10 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["frametitle"] = {**FRAMETITLE, **(data.get("frametitle") or {})}
     if out["frametitle"]["align"] not in ("left", "center"):
         sys.exit(f"{d.name}: frametitle.align {out['frametitle']['align']!r} is not left or center")
-    # the body's top (150 px of 900, as HTML pads it), or below a taller mark in a top corner
+    # the body's top (derived, not a key): BODY_GAP under the hairline, or under a taller mark in a top corner
     lg = (out.get("geometry") or {}).get("logo") or {}
-    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) + 0.0222 if lg.get("corner", "top-right") != "none" else 0
-    out["frametitle"]["body"] = round(max(BODY_TOP, below), 4)
+    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
+    out["frametitle"]["body"] = round(max(out["frametitle"]["rule-y"], below) + BODY_GAP, 4)
     for corner, legal in (("logo", ("top-right", "top-left", "none")), ("pagenumber", ("bottom-left", "bottom-right"))):
         v = out.get("geometry", {}).get(corner, {}).get("corner")
         if v is not None and v not in legal:
@@ -834,14 +835,14 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for k, tex in (("base", "base"), ("headings", "head")):
             for face, names in installed.get(k, {}).get("faces", {}).items():
                 L.append(f"\\def\\engine@installed@{tex}@{face}{{{names[0]}}}")
-    ft = livery["frametitle"]
-    if ft != {**FRAMETITLE, "body": BODY_TOP}:   # the content title, when not the engine's (left, tab, rule)
-        L.append("% the content slides' title: alignment, accent tab, hairline, the body's top (frametitle)")
-        L.append(f"\\def\\engine@ft@align{{{ft['align']}}}")
-        for k in ("tab", "rule"):
-            if not ft[k]:
-                L.append(f"\\def\\engine@ft@no{k}{{}}")
-        L.append(f"\\def\\engine@ft@bodytop{{{ft['body']}}}")
+    ft = livery["frametitle"]   # the content slides' title: the outer theme's \engine@frametitle reads every one
+    L.append("% the content slides' title (frametitle): alignment, accent tab, hairline, the band and the body's top")
+    L.append(f"\\def\\engine@ft@align{{{ft['align']}}}")
+    for k in ("tab", "rule"):
+        if not ft[k]:
+            L.append(f"\\def\\engine@ft@no{k}{{}}")
+    for k, tex in (("top", "top"), ("height", "height"), ("rule-y", "ruley"), ("body", "bodytop")):
+        L.append(f"\\def\\engine@ft@{tex}{{{ft[k]}}}")
     mk = livery.get("marking")
     if mk:   # the marking strip: its box (y down), alignment, colors and the livery's default text
         L.append("% the marking strip (marking:); its text is the deck's \\enginemarking, else this default")
@@ -1089,9 +1090,9 @@ def emit_css(livery: dict, extra: str = "") -> str:
     props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
     props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
     props.append(f"--engine-logo-content: {'none' if corner == 'none' else '\"\"'};")
-    ft = livery["frametitle"]
-    if ft["body"] != BODY_TOP:
-        props.append(f"--engine-body-top: {px(ft['body'])};")
+    ft = livery["frametitle"]   # the band (frametitle.top/height/rule-y) and the body's top, in slide pixels
+    for k, name in (("top", "title-top"), ("height", "title-height"), ("rule-y", "title-rule-y"), ("body", "body-top")):
+        props.append(f"--engine-{name}: {px(ft[k])};")
     if ft["align"] == "center":
         props.append("--engine-title-justify: center;")
         props.append("--engine-title-text-align: center;")

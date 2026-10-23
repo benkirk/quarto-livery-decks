@@ -83,10 +83,10 @@ $mermaid-label-fg-color: $engine-primary;
 // beside the brand
 // roles (--engine-primary, ...); engine-revealjs.lua attaches it
 
-// the body box: --engine-body-top to --engine-body-bottom of the 900px slide (livery.css; the
-// fallbacks are ncar's), as every slide's padding (below the mark, above the foot) and as a height
-$slide-padding: var(--engine-body-top, 150px) var(--engine-margin) calc(900px - var(--engine-body-bottom, 830px));
-$body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150px));
+// the body box: --engine-body-top to --engine-body-bottom of the 900px slide (livery.css), as
+// every slide's padding (below the mark, above the foot) and as a height
+$slide-padding: var(--engine-body-top) var(--engine-margin) calc(900px - var(--engine-body-bottom));
+$body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
 // the caption look, as the PDF and pptx set it: the caption role, muted, its leading, centered;
 // a site that shares only the type takes caption($block: false) and sets its own lines
 @mixin caption($block: true) {
@@ -176,12 +176,13 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
 // ---------------------------------------------------------------------------
 // content slides: accent tab beside the title, hairline rule, logo
 // ---------------------------------------------------------------------------
+// the band (frametitle.top/height/rule-y, livery.css): the title centered in it, a taller one grows down
 .reveal .slides section.slide.level2 > h2 {
   position: absolute;
-  top: 44px;
+  top: var(--engine-title-top);
   left: var(--engine-title-left, var(--engine-margin));   // the title gives way on the mark's side
   right: var(--engine-title-right, calc(var(--engine-margin) + 40px + var(--engine-logo-w)));
-  min-height: 70px;
+  min-height: var(--engine-title-height);
   margin: 0;
   display: flex;
   align-items: center;
@@ -206,7 +207,7 @@ $body-height: calc(var(--engine-body-bottom, 830px) - var(--engine-body-top, 150
   display: var(--engine-title-rule, block);
   content: "";
   position: absolute;
-  top: 130px;
+  top: var(--engine-title-rule-y);
   left: var(--engine-margin);
   right: var(--engine-margin);
   height: 1px;

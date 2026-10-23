@@ -179,7 +179,8 @@ panel, a key Ben names when its sheet is up).
 
 From the side-by-sides, each before its commit (the row filled in as Ben picks):
 
-1. The pptx title in the 0.0778 band (one look) or spanning to the rule: —
+1. The pptx title in the 0.0778 band (one look) or spanning to the rule: **the band, and the PDF
+   tab the band's height** ("the branch looks great", 2026-10-22).
 2. The hairline's blend and weight (A `rule` at 0.0011 / B a lighter `hairline` blend / C A at
    beamer's 0.0016): —
 3. ex → em: HTML's values (the PDF grows) or the PDF's (HTML shrinks): —

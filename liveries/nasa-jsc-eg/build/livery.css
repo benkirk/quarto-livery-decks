@@ -91,7 +91,10 @@
   --engine-logo-right: 22.4px;
   --engine-logo-position: right top;
   --engine-logo-content: "";
-  --engine-body-top: 166.7px;
+  --engine-title-top: 44px;
+  --engine-title-height: 70px;
+  --engine-title-rule-y: 130px;
+  --engine-body-top: 166.8px;
   --engine-title-tab: none;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: calc(22.4px + 40px + var(--engine-logo-w));
