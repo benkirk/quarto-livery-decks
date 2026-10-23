@@ -164,6 +164,27 @@ jobs:
           assert len(refs) == 1 and all(r.font.size.pt == foot for r in refs[0].runs), [p.text for p in refs]
           EOF
 
+      # the elements of #132–#135 drawn in the rendered deck, not only in tests/' pandoc harness:
+      # the HTML holds each element's class, the pptx each drawer's group and no marker paragraph
+      # left in a text frame, the PDF the quote's attribution and a gallery caption
+      - name: Check the sample's elements
+        run: |
+          cd decks/sample
+          for c in engine-rail engine-quote engine-agenda engine-gallery; do grep -q "$c" sample.html || { echo "no $c in sample.html"; exit 1; }; done
+          pdftotext sample.pdf - | grep -q 'Richard Hamming'
+          pdftotext sample.pdf - | grep -q 'Earthrise'
+          python3 - <<'EOF'
+          from pptx import Presentation
+          from pptx.enum.shapes import MSO_SHAPE_TYPE
+          prs = Presentation("sample.pptx")
+          groups = {sh.name for s in prs.slides for sh in s.shapes if sh.shape_type == MSO_SHAPE_TYPE.GROUP}
+          missing = {"Steps", "Timeline", "Quote", "Agenda", "Gallery"} - groups
+          assert not missing, f"groups not drawn: {missing}"
+          markers = [p.text for s in prs.slides for sh in s.shapes if sh.has_text_frame
+                     for p in sh.text_frame.paragraphs if "⟦engine:" in p.text]
+          assert not markers, markers
+          EOF
+
       # the sample's own make qa (docs/authoring.md "Checking a deck"): every slide of every
       # format shot, overflow, slide counts, a note or a .full caption that wraps
       - name: QA the sample deck
