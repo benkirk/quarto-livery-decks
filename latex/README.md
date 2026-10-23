@@ -56,7 +56,7 @@ This directory holds the engine's own LaTeX decks; build them here:
 | every feature: `examples/template.tex`; the cookbook `sample.tex` ([authoring.md](authoring.md)); `paper.tex`, a document that is not slides; `mathfonts.tex`, the math-font specimen; `quarto-demo.qmd` | `make examples` | `examples/*.pdf` |
 | `template.tex` under UCAR, UCP, NCAR-UCAR, the light title, 4:3, pdfLaTeX and `mathfont=poppins`; `sample.tex` under cu, the dark livery nasa-dark and 4:3 | `make variants` | `examples/template-*.pdf`, `examples/sample-*.pdf` |
 | the Quarto demo as an HTML deck | `make html` | `examples/quarto-demo.html` |
-| the README's math-font specimen and the cookbook's contact sheet | `make previews` | `math-fonts.png`, `sample.png` |
+| the README's math-font specimen and starter preview, and the cookbook's contact sheet | `make previews` | `math-fonts.png`, `preview.png`, `sample.png` |
 
 `make latex` at the top of the repo builds the first three. They need TeX Live (or MacTeX,
 MiKTeX) with XeLaTeX and latexmk, and no fonts: the Makefile points `TEXINPUTS` and

@@ -108,6 +108,13 @@ owner changes a band, a hairline or a footnote rule once.
   it (the scss keeps Quarto's four compile-time Sass defaults, overridden at runtime). Nothing
   to do.
 
+### LaTeX
+
+- `make previews` in `latex/` also writes `preview.png`, the README's starter deck under ncar
+  and cu (`sheet.py --pages`); it had been shot by hand at the flatten and showed the old
+  hairline. latex/README.md names `BrandOnDark` among the roles and the exported palette names
+  as each `build/livery.sty` defines them.
+
 ## [26.10.9] - 2026-10-22
 
 ### Decks
