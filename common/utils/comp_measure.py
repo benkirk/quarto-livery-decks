@@ -4,7 +4,7 @@
     comp_measure.py [--fail-on html,pdf,pptx] <deck>...   (`make measure` in a deck directory)
 
 Shoots the four slides of each built deck at 1600x900 (HTML: Playwright; PDF: pdftoppm; pptx:
-soffice to PDF, skipped without it), picks the composition the formats pick (band, photo, light
+soffice to PDF through pptx_pdf.py, skipped without it), picks the composition the formats pick (band, photo, light
 from the front matter and the livery) and measures its boxes: filled edges (band, bar, panel, a
 straight field edge) by the strongest color step near them; marks and sign-offs by the bbox of
 non-field pixels in the box grown by 0.03; the text column by the bbox of its role's pixels down
@@ -17,16 +17,15 @@ import argparse
 import glob
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
-import zipfile
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
 import livery as livery_mod  # noqa: E402  (the engine's reader)
+import pptx_pdf  # noqa: E402
 from deck_qa import deck_sources, serve  # noqa: E402
 
 W, H = 1600, 900
@@ -34,7 +33,6 @@ GROW = 0.03                  # an image or text box is searched in its box grown
 TOL, TOL_MIDDLE, TOL_EDGE = 0.02, 0.03, 0.005   # 0.03: pptx's middle-anchored stacks
 FORMATS = ("html", "pdf", "pptx")
 KINDS = ("title", "section", "closing", "feature")
-SOFFICE = [shutil.which("soffice"), "/opt/homebrew/bin/soffice", "/Applications/LibreOffice.app/Contents/MacOS/soffice"]
 
 
 # ------------------------------------------------------------------ the deck
@@ -137,39 +135,14 @@ def shoot_pdf(pdf, titles, out, tag):
     return shots
 
 
-def _family(spec):
-    return spec if isinstance(spec, str) else (spec or {}).get("family")
-
-
 def shoot_pptx(deck, titles, out, L):
-    """soffice reads no embedded fonts, and a private profile sees none installed: it gets the
-    livery's bundled faces, and a typeface the livery names but does not bundle (cu's Helvetica
-    Neue) is drawn in its bundled stand-in (the base family), or the text is measured in a serif."""
-    soffice = next((s for s in SOFFICE if s and os.path.exists(s)), None)
-    if not soffice:
-        return "soffice (LibreOffice) is not installed"
-    with tempfile.TemporaryDirectory() as tmp:   # a private profile: a running LibreOffice blocks the default one
-        fonts = os.path.join(tmp, "profile", "user", "fonts")
-        os.makedirs(fonts)
-        bundled = set()
-        for font in L["typography"].get("fonts", []):
-            for f in font.get("files", []):
-                path = os.path.join(L["dir"], f["path"])
-                if os.path.exists(path):
-                    shutil.copy(path, fonts)
-                    bundled.add(font.get("family"))
-        src, typeface = deck + ".pptx", (L.get("pptx") or {}).get("typeface")
-        base = _family(L["typography"].get("base"))
-        if typeface and typeface not in bundled and base in bundled:
-            src = os.path.join(tmp, os.path.basename(deck) + ".pptx")
-            old, new = ('typeface="%s"' % typeface).encode(), ('typeface="%s"' % base).encode()
-            with zipfile.ZipFile(deck + ".pptx") as zin, zipfile.ZipFile(src, "w", zipfile.ZIP_DEFLATED) as zout:
-                for item in zin.infolist():
-                    data = zin.read(item.filename)
-                    zout.writestr(item, data.replace(old, new) if item.filename.endswith(".xml") else data)
-        subprocess.run([soffice, f"-env:UserInstallation=file://{tmp}/profile", "--headless", "--convert-to", "pdf",
-                        "--outdir", tmp, src], check=True, capture_output=True)
-        return shoot_pdf(os.path.join(tmp, os.path.basename(deck) + ".pdf"), titles, out, f"{deck}-pptx")
+    """The pptx as LibreOffice draws it (pptx_pdf.to_pdf: the livery's faces, a private
+    profile), shot like the PDF; the reason, when soffice is not installed."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pdf, why = pptx_pdf.to_pdf(deck + ".pptx", L, tmp)
+        if pdf is None:
+            return why
+        return shoot_pdf(pdf, titles, out, f"{deck}-pptx")
 
 
 # ------------------------------------------------------------------ measuring

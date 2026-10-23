@@ -5,17 +5,20 @@ Reads the already-built <deck>.{html,pdf,pptx} and writes to _qa/:
   report.txt        everything below, per deck (also printed)
   usage.tsv         per HTML slide: kind, body use, fit, layout classes
   names.txt         plain-text names from qa-names.txt (one per line), if the file exists
-  <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png the same for the PDF
+  <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png and <deck>-pptx.png the same
+                    for the PDF and the pptx (as LibreOffice draws it)
 Failures (exit 1): slide counts that differ between formats, PDF text past the right margin,
 into the footer band, overlapping other text or running into the next table column (the table's own
 columns: the HTML says where the table is), HTML content past the right edge, a {.full}
 caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a grid
 marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), and a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
-Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
+Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank, and
+the pptx as LibreOffice draws it (pptx_pdf.py) through the PDF's edge, footer and overlap checks
+(QA_PPTX_FAIL=1 makes those failures; <deck>-pptx.png is its contact sheet).
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
 (`python -m playwright install chromium`, or set CHROME to a Chromium binary) and are skipped
-without it.
+without it, the pptx checks LibreOffice (soffice) and are skipped without it.
 """
 
 import argparse
@@ -373,6 +376,39 @@ def html_findings(slides):
 
 # ------------------------------------------------------------------- pptx, names
 
+def check_pptx(deck, qa, slides, livery):
+    """The pptx as LibreOffice draws it (pptx_pdf.to_pdf), through the PDF checks but the table
+    rule (python-pptx's tables are not longtable's): text past the right margin, into the footer,
+    overlapping; a contact sheet <deck>-pptx.png. Hints, since LibreOffice applies no autofit and
+    substitutes the faces it lacks (a box it overflows PowerPoint may shrink); QA_PPTX_FAIL=1 makes
+    them failures. (lines, skipped-reason)."""
+    import pptx_pdf
+    path = deck + ".pptx"
+    if not os.path.exists(path):
+        return [], None
+    d = os.path.join(qa, deck, "pptx")
+    os.makedirs(d, exist_ok=True)
+    for old in glob.glob(os.path.join(d, "*")):
+        os.remove(old)
+    pdf, why = pptx_pdf.to_pdf(path, livery, d)
+    if pdf is None:
+        return [], why
+    lines = []
+    for n, (w, h, words, text_lines) in enumerate(pdf_pages(pdf), 1):   # a slide a page: no overlays
+        slide = slides[n - 1] if n <= len(slides) else None
+        meta = {**slide, "kind": "pptx"} if slide and slide.get("level2") else None
+        found = {}
+        for kind, detail in pdf_problems(w, h, words, text_lines, meta):
+            found.setdefault(kind, []).append(detail)
+        for kind, details in found.items():
+            more = " (+%d more)" % (len(details) - 3) if len(details) > 3 else ""
+            lines.append("s%d: %s: %s%s" % (n, kind, ", ".join(details[:3]), more))
+    if shutil.which("pdftoppm"):
+        run(["pdftoppm", "-r", "80", "-png", pdf, os.path.join(d, "p")])
+        contact_sheet(sorted(glob.glob(os.path.join(d, "*.png"))), os.path.join(qa, deck + "-pptx.png"))
+    return lines, None
+
+
 MARKER = "⟦engine:"   # grid-pptx.lua's markers, which the pptx steps draw and delete
 
 
@@ -473,9 +509,12 @@ def main():
     os.makedirs(qa, exist_ok=True)
     global EDGE, WIDE_EDGE
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
+    sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
-    geom = livery_mod.load()["geometry"]
+    livery = livery_mod.load()
+    geom = livery["geometry"]
     EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
+    pptx_fail = os.environ.get("QA_PPTX_FAIL") == "1"
 
     html_res = check_html(args.decks, qa)
     report, usage, failed = [], ["deck\tslide\tkind\tuse\tfit\ttitle\tclasses"], False
@@ -508,6 +547,14 @@ def main():
             report.append("pptx s%d: a grid marker left in the text (an element the steps did not draw; "
                           "see their warnings)%s" % (n, ' ("%s")' % titles[n] if titles.get(n) else ""))
         failed |= bool(markers)
+        pptx_lines, why = check_pptx(deck, qa, slides if same else [], livery)
+        if why:
+            report.append("pptx checks skipped: " + why)
+        for line in pptx_lines:
+            m = re.match(r"s(\d+)", line)
+            title = titles.get(int(m.group(1))) if m else None
+            report.append("%s pptx %s%s" % ("pptx" if pptx_fail else "hint", line, ' ("%s")' % title if title else ""))
+        failed |= pptx_fail and bool(pptx_lines)
         fails, hints = html_findings(slides)
         failed |= bool(fails)
         report += ["HTML " + f for f in fails] + ["hint " + h for h in hints]
