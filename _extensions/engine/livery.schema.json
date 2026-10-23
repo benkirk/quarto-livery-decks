@@ -627,6 +627,20 @@
             "attribution-gap": {"type": "number", "minimum": 0, "default": 0.5, "description": "The attribution's distance under the lines, in em of the caption type."}
           }
         },
+        "footnote": {
+          "type": "object",
+          "description": "The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule).",
+          "additionalProperties": false,
+          "properties": {
+            "rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0022, "description": "The short rule above them, its thickness (of the slide's height)."},
+            "rule-length": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.075, "description": "The rule's length (of the slide's width)."},
+            "rule-color": {"$ref": "#/$defs/color-or-role", "default": "rule", "description": "The rule's color: a role, a blend or a palette name (default: the `rule` blend, as the title hairline and the column rules)."},
+            "width": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.6, "description": "The block's width, of the text width."},
+            "gap": {"type": "number", "minimum": 0, "default": 0.55, "description": "The gap under the rule, above the first footnote (pptx: above it), in em of the footnote type."},
+            "hang": {"type": "number", "minimum": 0, "default": 0.9, "description": "The marker's hang: the text starts this far in, in em of the footnote type."},
+            "step": {"type": "number", "minimum": 0, "default": 0.3, "description": "The gap between one footnote and the next, in em of the footnote type."}
+          }
+        },
         "note": {
           "type": "object",
           "description": "A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look).",

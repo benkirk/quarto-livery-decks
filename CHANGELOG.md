@@ -43,6 +43,13 @@ owner changes a band, a hairline or a footnote rule once.
   shrinks by 0.1–0.2 em. pptx: the attribution gains the gap (it had none); the divider's stack
   tightens by a few pixels. PDF as before. The feature panel's block headings keep their gaps,
   now in em of the heading.
+- The slide footnotes read alike in every format (`boxes.footnote`). PDF: the marker's hang is
+  0.9 em of the footnote size (1.1 before, 1.2 in a hand author's `\footnote`), the gap under the
+  short rule 0.55 em (0.8 ex) and the step between entries 0.3 em (0.4 ex); the rule is the
+  `rule` blend (text at 30 % over the background before). HTML: the rule is 2 px of the `rule`
+  blend (muted at 60 % before) and the block stands on the body's foot. pptx: the marker hangs
+  (the text's lines start under the text, not under the marker), is bold as in HTML and the PDF,
+  and the spacing above a footnote is the gap or, after another, the step (10 pt before).
 
 ### Liveries
 
@@ -62,6 +69,11 @@ owner changes a band, a hairline or a footnote rule once.
   lines), `section.eyebrow-gap` (0.33, em of the eyebrow, under it) and `section.subtitle-gap`
   (0.66, em of the subtitle, above it): the gaps HTML had in `em` and the PDF in `ex`, one number
   each, read by all three formats. Nothing to do.
+- `boxes.footnote` holds the slide footnotes' numbers for every format: `rule` (0.0022 of the
+  height) and `rule-length` (0.075 of the width) for the short rule above them, `rule-color` (a
+  role, blend or palette name; default the `rule` blend), `width` (0.6 of the text width), and
+  in em of the footnote type `gap` (0.55, under the rule), `hang` (0.9, the marker's) and `step`
+  (0.3, between entries). Nothing to do.
 
 ## [26.10.9] - 2026-10-22
 

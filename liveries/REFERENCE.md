@@ -433,6 +433,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
 | `agenda` | object |  | The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows. |
 | `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
+| `footnote` | object |  | The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule). |
 | `note` | object |  | A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look). |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
@@ -501,6 +502,20 @@ A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no 
 | `family` | string or null | `null` | The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface. |
 | `style` | `normal` \| `italic` | `"normal"` | Its lines' style: normal (upright) or italic. |
 | `attribution-gap` | number | `0.5` | The attribution's distance under the lines, in em of the caption type. |
+
+### `boxes.footnote`
+
+The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule).
+
+| key | type | default | |
+|---|---|---|---|
+| `rule` | fraction | `0.0022` | The short rule above them, its thickness (of the slide's height). |
+| `rule-length` | fraction | `0.075` | The rule's length (of the slide's width). |
+| `rule-color` | color or role | `"rule"` | The rule's color: a role, a blend or a palette name (default: the `rule` blend, as the title hairline and the column rules). |
+| `width` | fraction | `0.6` | The block's width, of the text width. |
+| `gap` | number | `0.55` | The gap under the rule, above the first footnote (pptx: above it), in em of the footnote type. |
+| `hang` | number | `0.9` | The marker's hang: the text starts this far in, in em of the footnote type. |
+| `step` | number | `0.3` | The gap between one footnote and the next, in em of the footnote type. |
 
 ### `boxes.note`
 

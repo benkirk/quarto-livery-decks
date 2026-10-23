@@ -140,10 +140,15 @@ BOXES = {
     # the references slide's list (a deck's bibliography): each entry's hanging indent and the gap
     # above it, em of the footnote type it is set in
     "references": {"hang": 1.5, "gap": 0.4},
+    # the slide footnotes (†, ‡, § and ¶ paragraphs, ^[...] notes) at the slide's foot: the short rule above
+    # them (rule its thickness of the height, rule-length of the width, rule-color a role, blend or hex),
+    # width of the text width, and in em of the footnote type the gap under the rule, the marker's hang
+    # and the step between entries; the pptx styles them in place (hang, gap, step; no rule)
+    "footnote": {"rule": 0.0022, "rule-length": 0.075, "rule-color": "rule", "width": 0.6, "gap": 0.55, "hang": 0.9, "step": 0.3},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
-              "rail": ("line-color", "fill"), "gallery": ("fill",)}
+              "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -1231,6 +1236,11 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
     p += [f"--engine-references-hang: {refs['hang']:g}em;", f"--engine-references-gap: {refs['gap']:g}em;"]
     p += [f"--engine-quote-attribution-gap: {quote['attribution-gap']:g}em;",   # em of the caption type: set on the
           f"--engine-note-gap: {b['note']['gap']:g}em;"]                          # caption-sized element itself
+    fn = b["footnote"]   # the slide footnotes' block: its ems are of the footnote type, set on the block itself
+    p += [f"--engine-footnote-rule: {px(fn['rule'])};", f"--engine-footnote-rule-length: {px(fn['rule-length'], W)};",
+          f"--engine-footnote-rule-color: {fn['rule-color']};", f"--engine-footnote-width: {round(fn['width'] * 100, 2):g}%;",
+          f"--engine-footnote-gap: {fn['gap']:g}em;", f"--engine-footnote-hang: {fn['hang']:g}em;",
+          f"--engine-footnote-step: {fn['step']:g}em;"]
     return p
 
 

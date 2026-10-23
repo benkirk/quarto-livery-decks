@@ -690,15 +690,17 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
 .reveal .slides section .engine-noteref { color: var(--engine-accent); }
 
 // slide footnotes (paragraphs that start with † ‡ § ¶, and ^[...] notes; engine-revealjs.lua
-// lifts them here): on the floor of the slide, under a short rule, with the marker
-// hanging in the accent color.  The autofit script reserves their height, so
-// the body shrinks above them rather than running underneath.
+// lifts them here): on the floor of the slide (the body's foot), under a short rule, with the
+// marker hanging in the accent color. Every number is boxes.footnote (livery.css: the rule's
+// length, thickness and color, the width, and the gap, hang and step in em of the footnote
+// type, which the block itself is set in). The autofit script reserves their height, so the
+// body shrinks above them rather than running underneath.
 .reveal .slides section .engine-footnotes {
   position: absolute;
   left: var(--engine-margin);
-  bottom: 70px;
-  max-width: 60%;
-  padding-top: 0.55em;
+  bottom: calc(900px - var(--engine-body-bottom));
+  max-width: var(--engine-footnote-width);
+  padding-top: var(--engine-footnote-gap);
   color: var(--engine-muted);
   font-size: calc(var(--engine-type-footnote, 0.7) * 1em);
   line-height: var(--engine-leading-footnote, 1.35);
@@ -708,19 +710,18 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
     position: absolute;
     top: 0;
     left: 0;
-    width: 120px;
-    border-top: 2px solid currentColor;
-    opacity: 0.6;
+    width: var(--engine-footnote-rule-length);
+    border-top: var(--engine-footnote-rule) solid var(--engine-footnote-rule-color);
   }
   p {
-    margin: 0.3em 0 0;
-    padding-left: 0.9em;
-    text-indent: -0.9em;
+    margin: var(--engine-footnote-step) 0 0;
+    padding-left: var(--engine-footnote-hang);
+    text-indent: calc(-1 * var(--engine-footnote-hang));
   }
   p:first-child { margin-top: 0; }
   .engine-dagger {
     display: inline-block;
-    width: 0.9em;
+    width: var(--engine-footnote-hang);
     text-indent: 0;
     color: var(--engine-accent);
     font-weight: 700;

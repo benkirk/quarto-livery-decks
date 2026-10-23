@@ -46,6 +46,15 @@
       "gap": 0.03,
       "rule": 0
     },
+    "footnote": {
+      "gap": 0.55,
+      "hang": 0.9,
+      "rule": 0.0022,
+      "rule-color": "#AAA8A3",
+      "rule-length": 0.075,
+      "step": 0.3,
+      "width": 0.6
+    },
     "gallery": {
       "fill": null,
       "gap": 0.006,

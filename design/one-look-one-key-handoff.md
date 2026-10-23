@@ -186,7 +186,9 @@ From the side-by-sides, each before its commit (the row filled in as Ben picks):
 3. ex → em: HTML's values (the PDF grows) or the PDF's (HTML shrinks): **the PDF's** (note 0.3,
    attribution 0.5, eyebrow 0.33, subtitle 0.66 em; "P looks good", 2026-10-22).
 4. The footnotes: hang (0.9 / 1.1 / 1.2 em), gap (0.55 / 0.44), step (0.3 / 0.22), the rule's
-   blend (`rule` / foreground 30 % over background): —
+   blend (`rule` / foreground 30 % over background): **the proposal, provisional** (hang 0.9, gap
+   0.55, step 0.3, `rule`; committed as the default overnight, 2026-10-22, by agreement; Ben's
+   pick from the sheet in the morning is a one-line change of the defaults).
 5. The strip's gap: —
 6. The tracking (one value, or per element): —
 7. The feature panel's text role and key: —

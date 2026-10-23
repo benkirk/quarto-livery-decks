@@ -99,9 +99,12 @@ Per deck, `make pptx` runs:
    - `embed_fonts`: re-injects the livery's font variants as `<p:embeddedFont>` entries,
      which pandoc strips, so the font travels with the file (see "About the fonts").
    - `style_footnotes`: restyles body paragraphs that start with `†`, `‡`, `§` or `¶` (a
-     `^[...]` note too, which `inline-footnotes.lua` writes as one) as footnotes
-     (smaller, the livery's muted color, the marker in its accent), since pandoc ignores
-     inline size and color. HTML and PDF go further: the theme moves them to the slide's foot.
+     `^[...]` note too, which `inline-footnotes.lua` writes as one) as footnotes from the livery's
+     `boxes.footnote` (the footnote size, the muted color, the marker bold in the accent and
+     hanging by `hang`, `gap` above the first and `step` above each following one), since pandoc
+     ignores inline size and color. HTML and PDF go further: the theme moves them to the slide's
+     foot under a short rule (`rule`, `rule-length`, `rule-color`, `width`), which pptx cannot
+     draw where the paragraph will land.
    - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,
      bottom center, muted; the caption box is itself the link.
    - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light

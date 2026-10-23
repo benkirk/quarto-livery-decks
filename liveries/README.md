@@ -65,10 +65,11 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      column gap and an optional rule between columns, the caution box's bar and pads, the
      feature panel's pads, the lead box, cards (fill, corner radius, a picked card's outline),
      strips (their tint), the status glyphs' colors, the steps' rail, the agenda's colors, the
-     gallery's cells, the references list's hang, a note's gap under its figure, and the quote
-     block (its bar, its attribution's gap, and a face of its own: `boxes.quote.family`, a bundled
-     family, and `style`); the divider stack's gaps are `section.eyebrow-gap` and
-     `section.subtitle-gap`. Set only
+     gallery's cells, the references list's hang, a note's gap under its figure, the slide
+     footnotes (their rule, width, hang, gap and step), and the quote block (its bar, its
+     attribution's gap, and a face of its own: `boxes.quote.family`, a bundled family, and
+     `style`); the divider stack's gaps are `section.eyebrow-gap` and `section.subtitle-gap`. Set
+     only
      what differs from the engine's
      (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
      its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.

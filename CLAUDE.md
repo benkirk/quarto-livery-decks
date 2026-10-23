@@ -200,8 +200,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, `‡`, `§` or `¶`, the printer's order,
   `engine-common.lua` `MARKERS`): the theme lifts every one on a slide, columns included, to the
-  slide's foot in HTML and PDF, under a short muted rule with the marker in the accent orange;
-  pptx can't move content, so `style_footnotes.py` mutes them in place in the same colors.
+  slide's foot in HTML and PDF, under a short rule with the marker bold in the accent, every
+  number `boxes.footnote` (`rule`, `rule-length`, `rule-color`, `width`; `gap`, `hang`, `step` in
+  em of the footnote type), read alike by the inner theme (beamer's own `\footnote` template too),
+  the scss and `style_footnotes.py`; pptx can't move content, so the step styles them in place
+  (the hang as `marL`/`indent`, the gap and step as paragraph spacing) and draws no rule (the
+  paragraph's position is unknown before PowerPoint opens the file).
   `*† text*` works too. A `^[...]` note is one: `lift_footnotes()` (called by `take_footnotes()`,
   so both hoists; in pptx by `inline-footnotes.lua`, which puts it in a plain two-column slide's
   last column) makes it a superscript mark (`.engine-noteref`) and a paragraph led by the next
