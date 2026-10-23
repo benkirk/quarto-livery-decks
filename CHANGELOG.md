@@ -16,7 +16,7 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
-## [Unreleased]
+## [26.10.10] - 2026-10-23
 
 The "one look, one key" theme sprint (`design/one-look-one-key-handoff.md`): the furniture that
 predates the element series drawn from one set of livery numbers in every format, so a livery
@@ -624,7 +624,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.9...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.10...HEAD
+[26.10.10]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.10
 [26.10.9]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.9
 [26.10.8]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.8
 [26.10.7]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.7
