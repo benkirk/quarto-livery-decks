@@ -1,8 +1,8 @@
 # Sprint handoff: one look, one key (the themes' hand numbers)
 
 **For a fresh session.** One PR against `main` from `origin/main` after the release that follows
-#136 (branch `themes/one-look-one-key`), a commit per item in the order below, squash-merged once,
-no version bump. Planned 2026-10-22 from the #127–#135 sweep's deferred list
+#136 (branch `themes/one-look-one-key` from `81a3c9d`, release 26.10.9), a commit per item in the
+order below, squash-merged once, no version bump. Planned 2026-10-22 from the #127–#135 sweep's deferred list
 (`design/sweep-129-135-handoff.md`, `design/unplanned-city-ledger.md` "2026-10-22: window
 #127–#135", Open) and the older Untriaged items of the same kind. Every item here **changes what a
 deck renders** in at least one format, so this is not a sweep: the proof is before/after
@@ -31,30 +31,42 @@ once, and the three formats follow.
 | min gap title→rule | `0.0178\paperheight` | — | — | — |
 | body top | rule + `0.0222` = 0.1667, or `\engine@ft@bodytop` | `150px` fallback, or `--engine-body-top` | the layout's body placeholder | `BODY_TOP = 0.1667`; `frametitle.body = max(BODY_TOP, below the mark)`, **emitted only when it differs** (`:838-844`, `:1093-1094`), so both themes carry an `\ifdefined`/fallback copy of 0.1667 |
 
-The numbers agree today (ncar's by construction); the drift is four copies and two fallbacks.
+The hairline and body agree today; the title does not quite (read at the sprint's start,
+2026-10-22): the pptx title placeholder spans the whole band to the rule (0.049–0.1444,
+`anchor="ctr"`, `livery_template.py:208`) where beamer and HTML center the title in the 0.0778
+band (0.0489–0.1267), so the pptx title sits about 8 px of 900 lower; the accent tab is three
+heights (beamer the title text's box, HTML the h2 at least 70 px, pptx the full band); HTML's
+hairline is fixed at 130 px where beamer's follows a two-line title (pptx's cannot: a static
+layout). The 0.0178 minimum gap is the band's own: `rule-y − (top + height)` = 0.0177. The 0.0222
+(rule → body) is written in `resolve()` and again in the outer theme.
 **Proposal:** `livery.json` `frametitle` gains `top`, `height`, `rule-y` (fractions of the height;
-defaults 0.0489, 0.0778, 0.1444) beside its `body`, all four **always emitted**
+defaults 0.0489, 0.0778, 0.1444) beside its derived `body`, all four **always emitted**
 (`\engine@ft@top/height/ruley/bodytop`, `--engine-title-top/-height/-rule-y/--engine-body-top`),
-and the template builder reads the same (`field_layout`'s content layout). The `\ifdefined` and
-the px fallbacks go. **Flat by construction**; `make measure` does not cover the content title, so
-the proof is parity (PDF pages, the quickstart's screenshots) and a content slide shot per format.
-Pick for Ben: the key names (a `livery.yml` key needs his agreement; `frametitle.rule` is already
-the boolean "draw it", so the y needs another name: `rule-y`, or `frametitle.band: [top, height,
-rule]`).
+and the template builder reads the same (`master()`'s tab, rule and title placeholder). The
+`\ifdefined` and the px fallbacks go; the 0.0178 becomes the band's difference; the 0.0222 is
+derived once. `make measure` does not cover the content title, so the proof is parity (PDF pages
+and HTML flat, the pptx master and layouts named) and a content slide shot per format.
+**Picked (Ben, 2026-10-22, at planning):** flat keys, `frametitle.top/height/rule-y` beside
+`align/tab/rule`; the boolean `rule` stays. **Open on the sheet:** the pptx title centered in the
+0.0778 band as beamer and HTML (one look, the pptx title moves ~8 px up; the proposal) or left
+spanning to the rule. HTML's fixed hairline on a two-line title stays as it is, recorded.
 
 ### 2. The title hairline: three blends and three weights
 
 | | beamer (`beamercolorthemeEngine.sty:18`) | HTML (`scss` ~193, `livery_build.py` BLENDS `rule`) | pptx template (`livery_template.py:207`) |
 |---|---|---|---|
-| color | `BrandSurface!70!BrandText!40!BrandBackground` ≈ #DCE3EA on ncar | `var(--engine-rule)`: foreground 30 % over surface ≈ #A9B8CB | `tx1` at 30 % alpha over the background ≈ #B3C3D7 |
-| weight | 0.4 pt | 1 px (0.6 pt) | 0.75 pt |
+| color | `BrandSurface!70!BrandText!40!BrandBackground`: xcolor mixes left to right, so (surface 70 % over text) 40 % over background: ncar #DDE3EA, cu #DDDCDA, **nasa-dark #262829** (near-black on black: no visible hairline in the dark PDF today) | `var(--engine-rule)`: foreground 30 % over surface: ncar #A9B8CB, nasa-dark #606367 | `tx1` at 30 % alpha over the background: ncar ≈ #B2C2D7, nasa-dark ≈ #4C4C4C |
+| weight | 0.4 pt = 0.0016 of the height (the heaviest) | 1 px = 0.0011 | 9525 EMU = 0.75 pt = 0.0014 |
 
-Predates the window. **Proposal:** one color key, `frametitle.rule-color` (a role or blend; default
-the `rule` blend, HTML's), and the weight from item 1's `rule-y`'s companion `rule-width` (a
-fraction of the height, 1/900 = 0.0011) in all three. **Visible:** the PDF's hairline darkens
-from #DCE3EA to #A9B8CB; the pptx barely. Pick for Ben: which blend wins, the `rule` blend (HTML
-and the table rules already use it) or a new lighter `hairline` blend at the PDF's value for all
-three. Side-by-side: a content slide per format under ncar, cu and nasa-dark.
+Predates the window. **Proposal:** one color key, `frametitle.rule-color` (a role, blend or hex,
+resolved as `boxes.rail.line-color` is; default the `rule` blend, HTML's), and the weight
+`frametitle.rule-width` (a fraction of the height, default 1/900 = 0.0011) in all three.
+**Visible:** the PDF's hairline darkens from #DDE3EA to #A9B8CB and thins; on nasa-dark it
+appears; the pptx barely changes. **Picked:** the two flat keys. **Open on the sheet:** A the
+`rule` blend at 0.0011 (the proposal); B a new lighter `hairline` blend at the PDF's value for
+all three (the closest two-color mix: foreground 14 % over background, ncar #DBE3EC; nasa-dark
+#242424, so HTML and the pptx lose the hairline too); C A at beamer's weight 0.0016.
+Side-by-side: a content slide per format under ncar, cu and nasa-dark.
 
 ### 3. ex where HTML has em
 
@@ -66,13 +78,18 @@ Poppins' ex is about 0.55 em, so the PDF's gap is about half the HTML's under th
 | quote attribution | `\vskip0.6ex` (`:567`) | `margin-top: 0.6em` (`:439`) |
 | footnotes, under the rule | `\vskip0.8ex` (`:350`) | `padding-top: 0.55em` |
 | footnotes, between | `\vskip0.4ex` (`:354`) | `margin: 0.3em 0 0` |
-| divider eyebrow → title | `\vskip0.8ex` (`:123`), `0.6ex` (`:107`) | the composition's boxes (no gap of its own) |
-| block title | `0.6ex` / `0.3ex` (`:308-310`) | beamer only |
+| divider eyebrow → title | `\vskip0.6ex` (`:107`; `:123` is beamer's unused subsection page) | `margin-bottom: 0.5em` on the eyebrow (`scss:911`); pptx `section_subtitle.py:44` `LABEL_GAP = 10` px: three hands |
+| divider title → subtitle | `\vskip1.2ex` (`:111`) | `margin-top: 0.7em` on the subtitle (`:931`); pptx `:45` `BODY_GAP = 22` px |
+| block title (feature-panel blocks) | `0.6ex` / `0.3ex` / `0.6ex` (`:308-310`) | beamer only |
 
-**Proposal:** write them as shares of the body (`\engine@typebody`, the house idiom; `\engine@agendarow`
-already does) or as the element's key (`boxes.quote.attribution-gap`, the note's gap under
-`boxes.note`?), at HTML's values. **Moves the PDF** by 0.1–0.2 em per gap. The footnote rows go
-with item 4. Pick for Ben: HTML's values win (the proposal), or the PDF's (then HTML shrinks).
+**Proposal:** beamer selects the element's font and then skips in `em` (the em HTML measures in,
+no `\dimexpr`), the factor the element's key: `boxes.note: {gap: 0.4}` (em of the caption),
+`boxes.quote.attribution-gap: 0.6` (em of the caption), `section.eyebrow-gap: 0.5` (em of the
+eyebrow) and `section.subtitle-gap: 0.7` (em of the subtitle), read by all three formats
+(`section_subtitle.py` drops its pixel copies); the plain block's three to 0.33/0.17/0.33 em of
+the block title (no twin, no key). **Moves the PDF** by 0.1–0.2 em per gap. The footnote rows go
+with item 4. **Picked:** the divider's gaps are in. **Open on the sheet:** HTML's values win (the
+proposal), or the PDF's (0.22, 0.33, 0.28, 0.66 em; then HTML shrinks).
 
 ### 4. The slide footnotes
 
@@ -84,30 +101,36 @@ with item 4. Pick for Ben: HTML's values win (the proposal), or the PDF's (then 
 | width | `0.6\textwidth` | `max-width: 60%` | in place |
 | hang | `1.1em` (`\enginefootnote`); `1.2em` in beamer's own `\footnote` template (`:995` area, `\hbox to 1.2em`) | `0.9em` (`padding-left`, `text-indent`, the dagger's width) | none |
 | between entries | 0.4 ex | 0.3 em | — |
-| mark | `BrandAccent`, bold | `--engine-accent`, bold | accent, bold (`MARK_COLOR`) |
+| mark | `BrandAccent`, bold | `--engine-accent`, bold | accent, not bold (`MARK_COLOR`; `style()` sets size and color only) |
 | text | `BrandMuted`, footnote size | muted, footnote size, leading 1.35 (now the role's) | muted, footnote size |
 | place | the frame's foot (`\enginefootnotespring`) | `bottom: 70px` | in place (pptx cannot move content) |
 
 The rule's size already agrees as fractions; everything else is three hands. **Proposal:**
-`boxes.footnote: {rule: [0.075, 0.0022], rule-color: <blend>, width: 0.6, gap: <em>, hang: <em>,
-step: <em>}` (fractions of the width and height, em of the footnote type), read by both themes;
-beamer's own `\footnote` template takes the same hang; `style_footnotes.py` sets the hang on the
-paragraph (`marL`/`indent`) and may draw the rule above the first footnote (a new shape: a
-`cxnSp` the width of `rule[0]`, placed above the paragraph it styles in place). **Moves both PDF
-and HTML**, and pptx if it draws the rule. Picks for Ben: hang 0.9 / 1.1 / 1.2 em; gap 0.55 em
-(HTML) or 0.44 em (the PDF's 0.8 ex); step 0.3 or 0.22 em; the rule color, one blend for both
-(foreground 30 % over background, the PDF's, or muted at 60 %, HTML's); whether pptx draws the
-rule. Side-by-side: the sample's "Footnotes" slide in all three formats under ncar and nasa-dark
-(the dark livery is where `BrandText!30!BrandBackground` and muted-at-60 % part most).
+`boxes.footnote: {rule: 0.0022, rule-length: 0.075, rule-color: <blend>, width: 0.6, gap: <em>,
+hang: <em>, step: <em>}` (the rule's thickness of the height and length of the width as two
+scalars, since `emit_sty_boxes` writes a list as `[vertical, horizontal]`; `width` of the text
+width; the ems of the footnote type), read by both themes; beamer's own `\footnote` template
+takes the same hang; `style_footnotes.py` sets the hang on the paragraph (`marL`/`indent`, as
+`references_style()`), the gap and step as its paragraph spacing, and the mark bold. **The pptx
+draws no rule** (picked at planning): a shape drawn when the footnote is styled is orphaned when
+`grid.py` or `columns.py` moves the paragraph into a new box, and a late step would need the
+paragraph's rendered position, which nothing knows before PowerPoint opens the file; the ledger
+holds it. **Moves both PDF and HTML**, and the pptx footnotes' indent and spacing. **Open on the
+sheet:** hang 0.9 / 1.1 / 1.2 em; gap 0.55 em (HTML) or 0.44 em (the PDF's 0.8 ex); step 0.3 or
+0.22 em; the rule color, one blend for both: the `rule` blend (ncar #A9B8CB, nasa-dark #606367,
+between the two today) or foreground 30 % over background (the PDF's: #B2C2D7, #4C4C4C).
+Side-by-side: the sample's `## Next steps` (†, ‡) and `## Citing sources` (a lifted note and a †)
+in all three formats under ncar, cu and nasa-dark (the dark livery is where the blends part most).
 
 ### 5–7. The smaller piles of the same kind (the ledger's Untriaged, optional here)
 
 5. **Strip spacing per format**: the scss, `grid.py` and the inner theme each set the gap above and
    below a strip on their own numbers (`--engine-strip-gap` is the pad's vertical; the pptx and
    the theme their own). One `boxes.strip.gap`.
-6. **Small-caps tracking**: HTML 0.1em / 0.08 / 0.04 by element, beamer `LetterSpace=4`, pptx
-   `spc="100"` (`grid.py`), 0.1em (`section_subtitle.py`) and none (`style_tables.py`). One
-   `type.tracking` (em) for every small-caps run.
+6. **Small-caps tracking**: HTML 0.1em (label, eyebrow) / 0.08 (date) / 0.04 (table header),
+   beamer `LetterSpace=4` (label and table header; the eyebrow and date untracked), pptx a fixed
+   1 pt `spc="100"` (`common.style_runs`, the label), 0.1 em (`section_subtitle.py`) and 0.04 em
+   (`style_tables.py:72`; the ledger said none). One `type.tracking` (em) for every small-caps run.
 7. **White by hand on dark fields**: 16 `#fff`/`white` in the scss, 7 `white` in the beamer themes,
    `RGBColor(0xFF, 0xFF, 0xFF)` in `slide_layout.py` (the feature bar's number and panel text),
    where the composition's column role already reaches every format. `tests/test_cli.py`'s
@@ -117,13 +140,16 @@ rule. Side-by-side: the sample's "Footnotes" slide in all three formats under nc
 ## Commits, in order
 
 0. This handoff, with Ben's picks written in.
-1. **The content title band** (item 1): the keys, emitted always, the four drawers reading them, the
-   fallbacks gone; schema and `REFERENCE.md`; every livery's `build/` and `template.pptx`
-   regenerated (`make livery` per livery). Flat: parity and a content slide per format.
-2. **The hairline** (item 2): the color key and the width, all three the same. Visible in the PDF.
-3. **ex → em** (item 3, less the footnotes). Moves the PDF.
-4. **`boxes.footnote`** (item 4). Moves both; pptx may gain the rule.
-5–7. The piles, one commit each, if picked.
+1. **The content title band** (item 1): `frametitle.top/height/rule-y`, emitted always, the four
+   drawers reading them, the fallbacks gone; schema and `REFERENCE.md`; every livery's `build/`
+   and `template.pptx` regenerated (`make livery` per livery). Parity: PDF and HTML flat, the pptx
+   master and layouts (and every slide's title if the pptx title moves into the band).
+2. **The hairline** (item 2): `frametitle.rule-width/rule-color`, all three the same. Visible in
+   the PDF and the pptx.
+3. **ex → em** (item 3, less the footnotes; the divider's gaps in). Moves the PDF, and the pptx
+   divider stack.
+4. **`boxes.footnote`** (item 4). Moves both; the pptx footnotes' indent and spacing; no rule.
+5–7. The piles, one commit each (all three picked, 2026-10-22).
 8. The changelog (Decks: what looks different, per format; Liveries: the new keys, defaults, nothing
    to do), `docs/formats.md` and `liveries/README.md`'s boxes paragraph, CLAUDE.md's bullets, the
    ledger (the items off Untriaged, the entry).
@@ -137,16 +163,31 @@ rule. Side-by-side: the sample's "Footnotes" slide in all three formats under nc
   and `deck_qa.py`'s serve), compared by eye, a contact sheet per item for the PR.
 - `make test` after every commit; `make -C decks/sample qa`; the literal ratchet's ceilings lowered
   as the piles shrink.
-- `tests/app-open.sh` if pptx gains a shape (the footnote rule).
+- `tests/app-open.sh` stays the release's step: no pptx shape is added (the footnote rule is not
+  drawn).
+- The pick sheets come from a throwaway shooter in the session's scratchpad: one code state, each
+  candidate a copy of the livery with the candidate's keys set in its `livery.yml` (built with
+  `livery build` and `livery template`, `extends` resolved through a link to the parent beside the
+  copy), the deck built with `LIVERY_DIR=` on the copy; the before row is a worktree of `main`.
 
-## Open picks for Ben (answer before the fresh session starts)
+## Picks
 
-1. Key names for the title band (`frametitle.top/height/rule-y`, or `frametitle.band`).
-2. The hairline's blend: `rule` (HTML's, darker in the PDF) or a new lighter blend for all three.
-3. ex → em: HTML's values win (the PDF grows), or the PDF's (HTML shrinks).
-4. The footnotes: hang (0.9 / 1.1 / 1.2 em), gap, step, the rule's blend, and whether pptx draws
-   the rule.
-5. Which of items 5–7 ride along.
+Made at planning (2026-10-22): flat keys `frametitle.top/height/rule-y` and
+`rule-width/rule-color`, the boolean `rule` kept; the divider's gaps in item 3 under `section:`;
+no pptx footnote rule; items 5–7 all ride along (the white pile needs a text role on the feature
+panel, a key Ben names when its sheet is up).
+
+From the side-by-sides, each before its commit (the row filled in as Ben picks):
+
+1. The pptx title in the 0.0778 band (one look) or spanning to the rule: —
+2. The hairline's blend and weight (A `rule` at 0.0011 / B a lighter `hairline` blend / C A at
+   beamer's 0.0016): —
+3. ex → em: HTML's values (the PDF grows) or the PDF's (HTML shrinks): —
+4. The footnotes: hang (0.9 / 1.1 / 1.2 em), gap (0.55 / 0.44), step (0.3 / 0.22), the rule's
+   blend (`rule` / foreground 30 % over background): —
+5. The strip's gap: —
+6. The tracking (one value, or per element): —
+7. The feature panel's text role and key: —
 
 ## Memory for the fresh session
 
