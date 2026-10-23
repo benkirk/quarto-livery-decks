@@ -308,8 +308,7 @@ With `{.full}` the cells fill the slide, and this line is the caption.
 ![A caption for the figure](images/example.jpg){width=60%}
 
 ::: note
-Width can also be set in pixels (`{width=400}`) or with a `height=`
-attribute. PNG, JPG, and SVG all work for HTML/PDF; PPTX prefers PNG/JPG.
+Width can also be set in pixels (`{width=400}`) or with a `height=` attribute. PNG, JPG and SVG work in every format.
 :::
 
 ## A linked screenshot
@@ -503,9 +502,8 @@ without one gets it last, with a warning.
 
 ## Thank you! {.closing}
 
-The `.closing` class makes the PDF and HTML decks a closing slide on the
-brand field, with this text under the headline; pptx renders it as an
-ordinary slide.
+The `.closing` class makes a closing slide on the brand field in every format, with
+this text under the headline (pptx: the template's Closing layout).
 
 Questions: your.name@ucar.edu
 
