@@ -97,3 +97,20 @@ def test_bullets_beside_a_table_are_not_cells(deck_qa):
     rows[1] = row(88, (120, 180, "Casper-with-a-long-name DAV"), (228, 240, "36"))
     out = deck_qa.table_overruns(lines(CAPTION, HEADER, *rows, NOTE, *BULLETS), W, H, SPAN)
     assert out == [("runs into the next table column", repr("Casper-with-a-long-name DAV"))], "the table's own overrun still found"
+
+
+def test_indented_sub_rows_are_their_column(deck_qa):
+    """A hierarchy table indents its sub-rows a few points right of the first column's edge
+    (the fy27 deck's community portions): three of them are no column of their own, so the
+    parent rows, which run past that x, are not overruns; a row running into the real next
+    column still is."""
+    rows = [row(80, (120, 152, "University"), (160, 172, "HPC"), (232, 240, "37")),
+            row(88, (127, 160, "Large (CHAP)"), (160, 172, "HPC"), (232, 240, "90")),
+            row(96, (127, 158, "Small-scale"), (160, 172, "DAV"), (232, 240, "10")),
+            row(104, (120, 140, "NCAR"), (160, 172, "HPC"), (232, 240, "31")),
+            row(112, (127, 138, "NSC"), (160, 172, "HPC"), (232, 240, "60")),
+            row(120, (127, 140, "Labs"), (160, 172, "HPC"), (232, 240, "30"))]
+    note = row(130, (130, 232, "A note under the table, wider than its columns"))
+    assert deck_qa.table_overruns(lines(HEADER, *rows, note), W, H) == [], "the note under it is no cell either"
+    rows[3] = row(104, (120, 185, "NCAR-with-a-long-name HPC"), (232, 240, "31"))
+    assert deck_qa.table_overruns(lines(HEADER, *rows), W, H) == [("runs into the next table column", repr("NCAR-with-a-long-name HPC"))]

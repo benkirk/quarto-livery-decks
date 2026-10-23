@@ -174,6 +174,8 @@ def frames(pages):
 
 
 SPAN_PAD = 0.02   # of the width: the HTML table's span, widened before the PDF's lines are read against it
+INDENT = 0.02     # of the width: an edge this close to the right of a cell's own start is an indented
+                  # sub-row of its column (a hierarchy table's), not the next column
 
 
 def table_overruns(lines, w, h, span=None):
@@ -183,7 +185,9 @@ def table_overruns(lines, w, h, span=None):
     so a cell that overruns its column is a line spanning the next column's edge. Only a cell
     counts: a line that starts at a column edge itself (a merged cell starts at its own column's),
     or sits within the rows of the column it crosses. A table's caption above it, or a note
-    under it, is wider than its columns but neither. `span` is the table's (left, right) as shares
+    under it, is wider than its columns but neither, and an edge within INDENT of a cell's own
+    start is its column's indented sub-rows (a hierarchy table's), not a column it crosses.
+    `span` is the table's (left, right) as shares
     of the width, the HTML's measure of the same slide: only the lines reaching into it are read,
     so a bullet list beside the table (its hanging lines start at an x of their own) is no column."""
     body = [ln for ln in lines if ln[1] > h * 0.16]          # below the frame title
@@ -197,7 +201,8 @@ def table_overruns(lines, w, h, span=None):
     for a in body:
         in_column = len(starts[round(a[0])]) >= 3
         for x, col in starts.items():
-            if len(col) < 3 or not a[0] + 5 < x < a[2] - 1:
+            # an edge within INDENT of the line's own start is an indented sub-row of its column
+            if len(col) < 3 or not a[0] + max(5, INDENT * w) < x < a[2] - 1:
                 continue
             mid = (a[1] + a[3]) / 2
             if not in_column and not min(b[1] for b in col) <= mid <= max(b[3] for b in col):
