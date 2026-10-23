@@ -29,6 +29,7 @@
 \colorlet{BrandWarning}{BrandYellow}
 \colorlet{BrandDark}{Space}
 \colorlet{BrandCodeText}{Space}
+\colorlet{BrandOnDark}{BrandWhite}
 % the blends
 \definecolor{BrandTableRule}{HTML}{C1CBD7}
 \definecolor{BrandTableBand}{HTML}{F7F6F5}
@@ -49,6 +50,7 @@
 \expandafter\def\csname engine@role@warning\endcsname{BrandWarning}
 \expandafter\def\csname engine@role@dark\endcsname{BrandDark}
 \expandafter\def\csname engine@role@code-text\endcsname{BrandCodeText}
+\expandafter\def\csname engine@role@on-dark\endcsname{BrandOnDark}
 \expandafter\def\csname engine@role@table-rule\endcsname{BrandTableRule}
 \expandafter\def\csname engine@role@table-band\endcsname{BrandTableBand}
 \expandafter\def\csname engine@role@caution-fill\endcsname{BrandCautionFill}
@@ -66,6 +68,17 @@
 \def\engine@font@semibold{Poppins-SemiBold}
 \def\engine@font@bold{Poppins-Bold}
 \def\engine@font@bolditalic{Poppins-BoldItalic}
+% the content slides' title (frametitle): alignment, accent tab, hairline, the band and the body's top
+\def\engine@ft@align{left}
+\def\engine@ft@top{0.0489}
+\def\engine@ft@height{0.0778}
+\def\engine@ft@ruley{0.1444}
+\def\engine@ft@rulewidth{0.0016}
+\def\engine@ft@bodytop{0.1667}
+\definecolor{EngineFrametitleRuleColor}{HTML}{A9B8CB}
+% the divider stack's gaps (section:), em of the eyebrow and of the subtitle
+\def\engine@section@eyebrowgap{0.33}
+\def\engine@section@subtitlegap{0.66}
 % the marking strip (marking:); its text is the deck's \enginemarking, else this default
 \def\engine@marking@x{0.1}
 \def\engine@marking@y{0.004}
@@ -93,6 +106,8 @@
 \definecolor{EngineBoxesQuoteBarColor}{HTML}{0057C2}
 \def\engine@boxes@quote@pady{0.3}\def\engine@boxes@quote@padx{1.0}
 \def\engine@boxes@quote@style{normal}
+\def\engine@boxes@quote@attributiongap{0.5}
+\def\engine@boxes@note@gap{0.3}
 \definecolor{EngineBoxesCardFill}{HTML}{FFFFFF}
 \def\engine@boxes@card@radius{0.012}
 \def\engine@boxes@card@outline{0.0033}
@@ -102,6 +117,7 @@
 \def\engine@boxes@card@roles{primary,secondary,accent}
 \def\engine@boxes@strip@tint{0.18}
 \def\engine@boxes@strip@pady{0.3}\def\engine@boxes@strip@padx{0.8}
+\def\engine@boxes@strip@gap{0.3}
 \definecolor{EngineGlyphDone}{HTML}{00818F}
 \definecolor{EngineGlyphWarn}{HTML}{FAA119}
 \definecolor{EngineGlyphFail}{HTML}{B5540A}
@@ -116,6 +132,13 @@
 \def\engine@boxes@gallery@pady{0.15}\def\engine@boxes@gallery@padx{0.15}
 \def\engine@boxes@references@hang{1.5}
 \def\engine@boxes@references@gap{0.4}
+\def\engine@boxes@footnote@rule{0.0022}
+\def\engine@boxes@footnote@rulelength{0.075}
+\definecolor{EngineBoxesFootnoteRuleColor}{HTML}{A9B8CB}
+\def\engine@boxes@footnote@width{0.6}
+\def\engine@boxes@footnote@gap{0.55}
+\def\engine@boxes@footnote@hang{0.9}
+\def\engine@boxes@footnote@step{0.3}
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
@@ -161,6 +184,7 @@
 % type: the body as a fraction of the paper height, each role's size and leading as ratios to it,
 % the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)
 \def\engine@type@frac{0.02963}
+\def\engine@type@tracking{0.08}
 \def\engine@type@body{{1.0}{1.4}}
 \def\engine@type@subhead{{1.25}{1.2}}
 \def\engine@type@frametitle{{1.6667}{1.15}}

@@ -4,17 +4,21 @@
 pandoc's pptx writer ignores inline size and color, so a footnote authored in the .qmd (a
 paragraph starting with `†`, `‡`, `§` or `¶`; `*† text*` works too; a `^[...]` note, which
 inline-footnotes.lua writes as one) renders like any
-paragraph. This finds each such paragraph, or a caption line that holds one, and restyles it
-left-aligned in the livery's muted color at a smaller size, a little space above, the marker
-in the accent slot (accent4); a lifted note's mark in the text (a superscript marker) takes the
-accent too. HTML and PDF draw the same and also move footnotes to the slide's foot, which pptx
-cannot do without splitting the slide.
+paragraph. This finds each such paragraph, or a caption line that holds one, and restyles it as
+HTML and the PDF do, from boxes.footnote: left-aligned in the livery's muted color at the
+footnote size, the marker bold in the accent role and hanging (marL/indent by `hang` em of that
+size), `gap` em above the first footnote of a text frame and `step` em above each following one;
+a lifted note's mark in the text (a superscript marker) takes the accent too. HTML and PDF also
+move footnotes to the slide's foot under a short rule, which pptx cannot do without splitting the
+slide (the paragraph's position is not known before PowerPoint opens the file), so it draws no
+rule and the footnotes stay in place.
 
 Idempotent; a deck with no footnotes is untouched."""
 
 import copy
 from pathlib import Path
 
+from lxml import etree
 from pptx.enum.text import PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Pt
@@ -22,13 +26,14 @@ from pptx.dml.color import RGBColor
 
 import livery as livery_mod
 
-from .common import K, LIVERY
+from .common import BOXES, LIVERY, em, ppr_place
 
 MARKERS     = ("†", "‡", "§", "¶")     # the printer's order (engine-common.lua MARKERS)
-FOOT_SIZE   = Pt(livery_mod.type_pt(LIVERY, "footnote"))   # the themes' footnote size (livery.json type)
+FOOT_PT     = livery_mod.type_pt(LIVERY, "footnote")   # the themes' footnote size (livery.json type)
+FOOT_SIZE   = Pt(FOOT_PT)
 FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 MARK_COLOR  = RGBColor.from_string(livery_mod.hex(LIVERY, "accent"))   # the accent role, as HTML (--engine-accent) and beamer (BrandAccent)
-FOOT_BEFORE = Pt(10 * K)               # vertical gap above the footnote (7.5 in's 10 pt)
+FOOTNOTE    = BOXES["footnote"]        # hang, gap and step in em of the footnote type (boxes.footnote)
 
 
 def _footnote_start(para):
@@ -65,20 +70,31 @@ def _split_marker(para, start):
     return para.runs[start]
 
 
-def style(para) -> bool:
+def style(para, following: bool = False) -> bool:
     """The paragraph's footnote styled, if it holds one (slide_layout.py calls it again on a note
-    line it splits out of a caption: idempotent)."""
+    line it splits out of a caption: idempotent); `following`, one right after another footnote,
+    takes the step above it instead of the gap."""
     start = _footnote_start(para)
     if start is None:
         return False
     if start == 0:
-        # a caption is centered; a footnote reads from the left, as in HTML and PDF
-        para.space_before = FOOT_BEFORE
+        # a caption is centered; a footnote reads from the left, as in HTML and PDF, its marker
+        # hanging in the margin: marL/indent by the hang, no bullet
+        para.space_before = Pt((FOOTNOTE["step"] if following else FOOTNOTE["gap"]) * FOOT_PT)
         para.alignment = PP_ALIGN.LEFT
+        hang = em(FOOTNOTE["hang"], FOOT_PT)
+        ppr = para._p.get_or_add_pPr()
+        ppr.set("marL", str(hang))
+        ppr.set("indent", str(-hang))
+        for old in ppr.findall(qn("a:buChar")) + ppr.findall(qn("a:buAutoNum")):
+            ppr.remove(old)
+        if ppr.find(qn("a:buNone")) is None:
+            ppr_place(ppr, etree.Element(qn("a:buNone")))
     mark = _split_marker(para, start)
     for run in para.runs[start:]:  # every run — the code span too
         run.font.size = FOOT_SIZE
         run.font.color.rgb = MARK_COLOR if run._r is mark._r else FOOT_COLOR
+    mark.font.bold = True   # as HTML's .engine-dagger and beamer's footnote mark
     return True
 
 
@@ -102,7 +118,9 @@ def run(prs, path: Path) -> None:
         for shape in slide.shapes:
             if not shape.has_text_frame:
                 continue
+            previous = False   # a footnote right after another takes the step, the first the gap
             for para in shape.text_frame.paragraphs:
-                styled += style(para)
+                previous = style(para, following=previous)
+                styled += previous
                 marks += noteref(para)
     print(f"style_footnotes: restyled {styled} footnote paragraph(s), {marks} mark(s) in the text → {path.name}")

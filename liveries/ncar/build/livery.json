@@ -145,6 +145,15 @@
       "gap": 0.03,
       "rule": 0
     },
+    "footnote": {
+      "gap": 0.55,
+      "hang": 0.9,
+      "rule": 0.0022,
+      "rule-color": "#A9B8CB",
+      "rule-length": 0.075,
+      "step": 0.3,
+      "width": 0.6
+    },
     "gallery": {
       "fill": null,
       "gap": 0.006,
@@ -162,6 +171,9 @@
         0.9
       ]
     },
+    "note": {
+      "gap": 0.3
+    },
     "panel": {
       "pad": [
         0.6,
@@ -169,6 +181,7 @@
       ]
     },
     "quote": {
+      "attribution-gap": 0.5,
       "bar": 0.0089,
       "bar-color": "#0057C2",
       "family": null,
@@ -201,6 +214,7 @@
       "warn": "#FAA119"
     },
     "strip": {
+      "gap": 0.3,
       "pad": [
         0.3,
         0.8
@@ -1141,8 +1155,13 @@
   "frametitle": {
     "align": "left",
     "body": 0.1667,
+    "height": 0.0778,
     "rule": true,
-    "tab": true
+    "rule-color": "#A9B8CB",
+    "rule-width": 0.0016,
+    "rule-y": 0.1444,
+    "tab": true,
+    "top": 0.0489
   },
   "geometry": {
     "body": [
@@ -1198,6 +1217,7 @@
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
+      "on-dark": "BrandOnDark",
       "primary": "BrandPrimary",
       "primary-contrast": "BrandPrimaryContrast",
       "primary-text": "BrandPrimaryText",
@@ -1302,6 +1322,7 @@
     "foreground": "#00357A",
     "highlight": "#00818F",
     "muted": "#6B7C99",
+    "on-dark": "#FFFFFF",
     "primary": "#0057C2",
     "primary-contrast": "#0057C2",
     "primary-text": "#FFFFFF",
@@ -1311,7 +1332,9 @@
   },
   "schema": 1,
   "section": {
+    "eyebrow-gap": 0.33,
     "label": "Section",
+    "subtitle-gap": 0.66,
     "tab": true
   },
   "type": {
@@ -1438,7 +1461,8 @@
         "pt": 22,
         "size": 1.8333
       }
-    }
+    },
+    "tracking": 0.08
   },
   "typography": {
     "base": "Poppins",

@@ -16,6 +16,94 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
+## [Unreleased]
+
+The "one look, one key" theme sprint (`design/one-look-one-key-handoff.md`): the furniture that
+predates the element series drawn from one set of livery numbers in every format, so a livery
+owner changes a band, a hairline or a footnote rule once.
+
+### Decks
+
+- The content title band is one set of numbers in every format (`frametitle.top/height/rule-y`).
+  pptx: the title is centered in the band as HTML and the PDF center it, about 8 px of 900 higher
+  than PowerPoint placed it (it was centered in the whole space down to the hairline). PDF: the
+  accent tab beside the title is the band's height, as HTML's, not the title text's; the body
+  sits 0.025 pt lower (the gap under the hairline derived once). HTML unchanged.
+- The hairline under the content title is one color and one weight in every format
+  (`frametitle.rule-color`, `frametitle.rule-width`): the `rule` blend the column rules already
+  use, at the PDF's 0.4 pt. PDF: the hairline darkens from a near-white mix of surface, text and
+  background to that mid gray (ncar #DDE3EA to #A9B8CB), and on a dark livery it appears (nasa-dark
+  drew it near-black on black). HTML: 1.4 px instead of 1 px. pptx: the blend instead of the
+  text color at 30 % alpha, 0.86 pt instead of 0.75.
+- The gaps the PDF set in `ex` where HTML set `em` read alike (Poppins' ex is 0.55 em, so the
+  PDF's were about half of HTML's): a `::: note` sits 0.3 em of the caption under its figure, a
+  quote's attribution 0.5 em under the lines, a divider's eyebrow 0.33 em above its heading and
+  the subtitle 0.66 em below it, in every format (`boxes.note.gap`, `boxes.quote.attribution-gap`,
+  `section.eyebrow-gap`, `section.subtitle-gap`), the PDF's gaps as they were. HTML: each gap
+  shrinks by 0.1–0.2 em. pptx: the attribution gains the gap (it had none); the divider's stack
+  tightens by a few pixels. PDF as before. The feature panel's block headings keep their gaps,
+  now in em of the heading.
+- The slide footnotes read alike in every format (`boxes.footnote`). PDF: the marker's hang is
+  0.9 em of the footnote size (1.1 before, 1.2 in a hand author's `\footnote`), the gap under the
+  short rule 0.55 em (0.8 ex) and the step between entries 0.3 em (0.4 ex); the rule is the
+  `rule` blend (text at 30 % over the background before). HTML: the rule is 2 px of the `rule`
+  blend (muted at 60 % before) and the block stands on the body's foot. pptx: the marker hangs
+  (the text's lines start under the text, not under the marker), is bold as in HTML and the PDF,
+  and the spacing above a footnote is the gap or, after another, the step (10 pt before).
+- A strip (`::: {.strip}`) has the same space above and below it in every format
+  (`boxes.strip.gap`, 0.3 em of the body: HTML's margin as it was). PDF: the strip gains the gap
+  above and below (it sat flush). pptx: a strip in a card gains it above and below (flush before),
+  a strip on its own gains it above (it had its pad's height below only).
+- Every small-caps run is tracked alike, 0.08 em of its size (`type.tracking`). HTML: a table
+  header's spacing grows from 0.04 em, labels and eyebrows tighten from 0.1 (the date was 0.08).
+  PDF: labels and table headers from 4 % to 8 %, the eyebrow and the date gain tracking (they
+  had none). pptx: a card's label from a fixed 1 pt, a table header from 0.04 em, the eyebrow
+  from 0.1, the date gains it.
+- HTML: a picked card's outline (`.pick`) is whole. It was an inset shadow on the card, which the
+  head's fill and a strip, both running to the card's edges, painted over; it is an overlay above
+  the content now, as the PDF and pptx always drew it.
+- Text on dark fields reads one role (`on-dark`) in every format: the feature slide's panel text,
+  footline and slide number, the blocks on a feature frame in the PDF, a `.brand-dark` slide and
+  the code tints on dividers and closings in HTML. White as before on every bundled livery; the
+  PDF's feature title takes the feature composition's column role, as HTML and pptx did.
+
+### Liveries
+
+- `frametitle` gains the content title band: `top`, `height` and `rule-y`, fractions of the
+  height (defaults 0.0489, 0.0778 and 0.1444: 44, 70 and 130 px of 900, what every format drew
+  by hand before). The title is centered in the band and a taller one grows down; the accent tab
+  is the band's height; the body starts a fixed 20 px under the hairline, or under a taller mark,
+  as before (`frametitle.body` stays derived). Nothing to do: `livery build` writes the keys into
+  every `build/`, and `livery template` draws the master from them.
+- `frametitle.rule-width` (a fraction of the height, default 0.0016: the PDF's 0.4 pt, 1.4 px of
+  900) and `frametitle.rule-color` (a role, a blend or a palette name, default the `rule` blend
+  the column rules use) set the hairline under the content title in every format; the PDF's color
+  theme and the pptx template read them (the theme's `frametitle rule` color is
+  `EngineFrametitleRuleColor`). Nothing to do.
+- `boxes.note.gap` (default 0.3, em of the caption type: a `::: note`'s distance under its
+  figure), `boxes.quote.attribution-gap` (0.5, em of the caption: the attribution's under the
+  lines), `section.eyebrow-gap` (0.33, em of the eyebrow, under it) and `section.subtitle-gap`
+  (0.66, em of the subtitle, above it): the gaps HTML had in `em` and the PDF in `ex`, one number
+  each, read by all three formats. Nothing to do.
+- `boxes.footnote` holds the slide footnotes' numbers for every format: `rule` (0.0022 of the
+  height) and `rule-length` (0.075 of the width) for the short rule above them, `rule-color` (a
+  role, blend or palette name; default the `rule` blend), `width` (0.6 of the text width), and
+  in em of the footnote type `gap` (0.55, under the rule), `hang` (0.9, the marker's) and `step`
+  (0.3, between entries). Nothing to do.
+- `boxes.strip.gap` (default 0.3, em of the body type): the space above and below a strip, in a
+  card or on its own, in every format (HTML's margin before; the PDF and pptx had their own).
+  Nothing to do.
+- `type.tracking` (default 0.08, em of the run's size): the letter spacing of every small-caps run
+  (a card's label, a divider's eyebrow, the title's date, a table header) in every format. Above
+  0.08 pdftotext splits the PDF's tracked words into letters ("S E C T I O N"), so search and
+  copy break. Nothing to do.
+- A fourteenth role, `on-dark`: text on the `dark` role (the feature slide's bar and panel, the
+  blocks on a feature frame, a `.brand-dark` slide, the code tints on a field). Derived: whichever
+  of the background and the foreground reads better on dark (white on every bundled livery, so
+  nothing moves); `roles.on-dark` names one instead. The themes' last hand-written whites read
+  it (the scss keeps Quarto's four compile-time Sass defaults, overridden at runtime). Nothing
+  to do.
+
 ## [26.10.9] - 2026-10-22
 
 ### Decks

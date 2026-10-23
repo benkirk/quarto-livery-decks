@@ -44,6 +44,7 @@
 \colorlet{BrandWarning}{EgOrange}
 \colorlet{BrandDark}{NASABlack}
 \colorlet{BrandCodeText}{Frost}
+\colorlet{BrandOnDark}{NASAWhite}
 % the blends
 \definecolor{BrandTableRule}{HTML}{494D51}
 \definecolor{BrandTableBand}{HTML}{111317}
@@ -64,6 +65,7 @@
 \expandafter\def\csname engine@role@warning\endcsname{BrandWarning}
 \expandafter\def\csname engine@role@dark\endcsname{BrandDark}
 \expandafter\def\csname engine@role@code-text\endcsname{BrandCodeText}
+\expandafter\def\csname engine@role@on-dark\endcsname{BrandOnDark}
 \expandafter\def\csname engine@role@table-rule\endcsname{BrandTableRule}
 \expandafter\def\csname engine@role@table-band\endcsname{BrandTableBand}
 \expandafter\def\csname engine@role@caution-fill\endcsname{BrandCautionFill}
@@ -103,10 +105,18 @@
 \def\engine@installed@head@bold{Arial Bold}
 \def\engine@installed@head@italic{Arial Italic}
 \def\engine@installed@head@bolditalic{Arial Bold Italic}
-% the content slides' title: alignment, accent tab, hairline, the body's top (frametitle)
+% the content slides' title (frametitle): alignment, accent tab, hairline, the band and the body's top
 \def\engine@ft@align{left}
 \def\engine@ft@notab{}
-\def\engine@ft@bodytop{0.1852}
+\def\engine@ft@top{0.0489}
+\def\engine@ft@height{0.0778}
+\def\engine@ft@ruley{0.1444}
+\def\engine@ft@rulewidth{0.0016}
+\def\engine@ft@bodytop{0.1853}
+\definecolor{EngineFrametitleRuleColor}{HTML}{E1E1E1}
+% the divider stack's gaps (section:), em of the eyebrow and of the subtitle
+\def\engine@section@eyebrowgap{0.33}
+\def\engine@section@subtitlegap{0.66}
 % the marking strip (marking:); its text is the deck's \enginemarking, else this default
 \def\engine@marking@x{0.1115}
 \def\engine@marking@y{0.004}
@@ -137,6 +147,8 @@
 \definecolor{EngineBoxesQuoteBarColor}{HTML}{297DE0}
 \def\engine@boxes@quote@pady{0.3}\def\engine@boxes@quote@padx{1.0}
 \def\engine@boxes@quote@style{normal}
+\def\engine@boxes@quote@attributiongap{0.5}
+\def\engine@boxes@note@gap{0.3}
 \definecolor{EngineBoxesCardFill}{HTML}{1C2026}
 \def\engine@boxes@card@radius{0}
 \def\engine@boxes@card@outline{0.0033}
@@ -146,6 +158,7 @@
 \def\engine@boxes@card@roles{primary,secondary,accent}
 \def\engine@boxes@strip@tint{0.3}
 \def\engine@boxes@strip@pady{0.3}\def\engine@boxes@strip@padx{0.8}
+\def\engine@boxes@strip@gap{0.3}
 \definecolor{EngineGlyphDone}{HTML}{00BC71}
 \definecolor{EngineGlyphWarn}{HTML}{FEA20B}
 \definecolor{EngineGlyphFail}{HTML}{F93A1D}
@@ -160,6 +173,13 @@
 \def\engine@boxes@gallery@pady{0.15}\def\engine@boxes@gallery@padx{0.15}
 \def\engine@boxes@references@hang{1.5}
 \def\engine@boxes@references@gap{0.4}
+\def\engine@boxes@footnote@rule{0.0022}
+\def\engine@boxes@footnote@rulelength{0.075}
+\definecolor{EngineBoxesFootnoteRuleColor}{HTML}{E1E1E1}
+\def\engine@boxes@footnote@width{0.6}
+\def\engine@boxes@footnote@gap{0.55}
+\def\engine@boxes@footnote@hang{0.9}
+\def\engine@boxes@footnote@step{0.3}
 % the list glyphs per level (bullets:), in their color
 \definecolor{EngineBullet}{HTML}{FFFFFF}
 \def\engine@bullet@i{▪}
@@ -185,7 +205,7 @@
 \def\engine@geom@widemargin{0.014}
 \def\engine@geom@bodybottom{0.9222}
 \def\engine@geom@half{0.457}
-\def\engine@geom@bodyheight{0.737}
+\def\engine@geom@bodyheight{0.7369}
 \def\engine@art@title{\engineliverydir art/title}
 \def\engine@art@titlelight{\engineliverydir art/title-light}
 \def\engine@art@section{\engineliverydir art/closing}
@@ -194,6 +214,7 @@
 % type: the body as a fraction of the paper height, each role's size and leading as ratios to it,
 % the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)
 \def\engine@type@frac{0.02963}
+\def\engine@type@tracking{0.08}
 \def\engine@type@body{{1.0}{1.4}}
 \def\engine@type@subhead{{1.0}{1.2}}
 \def\engine@type@frametitle{{2.0}{1.15}}

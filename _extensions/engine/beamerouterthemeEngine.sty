@@ -111,36 +111,38 @@
       \vskip-0.25ex{\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}%
         \strut\insertframesubtitle\strut\par}%
     \fi}%
-  % HTML's and the pptx template's band: the title centred in 44-114 px of 900 (a taller one
-  % grows down), the hairline at 130 px or 16 px under the title, the body from 150 px
+  % the band (frametitle.top, .height, .rule-y of the paper; livery.sty), as HTML's and the pptx
+  % template's: the title centered in the band (a taller one grows down), the tab the band's height,
+  % the hairline at rule-y or the band's own gap under a taller title, the body from frametitle.body
   \@tempdimb=\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax
-  \@tempdimc=\dimexpr0.0778\paperheight-\@tempdimb\relax
+  \@tempdimc=\dimexpr\engine@ft@height\paperheight-\@tempdimb\relax
   \ifdim\@tempdimc<0pt \@tempdimc=0pt \fi
   \vbox{%
-    \vskip\dimexpr0.0489\paperheight+0.5\@tempdimc\relax
+    \vskip\dimexpr\engine@ft@top\paperheight+0.5\@tempdimc\relax
     \hbox{%
       \hskip-\beamer@leftmargin % frametitle is typeset at the text margin
       \engine@ifstyle{normal}{%
         \ifdefined\engine@ft@notab\hskip\engine@tabwidth\else
-        {\usebeamercolor[fg]{frametitle tab}%
-         \vrule width\engine@tabwidth height\ht\@tempboxa depth\dp\@tempboxa}\fi
+        {\usebeamercolor[fg]{frametitle tab}%   % smashed: the band's height, the line's box the title's
+         \smash{\vrule width\engine@tabwidth height\dimexpr\ht\@tempboxa+0.5\@tempdimc\relax
+                depth\dimexpr\dp\@tempboxa+0.5\@tempdimc\relax}}\fi
         \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
         % a top-left mark: the title starts beside it
         \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
           \ifdim\engine@logowidth>0pt\hskip\dimexpr\engine@logowidth+0.03\paperwidth+\engine@logoinset-\engine@margin\relax\fi}{}%
       }{\hskip\engine@margin}%
       \box\@tempboxa}%
-    \@tempdima=\dimexpr0.1444\paperheight-0.0489\paperheight-\@tempdimb-\@tempdimc\relax
-    \ifdim\@tempdima<0.0178\paperheight \@tempdima=0.0178\paperheight \fi
+    % the gap under the title: to rule-y, at least the band's own (rule-y less the band's foot)
+    \@tempdima=\dimexpr\engine@ft@ruley\paperheight-\engine@ft@top\paperheight-\@tempdimb-\@tempdimc\relax
+    \ifdim\@tempdima<\dimexpr\engine@ft@ruley\paperheight-\engine@ft@top\paperheight-\engine@ft@height\paperheight\relax
+      \@tempdima=\dimexpr\engine@ft@ruley\paperheight-\engine@ft@top\paperheight-\engine@ft@height\paperheight\relax\fi
     \vskip\dimexpr0.5\@tempdimc+\@tempdima\relax\nointerlineskip   % exact positions: no baselineskip glue
     \engine@ifstyle{normal}{%
       \ifdefined\engine@ft@norule\else
       \hbox{{\usebeamercolor[fg]{frametitle rule}%
-        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height0.4pt}}\fi
+        \vrule width\dimexpr\paperwidth-2\engine@margin\relax height\engine@ft@rulewidth\paperheight}}\fi
     }{}%
-    \ifdefined\engine@ft@bodytop   % below a taller mark (livery.sty)
-      \vskip\dimexpr\engine@ft@bodytop\paperheight-0.1444\paperheight-0.4pt\relax
-    \else\vskip\dimexpr0.0222\paperheight-0.4pt\relax\fi}%
+    \vskip\dimexpr\engine@ft@bodytop\paperheight-\engine@ft@ruley\paperheight-\engine@ft@rulewidth\paperheight\relax}%
 }
 
 % ---------------------------------------------------------------------------
@@ -153,7 +155,7 @@
 \defbeamertemplate*{footline}{Engine}{%
   \engine@ifstyle{normal}{\engine@footline}{%
     \engine@ifstyle{full}{\engine@footline}{%
-    \engine@ifstyle{feature}{{\color{white}\engine@footline}}{%
+    \engine@ifstyle{feature}{{\color{BrandOnDark}\engine@footline}}{%   % on the photo's bar (roles.on-dark)
       \vbox to 0.075\paperheight{\vfil}}}}}
 \def\engine@footline{%
   \engine@userlogorow
@@ -447,7 +449,7 @@ block body example,block title alerted,block body alerted}
 \define@key{beamerframe}{enginebg}{%
   \def\engine@framestyle{feature}\def\engine@featureimage{#1}%
   \engine@atframe{%
-    \setbeamercolor{frametitle}{fg=white}%
+    \setbeamercolor{frametitle}{fg=EngineCfeatureText}%   the feature composition's column role, as HTML and pptx
     \setbeamercolor{framesubtitle}{fg=BrandSecondary}%
     \engine@featureblocks}}
 % [enginefull=<image>]: the image fills the frame; no title, logo, rule or

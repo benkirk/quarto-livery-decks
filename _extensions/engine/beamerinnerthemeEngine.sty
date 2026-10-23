@@ -58,7 +58,7 @@
 \def\engine@flush{\engine@pending\let\engine@pending\@empty}
 \def\engine@el@date{\ifx\insertdate\@empty\else
   \ifx\engine@started\@empty\else\vskip0.02\paperheight\fi   % after other lines (a byline's last)
-  \engine@flush{\engine@elcolor{date}\usebeamerfont{date}\MakeUppercase{\insertdate}\par}%
+  \engine@flush{\engine@elcolor{date}\usebeamerfont{date}\engine@tracking\MakeUppercase{\insertdate}\par}%
   \def\engine@pending{\vskip0.02\paperheight}\def\engine@started{1}\fi}
 \def\engine@el@title{\engine@flush
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@palign\engine@part
@@ -102,14 +102,15 @@
 % and its subtitle, with the tab
 \def\engine@sectionstack{%
   \setbox\@tempboxa=\vbox{\hsize=\engine@bw \engine@calign
+    % the gaps are the livery's section.eyebrow-gap and .subtitle-gap, em of the eyebrow's and the
+    % subtitle's own type (livery.sty), as the scss sets them
     \engine@ifc{eyebrow@label}{\ifengine@numbered\ifnum\thesection>0
-      {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}%
-        \MakeUppercase{\insertsectionnumberlabel}\par}\vskip0.6ex
+      {\usebeamerfont{section number}\color{\engine@ccolor{Eyebrow}}\engine@tracking
+        \MakeUppercase{\insertsectionnumberlabel}\par\vskip\engine@section@eyebrowgap em}%
     \fi\fi}{}%
     {\usebeamerfont{section title}\ifengine@numbered\insertsectionhead\else\engine@sectionhead\fi\par}%
     \ifx\engine@sectionsubtitle\@empty\else
-      \vskip1.2ex
-      {\usebeamerfont{section subtitle}\engine@sectionsubtitle\par}%
+      {\usebeamerfont{section subtitle}\vskip\engine@section@subtitlegap em\engine@sectionsubtitle\par}%
     \fi}%
   \engine@ctab\@tempboxa}
 % the livery's word (section.label), as HTML and pptx set it; with section.progress, "of" the total
@@ -270,12 +271,12 @@
 
 % blocks on photo ("feature") frames: dark titles over white bodies, on the panel
 \def\engine@featureblocks{%
-  \setbeamercolor{block title}{fg=white,bg=BrandDark}%
-  \setbeamercolor{block body}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block title}{fg=BrandOnDark,bg=BrandDark}%
+  \setbeamercolor{block body}{fg=BrandDark,bg=BrandBackground}%
   \setbeamercolor{block title example}{fg=BrandDark,bg=BrandSecondary}%
-  \setbeamercolor{block body example}{fg=BrandDark,bg=white}%
+  \setbeamercolor{block body example}{fg=BrandDark,bg=BrandBackground}%
   \setbeamercolor{block title alerted}{fg=BrandDark,bg=BrandAccent}%
-  \setbeamercolor{block body alerted}{fg=white,bg=BrandDark}}
+  \setbeamercolor{block body alerted}{fg=BrandOnDark,bg=BrandDark}}
 
 % ---------------------------------------------------------------------------
 % feature frames: \begin{enginefeaturepanel} ... \end{enginefeaturepanel} (the Quarto filter
@@ -293,7 +294,7 @@
 \def\enginefeaturepanel{\global\engine@haspaneltrue
   \global\setbox\engine@panelbox=\vbox\bgroup
     \ifcsname engine@c@feature@panel@w\endcsname
-      \engine@hsize{\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax}\colorlet{EngineFeatureText}{white}%
+      \engine@hsize{\dimexpr\engine@c@feature@panel@w\paperwidth-2\engine@panelpadx\relax}\colorlet{EngineFeatureText}{BrandOnDark}%
     \else
       \engine@hsize{\engine@c@feature@column@w\paperwidth}\colorlet{EngineFeatureText}{EngineCfeatureText}%
     \fi
@@ -304,10 +305,10 @@
     \engine@plainblock{block alerted}{BrandAccent}%
     \raggedright\usebeamerfont{normal text}}
 % \engine@plainblock{<block kind>}{<title color>}: that block kind as a heading over its body
-\def\engine@plainblock#1#2{%
-  \setbeamertemplate{#1 begin}{\par\vskip0.6ex{\usebeamerfont{block title}\color{#2}\insertblocktitle\par}\vskip0.3ex
+\def\engine@plainblock#1#2{%   (the gaps in em of the block title, as every gap of the theme is set in em of its element)
+  \setbeamertemplate{#1 begin}{\par{\usebeamerfont{block title}\vskip0.33em\color{#2}\insertblocktitle\par\vskip0.17em}%
     \usebeamerfont{block body}}%
-  \setbeamertemplate{#1 end}{\par\vskip0.6ex}}
+  \setbeamertemplate{#1 end}{\par{\usebeamerfont{block title}\vskip0.33em}}}
 \def\endenginefeaturepanel{\par\egroup}
 % the bar's title, centred on it: the frame title and subtitle
 \def\engine@featuretitle{\vbox{\hsize=\engine@bw \engine@calign
@@ -342,16 +343,22 @@
 % filter writes all of this for paragraphs that start with † or ‡.
 % ---------------------------------------------------------------------------
 \newcommand\enginefootnotespring{\par\vskip 0pt plus 1filll\relax}
+% Every number is boxes.footnote (livery.sty): the rule's length (of the paper's width), thickness
+% (of its height) and color, the block's width (of the text width), and in em of the footnote
+% type the gap under the rule, the marker's hang and the step between entries; HTML's
+% .engine-footnotes and the pptx's style_footnotes.py read the same.
 % the footnotes' short rule, drawn once: here and as beamer's \footnoterule (the misc section)
-\newcommand\engine@footnoterule{{\color{BrandText!30!BrandBackground}\rule{12mm}{0.6pt}}}
+\newcommand\engine@footnoterule{{\color{EngineBoxesFootnoteRuleColor}%
+  \rule{\engine@boxes@footnote@rulelength\paperwidth}{\engine@boxes@footnote@rule\paperheight}}}
 \newenvironment{enginefootnotes}{%
-  \par\noindent\begin{minipage}[b]{0.6\textwidth}\raggedright
+  \par\noindent\begin{minipage}[b]{\engine@boxes@footnote@width\textwidth}\raggedright
   \usebeamerfont{footnote}\color{BrandMuted}%
-  \engine@footnoterule\par\vskip0.8ex}%
+  \engine@footnoterule\par\vskip\engine@boxes@footnote@gap em}%
   {\end{minipage}\par}
 \newcommand\enginefootnote[2]{%
-  \par\hangindent=1.1em\hangafter=1\noindent
-  \makebox[1.1em][l]{\textcolor{BrandAccent}{\bfseries #1}}#2\par\vskip0.4ex}
+  \par\hangindent=\engine@boxes@footnote@hang em\hangafter=1\noindent
+  \makebox[\engine@boxes@footnote@hang em][l]{\textcolor{BrandAccent}{\bfseries #1}}#2\par
+  \vskip\engine@boxes@footnote@step em}
 
 % ---------------------------------------------------------------------------
 % note: a remark under a figure or table, in the caption's look (the full
@@ -360,8 +367,8 @@
 % skip longtable leaves, \LTpost).
 %   \enginenote{121 PiB used of 141 PiB.}
 % ---------------------------------------------------------------------------
-\newcommand\enginenote[1]{%
-  \par\vskip0.4ex{\centering\usebeamerfont{caption}\color{BrandMuted}#1\par}}
+\newcommand\enginenote[1]{%   (boxes.note.gap under the figure, em of the caption type, as the scss)
+  \par{\usebeamerfont{caption}\vskip\engine@boxes@note@gap em\centering\color{BrandMuted}#1\par}}
 
 % ---------------------------------------------------------------------------
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
@@ -544,8 +551,10 @@
     \edef\engine@barboxin{\noexpand\hspace*{-\the\dimexpr\engine@boxes@card@padx em\relax}}%
     \edef\engine@barboxout{\kern-\the\dimexpr\engine@boxes@card@padx em\relax}%   (a kern: \par drops a trailing glue)
   \fi
+  % boxes.strip.gap above and below it, em of the body (the scss's margin, grid.py's room)
+  \par\vskip\engine@boxes@strip@gap em
   \engine@barbox{strip}}%
-  {\endengine@barbox{engine@strip}{engine@strip}}
+  {\endengine@barbox{engine@strip}{engine@strip}\vskip\engine@boxes@strip@gap em}
 
 % ---------------------------------------------------------------------------
 % quote: \begin{enginequote}[role=<role>]{<attribution>} ... \end{enginequote} (the Quarto filter
@@ -563,8 +572,8 @@
   \colorlet{engine@quotebar}{\engine@rolename}%
   \def\engine@quotewho{#2}%
   \engine@barbox{quote}\usebeamerfont{engine quote}}%
-  {\ifx\engine@quotewho\@empty\else   % the attribution in the body's face, upright
-     \par\vskip0.6ex{\normalfont\usebeamerfont{caption}\color{BrandMuted}— \engine@quotewho\par}\fi
+  {\ifx\engine@quotewho\@empty\else   % the attribution in the body's face, upright, boxes.quote.attribution-gap (em of the caption) under the lines
+     \par{\normalfont\usebeamerfont{caption}\vskip\engine@boxes@quote@attributiongap em\color{BrandMuted}— \engine@quotewho\par}\fi
    \endengine@barbox{}{engine@quotebar}\vskip\engine@pady}
 
 % ---------------------------------------------------------------------------
@@ -854,10 +863,10 @@
     \end{tikzpicture}}\par
   \fi}
 % the frame's room under a title in the theme's band (the outer theme's \engine@frametitle ends it at
-% the body's top, 0.1667 of the paper or the livery's frametitle.body), less beamer's 0.25em under the
-% title box and the \lineskip TeX puts above a line as tall as a gallery (enginewide's minipage is
-% one): \beamer@frametextheight, which beamer sets only after the body (a fragile frame's reads 0)
-\def\engine@bodyroom{\dimexpr\textheight-\ifdefined\engine@ft@bodytop\engine@ft@bodytop\else0.1667\fi\paperheight-0.25em-\lineskip\relax}
+% the body's top, the livery's frametitle.body), less beamer's 0.25em under the title box and the
+% \lineskip TeX puts above a line as tall as a gallery (enginewide's minipage is one):
+% \beamer@frametextheight, which beamer sets only after the body (a fragile frame's reads 0)
+\def\engine@bodyroom{\dimexpr\textheight-\engine@ft@bodytop\paperheight-0.25em-\lineskip\relax}
 % the grid, globally (a full frame's background reads it after the body): cols and rows derived
 \def\engine@galgrid{%
   \ifnum\engine@galn=\z@
@@ -969,7 +978,8 @@
 \newcommand\engineth[1]{{\usebeamercolor[fg]{normal text}\bfseries
   \fontsize{\fpeval{0.8*\f@size}pt}{\fpeval{0.8*\strip@pt\dimexpr\f@baselineskip\relax}pt}%
   \selectfont\engine@tracking\MakeUppercase{#1}}}
-\def\engine@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=4}}{}}
+% small caps' letter spacing: type.tracking (em; livery.sty), fontspec's LetterSpace is in percent of the em
+\def\engine@tracking{\@ifpackageloaded{fontspec}{\addfontfeatures{LetterSpace=\fpeval{100*\engine@type@tracking}}}{}}
 % \arrayrulecolor is global, so put it back after each table
 \AddToHook{env/longtable/begin}{%
   \let\engine@arc\CT@arc@
@@ -987,11 +997,14 @@
 \setbeamertemplate{frametitle continuation}[singleframecheck][\,(\insertcontinuationcount)]
 % beamer's \footnote (\footcite, a hand author's) in the slide footnotes' look (enginefootnotes): the
 % text muted, the mark in the accent and bold (the color and font themes), under the same short rule
-\setbeamertemplate{footnote}{%
-  \parindent 0em\noindent\raggedright\usebeamercolor[fg]{footnote}%
-  \hbox to 1.2em{\hfil\insertfootnotemark\,}\insertfootnotetext\par}
+\setbeamertemplate{footnote}{%   (the mark hangs by boxes.footnote.hang, as \enginefootnote's)
+  \parindent 0em\noindent\raggedright\usebeamercolor[fg]{footnote}\usebeamerfont{footnote}%
+  \hangindent=\engine@boxes@footnote@hang em\hangafter=1
+  \makebox[\engine@boxes@footnote@hang em][l]{\insertfootnotemark}\insertfootnotetext\par}
 % (\engine@footnoterule is a box; \nointerlineskip on both sides places it as LaTeX's \hrule is,
-% with no interline glue before it or before the footnote's first line)
-\renewcommand\footnoterule{\kern-3pt\nointerlineskip\hbox{\engine@footnoterule}\nointerlineskip\kern 2.6pt}
+% with no interline glue before it or before the footnote's first line; the gap under it is
+% boxes.footnote.gap in the footnote type, as enginefootnotes')
+\renewcommand\footnoterule{\kern-3pt\nointerlineskip\hbox{\engine@footnoterule}\nointerlineskip
+  {\usebeamerfont{footnote}\kern\engine@boxes@footnote@gap em}}
 
 \mode<all>

@@ -43,13 +43,13 @@ BLENDS = [
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
-# livery role -> the LaTeX color the themes read (the 13 roles; livery.json latex.roles carries them
-# and the blends' names to the beamer filter)
+# livery role -> the LaTeX color the themes read (the 14 roles; livery.json latex.roles carries them
+# and the blends' names to the beamer filter); on-dark is derived unless a livery names it
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
             "primary-contrast": "BrandPrimaryContrast", "secondary": "BrandSecondary",
             "accent": "BrandAccent", "highlight": "BrandHighlight", "foreground": "BrandText", "background": "BrandBackground",
             "muted": "BrandMuted", "surface": "BrandSurface", "warning": "BrandWarning", "dark": "BrandDark",
-            "code-text": "BrandCodeText"}
+            "code-text": "BrandCodeText", "on-dark": "BrandOnDark"}
 W, H = 1600, 900   # revealjs slide pixels (engine-revealjs.scss)
 # art.<kind> files: backgrounds per slide kind, and titlegraphic, the title photo a deck sets none of
 ART_KINDS = ("title", "title-light", "section", "closing", "content", "titlegraphic")
@@ -62,9 +62,17 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
               "accent1": "secondary", "accent2": "highlight", "accent3": "dark", "accent4": "accent",
               "accent5": "warning", "accent6": "primary-contrast", "hlink": "primary", "folHlink": "highlight"}
 # the content slides' title (livery.yml frametitle:): its alignment beside the mark, the accent tab at the
-# paper's edge, the hairline under it
-FRAMETITLE = {"align": "left", "tab": True, "rule": True}
-BODY_TOP = 0.1667   # the content body's top, a fraction of the height (150 px of 900)
+# paper's edge, the hairline under it, and the band as fractions of the height (44, 70 and 130 px of
+# 900): the title centered in top..top+height (a taller one grows down), the hairline at rule-y,
+# rule-width thick (0.4 pt of the PDF's 254 pt paper, 1.4 px of 900; Ben's pick from the side-by-side)
+# in rule-color (a role, blend or hex; resolved to hex in the json)
+FRAMETITLE = {"align": "left", "tab": True, "rule": True, "top": 0.0489, "height": 0.0778, "rule-y": 0.1444,
+              "rule-width": 0.0016, "rule-color": "rule"}
+BODY_GAP = 0.0223   # the content body's top under the hairline, or under a taller mark: 20 px of 900 (0.1444 + it rounds to the 0.1667 the formats drew)
+# the divider stack's gaps (livery.yml section:), em of the element above the gap: the eyebrow's under
+# it (of the eyebrow type), the subtitle's above it (of the section subtitle type). These and the note
+# and attribution gaps are the PDF's old ex gaps as em (Ben's pick from the side-by-side, 2026-10-22)
+SECTION = {"eyebrow-gap": 0.33, "subtitle-gap": 0.66}
 BODY_BOTTOM = 0.9222   # its foot (the pptx body placeholder's; 70 px of 900 above the edge, as HTML pads)
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
 # the cover title and closing, feature covers) on primary; a band title adds its own field role
@@ -86,6 +94,8 @@ TYPE = {"body": (16, 1.4), "subhead": (20, 1.2), "frametitle": (27, 1.15), "tabl
 LEVELS = (16, 15, 13, 12, 11)   # the body's five list levels, the first the body itself
 # the roles that scale with the body when a livery leaves them out (the rest scale with the canvas)
 BODY_ROLES = ("subhead", "table", "code", "caption", "footnote", "quote")
+TRACKING = 0.08   # small caps' letter spacing (type.tracking), em of the run's size, every format: above 0.08
+                  # pdftotext splits the PDF's tracked words into letters (Poppins Bold at 8 pt)
 # the compositions every livery.json carries (compositions()), and the keys each one has (null when absent)
 COMPOSITIONS = ("title", "title-photo", "title-light", "title-photo-light", "title-band",
                 "closing", "closing-light", "closing-band", "section", "feature")
@@ -110,12 +120,15 @@ BOXES = {
     # space above each row and number-width the number column, em of the body (HTML's 0.55em, 2em)
     "agenda": {"number-color": "primary-contrast", "current-color": "primary-contrast", "gap": 0.55, "number-width": 2},
     "quote": {"bar": 0.0089, "bar-color": "primary-contrast", "pad": [0.3, 1.0],   # a quote block: a bar, no fill,
-              "family": None, "style": "normal"},   # its lines' face: a typography.fonts family (null: the body's), its style
+              "family": None, "style": "normal",   # its lines' face: a typography.fonts family (null: the body's), its style
+              "attribution-gap": 0.5},   # the attribution's distance under the lines, em of the caption type
+    "note": {"gap": 0.3},   # a ::: note under a figure or table: its distance under it, em of the caption type
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
-    "strip": {"tint": 0.18, "pad": [0.3, 0.8]},   # 0.18: caution-fill's share (BLENDS), one tint recipe
+    "strip": {"tint": 0.18, "pad": [0.3, 0.8], "gap": 0.3},   # 0.18: caution-fill's share (BLENDS), one tint recipe;
+                                                            # gap: above and below it, em of the body
     "status": {"done": "highlight", "warn": "warning", "fail": "accent"},   # the ✓ ⚠ ✗ glyphs
     # steps and timelines: line, badge and dot of the height (the rail's thickness, a step's badge's
     # and a milestone's dot's diameter); fill a cell behind each item, null for none
@@ -130,10 +143,15 @@ BOXES = {
     # the references slide's list (a deck's bibliography): each entry's hanging indent and the gap
     # above it, em of the footnote type it is set in
     "references": {"hang": 1.5, "gap": 0.4},
+    # the slide footnotes (†, ‡, § and ¶ paragraphs, ^[...] notes) at the slide's foot: the short rule above
+    # them (rule its thickness of the height, rule-length of the width, rule-color a role, blend or hex),
+    # width of the text width, and in em of the footnote type the gap under the rule, the marker's hang
+    # and the step between entries; the pptx styles them in place (hang, gap, step; no rule)
+    "footnote": {"rule": 0.0022, "rule-length": 0.075, "rule-color": "rule", "width": 0.6, "gap": 0.55, "hang": 0.9, "step": 0.3},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
-              "rail": ("line-color", "fill"), "gallery": ("fill",)}
+              "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -217,6 +235,11 @@ def resolve(d: Path) -> tuple[dict, dict]:
             return ("livery.yml", f"roles.{k}")
         return ("_brand.yml", f"color.{k}") if k in color else ("livery.yml", "roles.dark")
     roles = {k: hex_of(v, role_key(k)) for k, v in sources.items()}
+    if "on-dark" not in roles and {"dark", "background", "foreground"} <= set(roles):
+        # text on the dark role (the feature panel and bar, a .brand-dark slide): whichever of the
+        # background and the foreground reads better on it, unless a livery names one (roles.on-dark)
+        lighter = max(("background", "foreground"), key=lambda r: livery_mod.contrast(roles[r], roles["dark"]))
+        roles["on-dark"], sources["on-dark"] = roles[lighter], sources[lighter]
     blends = {k: livery_mod.mix(roles[a], roles[b], share) for k, a, b, share in BLENDS if a in roles and b in roles}
     blends.update({k: hex_of(v, ("livery.yml", f"blends.{k}")) for k, v in data.get("blends", {}).items()})
     out = {
@@ -234,6 +257,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
     for key in ("geometry", "section", "art", "pptx", "latex"):
         if key in data:
             out[key] = data[key]
+    out["section"] = {**SECTION, **(data.get("section") or {})}   # the divider stack's gaps always in the json
     # the TeX name of each role and blend (livery.sty defines them, and carries this table as
     # \engine@role@<name> for a card's or strip's role=; the filters check a role= against it)
     out.setdefault("latex", {})["roles"] = {**{r: t for r, t in ROLE_TEX.items() if r in roles},
@@ -245,10 +269,12 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["frametitle"] = {**FRAMETITLE, **(data.get("frametitle") or {})}
     if out["frametitle"]["align"] not in ("left", "center"):
         sys.exit(f"{d.name}: frametitle.align {out['frametitle']['align']!r} is not left or center")
-    # the body's top (150 px of 900, as HTML pads it), or below a taller mark in a top corner
+    rc = out["frametitle"]["rule-color"]   # the hairline's color as hex: a role, a blend (the default) or a palette name
+    out["frametitle"]["rule-color"] = roles.get(rc) or blends.get(rc) or hex_of(rc, ("livery.yml", "frametitle.rule-color"))
+    # the body's top (derived, not a key): BODY_GAP under the hairline, or under a taller mark in a top corner
     lg = (out.get("geometry") or {}).get("logo") or {}
-    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) + 0.0222 if lg.get("corner", "top-right") != "none" else 0
-    out["frametitle"]["body"] = round(max(BODY_TOP, below), 4)
+    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
+    out["frametitle"]["body"] = round(max(out["frametitle"]["rule-y"], below) + BODY_GAP, 4)
     for corner, legal in (("logo", ("top-right", "top-left", "none")), ("pagenumber", ("bottom-left", "bottom-right"))):
         v = out.get("geometry", {}).get(corner, {}).get("corner")
         if v is not None and v not in legal:
@@ -351,8 +377,11 @@ def type_scale(name: str, data: dict) -> dict:
             sys.exit(f"{name}: pptx.size {size!r} is not [width, height] in inches")
         cw, ch = round(size[0] * 72), round(size[1] * 72)   # whole points: 13.333 in is 960 pt
     t = data.get("type") or {}
-    for k in sorted(set(t) - set(TYPE) - {"levels"}):
+    for k in sorted(set(t) - set(TYPE) - {"levels", "tracking"}):
         print(f"warning: {name}: unknown type: role {k!r} (ignored)", file=sys.stderr)
+    tracking = t.get("tracking", TRACKING)   # every small-caps run's letter spacing, em
+    if not (isinstance(tracking, (int, float)) and tracking >= 0):
+        sys.exit(f"{name}: type.tracking {tracking!r} is not an em length")
     canvas = ch / CANVAS[1]
     body = float(t.get("body", TYPE["body"][0] * canvas))
     by_body = body / TYPE["body"][0]
@@ -374,7 +403,7 @@ def type_scale(name: str, data: dict) -> dict:
             print(f"warning: {name}: type.{role} {v} rounded to {half(v)} pt", file=sys.stderr)
     levels = [half(v) for v in levels]
     b = pts["body"]
-    return {"canvas": {"w": cw, "h": ch}, "body": round(b / ch, 6), "levels": levels,
+    return {"canvas": {"w": cw, "h": ch}, "body": round(b / ch, 6), "levels": levels, "tracking": tracking,
             "roles": {k: {"pt": pts[k], "size": round(pts[k] / b, 4), "leading": TYPE[k][1]} for k in TYPE}}
 
 
@@ -834,14 +863,18 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for k, tex in (("base", "base"), ("headings", "head")):
             for face, names in installed.get(k, {}).get("faces", {}).items():
                 L.append(f"\\def\\engine@installed@{tex}@{face}{{{names[0]}}}")
-    ft = livery["frametitle"]
-    if ft != {**FRAMETITLE, "body": BODY_TOP}:   # the content title, when not the engine's (left, tab, rule)
-        L.append("% the content slides' title: alignment, accent tab, hairline, the body's top (frametitle)")
-        L.append(f"\\def\\engine@ft@align{{{ft['align']}}}")
-        for k in ("tab", "rule"):
-            if not ft[k]:
-                L.append(f"\\def\\engine@ft@no{k}{{}}")
-        L.append(f"\\def\\engine@ft@bodytop{{{ft['body']}}}")
+    ft = livery["frametitle"]   # the content slides' title: the outer theme's \engine@frametitle reads every one
+    L.append("% the content slides' title (frametitle): alignment, accent tab, hairline, the band and the body's top")
+    L.append(f"\\def\\engine@ft@align{{{ft['align']}}}")
+    for k in ("tab", "rule"):
+        if not ft[k]:
+            L.append(f"\\def\\engine@ft@no{k}{{}}")
+    for k, tex in (("top", "top"), ("height", "height"), ("rule-y", "ruley"), ("rule-width", "rulewidth"), ("body", "bodytop")):
+        L.append(f"\\def\\engine@ft@{tex}{{{ft[k]}}}")
+    L.append(f"\\definecolor{{EngineFrametitleRuleColor}}{{HTML}}{{{ft['rule-color'][1:]}}}")
+    L.append("% the divider stack's gaps (section:), em of the eyebrow and of the subtitle")
+    for k in SECTION:
+        L.append(f"\\def\\engine@section@{k.replace('-', '')}{{{livery['section'][k]}}}")
     mk = livery.get("marking")
     if mk:   # the marking strip: its box (y down), alignment, colors and the livery's default text
         L.append("% the marking strip (marking:); its text is the deck's \\enginemarking, else this default")
@@ -898,6 +931,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% the list levels ii-v as ratios to the body (the pptx's points on its canvas, livery.json type)")
     ty = livery["type"]
     L.append(f"\\def\\engine@type@frac{{{ty['body']}}}")
+    L.append(f"\\def\\engine@type@tracking{{{ty['tracking']}}}")   # small caps' letter spacing, em (\engine@tracking)
     for k, v in ty["roles"].items():
         L.append(f"\\def\\engine@type@{k}{{{{{v['size']}}}{{{v['leading']}}}}}")
     b, lead = ty["roles"]["body"]["pt"], ty["roles"]["body"]["leading"]
@@ -1066,6 +1100,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
     # (the deck's size step, --engine-type-scale from engine-revealjs.lua, multiplies the px ones)
     tpx = lambda pt: f"calc({round(pt / ty['canvas']['h'] * H, 2):g}px * var(--engine-type-scale, 1))"
     props.append(f"--engine-type-body: {tpx(ty['roles']['body']['pt'])};")
+    props.append(f"--engine-tracking: {ty['tracking']:g}em;")   # small caps' letter spacing (type.tracking)
     for k in ("frametitle", "pagenumber", "footer", "marking"):   # fixed px: not shrunk with the body
         props.append(f"--engine-type-{k}: {tpx(ty['roles'][k]['pt'])};")
     for k, v in ty["roles"].items():
@@ -1089,9 +1124,13 @@ def emit_css(livery: dict, extra: str = "") -> str:
     props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
     props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
     props.append(f"--engine-logo-content: {'none' if corner == 'none' else '\"\"'};")
-    ft = livery["frametitle"]
-    if ft["body"] != BODY_TOP:
-        props.append(f"--engine-body-top: {px(ft['body'])};")
+    ft = livery["frametitle"]   # the band (frametitle.top/height/rule-y) and the body's top, in slide pixels
+    for k, name in (("top", "title-top"), ("height", "title-height"), ("rule-y", "title-rule-y"),
+                    ("rule-width", "title-rule-width"), ("body", "body-top")):
+        props.append(f"--engine-{name}: {px(ft[k])};")
+    props.append(f"--engine-title-rule-color: {ft['rule-color']};")
+    for k in SECTION:   # the divider stack's gaps, em of the eyebrow and of the subtitle (section:)
+        props.append(f"--engine-section-{k}: {livery['section'][k]:g}em;")
     if ft["align"] == "center":
         props.append("--engine-title-justify: center;")
         props.append("--engine-title-text-align: center;")
@@ -1195,7 +1234,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",
           f"--engine-card-pad-x: {card['pad'][1]:g}em;"]   # a strip reaches the card's edges by it
     p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};",
-          f"--engine-strip-gap: {strip['pad'][0]:g}em;"]   # above and below it: its vertical pad
+          f"--engine-strip-gap: {strip['gap']:g}em;"]   # above and below it (boxes.strip.gap)
     p += [f"--engine-glyph-{k}: {c};" for k, c in b["status"].items()]   # the ✓ ⚠ ✗ glyphs (--engine-status-* are the charts')
     rail = b["rail"]
     p += [f"--engine-rail-line: {px(rail['line'])};", f"--engine-rail-line-color: {rail['line-color']};",
@@ -1208,6 +1247,13 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-gallery-fill: {gal['fill'] or 'transparent'};"]
     refs = b["references"]
     p += [f"--engine-references-hang: {refs['hang']:g}em;", f"--engine-references-gap: {refs['gap']:g}em;"]
+    p += [f"--engine-quote-attribution-gap: {quote['attribution-gap']:g}em;",   # em of the caption type: set on the
+          f"--engine-note-gap: {b['note']['gap']:g}em;"]                          # caption-sized element itself
+    fn = b["footnote"]   # the slide footnotes' block: its ems are of the footnote type, set on the block itself
+    p += [f"--engine-footnote-rule: {px(fn['rule'])};", f"--engine-footnote-rule-length: {px(fn['rule-length'], W)};",
+          f"--engine-footnote-rule-color: {fn['rule-color']};", f"--engine-footnote-width: {round(fn['width'] * 100, 2):g}%;",
+          f"--engine-footnote-gap: {fn['gap']:g}em;", f"--engine-footnote-hang: {fn['hang']:g}em;",
+          f"--engine-footnote-step: {fn['step']:g}em;"]
     return p
 
 

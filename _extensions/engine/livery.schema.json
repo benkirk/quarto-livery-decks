@@ -67,6 +67,10 @@
         "code-text": {
           "$ref": "#/$defs/color",
           "description": "Code text (default: the dark role; a dark livery's dark is a field, so it names a light color)."
+        },
+        "on-dark": {
+          "$ref": "#/$defs/color",
+          "description": "Text on the dark role: the feature slide's bar and panel, a `.brand-dark` slide (default: whichever of the background and the foreground reads better on dark)."
         }
       }
     },
@@ -260,7 +264,9 @@
           "description": "The eyebrow's color, a role or a hex.",
           "default": "secondary"
         },
-        "progress": {"type": "boolean", "default": false, "description": "The eyebrow reads \"SECTION 3 of 5\": the divider's number of the numbered sections, in every format (LaTeX: \\enginesectiontotal{5} in the preamble; the Quarto filter writes it)."}
+        "progress": {"type": "boolean", "default": false, "description": "The eyebrow reads \"SECTION 3 of 5\": the divider's number of the numbered sections, in every format (LaTeX: \\enginesectiontotal{5} in the preamble; the Quarto filter writes it)."},
+        "eyebrow-gap": {"type": "number", "minimum": 0, "default": 0.33, "description": "The gap under the eyebrow, above the heading, in em of the eyebrow type."},
+        "subtitle-gap": {"type": "number", "minimum": 0, "default": 0.66, "description": "The gap under the heading, above the subtitle, in em of the section subtitle type."}
       }
     },
     "art": {
@@ -484,7 +490,32 @@
           "description": "The accent tab at the paper's edge beside the title.",
           "default": true
         },
-        "rule": {"type": "boolean", "description": "The hairline under the title.", "default": true}
+        "rule": {"type": "boolean", "description": "The hairline under the title.", "default": true},
+        "top": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The band's top, a fraction of the height; the title is centered in the band and a taller one grows down.",
+          "default": 0.0489
+        },
+        "height": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The band's height, a fraction of the height (the accent tab's too).",
+          "default": 0.0778
+        },
+        "rule-y": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The hairline's y, a fraction of the height; the body starts a fixed gap under it, or under a taller mark.",
+          "default": 0.1444
+        },
+        "rule-width": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "The hairline's thickness, a fraction of the height (0.4 pt on the PDF's paper, 1.4 px of 900).",
+          "default": 0.0016
+        },
+        "rule-color": {
+          "type": "string",
+          "description": "The hairline's color: a role, a blend or a palette name (default: the `rule` blend, as the column rules).",
+          "default": "rule"
+        }
       }
     },
     "marking": {
@@ -596,7 +627,30 @@
             "bar-color": {"$ref": "#/$defs/color-or-role", "default": "primary-contrast", "description": "The bar's color when the quote names no role=, a role, a palette name or a hex; primary-contrast, the primary that reads on the background, by default."},
             "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 1.0], "description": "Its text's distance from its edges, in em of the body type."},
             "family": {"type": ["string", "null"], "minLength": 1, "default": null, "description": "The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface."},
-            "style": {"enum": ["normal", "italic"], "default": "normal", "description": "Its lines' style: normal (upright) or italic."}
+            "style": {"enum": ["normal", "italic"], "default": "normal", "description": "Its lines' style: normal (upright) or italic."},
+            "attribution-gap": {"type": "number", "minimum": 0, "default": 0.5, "description": "The attribution's distance under the lines, in em of the caption type."}
+          }
+        },
+        "footnote": {
+          "type": "object",
+          "description": "The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule).",
+          "additionalProperties": false,
+          "properties": {
+            "rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0022, "description": "The short rule above them, its thickness (of the slide's height)."},
+            "rule-length": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.075, "description": "The rule's length (of the slide's width)."},
+            "rule-color": {"$ref": "#/$defs/color-or-role", "default": "rule", "description": "The rule's color: a role, a blend or a palette name (default: the `rule` blend, as the title hairline and the column rules)."},
+            "width": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.6, "description": "The block's width, of the text width."},
+            "gap": {"type": "number", "minimum": 0, "default": 0.55, "description": "The gap under the rule, above the first footnote (pptx: above it), in em of the footnote type."},
+            "hang": {"type": "number", "minimum": 0, "default": 0.9, "description": "The marker's hang: the text starts this far in, in em of the footnote type."},
+            "step": {"type": "number", "minimum": 0, "default": 0.3, "description": "The gap between one footnote and the next, in em of the footnote type."}
+          }
+        },
+        "note": {
+          "type": "object",
+          "description": "A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look).",
+          "additionalProperties": false,
+          "properties": {
+            "gap": {"type": "number", "minimum": 0, "default": 0.3, "description": "Its distance under the figure or table, in em of the caption type (HTML and PDF; the pptx places it by measure)."}
           }
         },
         "card": {
@@ -619,7 +673,8 @@
           "additionalProperties": false,
           "properties": {
             "tint": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.18, "description": "The role's share in its fill, over the background."},
-            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 0.8], "description": "Its text's distance from its edges, in em of the body type."}
+            "pad": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2, "maxItems": 2, "x-kind": "[vertical, horizontal] em", "default": [0.3, 0.8], "description": "Its text's distance from its edges, in em of the body type."},
+            "gap": {"type": "number", "minimum": 0, "default": 0.3, "description": "The space above and below it, in a card or on its own, in em of the body type."}
           }
         },
         "status": {
@@ -974,6 +1029,10 @@
           "exclusiveMinimum": 0,
           "default": 9,
           "description": "The footer line (footer=full)."
+        },
+        "tracking": {
+          "type": "number", "minimum": 0, "default": 0.08,
+          "description": "The letter spacing of every small-caps run (a card's label, the divider's eyebrow, the title's date, a table header), in em of its size, in every format. Above 0.08, pdftotext reads the PDF's tracked words letter by letter."
         },
         "levels": {
           "type": "array",

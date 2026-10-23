@@ -23,6 +23,7 @@
   --engine-warning: #CFB87C;
   --engine-dark: #000000;
   --engine-code-text: #000000;
+  --engine-on-dark: #FFFFFF;
   --engine-table-rule: #C2C0BA;
   --engine-table-band: #F8F6F2;
   --engine-caution-fill: #F6F2E7;
@@ -40,6 +41,7 @@
   --engine-full-footline: 67.5px;
   --engine-full-caption: 54px;
   --engine-type-body: calc(26.67px * var(--engine-type-scale, 1));
+  --engine-tracking: 0.08em;
   --engine-type-frametitle: calc(53.33px * var(--engine-type-scale, 1));
   --engine-type-pagenumber: calc(15px * var(--engine-type-scale, 1));
   --engine-type-footer: calc(15px * var(--engine-type-scale, 1));
@@ -93,6 +95,14 @@
   --engine-logo-right: var(--engine-margin);
   --engine-logo-position: right top;
   --engine-logo-content: none;
+  --engine-title-top: 44px;
+  --engine-title-height: 70px;
+  --engine-title-rule-y: 130px;
+  --engine-title-rule-width: 1.4px;
+  --engine-body-top: 150px;
+  --engine-title-rule-color: #AAA8A3;
+  --engine-section-eyebrow-gap: 0.33em;
+  --engine-section-subtitle-gap: 0.66em;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: var(--engine-margin);
   --engine-pagenumber-left: auto;
@@ -160,6 +170,15 @@
   --engine-gallery-fill: transparent;
   --engine-references-hang: 1.5em;
   --engine-references-gap: 0.4em;
+  --engine-quote-attribution-gap: 0.5em;
+  --engine-note-gap: 0.3em;
+  --engine-footnote-rule: 2px;
+  --engine-footnote-rule-length: 120px;
+  --engine-footnote-rule-color: #AAA8A3;
+  --engine-footnote-width: 60%;
+  --engine-footnote-gap: 0.55em;
+  --engine-footnote-hang: 0.9em;
+  --engine-footnote-step: 0.3em;
 }
 /* chart colors (livery.json charts) */
 :root {

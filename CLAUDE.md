@@ -200,8 +200,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `releases/latest`).
 - **Slide footnotes** (a paragraph starting with `†`, `‡`, `§` or `¶`, the printer's order,
   `engine-common.lua` `MARKERS`): the theme lifts every one on a slide, columns included, to the
-  slide's foot in HTML and PDF, under a short muted rule with the marker in the accent orange;
-  pptx can't move content, so `style_footnotes.py` mutes them in place in the same colors.
+  slide's foot in HTML and PDF, under a short rule with the marker bold in the accent, every
+  number `boxes.footnote` (`rule`, `rule-length`, `rule-color`, `width`; `gap`, `hang`, `step` in
+  em of the footnote type), read alike by the inner theme (beamer's own `\footnote` template too),
+  the scss and `style_footnotes.py`; pptx can't move content, so the step styles them in place
+  (the hang as `marL`/`indent`, the gap and step as paragraph spacing) and draws no rule (the
+  paragraph's position is unknown before PowerPoint opens the file).
   `*† text*` works too. A `^[...]` note is one: `lift_footnotes()` (called by `take_footnotes()`,
   so both hoists; in pptx by `inline-footnotes.lua`, which puts it in a plain two-column slide's
   last column) makes it a superscript mark (`.engine-noteref`) and a paragraph led by the next
@@ -223,7 +227,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   bibtex (the image's `texlive-bibtex-extra`; biber is not installed); the theme's `bibliography
   item` must not assume `\insertbiblabel` (biblatex defines none).
 - **Notes under a figure** (`::: note` right after a slide's figure or table): its
-  caption, as the `.full` caption looks (caption role, muted, centered, just under it). HTML
+  caption, as the `.full` caption looks (caption role, muted, centered, `boxes.note.gap` em of the
+  caption under it in HTML and PDF; the pptx places it by measure). HTML
   `.engine-note`, PDF `\enginenote` (both after the † lift, which reaches into it; after a
   table the filter writes `\vskip-\LTpost` first). pptx: `single-body.lua` folds it into the
   caption box and writes `engine-layout: note`; `slide_layout.py` splits the box at its line
@@ -294,7 +299,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   widened along its rows (`widened()`), so thin type ("Office") is not lost.
 - **Type**: text sizes are **points on the livery's pptx canvas**, whole or
   half points (a pasted slide carries round numbers; nasa: the reference deck's 10 x 5.625 in,
-  body 12, titles 22): `livery.yml` `type:` (role -> pt, `levels`)
+  body 12, titles 22): `livery.yml` `type:` (role -> pt, `levels`, and `tracking`: every
+  small-caps run's letter spacing in em of its size, `\engine@tracking`, `--engine-tracking`,
+  `common.TRACKING`, default 0.08: above it pdftotext splits the PDF's tracked words into
+  letters)
   and `pptx.size` (inches, default 13.333 x 7.5), defaulting to the engine's `TYPE` (the NSF NCAR
   template's guidance carried onto 540 pt). ncar is on the brand template's own canvas, 10 x
   5.625 in, at its guidance (body 12, titles 20; its family inherits); cu's are the NSI master
@@ -306,7 +314,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   sets a size, reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
-  since a dark livery's `dark` stays a field color; beamer mixes its tints toward
+  since a dark livery's `dark` stays a field color; the `on-dark` role (derived: whichever of
+  background and foreground reads better on `dark`, `roles.on-dark` to name one) is text on the
+  dark role in every format (the feature bar and panel, a `.brand-dark` slide, the code tints on
+  a field): no theme writes `white` by hand (`test_cli.py`'s ratchet holds the counts at the
+  scss's four Sass defaults and zero in beamer); beamer mixes its tints toward
   `BrandBackground`, not white; `livery.css` gains callout title tints and a lightness flip
   (CSS filter) for inline Graphviz. Quarto bakes mermaid and dot cells to PNG before any Lua
   filter runs (even `at: pre-ast`), so the engine's `diagram-dark.lua` swaps each baked picture for
@@ -315,11 +327,16 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
-- **Content title**: `livery.yml` `frametitle: {align: left|center, tab, rule}`
-  (nsi: centered, no tab, no hairline, as the NSI master deck's slide 20; its mark at the paper's
-  edge, `geometry.logo.inset: 0.015`); the body starts below
-  a mark taller than ncar's (`livery.json` `frametitle.body`). Beamer centers the title in the
-  same band as HTML and pptx (it sat higher before).
+- **Content title**: `livery.yml` `frametitle: {align: left|center, tab, rule, top, height,
+  rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
+  slide 20; its mark at the paper's edge, `geometry.logo.inset: 0.015`). The band is the three
+  fractions of the height (defaults 44, 70 and 130 px of 900: the title centered in
+  `top..top+height`, a taller one growing down, the tab the band's height, the hairline at
+  `rule-y`, `rule-width` thick (0.0016: the PDF's 0.4 pt, 1.4 px of 900) in `rule-color` (a role, blend or hex, default the
+  `rule` blend the column rules use; a hex in `livery.json`)), always emitted (`\engine@ft@*`,
+  `EngineFrametitleRuleColor`, `--engine-title-*`) and read by the outer theme, the scss and the
+  template's master alike; the body starts `livery_build.BODY_GAP` under the hairline or below a
+  taller mark (`livery.json` `frametitle.body`, derived, not a key).
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
   pandoc's `monofont` in pptx (nasa: DM Mono); `pptx.code-typeface` overrides the pptx's with an
@@ -420,6 +437,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   line, no bookmark; its state global until shipout, where the background draws the stack).
   `section.progress` (default off) reads "SECTION 3 of 5": pptx counts the numbered dividers,
   HTML's filter writes `data-engine-section-total`, beamer's writes `\enginesectiontotal{n}`.
+  The stack's gaps are `section.eyebrow-gap` (em of the eyebrow, under it) and
+  `section.subtitle-gap` (em of the subtitle, above it), always in `livery.json` (`SECTION`), read
+  by the inner theme, the scss and `section_subtitle.py` alike; every gap the beamer theme sets
+  is in `em` of its own element's font, selected first, never `ex` (Poppins' ex is 0.55 em, so an
+  `ex` gap read half of HTML's `em`).
   In pptx the blue field, logo and waves are the template's Section Header
   layout, which `livery template` generates with the rest of the
   template from the livery's data (`make livery` after a livery change, never edit
@@ -654,7 +676,8 @@ it does, by area, beyond the format notes above:
   or a strip, where it warns and stays its lines): `engine-common.lua`'s `quote_parts()` (a last
   line led by —, – or -- the attribution) and `quote_blocks()`, the one walk every format uses;
   `boxes.quote` (`bar`, `bar-color` primary-contrast by default, `pad`, `family`: a bundled
-  `typography.fonts` family or null, `style`) and the `quote` type role; `pptx.quote-typeface`
+  `typography.fonts` family or null, `style`, `attribution-gap` em of the caption under the lines,
+  in all three) and the `quote` type role; `pptx.quote-typeface`
   names PowerPoint's face. pptx: `⟦engine:quote role=⟧` ... `⟦engine:attribution⟧` ...
   `⟦engine:end⟧` in a `.engine-quote-marks` Div; a quote in a column makes a grid slide
   (`is_grid()`, unless a column holds a picture or table: pandoc's slide and blockquote then, warned);

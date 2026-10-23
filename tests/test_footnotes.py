@@ -133,10 +133,16 @@ def test_pptx_section_sign(pandoc_deck, tmp_path):
     j = json.loads((NCAR / "build" / "livery.json").read_text())
     body = next(sh for sh in Presentation(str(tmp_path / "t.pptx")).slides[0].placeholders
                 if sh.has_text_frame and "third" in sh.text_frame.text)
-    for p, mark in zip(body.text_frame.paragraphs, "§¶"):
+    fn, pt = j["boxes"]["footnote"], j["type"]["roles"]["footnote"]["pt"]
+    for i, (p, mark) in enumerate(zip(body.text_frame.paragraphs, "§¶")):
         assert p.runs[0].text.strip() == mark
-        assert all(r.font.size == Pt(j["type"]["roles"]["footnote"]["pt"]) for r in p.runs), p.text
+        assert p.runs[0].font.bold, "the marker is bold, as HTML's and the PDF's"
+        assert all(r.font.size == Pt(pt) for r in p.runs), p.text
         assert str(p.runs[1].font.color.rgb) == j["roles"]["muted"][1:].upper()
+        # boxes.footnote: the marker's hang as marL/indent, the gap above the first, the step above the next
+        ppr = p._p.pPr
+        assert int(ppr.get("marL")) == round(fn["hang"] * pt * 12700) == -int(ppr.get("indent")), "the hang"
+        assert p.space_before == Pt((fn["gap"] if i == 0 else fn["step"]) * pt), "the gap, then the step"
 
 
 BIB = "---\nbibliography: refs.bib\n---\n\n"

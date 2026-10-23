@@ -48,6 +48,15 @@
       "gap": 0.03,
       "rule": 0
     },
+    "footnote": {
+      "gap": 0.55,
+      "hang": 0.9,
+      "rule": 0.0022,
+      "rule-color": "#AAA8A3",
+      "rule-length": 0.075,
+      "step": 0.3,
+      "width": 0.6
+    },
     "gallery": {
       "fill": null,
       "gap": 0.006,
@@ -65,6 +74,9 @@
         0.9
       ]
     },
+    "note": {
+      "gap": 0.3
+    },
     "panel": {
       "pad": [
         0.6,
@@ -72,6 +84,7 @@
       ]
     },
     "quote": {
+      "attribution-gap": 0.5,
       "bar": 0.0089,
       "bar-color": "#8D7334",
       "family": null,
@@ -104,6 +117,7 @@
       "warn": "#CFB87C"
     },
     "strip": {
+      "gap": 0.3,
       "pad": [
         0.3,
         0.8
@@ -1143,16 +1157,21 @@
   "engine": "26.10.9",
   "frametitle": {
     "align": "center",
-    "body": 0.1972,
+    "body": 0.1973,
+    "height": 0.0778,
     "rule": false,
-    "tab": false
+    "rule-color": "#AAA8A3",
+    "rule-width": 0.0016,
+    "rule-y": 0.1444,
+    "tab": false,
+    "top": 0.0489
   },
   "geometry": {
     "body": [
       0.06,
-      0.1972,
+      0.1973,
       0.88,
-      0.725
+      0.7249
     ],
     "body-bottom": 0.9222,
     "full": {
@@ -1241,6 +1260,7 @@
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
+      "on-dark": "BrandOnDark",
       "primary": "BrandPrimary",
       "primary-contrast": "BrandPrimaryContrast",
       "primary-text": "BrandPrimaryText",
@@ -1352,6 +1372,7 @@
     "foreground": "#000000",
     "highlight": "#096FAE",
     "muted": "#565A5C",
+    "on-dark": "#FFFFFF",
     "primary": "#CFB87C",
     "primary-contrast": "#8D7334",
     "primary-text": "#000000",
@@ -1361,7 +1382,9 @@
   },
   "schema": 1,
   "section": {
+    "eyebrow-gap": 0.33,
     "label": "Section",
+    "subtitle-gap": 0.66,
     "tab": true
   },
   "signoff": {
@@ -1505,7 +1528,8 @@
         "pt": 48,
         "size": 3.0
       }
-    }
+    },
+    "tracking": 0.08
   },
   "typography": {
     "base": "TeX Gyre Heros",

@@ -27,6 +27,7 @@
   --engine-warning: #FFC72C;
   --engine-dark: #000000;
   --engine-code-text: #E6E8EB;
+  --engine-on-dark: #FFFFFF;
   --engine-table-rule: #494D51;
   --engine-table-band: #111317;
   --engine-caution-fill: #2E2408;
@@ -44,6 +45,7 @@
   --engine-full-footline: 67.5px;
   --engine-full-caption: 54px;
   --engine-type-body: calc(26.67px * var(--engine-type-scale, 1));
+  --engine-tracking: 0.08em;
   --engine-type-frametitle: calc(48.89px * var(--engine-type-scale, 1));
   --engine-type-pagenumber: calc(17.78px * var(--engine-type-scale, 1));
   --engine-type-footer: calc(17.78px * var(--engine-type-scale, 1));
@@ -97,6 +99,14 @@
   --engine-logo-right: var(--engine-margin);
   --engine-logo-position: right top;
   --engine-logo-content: "";
+  --engine-title-top: 44px;
+  --engine-title-height: 70px;
+  --engine-title-rule-y: 130px;
+  --engine-title-rule-width: 1.4px;
+  --engine-body-top: 150px;
+  --engine-title-rule-color: #606367;
+  --engine-section-eyebrow-gap: 0.33em;
+  --engine-section-subtitle-gap: 0.66em;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
   --engine-pagenumber-left: auto;
@@ -164,6 +174,15 @@
   --engine-gallery-fill: transparent;
   --engine-references-hang: 1.5em;
   --engine-references-gap: 0.4em;
+  --engine-quote-attribution-gap: 0.5em;
+  --engine-note-gap: 0.3em;
+  --engine-footnote-rule: 2px;
+  --engine-footnote-rule-length: 120px;
+  --engine-footnote-rule-color: #606367;
+  --engine-footnote-width: 60%;
+  --engine-footnote-gap: 0.55em;
+  --engine-footnote-hang: 0.9em;
+  --engine-footnote-step: 0.3em;
 }
 /* chart colors (livery.json charts) */
 :root {

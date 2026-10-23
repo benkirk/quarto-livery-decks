@@ -166,7 +166,8 @@ class Builder:
     # ------------------------------------------------------------------ master
     def master(self):
         g = self.geom; m, tab = g["margin"], g["tab-width"]
-        title_top, rule_y = 0.049, 0.1444
+        ft = self.L["frametitle"]   # the band (frametitle.top/height/rule-y): tab and title in it, the rule at rule-y
+        title_top, band_h, rule_y = ft["top"], ft["height"], ft["rule-y"]
         _, body_top, _, body_h = g["body"]   # the content body (geometry.body: below a taller mark, to body-bottom)
         body_bottom = body_top + body_h
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
@@ -200,12 +201,13 @@ class Builder:
                         f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                         f'</a:defRPr></a:lvl{i}pPr>' for i in range(1, 10))
         tab_sp = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Title tab"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
-                  f'</p:nvSpPr><p:spPr>{xfrm(0, title_top, tab, rule_y - title_top)}<a:prstGeom prst="rect"><a:avLst/>'
+                  f'</p:nvSpPr><p:spPr>{xfrm(0, title_top, tab, band_h)}<a:prstGeom prst="rect"><a:avLst/>'
                   f'</a:prstGeom>{fill("accent4")}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')
         rule = (f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/>'
                 f'<p:nvPr userDrawn="1"/></p:nvCxnSpPr><p:spPr>{xfrm(m, rule_y, 1 - 2 * m, 0)}'
-                f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="9525">{fill("tx1", 30000)}</a:ln></p:spPr></p:cxnSp>')
-        title = self.ph("Title Placeholder", "title", None, xfrm(title_x, title_top, title_w, rule_y - title_top),
+                f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="{emu(ft["rule-width"], H_EMU)}">'
+                f'{srgb(ft["rule-color"])}</a:ln></p:spPr></p:cxnSp>')
+        title = self.ph("Title Placeholder", "title", None, xfrm(title_x, title_top, title_w, band_h),
                         'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/><a:x',
                         "", "Click to edit Master title style")
         # (the bodyPr trick above closes the element; restate it plainly)
@@ -254,9 +256,11 @@ class Builder:
                 f'</a:xfrm></p:grpSpPr>{"".join(shapes)}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>')
 
     def field_text(self, size, bold=False, caps=False, role="primary-text", align="l"):
-        """A lstStyle for text on the brand field, in the primary-text role (or another)."""
+        """A lstStyle for text on the brand field, in the primary-text role (or another); small caps
+        tracked by type.tracking (em of the size; a:spc in hundredths of a point)."""
+        caps_attr = f' cap="all" spc="{round(int(self.sz(size)) * self.L["type"]["tracking"])}"' if caps else ""
         return (f'<a:lvl1pPr algn="{align}" marL="0" indent="0"><a:spcBef><a:spcPts val="0"/></a:spcBef><a:buNone/>'
-                f'<a:defRPr sz="{self.sz(size)}" b="{1 if bold else 0}"{" cap=\"all\"" if caps else ""}>'
+                f'<a:defRPr sz="{self.sz(size)}" b="{1 if bold else 0}"{caps_attr}>'
                 f'{srgb(self.roles[role])}<a:latin typeface="+mn-lt"/></a:defRPr></a:lvl1pPr>')
 
     def column(self, c, kind):

@@ -44,7 +44,9 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Palette and roles.** `_brand.yml`: the palette under the brand's own names (the scaffold
      names the colors after the theme slots) and `primary`/`secondary`/`foreground`/`background`.
      `livery.yml` `roles`: `primary-text`, `primary-contrast`, `accent`, `highlight`, `muted`,
-     `surface`, `warning`, `dark`, and `code-text` when code should not be the `dark` role. A
+     `surface`, `warning`, `dark`, `code-text` when code should not be the `dark` role, and
+     `on-dark` when text on the dark role should not be whichever of the background and the
+     foreground reads better on it. A
      background darker than the foreground makes a dark livery ("Dark liveries" below).
    - **Fonts.** The brand's font files in `_brand.yml` in place of the stand-in (free,
      bundleable; a proprietary face is named in the pptx and stood in for elsewhere),
@@ -64,14 +66,19 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
    - **Boxes.** `boxes:` holds the numbers every format draws its columns and boxes with: the
      column gap and an optional rule between columns, the caution box's bar and pads, the
      feature panel's pads, the lead box, cards (fill, corner radius, a picked card's outline),
-     strips (their tint), the status glyphs' colors, the steps' rail, the agenda's colors, the
-     gallery's cells, the references list's hang, and the quote block (its bar, and a face of its
-     own: `boxes.quote.family`, a bundled family, and `style`). Set only
+     strips (their tint and the gap above and below), the status glyphs' colors, the steps' rail, the agenda's colors, the
+     gallery's cells, the references list's hang, a note's gap under its figure, the slide
+     footnotes (their rule, width, hang, gap and step), and the quote block (its bar, its
+     attribution's gap, and a face of its own: `boxes.quote.family`, a bundled family, and
+     `style`); the divider stack's gaps are `section.eyebrow-gap` and `section.subtitle-gap`. Set
+     only
      what differs from the engine's
      (REFERENCE.md has every key): ncar rounds its cards and keeps its warn and fail glyphs off
      its yellow, which is unreadable as text on white; nasa-jsc-eg rules its columns.
    - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
-     hairline `rule`); `title: {style: band, ...}` for a band title instead of the cover (nsi);
+     hairline `rule` with its `rule-width` and `rule-color`, and the band's `top`, `height` and
+     `rule-y` as fractions of the height, one set every format draws); `title: {style: band, ...}`
+     for a band title instead of the cover (nsi);
      `feature.style`; `section: {progress: true}` for "SECTION 3 OF 5" over the dividers;
      `compositions` to move any box of the composed slides.
    - **Bullets.** `bullets:` (`glyphs` per level, `color`) when the brand's template draws its own

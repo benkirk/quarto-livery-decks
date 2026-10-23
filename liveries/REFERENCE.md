@@ -60,6 +60,7 @@ Which palette color plays each part of the slides. A value is a _brand.yml palet
 | `warning` | color |  | The bar of a caution slide; its soft fill is the caution-fill blend. |
 | `dark` | color |  | The darkest field: the feature slide's bar and panel, dark slides, and code text unless code-text says otherwise. |
 | `code-text` | color |  | Code text (default: the dark role; a dark livery's dark is a field, so it names a light color). |
+| `on-dark` | color |  | Text on the dark role: the feature slide's bar and panel, a `.brand-dark` slide (default: whichever of the background and the foreground reads better on dark). |
 
 ### `blends`
 
@@ -140,6 +141,8 @@ Section slides.
 | `tab` | boolean | `true` | The accent tab beside the heading. |
 | `label-color` | role or hex | `"secondary"` | The eyebrow's color, a role or a hex. |
 | `progress` | boolean | `false` | The eyebrow reads "SECTION 3 of 5": the divider's number of the numbered sections, in every format (LaTeX: \enginesectiontotal{5} in the preamble; the Quarto filter writes it). |
+| `eyebrow-gap` | number | `0.33` | The gap under the eyebrow, above the heading, in em of the eyebrow type. |
+| `subtitle-gap` | number | `0.66` | The gap under the heading, above the subtitle, in em of the section subtitle type. |
 
 ### `art`
 
@@ -397,6 +400,11 @@ Content slides' titles.
 | `align` | `left` \| `center` | `"left"` | The title's alignment in the room beside the mark. |
 | `tab` | boolean | `true` | The accent tab at the paper's edge beside the title. |
 | `rule` | boolean | `true` | The hairline under the title. |
+| `top` | fraction | `0.0489` | The band's top, a fraction of the height; the title is centered in the band and a taller one grows down. |
+| `height` | fraction | `0.0778` | The band's height, a fraction of the height (the accent tab's too). |
+| `rule-y` | fraction | `0.1444` | The hairline's y, a fraction of the height; the body starts a fixed gap under it, or under a taller mark. |
+| `rule-width` | fraction | `0.0016` | The hairline's thickness, a fraction of the height (0.4 pt on the PDF's paper, 1.4 px of 900). |
+| `rule-color` | string | `"rule"` | The hairline's color: a role, a blend or a palette name (default: the `rule` blend, as the column rules). |
 
 ### `marking`
 
@@ -426,6 +434,8 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `lead` | object |  | A lead box (`::: {.lead}`) over a slide's columns. |
 | `agenda` | object |  | The agenda slide (`## Agenda {.agenda}`): the numbered sections as rows. |
 | `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
+| `footnote` | object |  | The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule). |
+| `note` | object |  | A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look). |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
@@ -492,6 +502,29 @@ A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no 
 | `pad` | [vertical, horizontal] em | `[0.3, 1.0]` | Its text's distance from its edges, in em of the body type. |
 | `family` | string or null | `null` | The font family its lines are set in, one of _brand.yml's typography.fonts with files of its own; null, the body's. The attribution stays in the body's. PowerPoint sets it in pptx.quote-typeface. |
 | `style` | `normal` \| `italic` | `"normal"` | Its lines' style: normal (upright) or italic. |
+| `attribution-gap` | number | `0.5` | The attribution's distance under the lines, in em of the caption type. |
+
+### `boxes.footnote`
+
+The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule).
+
+| key | type | default | |
+|---|---|---|---|
+| `rule` | fraction | `0.0022` | The short rule above them, its thickness (of the slide's height). |
+| `rule-length` | fraction | `0.075` | The rule's length (of the slide's width). |
+| `rule-color` | color or role | `"rule"` | The rule's color: a role, a blend or a palette name (default: the `rule` blend, as the title hairline and the column rules). |
+| `width` | fraction | `0.6` | The block's width, of the text width. |
+| `gap` | number | `0.55` | The gap under the rule, above the first footnote (pptx: above it), in em of the footnote type. |
+| `hang` | number | `0.9` | The marker's hang: the text starts this far in, in em of the footnote type. |
+| `step` | number | `0.3` | The gap between one footnote and the next, in em of the footnote type. |
+
+### `boxes.note`
+
+A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look).
+
+| key | type | default | |
+|---|---|---|---|
+| `gap` | number | `0.3` | Its distance under the figure or table, in em of the caption type (HTML and PDF; the pptx places it by measure). |
 
 ### `boxes.card`
 
@@ -515,6 +548,7 @@ A strip (`::: {.strip}`): a band tinted in its role across a card.
 |---|---|---|---|
 | `tint` | fraction | `0.18` | The role's share in its fill, over the background. |
 | `pad` | [vertical, horizontal] em | `[0.3, 0.8]` | Its text's distance from its edges, in em of the body type. |
+| `gap` | number | `0.3` | The space above and below it, in a card or on its own, in em of the body type. |
 
 ### `boxes.status`
 
@@ -656,6 +690,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `display` | number | `40` | A card's big number (`[$20M]{.big}`). |
 | `quote` | number | `24` | A quote block's text (its attribution is `caption`). |
 | `footer` | number | `9` | The footer line (footer=full). |
+| `tracking` | number | `0.08` | The letter spacing of every small-caps run (a card's label, the divider's eyebrow, the title's date, a table header), in em of its size, in every format. Above 0.08, pdftotext reads the PDF's tracked words letter by letter. |
 | `levels` | list of 5 numbers | `[16, 15, 13, 12, 11]` | The five list levels, the first the body. |
 
 ### `charts`

@@ -23,8 +23,10 @@ import livery_build as lb
 from conftest import ENGINE, ROOT, run
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot", "ring")
-EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width")}   # em of a type role, not a fraction
+FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
+EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
+       ("quote", "attribution-gap"), ("note", "gap"),
+       ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
 
 
 def test_every_key(livery):
@@ -175,15 +177,34 @@ def test_bullets(livery, tmp_path):
 
 
 def test_geometry_derived(livery):
-    """livery.json carries the content body's box and the Two Content half (geometry.body, geometry.half),
-    derived once by livery build from the margin, frametitle.body, body-bottom and the column gap; the
-    template, the plots' figsize and columns.py read them."""
-    import json
+    """livery.json carries the content title band (frametitle.top/height/rule-y, every key, the defaults
+    FRAMETITLE's), the body's top derived from it (BODY_GAP under the hairline or under a taller mark),
+    the content body's box and the Two Content half (geometry.body, geometry.half), derived once by
+    livery build; the template, the plots' figsize and columns.py read them, and the template's master
+    draws the title rule at rule-y."""
+    import zipfile
     j = json.loads((livery / "build" / "livery.json").read_text())
-    g, m = j["geometry"], j["geometry"]["margin"]
-    top = j["frametitle"]["body"]
+    g, m, ft = j["geometry"], j["geometry"]["margin"], j["frametitle"]
+    assert set(ft) == set(lb.FRAMETITLE) | {"body"}, f"{livery.name}: frametitle keys"
+    assert HEX.match(ft["rule-color"]) and 0 <= ft["rule-width"] <= 1, f"{livery.name}: frametitle.rule-color/rule-width"
+    lg = g.get("logo") or {}
+    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
+    assert ft["body"] == round(max(ft["rule-y"], below) + lb.BODY_GAP, 4), f"{livery.name}: frametitle.body"
+    top = ft["body"]
     assert g["body"] == [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)], f"{livery.name}: geometry.body"
     assert g["half"] == round((1 - 2 * m - j["boxes"]["columns"]["gap"]) / 2, 4), f"{livery.name}: geometry.half"
+    with zipfile.ZipFile(livery / "template.pptx") as z:
+        master = z.read("ppt/slideMasters/slideMaster1.xml").decode()
+    rule = re.search(r'name="Title rule".*?<a:off x="\d+" y="(\d+)".*?<a:ln w="(\d+)"><a:solidFill><a:srgbClr val="([0-9A-F]{6})"',
+                     master, re.S)
+    h_emu = j["type"]["canvas"]["h"] * 12700   # the livery's pptx canvas (type.canvas, points)
+    if ft["rule"]:
+        assert rule, f"{livery.name}: the master draws no title rule"
+        assert int(rule.group(1)) == round(ft["rule-y"] * h_emu), f"{livery.name}: the master's title rule is not at rule-y"
+        assert int(rule.group(2)) == round(ft["rule-width"] * h_emu), f"{livery.name}: the master's title rule is not rule-width thick"
+        assert rule.group(3) == ft["rule-color"][1:], f"{livery.name}: the master's title rule is not rule-color"
+    else:
+        assert not rule, f"{livery.name}: frametitle.rule is off, yet the master draws a title rule"
 
 
 def _contrast(a, b):

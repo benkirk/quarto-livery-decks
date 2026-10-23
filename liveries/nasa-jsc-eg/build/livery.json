@@ -51,6 +51,15 @@
       "gap": 0.03,
       "rule": 0.0022
     },
+    "footnote": {
+      "gap": 0.55,
+      "hang": 0.9,
+      "rule": 0.0022,
+      "rule-color": "#E1E1E1",
+      "rule-length": 0.075,
+      "step": 0.3,
+      "width": 0.6
+    },
     "gallery": {
       "fill": null,
       "gap": 0.006,
@@ -68,6 +77,9 @@
         0.9
       ]
     },
+    "note": {
+      "gap": 0.3
+    },
     "panel": {
       "pad": [
         0.6,
@@ -75,6 +87,7 @@
       ]
     },
     "quote": {
+      "attribution-gap": 0.5,
       "bar": 0.0089,
       "bar-color": "#297DE0",
       "family": null,
@@ -107,6 +120,7 @@
       "warn": "#FEA20B"
     },
     "strip": {
+      "gap": 0.3,
       "pad": [
         0.3,
         0.8
@@ -1336,16 +1350,21 @@
   "engine": "26.10.9",
   "frametitle": {
     "align": "left",
-    "body": 0.1852,
+    "body": 0.1853,
+    "height": 0.0778,
     "rule": true,
-    "tab": false
+    "rule-color": "#E1E1E1",
+    "rule-width": 0.0016,
+    "rule-y": 0.1444,
+    "tab": false,
+    "top": 0.0489
   },
   "geometry": {
     "body": [
       0.028,
-      0.1852,
+      0.1853,
       0.944,
-      0.737
+      0.7369
     ],
     "body-bottom": 0.9222,
     "full": {
@@ -1442,6 +1461,7 @@
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
+      "on-dark": "BrandOnDark",
       "primary": "BrandPrimary",
       "primary-contrast": "BrandPrimaryContrast",
       "primary-text": "BrandPrimaryText",
@@ -1578,6 +1598,7 @@
     "foreground": "#FFFFFF",
     "highlight": "#FCDB00",
     "muted": "#959595",
+    "on-dark": "#FFFFFF",
     "primary": "#061F5F",
     "primary-contrast": "#297DE0",
     "primary-text": "#FFFFFF",
@@ -1587,7 +1608,9 @@
   },
   "schema": 1,
   "section": {
+    "eyebrow-gap": 0.33,
     "label": null,
+    "subtitle-gap": 0.66,
     "tab": false
   },
   "signoff": {
@@ -1720,7 +1743,8 @@
         "pt": 36,
         "size": 2.25
       }
-    }
+    },
+    "tracking": 0.08
   },
   "typography": {
     "base": "Liberation Sans",

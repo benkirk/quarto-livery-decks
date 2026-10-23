@@ -245,7 +245,9 @@ def draw_quote(slide, x, y, w, room, paras, color, slide_height, name="Quote"):
             t = p.find(".//" + qn("a:t"))
             if t is not None:
                 t.text = "— " + (t.text or "")
-            style_runs(p, livery_mod.type_pt(LIVERY, "caption"), color=_hex("muted"))
+            caption_pt = livery_mod.type_pt(LIVERY, "caption")
+            style_runs(p, caption_pt, color=_hex("muted"))
+            space_before(p, BOXES["quote"]["attribution-gap"] * caption_pt)   # under the lines, as HTML and the PDF
         else:
             style_runs(p, livery_mod.type_pt(LIVERY, "quote"))
             for r in p.iter(qn("a:r")):
@@ -424,7 +426,7 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
                 text_part() if run else None
                 n_strip += 1
                 tb, r = draw_strip(slide, x, y, w, room, it[2], _pick_role(it[1], "accent", slide), solid, f"Card {n_col} strip {n_strip}")
-                parts.append(("strip", tb, r, tb.height))
+                parts.append(("strip", tb, r, tb.height + 2 * em(BOXES["strip"]["gap"])))   # its room: the gap above and below
             else:
                 run.append(it)
         if run or not parts or parts[-1][0] in ("strip", "quote"):
@@ -449,12 +451,14 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         if hb is not None:
             hb.top, hb.height = y, head_h
         cy = y + head_h
+        gap = em(BOXES["strip"]["gap"])   # a strip sits boxes.strip.gap inside its room, above and below
         for i, (kind, tb, r, h) in enumerate(c["parts"]):
             if i == len(c["parts"]) - 1 and kind == "text":   # the last text runs to the card's foot
                 h = max(y + total - cy, 0)
-            tb.top, tb.height = cy, h
+            inset_y = gap if kind == "strip" else 0
+            tb.top, tb.height = cy + inset_y, h - 2 * inset_y
             if r is not None:
-                r.top = cy
+                r.top = cy + inset_y
             cy += h
         mine += [hb] + [part for _, tb, r, _ in c["parts"] for part in (tb, r)]
         group(slide, mine, f"Card {n}")   # one object to move or copy in PowerPoint
@@ -594,11 +598,13 @@ def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
             group(slide, [bar, tb], "Quote")
             y += tb.height + pads("quote")[0]
             continue
-        if seg[0] == "strip":   # on its own: as wide as the body, a vertical pad under it
+        if seg[0] == "strip":   # on its own: as wide as the body, boxes.strip.gap above and below it
+            gap = em(BOXES["strip"]["gap"])
+            y += gap
             tb, r = draw_strip(slide, left, y, width, max(bottom - y, 0), seg[2], _pick_role(seg[1], "accent", slide), False, "Strip fill")
             tb.name = "Strip text"
             group(slide, [r, tb], "Strip")
-            y += tb.height + pads("strip")[0]
+            y += tb.height + gap
             continue
         _, shares, columns = seg
         frames = column_frames(left, width, shares[:len(columns)] or [1 / len(columns)] * len(columns), slide_width)

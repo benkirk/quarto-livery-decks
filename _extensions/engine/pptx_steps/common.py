@@ -27,6 +27,7 @@ K = livery_mod.canvas_scale(LIVERY)                # the canvas height over 540 
 BOXES = LIVERY["boxes"]                            # the boxes' numbers, every format's (livery.json boxes)
 GEOM = LIVERY["geometry"]
 BODY_PT = livery_mod.type_pt(LIVERY, "body")       # pads are em of the body type
+TRACKING = LIVERY["type"]["tracking"]              # small caps' letter spacing, em of the run's size (type.tracking)
 SLACK = 1.1                                        # measured height x this: autofit stays idle
 NOT_BODY = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
             PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
@@ -174,7 +175,8 @@ def para_text(p):
 
 
 def style_runs(p, size=None, bold=None, color=None, caps=False):
-    """Every run of the paragraph at a size (pt), bold, a six-digit color, small caps' tracking."""
+    """Every run of the paragraph at a size (pt), bold, a six-digit color, small caps tracked by
+    type.tracking (em of the run's size; a:spc is in hundredths of a point)."""
     for r in p.iter(qn("a:r")):
         el = rpr(r)
         if size is not None:
@@ -182,7 +184,8 @@ def style_runs(p, size=None, bold=None, color=None, caps=False):
         if bold is not None:
             el.set("b", "1" if bold else "0")
         if caps:
-            el.set("cap", "all"); el.set("spc", "100")
+            sz = int(el.get("sz") or round(BODY_PT * 100))
+            el.set("cap", "all"); el.set("spc", str(round(sz * TRACKING)))
         if color is not None:
             set_fill(el, color)
 
