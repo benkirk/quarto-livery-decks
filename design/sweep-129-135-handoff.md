@@ -1,5 +1,7 @@
 # Sweep handoff: unplanned-city window #127–#135
 
+**State (2026-10-22):** landed as #136. Departures: the Lua scaffolding went in as seven commits (the walk, warn, top_level, holds_shape, the small filters, dead code, the head comments) and the pptx idioms as four; a gallery outside a content slide is unwrapped into its pictures with a warning in all three formats (not left wrapped: pandoc's pptx writer draws no picture in a Div); `boxes.agenda` took no `sub-gap` (pptx has none); the Python steps, the inner theme and the scss lifts were done by agents in worktrees and cherry-picked; the CI step was split out of a commit it had ridden into.
+
 **For a fresh session.** One PR against `main` (branch `sweep/129-135` from `origin/main` at
 `f493a70`, the #135 squash), a commit per finding in the order below, squash-merged once, no
 version bump: the release is the PR after this one. The skill is

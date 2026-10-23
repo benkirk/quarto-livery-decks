@@ -72,6 +72,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   quote pandoc's own, warned). HTML's old blockquote look (a muted paragraph, a thin
   border) and the PDF's plain italic quote are gone. `docs/authoring.md` "Quotes". The sample
   has "A pull quote".
+- pptx: a vcentered table (`{.vcenter}`, `{.center}`) is centered on the height its cells have once
+  the table is styled (the estimate used PowerPoint's default cell margins, 1.6 pt a row short on
+  ncar): the box grows that much and rises half of it. The agenda in HTML hangs its titles at the
+  number column's edge, as PDF and pptx do (0.9 em further left).
 - An unnumbered divider (`# Backup {.unnumbered}`) is outside the count in every format: pptx and
   PDF no longer give it a number, as HTML already did, so the dividers after it keep the numbers
   HTML shows. The PDF draws it with its subtitle (it drew no divider at all before, and the
