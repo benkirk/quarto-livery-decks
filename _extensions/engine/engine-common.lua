@@ -4,9 +4,10 @@
 -- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
 -- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
 -- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
--- rails, quotes, galleries and the agenda, the theme options, the livery, the deck's markings. What
--- a format does with the result stays in its filter: the drawers (wrap_layout, hoist_footnotes,
--- size_plots, the cards, strips, rails, galleries, quotes and the agenda's rows).
+-- rails, quotes, galleries and the agenda, a grid cell's picture or table, the theme options, the
+-- livery, the deck's marking strips, watermark and cover fine print. What a format does with the
+-- result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
+-- strips, rails, galleries, quotes and the agenda's rows, the tail of every slide).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do
@@ -49,7 +50,8 @@ local function default_livery(extdir)
 end
 
 -- Whether a block holds a picture or a table anywhere inside it: pandoc's pptx writer draws either
--- as a shape of its own, outside any text, so a card, a rail item or a grid column cannot hold one.
+-- as a shape of its own, outside any text, so a rail item cannot hold one, and a grid column or card
+-- holds one only as cell_figure() or simple_table() reads it (grid-pptx.lua's picture and table markers).
 local function holds_shape(blk)
   local found = false
   pandoc.walk_block(blk, { Image = function() found = true end, Table = function() found = true end })
@@ -153,8 +155,9 @@ local function content_heading(blk, level, kinds)
 end
 
 -- The per-slide layout controls on a heading (.hcenter, .vcenter, .center, .fill, .caution, .wide,
--- scale="S"), taken off it: { h, v, fill, caution, wide, scale } (scale the string, or nil), or nil
--- when it has none. A scale that is not a number is dropped with a warning (who: the filter).
+-- .brand-dark, scale="S"), taken off it: { h, v, fill, caution, wide, dark, scale } (scale the
+-- string, or nil), or nil when it has none. A scale that is not a number is dropped with a warning
+-- (who: the filter).
 local function take_layout(blk, who)
   local h, v, fill, caution, wide, dark, found = false, false, false, false, false, false, false
   local kept = pandoc.List({})
@@ -774,9 +777,6 @@ local MARKED = { ["☒"] = "done", ["[!]"] = "warn", ["[-]"] = "fail" }
 local LITERAL = { ["✓"] = "done", ["⚠"] = "warn", ["✗"] = "fail" }
 local GLYPHS = { done = "✓", warn = "⚠", fail = "✗" }
 
--- status_item(item, marked): an item's (a list of blocks) status, "done" | "warn" | "fail", and the
--- item with its leading glyph normalized to the glyph's Str (✓ ⚠ ✗, no variation selector) and a
--- Space; nil when it is not one. marked: inside a card or a .status list, where [x] [!] [-] count.
 -- A quote's parts: { role (role= when it is a role or a blend of the livery, else nil: the box's
 -- bar-color, boxes.quote; a name that is neither is warned of), body (its source lines each a
 -- paragraph, split_lines()), attribution (the last line's inlines after its leading —, – or --,
@@ -829,6 +829,9 @@ local function quote_blocks(blocks, livery, who, draw)
     BlockQuote = function(b) return draw(quote_parts(b, livery, who)), false end })
 end
 
+-- status_item(item, marked): an item's (a list of blocks) status, "done" | "warn" | "fail", and the
+-- item with its leading glyph normalized to the glyph's Str (✓ ⚠ ✗, no variation selector) and a
+-- Space; nil when it is not one. marked: inside a card or a .status list, where [x] [!] [-] count.
 local function status_item(item, marked)
   local first = item[1]
   if not first or (first.t ~= "Plain" and first.t ~= "Para") then return nil end

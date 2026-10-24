@@ -33,7 +33,7 @@ local function turn(src)
   local out = src:gsub("%.png$", "-dark.png")
   local ok = pcall(pandoc.pipe, "python3", { script(), src, out, lv.roles.background, lv.roles.foreground }, "")
   if not ok then
-    io.stderr:write("diagram-dark.lua: could not turn " .. src .. " to the dark\n")
+    C.warn("diagram-dark.lua: could not turn " .. src .. " to the dark")
     return nil
   end
   done[src] = out

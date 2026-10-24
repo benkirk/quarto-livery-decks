@@ -79,9 +79,9 @@ $mermaid-label-fg-color: $engine-primary;
 /*-- scss:rules --*/
 
 // slide geometry: the livery's fractions as slide pixels in its build/livery.css
-// (--engine-margin, -tab-width, -logo-top, -logo-h/-w/-aspect, -full-pad/-footline/-caption),
-// beside the brand
-// roles (--engine-primary, ...); engine-revealjs.lua attaches it
+// (--engine-margin, -tab-width, -full-pad/-footline/-caption; a content slide's corner marks as an
+// .engine-mark-<corner> rule each), beside the brand roles (--engine-primary, ...);
+// engine-revealjs.lua attaches it
 
 // the body box: --engine-body-top to --engine-body-bottom of the 900px slide (livery.css), as
 // every slide's padding (below the mark, above the foot) and as a height
@@ -192,7 +192,7 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
 .reveal .slides section.slide.engine-dark .engine-watermark { color: var(--engine-on-dark); }
 
 // ---------------------------------------------------------------------------
-// content slides: accent tab beside the title, hairline rule, logo
+// content slides: accent tab beside the title, hairline rule (the corner marks: livery.css)
 // ---------------------------------------------------------------------------
 // the band (frametitle.top/height/rule-y, livery.css): the title centered in it, a taller one grows down
 .reveal .slides section.slide.level2 > h2 {

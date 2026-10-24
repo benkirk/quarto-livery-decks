@@ -1,5 +1,5 @@
 -- pptx only. The theme's per-slide layout controls (.hcenter, .vcenter,
--- .center, scale="S", .fill, .full, .caution, .feature, .wide; see the engine's engine-revealjs.lua) mean nothing
+-- .center, scale="S", .fill, .full, .caution, .feature, .wide, .brand-dark; C.take_layout) mean nothing
 -- to pandoc's pptx writer, which drops slide classes. Carry them to
 -- the engine's pptx_steps/slide_layout.py as one speaker-notes line,
 --   engine-layout: hcenter vcenter scale=1.4
@@ -9,8 +9,9 @@
 -- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
 -- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), the
 -- marking strips' texts the strings `engine-marking-<name>` (C.marking_texts, the one reader of
--- `marking:`; pandoc records a map as empty too), and `fineprint:` the string `engine-fineprint`, a
--- line per paragraph.
+-- `marking:`; pandoc records a map as empty too), the watermark's text `engine-watermark`
+-- (C.watermark_text) and the cover's fine print `engine-fineprint`, a line per paragraph
+-- (C.fineprint_paragraphs), each `none` for none.
 
 if not quarto.doc.is_format("pptx") then
   return {}
