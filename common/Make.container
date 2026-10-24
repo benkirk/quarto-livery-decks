@@ -77,10 +77,12 @@ endif
 # the version bump and the tag the default (this checkout's version) is not pullable, and the
 # runtime's own "manifest unknown" said nothing of what to do (#133). Docker and Podman look
 # locally, then pull; Apptainer checks a named SIF (a docker:// pull stays its own, cached).
+# the month's tag is offered only for a release's tag (YY.MM.N): `main`, `sha-<commit>` and `pr-N` have no month
+image_month = $(if $(word 3,$(subst ., ,$(DECKS_IMAGE_TAG))),DECKS_IMAGE_TAG=$(firstword $(subst ., ,$(DECKS_IMAGE_TAG))).$(word 2,$(subst ., ,$(DECKS_IMAGE_TAG))) (the month's newest) or)
 define image_missing
 { echo "quarto-livery-decks: image $(or $(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE)) is not available." >&2; \
-  echo "  A release's image appears when its tag is cut. Build with DECKS_IMAGE_TAG=$(firstword $(subst ., ,$(DECKS_IMAGE_TAG))).$(word 2,$(subst ., ,$(DECKS_IMAGE_TAG))) (the month's newest)" >&2; \
-  echo "  or DECKS_IMAGE_TAG=latest, or natively after \`source etc/config_env.sh\` (docs/container.md \"Which image\")." >&2; exit 1; }
+  echo "  A release's image appears when its tag is cut. Build with $(strip $(image_month) DECKS_IMAGE_TAG=latest)," >&2; \
+  echo "  or natively after \`source etc/config_env.sh\` (docs/container.md \"Which image\")." >&2; exit 1; }
 endef
 ifeq ($(DECKS_RUNTIME_USED),apptainer)
 DECKS_CHECK = $(if $(APPTAINER_SIF),test -f $(APPTAINER_SIF) || $(image_missing),true)
