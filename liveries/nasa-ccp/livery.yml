@@ -1,0 +1,161 @@
+# yaml-language-server: $schema=../../_extensions/engine/livery.schema.json
+schema: 1
+# Engine knobs for NASA's Commercial Crew Program (CCP), light: nasa on the CCP PowerPoint template's
+# canvas, type and furniture. Its markings are the point: the CUI banner across every slide's top,
+# the proprietary-data legend at every slide's foot, and the CCtCap limited-rights notice on the
+# cover, each the template's text by default (over-marking is the safe failure) and each a deck's
+# to replace (`marking:`, `fineprint:`; docs/authoring.md). The title bar, the cover banner and the
+# divider band are art drawn from the template (reference/ccp_art.py); the CCP emblem, the lockup
+# and the cover's insignia are vector marks. reference/notes.md has the sources and the decisions.
+name: nasa-ccp
+extends: nasa
+
+roles:
+  foreground: black
+  primary-contrast: ccp-navy    # links and small accents on white
+  accent: ccp-red
+  highlight: ccp-navy
+  muted: ccp-gray
+  dark: ccp-slate
+
+signoff: null             # the template has no agency name at the foot (nasa's)
+
+marks:                    # content slides: the CCP emblem at the title bar's left end
+  background: {logo: ccp-emblem}
+  primary: {logo: ccp-emblem}
+
+geometry:
+  margin: 0.04            # the template's body inset (0.125 in of 13.333) widened a little for HTML
+  body-bottom: 0.955      # above the legend
+  logo:
+    corner: top-left      # the emblem on the bar; the insignia at its right end is in the art
+    top: 0.0728           # the template's (under the CUI banner, inside the bar)
+    height: 0.107
+    aspect: 0.9717        # the cropped Commons SVG's box
+    inset: 0.008
+  pagenumber:
+    corner: bottom-right
+
+frametitle:               # white on the title bar, centered on the slide as the template's
+  align: center
+  symmetric: true
+  color: white
+  tab: false
+  rule: false
+  top: 0.07
+  height: 0.117
+  rule-y: 0.18            # no hairline drawn: where the body starts under the bar
+
+section:
+  tab: false
+  label: null             # the template's dividers have no "SECTION n"
+
+marking:                  # the template's two markings, on every slide; a deck's `marking:` replaces them
+  banner:                 # Controlled Unclassified Information: the template's default category line
+    text: "CUI//SP-EXPT/SP-PROPIN//DL ONLY"
+    edge: top
+    offset: 0
+    width: 1
+    height: 0.066
+    fill: ccp-purple
+    color: white
+    bold: true
+    size: 16
+  legend:
+    text: "MAY CONTAIN PROPRIETARY AND/OR LIMITED RIGHTS DATA; NOT REVIEWED FOR EXPORT CONTROL"
+    edge: bottom
+    offset: 0.006
+    width: 0.795          # the template's footer box: clear of the page number
+    height: 0.026
+    color: muted
+    size: 10
+
+art:
+  title: art/title.jpg      # the banner: Dragon, Starliner and the station over the sky (insignia out)
+  closing: art/title.jpg
+  content: art/content.jpg  # the title bar, the insignia drawn back from the vector at its right end
+  section: art/section.jpg  # the bar and the slate band fading to white under it
+  titlegraphic: null        # the cover is the banner, not nasa's Earth limb
+
+compositions:             # boxes [x, y, w, h], fractions of the slide, from the template's layouts
+  title:
+    art: title
+    field: {role: background}
+    mark: {role: background, image: meatball, box: [0.911, 0.0679, 0.0765, 0.1165]}   # where the banner had it
+    signoff: {role: background, image: ccp-lockup, box: [0.0095, 0.808, 0.0795, 0.173]}
+    column: {role: foreground, box: [0.01, 0.3924, 0.98, 0.1679], anchor: middle, align: center, tab: false, rule: null}
+    byline: {role: foreground, box: [0.01, 0.5604, 0.98, 0.13], anchor: top, align: center}
+    fineprint:            # the notice box, grown down to the legend; the distribution line its last paragraph
+      role: foreground
+      box: [0.4478, 0.70, 0.5122, 0.262]   # to the right margin
+      anchor: bottom
+      text: |
+        CCtCap LIMITED RIGHTS NOTICE (DEC 2007) (DEVIATION)
+
+        (a) These data are submitted with limited rights under Government Contract No. SpaceX
+        NNK14MA74C / Boeing NNK14MA75C. These data may be reproduced and used by the Government with
+        the express limitation that they will not, without written permission of the Contractor, be
+        used for purposes of manufacture nor disclosed outside the Government; except that the
+        Government may disclose these data outside the Government to support service contractors
+        and/or pursuant to agreements and contracts related to the International Space Station;
+        provided that the Government makes such disclosure subject to prohibition against further use
+        and disclosure.
+
+        (b) In the event this contract is terminated for Contractor default, the Government shall have
+        Government purpose rights in all data first produced wholly or in part at private expense in
+        performance of this contract.
+
+        (c) This notice shall be marked on any reproduction of these data, in whole or in part.
+
+        Distribution limited to Commercial Crew Transportation Capability (CCtCap) contract support
+        personnel.
+  closing:
+    art: closing
+    field: {role: background}
+    mark: {role: background, image: meatball, box: [0.911, 0.0679, 0.0765, 0.1165]}
+    signoff: {role: background, image: ccp-lockup, box: [0.0095, 0.808, 0.0795, 0.173]}
+    column: {role: foreground, box: [0.1, 0.45, 0.8, 0.3], anchor: middle, align: center, tab: false, rule: null}
+  section:
+    art: section
+    field: {role: background}
+    mark: {role: background, image: ccp-emblem, box: [0.008, 0.0728, 0.104, 0.107]}
+    signoff: null
+    column: {role: foreground, box: [0.04, 0.44, 0.92, 0.18], anchor: middle, align: center, tab: false, rule: null}   # on the band's foot
+
+installed-fonts:          # Helvetica itself where the machine has it (Macs: HTML; PDF under fonts=brand)
+  base: &helvetica
+    family: Helvetica
+    faces:
+      regular: [Helvetica, Helvetica]
+      bold: [Helvetica Bold, Helvetica-Bold]
+      italic: [Helvetica Oblique, Helvetica-Oblique]
+      bolditalic: [Helvetica Bold Oblique, Helvetica-BoldOblique]
+  headings: *helvetica
+
+bullets:                  # the template's disc, dash and square (its § is a Wingdings square)
+  glyphs: ["●", "–", "▪"]
+  color: foreground
+
+pptx:
+  template: template.pptx
+  typeface: Helvetica         # the template's; Windows substitutes Arial (the same metrics)
+  heading-typeface: Helvetica
+  size: [13.333, 7.5]         # the template's canvas
+  scheme:
+    hlink: ccp-navy
+    folHlink: ccp-purple
+
+type:                     # points on that canvas
+  body: 16                # the portable share (the template's master says 20 bold; reference/notes.md)
+  levels: [16, 15, 13, 12, 11]
+  frametitle: 28          # the template's
+  title: 32               # the template's cover title
+  subtitle: 24
+  author: 20
+  institute: 18
+  date: 18
+  fineprint: 8            # the template's notice
+  section: 28
+  sectionsubtitle: 20
+  closing: 32
+  pagenumber: 12

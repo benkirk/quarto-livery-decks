@@ -17,7 +17,7 @@ quarto-livery-decks/
 │   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
 │   ├── ucp/  ncarucar/    #     template.pptx and build/ (both generated, committed),
 │   ├── cu/  nsi/          #     reference/notes.md
-│   └── nasa/  nasa-dark/  nasa-jsc-eg/
+│   └── nasa/  nasa-dark/  nasa-jsc-eg/  nasa-ccp/
 ├── common/                # what decks share:
 │   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
 │   └── utils/
@@ -152,6 +152,8 @@ headings face), so slide masters and layouts all dereference to it:
   then a viewer without the faces sees PowerPoint's substitute.
 - **nasa-jsc-eg** names Arial, its template's face, and embeds nothing (every Office has it);
   HTML and PDF set Liberation Sans, its metric twin, where Arial is not installed.
+- **nasa-ccp** names Helvetica, its template's face (Windows substitutes Arial, the same
+  metrics), and embeds nothing; HTML and PDF set TeX Gyre Heros where Helvetica is not installed.
 
 A livery's code face (`typography.monospace` in `_brand.yml`, with files of its own: nasa's
 DM Mono) sets code in all three formats: pandoc's `monofont` in pptx, the code font in HTML

@@ -14,8 +14,8 @@ Overleaf packer) was `benkirk/beamer-livery-theme` until 2026-10, when it merged
 history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
-`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`, `nasa-jsc-eg`), built by `livery build`
-into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
+`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`, `nasa-jsc-eg`, `nasa-ccp`), built by
+`livery build` into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
 validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
 out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
 schema (`livery schema --doc`; `tests/test_schema.py` holds it current). A key is renamed only with Ben's
@@ -52,7 +52,12 @@ external communication; no official template, so the Brand Center's rules and NA
 public-engagement deck) and its flavor `nasa-dark` (content on black) are the first dark
 livery (see "Dark liveries" below); `nasa-jsc-eg` (the JSC Aeroscience and Flight Mechanics
 Division's template) is `nasa-dark`'s flavor with the template's furniture as art rendered from its
-layouts (`reference/eg_art.py`) and a group's patch as a mark a group's own flavor swaps. The reference decks themselves live on Drive or a laptop,
+layouts (`reference/eg_art.py`) and a group's patch as a mark a group's own flavor swaps; `nasa-ccp`
+(the Commercial Crew Program's template) is `nasa`'s flavor whose markings are the point: a CUI
+banner and a legend as two marking strips and the CCtCap rights notice as the cover's default fine
+print, each the template's text by default and a deck's to replace, its art drawn from the template
+with the baked insignia painted out (`reference/ccp_art.py`), the CCP emblem and lockup NASA's
+vectors. The reference decks themselves live on Drive or a laptop,
 not in git. A livery without `pptx.fonts` embeds nothing (`embed_fonts.py` says so and leaves
 the deck alone); a livery without `art.waves` gets straight-edged title fields in every format.
 

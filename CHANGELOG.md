@@ -70,6 +70,13 @@ seams a 42-slide deck found that `make qa` could not see, and the checks that se
 - `compositions.title.fineprint.text` (new, optional) is the cover's default small print,
   paragraphs a blank line apart; set on `title` it reaches every cover.
 - `signoff: null` drops a parent's sign-off from a flavor (nasa-ccp drops nasa's agency name).
+- `nasa-ccp`: NASA's Commercial Crew Program template, light, a flavor of `nasa`, whose markings
+  are its point: a purple CUI banner across every slide's top and a proprietary-data legend at
+  its foot (two marking strips), and the CCtCap limited-rights notice and distribution line on
+  the cover (its default fine print), each the template's text unless a deck sets its own. White
+  titles centered on a slate title bar between the CCP emblem and the insignia, the cover's
+  Dragon, Starliner and station banner, the CCP lockup; Helvetica (TeX Gyre Heros standing in).
+  The emblem, lockup and insignia are vectors (`liveries/nasa-ccp/reference/notes.md`).
 - `frametitle.color` (new, optional; default the foreground) colors the content titles apart
   from the body, for titles on a bar of their own, and `frametitle.symmetric` (default false)
   mirrors the title's room beside the mark, so a centered title sits on the slide's center.

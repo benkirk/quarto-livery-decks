@@ -113,7 +113,7 @@ default color map, the diverging scale. Where they come from (each livery's
   Blue, with the campus in it: the red tile roofs (`#9C3F29`, sampled from the campus photo) as
   the third color and a sage green the fourth, a campus map of Light Gold, the Flatirons' sandstone and the tile in sun and
   shade, and a diverging scale from the sky to the roofs.
-- **nasa, nasa-dark, nasa-jsc-eg**: NASA's own dataviz palette from the Horizon Design System, verbatim.
+- **nasa, nasa-dark, nasa-jsc-eg, nasa-ccp**: NASA's own dataviz palette from the Horizon Design System, verbatim.
 
 The colors pass the dataviz checks (lightness band, chroma, separation under color blindness,
 contrast on the surface). A palette the engine generates must pass. A brand's published palette
