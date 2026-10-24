@@ -139,7 +139,8 @@ end
 -- The slide kinds a composition draws (their classes on the slide's heading; not content slides), and
 -- the per-slide layout classes of a content slide (take_layout()).
 local SLIDE_KINDS = { feature = true, closing = true, full = true }
-local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, caution = true, wide = true }
+local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, caution = true, wide = true,
+                         ["brand-dark"] = true }
 
 -- A content slide's heading: at the slide level, with none of the kinds' classes (SLIDE_KINDS by
 -- default; a format that treats a kind as content passes its own set).
@@ -155,7 +156,7 @@ end
 -- scale="S"), taken off it: { h, v, fill, caution, wide, scale } (scale the string, or nil), or nil
 -- when it has none. A scale that is not a number is dropped with a warning (who: the filter).
 local function take_layout(blk, who)
-  local h, v, fill, caution, wide, found = false, false, false, false, false, false
+  local h, v, fill, caution, wide, dark, found = false, false, false, false, false, false, false
   local kept = pandoc.List({})
   for _, c in ipairs(blk.classes) do
     if LAYOUT_CLASSES[c] then
@@ -165,6 +166,7 @@ local function take_layout(blk, who)
       fill = fill or c == "fill"
       caution = caution or c == "caution"
       wide = wide or c == "wide"
+      dark = dark or c == "brand-dark"
     else
       kept:insert(c)
     end
@@ -180,7 +182,7 @@ local function take_layout(blk, who)
   end
   if not found then return nil end
   blk.classes = kept
-  return { h = h, v = v, fill = fill, caution = caution, wide = wide, scale = scale }
+  return { h = h, v = v, fill = fill, caution = caution, wide = wide, dark = dark, scale = scale }
 end
 
 -- themeoptions: a list or a comma-separated string of key=value (a bare key is "true"). Returns

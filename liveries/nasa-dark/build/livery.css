@@ -224,7 +224,7 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
-.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark) { background: url("starfield.jpg") center / cover no-repeat; }
+.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.engine-dark) { background: url("starfield.jpg") center / cover no-repeat; }
 html:root {
   --engine-mark-background-logo: url("meatball.png");
   --engine-mark-background-signoff: url("nasa-name-white.png");

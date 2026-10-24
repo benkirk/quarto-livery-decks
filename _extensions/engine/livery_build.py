@@ -1256,8 +1256,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
              "\n  --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;\n}")
     f = livery.get("art", {}).get("content")   # content slides' static background (the compositions carry the rest)
     if isinstance(f, str):
-        # (not a .brand-dark slide, which promises the dark color: white text on the photo vanished)
-        sel = "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark)"
+        # (not a dark slide, which promises the dark color: white text on the photo vanished)
+        sel = "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.engine-dark)"
         L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
     # the marks per field role (--engine-mark-<role>-<name>), worn by the content slides (background),
     # the fields (primary) and the inverted content slide (dark)
@@ -1287,6 +1287,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
     L += emit_css_compositions(livery)
     if livery.get("mode") == "dark":
         L += emit_css_dark()
+    else:
+        L += emit_css_dark_slide(livery)
     L.append(extra.rstrip("\n"))
     return "\n".join(L).rstrip("\n") + "\n"
 
@@ -1344,7 +1346,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
 
 def emit_css_charts(livery: dict) -> list[str]:
     """The chart colors as --engine-data-1.., --engine-data-muted and --engine-status-*: the livery's
-    mode on :root, and on a light livery the dark set on a .brand-dark slide."""
+    mode on :root, and on a light livery the dark set on a dark slide (.engine-dark)."""
     ch = livery["charts"]
     def props(b):
         p = [f"--engine-data-{i}: {c};" for i, c in enumerate(b["categorical"], 1)]
@@ -1352,7 +1354,7 @@ def emit_css_charts(livery: dict) -> list[str]:
         return p + [f"--engine-status-{k}: {c};" for k, c in b["status"].items()]
     L = ["/* chart colors (livery.json charts) */", ":root {\n  " + "\n  ".join(props(ch[ch["mode"]])) + "\n}"]
     if ch["mode"] == "light":
-        L.append(".reveal .slides section.slide.brand-dark {\n  " + "\n  ".join(props(ch["dark"])) + "\n}")
+        L.append(".reveal .slides section.slide.engine-dark {\n  " + "\n  ".join(props(ch["dark"])) + "\n}")
     return L
 
 
@@ -1440,6 +1442,34 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
             f"{livery['type']['canvas']['h'] / 72:g} in canvas: draw at charts.figsize.",
             "# the base family is a CFF OpenType font: PDF takes Type 3 (see is_cff())" if cff else None]
     return "\n".join([x for x in head if x] + [f"{k}: {v}" for k, v in rc]) + "\n"
+
+
+# the roles a light livery's dark slide ({.brand-dark}, .engine-dark) swaps, as pptx's
+# common.palette(): its text, muted text, accents and table blends; restored inside a box with a
+# fill of its own (DARK_BOXES), which keeps its colors
+DARK_SWAP = {"foreground": "on-dark", "muted": "dark-muted", "primary-contrast": "secondary", "primary": "secondary",
+             "table-rule": "dark-rule", "table-band": "dark-band"}
+DARK_BOXES = (".engine-card", ".engine-lead", ".engine-strip", ".callout")
+
+
+def emit_css_dark_slide(livery: dict) -> list[str]:
+    """A light livery's dark content slide: on the slide the roles of DARK_SWAP take their dark
+    values (and reveal's text colors, which :root computed once, the title on-dark whatever
+    frametitle.color says, and the hairline the dark-rule blend); in a box of DARK_BOXES (and a caution slide's body field) the livery's own; inline
+    Graphviz turned to the dark as a dark livery's (lightness flipped, hues kept). Live mermaid
+    reads :root (deferred)."""
+    c = {**livery["roles"], **livery["blends"]}
+    def swap(to):
+        p = [f"--engine-{k}: {c[v if to else k]};" for k, v in DARK_SWAP.items()]
+        fg = c["on-dark" if to else "foreground"]
+        return "\n  ".join(p + [f"--r-main-color: {fg};", f"--r-heading-color: {fg};", f"color: {fg};"])
+    sel = ".reveal .slides section.slide.engine-dark"
+    boxes = ",\n".join([f"{sel} :is({', '.join(DARK_BOXES)})", f"{sel}.engine-caution > .engine-body"])
+    return ["/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */",
+            f"{sel} {{\n  {swap(True)}\n  --engine-title-color: {c['on-dark']};\n  --engine-title-rule-color: {c['dark-rule']};\n}}",
+            f"{boxes} {{\n  {swap(False)}\n}}",
+            f"{sel} svg:has(> g.graph) > g.graph > polygon:first-of-type {{ fill: transparent; stroke: transparent; }}",
+            f"{sel} svg:has(> g.graph) {{ filter: invert(1) hue-rotate(180deg); }}"]
 
 
 def emit_css_dark() -> list[str]:

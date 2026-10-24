@@ -212,7 +212,7 @@
   --engine-status-serious: #B45C00;
   --engine-status-critical: #B63B35;
 }
-.reveal .slides section.slide.brand-dark {
+.reveal .slides section.slide.engine-dark {
   --engine-data-1: #256EE4;
   --engine-data-2: #EF483F;
   --engine-data-3: #F29D49;
@@ -1230,3 +1230,31 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-eyebrow-display: none;
   background: none;
 }
+/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */
+.reveal .slides section.slide.engine-dark {
+  --engine-foreground: #FFFFFF;
+  --engine-muted: #B2B2B2;
+  --engine-primary-contrast: #8A8D8F;
+  --engine-primary: #8A8D8F;
+  --engine-table-rule: #404040;
+  --engine-table-band: #0F0F0F;
+  --r-main-color: #FFFFFF;
+  --r-heading-color: #FFFFFF;
+  color: #FFFFFF;
+  --engine-title-color: #FFFFFF;
+  --engine-title-rule-color: #404040;
+}
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout),
+.reveal .slides section.slide.engine-dark.engine-caution > .engine-body {
+  --engine-foreground: #1C1C1C;
+  --engine-muted: #5C5E62;
+  --engine-primary-contrast: #0032A0;
+  --engine-primary: #0032A0;
+  --engine-table-rule: #C6C6C8;
+  --engine-table-band: #F6F7F8;
+  --r-main-color: #1C1C1C;
+  --r-heading-color: #1C1C1C;
+  color: #1C1C1C;
+}
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }
