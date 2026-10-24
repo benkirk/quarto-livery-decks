@@ -235,17 +235,19 @@ def pdf_problems(w, h, words, lines, slide=None):
     words = [wd for wd in words if not (WATERMARK and wd[4] in WATERMARK and wd[3] - wd[1] > 0.4 * WM_HEIGHT * h)]
     wide = slide is None or "engine-wide" in slide.get("cls", "").split()
     edge = w * (WIDE_EDGE if wide else EDGE) + TOL
-    for x0, y0, x1, y1, t in words:
-        if x1 > edge:
-            out.append(("past the right margin", repr(t)))
-    # the frame number (bottom left) marks the footline; small words beside it are the
-    # linked-image URL line, which belongs there
+    # the frame number (a bottom corner) marks the footline: furniture, which may sit past the
+    # text's margin (the pptx's in the bottom right); small words beside it are the linked-image
+    # URL line, which belongs there
     n = frame_number(w, h, words)
+    for wd in words:
+        if wd is not n and wd[2] > edge:
+            out.append(("past the right margin", repr(wd[4])))
     if n:
         for wd in words:
             if wd is n or wd[3] <= n[1] + TOL or (wd[1] >= n[1] - 1 and wd[3] - wd[1] < 8.5):
                 continue
-            if wd[0] < n[2] + 6 or wd[3] > n[3] + TOL:   # meets the number, or below the footline
+            # meets the number (in either corner: within 6 pt of its box across), or below the footline
+            if (wd[0] < n[2] + 6 and wd[2] > n[0] - 6) or wd[3] > n[3] + TOL:
                 out.append(("into the footer", repr(wd[4])))
     # a math accent (the tilde of a typeset \tilde\rho) is a word of its own, set over its base
     solid = [wd for wd in words if not all(unicodedata.combining(c) for c in wd[4])]
