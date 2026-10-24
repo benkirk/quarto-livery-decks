@@ -49,6 +49,26 @@ every format (`design/cells-dark-handoff.md`).
 
 ### Liveries
 
+- **Reshape: `geometry.logo` and `signoff` became `geometry.marks.<corner>`**, one mark per corner,
+  any of the four (`top-left`, `top-right`, `bottom-left`, `bottom-right`), each naming its mark;
+  no alias, so a livery of your own moves its keys:
+  - `geometry.logo: {corner: top-right, height, top, aspect, inset, title-height, ...}` is
+    `geometry.marks.top-right: {mark: logo, height, top, aspect, inset, title-height, ...}` (its
+    `corner:` names the entry; `corner: none` is no entry);
+  - `signoff: {light, dark, aspect, height, bottom, corner: bottom-left}` is
+    `geometry.marks.bottom-left: {mark: signoff, light, dark, aspect, height, bottom}`;
+  - `signoff: null` in a flavor is `geometry.marks.<its corner>: null`;
+  - `marks.<role>` names an image for `logo` and every name a corner wears; a corner's `light` and
+    `dark` are the background and primary defaults.
+
+  A flavor's corner merges over its parent's, unless it names another mark, which replaces it.
+  The bundled ten moved alike (cu's corner-none logo block is gone; nsi's mark is `top-left`
+  over cu's `bottom-left` sign-off; nasa-ccp's `top-left` and `top-right`), and draw as before.
+  `livery.css` loses `--engine-logo-*` and `--engine-signoff-*` (an `.engine-mark-<corner>` rule
+  per corner), `livery.sty` `\engine@geom@logo*` and `\engine@signoff*` (`\engine@corners` and
+  `\engine@corner@<corner>@<key>`). In HTML a content slide's marks are elements now
+  (`.engine-marks > .engine-mark-<corner>`), not the slide's `::after`: an `overrides/livery-extra.css`
+  rule on the old pseudo-element moves to them.
 - `boxes.card.border` and `border-color` (the card's hairline); `border: 0` turns it off.
 - Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
   corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and

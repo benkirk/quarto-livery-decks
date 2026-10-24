@@ -360,7 +360,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `livery_mpl.dark()` applies in every format. A baked diagram on it stays light (deferred).
 - **Content title**: `livery.yml` `frametitle: {align: left|center, symmetric, color, tab, rule, top,
   height, rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
-  slide 20; its mark at the paper's edge, `geometry.logo.inset: 0.015`). The band is the three
+  slide 20; its mark at the paper's edge, `geometry.marks.top-left.inset: 0.015`). The band is the three
   fractions of the height (defaults 44, 70 and 130 px of 900: the title centered in
   `top..top+height`, a taller one growing down, the tab the band's height, the hairline at
   `rule-y`, `rule-width` thick (0.0016: the PDF's 0.4 pt, 1.4 px of 900) in `rule-color` (a role, blend or hex, default the
@@ -416,15 +416,29 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   to the placeholder). Plot text then measures the slide's (HTML 1.00, PDF 1.00, pptx 1.01).
   `livery zip --charts` (`make charts-zip`) packs the style, the helper, `livery.json`, the fonts and
   licenses and the swatch sheet; `release.yml` attaches one per livery.
-- **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
+- **Marks and numbers** are livery parameters (`geometry.marks.<corner>`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
-  and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
+  and `livery_template.py` all honor. A content slide wears one mark per corner, any of the four,
+  each named (`mark:`; `logo` is the compositions' mark, `signoff` their sign-off, any other name
+  one of its own, nasa-ccp's `insignia`): `livery_build.corner_marks()` resolves them (a flavor's
+  entry merges over its parent's unless it names another mark, which replaces it, `read()`; `null`
+  drops one), `furniture.marks` holds their boxes, and the drawers loop: beamer's
+  `\engine@drawcorner` over `\engine@corners` and `\engine@corner@<corner>@<key>`, livery.css's
+  `.engine-mark-<corner>` rule per field role (background, `.engine-field` primary, `.engine-dark`
+  dark) on the elements `add_marks()` writes in ONE `.engine-marks` box per content slide (Quarto's
+  `.columns:nth-child(3)` margin counts a slide's children: the body's place among them must not
+  depend on the livery), the template master's picture per corner in `CORNERS` order (logo `rId2`
+  always, other names `rId3`, `rId5`, `rId6`; "Logo (light)", "Sign-off (light)", "Mark <name>
+  (light)"). `livery.json`'s keys are sorted, so a reader walks `CORNERS`. The content title gives
+  way to each top mark on its side by one formula, `livery_build.title_room()` (furniture's title
+  box, `--engine-title-left|right`; beamer restates it on the marks it measures, the dark role's
+  on a dark frame). Which image each name is on a field goes by
   its role (`marks:`; `livery.json` always has `marks`, read with
-  `livery.mark(livery, role, "logo"|"signoff")`): content slides `background`,
+  `livery.mark(livery, role, name)`): content slides `background`,
   dividers, covers and the cover closing `primary`, the band title and closing
   `title.field`. A composed slide's are its composition's: `compositions.<name>.mark|signoff`
   resolve to files (`img`, `img-print`), by `image:` (a `logo.images` name; a light variant keeps
-  it) else the role's, and every drawer reads those (nasa-jsc-eg names its patches so). Defaults: background `logo.medium.light`/`signoff.light`, primary the
+  it) else the role's, and every drawer reads those (nasa-jsc-eg names its patches so). Defaults: background `logo.medium.light` and each corner's `light`, primary the
   dark ones, any other role primary's (nsi: black mark on gold, white on the band). pandoc writes no slide-number box, so
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).

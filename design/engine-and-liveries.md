@@ -845,7 +845,8 @@ Newest first. The log closes at the first release, 26.10.0 (2026-10-18): since t
   per background (NSI has a unit mark and a sign-off lockup), `extends` losing the parent's
   `art.*` paths, and pptx placing only `art.content`. Decided with Ben: the sign-off goes
   bottom-left and the page number moves right, both as livery parameters with today's layout
-  as the defaults. The contract gains `signoff` (light and dark images, aspect, height,
+  as the defaults (superseded 2026-10-24: `signoff` and `geometry.logo` became one mark per
+  corner, `geometry.marks.<corner>`; CHANGELOG). The contract gains `signoff` (light and dark images, aspect, height,
   bottom, corner), `geometry.logo.corner` (top-right | top-left | none: none drops the mark
   everywhere, keeping its room on fields) and `geometry.pagenumber.corner`, drawn by all
   three themes and the template builder; `typography.headings` may now be a second family
