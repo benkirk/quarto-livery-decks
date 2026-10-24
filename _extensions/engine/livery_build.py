@@ -282,7 +282,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         v = out.get("geometry", {}).get(corner, {}).get("corner")
         if v is not None and v not in legal:
             sys.exit(f"{d.name}: geometry.{corner}.corner {v!r} is not one of {legal}")
-    if "signoff" in data:   # the sign-off lockup's box; its images (light, dark) are marks defaults
+    if data.get("signoff"):   # the sign-off lockup's box; its images (light, dark) are marks defaults (null: none)
         so = {k: v for k, v in data["signoff"].items() if k not in ("light", "dark")}
         if so.get("corner", "bottom-left") not in ("bottom-left", "bottom-right"):
             sys.exit(f"{d.name}: signoff.corner {so['corner']!r} is not bottom-left or bottom-right")

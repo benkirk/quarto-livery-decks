@@ -338,8 +338,8 @@
       }
     },
     "signoff": {
-      "type": "object",
-      "description": "A second lockup at the foot of every slide but feature and full ones.",
+      "type": ["object", "null"],
+      "description": "A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's).",
       "additionalProperties": false,
       "properties": {
         "light": {

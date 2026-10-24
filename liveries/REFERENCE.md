@@ -26,7 +26,7 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `geometry` | object |  | The slides' furniture, in fractions of the slide. |
 | `section` | object |  | Section slides. |
 | `art` | object |  | Pictures and curves behind the fields. A path is relative to the livery. |
-| `signoff` | object |  | A second lockup at the foot of every slide but feature and full ones. |
+| `signoff` | object or null |  | A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's). |
 | `title` | object |  | The cover's composition. |
 | `marks` | map |  | Which mark and sign-off each field wears, by the field's role: background (content slides; default logo.medium.light, signoff.light), primary (covers, sections, the closing; default the dark ones), any other role the primary's. |
 | `compositions` | object |  | Overrides of the composed slides' boxes and colors, by slide; every slide takes the parts of compositions.<name> below. |
@@ -179,7 +179,7 @@ How far right of the drawn position each slide kind shows them, of the width.
 
 ### `signoff`
 
-A second lockup at the foot of every slide but feature and full ones.
+A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's).
 
 | key | type | default | |
 |---|---|---|---|
