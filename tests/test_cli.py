@@ -273,6 +273,19 @@ def test_mono_code_typeface(tmp_path):
     assert run("mono", ROOT / "liveries" / "ncar").stdout.strip() == "", "a livery without a code face"
 
 
+def test_furniture_skip_lists_agree():
+    """The HTML autofit's furniture (engine-revealjs.js FURNITURE: the elements that are not a
+    slide's body) is skipped by make qa's measurement too (deck_qa.py MEASURE_JS's skip list, which
+    adds its own): a furniture element added to one alone is a body to the other. An item the QA
+    skips more broadly (aside for aside.notes) counts."""
+    js = (ENGINE / "engine-revealjs.js").read_text()
+    furniture = {s.strip() for s in re.search(r'FURNITURE = "([^"]*)"', js).group(1).split(",")}
+    qa = (ROOT / "common" / "utils" / "deck_qa.py").read_text()
+    skip = {s.strip() for s in re.search(r"const skip = '([^']*)'", qa).group(1).split(",")}
+    missing = {s for s in furniture if s not in skip and s.split(".")[0] not in skip}
+    assert not missing, f"deck_qa.py's MEASURE_JS skip list lacks {missing}"
+
+
 def test_no_private_imports():
     """A step or tool imports no other module's `_private` name: what two modules need is public in
     pptx_steps/common.py, measure.py or livery.py (the #126 sweep found grid.py and columns.py on

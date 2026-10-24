@@ -76,7 +76,8 @@ MEASURE_JS = r"""
   const shift = parseFloat(s.style.getPropertyValue('--engine-shift')) || 0;
   const fit = parseFloat(s.style.getPropertyValue('--engine-fit')) || 1;
   const scale = parseFloat(s.getAttribute('data-engine-scale')) || 1;
-  const skip = 'h2, svg.engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
+  // engine-revealjs.js's FURNITURE (tests/test_cli.py holds it a subset), and what the QA leaves out besides
+  const skip = 'h2, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
   for (const k of kids) for (const e of [k, ...k.querySelectorAll('*')]) {
