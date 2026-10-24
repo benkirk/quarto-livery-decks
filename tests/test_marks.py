@@ -17,7 +17,7 @@ import sys
 import pytest
 from pptx import Presentation
 
-from conftest import ENGINE, ROOT, run
+from conftest import ENGINE, ROOT, flavor, run, title_ph
 
 sys.path.insert(0, str(ENGINE))
 import livery_build as lb  # noqa: E402
@@ -27,18 +27,6 @@ TWO = """geometry:
   marks:
     top-left: {mark: emblem, light: ncar-white, dark: ncar-color, height: 0.05, top: 0.06, aspect: 2, inset: 0.01}
 """
-
-
-def flavor(tmp, name, knobs, parent="ncar"):
-    """A livery extending a bundled one (linked beside it) with the given livery.yml body: its directory."""
-    if not (tmp / parent).exists():
-        (tmp / parent).symlink_to(ROOT / "liveries" / parent)
-    d = tmp / name
-    d.mkdir()
-    (d / "_brand.yml").write_text("{}\n")
-    (d / "livery.yml").write_text(f"schema: 1\nname: {name}\nextends: {parent}\n{knobs}")
-    (d / "template.pptx").write_text("")   # resolve() only warns without one
-    return d
 
 
 def resolved(tmp, name, knobs, parent="ncar"):
@@ -73,7 +61,7 @@ def test_two_top_corners_room(two):
     assert lb.title_room(j) == pytest.approx((left, right)), "title_room(): each side its own corner's"
     assert prop(css, "engine-title-left") == "calc(16px + 40px + 90.0px)", "the top-left mark's inset, the gap, its width"
     assert prop(css, "engine-title-right") == "calc(var(--engine-margin) + 40px + 228.2px)", "the logo's"
-    ph = next(s for s in prs.slide_master.placeholders if s.placeholder_format.type == 1)   # the title
+    ph = title_ph(prs.slide_master)
     W = prs.slide_width
     assert abs(ph.left - (m + left) * W) <= 1 and abs(ph.left + ph.width - (1 - m - right) * W) <= 1, "the placeholder between them"
     assert j["furniture"]["title"][0] == pytest.approx(m + left)

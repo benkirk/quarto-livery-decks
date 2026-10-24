@@ -11,10 +11,7 @@ livery's LIVERY_DIR). Needs pandoc ($QUARTO_PANDOC) for that one.
 """
 
 import json
-import os
 import re
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -22,7 +19,7 @@ import yaml
 
 import livery_build as lb
 
-from conftest import ENGINE, ROOT, run
+from conftest import ROOT, run, run_steps
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
 FRACTIONS = ("gap", "rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
@@ -164,22 +161,12 @@ def test_refused_with_path(tmp_path, tmp_livery, boxes, expect):
     assert rc != 0 and expect in err, f"rc {rc}: {err.strip()!r}"
 
 
-STEP = """
-import sys
-from pathlib import Path
-from pptx import Presentation
-from pptx_steps import slide_layout
-prs = Presentation(sys.argv[1]); slide_layout.run(prs, Path(sys.argv[1])); prs.save(sys.argv[1])
-"""
-
-
 @pytest.mark.parametrize("name", ["ncar", "nasa-jsc-eg"])
 def test_pptx_caution(pandoc_deck, tmp_path, name):
     """The caution box's bar is boxes.caution.bar of the canvas height, its pads em of the body."""
     md = "## Careful\n\nA warning.\n\n::: notes\nengine-layout: caution\n:::\n"
     pandoc_deck(tmp_path, md, "t.pptx")
-    env = {**os.environ, "LIVERY_DIR": str(ROOT / "liveries" / name), "PYTHONPATH": str(ENGINE)}
-    subprocess.run([sys.executable, "-c", STEP, str(tmp_path / "t.pptx")], env=env, check=True, capture_output=True)
+    run_steps(tmp_path / "t.pptx", ["slide_layout"], ROOT / "liveries" / name)
     from pptx import Presentation
     from pptx.util import Pt
     j = json.loads((ROOT / "liveries" / name / "build" / "livery.json").read_text())

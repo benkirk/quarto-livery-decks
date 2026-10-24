@@ -19,7 +19,6 @@ liveries/README.md's acceptance, not this test's. The scaffolds are built once p
 """
 
 import json
-import os
 import re
 import subprocess
 import sys
@@ -28,7 +27,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import ENGINE, ROOT, run
+from conftest import ENGINE, ROOT, bare_env, run
 
 VERSION = re.search(r"^version:\s*(\S+)", (ENGINE / "_extension.yml").read_text(), re.M)[1]
 
@@ -149,7 +148,7 @@ def test_livery_mpl_version(tmp_path):
              "with m.dense(0.5): assert plt.rcParams['font.size'] == round(f) / 2, 'dense'\n"
              "assert plt.rcParams['font.size'] == f and m.surface and m.mix('#000000', '#FFFFFF', 0) == '#000000'\n"
              "with m.raster(): pass   # outside a kernel: nothing to switch")
-    env = {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+    env = bare_env()
     for where, kw in (("engine", {"env": {**env, "LIVERY_DIR": str(ROOT / "liveries" / "ncar"),
                                           "PYTHONPATH": str(ENGINE / "mpl")}}),
                       ("bundle", {"env": env, "cwd": tmp_path / "bundle"})):
@@ -187,7 +186,7 @@ def test_use_zip(tmp_path):
     (once), its base family registered from there, ncar's slots; in a subprocess, its own env."""
     z = tmp_path / "ncar-charts.zip"
     assert run("zip", "--charts", ROOT / "liveries" / "ncar", "-o", z).returncode == 0
-    env = {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+    env = bare_env()
     (tmp_path / "empty").mkdir()
     r = subprocess.run([sys.executable, "-c", USE_ZIP, str(z), str(ROOT / "liveries" / "ncar" / "build" / "livery.json")],
                        capture_output=True, text=True, cwd=tmp_path / "empty",

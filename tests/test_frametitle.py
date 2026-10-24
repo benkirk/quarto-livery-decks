@@ -14,7 +14,7 @@ import json
 from pptx import Presentation
 from pptx.util import Emu
 
-from conftest import ROOT, run
+from conftest import ROOT, run, title_ph
 
 TITLE_STYLE = "{http://schemas.openxmlformats.org/presentationml/2006/main}titleStyle"
 
@@ -49,7 +49,7 @@ def test_color_and_symmetric(tmp_path, tmp_livery):
     assert run("template", d).returncode == 0
     prs = Presentation(str(d / "template.pptx"))
     assert '<a:srgbClr val="FFFFFF"/>' in title_style(d / "template.pptx")
-    ph = next(s for s in prs.slide_master.placeholders if s.placeholder_format.type == 1)   # the title
+    ph = title_ph(prs.slide_master)
     center = ph.left + ph.width / 2
     assert abs(center - prs.slide_width / 2) < Emu(12700), "the title placeholder centered on the slide"
 
@@ -80,7 +80,7 @@ def test_furniture(livery):
         r = by["Title rule"]
         x, y, w, _ = frame(fu["rule"])
         assert (r.left, r.top, r.width) == (x, y, w), "the rule's line"
-    ph = next(s for s in m.placeholders if s.placeholder_format.type == 1)   # the title
+    ph = title_ph(m)
     assert (ph.left, ph.top, ph.width, ph.height) == frame(fu["title"]), "the title's box"
     for corner, mk in fu["marks"].items():
         if mk is None:

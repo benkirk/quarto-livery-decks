@@ -13,10 +13,12 @@ import json
 import re
 
 import pytest
+from pptx import Presentation
+from pptx.oxml.ns import qn
 
 import livery_build as lb
 
-from conftest import ROOT, lua_common
+from conftest import ROOT, lua_common, run_steps, slide_layout_shim
 
 
 def test_defaults_in_every_livery(livery):
@@ -88,31 +90,16 @@ def test_reader(tmp_path, front, default, want):
 
 
 # the pptx half: slide-layout.lua writes the text (engine-watermark), the step draws it
-STEP = """
-import sys
-from pathlib import Path
-from pptx import Presentation
-from pptx_steps import slide_layout, marking, watermark, type_step
-p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); marking.run(prs, p); watermark.run(prs, p); type_step.run(prs, p); prs.save(p)
-"""   # the driver's order around it
+STEPS = ["slide_layout", "marking", "watermark", "type_step"]   # the driver's order around it
 
 
 def pptx_marks(pandoc_deck, tmp, front, body="## a\n\nOne.\n\n## b {.brand-dark}\n\nTwo.\n", name="ncar"):
     """Each slide's Watermark shapes after the steps: (index in the tree, rot, size pt, color, alpha), and
     each slide's first text shape's index; under the livery name."""
-    import os
-    import subprocess
-    import sys
-    from pptx import Presentation
-    from pptx.oxml.ns import qn
-    from conftest import ENGINE, slide_layout_shim
     d = ROOT / "liveries" / name
     md = f"---\nlivery: {d}\n{front}---\n\n{body}"
     pandoc_deck(tmp, md, "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
-    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
-    r = subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, capture_output=True, text=True)
-    assert r.returncode == 0, r.stderr
+    run_steps(tmp / "t.pptx", STEPS, d)
     out = []
     for s in Presentation(str(tmp / "t.pptx")).slides:
         shapes = list(s.shapes)

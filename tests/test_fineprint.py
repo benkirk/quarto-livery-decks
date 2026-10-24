@@ -15,36 +15,25 @@ import json
 import os
 import shutil
 import subprocess
-import sys
 
 import pytest
 
-from conftest import ENGINE, ROOT, pandoc_exe, run, slide_layout_shim
+from conftest import ENGINE, ROOT, flavor, pandoc_exe, run, run_steps, slide_layout_shim
 
 NAME = "fp"
 TEXT = "First notice, (a) and (b).\n\nSecond notice."
-STEP = """
-import sys
-from pathlib import Path
-from pptx import Presentation
-from pptx_steps import slide_layout
-p = Path(sys.argv[1]); prs = Presentation(p); slide_layout.run(prs, p); prs.save(p)
-"""
 
 
-def flavor(tmp, compositions):
-    """ncar's flavor NAME with a compositions: block, built: (its directory, the run)."""
-    liv = tmp / "liveries"
-    shutil.copytree(ROOT / "liveries" / "ncar", liv / "ncar", ignore=shutil.ignore_patterns("reference"))
-    d = liv / NAME; d.mkdir()
-    (d / "_brand.yml").write_text("{}\n")
-    (d / "livery.yml").write_text(f"schema: 1\nname: {NAME}\nextends: ncar\ncompositions:\n{compositions}")
+def fp_flavor(tmp, compositions):
+    """ncar's flavor NAME (in tmp/liveries, where LaTeX's livery= finds it) with a compositions: block,
+    built: (its directory, the run)."""
+    d = flavor(tmp / "liveries", NAME, f"compositions:\n{compositions}")
     return d, run("build", d)
 
 
 @pytest.fixture(scope="module")
 def fp(tmp_path_factory):
-    d, r = flavor(tmp_path_factory.mktemp("fp"), f"  title:\n    fineprint: {{text: {json.dumps(TEXT)}}}\n")
+    d, r = fp_flavor(tmp_path_factory.mktemp("fp"), f"  title:\n    fineprint: {{text: {json.dumps(TEXT)}}}\n")
     assert r.returncode == 0, r.stderr
     return d, json.loads((d / "build" / "livery.json").read_text())
 
@@ -61,7 +50,7 @@ def test_default_reaches_every_cover(fp):
 
 
 def test_text_on_a_closing_fails(tmp_path):
-    _, r = flavor(tmp_path, "  closing:\n    fineprint: {box: [0.1, 0.8, 0.5, 0.1], anchor: top, text: No.}\n")
+    _, r = fp_flavor(tmp_path, "  closing:\n    fineprint: {box: [0.1, 0.8, 0.5, 0.1], anchor: top, text: No.}\n")
     assert r.returncode != 0 and "compositions.closing.fineprint.text: only a cover" in r.stderr, r.stderr
 
 
@@ -99,9 +88,7 @@ def drawn(pandoc_deck, tmp, d, front):
     hex, anchor), or None."""
     tmp.mkdir()
     pandoc_deck(tmp, f"---\ntitle: A deck\nlivery: {d}\n{front}---\n\n## a\n\nOne.\n", "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
-    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
-    r = subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, capture_output=True, text=True)
-    assert r.returncode == 0, r.stderr
+    run_steps(tmp / "t.pptx", ["slide_layout"], d)
     from pptx import Presentation
     box = next((s for s in Presentation(str(tmp / "t.pptx")).slides[0].shapes if s.name == "Fineprint"), None)
     if box is None:

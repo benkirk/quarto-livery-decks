@@ -9,13 +9,11 @@ has no swap (the class is a no-op there).
 """
 
 import json
-import os
 import subprocess
-import sys
 
 import pytest
 
-from conftest import ENGINE, ROOT, flat, lua_common, pandoc_exe, slide_layout_shim
+from conftest import ENGINE, ROOT, flat, lua_common, pandoc_exe, run_steps, slide_layout_shim
 
 # take_layout() on each heading of the markdown from stdin: {dark, classes} or {nil}
 HARNESS = r"""
@@ -89,9 +87,7 @@ def dark_deck(request, tmp_path_factory):
     subprocess.run([pandoc_exe(), "--lua-filter", str(slide_layout_shim(tmp)), "--lua-filter", str(ENGINE / "grid-pptx.lua"),
                     "--reference-doc", str(d / "template.pptx"), "-o", str(out)],
                    input=f"---\nlivery: {d}\n---\n\n" + DECK, text=True, cwd=tmp, check=True, capture_output=True)
-    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
-    r = subprocess.run([sys.executable, str(ENGINE / "pptx_post.py"), str(out)], env=env, cwd=tmp, capture_output=True, text=True)
-    assert r.returncode == 0, r.stderr
+    run_steps(out, None, d)
     from pptx import Presentation
     return name, json.loads((d / "build" / "livery.json").read_text()), Presentation(str(out))
 

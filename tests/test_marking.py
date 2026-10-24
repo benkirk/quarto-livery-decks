@@ -11,26 +11,18 @@ The step runs in a subprocess, under the livery its LIVERY_DIR names. Needs pand
 """
 
 import json
-import os
 import re
 import subprocess
-import sys
 
 import pytest
 
 import livery as livery_mod
 import livery_build as lb
 
-from conftest import ENGINE, ROOT, lua_common, pandoc_exe, slide_layout_shim
+from conftest import ENGINE, ROOT, lua_common, pandoc_exe, run_steps, slide_layout_shim
 
 DEMO = "This presentation contains no sensitive information"
-STEP = """
-import sys
-from pathlib import Path
-from pptx import Presentation
-from pptx_steps import marking, type_step
-p = Path(sys.argv[1]); prs = Presentation(p); marking.run(prs, p); type_step.run(prs, p); prs.save(p)
-"""   # the driver's order: the strips before the size step, which scales them as HTML and PDF do
+STEPS = ["marking", "type_step"]   # the driver's order: the strips before the size step, which scales them as HTML and PDF do
 TWO = """  banner: {text: TOP, fill: primary, bold: true, size: 14}
   legend: {text: FOOT, edge: bottom, width: 0.7, size: 8}
 """   # a two-strip block for ncar (tmp_livery)
@@ -69,8 +61,7 @@ def strips(pandoc_deck, tmp, name, front, livery_dir=None):
     d = livery_dir or ROOT / "liveries" / name
     md = f"---\nlivery: {d}\n{front}---\n\n## a\n\nOne.\n\n## b\n\nTwo.\n"   # the filter reads the livery's strips
     pandoc_deck(tmp, md, "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
-    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
-    subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, check=True, capture_output=True)
+    run_steps(tmp / "t.pptx", STEPS, d)
     from pptx import Presentation
     prs = Presentation(str(tmp / "t.pptx"))
     return [[(sh.name, sh.text_frame.text, sh.text_frame.paragraphs[0].runs[0].font.size.pt)
