@@ -53,6 +53,10 @@ seams a 42-slide deck found that `make qa` could not see, and the checks that se
 - The cover's `fineprint:` is drawn in pptx too (it showed only in HTML and PDF), a paragraph per
   paragraph, in the livery's box, size and color. A livery may give every cover a default (a
   rights notice, say), which a deck's `fineprint:` replaces; `fineprint: none` drops it.
+- `make ... DECK_META=<file>` hands every render a metadata file, filling keys the deck leaves out.
+  The images the framework keeps (the README's livery gallery, `livery check --qa`'s and CI's
+  contact sheets) are shot under `livery placeholders <livery>`, which puts SAMPLE markings and a
+  Lorem ipsum notice over a livery's defaults, so none reads as a real restricted deck.
 
 ### Plots
 

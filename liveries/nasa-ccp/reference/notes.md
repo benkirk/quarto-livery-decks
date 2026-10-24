@@ -26,6 +26,10 @@ that says nothing is over-marked (the safe failure) and a deck replaces each (do
   Commercial Crew Transportation Capability (CCtCap) contract support personnel." The template
   sets the contract line "SpaceX NNK14MA74C / Boeing NNK14MA75C" in red, its cue to keep the one
   that applies; the default keeps both, and a deck's `fineprint:` replaces the whole notice.
+- **Our own images** (the README's gallery, `livery check --qa`'s and CI's contact sheets) are
+  shot under `livery placeholders`: "SAMPLE — CONTAINS NO CUI", a SAMPLE legend and a Lorem ipsum
+  notice of the real one's shape (Ben, 2026-10-23: the defaults stand, but nothing we publish may
+  read as restricted when it is a placeholder).
 - **Dropped**: the cover's export-control placeholder, an instruction to the author ("Placeholder
   for Export Control marking to be applied before sharing outside of the Government and/or
   International Partners. Based on source data, select appropriate marking from here."), whose

@@ -34,7 +34,9 @@ Sans from `liveries/nasa` as its stand-in face, a placeholder mark; `--from <dec
 (`livery_template.py`), `check [--swatch] [--qa]` (`livery_check.py`; `--qa` runs the quickstart's
 `make qa` with `LIVERY=` for a bundled livery, else `LIVERY_DIR=`), `all` (build, template,
 check; the root `make livery LIVERY=|LIVERY_DIR=`), `zip [--charts]` (`overleaf_zip.py`,
-`mpl_zip.py`), `schema --doc`, and `deps|mono|figsize` for `Make.common`. The modules have no
+`mpl_zip.py`), `schema --doc`, `placeholders` (sample text over a livery's default markings and
+cover notice, the `DECK_META` every image we keep is shot under: gallery, `check --qa`, CI's
+measure) and `deps|mono|figsize` for `Make.common`. The modules have no
 entry points of their own; `livery.py` imports each only when its subcommand runs, so `zip`
 needs nothing beyond Python (the release job).
 `design/engine-and-liveries.md` is the roadmap; its section 10 logged progress up to the first
@@ -84,7 +86,9 @@ build pipeline, template constraints and font embedding; `docs/container.md` the
   commit them. Slides are found by title (`SLIDES` in `screenshots.py`), so a
   renamed slide needs that list updated. `make gallery` (`gallery.py`) writes
   `liveries.png`, the deck under every livery (title, divider, content, closing),
-  rebuilding the HTML per `LIVERY`; `screenshots.py` leaves that file alone. Where the MathJax CDN is blocked, set
+  rebuilding the HTML per `LIVERY` (a livery with default markings under `livery placeholders`,
+  passed as `DECK_META`, a metadata file Make.common hands every render: no committed image reads
+  as a real restricted deck); `screenshots.py` leaves that file alone. Where the MathJax CDN is blocked, set
   `MATHJAX` to a local MathJax 2.7 (the npm tarball from registry.npmjs.org),
   or the equations shoot as raw TeX.
 

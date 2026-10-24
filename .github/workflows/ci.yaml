@@ -524,9 +524,13 @@ jobs:
 
       # the title, divider, closing and feature slides of every format against the livery's
       # compositions (comp_measure.py; pptx through the image's LibreOffice). Report-only
-      # (MEASURE_FAIL empty) until the formats draw from the boxes; the sheet and table are uploaded
+      # (MEASURE_FAIL empty) until the formats draw from the boxes; the sheet and table are uploaded,
+      # so a livery's default markings wear `livery placeholders`' sample text (DECK_META)
       - name: Measure the compositions
-        run: timeout 900 make -C decks/fixtures measure LIVERY="$LIVERY" MEASURE_FAIL=
+        run: |
+          python3 _extensions/engine/livery.py placeholders "liveries/$LIVERY" > /tmp/placeholders.yml
+          meta=$([ -s /tmp/placeholders.yml ] && echo DECK_META=/tmp/placeholders.yml || true)
+          timeout 900 make -C decks/fixtures measure LIVERY="$LIVERY" MEASURE_FAIL= $meta
 
       - name: Upload the deck
         uses: actions/upload-artifact@v7

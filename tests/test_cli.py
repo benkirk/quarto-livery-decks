@@ -265,3 +265,18 @@ def test_svg_dpi_is_the_quarto_fig_dpi():
     dpi = int(re.search(r"fig-dpi:\s*(\d+)", yml).group(1))
     src = (ENGINE / "pptx_steps" / "svg_fallback.py").read_text()
     assert int(re.search(r"^DPI\s*=\s*(\d+)", src, re.M).group(1)) == dpi
+
+
+def test_placeholders():
+    """livery placeholders: sample text over a livery's default markings and cover notice, for the
+    images we publish (gallery.py's DECK_META); nothing for a livery without defaults."""
+    assert run("placeholders", ROOT / "liveries" / "ncar").stdout == "", "ncar has no default marking"
+    meta = json.loads(run("placeholders", ROOT / "liveries" / "nasa-ccp").stdout)
+    assert set(meta["marking"]) == {"banner", "legend"}
+    assert all(v.startswith("SAMPLE") and "CUI//" not in v for v in meta["marking"].values()), meta["marking"]
+    paras = meta["fineprint"].split("\n\n")
+    real = json.loads((ROOT / "liveries" / "nasa-ccp" / "build" / "livery.json").read_text())
+    want = real["compositions"]["title"]["fineprint"]["paragraphs"]
+    assert len(paras) == len(want) and paras[0].startswith("SAMPLE"), paras
+    assert paras[1].startswith("\\(a) Lorem ipsum"), "a label kept, escaped from markdown's lists"
+    assert "NNK14" not in meta["fineprint"] and "CCtCap" not in meta["fineprint"]
