@@ -741,26 +741,21 @@ function Pandoc(doc)
     opts.autofit == "false" and ",'engine-no-autofit'" or ""))
 
   -- title slide: the composition by the band, a photo (the deck's or the livery's) and light
+  local tcomp = comps[C.cover_name(meta, livery, light)]
   local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
   local nophoto = tg == "none"   -- `titlegraphic: none`: the plain cover, not the livery's default
   if nophoto then tg = nil; meta["titlegraphic"] = nil end
   local default_photo = not tg and not nophoto and livery.art and type(livery.art.titlegraphic) == "string"
-  local tcomp = comps[band and "title-band" or ((tg or default_photo) and "title-photo" or "title") .. (light and "-light" or "")]
   local bg, fieldclass = field_of(tcomp)
   title_slide_attributes(meta, { ["data-background-color"] = bg })
   meta["engine-title-art"] = pandoc.RawInline("html", comp_art(tcomp, r, (tg or default_photo) and photo_img(tg) or nil))
   meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
   -- a cover's byline with a box of its own (livery.json compositions): title-slide.html's second stack
   if tcomp.byline and tcomp.byline.box then meta["engine-byline"] = true end
-  -- the cover's fine print (title-slide.html): the deck's fineprint: (none: none), else the livery's default
-  local fp = meta["fineprint"]
-  if fp and pandoc.utils.stringify(fp) == "none" then
-    meta["fineprint"] = nil
-  elseif not fp and tcomp.fineprint and tcomp.fineprint.paragraphs then
-    local paras = pandoc.Blocks({})
-    for _, para in ipairs(tcomp.fineprint.paragraphs) do paras:insert(pandoc.Para(pandoc.Inlines(para))) end
-    meta["fineprint"] = pandoc.MetaBlocks(paras)
-  end
+  -- the cover's fine print (title-slide.html): C.fineprint_paragraphs, the deck's fineprint: (none:
+  -- none), else the livery's default
+  local fp = C.fineprint_paragraphs(meta, tcomp)
+  meta["fineprint"] = #fp > 0 and pandoc.MetaBlocks(fp) or nil
   -- the marking strips, as HTML: each with its text (C.marking_texts: the deck's marking:, else the
   -- strip's default), in the livery's order; livery.css places and colors each by its class
   local divs = {}

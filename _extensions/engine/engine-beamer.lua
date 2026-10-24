@@ -748,21 +748,13 @@ function Pandoc(doc)
     doc.meta["header-includes"] = hi
   end
 
-  -- the cover's fine print from metadata (`fineprint: none`: not the livery's default either)
-  local fp = doc.meta["fineprint"]
-  if fp then
-    local ty, text = pandoc.utils.type(fp), nil
-    if pandoc.utils.stringify(fp) == "none" then
-      text = ""
-    elseif ty == "Inlines" then
-      text = inlines_to_latex(fp)
-    elseif ty == "Blocks" then
-      text = (pandoc.write(pandoc.Pandoc(fp), "latex"):gsub("%s+$", ""))
-    else
-      text = pandoc.utils.stringify(fp)
-    end
+  -- the cover's fine print when the deck sets it (C.fineprint_paragraphs; `fineprint: none` writes {},
+  -- not the livery's default either): the theme draws the livery's default itself, from livery.sty,
+  -- as it does for a hand-written deck
+  local fp, own = C.fineprint_paragraphs(doc.meta)
+  if own then
     local hi = header_includes(doc)
-    hi:insert(pandoc.Blocks({ latex("\\titlefineprint{" .. text .. "}") }))
+    hi:insert(pandoc.Blocks({ latex("\\titlefineprint{" .. (pandoc.write(pandoc.Pandoc(fp), "latex"):gsub("%s+$", "")) .. "}") }))
     doc.meta["header-includes"] = hi
   end
 

@@ -4,10 +4,11 @@
     python3 -m pytest tests/test_fineprint.py
 
 A tmp flavor of ncar sets a two-paragraph default on `title`: the build gives every cover its
-paragraphs and refuses the text on a closing. slide-layout.lua (under a `quarto` shim) flattens the
-deck's fineprint: to `engine-fineprint`, a line per paragraph (a line break parts one too: Quarto
-reads a metadata file's blank line as one); the pptx step draws the deck's, else the default, in
-the box, size and color the livery gives, and none for `fineprint: none`. Needs pandoc.
+paragraphs and refuses the text on a closing. slide-layout.lua (under a `quarto` shim) writes
+engine-common.lua's one reader (the deck's fineprint:, else the cover's default) to
+`engine-fineprint`, a line per paragraph (a line break parts one too: Quarto reads a metadata file's
+blank line as one), `none` for none; the pptx step draws that string in the box, size and color the
+livery gives. Needs pandoc.
 """
 
 import json
@@ -65,7 +66,7 @@ def test_text_on_a_closing_fails(tmp_path):
 
 
 def flatten(tmp_path, front):
-    """slide-layout.lua's engine-fineprint for the front matter (None: not set)."""
+    """slide-layout.lua's engine-fineprint for the front matter."""
     r = subprocess.run([pandoc_exe(), "--lua-filter", str(slide_layout_shim(tmp_path)), "-t", "json"], input=f"---\n{front}---\n\n## a\n\nx\n",
                        text=True, capture_output=True, check=True)
     m = json.loads(r.stdout)["meta"].get("engine-fineprint")
@@ -77,17 +78,27 @@ def flatten(tmp_path, front):
     ("fineprint: |\n  First para.\n\n  Second para.\n", "First para.\nSecond para."),
     ("fineprint: \"First line.\\\\\\nSecond line.\"\n", "First line.\nSecond line."),   # a line break
     ("fineprint: none\n", "none"),
-    ("title: T\n", None),
+    ("title: T\n", "none"),   # ncar: no default
 ])
 def test_flattened_for_pptx(tmp_path, front, want):
     assert flatten(tmp_path, front) == want
+
+
+@pytest.mark.parametrize("front, want", [
+    ("", "First notice, (a) and (b).\nSecond notice."),   # the cover's default, every cover's
+    ("titlegraphic: none\nthemeoptions: [title=light]\n", "First notice, (a) and (b).\nSecond notice."),
+    ("fineprint: Own.\n", "Own."),
+    ("fineprint: none\n", "none"),
+])
+def test_flattened_default(tmp_path, fp, front, want):
+    assert flatten(tmp_path, f"livery: {fp[0]}\n{front}") == want
 
 
 def drawn(pandoc_deck, tmp, d, front):
     """The cover's Fineprint box after slide-layout.lua and the step: (its paragraphs, size pt, color
     hex, anchor), or None."""
     tmp.mkdir()
-    pandoc_deck(tmp, f"---\ntitle: A deck\n{front}---\n\n## a\n\nOne.\n", "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
+    pandoc_deck(tmp, f"---\ntitle: A deck\nlivery: {d}\n{front}---\n\n## a\n\nOne.\n", "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
     env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
     r = subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr

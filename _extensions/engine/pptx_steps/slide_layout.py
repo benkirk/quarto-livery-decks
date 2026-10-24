@@ -522,16 +522,16 @@ def cover_byline(prs, slide, comp, width, height):
 
 
 def cover_fineprint(prs, slide, comp, width, height):
-    """A cover's fine print (compositions: fineprint), as HTML and beamer draw it: the deck's
-    fineprint: (slide-layout.lua's engine-fineprint, a line per paragraph; `none`, none), else the
-    livery's default paragraphs, as one text box in its box, hanging from its top or standing on its
-    bottom, left-aligned in its role's color, the fineprint size at its leading. PowerPoint cannot
-    flow it, so a text taller than its box is warned."""
+    """A cover's fine print (compositions: fineprint), as HTML and beamer draw it: slide-layout.lua's
+    engine-fineprint (engine-common.lua's one reader: the deck's fineprint:, else the livery's
+    default; a line per paragraph, `none` for none), as one text box in its box, hanging from its top
+    or standing on its bottom, left-aligned in its role's color, the fineprint size at its leading.
+    PowerPoint cannot flow it, so a text taller than its box is warned."""
     fp = comp.get("fineprint")
-    deck = docprops.prop(prs, "engine-fineprint")
-    if not fp or not fp.get("box") or deck == "none":
+    text = docprops.prop(prs, "engine-fineprint")
+    if not fp or not fp.get("box") or not text or text == "none":
         return
-    paras = [p for p in (deck.split("\n") if deck else fp.get("paragraphs") or []) if p.strip()]
+    paras = [p for p in text.split("\n") if p.strip()]
     if not paras:
         return
     x, y, w, h = fp["box"]

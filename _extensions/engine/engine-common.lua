@@ -516,6 +516,33 @@ local function watermark_text(meta, livery)
   return type(t) == "string" and t ~= "" and pandoc.Inlines(t) or nil
 end
 
+-- The cover's composition name (livery.json compositions): the band title's, else a photo cover's when
+-- the deck's titlegraphic: or the livery's art.titlegraphic gives one (`titlegraphic: none`: the plain
+-- cover), its light variant under light (the caller's title=light, false under a band).
+local function cover_name(meta, livery, light)
+  if livery.title and livery.title.style == "band" then return "title-band" end
+  local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
+  local photo = tg and tg ~= "none" or (not tg and livery.art and type(livery.art.titlegraphic) == "string")
+  return (photo and "title-photo" or "title") .. (light and "-light" or "")
+end
+
+-- The cover's fine print (the one reader every format uses): the deck's `fineprint:` (Blocks as
+-- written, inlines as one Plain; `none`, no blocks), else the composition's default paragraphs
+-- (livery.json compositions.<cover>.fineprint.paragraphs), each a Para. Returns the Blocks (empty:
+-- none) and whether the deck set them (beamer's theme holds the livery's default itself).
+local function fineprint_paragraphs(meta, comp)
+  local fp = meta["fineprint"]
+  if fp ~= nil then
+    if pandoc.utils.stringify(fp) == "none" then return pandoc.Blocks({}), true end
+    local ty = pandoc.utils.type(fp)
+    if ty == "Blocks" then return fp, true end
+    return pandoc.Blocks({ pandoc.Plain(ty == "Inlines" and fp or pandoc.Inlines(pandoc.utils.stringify(fp))) }), true
+  end
+  local paras = pandoc.Blocks({})
+  for _, p in ipairs(comp and comp.fineprint and comp.fineprint.paragraphs or {}) do paras:insert(pandoc.Para(pandoc.Inlines(p))) end
+  return paras, false
+end
+
 -- A .columns div's columns and their shares of the row, the gaps taken out first, as every format
 -- lays them out: a column's width= ("55%" or "0.55") is its share, the columns without one share
 -- what is left equally, and shares that add to more than 1 are scaled down to 1 (less than 1
@@ -1178,7 +1205,7 @@ return {
   quote_blocks = quote_blocks,
   content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery, marking_texts = marking_texts,
-  watermark_text = watermark_text,
+  watermark_text = watermark_text, cover_name = cover_name, fineprint_paragraphs = fineprint_paragraphs,
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
