@@ -81,11 +81,12 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
   counter-clockwise), `size` (points on the canvas; default 120 on the default 13.33 x 7.5 in
   canvas, scaled to the livery's), and a default `text` every deck shows (none by default).
   `livery placeholders` gives a default text SAMPLE.
-- Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
-  corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
-  `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its
-  `marks` always holds the dark role (primary's unless `marks.dark` names its own). In LaTeX the
-  marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is unchanged.
+- `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by corner) and
+  the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and `dark-muted` (on-dark
+  into the dark role; `blends:` in `livery.yml` may set any of them), and its `marks` always holds
+  the dark role (primary's unless `marks.dark` names its own): all derived, nothing to do for
+  them. In LaTeX the marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is
+  unchanged.
 
 ### Plots
 
