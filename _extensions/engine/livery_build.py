@@ -141,7 +141,8 @@ BOXES = {
               "attribution-gap": 0.5},   # the attribution's distance under the lines, em of the caption type
     "note": {"gap": 0.3},   # a ::: note under a figure or table: its distance under it, em of the caption type
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
-    "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
+    # card: its body on fill (surface: off the page, as the lead), tint a share of the card's role over it
+    "card": {"fill": "surface", "tint": 0, "radius": 0, "outline": 0.0033, "outline-color": "highlight",
              "border": 0.0016, "border-color": "rule",   # every card's hairline (a pick's outline replaces it; none on a solid card)
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
@@ -1134,6 +1135,13 @@ def tex_camel(key: str) -> str:
     return "".join(w.capitalize() for w in key.split("-"))
 
 
+def card_code(livery: dict) -> str:
+    """Code's fill in a card (a block's and an inline run's): the background on a card filled off it (the
+    default, surface, which code takes on the slide), else the surface."""
+    r = livery["roles"]
+    return r["background"] if livery["boxes"]["card"]["fill"].lower() != r["background"].lower() else r["surface"]
+
+
 def emit_sty_boxes(livery: dict) -> list[str]:
     """The boxes (livery.json boxes): \\engine@boxes@<box>@<key> for each number (fractions of the paper,
     tint a share), @pady and @padx for each pad (em, so the factor goes before `em`), and a color per
@@ -1158,6 +1166,7 @@ def emit_sty_boxes(livery: dict) -> list[str]:
                 L.append(f"\\def\\engine@boxes@{box}@{name}y{{{val[0]}}}\\def\\engine@boxes@{box}@{name}x{{{val[1]}}}")
             else:
                 L.append(f"\\def\\engine@boxes@{box}@{name}{{{val}}}")
+    L.append(f"\\definecolor{{EngineBoxesCardCode}}{{HTML}}{{{card_code(livery)[1:]}}}")   # code in a card
     return L
 
 
@@ -1407,7 +1416,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-quote-style: {quote['style']};"]
     if quote["family"]:   # else the body's
         p.append(f'--engine-quote-family: "{quote["family"]}";')
-    p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
+    p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-tint: {round(card['tint'] * 100, 2):g}%;",
+          f"--engine-card-code: {card_code(livery)};", f"--engine-card-radius: {px(card['radius'])};",
           f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
           f"--engine-card-border: {px(card['border'])};", f"--engine-card-border-color: {card['border-color']};",
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",

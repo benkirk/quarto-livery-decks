@@ -598,7 +598,8 @@
 % pads and outline; the row then draws every card as a tcolorbox one height, the tallest body and
 % head (one run, no aux; each head its own text's height, as HTML's and the pptx's): a head band
 % in the role (the title in the block title font, bold, its sub in the body's) over the body on
-% the card fill, rounded by boxes.card.radius. \enginelabel and \enginebig are a card's small-caps
+% the card fill under boxes.card.tint of its role (code in it on EngineBoxesCardCode), rounded by
+% boxes.card.radius. \enginelabel and \enginebig are a card's small-caps
 % label and big number.
 % ---------------------------------------------------------------------------
 \RequirePackage{tcolorbox}\tcbuselibrary{skins,breakable}   % breakable: Quarto's callouts, which load it after this
@@ -666,7 +667,8 @@
     % on a solid card the text is the tcolorbox's coltext (no \color here: its whatsit would put
     % \parskip over the first paragraph, which an empty list does not get)
     \ifengine@cardsolid\setbeamercolor{normal text}{fg=BrandPrimaryText}%
-      \def\engine@labelcolor{BrandPrimaryText}\def\engine@bigcolor{BrandPrimaryText}\fi}
+      \def\engine@labelcolor{BrandPrimaryText}\def\engine@bigcolor{BrandPrimaryText}%
+    \else\@ifundefined{\string\color@shadecolor}{}{\colorlet{shadecolor}{EngineBoxesCardCode}}\fi}   % code off the card's fill
 \def\endenginecard{\endengine@cellbox{\engine@ncards}{\engine@cardbody}}
 % the row: each card a tcolorbox, the gap between them; its height the tallest body and head
 \def\engine@drawcards{\hbox{\@tempcnta=\z@   % a box in the vertical list: no paragraph, no \parskip
@@ -704,7 +706,8 @@
   \else
     \engine@hasopt{solid}%
     \ifin@\edef\engine@tmpb{colback=\engine@crole,coltext=BrandPrimaryText,colframe=\engine@crole}%
-    \else\def\engine@tmpb{colback=EngineBoxesCardFill,colframe=EngineBoxesCardBorderColor,coltext=BrandText}\fi
+    \else\edef\engine@tmpb{colback=\engine@crole!\fpeval{round(100*\engine@boxes@card@tint)}!EngineBoxesCardFill,   % its tint over the fill
+      colframe=EngineBoxesCardBorderColor,coltext=BrandText}\fi
     \expandafter\engine@add\expandafter{\engine@tmpb}%
     \ifx\engine@ctitle\@empty\else\engine@add{title={\engine@cardtitle}}\fi
   \fi

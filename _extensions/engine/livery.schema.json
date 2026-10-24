@@ -625,7 +625,8 @@
           "description": "A card (`::: {.column .card}`): a colored head band over a body.",
           "additionalProperties": false,
           "properties": {
-            "fill": {"$ref": "#/$defs/color-or-role", "default": "background", "description": "Its body's fill, a role, a palette name or a hex."},
+            "fill": {"$ref": "#/$defs/color-or-role", "default": "surface", "description": "Its body's fill, a role, a palette name or a hex (default: surface, the card off the page as a lead is; code in a card then takes the background)."},
+            "tint": {"type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "The card's role's share in its body, mixed over the fill: each card's body a wash of its head's color (0.09 over the background reads; 0 for the fill alone)."},
             "radius": {"type": "number", "minimum": 0, "maximum": 1, "default": 0, "description": "Its corners' radius (of the slide's height); 0 for square corners."},
             "outline": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0033, "description": "The outline of a picked card (`.pick`), its width (of the slide's height)."},
             "outline-color": {"$ref": "#/$defs/color-or-role", "default": "highlight", "description": "That outline's color, a role, a palette name or a hex."},

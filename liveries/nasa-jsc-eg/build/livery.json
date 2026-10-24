@@ -44,7 +44,8 @@
         "primary",
         "secondary",
         "accent"
-      ]
+      ],
+      "tint": 0
     },
     "caution": {
       "bar": 0.0089,
