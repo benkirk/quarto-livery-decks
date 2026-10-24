@@ -24,15 +24,11 @@ def main():
     cells = []
     with tempfile.TemporaryDirectory() as tmp:
         for livery in LIVERIES:
-            meta = subprocess.run([sys.executable, LIVERY_PY, "placeholders", os.path.join("..", "..", "liveries", livery)],
-                                  check=True, capture_output=True, text=True).stdout
-            args = ["make", "html", f"LIVERY={livery}"]
-            if meta:   # its sample markings: a prerequisite, so the deck rebuilds under them
-                path = os.path.join(tmp, f"{livery}-placeholders.yml")
-                with open(path, "w") as f:
-                    f.write(meta)
-                args.append(f"DECK_META={path}")
-            subprocess.run(args, check=True, stdout=subprocess.DEVNULL)
+            meta = subprocess.run([sys.executable, LIVERY_PY, "placeholders", os.path.join("..", "..", "liveries", livery),
+                                   "-o", os.path.join(tmp, f"{livery}-placeholders.yml")],
+                                  check=True, capture_output=True, text=True).stdout.strip()
+            # its sample markings (DECK_META=<file>, or nothing): a prerequisite, so the deck rebuilds under them
+            subprocess.run(["make", "html", f"LIVERY={livery}", *([meta] if meta else [])], check=True, stdout=subprocess.DEVNULL)
             os.mkdir(os.path.join(tmp, livery))
             shots = screenshots.html_shots(os.path.join(tmp, livery))
             cells += [shots[name] for name in COLUMNS]

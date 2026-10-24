@@ -362,3 +362,14 @@ def test_placeholders_watermark(tmp_path, tmp_livery):
     rc, err, _ = tmp_livery(tmp_path, "  text: INTERNAL\n", key="watermark")
     assert rc == 0, err
     assert json.loads(run("placeholders", tmp_path / "liveries" / "ncar").stdout) == {"watermark": "SAMPLE"}
+
+
+def test_placeholders_output(tmp_path):
+    """placeholders -o: the same file written, DECK_META=<its absolute path> printed (make's argument,
+    one $(...) in a caller); for a livery without defaults nothing printed and nothing written."""
+    r = run("placeholders", ROOT / "liveries" / "nasa-ccp", "-o", "sub/p.yml", cwd=tmp_path)
+    f = tmp_path / "sub" / "p.yml"
+    assert r.returncode == 0 and r.stdout == f"DECK_META={f.resolve()}\n", r.stdout + r.stderr
+    assert f.read_text() == run("placeholders", ROOT / "liveries" / "nasa-ccp").stdout
+    r = run("placeholders", ROOT / "liveries" / "ncar", "-o", tmp_path / "n.yml")
+    assert r.returncode == 0 and r.stdout == "" and not (tmp_path / "n.yml").exists(), r.stdout

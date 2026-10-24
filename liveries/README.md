@@ -27,7 +27,7 @@ livery; `-v` prints every check.
 | `livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]` | the Overleaf project: the theme, the livery, the starter deck and the LaTeX cookbook |
 | `livery zip --charts <dir> -o <zip>` | the charts bundle: the plot style and helper for matplotlib outside the decks |
 | `livery schema --doc [--check]` | regenerates [REFERENCE.md](REFERENCE.md) from the schema |
-| `livery placeholders <dir>` | a metadata file (to standard output; nothing for a livery without defaults) that puts sample text over the livery's default marking strips and cover notice: SAMPLE markings and a Lorem ipsum notice of the real one's shape. The images we keep (the gallery, `check --qa`'s contact sheets, CI's) are shot under it, as a deck's `DECK_META=<file>`, so none reads as a real restricted deck |
+| `livery placeholders <dir> [-o FILE]` | a metadata file (to standard output, or written to `-o`'s file, printing `DECK_META=<file>` for make's command line; nothing for a livery without defaults) that puts sample text over the livery's default marking strips and cover notice: SAMPLE markings and a Lorem ipsum notice of the real one's shape. The images we keep (the gallery, `check --qa`'s contact sheets, CI's) are shot under it, as a deck's `DECK_META=<file>`, so none reads as a real restricted deck |
 
 `make livery LIVERY=<name>` at the top of the repository runs `livery all liveries/<name>`, and
 `make livery LIVERY_DIR=<dir>` a livery anywhere. A deck directory's `make overleaf` and

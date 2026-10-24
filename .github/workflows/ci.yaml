@@ -564,8 +564,7 @@ jobs:
       # so a livery's default markings wear `livery placeholders`' sample text (DECK_META)
       - name: Measure the compositions
         run: |
-          python3 _extensions/engine/livery.py placeholders "liveries/$LIVERY" > /tmp/placeholders.yml
-          meta=$([ -s /tmp/placeholders.yml ] && echo DECK_META=/tmp/placeholders.yml || true)
+          meta=$(python3 _extensions/engine/livery.py placeholders "liveries/$LIVERY" -o /tmp/placeholders.yml)
           timeout 900 make -C decks/fixtures measure LIVERY="$LIVERY" MEASURE_FAIL= $meta
 
       - name: Upload the deck
