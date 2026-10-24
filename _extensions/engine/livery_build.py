@@ -49,6 +49,10 @@ BLENDS = [
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
+# livery_mod.DARK_SWAP's keys a dark frame does not swap as colors: foreground is beamer's normal
+# text there (BrandText stays the light text a card and a filled box read), and primary is a
+# card head's and a block title's field, which keep it as HTML's boxes do
+BEAMER_DARK_KEEPS = ("foreground", "primary")
 # livery role -> the LaTeX color the themes read (the 14 roles; livery.json latex.roles carries them
 # and the blends' names to the beamer filter); on-dark is derived unless a livery names it
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
@@ -949,6 +953,12 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% the roles and blends by name (a card's or strip's role=): \\engine@role@<name> is its color")
     for role, tex in livery["latex"]["roles"].items():   # hyphenated names: through \csname
         L.append(f"\\expandafter\\def\\csname engine@role@{role}\\endcsname{{{tex}}}")
+    swap = {ROLE_TEX.get(k) or BEAMER_BLENDS[k]: ROLE_TEX.get(v) or tex_name("brand-" + v, {})
+            for k, v in livery_mod.DARK_SWAP.items() if k not in BEAMER_DARK_KEEPS}
+    L.append("% the dark frame ([enginedark]): \\engine@darkswap its swapped colors, \\engine@darkswapped their names")
+    L.append("% (the outer theme's EngineLight<name> snapshots, put back on reset and in a box with a fill of its own)")
+    L.append(f"\\def\\engine@darkswapped{{{','.join(swap)}}}")
+    L.append("\\def\\engine@darkswap{" + "".join(f"\\colorlet{{{a}}}{{{b}}}" for a, b in swap.items()) + "}")
     stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
     L.append("% marks per field role: \\engine@mark@<role>@<name> (a name's print lockup when there is one);")
     L.append("% \\enginelogo{light|dark} draws background's and primary's logo")
@@ -1514,30 +1524,32 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
     return "\n".join([x for x in head if x] + [f"{k}: {v}" for k, v in rc]) + "\n"
 
 
-# the roles a light livery's dark slide ({.brand-dark}, .engine-dark) swaps, as pptx's
-# common.palette(): its text, muted text, accents and table blends; restored inside a box with a
-# fill of its own (DARK_BOXES), which keeps its colors
-DARK_SWAP = {"foreground": "on-dark", "muted": "dark-muted", "primary-contrast": "secondary", "primary": "secondary",
-             "table-rule": "dark-rule", "table-band": "dark-band"}
+# the boxes with a fill of their own on a light livery's dark slide (.engine-dark), which keep the
+# livery's colors (livery_mod.DARK_SWAP undone), and a caution slide's body field
 DARK_BOXES = (".engine-card", ".engine-lead", ".engine-strip", ".callout")
+CAUTION_BODY = ".engine-caution > .engine-body"
 
 
 def emit_css_dark_slide(livery: dict) -> list[str]:
     """A light livery's dark content slide: on the slide the roles of DARK_SWAP take their dark
     values (and reveal's text colors, which :root computed once, the title on-dark whatever
-    frametitle.color says, and the hairline the dark-rule blend); in a box of DARK_BOXES (and a caution slide's body field) the livery's own; inline
-    Graphviz turned to the dark as a dark livery's (lightness flipped, hues kept). Live mermaid
-    reads :root (deferred)."""
+    frametitle.color says, and the hairline the dark-rule blend), inline code on the dark-code
+    field; in a box of DARK_BOXES and a caution slide's body field the livery's own, its code's ink
+    too (reveal's has-dark-background rule would paint it the warning); inline Graphviz turned to
+    the dark as a dark livery's (lightness flipped, hues kept). Live mermaid reads :root (deferred)."""
     c = {**livery["roles"], **livery["blends"]}
     def swap(to):
-        p = [f"--engine-{k}: {c[v if to else k]};" for k, v in DARK_SWAP.items()]
+        p = [f"--engine-{k}: {c[v if to else k]};" for k, v in livery_mod.DARK_SWAP.items()]
         fg = c["on-dark" if to else "foreground"]
         return "\n  ".join(p + [f"--r-main-color: {fg};", f"--r-heading-color: {fg};", f"color: {fg};"])
     sel = ".reveal .slides section.slide.engine-dark"
-    boxes = ",\n".join([f"{sel} :is({', '.join(DARK_BOXES)})", f"{sel}.engine-caution > .engine-body"])
+    inside = [f"{sel} :is({', '.join(DARK_BOXES)})", f"{sel}{CAUTION_BODY}"]
+    boxed = ", ".join(DARK_BOXES + (CAUTION_BODY,))
     return ["/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */",
             f"{sel} {{\n  {swap(True)}\n  --engine-title-color: {c['on-dark']};\n  --engine-title-rule-color: {c['dark-rule']};\n}}",
-            f"{boxes} {{\n  {swap(False)}\n}}",
+            ",\n".join(inside) + f" {{\n  {swap(False)}\n}}",
+            f"{sel} :not(pre) > code:not(:is({boxed}) *) {{ background: var(--engine-dark-code); color: var(--engine-warning); }}",
+            ", ".join(f"{s} code" for s in inside) + " { color: var(--engine-code-text, var(--engine-dark)); }",
             f"{sel} svg:has(> g.graph) > g.graph > polygon:first-of-type {{ fill: transparent; stroke: transparent; }}",
             f"{sel} svg:has(> g.graph) {{ filter: invert(1) hue-rotate(180deg); }}"]
 

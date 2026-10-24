@@ -1244,5 +1244,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --r-heading-color: #1C1C1C;
   color: #1C1C1C;
 }
+.reveal .slides section.slide.engine-dark :not(pre) > code:not(:is(.engine-card, .engine-lead, .engine-strip, .callout, .engine-caution > .engine-body) *) { background: var(--engine-dark-code); color: var(--engine-warning); }
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout) code, .reveal .slides section.slide.engine-dark.engine-caution > .engine-body code { color: var(--engine-code-text, var(--engine-dark)); }
 .reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
 .reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }

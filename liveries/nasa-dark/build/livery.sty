@@ -70,6 +70,10 @@
 \expandafter\def\csname engine@role@dark-band\endcsname{BrandDarkBand}
 \expandafter\def\csname engine@role@dark-code\endcsname{BrandDarkCode}
 \expandafter\def\csname engine@role@dark-muted\endcsname{BrandDarkMuted}
+% the dark frame ([enginedark]): \engine@darkswap its swapped colors, \engine@darkswapped their names
+% (the outer theme's EngineLight<name> snapshots, put back on reset and in a box with a fill of its own)
+\def\engine@darkswapped{BrandMuted,BrandPrimaryContrast,enginetablerule,enginetableband}
+\def\engine@darkswap{\colorlet{BrandMuted}{BrandDarkMuted}\colorlet{BrandPrimaryContrast}{BrandSecondary}\colorlet{enginetablerule}{BrandDarkRule}\colorlet{enginetableband}{BrandDarkBand}}
 % marks per field role: \engine@mark@<role>@<name> (a name's print lockup when there is one);
 % \enginelogo{light|dark} draws background's and primary's logo
 \expandafter\def\csname engine@mark@background@logo\endcsname{\engineliverydir ../nasa/logos/meatball}

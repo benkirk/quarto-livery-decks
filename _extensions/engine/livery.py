@@ -41,6 +41,11 @@ SPC_BEFORE = (0.5, 0.3)
 # the template's body indent (a:lvl1pPr marL, the bullet's), points on its 540 pt canvas: the
 # template builder writes it, and measure.py takes it off a text box's width
 BODY_INDENT_PT = 18
+# a light livery's dark content slide ({.brand-dark}): the roles and blends it swaps, light -> dark
+# (its text, muted text, accents and table blends); a box with a fill of its own keeps the light
+# ones. livery_build writes livery.css's and livery.sty's swaps from it, the pptx steps their inks
+DARK_SWAP = {"foreground": "on-dark", "muted": "dark-muted", "primary-contrast": "secondary", "primary": "secondary",
+             "table-rule": "dark-rule", "table-band": "dark-band"}
 
 
 def livery_dir(path: str | os.PathLike | None = None) -> Path:

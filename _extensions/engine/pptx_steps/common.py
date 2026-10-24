@@ -115,12 +115,10 @@ def take_marker(slide, key):
 
 
 # a light livery's dark content slide ({.brand-dark}): the colors a step draws with there, the
-# light ones swapped as livery.css swaps the roles (livery_build.DARK_SWAP; background to the field)
-LIGHT_INK = {k: livery_mod.hex(LIVERY, k) for k in ("foreground", "muted", "primary-contrast", "primary", "table-rule",
-                                                     "table-band", "background")}
-DARK_INK = {**LIGHT_INK, **({k: livery_mod.hex(LIVERY, v) for k, v in (
-    ("foreground", "on-dark"), ("muted", "dark-muted"), ("primary-contrast", "secondary"), ("primary", "secondary"),
-    ("table-rule", "dark-rule"), ("table-band", "dark-band"), ("background", "dark"))} if LIVERY["mode"] != "dark" else {})}
+# light ones swapped as livery.css swaps the roles (livery_mod.DARK_SWAP; background to the field)
+LIGHT_INK = {k: livery_mod.hex(LIVERY, k) for k in (*livery_mod.DARK_SWAP, "background")}
+DARK_INK = {**LIGHT_INK, **({k: livery_mod.hex(LIVERY, v) for k, v in {**livery_mod.DARK_SWAP, "background": "dark"}.items()}
+                            if LIVERY["mode"] != "dark" else {})}
 
 
 def is_dark(slide) -> bool:

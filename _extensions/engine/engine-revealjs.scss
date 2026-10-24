@@ -1091,18 +1091,6 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 }
 
 // ---------------------------------------------------------------------------
-// .engine-dark ({.brand-dark}, engine-revealjs.lua): a content slide on the dark role. livery.css
-// swaps the roles its text reads (foreground to on-dark, muted to dark-muted, primary and
-// primary-contrast to secondary, the table blends to the dark ones, the hairline to dark-rule) and
-// restores them in a box with a fill of its own (a card, a lead, a strip, a callout, a caution
-// body); reveal's has-dark-background colors links and the slide number. Here what reads no role.
-// ---------------------------------------------------------------------------
-.reveal .slides section.slide.engine-dark :not(pre) > code:not(:is(.engine-card, .engine-lead, .engine-strip, .callout) *) {
-  background: var(--engine-dark-code);
-  color: var(--engine-warning);
-}
-
-// ---------------------------------------------------------------------------
 // .full: one figure fills the slide, an optional caption line under it
 // ---------------------------------------------------------------------------
 // Absolutely placed, so reveal's inline display and the print padding cannot

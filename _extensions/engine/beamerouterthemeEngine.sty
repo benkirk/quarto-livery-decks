@@ -479,9 +479,9 @@ frametitle,framesubtitle,structure,item,subitem,subsubitem,local structure,%
 enumerate item,alerted text,block title,block body,block title example,%
 block body example,block title alerted,block body alerted,%
 background canvas,frametitle rule,page number in head/foot,footline,caption,footnote}
-% the colors a dark frame swaps outside beamer's (the inner theme draws with them), snapshotted at
-% \begin{document} as EngineLight<name> and put back on reset; a card reads the snapshots
-\def\engine@darkswapped{BrandMuted,BrandPrimaryContrast,enginetableband,enginetablerule}
+% the colors a dark frame swaps outside beamer's (the inner theme draws with them; livery.sty's
+% \engine@darkswapped, \engine@darkswap), snapshotted at \begin{document} as EngineLight<name> and
+% put back on reset; a card reads the snapshots
 \def\engine@colorslots{thcfg,thcbg,thcinherits,thcuse}
 \def\engine@copycolors#1#2{% #1 -> #2 prefixes, for every touched color & slot
   \@for\engine@c:=\engine@touchedcolors\do{%
@@ -554,8 +554,7 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
   \setbeamercolor{footline}{fg=BrandOnDark}%
   \setbeamercolor{caption}{fg=BrandDarkMuted}%
   \setbeamercolor{footnote}{fg=BrandDarkMuted}%
-  \colorlet{BrandMuted}{BrandDarkMuted}\colorlet{BrandPrimaryContrast}{BrandSecondary}%
-  \colorlet{enginetableband}{BrandDarkBand}\colorlet{enginetablerule}{BrandDarkRule}%
+  \engine@darkswap
   \engine@ftroom{dark}}
 
 % \engine@fieldcolors{<color>}: every text color for a field in <color>
