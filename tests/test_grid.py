@@ -55,7 +55,7 @@ PICTURED = ('## Pictured cards\n\n:::: {.columns}\n::: {.column .card}\n### One\
             '## Pictured column\n\n:::: {.columns}\n::: {.column}\nAbove.\n\n![](p.jpg)\n\nBelow.\n:::\n'
             '::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
             '## Tabled columns\n\n:::: {.columns}\n::: {.column}\nLeft.\n:::\n::: {.column}\nAbove.\n\n'
-            '| Year | Hours | Users |\n|---|---|---|\n| 2024 | **12** | 300 |\n| 2025 | 18 | 410 |\n\nTable: Core-hours, millions.\n:::\n'
+            '| Year | Hours | Users |\n|---|--:|---|\n| 2024 | **12** | 300 |\n| 2025 | 18 | 410 |\n\nTable: Core-hours, millions.\n:::\n'
             '::: {.column}\nRight.\n:::\n::::\n')   # slides 23 to 25
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
@@ -336,6 +336,8 @@ def test_tabled_column(deck):
     head = t.table.cell(0, 0).text_frame.paragraphs[0].runs[0]._r.find("{*}rPr")
     assert t.table.cell(0, 0).text == "Year" and head.get("b") == "1" and head.get("cap") == "all", "the header styled"
     assert t.table.cell(1, 1).text_frame.paragraphs[0].runs[0].font.bold, "a cell's bold run"
+    algn = lambda r, c: t.table.cell(r, c).text_frame.paragraphs[0]._p.find("{*}pPr").get("algn")
+    assert (algn(1, 1), algn(1, 0)) == ("r", None), "a right-aligned column, a default one"
     cap = by["Column 2 table caption"]
     assert cap.text_frame.text == "Core-hours, millions." and cap.top == t.top + t.height, "the caption under the table"
     assert "⟦" not in slide._element.xml, "a marker left"

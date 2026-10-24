@@ -16,6 +16,27 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
+## [Unreleased]
+
+Pictures and tables in a grid slide's columns and cards in pptx, and the dark content slide in
+every format (`design/cells-dark-handoff.md`).
+
+### Decks
+
+- A picture in a card, or in a column of three or more, is drawn in the pptx at the column's
+  width (a card's less its pads), its aspect kept, the caption under it in the caption look,
+  as HTML and the PDF draw it; before, pandoc drew it as a shape of its own and split the slide.
+  An executed plot or a baked diagram works too. A simple table in such a column is a native
+  pptx table at the column's width. A table in a card is not drawn as a card in any format: the
+  row is drawn as plain columns, with a warning (the PDF's rule, now everyone's). The sample
+  deck shows both ("Pictures in cards", "A table between two columns"); docs/authoring.md
+  "Columns" and "Cards and lead boxes".
+
+### Plots
+
+- A plot cell in a card or a grid column takes the column's width in the pptx, as in HTML and
+  the PDF (the plots deck's "Plots in cards").
+
 ## [26.10.11] - 2026-10-23
 
 The first consumer deck's friction list (#133, `design/consumer-friction-handoff.md`): the pptx

@@ -136,7 +136,7 @@ def test_plot_bytes_carried(tmp_path):
     assert "missing.png cannot be read" in err, err
 
 
-TABLE = "| a | b | c |\n|---|---|---|\n| 1 | **2** | |\n| 4 | 5 | 6 |\n\nTable: The caption.\n"
+TABLE = "| a | b | c |\n|---|--:|---|\n| 1 | **2** | |\n| 4 | 5 | 6 |\n\nTable: The caption.\n"
 LISTED = "+------+------+\n| a    | b    |\n+======+======+\n| - x  | 2    |\n| - y  |      |\n+------+------+\n"
 
 
@@ -151,15 +151,15 @@ def test_table_marked(tmp_path):
           + "## Two\n\n:::: {.columns}\n::: {.column .card}\n### A\nx\n:::\n::: {.column}\n" + TABLE + ":::\n::::\n")
     err, slides = marked(tmp_path, md)
     one = slides[0]
-    i = one.index("⟦engine:table cols=3 header⟧")
-    assert one[i:i + 16] == ["⟦engine:table cols=3 header⟧", "⟦engine:row⟧", "⟦engine:cell⟧a", "⟦engine:cell⟧b", "⟦engine:cell⟧c",
+    i = one.index("⟦engine:table cols=3 header align=d,r,d⟧")
+    assert one[i:i + 16] == ["⟦engine:table cols=3 header align=d,r,d⟧", "⟦engine:row⟧", "⟦engine:cell⟧a", "⟦engine:cell⟧b", "⟦engine:cell⟧c",
                              "⟦engine:row⟧", "⟦engine:cell⟧1", "⟦engine:cell⟧2", "⟦engine:cell⟧", "⟦engine:row⟧", "⟦engine:cell⟧4",
                              "⟦engine:cell⟧5", "⟦engine:cell⟧6", "The caption.", "⟦engine:end⟧", "⟦engine:end⟧"], one[i:]
     assert 'slide "Tabled"' not in err, err
     assert 'slide "Listed": a table with spans or blocks in its cells is not drawn in a grid column' in err, err
     assert not any("⟦engine:table" in p for p in slides[1]), "a listed table marked"
     assert 'slide "Carded": a table in a card: the row is drawn as plain columns' in err, err
-    carded = next(s for s in slides if "⟦engine:table cols=3 header⟧" in s and s is not one)
+    carded = next(s for s in slides if "⟦engine:table cols=3 header align=d,r,d⟧" in s and s is not one)
     assert not any(p.startswith("⟦engine:column card") for p in carded), "the carded row drawn as cards"
     assert 'slide "Two": a table in a card: the row is drawn as plain columns' in err, err
     assert not any("⟦engine:" in p for p in slides[-1]), "a two-column tabled row flattened"

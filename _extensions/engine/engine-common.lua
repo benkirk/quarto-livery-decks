@@ -587,7 +587,8 @@ local function tabled_row(div)
 end
 
 -- A table pptx draws natively in a grid column: { cols, header (a header row), rows = {{inlines, ...}, ...}
--- (the header row first when there is one), caption = inlines or nil }; nil when it is not simple: a
+-- (the header row first when there is one), aligns = {"l"|"c"|"r"|"d", ...} (a column's alignment, d
+-- its default), caption = inlines or nil }; nil when it is not simple: a
 -- cell spanning rows or columns, a cell of more than one block or of a block that is not a
 -- paragraph, more than one header row, an intermediate head or a foot.
 local function simple_table(tbl)
@@ -620,7 +621,11 @@ local function simple_table(tbl)
     end
   end
   local caption = pandoc.utils.blocks_to_inlines(tbl.caption.long or {})
-  return { cols = cols, header = header, rows = rows, caption = #caption > 0 and caption or nil }
+  local aligns = {}
+  for k, spec in ipairs(tbl.colspecs) do
+    aligns[k] = ({ AlignLeft = "l", AlignCenter = "c", AlignRight = "r" })[spec[1]] or "d"
+  end
+  return { cols = cols, header = header, rows = rows, aligns = aligns, caption = #caption > 0 and caption or nil }
 end
 
 -- A grid slide, the one list (the prose elsewhere says "what is_grid() counts"): the columns div has

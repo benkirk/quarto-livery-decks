@@ -633,9 +633,17 @@ it does, by area, beyond the format notes above:
   `.gallery`, a quote) is flattened on purpose into one
   placeholder with marker paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`,
   `⟦engine:end⟧`), which `grid.py` redraws as text boxes carrying the master's body list style
-  and deletes. First-cut limit: a
-  picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits the
-  slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
+  and deletes. A picture in a grid column or card (`cell_figure()`: a figure, an image line, a
+  plot cell) is `⟦engine:picture src=..[ data=..][ size=..]⟧`, its caption, `⟦engine:end⟧`, and a
+  simple table in a grid column (`simple_table()`) `⟦engine:table cols=n[ header][ align=..]⟧`, per
+  row `⟦engine:row⟧` and its cells led by `⟦engine:cell⟧`; `pptx_steps/figures.py` draws them
+  (`draw_picture()`, `draw_table()`: a native table `style_tables` styles). An executed plot or a
+  baked diagram (a src under `figure-*/` or `*_files/`) is gone from disk when the steps run, so
+  `grid-pptx.lua` carries its bytes in the marker as base64 (`data=`, at most 6 MB: lxml's
+  text-node limit); `diagram-dark.lua` runs before it in pptx for that reason. A table in a card
+  is refused in every format alike (`tabled_row()`: the row is drawn as plain columns, warned). Any
+  other picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits
+  the slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
   pandoc, silently, in either tier.
 - **Cards and boxes** (`::: {.lead}`, `::: {.column .card role= .pick .solid}` with `###`,
   `[..]{.sub}`, `[..]{.label}`, `[..]{.big}`, `::: {.strip role=}`, status items `- [x]`/`[!]`/`[-]`
@@ -648,8 +656,11 @@ it does, by area, beyond the format notes above:
   "Lead fill", "Card n strip k"...), one group per card, lead or strip ("Card n", "Lead", "Strip": a
   click selects it whole; tests look inside groups), under text boxes whose `lstStyle` is the master's body style
   (bullets and sizes as the placeholder's), each head its own height, a row's cards one height;
-  `status_glyphs.py` makes a glyph the bullet (`a:buChar`). HTML: raw tags (a Div opening with a
-  heading would become a `<section>`), the role a custom property (`role` is ARIA's attribute).
+  `status_glyphs.py` makes a glyph the bullet (`a:buChar`); a picture in a card is
+  `figures.py`'s inside the card's pads and group ("Card n picture", "Card n picture caption"),
+  and pictures give way (to `PIC_FLOOR` em) when the card's text needs the room. HTML: raw tags (a
+  Div opening with a heading would become a `<section>`), the role a custom property (`role` is
+  ARIA's attribute).
   PDF: `\engine@barbox` (caution, lead, strip), tcolorbox cards set in one run (bodies boxed
   first, the feature panel's pattern), a status list beamer's itemize with `\item[✓]`. PDF frames
   are top-aligned (`t`, without beamer's 0.2 cm; a paragraph-first body cancels its `\parskip`).

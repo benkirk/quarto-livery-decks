@@ -143,6 +143,38 @@ plt.show()
 
 ::::
 
+## Plots in cards
+
+:::: {.columns}
+
+::: {.column .card}
+### Run A
+
+```{python}
+# a plot in a card takes the card's width less its pads; a shorter figure leaves room for the head
+# (its own generator: the deck's rng stays the later slides')
+cards = np.random.default_rng(24)
+fig, ax = plt.subplots(figsize=livery_mpl.figsize("half", height=0.7))
+ax.plot(np.arange(24), np.cumsum(cards.normal(0.2, 1, 24)), label="Run A")
+ax.set_xlabel("Hour")
+ax.set_ylabel("Drift")
+plt.show()
+```
+:::
+
+::: {.column .card}
+### Run B
+
+```{python}
+fig, ax = plt.subplots(figsize=livery_mpl.figsize("half", height=0.7))
+ax.bar(["Mon", "Tue", "Wed", "Thu", "Fri"], cards.integers(20, 60, 5), color=livery_mpl.colors[1])
+ax.set_ylabel("Jobs")
+plt.show()
+```
+:::
+
+::::
+
 ## Math in the labels
 
 ```{python}

@@ -139,9 +139,13 @@ without a width takes an equal share of what is left.
 - **Two columns** are pandoc's own two-column layout in pptx, set to their widths after
   rendering; a picture or table in a column moves and scales with it.
 - **Three or more columns** are drawn in pptx as text boxes at the same widths (pandoc's pptx
-  keeps only two). First-cut limit: a picture or table in one of them is not drawn in its
-  column yet; the render warns, naming the slide, and pandoc splits the slide (`make qa`'s
-  slide count catches it). Put pictures and tables on a two-column slide.
+  keeps only two). A picture in one of them (`![Caption](path)`, an image line, or a plot cell)
+  takes the column's width in every format, its aspect kept (a `width=` keeps its own), the
+  caption under it in the caption look; pptx draws it as a picture in the column, from the file
+  (an executed plot's bytes are carried through the render). A simple table (no merged cells,
+  one paragraph a cell) is a native pptx table at the column's width, styled as every table;
+  any other picture or table there is not drawn in its column: the render warns, naming the
+  slide, and pandoc splits the slide (`make qa`'s slide count catches it).
 - **`{.wide}`** on the heading widens the body to the slide less a narrower margin
   (`geometry.wide-margin`), in every format: the deliberate way to room for four columns or a
   wide table.
@@ -198,8 +202,10 @@ Each trades local capacity against a share of the consortium system.
   literal ✓ ⚠ ✗ first in an item works anywhere. `- [ ]` stays an unchecked task box.
 - pptx draws cards, leads and strips as native shapes and text boxes, editable in PowerPoint:
   each is one group ("Card 1", "Lead"), so a click selects it whole and a second click its text.
-  The first-cut limit of three columns holds for cards: no picture or table in a card (the PDF
-  draws a row with a table as plain columns). A lead beside a table goes in the title or the
+  A picture in a card takes the card's width less its pads, its caption under it, in every
+  format (inside the card's group in pptx; the sample deck's "Pictures in cards"). A table in a
+  card is not a card in any format: a row holding a card and a table is drawn as plain columns,
+  with a warning. A lead beside a table goes in the title or the
   notes: a lead makes the slide a card slide, and the table would split it. A card slide's
   `.caution` and `.vcenter` do not apply in pptx.
 - The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).

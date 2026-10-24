@@ -32,7 +32,7 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   when the pptx steps run, so its bytes ride in the marker as ` data=<base64>`, at most
   PICTURE_MAX; past that, unreadable or inside a link, the picture stays in the flow, where pandoc
   splits the slide, warned of. A simple table there (engine-common.lua's simple_table(): no spans, a
-  paragraph a cell) is `⟦engine:table cols=n[ header]⟧`, per row `⟦engine:row⟧` and its cells each a
+  paragraph a cell) is `⟦engine:table cols=n[ header][ align=l,r,..]⟧`, per row `⟦engine:row⟧` and its cells each a
   paragraph led by `⟦engine:cell⟧`, the caption a paragraph, `⟦engine:end⟧`, drawn natively by
   figures.py; any other stays in the flow, warned of. A row with a card and a table (tabled_row()) is
   flattened as plain columns, warned of, as HTML and the PDF draw it. A two-column slide holding
@@ -162,7 +162,9 @@ end
 -- a simple table's marks (C.simple_table()'s t): `⟦engine:table cols=n[ header]⟧`, per row `⟦engine:row⟧`
 -- and a paragraph per cell led by `⟦engine:cell⟧`, the caption, `⟦engine:end⟧`
 local function table_marks(t)
-  local out = pandoc.Blocks({ marker("table cols=" .. t.cols .. (t.header and " header" or "")) })
+  local aligned = table.concat(t.aligns, ","):find("[lcr]")   -- align= when a column is not its default
+  local out = pandoc.Blocks({ marker("table cols=" .. t.cols .. (t.header and " header" or "")
+    .. (aligned and (" align=" .. table.concat(t.aligns, ",")) or "")) })
   for _, row in ipairs(t.rows) do
     out:insert(marker("row"))
     for _, cell in ipairs(row) do out:insert(prefixed("cell", cell)) end

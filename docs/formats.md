@@ -77,7 +77,8 @@ Per deck, `make pptx` runs:
      since pandoc's pptx keeps the first two, cards, a lead box, a strip, a rail, a gallery, a
      quote, an agenda) into one text flow with marker paragraphs for `grid`;
    - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [authoring.md "Linked images"](authoring.md#linked-images));
-   - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too).
+   - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too);
+     in pptx before `grid-pptx.lua`, which carries a card's diagram in its marker.
 2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
    (`_extensions/engine/pptx_steps/`). It opens the deck once, runs them in this order and
    saves once:
@@ -117,8 +118,9 @@ Per deck, `make pptx` runs:
      box, a strip, a rail, a quote, an agenda) from `grid-pptx.lua`'s markers: native shapes
      (fills, bars, rounded cards, outlines, badges) and text boxes in the body placeholder's look,
      at the same widths, gap and pads as HTML and PDF (the livery's `boxes`), each element one
-     group; `gallery.py`, which it calls, places a gallery's pictures from the deck's directory.
-     A picture or table in such a column is not drawn in it yet (a warning at render time).
+     group; `gallery.py`, which it calls, places a gallery's pictures from the deck's directory,
+     and `figures.py` a picture in a column or card (from the deck's directory, or the bytes an
+     executed plot's marker carries) and a simple table in a column, a native table.
    - `status_glyphs`: makes a status item's ✓ ⚠ ✗ its bullet, in the livery's status color.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in the primary color, thin rules between rows, every second row banded, the

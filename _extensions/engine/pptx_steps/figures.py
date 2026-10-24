@@ -14,7 +14,7 @@ missing file warns and draws nothing (its caption stays text).
 
 A simple table in a column (engine-common.lua's simple_table()) is `⟦engine:table cols=n[ header]⟧`,
 per row `⟦engine:row⟧` and a paragraph per cell led by `⟦engine:cell⟧`, the caption a paragraph,
-`⟦engine:end⟧`: drawn as a native table at the column's width, its columns equal (style_tables, which
+`⟦engine:end⟧` (` align=l,r,c,d` a column's alignment, d its default): drawn as a native table at the column's width, its columns equal (style_tables, which
 runs after grid, re-splits them by their longest cells as it does pandoc's, and styles the table
 as the HTML deck's), each cell's paragraph moved in with its runs, the master's table size
 inherited as pandoc's are, the first row the header when the marker says so; its caption under it
@@ -120,8 +120,12 @@ def _caption_box(slide, x, y, w, room, caption, name):
     return cb, int(text_height(cb, slide, gap=0) * SLACK)
 
 
-def _cell(p):
-    """A cell's paragraph as pandoc writes one in a table: its ⟦engine:cell⟧ prefix off, no indent, no bullet."""
+ALIGN = {"l": "l", "c": "ctr", "r": "r"}   # a marker's align= letter: a:pPr's algn (d: none, the default)
+
+
+def _cell(p, align=None):
+    """A cell's paragraph as pandoc writes one in a table: its ⟦engine:cell⟧ prefix off, no indent, no
+    bullet, its column's alignment (an a:pPr algn, or none)."""
     t = p.find(".//" + qn("a:t"))
     if t is not None and (t.text or "").startswith(CELL):
         t.text = t.text[len(CELL):]
@@ -131,6 +135,8 @@ def _cell(p):
     for old in p.findall(qn("a:pPr")):
         p.remove(old)
     ppr = etree.Element(qn("a:pPr"), lvl="0", indent="0", marL="0")
+    if align:
+        ppr.set("algn", align)
     etree.SubElement(ppr, qn("a:buNone"))
     p.insert(0, ppr)
     return p
@@ -145,12 +151,14 @@ def draw_table(slide, x, y, w, room, attrs, paras, name):
         if text == ROW and not caption:
             rows.append([])
         elif text.startswith(CELL) and rows and not caption:
-            rows[-1].append(_cell(p))
+            rows[-1].append(p)
         else:
             caption.append(p)
     cols = int(attrs.get("cols", max((len(r) for r in rows), default=0)))
     if not rows or not cols:
         return None
+    aligns = [ALIGN.get(a) for a in attrs.get("align", "").split(",")] if attrs.get("align") else []
+    align = lambda c: aligns[c] if c < len(aligns) else None
     frame = slide.shapes.add_table(len(rows), cols, Emu(x), Emu(y), Emu(w), Emu(max(room, 1)))
     frame.name = name
     tbl = frame.table
@@ -164,7 +172,7 @@ def draw_table(slide, x, y, w, room, attrs, paras, name):
             body = tbl.cell(r, c).text_frame._txBody
             for old in body.findall(qn("a:p")):
                 body.remove(old)
-            body.append(row[c] if c < len(row) else _cell(etree.Element(qn("a:p"))))
+            body.append(_cell(row[c] if c < len(row) else etree.Element(qn("a:p")), align(c)))
     th = table_height(frame, slide)
     cb, cap_h = _caption_box(slide, x, y + th, w, max(room - th, 0), caption, name)
     frame.height = Emu(th)
