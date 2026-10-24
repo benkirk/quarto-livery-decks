@@ -1,7 +1,7 @@
 # Sprint handoff: one look, one key (the themes' hand numbers)
 
-**State (2026-10-23):** open as #138 (`themes/one-look-one-key`: the handoff, the seven items, the
-records, the outline fix). Items 1–3 at Ben's picks from the sheets (the band, hairline C, the
+**State (2026-10-23):** landed as #138, squash `c0ac0be`, released in 26.10.10 (#140): the handoff, the seven items, the
+records, the outline fix. Items 1–3 at Ben's picks from the sheets (the band, hairline C, the
 PDF's gaps); items 4–7 committed with the proposal as the default by agreement overnight and
 confirmed by him from the sheets on 2026-10-23 ("Picks" below). An eleventh commit fixes the
 HTML pick outline he spotted on item 5's sheet (an overlay above the head and the strip). Departures from the plan: the hairline's weight is

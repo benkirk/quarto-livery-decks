@@ -1,7 +1,7 @@
 # Sprint handoff: the first consumer's friction list (#133)
 
-**State (2026-10-23):** executed on `decks/consumer-friction`, every in-sprint item landed, a commit
-each (items 1 and 2 as one: both live in `grid.run()`). Departures from the plan below: the
+**State (2026-10-23):** landed as #145, squash `7685f59`, released in 26.10.11 (#147): every in-sprint
+item a commit (items 1 and 2 as one: both live in `grid.run()`). Departures from the plan below: the
 lead-over-table flow puts the note just under the table (HTML's and PDF's place), raised only at
 the body's foot, through `slide_layout.frame_note` and `table_height` (shared with `note_place`);
 a lead under a picture that needs more room shrinks the picture and lifts the flow; the table rule
