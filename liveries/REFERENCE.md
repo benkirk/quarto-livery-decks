@@ -553,7 +553,8 @@ A card (`::: {.column .card}`): a colored head band over a body.
 
 | key | type | default | |
 |---|---|---|---|
-| `fill` | color or role | `"background"` | Its body's fill, a role, a palette name or a hex. |
+| `fill` | color or role | `"surface"` | Its body's fill, a role, a palette name or a hex (default: surface, the card off the page as a lead is; code in a card then takes the background). |
+| `tint` | fraction | `0` | The card's role's share in its body, mixed over the fill: each card's body a wash of its head's color (0.09 over the background reads; 0 for the fill alone). |
 | `radius` | fraction | `0` | Its corners' radius (of the slide's height); 0 for square corners. |
 | `outline` | fraction | `0.0033` | The outline of a picked card (`.pick`), its width (of the slide's height). |
 | `outline-color` | color or role | `"highlight"` | That outline's color, a role, a palette name or a hex. |
