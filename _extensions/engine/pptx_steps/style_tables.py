@@ -15,7 +15,7 @@ from pathlib import Path
 from lxml import etree
 from pptx.oxml.ns import qn
 
-from .common import CELL_MAR, DARK_INK, LIGHT_INK, LIVERY, is_table, on_dark, palette, rpr
+from .common import CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, rpr
 from .measure import PX, other_size   # EMU per revealjs px (1600 px wide)
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
@@ -87,7 +87,7 @@ def _rebalance(tbl):
         col.set("w", str(round(total * share / norm)))
 
 
-def style_table(tbl, base, ink=LIGHT_INK):
+def style_table(tbl, base, ink):
     """A table styled in ink (common.palette(): the head rule primary's, the row rules and bands the
     table blends; on a dark slide secondary, the dark blends, and every cell's text on-dark)."""
     tbl_pr = tbl.find(qn("a:tblPr"))

@@ -164,7 +164,7 @@ def note_style(slide):
     split_br(tf._txBody)
     spans = marker_spans(tf._txBody.findall(qn("a:p")))   # a lead folded in after the caption: grid.py's
     for i, p in enumerate(tf.paragraphs):
-        if i in spans or style_footnotes.style(p, color=palette(slide)["muted"]):
+        if i in spans or style_footnotes.style(p, palette(slide)["muted"]):
             continue
         p.alignment = PP_ALIGN.CENTER
         for r in p.runs:   # muted: the dark slide's dark-muted (palette())

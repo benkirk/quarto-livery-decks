@@ -31,7 +31,6 @@ from .common import BOXES, LIVERY, em, palette, ppr_place
 MARKERS     = ("†", "‡", "§", "¶")     # the printer's order (engine-common.lua MARKERS)
 FOOT_PT     = livery_mod.type_pt(LIVERY, "footnote")   # the themes' footnote size (livery.json type)
 FOOT_SIZE   = Pt(FOOT_PT)
-FOOT_COLOR  = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 MARK_COLOR  = RGBColor.from_string(livery_mod.hex(LIVERY, "accent"))   # the accent role, as HTML (--engine-accent) and beamer (BrandAccent)
 FOOTNOTE    = BOXES["footnote"]        # hang, gap and step in em of the footnote type (boxes.footnote)
 
@@ -70,11 +69,11 @@ def _split_marker(para, start):
     return para.runs[start]
 
 
-def style(para, following: bool = False, color: str | None = None) -> bool:
+def style(para, color: str, following: bool = False) -> bool:
     """The paragraph's footnote styled, if it holds one (slide_layout.py calls it again on a note
-    line it splits out of a caption: idempotent); `following`, one right after another footnote,
-    takes the step above it instead of the gap; color its text's (six digits: the slide's muted,
-    common.palette()), FOOT_COLOR by default."""
+    line it splits out of a caption: idempotent); color its text's (six digits: the slide's muted,
+    common.palette()); `following`, one right after another footnote, takes the step above it
+    instead of the gap."""
     start = _footnote_start(para)
     if start is None:
         return False
@@ -94,7 +93,7 @@ def style(para, following: bool = False, color: str | None = None) -> bool:
     mark = _split_marker(para, start)
     for run in para.runs[start:]:  # every run — the code span too
         run.font.size = FOOT_SIZE
-        run.font.color.rgb = MARK_COLOR if run._r is mark._r else (RGBColor.from_string(color) if color else FOOT_COLOR)
+        run.font.color.rgb = MARK_COLOR if run._r is mark._r else RGBColor.from_string(color)
     mark.font.bold = True   # as HTML's .engine-dagger and beamer's footnote mark
     return True
 
@@ -122,7 +121,7 @@ def run(prs, path: Path) -> None:
             previous = False   # a footnote right after another takes the step, the first the gap
             muted = palette(slide)["muted"]   # a dark slide's dark-muted
             for para in shape.text_frame.paragraphs:
-                previous = style(para, following=previous, color=muted)
+                previous = style(para, muted, following=previous)
                 styled += previous
                 marks += noteref(para)
     print(f"style_footnotes: restyled {styled} footnote paragraph(s), {marks} mark(s) in the text → {path.name}")

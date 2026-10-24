@@ -16,8 +16,6 @@ embedded later by embed_fonts.py; a deck's title photo by slide_layout.py.
 Rewrites in place with fixed zip timestamps, so an unchanged rebuild is byte-identical.
 """
 
-import json
-import sys
 import zipfile
 from pathlib import Path
 
@@ -351,7 +349,6 @@ class Builder:
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
         _, body_top, _, h = g["body"]   # the content body's box (geometry.body)
-        body_bottom = body_top + h
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
         gap, half = self.L["boxes"]["columns"]["gap"], g["half"]   # the column gap and the Two Content half (livery.json)
@@ -469,8 +466,8 @@ class Builder:
                                      '<Slides>0</Slides></Properties>')
         exts = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "svg": "image/svg+xml"}
         defaults = ''.join(f'<Default Extension="{e}" ContentType="{t}"/>' for e, t in exts.items() if any(n.endswith("." + e) for n in parts))
-        overrides = (f'<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'
-                     f'<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>'
+        overrides = ('<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'
+                     '<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>'
                      + "".join(f'<Override PartName="/ppt/slideLayouts/slideLayout{i}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>' for i in range(1, len(ALL_LAYOUTS) + 1))
                      + '<Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>'
                      '<Override PartName="/ppt/presProps.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presProps+xml"/>'
