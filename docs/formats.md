@@ -263,9 +263,6 @@ and keep `<deck>_files/` beside it.
 - **Presenting:** `s` speaker view (notes), `m` slide menu, `b`/`c`
   whiteboard / draw on the slide, `f` full screen.
 - **HTML-only extras:**
-  - `## Title {.brand-dark}` puts a content slide on the livery's dark role, its text in
-    the `on-dark` role (under a dark livery, every content slide already is); pptx and PDF
-    draw an ordinary slide.
   - Overflowing content slides shrink to fit (see [authoring.md "About text autofit"](authoring.md#about-text-autofit)).
   - Mermaid and Graphviz draw live in the browser; mermaid uses the livery's
     colors and font where pptx and PDF carry a picture of it.

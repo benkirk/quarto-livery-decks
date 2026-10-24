@@ -32,6 +32,13 @@ every format (`design/cells-dark-handoff.md`).
   deck shows both ("Pictures in cards", "A table between two columns"); docs/authoring.md
   "Columns" and "Cards and lead boxes".
 
+- `{.brand-dark}` is a dark slide in every format: the content slide on the livery's dark role,
+  its text on-dark, its accents secondary, the dark role's mark and sign-off, the hairline,
+  table rules and muted text in dark blends; a card, lead, strip or caution body keeps its own
+  colors. pptx and the PDF drew an ordinary slide before, and HTML wore the field's mark (nsi's
+  black lockup on black; now its white one) and colored a card's text white on white. Under a
+  dark livery the class does nothing. docs/authoring.md "Front matter and slide kinds".
+
 ### Liveries
 
 - Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
@@ -44,6 +51,18 @@ every format (`design/cells-dark-handoff.md`).
 
 - A plot cell in a card or a grid column takes the column's width in the pptx, as in HTML and
   the PDF (the plots deck's "Plots in cards").
+- `with livery_mpl.dark():` draws the dark chrome and colors in every format, since every format
+  draws a `{.brand-dark}` slide dark; its `force=` argument is gone (it was the only way to have
+  it outside HTML).
+
+### LaTeX
+
+- `\begin{frame}[enginedark]{...}`: a content frame on the livery's dark role, as the Quarto
+  `{.brand-dark}` slide (a no-op under a dark livery); the cookbook's "Dark slide, step by step".
+- A card's `\linewidth` takes a picture at the card's width with `\enginenote{...}` as its caption
+  (the cookbook's "Pictures in cards").
+- The marks are `\engine@mark@<role>@<name>` in `livery.sty` (`\engine@logo@light|dark` and
+  `\engine@signoff@light|dark` are gone); `\enginelogo{light|dark}` is unchanged.
 
 ## [26.10.11] - 2026-10-23
 

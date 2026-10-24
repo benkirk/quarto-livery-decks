@@ -191,8 +191,8 @@ plt.show()
 ## On a dark slide {.brand-dark}
 
 ```{python}
-# livery_mpl.dark(): the dark chrome and slots where the slide is dark (HTML's .brand-dark, every
-# slide of a dark livery); pptx and PDF draw this slide light, and there it changes nothing
+# livery_mpl.dark(): the dark chrome and slots for a dark slide ({.brand-dark}, which every format
+# draws on the livery's dark role; every slide of a dark livery)
 with livery_mpl.dark():
     fig, ax = plt.subplots()
     for i in range(4):

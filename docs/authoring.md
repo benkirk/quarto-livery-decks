@@ -100,6 +100,14 @@ element once for every format; a format-specific variant of an element is not su
   is its subtitle, as under any divider. In the PDF it has no bookmark.
   A livery with `section: {progress: true}` reads "SECTION 3 OF 5" over a numbered divider: its
   number of the numbered sections.
+- `## Title {.brand-dark}` puts a content slide on the livery's dark role, in every format: its
+  text in the `on-dark` role, its accents (bullets, links, a table's head rule) in `secondary`,
+  its muted text and table rules in the dark blends, the dark role's mark and sign-off, no
+  content art or waves. A box with a fill of its own (a card, a lead, a strip, a caution body)
+  keeps its colors. Under a dark livery (`nasa-dark`) every slide already is, and the class does
+  nothing. A plot in it takes `with livery_mpl.dark():`. A mermaid or Graphviz picture baked for
+  the pptx and the PDF stays light on it under a light livery, and HTML's live mermaid keeps the
+  slide's light colors: put a diagram on a light slide.
 - `## Thank you! {.closing}` makes a closing slide.
 - `### Heading {.example}` / `{.alert}` give block variants.
 - `[text]{.alert}` emphasizes text.

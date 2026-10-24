@@ -339,6 +339,25 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
+- **The dark slide** (`## Title {.brand-dark}`, a light livery's content slide on the dark role;
+  a no-op on a dark livery): a layout class (`take_layout()`'s `dark`). HTML: `.engine-dark` with
+  `data-background-color` the dark role; `livery.css` (`emit_css_dark_slide()`) swaps the roles
+  the text reads (`DARK_SWAP`: foreground to on-dark, muted to `dark-muted`, primary and
+  primary-contrast to secondary, the table blends to `dark-rule`/`dark-band`, the title and
+  hairline with them) and restores them in a box with a fill of its own (`DARK_BOXES`), the
+  chart colors' dark set, Graphviz flipped. pptx: `engine-layout: dark`; `slide_layout.py`'s
+  `draw_dark()` sets the slide's `p:bg`, hides the master (`showMasterSp="0"`) and redraws the
+  furniture from `livery.json` `furniture` (the tab, rule, title and marks by corner, `{mark,
+  box}`, derived from `frametitle`/`geometry` and read by `livery_template.master()` too),
+  the dark role's marks; `common.is_dark()` (the `p:bg`, or before that step the notes line) and
+  `common.palette()` give the steps their inks, `darken()` grid's outside a box. PDF: the frame
+  key `enginedark` (`\engine@darkcolors`; `BrandMuted`, `BrandPrimaryContrast` and the table
+  colors swapped and put back on reset, a card reading the `EngineLight*` snapshots; a no-op
+  under `\engine@mode` dark). Marks are per role, `\engine@mark@<role>@<name>` and
+  `--engine-mark-<role>-<name>`, `marks` always holding the dark role (`MARK_ROLES`);
+  `\enginelogo{light|dark}` reads background's and primary's. The four blends are
+  `dark-rule`, `dark-band`, `dark-code`, `dark-muted` (on-dark into the dark role).
+  `livery_mpl.dark()` applies in every format. A baked diagram on it stays light (deferred).
 - **Content title**: `livery.yml` `frametitle: {align: left|center, symmetric, color, tab, rule, top,
   height, rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
   slide 20; its mark at the paper's edge, `geometry.logo.inset: 0.015`). The band is the three
@@ -377,7 +396,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Plots**: every format draws the chart colors. `build/livery.mplstyle` (`emit_mplstyle()`: the
   livery mode's chrome and cycle, transparent figures, the base family over DejaVu Sans, sizes
   from the type roles, `pdf.fonttype` 3 for a CFF `.otf` base family, cu/nsi, else 42; SVG text
-  as paths); `livery.css` `--engine-data-*`/`--engine-status-*` (the dark set on `.brand-dark`);
+  as paths); `livery.css` `--engine-data-*`/`--engine-status-*` (the dark set on `.engine-dark`);
   `livery.sty` `EngineData*` and a pgfplots `livery` cycle list (the default once pgfplots is
   loaded); `template.pptx` the mode's slots as a named `<a:custClrLst>` (PowerPoint's Custom
   Colors row, at most eight; `livery check` checks it). `Make.common` exports `MATPLOTLIBRC`
@@ -386,8 +405,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `charts.figsize.full` as `-M fig-width/fig-height` to pptx and HTML (`livery.py figsize`; a
   cell's own wins; not to beamer, whose fig-width is paper inches and sizes its baked diagrams:
   4.25 in pushed the sample's Graphviz off the frame; `livery_mpl` sets PDF plots' size)
-  and `ENGINE_FORMAT` per recipe (`dark()` applies only where the slide is dark: HTML, a dark
-  livery). `common/_quarto.yml`: pptx svg (with `svg_fallback`'s PNG at its 200 dpi; PowerPoint
+  and `ENGINE_FORMAT` per recipe (the PDF plots' size reads it; `dark()` applies in every format). `common/_quarto.yml`: pptx svg (with `svg_fallback`'s PNG at its 200 dpi; PowerPoint
   draws the SVG, Google Slides' import the PNG), revealjs svg; beamer keeps Quarto's pdf at 300.
   Keynote 15.4 opens the deck too, since `notes_clrmap`.
   `engine-plots.lua` (dofile'd by both filters) shows a figure in Quarto's `figure-<format>/` at

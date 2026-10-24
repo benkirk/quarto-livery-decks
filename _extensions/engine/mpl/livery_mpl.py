@@ -24,9 +24,9 @@ directory, else a livery.json beside this file (the charts bundle, mpl_zip.py).
     with livery_mpl.raster():  the figures shown inside as PNG (200 dpi unless given) where the
                                deck draws vector (HTML's SVG, the PDF's PDF): one plot with
                                thousands of marks, the rest of the deck still vector
-    with livery_mpl.dark():    the dark chrome, slots and maps, where the slide is dark: an HTML
-                               .brand-dark slide, every slide of a dark livery; elsewhere (pptx
-                               and PDF draw .brand-dark as an ordinary slide) it changes nothing
+    with livery_mpl.dark():    the dark chrome, slots and maps, for a dark slide: a {.brand-dark}
+                               slide, which every format draws on the dark role, or any slide of
+                               a dark livery
     livery_mpl.use(path)       load another livery (a directory, or a bundle's)
     livery_mpl.__version__     the engine's version (a bundle's: the engine that packed it)
 
@@ -227,15 +227,10 @@ def _rc(m: str) -> dict:
 
 
 @contextmanager
-def dark(force: bool = False):
-    """Draw for a dark slide inside the block: the dark chrome, slots, families and maps. Applies on
-    a dark livery and in the HTML deck (where .brand-dark is dark), or with force=True; pptx and PDF
-    draw .brand-dark as an ordinary slide, so there it changes nothing."""
+def dark():
+    """Draw for a dark slide inside the block: the dark chrome, slots, families and maps, in every
+    format (each draws a {.brand-dark} slide on the dark role; a dark livery's slides all are)."""
     global colors, families, status, muted, surface, cycle
-    on = force or mode == "dark" or output_format() == "html"
-    if not on:
-        yield
-        return
     saved = (colors, families, status, muted, surface, cycle)
     b = charts["dark"]
     colors, families, status, muted = list(b["categorical"]), b["families"], b["status"], b["muted"]
