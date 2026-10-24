@@ -162,5 +162,7 @@ test ! -e "$work/hello.pptx"
 echo "== size"
 docker image inspect --format 'uncompressed: {{.Size}} bytes' "$img"
 docker history --no-trunc --format 'table {{.Size}}\t{{.CreatedBy}}' "$img" > "$tmp/history.txt"   # no pipe: pipefail + head
-cut -c1-160 "$tmp/history.txt" | grep -v '^0B' | head -40
+# the first 40 lines by a reader that takes the rest too: `head -40` closes the pipe, and grep, still
+# writing (a RUN step's lines are many), gets EPIPE, exit 2 under pipefail: a flake by timing (#148)
+cut -c1-160 "$tmp/history.txt" | grep -v '^0B' | awk 'NR <= 40'
 echo "smoke test passed"
