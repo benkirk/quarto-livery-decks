@@ -998,7 +998,8 @@ local function para_images(b)
   return #imgs > 0 and imgs or nil
 end
 
--- A picture in a grid column or a card, as every format draws it: { src, caption = inlines or nil,
+-- A picture in a grid column or a card, as grid-pptx.lua and beamer's cards read it (an executed plot
+-- reaches beamer's as raw LaTeX, engine-plots.lua's, and stays pandoc's): { src, caption = inlines or nil,
 -- image = the Image, sized = its width= when the author gave one (it keeps that size) } for a Figure
 -- of one image (its caption the Figure's, else the alt text), a Para or Plain of one image (the alt
 -- text), Quarto's PDF figure (latex_figure()), or an executed cell's or a Quarto figure's Div whose

@@ -269,19 +269,18 @@ local function card_body(blocks)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
     local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
-    local img, caption = C.latex_figure(b)
-    local imgs = C.para_images(b)
-    if img then
-      out:insert(pandoc.Para({ pandoc.RawInline("latex", "{\\centering "), card_picture(img), pandoc.RawInline("latex", "\\par}") }))
-      if caption then
+    local fig = C.cell_figure(b)
+    if fig and (b.t == "Para" or b.t == "Plain") then   -- a lone image: the paragraph keeps it
+      card_picture(fig.image)
+      out:insert(b)
+    elseif fig then
+      out:insert(pandoc.Para({ pandoc.RawInline("latex", "{\\centering "), card_picture(fig.image), pandoc.RawInline("latex", "\\par}") }))
+      if fig.caption then
         local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\enginenote{") })
-        il:extend(caption)
+        il:extend(fig.caption)
         il:insert(pandoc.RawInline("latex", "}"))
         out:insert(pandoc.Para(il))
       end
-    elseif imgs and #imgs == 1 then
-      card_picture(imgs[1])
-      out:insert(b)
     elseif label or big then
       local il = pandoc.Inlines({ pandoc.RawInline("latex", label and "\\enginelabel{" or "\\enginebig{") })
       il:extend(label or big)
