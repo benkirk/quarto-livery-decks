@@ -55,7 +55,9 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   format, where the livery's title composition places it. Without one the livery's
   default appears (`art.titlegraphic`: ncar's Mesa Lab, nsi's campus, nasa's Earth
   limb); `titlegraphic: none` keeps the plain cover.
-- `fineprint: "..."` adds small print under the title block.
+- `fineprint: "..."` adds small print to the cover (several paragraphs as a `|` block). A livery
+  may give every cover a default (a rights notice: its `compositions.title.fineprint.text`), which
+  the deck's replaces; `fineprint: none` drops it.
 - `marking: "CUI"` (any text) puts a marking strip on every slide, in every format: a
   restriction or distribution marking. Where it sits, how wide, its fill, size and colors are
   the livery's `marking:`, and a livery may set default text every deck under it shows

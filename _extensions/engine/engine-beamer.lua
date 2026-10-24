@@ -50,8 +50,8 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
       livery.sty's boxes; the theme's own environments, written as a hand
       author writes them (latex/authoring.md)
 
-  metadata `fineprint: "..."`
-      small print under the title block, e.g. an NSF funding statement
+  metadata `fineprint: "..."` (`none`: no fine print, not the livery's default either)
+      small print on the cover, e.g. an NSF funding statement (the livery may have a default)
 
   metadata `marking: "CUI"` (the first strip) or `marking: {<name>: "...", <name>: none}`
       the marking strips on every frame (\enginemarking[<name>]; the livery places them)
@@ -721,11 +721,13 @@ function Pandoc(doc)
     doc.meta["header-includes"] = hi
   end
 
-  -- title fine print from metadata
+  -- the cover's fine print from metadata (`fineprint: none`: not the livery's default either)
   local fp = doc.meta["fineprint"]
   if fp then
     local ty, text = pandoc.utils.type(fp), nil
-    if ty == "Inlines" then
+    if pandoc.utils.stringify(fp) == "none" then
+      text = ""
+    elseif ty == "Inlines" then
       text = inlines_to_latex(fp)
     elseif ty == "Blocks" then
       text = (pandoc.write(pandoc.Pandoc(fp), "latex"):gsub("%s+$", ""))

@@ -107,7 +107,7 @@ Per deck, `make pptx` runs:
      draw where the paragraph will land.
    - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,
      bottom center, muted; the caption box is itself the link.
-   - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
+   - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; draws the cover's byline and fine print; points closing and light
      title slides at the template's extra layouts; sets a `::: note` in the caption's look
      under its figure (see [authoring.md "Notes under a figure"](authoring.md#notes-under-a-figure)); copies the slide number onto every slide.
    - `columns`: sets a two-column slide's columns at their widths, the livery's gap between them

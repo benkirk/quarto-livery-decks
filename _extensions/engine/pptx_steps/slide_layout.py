@@ -24,7 +24,8 @@ title slide onto Title Slide (light); a band title ignores it), its placeholders
 copied frames to take the layout's. The title slide with a `titlegraphic:` (docProps/custom.xml;
 else the livery's art.titlegraphic) is drawn from its composition (livery.json compositions):
 the photo at the back, cropped to cover its box, the field and waves over it, the marks in their
-boxes; the band takes the photo into its box over the layout's default. feature: by the
+boxes; the band takes the photo into its box over the layout's default. The cover's byline and fine
+print (the deck's fineprint:, else the livery's default) are text boxes in theirs. feature: by the
 livery's feature.style, the photo under a dark bar with the title and the body on a panel, or the
 cover with the title and body in its column. Footnote paragraphs
 (style_footnotes.py) keep their size. Every slide also gets its layout's slide-number placeholder, which pandoc never writes
@@ -520,6 +521,42 @@ def cover_byline(prs, slide, comp, width, height):
             sub._element.getparent().remove(sub._element)
 
 
+def cover_fineprint(prs, slide, comp, width, height):
+    """A cover's fine print (compositions: fineprint), as HTML and beamer draw it: the deck's
+    fineprint: (slide-layout.lua's engine-fineprint, a line per paragraph; `none`, none), else the
+    livery's default paragraphs, as one text box in its box, hanging from its top or standing on its
+    bottom, left-aligned in its role's color, the fineprint size at its leading. PowerPoint cannot
+    flow it, so a text taller than its box is warned."""
+    fp = comp.get("fineprint")
+    deck = docprops.prop(prs, "engine-fineprint")
+    if not fp or not fp.get("box") or deck == "none":
+        return
+    paras = [p for p in (deck.split("\n") if deck else fp.get("paragraphs") or []) if p.strip()]
+    if not paras:
+        return
+    x, y, w, h = fp["box"]
+    box = slide.shapes.add_textbox(int(x * width), int(y * height), int(w * width), int(h * height))
+    box.name = "Fineprint"
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.BOTTOM if fp["anchor"] == "bottom" else MSO_ANCHOR.TOP
+    pt, lead = livery_mod.type_pt(LIVERY, "fineprint"), LIVERY["type"]["roles"]["fineprint"]["leading"]
+    color = RGBColor.from_string(livery_mod.color(LIVERY, fp["role"]))
+    for i, text in enumerate(paras):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.alignment = PP_ALIGN.LEFT
+        p.line_spacing = Pt(pt * lead)   # exact points, which type_step scales with the size
+        r = p.add_run()
+        r.text = text
+        r.font.size = Pt(pt)
+        r.font.color.rgb = color
+    need = sum(para_lines(p, measure.BODY, Pt(pt), box.width) for p in tf.paragraphs) * Pt(pt * lead)
+    if need > box.height:
+        print(f"slide_layout: WARNING: the cover's fine print needs {need / box.height:.2f} times its box; "
+              "it runs past it", file=sys.stderr)
+
+
 def _recolor_byline(date, sub, els, has_subtitle, color):
     """A box-less byline: its elements' runs in its color, where pandoc put them (the subtitle's
     runs before the blank line, the authors' after it, or all of them without a subtitle)."""
@@ -722,4 +759,5 @@ def run(prs, path: Path) -> None:
     if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
         cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
         cover_byline(prs, prs.slides[0], COMP[cover], w, h)
+        cover_fineprint(prs, prs.slides[0], COMP[cover], w, h)
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {path.name}")

@@ -50,6 +50,9 @@ seams a 42-slide deck found that `make qa` could not see, and the checks that se
   say. `marking: "CUI"` still sets the first and `marking: none` turns every one off; a map sets
   them by name, `marking: {banner: "CUI//SP-EXPT", legend: none}`, and a strip the deck does not
   name keeps the livery's default.
+- The cover's `fineprint:` is drawn in pptx too (it showed only in HTML and PDF), a paragraph per
+  paragraph, in the livery's box, size and color. A livery may give every cover a default (a
+  rights notice, say), which a deck's `fineprint:` replaces; `fineprint: none` drops it.
 
 ### Plots
 
@@ -64,12 +67,16 @@ seams a 42-slide deck found that `make qa` could not see, and the checks that se
   its keys under a name, `marking: {banner: {text: ..., fill: ...}}` (nasa-jsc-eg's is moved). A
   strip takes a `size` in points of its own (default the `marking` type role), and `<name>: null`
   drops a parent's strip; names are lower-case letters.
+- `compositions.title.fineprint.text` (new, optional) is the cover's default small print,
+  paragraphs a blank line apart; set on `title` it reaches every cover.
 
 ### LaTeX
 
 - `make clean` in `latex/` works on a tree whose `talk-cu.tex` variant is already gone.
 - `\enginemarking[<name>]{...}` sets a marking strip by its name; with no name it is the first
   strip, as before. An unknown name warns.
+- `\titlefineprint{}` now means "no fine print"; without the command a cover shows the
+  livery's default, if it has one.
 
 ## [26.10.10] - 2026-10-23
 

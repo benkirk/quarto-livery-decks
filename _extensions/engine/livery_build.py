@@ -645,6 +645,16 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     for k in COMPOSITIONS:   # every override last; a base's already reached its variants
         if k not in ("title", "closing"):
             res[k] = merge(res[k], over.get(k) or {})
+    for k, v in over.items():   # the small print's default text belongs to a cover
+        if k not in COVERS and ((v or {}).get("fineprint") or {}).get("text"):
+            sys.exit(f"{name}: compositions.{k}.fineprint.text: only a cover has default small print")
+    title_text = (res["title"]["fineprint"] or {}).get("text")
+    for k in COVERS:   # its paragraphs (blank-line apart, white space collapsed): a cover's own, else title's
+        fp = res[k]["fineprint"]
+        if fp:
+            text = fp.pop("text", None) or title_text
+            if text:
+                fp["paragraphs"] = [" ".join(p.split()) for p in re.split(r"\n\s*\n", text.strip())]
     for c in res.values():   # the column's text alignment, left unless a livery centers it
         if c["column"]:
             c["column"].setdefault("align", "left")
@@ -1058,6 +1068,8 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
             d("column@rule@w", col["rule"][0]); d("column@rule@h", col["rule"][1])
         if c["fineprint"]:
             d("fineprint@anchor", c["fineprint"]["anchor"])
+            if c["fineprint"].get("paragraphs"):   # the livery's default small print, unless the deck sets its own
+                d("fineprint@text", "\\par ".join(tex_escape(p) for p in c["fineprint"]["paragraphs"]))
         if c["eyebrow"]:
             e = c["eyebrow"]
             d("eyebrow@label", e["label"])

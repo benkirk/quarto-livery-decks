@@ -31,7 +31,7 @@ The same Markdown as the beamer theme (engine-beamer.lua):
       pptx and beamer draw an ordinary slide)
 
   metadata `livery: <dir>`, `themeoptions: [title=light]`, `titlegraphic:`,
-  `fineprint:`, `institute:` -- as for beamer; HTML also reads `autofit=false`
+  `fineprint:` (`none`, else the livery's default), `institute:` -- as for beamer; HTML also reads `autofit=false`
 
 Overflowing content slides shrink their body text to fit (engine-revealjs.js);
 {.no-autofit} or {.scrollable} on a slide opts out.
@@ -714,6 +714,15 @@ function Pandoc(doc)
   meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
   -- a cover's byline with a box of its own (livery.json compositions): title-slide.html's second stack
   if tcomp.byline and tcomp.byline.box then meta["engine-byline"] = true end
+  -- the cover's fine print (title-slide.html): the deck's fineprint: (none: none), else the livery's default
+  local fp = meta["fineprint"]
+  if fp and pandoc.utils.stringify(fp) == "none" then
+    meta["fineprint"] = nil
+  elseif not fp and tcomp.fineprint and tcomp.fineprint.paragraphs then
+    local paras = pandoc.Blocks({})
+    for _, para in ipairs(tcomp.fineprint.paragraphs) do paras:insert(pandoc.Para(pandoc.Inlines(para))) end
+    meta["fineprint"] = pandoc.MetaBlocks(paras)
+  end
   -- the marking strips, as HTML: each with its text (C.marking_texts: the deck's marking:, else the
   -- strip's default), in the livery's order; livery.css places and colors each by its class
   local divs = {}

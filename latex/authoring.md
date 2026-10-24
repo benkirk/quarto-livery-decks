@@ -20,7 +20,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 |---|---|
 | Title slide | `\titlepage` in a `[plain]` frame |
 | Photo on the title slide (else the livery's default, if it has one: the NCAR family's is the Mesa Lab) | `\titlegraphic{\includegraphics{photo.jpg}}`; `\enginenotitlegraphic` for the plain cover |
-| Fine print under the title | `\titlefineprint{...}` |
+| Fine print on the cover | `\titlefineprint{...}`; the livery's default (if any) without it, `\titlefineprint{}` for none |
 | Section divider | `\section{...}` |
 | Divider subtitle | `\sectionsubtitle{...}` before `\section` |
 | Agenda: the numbered sections, a row each, each `\sectionsubtitle` under its title; in a section, that one current | `\begin{frame}{Agenda}\engineagenda\end{frame}` (from the table of contents: `latexmk` runs LaTeX twice); a plain `\tableofcontents` draws the same rows, none current |

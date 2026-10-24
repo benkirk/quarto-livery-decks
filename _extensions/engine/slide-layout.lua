@@ -8,7 +8,8 @@
 -- .closing becomes `closing` (the template's Closing layout), the slide holding ::: {#refs}
 -- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
 -- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), and a
--- map `marking:` the strings `engine-marking-<name>` (C.deck_marking; pandoc records a map as empty too).
+-- map `marking:` the strings `engine-marking-<name>` (C.deck_marking; pandoc records a map as empty too),
+-- and `fineprint:` the string `engine-fineprint`, a line per paragraph.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -66,6 +67,20 @@ local function byline_meta(meta)
   if #institutes > 0 then meta["engine-institute"] = pandoc.MetaString(table.concat(institutes, "\n")) end
 end
 
+-- the deck's fineprint: as one string, a line per paragraph (pandoc records Blocks in the pptx as
+-- their text run together), for slide_layout.py's cover; `none` stays none
+local function fineprint_meta(meta)
+  local fp = meta["fineprint"]
+  if fp == nil then return end
+  local lines = {}
+  if pandoc.utils.type(fp) == "Blocks" then
+    for _, b in ipairs(fp) do table.insert(lines, pandoc.utils.stringify(b)) end
+  else
+    lines = { pandoc.utils.stringify(fp) }
+  end
+  meta["engine-fineprint"] = pandoc.MetaString(table.concat(lines, "\n"))
+end
+
 -- a map marking: as one string per strip it names, for pptx_steps/marking.py (a plain string arrives
 -- as `marking` already)
 local function marking_meta(meta)
@@ -78,6 +93,7 @@ function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   byline_meta(doc.meta)
   marking_meta(doc.meta)
+  fineprint_meta(doc.meta)
   local level = C.slide_level()
   local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
   local refs = C.refs_heading(blocks, level)

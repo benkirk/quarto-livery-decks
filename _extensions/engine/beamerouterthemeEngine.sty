@@ -328,12 +328,16 @@
       ++(\engine@bw,-\dimexpr\ht\engine@panelbox+\dp\engine@panelbox+2\engine@panelpady\relax);
     \node[anchor=north west,inner sep=0pt] at (\engine@bx+\engine@panelpadx,\@tempdima-\engine@panelpady)
       {\copy\engine@panelbox};}{}\fi}
-\def\engine@cfineprint{\ifx\engine@fineprint\@empty\else\engine@ifc{fineprint@x}{\engine@box{fineprint}%
+\def\engine@cfineprint{\begingroup
+  \ifx\engine@fineprint\relax   % the deck set none: the livery's default, if any
+    \engine@ifc{fineprint@text}{\def\engine@fp{\engine@cv{fineprint@text}}}{\let\engine@fp\@empty}%
+  \else\let\engine@fp\engine@fineprint\fi
+  \ifx\engine@fp\@empty\else\engine@ifc{fineprint@x}{\engine@box{fineprint}%
   \engine@ifcorner{\engine@cv{fineprint@anchor}}{bottom}%
     {\def\engine@tmpc{south west}\@tempdima=\engine@by}%
     {\def\engine@tmpc{north west}\@tempdima=\dimexpr\engine@by+\engine@bh\relax}%
   \node[anchor=\engine@tmpc,inner sep=0pt,text width=\engine@bw,font=\usebeamerfont{title fineprint},
-    text=\engine@ccolor{Fineprint},align=left] at (\engine@bx,\@tempdima) {\engine@fineprint};}{}\fi}
+    text=\engine@ccolor{Fineprint},align=left] at (\engine@bx,\@tempdima) {\engine@fp};}{}\fi\endgroup}
 
 % \engine@art{<kind>}: the livery's static background for a slide kind, if it names one
 \def\engine@art#1{%

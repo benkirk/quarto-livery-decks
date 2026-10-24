@@ -373,6 +373,7 @@ The cover's small print.
 | `role` | role |  | The role it is drawn in. |
 | `box` | box |  | Where it sits. |
 | `anchor` | `top` \| `bottom` |  | Whether the text hangs from the box's top or stands on its bottom. |
+| `text` | string |  | The small print every deck under the livery shows on its cover (a rights notice, a funding statement), paragraphs a blank line apart, plain text; a deck's `fineprint:` replaces it, `fineprint: none` drops it. Set on `title`, it reaches every cover; a cover only. |
 
 ### `compositions.<name>.eyebrow`
 

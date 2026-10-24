@@ -21,8 +21,9 @@
 \providecommand\engine@titlestyle{dark}
 \@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
 
-% optional fine print under the title block, e.g. an NSF funding statement
-\def\engine@fineprint{}
+% the cover's fine print, e.g. an NSF funding statement: \titlefineprint{<text>}, {} for none;
+% unset (\relax), the livery's default (compositions.<cover>.fineprint.text), if it has one
+\let\engine@fineprint\relax
 \newcommand\titlefineprint[1]{\def\engine@fineprint{#1}}
 
 % the composition column's text alignment (column.align: left | center; \engine@calignof{<comp>}
