@@ -7,20 +7,20 @@ schema: 1
 name: nsi
 extends: cu
 
-signoff:                  # the deck's RIO lockup at the foot, as cu's slot (corner, bottom) has it
-  light: rio-color
-  dark: rio-color
-  aspect: 6.317           # the vector lockup's box, 213.69 x 33.83 pt
-  height: 0.05
-  bottom: 0.03
-
 geometry:
-  logo:
-    corner: top-left      # the deck's content slides; the title gives way beside it
-    top: 0.04             # the deck's (Lindsay's slide 20): the body starts below it (frametitle.body)
-    inset: 0.015          # near the paper's edge, not at the text margin (the deck's 23 px of 1600)
-    height: 0.135         # and no title rule to keep clear of (frametitle)
-    aspect: 1.830         # the NSI lockup, 1316/719
+  marks:
+    top-left:             # the deck's content slides; the title gives way beside it
+      mark: logo
+      top: 0.04           # the deck's (Lindsay's slide 20): the body starts below it (frametitle.body)
+      inset: 0.015        # near the paper's edge, not at the text margin (the deck's 23 px of 1600)
+      height: 0.135       # and no title rule to keep clear of (frametitle)
+      aspect: 1.830       # the NSI lockup, 1316/719
+    bottom-left:          # the deck's RIO lockup at the foot, in cu's corner
+      light: rio-color
+      dark: rio-color
+      aspect: 6.317       # the vector lockup's box, 213.69 x 33.83 pt
+      height: 0.05
+      bottom: 0.03
 
 frametitle:               # the deck's content titles: centred beside the mark, no tab, no hairline
   align: center

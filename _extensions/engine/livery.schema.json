@@ -148,60 +148,15 @@
           "maximum": 1,
           "description": "The width of the accent tab at the paper's edge beside titles, of the width."
         },
-        "logo": {
+        "marks": {
           "type": "object",
-          "description": "The brand mark.",
+          "description": "The content slides' marks, one per corner: each names its mark and places it (the corners a livery leaves out wear none).",
           "additionalProperties": false,
           "properties": {
-            "corner": {
-              "enum": ["top-right", "top-left", "none"],
-              "description": "The content slides' corner for the mark; none drops the mark from every slide.",
-              "default": "top-right"
-            },
-            "height": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "The mark's height on content slides."
-            },
-            "top": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "The mark's distance from the top on content slides."
-            },
-            "aspect": {
-              "type": "number",
-              "exclusiveMinimum": 0,
-              "description": "The mark's width over its height (the lockup's image)."
-            },
-            "inset": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "The mark's distance from its side edge on content slides, of the width (default: the margin)."
-            },
-            "title-height": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "The mark's height on the cover.",
-              "default": 0.09
-            },
-            "section-height": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "The mark's height on section slides.",
-              "default": 0.08
-            },
-            "closing-height": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "The mark's height on the closing slide.",
-              "default": 0.1
-            }
+            "top-left": {"$ref": "#/$defs/corner-mark"},
+            "top-right": {"$ref": "#/$defs/corner-mark"},
+            "bottom-left": {"$ref": "#/$defs/corner-mark"},
+            "bottom-right": {"$ref": "#/$defs/corner-mark"}
           }
         },
         "pagenumber": {
@@ -353,41 +308,6 @@
         }
       }
     },
-    "signoff": {
-      "type": ["object", "null"],
-      "description": "A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's).",
-      "additionalProperties": false,
-      "properties": {
-        "light": {
-          "$ref": "#/$defs/image",
-          "description": "The lockup on the paper (a _brand.yml logo.images name)."
-        },
-        "dark": {
-          "$ref": "#/$defs/image",
-          "description": "The lockup on the primary field (a _brand.yml logo.images name)."
-        },
-        "aspect": {"type": "number", "exclusiveMinimum": 0, "description": "Its width over its height."},
-        "height": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Its height.",
-          "default": 0.05
-        },
-        "bottom": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Its distance from the bottom.",
-          "default": 0.03
-        },
-        "corner": {
-          "enum": ["bottom-left", "bottom-right"],
-          "description": "Its corner.",
-          "default": "bottom-left"
-        }
-      }
-    },
     "title": {
       "type": "object",
       "description": "The cover's composition.",
@@ -450,16 +370,14 @@
     },
     "marks": {
       "type": "object",
-      "description": "Which mark and sign-off each field wears, by the field's role: background (content slides; default logo.medium.light, signoff.light), primary (covers, sections, the closing; default the dark ones), any other role the primary's.",
+      "description": "Which image each mark wears on a field, by the field's role and the mark's name (logo, and every name geometry.marks wears): background (content slides; default logo.medium.light and each corner's light), primary (covers, sections, the closing; default the dark ones), any other role the primary's.",
       "x-key": "<role>",
       "additionalProperties": {
         "type": "object",
-        "description": "The images on a field of this role.",
-        "additionalProperties": false,
-        "properties": {
-          "logo": {"$ref": "#/$defs/image", "description": "The mark (a logo.images name)."},
-          "signoff": {"$ref": "#/$defs/image", "description": "The sign-off (a logo.images name)."}
-        }
+        "description": "The images on a field of this role, by mark name.",
+        "x-key": "<name>",
+        "propertyNames": {"pattern": "^[a-z]+$"},
+        "additionalProperties": {"$ref": "#/$defs/image", "description": "The mark's image (a logo.images name)."}
       }
     },
     "compositions": {
@@ -1243,6 +1161,65 @@
     }
   },
   "$defs": {
+    "corner-mark": {
+      "type": ["object", "null"],
+      "description": "The mark in this corner of every content slide but feature and full ones (null: none, a flavor dropping its parent's). A flavor's entry merges over its parent's, so mark and aspect are required of the merged entry (livery build says so), not of each file.",
+      "additionalProperties": false,
+      "properties": {
+        "mark": {"type": "string", "pattern": "^[a-z]+$", "description": "Its name, once per livery: the image each field role wears by it (marks:). logo is also the compositions' mark (its *-height keys), signoff their sign-off."},
+        "light": {"$ref": "#/$defs/image", "description": "Its image on the paper, the background role's default (logo: logo.medium.light)."},
+        "dark": {"$ref": "#/$defs/image", "description": "Its image on the primary field, primary's default and any other role's (logo: logo.medium.dark)."},
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Its height.",
+          "default": 0.0644
+        },
+        "top": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "A top corner's distance from the top (a bottom corner takes bottom).",
+          "default": 0.0533
+        },
+        "bottom": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "A bottom corner's distance from the bottom (a top corner takes top).",
+          "default": 0.03
+        },
+        "aspect": {"type": "number", "exclusiveMinimum": 0, "description": "Its width over its height (the image's)."},
+        "inset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Its distance from its side edge, of the width (default: the margin)."
+        },
+        "title-height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The logo entry's: the mark's height on the cover.",
+          "default": 0.09
+        },
+        "section-height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The logo entry's: the mark's height on section slides.",
+          "default": 0.08
+        },
+        "closing-height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The logo entry's: the mark's height on the closing slide.",
+          "default": 0.1
+        }
+      }
+    },
     "color": {
       "type": "string",
       "pattern": "^(#[0-9A-Fa-f]{6}|[A-Za-z][A-Za-z0-9_-]*)$",

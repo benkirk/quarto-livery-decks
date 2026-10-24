@@ -1418,17 +1418,29 @@
       "pad": 0.025
     },
     "half": 0.457,
-    "logo": {
-      "aspect": 1.2146,
-      "closing-height": 0.129,
-      "corner": "top-right",
-      "height": 0.129,
-      "inset": 0.014,
-      "section-height": 0.129,
-      "title-height": 0.129,
-      "top": 0.034
-    },
     "margin": 0.028,
+    "marks": {
+      "bottom-left": {
+        "aspect": 26.0833,
+        "bottom": 0.009,
+        "dark": "eg-footer",
+        "height": 0.054,
+        "light": "eg-footer",
+        "mark": "signoff"
+      },
+      "bottom-right": null,
+      "top-left": null,
+      "top-right": {
+        "aspect": 1.2146,
+        "closing-height": 0.129,
+        "height": 0.129,
+        "inset": 0.014,
+        "mark": "logo",
+        "section-height": 0.129,
+        "title-height": 0.129,
+        "top": 0.034
+      }
+    },
     "pagenumber": {
       "corner": "bottom-right"
     },
@@ -1666,12 +1678,6 @@
     "label": null,
     "subtitle-gap": 0.66,
     "tab": false
-  },
-  "signoff": {
-    "aspect": 26.0833,
-    "bottom": 0.009,
-    "corner": "bottom-left",
-    "height": 0.054
   },
   "type": {
     "body": 0.02963,

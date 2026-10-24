@@ -137,7 +137,9 @@ def test_dark_blends_and_marks(livery):
     for role, m in j["marks"].items():
         assert f'--engine-mark-{role}-logo: url("{Path(m["logo"]).name}");' in css, role
         assert f"\\csname engine@mark@{role}@logo\\endcsname" in sty, role
-    assert ".reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }" in css
+    for c, e in j["geometry"]["marks"].items():   # each corner's mark on the dark slide: the dark role's image of its name
+        if e:
+            assert f".reveal .slides section.engine-dark .engine-mark-{c} {{ background-image: var(--engine-mark-dark-{e['mark']}); }}" in css, c
     assert "engine@logo@" not in sty and "engine@signoff@" not in sty, "the old names"
 
 
@@ -224,8 +226,7 @@ def test_geometry_derived(livery):
     g, m, ft = j["geometry"], j["geometry"]["margin"], j["frametitle"]
     assert set(ft) == set(lb.FRAMETITLE) | {"body"}, f"{livery.name}: frametitle keys"
     assert HEX.match(ft["rule-color"]) and 0 <= ft["rule-width"] <= 1, f"{livery.name}: frametitle.rule-color/rule-width"
-    lg = g.get("logo") or {}
-    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
+    below = max([e["top"] + e["height"] for c, e in g["marks"].items() if e and c.startswith("top")], default=0)
     assert ft["body"] == round(max(ft["rule-y"], below) + lb.BODY_GAP, 4), f"{livery.name}: frametitle.body"
     top = ft["body"]
     assert g["body"] == [m, top, round(1 - 2 * m, 4), round(g["body-bottom"] - top, 4)], f"{livery.name}: geometry.body"

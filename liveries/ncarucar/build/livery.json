@@ -1219,15 +1219,21 @@
       "pad": 0.025
     },
     "half": 0.425,
-    "logo": {
-      "aspect": 3.206,
-      "closing-height": 0.1,
-      "height": 0.0644,
-      "section-height": 0.08,
-      "title-height": 0.09,
-      "top": 0.0533
-    },
     "margin": 0.06,
+    "marks": {
+      "bottom-left": null,
+      "bottom-right": null,
+      "top-left": null,
+      "top-right": {
+        "aspect": 3.206,
+        "closing-height": 0.1,
+        "height": 0.0644,
+        "mark": "logo",
+        "section-height": 0.08,
+        "title-height": 0.09,
+        "top": 0.0533
+      }
+    },
     "section": {
       "bottom": 0.0889,
       "top": 0.1333

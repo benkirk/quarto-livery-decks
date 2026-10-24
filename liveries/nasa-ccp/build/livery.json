@@ -1426,17 +1426,22 @@
       "pad": 0.025
     },
     "half": 0.445,
-    "logo": {
-      "aspect": 0.9717,
-      "closing-height": 0.16,
-      "corner": "top-left",
-      "height": 0.107,
-      "inset": 0.008,
-      "section-height": 0.11,
-      "title-height": 0.16,
-      "top": 0.0728
-    },
     "margin": 0.04,
+    "marks": {
+      "bottom-left": null,
+      "bottom-right": null,
+      "top-left": {
+        "aspect": 0.9717,
+        "closing-height": 0.16,
+        "height": 0.107,
+        "inset": 0.008,
+        "mark": "logo",
+        "section-height": 0.11,
+        "title-height": 0.16,
+        "top": 0.0728
+      },
+      "top-right": null
+    },
     "pagenumber": {
       "corner": "bottom-right"
     },

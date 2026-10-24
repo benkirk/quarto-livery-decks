@@ -75,6 +75,14 @@
 \expandafter\def\csname engine@mark@background@logo\endcsname{\engineliverydir logos/ccp-emblem}
 \expandafter\def\csname engine@mark@primary@logo\endcsname{\engineliverydir logos/ccp-emblem}
 \expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/ccp-emblem}
+% the content slides' marks by corner (geometry.marks): \engine@corners the worn ones, each one's
+% \engine@corner@<corner>@<key>: mark (its name in \engine@mark@<role>@<name>), height, top or bottom, aspect, inset
+\def\engine@corners{top-left}
+\expandafter\def\csname engine@corner@top-left@mark\endcsname{logo}
+\expandafter\def\csname engine@corner@top-left@height\endcsname{0.107}
+\expandafter\def\csname engine@corner@top-left@top\endcsname{0.0728}
+\expandafter\def\csname engine@corner@top-left@aspect\endcsname{0.9717}
+\expandafter\def\csname engine@corner@top-left@inset\endcsname{0.008}
 % fonts: the base family's files, by weight and style
 \def\engine@font@family{TeX Gyre Heros}
 \def\engine@font@dir{\engineliverydir fonts/}
@@ -193,14 +201,6 @@
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.04}
 \def\engine@geom@tabwidth{0.018}
-\def\engine@geom@logocorner{top-left}
-\def\engine@geom@logoheight{0.107}
-\def\engine@geom@logotop{0.0728}
-\def\engine@geom@logoaspect{0.9717}
-\def\engine@geom@logotitleheight{0.16}
-\def\engine@geom@logosectionheight{0.11}
-\def\engine@geom@logoclosingheight{0.16}
-\def\engine@geom@logoinset{0.008}
 \def\engine@geom@pagenumbercorner{bottom-right}
 \def\engine@geom@sectiontop{0.1333}
 \def\engine@geom@sectionbottom{0.0889}

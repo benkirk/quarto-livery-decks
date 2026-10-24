@@ -42,14 +42,15 @@ blends:                   # blends livery_build.py computes from the roles (BLEN
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06            # 96 px of 1600; deck_qa.py's overflow edge is 1 - margin
   tab-width: 0.018        # 29 px; the divider's accent tab
-  logo:
-    # corner: top-right   # the mark's corner on content slides: top-right | top-left | none (none drops it everywhere)
-    height: 0.0644        # content slides: 58 px of 900 (beamer drew 0.06 before Phase 2)
-    top: 0.0533           # 48 px
-    aspect: 3.934         # NSF NCAR lockup, 1200/305
-    title-height: 0.09    # the lockup on the title, section and closing slides (beamer's sizes;
-    section-height: 0.08  # HTML drew 70, 58 and 58 px before Phase 2)
-    closing-height: 0.10
+  marks:                  # one mark per corner on content slides (top-left, top-right, bottom-left, bottom-right)
+    top-right:
+      mark: logo          # the field roles' images by name (marks:); logo: logo.medium.light | dark
+      height: 0.0644      # content slides: 58 px of 900 (beamer drew 0.06 before Phase 2)
+      top: 0.0533         # 48 px
+      aspect: 3.934       # NSF NCAR lockup, 1200/305
+      title-height: 0.09  # the lockup on the title, section and closing slides (beamer's sizes;
+      section-height: 0.08  # HTML drew 70, 58 and 58 px before Phase 2)
+      closing-height: 0.10
   section:                # the section slide's block: padding above and below (120 / 80 px);
     top: 0.1333           # section_subtitle.py centers the pptx block in the same band
     bottom: 0.0889

@@ -86,6 +86,10 @@ BODY_BOTTOM = 0.9222   # its foot (the pptx body placeholder's; 70 px of 900 abo
 # marks unless the livery names its own, as every reader fell back to); a band title adds its field role
 MARK_ROLES = ("background", "primary", "dark")
 CORNERS = ("top-left", "top-right", "bottom-left", "bottom-right")   # where a content slide's marks sit
+# a corner's mark (geometry.marks.<corner>): its height, and its distance from its top or bottom edge
+# (the content mark's 58 and 48 px of 900; a foot lockup's 27); a side inset absent is the margin
+MARK = {"height": 0.0644, "top": 0.0533, "bottom": 0.03}
+MARK_HEIGHTS = ("title-height", "section-height", "closing-height")   # the logo entry's, the compositions' marks
 # Type: every text role's size in points on the pptx canvas, with its leading. The default canvas is
 # 13.333 x 7.5 in (960 x 540 pt); the default sizes are the NSF NCAR template's guidance (body 12 pt
 # on its 405 pt slide, levels 12/11/10/9/8, page title 20, cover title 22, ...) carried onto that
@@ -283,22 +287,13 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["frametitle"]["rule-color"] = roles.get(rc) or blends.get(rc) or hex_of(rc, ("livery.yml", "frametitle.rule-color"))
     tc = out["frametitle"]["color"]   # the title's color as hex: a role (the body text's by default), a blend or a palette name
     out["frametitle"]["color"] = roles.get(tc) or blends.get(tc) or hex_of(tc, ("livery.yml", "frametitle.color"))
+    g["marks"] = corner_marks(d.name, g.get("marks") or {})
     # the body's top (derived, not a key): BODY_GAP under the hairline, or under a taller mark in a top corner
-    lg = (out.get("geometry") or {}).get("logo") or {}
-    below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
+    below = max([e["top"] + e["height"] for c, e in g["marks"].items() if e and c.startswith("top")], default=0)
     out["frametitle"]["body"] = round(max(out["frametitle"]["rule-y"], below) + BODY_GAP, 4)
-    for corner, legal in (("logo", ("top-right", "top-left", "none")), ("pagenumber", ("bottom-left", "bottom-right"))):
-        v = out.get("geometry", {}).get(corner, {}).get("corner")
-        if v is not None and v not in legal:
-            sys.exit(f"{d.name}: geometry.{corner}.corner {v!r} is not one of {legal}")
-    if data.get("signoff"):   # the sign-off lockup's box; its images (light, dark) are marks defaults (null: none)
-        so = {k: v for k, v in data["signoff"].items() if k not in ("light", "dark")}
-        if so.get("corner", "bottom-left") not in ("bottom-left", "bottom-right"):
-            sys.exit(f"{d.name}: signoff.corner {so['corner']!r} is not bottom-left or bottom-right")
-        so.setdefault("height", 0.05); so.setdefault("bottom", 0.03); so.setdefault("corner", "bottom-left")
-        if "aspect" not in so:
-            sys.exit(f"{d.name}: signoff.aspect (width / height of the image) is required")
-        out["signoff"] = so
+    v = g.get("pagenumber", {}).get("corner")
+    if v is not None and v not in ("bottom-left", "bottom-right"):
+        sys.exit(f"{d.name}: geometry.pagenumber.corner {v!r} is not one of ('bottom-left', 'bottom-right')")
     if "title" in data:   # only when set, so a livery without it keeps its build/ unchanged
         out["title"] = band(d.name, data["title"], out)
     out["marks"] = marks(d.name, data, out)
@@ -335,35 +330,89 @@ def resolve(d: Path) -> tuple[dict, dict]:
     return out, sources
 
 
+def corner_marks(name: str, spec: dict) -> dict:
+    """geometry.marks resolved: every CORNERS key, null or {mark, height, top|bottom, aspect, inset?,
+    light?, dark?, and on the logo's entry its *-height keys} (a flavor's entry merged over its
+    parent's; null drops one). mark names the image a corner wears ([a-z]+, once per livery: marks:
+    keys it per role), aspect its width over its height; a top corner's distance is top, a bottom
+    one's bottom."""
+    res, seen = {}, {}
+    for corner in CORNERS:
+        e = spec.get(corner)
+        if e is None:
+            res[corner] = None
+            continue
+        where = f"{name}: geometry.marks.{corner}"
+        side, other = ("top", "bottom") if corner.startswith("top") else ("bottom", "top")
+        for k in ("mark", "aspect"):   # required once the parent's entry is merged in (not in the schema: a
+            if k not in e:              # flavor's entry may override one key)
+                sys.exit(f"{where}.{k} is required")
+        if not re.fullmatch(r"[a-z]+", e["mark"]):   # it becomes TeX control-sequence and CSS names
+            sys.exit(f"{where}.mark: {e['mark']!r} is lower-case letters only")
+        if other in e:
+            sys.exit(f"{where}: a {side} corner's distance is {side}, not {other}")
+        if e["mark"] in seen:
+            sys.exit(f"{where}.mark: {e['mark']!r} is already geometry.marks.{seen[e['mark']]}'s")
+        if e["mark"] != "logo" and (bad := [k for k in MARK_HEIGHTS if k in e]):
+            sys.exit(f"{where}: {bad} belong to the entry whose mark is logo")
+        seen[e["mark"]] = corner
+        res[corner] = {"mark": e["mark"], "height": e.get("height", MARK["height"]), side: e.get(side, MARK[side]),
+                       **{k: v for k, v in e.items() if k not in ("mark", "height", side)}}
+    return res
+
+
+def mark_entry(g: dict, mark: str) -> dict | None:
+    """The corner entry (geometry.marks, resolved) that wears this mark, or None."""
+    return next((e for e in g["marks"].values() if e and e["mark"] == mark), None)
+
+
+def title_room(out: dict) -> tuple[float, float]:
+    """The content title's room beside the marks, (left, right) of the width past the margin: per top
+    corner its inset, its mark's width and TITLE_GAP less the margin, on its side; frametitle.symmetric
+    gives both sides the larger (a centered title on the slide's center). Every drawer of the title
+    reads it: furniture() (the pptx master, slide_layout), emit_css; the beamer theme restates it on
+    the marks it measures."""
+    return tuple(corner_room(out, c) if c else 0 for c in title_corners(out))
+
+
+def corner_room(out: dict, corner: str) -> float:
+    """A top corner's room past the margin: its inset, its mark's width and TITLE_GAP, less the margin."""
+    g = out["geometry"]; e = g["marks"][corner]
+    cw, ch = (out["type"]["canvas"][k] * 12700 for k in ("w", "h"))   # the canvas in EMU: a mark's width is its height's
+    return max(0, e.get("inset", g["margin"]) + e["height"] * e["aspect"] * ch / cw + TITLE_GAP - g["margin"])
+
+
+def title_corners(out: dict) -> tuple[str | None, str | None]:
+    """The top corner whose mark each side of the content title gives way to, (left, right): its own,
+    else none; under frametitle.symmetric both sides the wider room's (title_room())."""
+    own = tuple(c if out["geometry"]["marks"][c] else None for c in ("top-left", "top-right"))
+    if not out["frametitle"].get("symmetric") or own == (None, None):
+        return own
+    wider = max((c for c in own if c), key=lambda c: corner_room(out, c))
+    return wider, wider
+
+
 def furniture(out: dict) -> dict:
     """A content slide's furniture, the boxes [x, y, w, h] in slide fractions (y down) every drawer of
     it reads (livery_template.master() and slide_layout.draw_dark()): the title tab (null without
-    one), the hairline (y its center line, h its width; null without one), the title's box, and the
-    marks by corner, {mark: name, box} or null (the content mark in its top corner, the sign-off in
-    its bottom one). Not rounded: the template's EMUs come from them, as they did from geometry and
-    frametitle, so they must not move. Derived, not a livery.yml key."""
+    one), the hairline (y its center line, h its width; null without one), the title's box (beside the
+    marks, title_room()), and the marks by corner, {mark: name, box} or null (geometry.marks). Not
+    rounded: the template's EMUs come from them, as they did from geometry and frametitle, so they
+    must not move. Derived, not a livery.yml key."""
     g, ft = out["geometry"], out["frametitle"]
-    cw, ch = (out["type"]["canvas"][k] * 12700 for k in ("w", "h"))   # the canvas in EMU: a mark's width is its height's
+    cw, ch = (out["type"]["canvas"][k] * 12700 for k in ("w", "h"))
     m = g["margin"]
-    lg = g["logo"]
-    corner = lg.get("corner", "top-right")
-    logo_h = lg["height"]; logo_w = logo_h * lg["aspect"] * ch / cw
-    inset = lg.get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
-    beside = inset + logo_w + TITLE_GAP   # the title's edge on the mark's side
-    title_x = beside if corner == "top-left" else m
-    title_w = 1 - 2 * m - (beside - m if corner != "none" else 0)
-    if ft.get("symmetric") and corner != "none":   # the room mirrored: a centered title on the slide's center
-        title_x, title_w = beside, 1 - 2 * beside
+    left, right = title_room(out)
     marks = dict.fromkeys(CORNERS)
-    if corner != "none":
-        marks[corner] = {"mark": "logo", "box": [inset if corner == "top-left" else 1 - inset - logo_w, lg["top"], logo_w, logo_h]}
-    so = out.get("signoff")
-    if so:
-        h = so["height"]; w = h * so["aspect"] * ch / cw
-        marks[so["corner"]] = {"mark": "signoff", "box": [m if so["corner"] == "bottom-left" else 1 - m - w, 1 - so["bottom"] - h, w, h]}
+    for corner, e in g["marks"].items():
+        if e:
+            h = e["height"]; w = h * e["aspect"] * ch / cw
+            inset = e.get("inset", m)   # the mark's distance from its side edge
+            y = e["top"] if corner.startswith("top") else 1 - e["bottom"] - h
+            marks[corner] = {"mark": e["mark"], "box": [inset if corner.endswith("left") else 1 - inset - w, y, w, h]}
     return {"tab": [0, ft["top"], g["tab-width"], ft["height"]] if ft.get("tab", True) else None,
             "rule": [m, ft["rule-y"], 1 - 2 * m, ft["rule-width"]] if ft.get("rule", True) else None,
-            "title": [title_x, ft["top"], title_w, ft["height"]],
+            "title": [m + left, ft["top"], 1 - 2 * m - left - right, ft["height"]],
             "marks": marks}
 
 
@@ -475,43 +524,45 @@ def band(name: str, title: dict, out: dict) -> dict:
     for k in ("band", "field", "field-text"):
         if t[k] not in out["roles"]:
             sys.exit(f"{name}: title.{k} {t[k]!r} is not a role")
-    if "signoff" in out:
-        t.setdefault("signoff-height", out["signoff"]["height"])
-    t.setdefault("logo-height", out.get("geometry", {}).get("logo", {}).get("title-height", 0.09))
+    g = out["geometry"]
+    if so := mark_entry(g, "signoff"):
+        t.setdefault("signoff-height", so["height"])
+    t.setdefault("logo-height", (mark_entry(g, "logo") or {}).get("title-height", 0.09))
     return t
 
 
 def marks(name: str, data: dict, out: dict) -> dict:
-    """{role: {logo, logo-print?, signoff?}} as paths, for MARK_ROLES, the band's field and every role
-    marks: names. background defaults to logo.medium.light and signoff.light, primary to the dark
-    ones, any other role to primary's; each key defaults on its own."""
+    """{role: {logo, logo-print?, <name>, <name>-print?...}} as paths, for MARK_ROLES, the band's field
+    and every role marks: names: logo (the compositions' slot, worn or not) and every mark a corner
+    wears (geometry.marks). background defaults to logo.medium.light and each corner's light image,
+    primary to the dark ones, any other role to primary's; each name defaults on its own. A name's
+    print (CMYK) twin, `<image>-print` in logo.images, rides along for LaTeX."""
     images, medium = out["logo"].get("images", {}), out["logo"].get("medium", {})
-    so = data.get("signoff") or {}
+    worn = [e for e in out["geometry"]["marks"].values() if e]
     given = {k: dict(v or {}) for k, v in (data.get("marks") or {}).items()}
     t = data.get("title") or {}
     field = {**BAND, **t}["field"] if t.get("style") == "band" else None
-    defaults = {"background": {"logo": medium.get("light"), "signoff": so.get("light")},
-                "primary": {"logo": medium.get("dark"), "signoff": so.get("dark")}}
+    defaults = {"background": {"logo": medium.get("light"), **{e["mark"]: e["light"] for e in worn if "light" in e}},
+                "primary": {"logo": medium.get("dark"), **{e["mark"]: e["dark"] for e in worn if "dark" in e}}}
+    legal = ["logo"] + [e["mark"] for e in worn if e["mark"] != "logo"]
     roles = list(MARK_ROLES) + [r for r in [field, *given] if r and r not in MARK_ROLES]
     names = {}
     for role in dict.fromkeys(roles):
         if role not in out["roles"]:
             sys.exit(f"{name}: marks.{role} is not a role")
-        bad = set(given.get(role, {})) - {"logo", "signoff"}
+        bad = set(given.get(role, {})) - set(legal)
         if bad:
-            sys.exit(f"{name}: marks.{role} takes logo and signoff, not {sorted(bad)}")
+            sys.exit(f"{name}: marks.{role} takes {legal} (logo and the marks geometry.marks wears), not {sorted(bad)}")
         names[role] = {**(defaults[role] if role in defaults else names["primary"]), **given.get(role, {})}
     res = {}
     for role, m in names.items():
-        if m["logo"] not in images:
-            sys.exit(f"{name}: marks.{role}.logo {m['logo']!r} is not a logo.images name")
-        r = {"logo": images[m["logo"]]["path"]}
-        if m["logo"] + "-print" in images:   # LaTeX takes the print (CMYK) lockup when there is one
-            r["logo-print"] = images[m["logo"] + "-print"]["path"]
-        if "signoff" in out:
-            if m.get("signoff") not in images:
-                sys.exit(f"{name}: marks.{role}.signoff {m.get('signoff')!r} is not a logo.images name")
-            r["signoff"] = images[m["signoff"]]["path"]
+        r = {}
+        for n in legal:
+            if m.get(n) not in images:
+                sys.exit(f"{name}: marks.{role}.{n} {m.get(n)!r} is not a logo.images name")
+            r[n] = images[m[n]]["path"]
+            if m[n] + "-print" in images:   # LaTeX takes the print (CMYK) lockup when there is one
+                r[n + "-print"] = images[m[n] + "-print"]["path"]
         res[role] = r
     return res
 
@@ -542,37 +593,41 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     each format's drawer picks a name and applies no variant logic. Derived from the geometry,
     title, signoff and art knobs; livery.yml `compositions: {<name>: {<key>: ...}}` overrides,
     an override on title reaching its photo and light variants, one on closing its light one."""
-    g = out["geometry"]; m = g["margin"]; logo = g.get("logo", {})
+    g = out["geometry"]; m = g["margin"]
+    logo = mark_entry(g, "logo") or {}   # the content mark's entry: its aspect and *-height keys (none: no field mark)
     hw = slide_hw(out)   # a height as a fraction of the width
     art = out.get("art") or {}
     has_art = lambda k: isinstance(art.get(k), str)
     waves = art.get("waves")
     t = {**BAND, "logo-height": logo.get("title-height", 0.09), **(out.get("title") or {})}
-    so = out.get("signoff")
+    so = mark_entry(g, "signoff")   # the sign-off's entry: the fields wear it in its corner
     if so:
         t.setdefault("signoff-height", so["height"])
 
     def mark(y, h, role):   # the mark top left on a field; null where the livery draws none
-        if logo.get("corner", "top-right") == "none":
+        if not logo:
             return None
         return {"role": role, "box": _box(m, y, h * logo.get("aspect", 1) * hw, h)}
 
-    def signoff(role):
+    def signoff(role):   # in its corner, as on a content slide
         if not so:
             return None
         h = so["height"]; w = h * so["aspect"] * hw
-        x = m if so["corner"] == "bottom-left" else 1 - m - w
-        return {"role": role, "box": _box(x, 1 - so["bottom"] - h, w, h)}
+        inset = so.get("inset", m)
+        x = inset if so_corner.endswith("left") else 1 - inset - w
+        return {"role": role, "box": _box(x, so["top"] if so_corner.startswith("top") else 1 - so["bottom"] - h, w, h)}
 
-    def strip(role):   # the band's strip: the sign-off in its corner, the mark opposite, centered
+    so_corner = next((c for c, e in g["marks"].items() if e is so), None) if so else None
+
+    def strip(role):   # the band's strip: the sign-off on its corner's side, the mark opposite, centered
         mid, left = (1 + t["bottom"]) / 2, None
         sig = None
         if so:
             h = t["signoff-height"]; w = h * so["aspect"] * hw
-            left = so["corner"] == "bottom-left"
+            left = so_corner.endswith("left")
             sig = {"role": role, "box": _box(m if left else 1 - m - w, mid - h / 2, w, h)}
         mk = None
-        if logo.get("corner", "top-right") != "none":
+        if logo:
             h = t["logo-height"]; w = h * logo.get("aspect", 1) * hw
             mk = {"role": role, "box": _box(m if left is False else 1 - m - w, mid - h / 2, w, h)}
         return mk, sig
@@ -880,11 +935,14 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
         for name, path in m.items():
             if not name.endswith("-print"):
                 L.append(f"\\expandafter\\def\\csname engine@mark@{role}@{name}\\endcsname{{{stem(m.get(name + '-print', path))}}}")
-    if "signoff" in livery:   # the sign-off lockup at the foot (its corner, height and bottom are geometry)
-        so = livery["signoff"]
-        L.append("% the sign-off lockup's box (signoff)")
-        for k in ("height", "bottom", "corner"):
-            L.append(f"\\def\\engine@signoff{k}{{{so[k]}}}")
+    worn = {c: livery["geometry"]["marks"][c] for c in CORNERS if livery["geometry"]["marks"][c]}
+    L.append("% the content slides' marks by corner (geometry.marks): \\engine@corners the worn ones, each one's")
+    L.append("% \\engine@corner@<corner>@<key>: mark (its name in \\engine@mark@<role>@<name>), height, top or bottom, aspect, inset")
+    L.append(f"\\def\\engine@corners{{{','.join(worn)}}}")
+    for c, e in worn.items():
+        for k in ("mark", "height", "top", "bottom", "aspect", "inset"):
+            if k in e:
+                L.append(f"\\expandafter\\def\\csname engine@corner@{c}@{k}\\endcsname{{{e[k]}}}")
     family, files = base_font(livery)
     L.append("% fonts: the base family's files, by weight and style")
     L.append(f"\\def\\engine@font@family{{{family}}}")
@@ -977,6 +1035,8 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% geometry, in fractions of the slide")
     geom = livery.get("geometry", {})
     for k, v in geom.items():
+        if k == "marks":   # by corner, above
+            continue
         if isinstance(v, dict):
             for k2, v2 in v.items():
                 L.append(f"\\def\\engine@geom@{k}{k2.replace('-', '')}{{{v2}}}")
@@ -1156,16 +1216,8 @@ def emit_css(livery: dict, extra: str = "") -> str:
     props = [f"--engine-{k}: {v};" for k, v in livery["roles"].items()]
     props += [f"--engine-{k}: {v};" for k, v in livery["blends"].items()]
     geom = livery.get("geometry", {})
-    logo = geom.get("logo", {})
     px = lambda frac, axis=H: f"{round(frac * axis, 1):g}px"
-    if "height" in logo:
-        props.append(f"--engine-logo-h: {px(logo['height'])};")   # 0.0644 * 900 is the scss's 58px
-        if "aspect" in logo:
-            props.append(f"--engine-logo-w: {round(logo['height'] * H, 1) * logo['aspect']:.1f}px;")
-    if "aspect" in logo:
-        props.append(f"--engine-logo-aspect: {logo['aspect']};")
-    if "top" in logo:   # the content mark's top (the field slides' marks are their compositions')
-        props.append(f"--engine-logo-top: {px(logo['top'])};")
+    mark_w = lambda e: f"{round(e['height'] * H, 1) * e['aspect']:.1f}px"   # a corner mark's width: its height's px times its aspect
     for k in ("margin", "tab-width", "wide-margin"):
         if k in geom:
             props.append(f"--engine-{k}: {px(geom[k], W)};")
@@ -1194,16 +1246,12 @@ def emit_css(livery: dict, extra: str = "") -> str:
     props.append(f'--engine-font-family: "{family}";')
     if hfamily:
         props.append(f'--engine-heading-font-family: "{hfamily}";')
-    # the content-slide mark's corner (top-right | top-left | none) and the page number's; the title
-    # box gives way on the mark's side
-    corner = logo.get("corner", "top-right")
+    # the content slides' marks by corner (geometry.marks; the .engine-mark-<corner> rules below) and
+    # the page number's corner; the title box gives way on each mark's side (title_room())
+    marks = {c: geom["marks"][c] for c in CORNERS if geom["marks"][c]}
     margin = "var(--engine-margin)"
-    inset = px(logo["inset"], W) if "inset" in logo else margin   # the mark's distance from its edge
-    beside = f"calc({inset} + {round(TITLE_GAP * W)}px + var(--engine-logo-w))"
-    props.append(f"--engine-logo-left: {inset if corner == 'top-left' else 'auto'};")
-    props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
-    props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
-    props.append(f"--engine-logo-content: {'none' if corner == 'none' else '\"\"'};")
+    inset = lambda e: px(e["inset"], W) if "inset" in e else margin   # a mark's distance from its side edge
+    beside = lambda c: f"calc({inset(marks[c])} + {round(TITLE_GAP * W)}px + {mark_w(marks[c])})"
     ft = livery["frametitle"]   # the band (frametitle.top/height/rule-y) and the body's top, in slide pixels
     for k, name in (("top", "title-top"), ("height", "title-height"), ("rule-y", "title-rule-y"),
                     ("rule-width", "title-rule-width"), ("body", "body-top")):
@@ -1218,22 +1266,12 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append("--engine-title-tab: none;")
     if not ft["rule"]:
         props.append("--engine-title-rule: none;")
-    sym = ft["symmetric"] and corner != "none"   # the room mirrored: the mark's side's gap on both sides
-    props.append(f"--engine-title-left: {beside if corner == 'top-left' or sym else margin};")
-    props.append(f"--engine-title-right: {beside if corner == 'top-right' or sym else margin};")
+    for s, c in zip(("left", "right"), title_corners(livery)):   # the corner whose room each side takes (title_room())
+        props.append(f"--engine-title-{s}: {beside(c) if c else margin};")
     props.append(f"--engine-title-color: {ft['color']};")
     pn = geom.get("pagenumber", {}).get("corner", "bottom-left")
     props.append(f"--engine-pagenumber-left: {'auto' if pn == 'bottom-right' else '50px'};")
     props.append(f"--engine-pagenumber-right: {'50px' if pn == 'bottom-right' else 'auto'};")
-    if "signoff" in livery:
-        so = livery["signoff"]
-        props.append("--engine-signoff-display: block;")
-        props.append(f"--engine-signoff-h: {px(so['height'])};")
-        props.append(f"--engine-signoff-w: {round(so['height'] * H, 1) * so['aspect']:.1f}px;")
-        props.append(f"--engine-signoff-bottom: {px(so['bottom'])};")
-        props.append(f"--engine-signoff-left: {margin if so['corner'] == 'bottom-left' else 'auto'};")
-        props.append(f"--engine-signoff-right: {'auto' if so['corner'] == 'bottom-left' else margin};")
-        props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
     props += emit_css_boxes(livery, px)
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     for s in livery.get("marking") or []:   # each marking strip, in slide pixels (its text: engine-revealjs.lua)
@@ -1266,16 +1304,13 @@ def emit_css(livery: dict, extra: str = "") -> str:
     L.append("html:root {\n" + "".join(f'  --engine-mark-{role}-{name}: url("{Path(path).name}");\n'
                                        for role, m in livery["marks"].items() for name, path in m.items()
                                        if not name.endswith("-print")) + "}")
-    L.append(".reveal .slides section.slide::after,\n.reveal .slides section.engine-title::after "
-             "{ background-image: var(--engine-mark-background-logo); }")
-    L.append(".reveal .slides section.slide.engine-field::after,\n.reveal .slides section.engine-title.engine-field::after "
-             "{ background-image: var(--engine-mark-primary-logo); }")
-    L.append(".reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }")
-    if "signoff" in livery:
-        L.append(".reveal .slides section .engine-signoff { background-image: var(--engine-mark-background-signoff); }")
-        L.append(".reveal .slides section.engine-field .engine-signoff,\n.reveal .slides section.engine-title.engine-field .engine-signoff "
-                 "{ background-image: var(--engine-mark-primary-signoff); }")
-        L.append(".reveal .slides section.engine-dark .engine-signoff { background-image: var(--engine-mark-dark-signoff); }")
+    for c, e in marks.items():   # each corner's mark (engine-revealjs.lua's .engine-mark-<corner> on a content slide)
+        v, h = c.split("-")
+        L.append(f".reveal .slides section.slide .engine-mark-{c} {{ {v}: {px(e[v])}; {h}: {inset(e)}; "
+                 f"width: {mark_w(e)}; height: {px(e['height'])}; background-position: {h} {v}; "
+                 f"background-image: var(--engine-mark-background-{e['mark']}); }}")
+        L.append(f".reveal .slides section.engine-field .engine-mark-{c} {{ background-image: var(--engine-mark-primary-{e['mark']}); }}")
+        L.append(f".reveal .slides section.engine-dark .engine-mark-{c} {{ background-image: var(--engine-mark-dark-{e['mark']}); }}")
     art = livery.get("art", {})
     if isinstance(art.get("titlegraphic"), str):   # the title photo when a deck sets none
         L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')

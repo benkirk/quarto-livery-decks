@@ -1380,16 +1380,28 @@
       "pad": 0.025
     },
     "half": 0.425,
-    "logo": {
-      "aspect": 1.2146,
-      "closing-height": 0.16,
-      "corner": "top-right",
-      "height": 0.075,
-      "section-height": 0.11,
-      "title-height": 0.16,
-      "top": 0.045
-    },
     "margin": 0.06,
+    "marks": {
+      "bottom-left": {
+        "aspect": 22.208,
+        "bottom": 0.035,
+        "dark": "nasa-name-white",
+        "height": 0.028,
+        "light": "nasa-name",
+        "mark": "signoff"
+      },
+      "bottom-right": null,
+      "top-left": null,
+      "top-right": {
+        "aspect": 1.2146,
+        "closing-height": 0.16,
+        "height": 0.075,
+        "mark": "logo",
+        "section-height": 0.11,
+        "title-height": 0.16,
+        "top": 0.045
+      }
+    },
     "pagenumber": {
       "corner": "bottom-right"
     },
@@ -1554,12 +1566,6 @@
     "label": "Section",
     "subtitle-gap": 0.66,
     "tab": true
-  },
-  "signoff": {
-    "aspect": 22.208,
-    "bottom": 0.035,
-    "corner": "bottom-left",
-    "height": 0.028
   },
   "type": {
     "body": 0.02963,

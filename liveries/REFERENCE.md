@@ -26,9 +26,8 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `geometry` | object |  | The slides' furniture, in fractions of the slide. |
 | `section` | object |  | Section slides. |
 | `art` | object |  | Pictures and curves behind the fields. A path is relative to the livery. |
-| `signoff` | object or null |  | A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's). |
 | `title` | object |  | The cover's composition. |
-| `marks` | map |  | Which mark and sign-off each field wears, by the field's role: background (content slides; default logo.medium.light, signoff.light), primary (covers, sections, the closing; default the dark ones), any other role the primary's. |
+| `marks` | map |  | Which image each mark wears on a field, by the field's role and the mark's name (logo, and every name geometry.marks wears): background (content slides; default logo.medium.light and each corner's light), primary (covers, sections, the closing; default the dark ones), any other role the primary's. |
 | `compositions` | object |  | Overrides of the composed slides' boxes and colors, by slide; every slide takes the parts of compositions.<name> below. |
 | `feature` | object |  | Feature (photo) slides. |
 | `frametitle` | object |  | Content slides' titles. |
@@ -88,25 +87,39 @@ The slides' furniture, in fractions of the slide.
 | `wide-margin` | fraction |  | The side margin of a `{.wide}` slide, of the width (default: half the margin). |
 | `body-bottom` | fraction | `0.9222` | The foot of a content slide's body, of the height. |
 | `tab-width` | fraction |  | The width of the accent tab at the paper's edge beside titles, of the width. |
-| `logo` | object |  | The brand mark. |
+| `marks` | object |  | The content slides' marks, one per corner: each names its mark and places it (the corners a livery leaves out wear none). |
 | `pagenumber` | object |  | The page number. |
 | `section` | object |  | A section slide's text block. |
 | `full` | object |  | A full-slide figure ({.full}). |
 
-### `geometry.logo`
+### `geometry.marks`
 
-The brand mark.
+The content slides' marks, one per corner: each names its mark and places it (the corners a livery leaves out wear none).
 
 | key | type | default | |
 |---|---|---|---|
-| `corner` | `top-right` \| `top-left` \| `none` | `"top-right"` | The content slides' corner for the mark; none drops the mark from every slide. |
-| `height` | fraction |  | The mark's height on content slides. |
-| `top` | fraction |  | The mark's distance from the top on content slides. |
-| `aspect` | number |  | The mark's width over its height (the lockup's image). |
-| `inset` | fraction |  | The mark's distance from its side edge on content slides, of the width (default: the margin). |
-| `title-height` | fraction | `0.09` | The mark's height on the cover. |
-| `section-height` | fraction | `0.08` | The mark's height on section slides. |
-| `closing-height` | fraction | `0.1` | The mark's height on the closing slide. |
+| `top-left` | object or null |  | The mark in this corner of every content slide but feature and full ones (null: none, a flavor dropping its parent's). A flavor's entry merges over its parent's, so mark and aspect are required of the merged entry (livery build says so), not of each file. |
+| `top-right` | object or null |  | The mark in this corner of every content slide but feature and full ones (null: none, a flavor dropping its parent's). A flavor's entry merges over its parent's, so mark and aspect are required of the merged entry (livery build says so), not of each file. |
+| `bottom-left` | object or null |  | The mark in this corner of every content slide but feature and full ones (null: none, a flavor dropping its parent's). A flavor's entry merges over its parent's, so mark and aspect are required of the merged entry (livery build says so), not of each file. |
+| `bottom-right` | object or null |  | The mark in this corner of every content slide but feature and full ones (null: none, a flavor dropping its parent's). A flavor's entry merges over its parent's, so mark and aspect are required of the merged entry (livery build says so), not of each file. |
+
+### `geometry.marks.<corner>`
+
+The mark in this corner of every content slide but feature and full ones (null: none, a flavor dropping its parent's). A flavor's entry merges over its parent's, so mark and aspect are required of the merged entry (livery build says so), not of each file.
+
+| key | type | default | |
+|---|---|---|---|
+| `mark` | string |  | Its name, once per livery: the image each field role wears by it (marks:). logo is also the compositions' mark (its *-height keys), signoff their sign-off. |
+| `light` | image |  | Its image on the paper, the background role's default (logo: logo.medium.light). |
+| `dark` | image |  | Its image on the primary field, primary's default and any other role's (logo: logo.medium.dark). |
+| `height` | fraction | `0.0644` | Its height. |
+| `top` | fraction | `0.0533` | A top corner's distance from the top (a bottom corner takes bottom). |
+| `bottom` | fraction | `0.03` | A bottom corner's distance from the bottom (a top corner takes top). |
+| `aspect` | number |  | Its width over its height (the image's). |
+| `inset` | fraction |  | Its distance from its side edge, of the width (default: the margin). |
+| `title-height` | fraction | `0.09` | The logo entry's: the mark's height on the cover. |
+| `section-height` | fraction | `0.08` | The logo entry's: the mark's height on section slides. |
+| `closing-height` | fraction | `0.1` | The logo entry's: the mark's height on the closing slide. |
 
 ### `geometry.pagenumber`
 
@@ -181,19 +194,6 @@ How far right of the drawn position each slide kind shows them, of the width.
 | `section` | number | `0` | On section slides. |
 | `content` | number |  | Behind content slides. |
 
-### `signoff`
-
-A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's).
-
-| key | type | default | |
-|---|---|---|---|
-| `light` | image |  | The lockup on the paper (a _brand.yml logo.images name). |
-| `dark` | image |  | The lockup on the primary field (a _brand.yml logo.images name). |
-| `aspect` | number |  | Its width over its height. |
-| `height` | fraction | `0.05` | Its height. |
-| `bottom` | fraction | `0.03` | Its distance from the bottom. |
-| `corner` | `bottom-left` \| `bottom-right` | `"bottom-left"` | Its corner. |
-
 ### `title`
 
 The cover's composition.
@@ -212,20 +212,11 @@ The cover's composition.
 
 ### `marks`
 
-Which mark and sign-off each field wears, by the field's role: background (content slides; default logo.medium.light, signoff.light), primary (covers, sections, the closing; default the dark ones), any other role the primary's.
+Which image each mark wears on a field, by the field's role and the mark's name (logo, and every name geometry.marks wears): background (content slides; default logo.medium.light and each corner's light), primary (covers, sections, the closing; default the dark ones), any other role the primary's.
 
 | key | type | default | |
 |---|---|---|---|
-| `<role>` | object |  | The images on a field of this role. |
-
-### `marks.<role>`
-
-The images on a field of this role.
-
-| key | type | default | |
-|---|---|---|---|
-| `logo` | image |  | The mark (a logo.images name). |
-| `signoff` | image |  | The sign-off (a logo.images name). |
+| `<role>` | map |  | The images on a field of this role, by mark name. |
 
 ### `compositions`
 

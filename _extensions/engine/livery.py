@@ -134,9 +134,9 @@ def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False
 
 
 def mark(livery: dict, role: str, kind: str = "logo") -> str | None:
-    """The mark (kind logo) or sign-off (kind signoff) a field of this role wears, relative to the
-    livery dir; None for a sign-off when the livery has none. A role marks: does not name wears
-    primary's."""
+    """The image of the mark named kind (logo, signoff, any name geometry.marks wears) a field of this
+    role wears, relative to the livery dir; None for a name no corner wears (logo is always there: the
+    compositions' slot). A role marks: does not name wears primary's."""
     m = livery["marks"].get(role, livery["marks"]["primary"])
     return m.get(kind)
 
@@ -150,7 +150,7 @@ def files(livery: dict) -> list[tuple[str, str]]:
         out += [(f["path"], f"font {font['family']}") for f in font.get("files", [])]
     images = [(img["path"], f"logo {k}") for k, img in livery["logo"].get("images", {}).items()]
     for role, m in livery.get("marks", {}).items():
-        images += [(m[k], f"marks {role} {k}") for k in ("logo", "logo-print", "signoff") if k in m]
+        images += [(path, f"marks {role} {k}") for k, path in m.items()]
     images += [(v, f"art {kind}") for kind, v in (livery.get("art") or {}).items() if isinstance(v, str)]
     for path, what in images:
         out.append((path, what))

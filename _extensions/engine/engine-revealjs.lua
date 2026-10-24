@@ -403,17 +403,29 @@ local function unwrap_layout(blocks)
   return out
 end
 
--- the sign-off lockup's box on every content, section and closing slide (the title slide's is
--- in title-slide.html); livery.css shows and places it when the livery has one. Raw tags, not
--- a Div (the <section> trap).
-local SIGNOFF_SKIP = { feature = true, full = true }   -- a closing slide wears it
+-- the marks: on a content slide one box per corner the livery wears (geometry.marks), which
+-- livery.css places and fills (.engine-mark-<corner>), in one .engine-marks box over the slide
+-- (always there, empty or not: Quarto's `.columns:nth-child(3)` margin counts a slide's children,
+-- so the body's place among them must not depend on the livery); on a divider and a closing the
+-- composition's sign-off box (the title slide's is in title-slide.html). None on a feature or
+-- full slide. Raw tags, not a Div (the <section> trap).
+local MARK_SKIP = { feature = true, full = true }   -- a closing slide wears its composition's
+local CORNERS = { "top-left", "top-right", "bottom-left", "bottom-right" }
 
-local function add_signoff(blocks)
+local function add_marks(blocks, livery)
+  local worn = {}
+  for _, c in ipairs(CORNERS) do
+    if type(livery.geometry.marks[c]) == "table" then table.insert(worn, c) end
+  end
   local out = pandoc.Blocks({})
   for _, blk in ipairs(blocks) do
     out:insert(blk)
-    if (blk.t == "Header" and blk.level == 1) or C.content_heading(blk, slide_level, SIGNOFF_SKIP) then
+    if (blk.t == "Header" and blk.level == 1) or (C.content_heading(blk, slide_level, MARK_SKIP) and has_class(blk, "closing")) then
       out:insert(html('<div class="engine-signoff"></div>'))
+    elseif C.content_heading(blk, slide_level, MARK_SKIP) then
+      local marks = {}
+      for _, c in ipairs(worn) do table.insert(marks, '<div class="engine-mark engine-mark-' .. c .. '"></div>') end
+      out:insert(html('<div class="engine-marks">' .. table.concat(marks) .. '</div>'))
     end
   end
   return out
@@ -638,9 +650,14 @@ local function add_dependency(livery)
   end
   table.sort(roles)
   table.insert(roles, 1, "primary"); table.insert(roles, 1, "background")
-  for _, role in ipairs(roles) do
-    add(livery.marks[role].logo)
-    if livery.marks[role].signoff then add(livery.marks[role].signoff) end
+  for _, role in ipairs(roles) do   -- each role's logo first, then its other names sorted (no print twin: LaTeX's)
+    local names = {}
+    for n in pairs(livery.marks[role]) do
+      if n ~= "logo" and not n:match("%-print$") then table.insert(names, n) end
+    end
+    table.sort(names)
+    table.insert(names, 1, "logo")
+    for _, n in ipairs(names) do add(livery.marks[role][n]) end
   end
   local comps = {}   -- every composition's own mark and sign-off files (an image: of its own)
   for k in pairs(livery.compositions or {}) do table.insert(comps, k) end
@@ -883,6 +900,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_signoff(out), marking))))
+  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_marks(out, livery), marking))))
   return doc
 end

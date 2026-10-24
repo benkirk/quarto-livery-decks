@@ -16,25 +16,17 @@ roles:
   warning: cu-gold                # the caution slide's bar; its fill is the derived blend
   dark: black
 
-signoff:                  # the lockup as the brand's "sign off" at the foot of every slide
-  light: cu-color
-  dark: cu-color
-  aspect: 10.903          # the CU Boulder lockup, viewBox 868.22 x 79.63
-  height: 0.04            # one line, so lower than a two-line lockup: 0.27 of the width
-  bottom: 0.035
-  corner: bottom-left
-
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06
   tab-width: 0.018
-  logo:
-    corner: none          # no mark top right: the sign-off carries the lockup (the NSI flavor puts its mark top-left)
-    height: 0.0644
-    top: 0.0533
-    aspect: 10.903
-    title-height: 0.09
-    section-height: 0.08
-    closing-height: 0.10
+  marks:                  # no mark top right: the sign-off carries the lockup (the NSI flavor puts its mark top-left)
+    bottom-left:          # the lockup as the brand's "sign off" at the foot of every slide
+      mark: signoff
+      light: cu-color
+      dark: cu-color
+      aspect: 10.903      # the CU Boulder lockup, viewBox 868.22 x 79.63
+      height: 0.04        # one line, so lower than a two-line lockup: 0.27 of the width
+      bottom: 0.035
   pagenumber:
     corner: bottom-right  # the reference deck's
   section:

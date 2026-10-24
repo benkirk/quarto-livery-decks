@@ -70,6 +70,13 @@
 \expandafter\def\csname engine@mark@background@logo\endcsname{\engineliverydir logos/NSF-NCAR_Logo_FullColor_RGB}
 \expandafter\def\csname engine@mark@primary@logo\endcsname{\engineliverydir logos/NSF-NCAR_Logo_Color-White_RGB}
 \expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/NSF-NCAR_Logo_Color-White_RGB}
+% the content slides' marks by corner (geometry.marks): \engine@corners the worn ones, each one's
+% \engine@corner@<corner>@<key>: mark (its name in \engine@mark@<role>@<name>), height, top or bottom, aspect, inset
+\def\engine@corners{top-right}
+\expandafter\def\csname engine@corner@top-right@mark\endcsname{logo}
+\expandafter\def\csname engine@corner@top-right@height\endcsname{0.0644}
+\expandafter\def\csname engine@corner@top-right@top\endcsname{0.0533}
+\expandafter\def\csname engine@corner@top-right@aspect\endcsname{3.934}
 % fonts: the base family's files, by weight and style
 \def\engine@font@family{Poppins}
 \def\engine@font@dir{\engineliverydir fonts/}
@@ -160,12 +167,6 @@
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
-\def\engine@geom@logoheight{0.0644}
-\def\engine@geom@logotop{0.0533}
-\def\engine@geom@logoaspect{3.934}
-\def\engine@geom@logotitleheight{0.09}
-\def\engine@geom@logosectionheight{0.08}
-\def\engine@geom@logoclosingheight{0.1}
 \def\engine@geom@sectiontop{0.1333}
 \def\engine@geom@sectionbottom{0.0889}
 \def\engine@geom@fullpad{0.025}

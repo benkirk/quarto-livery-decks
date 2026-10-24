@@ -116,41 +116,32 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   padding: $slide-padding;
 }
 
-// the mark on content slides: top right unless the livery's geometry.logo.corner says
-// top-left or none (livery.css resolves the corner into the --engine-logo-* vars; the
-// images are set there too)
-.reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after {
-  content: var(--engine-logo-content, "");
+// the marks on content slides, one per corner (geometry.marks): engine-revealjs.lua puts an
+// .engine-marks box over every content slide holding a .engine-mark-<corner> box for each corner
+// the livery wears; livery.css places and sizes each one in the slide's box and gives it the field
+// role's image (the dark slide's: the dark role's)
+.reveal .slides section .engine-marks {
   position: absolute;
-  top: var(--engine-logo-top);
-  left: var(--engine-logo-left, auto);
-  right: var(--engine-logo-right, var(--engine-margin));
-  width: var(--engine-logo-w);
-  height: var(--engine-logo-h);
-  background-repeat: no-repeat;
-  background-position: var(--engine-logo-position, right top);
-  background-size: contain;
+  inset: 0;
+  margin: 0;
   pointer-events: none;
 }
-// the sign-off lockup at the foot (signoff in livery.yml): the Lua puts the box on every
-// slide, livery.css shows and places it when the livery has one
-.reveal .slides section .engine-signoff {
-  display: var(--engine-signoff-display, none);
+.reveal .slides section .engine-mark {
   position: absolute;
-  bottom: var(--engine-signoff-bottom, 0);
-  left: var(--engine-signoff-left, var(--engine-margin));
-  right: var(--engine-signoff-right, auto);
-  width: var(--engine-signoff-w, 0);
-  height: var(--engine-signoff-h, 0);
   margin: 0;
   background-repeat: no-repeat;
-  background-position: var(--engine-signoff-position, left bottom);
   background-size: contain;
   pointer-events: none;
 }
-// no logo on busy photos (Brand Guide p11); a feature's marks are its composition's (none on the bar)
-.reveal .slides section.slide.full .engine-signoff { display: none; }
+// the sign-off of a composed slide (title-slide.html, the filter on dividers and closings), placed
+// and filled by its composition (livery.css)
+.reveal .slides section .engine-signoff {
+  position: absolute;
+  margin: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+}
 
 // the marking strips (livery.yml marking:): on every slide, over everything, in slide pixels;
 // livery.css sets each one's properties on .engine-marking-<name>
@@ -182,7 +173,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   position: absolute;
   top: var(--engine-title-top);
   left: var(--engine-title-left, var(--engine-margin));   // the title gives way on the mark's side
-  right: var(--engine-title-right, calc(var(--engine-margin) + 40px + var(--engine-logo-w)));
+  right: var(--engine-title-right, var(--engine-margin));
   min-height: var(--engine-title-height);
   margin: 0;
   display: flex;
@@ -769,12 +760,17 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   z-index: -1;
   pointer-events: none;
 }
-// the mark and the sign-off of every composition, from their boxes
+// the mark and the sign-off of every composition, from their boxes (the mark is the slide's ::after)
 div.reveal div.slides section.engine-title.quarto-title-block,
 .reveal .slides section.slide.engine-section,
 .reveal .slides section.slide.level2.closing,
 .reveal .slides section.slide.level2.feature {
   &::after {
+    content: "";
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: contain;
+    pointer-events: none;
     display: var(--engine-cmp-mark-display);
     left: var(--engine-cmp-mark-x);
     top: var(--engine-cmp-mark-y);
@@ -1086,7 +1082,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 // Absolutely placed, so reveal's inline display and the print padding cannot
 // move it; the title stays in the page (navigation, tools), clipped to nothing.
 .reveal .slides section.slide.level2.full {
-  &::before, &::after { content: none; }  // no rule, no logo
+  &::before { content: none; }  // no rule (and no marks: the filter puts none on it)
   > h2 {
     top: 0;
     left: 0;

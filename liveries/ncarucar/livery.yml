@@ -5,5 +5,6 @@ name: ncarucar
 extends: ncar
 
 geometry:
-  logo:
-    aspect: 3.206        # NSF-NCAR-UCAR lockup, 1991/621 (the web PNG)
+  marks:
+    top-right:
+      aspect: 3.206      # NSF-NCAR-UCAR lockup, 1991/621 (the web PNG)

@@ -23,7 +23,7 @@ from pathlib import Path
 
 import livery as livery_mod
 import pptx_waves
-from livery_build import ART_KINDS, SLOT_ROLES
+from livery_build import ART_KINDS, CORNERS, SLOT_ROLES
 from livery_charts import custom_colors
 
 # the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
@@ -84,7 +84,12 @@ class Builder:
         art = livery.get("art") or {}
         self.waves = art.get("waves")
         self.art = {k: art[k] for k in ART_KINDS if isinstance(art.get(k), str)}
-        self.signoff = livery.get("signoff")
+        # the master's marks, {name: rId}: the background logo always rId2 (the compositions' slot, worn or
+        # not), every other name a corner wears (geometry.marks) the next free ids in corner order (rId4 is
+        # the content art, rId10+ the layouts)
+        corner = livery["geometry"]["marks"]   # (livery.json's keys are sorted: CORNERS is the order)
+        others = [corner[c]["mark"] for c in CORNERS if corner[c] and corner[c]["mark"] != "logo"]
+        self.mark_rids = {"logo": "rId2", **dict(zip(others, ("rId3", "rId5", "rId6")))}
         self.band = (livery.get("title") or {}).get("style") == "band"
         self.comps = livery["compositions"]
         t = livery["type"]   # type sizes in points on the livery's canvas (hundredths in the xml)
@@ -217,15 +222,15 @@ class Builder:
         waves = "".join(self.own(pptx_waves.wave_shapes(self.waves["lines"], self.sid + 1, W_EMU, H_EMU,
                                                         self.waves["shift"]["content"], "lt2"))) if self.waves else ""
         art = self.art_pic("rId4", "content")   # under everything (the layouts with a field hide the master)
-        # the content mark and sign-off in their corners (the light ones: the background role's), the mark first
-        boxes = {mk["mark"]: mk["box"] for mk in fu["marks"].values() if mk}
-        logo = self.pic("rId2", "Logo (light)", *boxes["logo"]) if "logo" in boxes else ""
-        so = self.pic("rId3", "Sign-off (light)", *boxes["signoff"]) if "signoff" in boxes else ""
+        # the marks in their corners, in corner order (the light ones: the background role's); a logo and a
+        # sign-off keep the shape names an author has seen, any other mark is "Mark <name>"
+        marks = "".join(self.pic(self.mark_rids[mk["mark"]], {"logo": "Logo", "signoff": "Sign-off"}.get(mk["mark"], f"Mark {mk['mark']}")
+                                 + " (light)", *mk["box"]) for mk in map(fu["marks"].get, CORNERS) if mk)
         tab_sp = tab_sp if fu["tab"] else ""
         rule = rule if fu["rule"] else ""
         tc = ft.get("color")   # the body text's slot unless the livery colors titles apart (frametitle.color)
         title_fill = fill("tx1") if not tc or tc.upper() == self.L["roles"]["foreground"].upper() else srgb(tc)
-        shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo + so
+        shapes = art + waves + tab_sp + rule + title + body + self.chrome() + marks
         return (XMLDECL + f'<p:sldMaster {NSDECL}><p:cSld><p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg>'
                 f'<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
                 f'<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/>'
@@ -411,16 +416,16 @@ class Builder:
 
     def build(self, out: Path, livery_dir: Path):
         parts = {}
-        # media, numbered in this order: the master's mark, sign-off and art, then each field layout's
-        mark = lambda role, kind="logo": livery_mod.mark(self.L, role, kind)
-        names = ["mark-background"] + (["signoff-background"] if self.signoff else []) + (["art-content"] if "content" in self.art else [])
+        # media, numbered in this order: the master's marks (by rId) and art, then each field layout's
+        names = [f"{n}-background" for n in sorted(self.mark_rids, key=self.mark_rids.get)] + (["art-content"] if "content" in self.art else [])
         names += [n for lay in FIELD_LAYOUTS for n in self.media_for(lay).values()]
         def path_of(n):
             kind, _, key = n.partition("-")
             if kind in ("mark", "signoff") and key in self.comps:   # a composition's own file
                 return self.comps[key][kind]["img"]
-            return (mark(key) if kind == "mark" else mark(key, "signoff") if kind == "signoff"
-                    else self.art[key] if kind == "art" else self.art["titlegraphic"])
+            if kind == "art":
+                return self.art[key]
+            return self.art["titlegraphic"] if kind == "photo" else livery_mod.mark(self.L, key, kind)   # <name>-<role>: a master mark
         part_of, by_path = {}, {}   # one media part per file: a lockup serving two roles is stored once
         for name in dict.fromkeys(names):
             rel_path = path_of(name)
@@ -432,11 +437,11 @@ class Builder:
         image_rel = lambda rid, name: f'<Relationship Id="{rid}" Type="{REL}/image" Target="../media/{part_of[name]}"/>'
         parts["ppt/theme/theme1.xml"] = self.theme()
         parts["ppt/slideMasters/slideMaster1.xml"] = self.master()
-        rels = [f'<Relationship Id="rId1" Type="{REL}/theme" Target="../theme/theme1.xml"/>', image_rel("rId2", "mark-background")]
-        if self.signoff:
-            rels.append(image_rel("rId3", "signoff-background"))
+        rels = [f'<Relationship Id="rId1" Type="{REL}/theme" Target="../theme/theme1.xml"/>']
+        rels += [image_rel(rid, f"{n}-background") for n, rid in self.mark_rids.items() if rid < "rId4"]
         if "content" in self.art:
             rels.append(image_rel("rId4", "art-content"))
+        rels += [image_rel(rid, f"{n}-background") for n, rid in self.mark_rids.items() if rid > "rId4"]
         rels += [f'<Relationship Id="rId{10 + i}" Type="{REL}/slideLayout" Target="../slideLayouts/slideLayout{i + 1}.xml"/>' for i in range(len(ALL_LAYOUTS))]
         parts["ppt/slideMasters/_rels/slideMaster1.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(rels)}</Relationships>'
         for i, name in enumerate(ALL_LAYOUTS, 1):

@@ -20,28 +20,26 @@ roles:
 blends:
   rule: eg-light-gray           # the white hairline under content titles
 
-signoff:                  # the division bar along the foot of content slides (1565 x 60 px)
-  light: eg-footer
-  dark: eg-footer
-  aspect: 26.0833
-  height: 0.054
-  bottom: 0.009
-  corner: bottom-left
-
 marks:                    # by field role: content slides; the cover, closing and dividers name theirs (image:)
   background: {logo: meatball, signoff: eg-footer}
   dark: {logo: meatball, signoff: eg-footer}
 
 geometry:
   margin: 0.028           # the template's text inset from the slide's edge
-  logo:
-    corner: top-right
-    height: 0.129
-    top: 0.034
-    inset: 0.014
-    title-height: 0.129
-    section-height: 0.129
-    closing-height: 0.129
+  marks:
+    top-right:
+      height: 0.129
+      top: 0.034
+      inset: 0.014
+      title-height: 0.129
+      section-height: 0.129
+      closing-height: 0.129
+    bottom-left:          # the division bar along the foot of content slides (1565 x 60 px)
+      light: eg-footer
+      dark: eg-footer
+      aspect: 26.0833
+      height: 0.054
+      bottom: 0.009
   pagenumber:
     corner: bottom-right
 

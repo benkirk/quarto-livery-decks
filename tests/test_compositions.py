@@ -23,10 +23,17 @@ W, H = 1600, 900
 TOL = 1e-4   # compositions round to 4 places
 
 
+def worn(L: dict, mark: str) -> tuple:
+    """(corner, entry) of the geometry.marks entry wearing this mark, else (None, None)."""
+    return next(((c, e) for c, e in L["geometry"]["marks"].items() if e and e["mark"] == mark), (None, None))
+
+
 def today(L: dict) -> dict:
-    """The revealjs theme's compositions as of engine 3.4.0, from the livery's knobs."""
+    """The revealjs theme's compositions as of engine 3.4.0, from the livery's knobs (the content mark
+    then geometry.logo, the sign-off signoff: now the geometry.marks entries named logo and signoff)."""
     g, m = L["geometry"], L["geometry"]["margin"]
-    logo, art, so = g["logo"], L.get("art", {}), L.get("signoff")
+    (lc, logo), art, (sc, so) = worn(L, "logo"), L.get("art", {}), worn(L, "signoff")
+    logo = logo or {"aspect": 1}
     has = lambda k: isinstance(art.get(k), str)
     waves = art.get("waves")
     t = {**lb.BAND, "logo-height": logo.get("title-height", 0.09), **L.get("title", {})}
@@ -34,14 +41,14 @@ def today(L: dict) -> dict:
         t.setdefault("signoff-height", so["height"])
     pad = 1 - 2 * m   # in-flow percentages are of the padded box (scss padding: ... var(--engine-margin))
     box = lambda x, y, w, h: [x, y, w, h]
-    none = logo.get("corner") == "none"
+    none = lc is None
     mark = lambda y, h, role: None if none else {"role": role, "box": box(m, y, h * logo["aspect"] * 9 / 16, h)}
 
     def signoff(role):
         if not so:
             return None
         h = so["height"]; w = h * so["aspect"] * 9 / 16
-        return {"role": role, "box": box(m if so["corner"] == "bottom-left" else 1 - m - w, 1 - so["bottom"] - h, w, h)}
+        return {"role": role, "box": box(m if sc == "bottom-left" else 1 - m - w, 1 - so["bottom"] - h, w, h)}
 
     def wave(style, shift, op):
         return waves and {"style": style, "shift": shift, "role": "secondary", "opacity": op, "line": 2.4 / W}
@@ -51,7 +58,7 @@ def today(L: dict) -> dict:
     # title: padding 180px m 60px, mark top 72px, text max-width 58% (44% with a photo), fineprint bottom 36px max-width 50%
     title = {**empty, "field": {"role": "primary", "box": box(0, 0, 1, 1)}, "art": "title" if has("title") else None,
              "waves": wave("bands", waves and waves["shift"]["title"], [0.18, 0.10]),
-             "mark": mark(72 / H, logo["title-height"], "primary"), "signoff": signoff("primary"),
+             "mark": mark(72 / H, logo.get("title-height", 0.09), "primary"), "signoff": signoff("primary"),
              "column": {"box": box(m, 180 / H, 0.58 * pad, 1 - 240 / H), "anchor": "top", "role": "primary-text",
                         "tab": True, "rule": rule},
              "fineprint": {"box": box(m, 1 - 36 / H - 0.10, 0.50, 0.10), "anchor": "bottom", "role": "primary-text"}}
@@ -68,7 +75,7 @@ def today(L: dict) -> dict:
                 "fineprint": c["fineprint"] and {**c["fineprint"], "role": "foreground"}}
 
     top, bottom, split, mid = t["top"], t["bottom"], t["split"], (1 + t["bottom"]) / 2
-    left = so and so["corner"] == "bottom-left"   # --engine-band-logo-left: the mark opposite the sign-off, else at the margin
+    left = so and sc == "bottom-left"   # --engine-band-logo-left: the mark opposite the sign-off, else at the margin
     sh = so and t["signoff-height"]; sw = so and sh * so["aspect"] * 9 / 16
     lh = t["logo-height"]; lw = lh * logo["aspect"] * 9 / 16
     smark = None if none else {"role": t["field"], "box": box(1 - m - lw if left else m, mid - lh / 2, lw, lh)}
@@ -83,7 +90,7 @@ def today(L: dict) -> dict:
     ccol = {"box": box(m, 150 / H, 0.60 * pad, 1 - 230 / H), "anchor": "middle", "role": "primary-text", "tab": True, "rule": None}
     closing = {**empty, "field": {"role": "primary", "box": box(0, 0, 1, 1)}, "art": "closing" if has("closing") else None,
                "waves": wave("bands", waves and waves["shift"]["title"], [0.18, 0.10]),
-               "mark": mark(81 / H, logo["closing-height"], "primary"), "signoff": signoff("primary"), "column": ccol}
+               "mark": mark(81 / H, logo.get("closing-height", 0.10), "primary"), "signoff": signoff("primary"), "column": ccol}
     cband = {**empty, "field": {"role": t["field"], "box": box(0, 0, 1, 1)},
              "art": "closing" if has("closing") else "title" if has("title") else None,
              "mark": smark, "signoff": ssign, "column": {**ccol, "role": t["field-text"]}}
@@ -91,7 +98,7 @@ def today(L: dict) -> dict:
     dv, d = g["section"], L.get("section", {})
     section = {**empty, "field": {"role": "primary", "box": box(0, 0, 1, 1)}, "art": "section" if has("section") else None,
                "waves": wave("bands", waves and waves["shift"]["section"], [0.18, 0.10]),
-               "mark": mark(72 / H, logo["section-height"], "primary"), "signoff": signoff("primary"),
+               "mark": mark(72 / H, logo.get("section-height", 0.08), "primary"), "signoff": signoff("primary"),
                "column": {"box": box(m, dv["top"], 0.62 * pad, 1 - dv["top"] - dv["bottom"]), "anchor": "middle",
                           "role": "primary-text", "tab": d.get("tab", True), "rule": None},
                "eyebrow": {"label": d.get("label", "Section"),   # label-color resolved to a hex at build
@@ -157,8 +164,8 @@ EXPECTED_DELTAS = {
     "closing column": ({"pdf": "vfill thirds, 0.62W", "html": "centred in padding, 0.528W", "pptx": "fixed 0.30/0.49, 0.62W",
                         "decided": "[m, mark bottom + 0.03, 0.62, 0.88 - y] middle"},
                        each(("closing", "closing-light", "closing-band"), lambda x, L: x["column"].update(
-                           box=[L["geometry"]["margin"], 0.09 + L["geometry"]["logo"]["closing-height"] + 0.03, 0.62,
-                                0.88 - 0.09 - L["geometry"]["logo"]["closing-height"] - 0.03]))),
+                           box=[L["geometry"]["margin"], 0.09 + (worn(L, "logo")[1] or {}).get("closing-height", 0.10) + 0.03, 0.62,
+                                0.88 - 0.09 - (worn(L, "logo")[1] or {}).get("closing-height", 0.10) - 0.03]))),
     "closing-band column": ({"pdf": "strut + vfill", "html": "as closing", "pptx": "0.30/0.49",
                              "decided": "[m, 0.10, 0.62, bottom - 0.13]"},
                             lambda c, L: c["closing-band"]["column"].update(box=[L["geometry"]["margin"], 0.10, 0.62,
@@ -173,7 +180,7 @@ EXPECTED_DELTAS = {
                            lambda c, L: (setbox("fineprint", 1, lambda L: {**lb.BAND, **L.get("title", {})}["bottom"] + 0.018)(c["title-band"], L),
                                          setbox("fineprint", 2, lambda L: {**lb.BAND, **L.get("title", {})}["split"] - L["geometry"]["margin"] - 0.04)(c["title-band"], L))),
     "band mark without a sign-off": ({"pdf": "right", "html": "left", "pptx": "right", "decided": "right"},
-                                     each(("title-band", "closing-band"), lambda x, L: L.get("signoff") or setbox("mark", 0, lambda L:
+                                     each(("title-band", "closing-band"), lambda x, L: worn(L, "signoff")[1] or setbox("mark", 0, lambda L:
                                          1 - L["geometry"]["margin"] - x["mark"]["box"][2])(x, L))),
     "title column top, ncar": ({"pdf": 0.205, "html": 0.20, "pptx": 0.375,
                                 "decided": "ncar and its flavors: pptx's 0.375 (Ben, 2026-10-17); others under the mark"},

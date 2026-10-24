@@ -29,10 +29,6 @@
   --engine-dark-band: #4C5F74;
   --engine-dark-code: #58697D;
   --engine-dark-muted: #C6CCD3;
-  --engine-logo-h: 96.3px;
-  --engine-logo-w: 93.6px;
-  --engine-logo-aspect: 0.9717;
-  --engine-logo-top: 65.5px;
   --engine-margin: 64px;
   --engine-tab-width: 28.8px;
   --engine-wide-margin: 32px;
@@ -90,10 +86,6 @@
   --engine-type-level4: 0.9231;
   --engine-type-level5: 0.9167;
   --engine-font-family: "TeX Gyre Heros";
-  --engine-logo-left: 12.8px;
-  --engine-logo-right: auto;
-  --engine-logo-position: left top;
-  --engine-logo-content: "";
   --engine-title-top: 63px;
   --engine-title-height: 105.3px;
   --engine-title-rule-y: 162px;
@@ -106,8 +98,8 @@
   --engine-title-text-align: center;
   --engine-title-tab: none;
   --engine-title-rule: none;
-  --engine-title-left: calc(12.8px + 40px + var(--engine-logo-w));
-  --engine-title-right: calc(12.8px + 40px + var(--engine-logo-w));
+  --engine-title-left: calc(12.8px + 40px + 93.6px);
+  --engine-title-right: calc(12.8px + 40px + 93.6px);
   --engine-title-color: #FFFFFF;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
@@ -250,11 +242,9 @@ html:root {
   --engine-mark-primary-logo: url("ccp-emblem.png");
   --engine-mark-dark-logo: url("ccp-emblem.png");
 }
-.reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
-.reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
-.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
+.reveal .slides section.slide .engine-mark-top-left { top: 65.5px; left: 12.8px; width: 93.6px; height: 96.3px; background-position: left top; background-image: var(--engine-mark-background-logo); }
+.reveal .slides section.engine-field .engine-mark-top-left { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.engine-dark .engine-mark-top-left { background-image: var(--engine-mark-dark-logo); }
 html .reveal .slides section ul > li::before { content: "●"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }

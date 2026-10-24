@@ -72,10 +72,17 @@
 \expandafter\def\csname engine@mark@primary@signoff\endcsname{\engineliverydir logos/nasa-name-white}
 \expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/meatball-rule}
 \expandafter\def\csname engine@mark@dark@signoff\endcsname{\engineliverydir logos/nasa-name-white}
-% the sign-off lockup's box (signoff)
-\def\engine@signoffheight{0.028}
-\def\engine@signoffbottom{0.035}
-\def\engine@signoffcorner{bottom-left}
+% the content slides' marks by corner (geometry.marks): \engine@corners the worn ones, each one's
+% \engine@corner@<corner>@<key>: mark (its name in \engine@mark@<role>@<name>), height, top or bottom, aspect, inset
+\def\engine@corners{top-right,bottom-left}
+\expandafter\def\csname engine@corner@top-right@mark\endcsname{logo}
+\expandafter\def\csname engine@corner@top-right@height\endcsname{0.075}
+\expandafter\def\csname engine@corner@top-right@top\endcsname{0.045}
+\expandafter\def\csname engine@corner@top-right@aspect\endcsname{1.2146}
+\expandafter\def\csname engine@corner@bottom-left@mark\endcsname{signoff}
+\expandafter\def\csname engine@corner@bottom-left@height\endcsname{0.028}
+\expandafter\def\csname engine@corner@bottom-left@bottom\endcsname{0.035}
+\expandafter\def\csname engine@corner@bottom-left@aspect\endcsname{22.208}
 % fonts: the base family's files, by weight and style
 \def\engine@font@family{Public Sans}
 \def\engine@font@dir{\engineliverydir fonts/}
@@ -181,13 +188,6 @@
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
-\def\engine@geom@logocorner{top-right}
-\def\engine@geom@logoheight{0.075}
-\def\engine@geom@logotop{0.045}
-\def\engine@geom@logoaspect{1.2146}
-\def\engine@geom@logotitleheight{0.16}
-\def\engine@geom@logosectionheight{0.11}
-\def\engine@geom@logoclosingheight{0.16}
 \def\engine@geom@pagenumbercorner{bottom-right}
 \def\engine@geom@sectiontop{0.1333}
 \def\engine@geom@sectionbottom{0.0889}
