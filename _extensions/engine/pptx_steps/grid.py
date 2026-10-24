@@ -51,9 +51,9 @@ import livery as livery_mod
 from .columns import rules
 from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
-from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, em, fit_table, group, inset,
-                     is_body, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title, space_before,
-                     split_br, style_runs)
+from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
+                     inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title,
+                     space_before, split_br, style_runs)
 from .slide_layout import NOTE_GAP, frame_note, note_style, table_height, use_layout
 from .measure import text_height
 
@@ -61,6 +61,7 @@ PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a ca
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
 PIC_FLOOR = 2   # em of the body type: the least height a picture keeps when the lead under it needs its room
+BOXED = re.compile(r"^(Card \d+|Lead|Strip)$")   # a box with a fill of its own: it keeps its colors on a dark slide
 
 
 def _attrs(rest):
@@ -761,6 +762,10 @@ def run(prs, path: Path) -> None:
                 for sh in slide.shapes:
                     if sh._element not in before or sh._element is ph._element:
                         sh.top -= over
+            if is_dark(slide):   # what grid drew outside a box takes the dark ink (a card, lead or strip keeps its own)
+                for sh in slide.shapes:
+                    if sh._element not in before and not BOXED.match(sh.name):
+                        darken(sh._element)
             if beside:   # the note's look, which slide_layout skipped beside two bodies (one is left now)
                 note_style(slide)
             notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]

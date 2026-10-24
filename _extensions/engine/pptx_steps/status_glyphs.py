@@ -17,15 +17,15 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .common import BOXES, LIVERY, ppr_place, rpr, set_fill
+from .common import BOXES, LIVERY, palette, ppr_place, rpr, set_fill
 
 GLYPHS = {"✓": "done", "⚠": "warn", "✗": "fail"}
 STATUS = BOXES["status"]
-MUTED = livery_mod.color(LIVERY, "muted")
 
 
-def mark(p) -> bool:
-    """A paragraph (a:p) led by a status glyph: the glyph made its bullet; False if it is not one."""
+def mark(p, muted: str) -> bool:
+    """A paragraph (a:p) led by a status glyph: the glyph made its bullet, a failed item's text in
+    muted (six digits: the slide's, common.palette()); False if it is not one."""
     ppr = p.find(qn("a:pPr"))
     if ppr is not None and ppr.find(qn("a:buNone")) is not None:   # not a list item: a title, a paragraph
         return False
@@ -58,14 +58,15 @@ def mark(p) -> bool:
     ppr_place(ppr, bu)
     if kind == "fail":   # the failed item's text muted
         for r in runs:
-            set_fill(rpr(r), MUTED)
+            set_fill(rpr(r), muted)
     return True
 
 
 def run(prs, path: Path) -> None:
     n = 0
     for slide in prs.slides:
+        muted = palette(slide)["muted"]
         for p in slide._element.iter(qn("a:p")):
-            n += mark(p)
+            n += mark(p, muted)
     if n:
         print(f"status_glyphs: {n} status item(s) → {path.name}")
