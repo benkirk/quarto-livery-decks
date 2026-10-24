@@ -300,10 +300,17 @@ def test_no_private_imports():
 def test_slide_kinds_agree():
     """The slide kinds a composition draws (feature, closing, full) are named once in Lua
     (engine-common.lua SLIDE_KINDS) and must appear in the two lists that cannot read it: the HTML
-    autofit's NEVER selector (engine-revealjs.js) and livery_build's content-art selector."""
+    autofit's NEVER selector (engine-revealjs.js) and livery_build's content-art selector; with the
+    layout classes (LAYOUT_CLASSES) they are slide-layout.lua's notes-line WORDS, a hand list in its
+    own order (.center is hcenter and vcenter there, .brand-dark the word dark; references its own)."""
     lua = (ENGINE / "engine-common.lua").read_text()
     kinds = set(re.findall(r"(\w+) = true", re.search(r"SLIDE_KINDS = \{([^}]*)\}", lua).group(1)))
     assert kinds == {"feature", "closing", "full"}, kinds
+    classes = set(re.findall(r'\[?"?([\w-]+)"?\]? = true', re.search(r"LAYOUT_CLASSES = \{([^}]*)\}", lua).group(1)))
+    words = set(re.findall(r'"([\w-]+)"', re.search(r"local WORDS = \{([^}]*)\}",
+                                                    (ENGINE / "slide-layout.lua").read_text()).group(1)))
+    want = {"dark" if c == "brand-dark" else c for c in classes - {"center"}} | kinds | {"references"}
+    assert words == want, f"slide-layout.lua WORDS: missing {want - words}, extra {words - want}"
     js = (ENGINE / "engine-revealjs.js").read_text()
     never = set(re.findall(r"\.([\w-]+)", re.search(r'NEVER = "([^"]*)"', js).group(1)))
     assert kinds <= never, f"engine-revealjs.js NEVER lacks {kinds - never}"
