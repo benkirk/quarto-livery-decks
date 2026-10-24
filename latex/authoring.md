@@ -50,6 +50,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Citations (biblatex, author-year) | `\usepackage[style=authoryear,backend=bibtex]{biblatex}` and `\addbibresource{references.bib}` in the preamble (`backend=biber` where biber is installed); `\parencite{key}`, `\textcite{key}`, `\footcite{key}` (a footnote at the frame's foot) |
 | The reference list | `\begin{frame}[allowframebreaks]{References}\printbibliography[heading=none]\end{frame}`: the footnote size, a 1.5 em hanging indent; a long list runs on, (1), (2) |
 | Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` |
+| Dark slide: the frame on the livery's dark role, its text on-dark, its accents secondary, the dark role's mark; a card keeps its colors (a no-op on a dark livery) | `\begin{frame}[enginedark]{Title}` |
 | Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body; the bare `[enginefull]` with an `enginegallery` in the body fills the slide with the gallery |
 | Closing slide | `\engineclosingframe{Thank you!}{...}` |
 | Speaker notes | `\note{...}` in the frame; `\setbeameroption{show notes}` in the preamble shows them |
@@ -205,7 +206,6 @@ What the Quarto decks do that a LaTeX deck does not, and the LaTeX way:
 | The linked-image footer | `linked-images.lua` writes it per format | `\href{url}{\includegraphics{...}}` and the URL as a slide footnote (`\enginefootnote`) |
 | Quarto callouts | Quarto's own tcolorboxes | beamer's `block`, `exampleblock`, `alertblock`, or a `tcolorbox` in the roles |
 | HTML autofit and `{.fill}` | a browser measures the slide | `[shrink]` on the frame, `enginescale`, `typescale=` for the deck |
-| `{.brand-dark}` | an HTML-only slide class | a dark livery (`nasa-dark`), the whole deck |
 | `date: last-modified` | Quarto reads the file's time | `\date{\today}` |
 | `{{< include file >}}` | a Quarto shortcode | `\lstinputlisting{file}` to show it, `\input{file}` to use it |
 | Speaker notes in PowerPoint's pane | a pptx has one | `\note{...}`, shown by `\setbeameroption{show notes}` (or `show notes on second screen=right`) |

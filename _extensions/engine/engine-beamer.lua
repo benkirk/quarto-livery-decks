@@ -140,7 +140,8 @@ local function hoist_footnotes(blocks)
   return out
 end
 
--- Per-slide layout controls (C.take_layout; .fill means nothing here): the body goes in a Div
+-- Per-slide layout controls (C.take_layout; .fill means nothing here; .brand-dark the frame key
+-- enginedark, which the theme makes a no-op on a dark livery): the body goes in a Div
 -- before the footnote hoist (which reaches into it) and becomes raw LaTeX afterwards (unwrap_layout).
 local used = { hcenter = false }
 
@@ -153,6 +154,7 @@ local function wrap_layout(blocks)
     local lay = C.content_heading(blk, slide_level, CONTENT_KINDS) and C.take_layout(blk, "engine-beamer")
     if lay then
       if lay.v then add_frameoption(blk, "c") end
+      if lay.dark then add_frameoption(blk, "enginedark") end   -- a no-op on a dark livery (the theme's)
       local slide
       slide, i = C.slide_from(blocks, i, slide_level)
       local body, notes = C.split_notes(slide)

@@ -457,13 +457,14 @@ mpirun -n 4 ./a.out
   \note{A full frame takes one image, then an optional \texttt{\textbackslash enginefullcaption}.}
 \end{frame}
 
-\begin{frame}{A list, step by step}
+\begin{frame}[enginedark]{Dark slide, step by step}
+  % [enginedark]: the frame on the livery's dark role, its text on-dark, its accents secondary, the
+  % dark role's mark (a no-op on a dark livery: make variants builds this deck under nasa-dark);
   % beamer's overlays: <+-> reveals the items one at a time (one page per step)
   \begin{itemize}
   \item<+-> \texttt{\textbackslash item<+->} reveals a list one item at a time
   \item<+-> one PDF page per step
-  \item<+-> a dark slide is the dark livery's: \texttt{make variants} builds this deck under
-    \texttt{nasa-dark}
+  \item<+-> \texttt{[enginedark]} sets the frame on the dark role
   \end{itemize}
 \end{frame}
 

@@ -609,7 +609,7 @@
 \newbox\engine@cardboxi \newbox\engine@cardboxii \newbox\engine@cardboxiii
 \newbox\engine@cardboxiv \newbox\engine@cardboxv \newbox\engine@cardboxvi
 \def\engine@cardbox#1{\csname engine@cardbox\romannumeral#1\endcsname}
-\def\engine@labelcolor{BrandMuted}\def\engine@bigcolor{BrandPrimaryContrast}
+\def\engine@labelcolor{EngineLightBrandMuted}\def\engine@bigcolor{EngineLightBrandPrimaryContrast}   % a dark frame's card keeps them (the outer theme's snapshots)
 % (each its own paragraph, opened by \par so a text line before it needs no blank line, and ended
 % inside the font's group: the line takes the font's leading)
 \newcommand\enginelabel[1]{\par{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}\par}}

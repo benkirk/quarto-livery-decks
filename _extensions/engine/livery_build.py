@@ -868,6 +868,7 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for key, color in BEAMER_BLENDS.items():   # a livery's blends: override, which the theme would recompute
         if key in livery["blends"] and livery["blends"][key] != blends.get(key):
             L.append(f"\\colorlet{{{color}}}{{{tex_name('brand-' + key, {})}}}")
+    L.append(f"\\def\\engine@mode{{{livery['mode']}}}   % dark: light text on a dark background (a dark frame is every frame)")
     L.append("% the roles and blends by name (a card's or strip's role=): \\engine@role@<name> is its color")
     for role, tex in livery["latex"]["roles"].items():   # hyphenated names: through \csname
         L.append(f"\\expandafter\\def\\csname engine@role@{role}\\endcsname{{{tex}}}")

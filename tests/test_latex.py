@@ -115,6 +115,15 @@ A line under it.
 \begin{enginecard}{OTHER}{}Text.\end{enginecard}
 \end{enginecards}
 \end{frame}
+\begin{frame}[enginedark]{Dark}
+\begin{itemize}\item A list item with \texttt{inline code}\end{itemize}
+\begin{enginestatus}\done Done\fail Failed\end{enginestatus}
+\begin{enginecards}{2}\begin{enginecard}{CARD}{}\enginelabel{A label} On its own fill.\end{enginecard}
+\begin{enginecard}{OTHER}{}Text.\end{enginecard}\end{enginecards}
+\enginefootnotespring
+\begin{enginefootnotes}\enginefootnote{†}{A footnote on the dark frame.}\end{enginefootnotes}
+\end{frame}
+\begin{frame}{Light again}Back on the background.\end{frame}
 \sectionsubtitle{Its subtitle}
 \section{Numbered}
 \begin{frame}{In the section}A slide.\end{frame}
@@ -238,7 +247,7 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 16, "the pick=<2> and the \\uncover<2-> frames are two pages, the other twelve one each"
+    assert len(texts) == 18, "the pick=<2> and the \\uncover<2-> frames are two pages, the other fourteen one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
     assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
     for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
@@ -268,11 +277,45 @@ def test_pictured_card(deck):
     assert len([l for l in out.splitlines()[2:] if l.split()[2:3] == ["image"]]) >= 1, out
 
 
+def test_dark_frame(deck):
+    """[enginedark]: the page on the livery's dark role (ncar's #011837, read off the page's corner), its
+    text there; the frame after it back on the background (the colors put back on reset)."""
+    from PIL import Image
+    d, _ = deck
+    t = " ".join(pages(d / "deck.pdf")[9].split())
+    assert t.replace("TEST MARKING", "").strip().startswith("Dark") and "inline code" in t and "A footnote on the dark frame." in t and "A LABEL" in t, t
+    for page, want in ((10, (0x01, 0x18, 0x37)), (11, (0xFF, 0xFF, 0xFF))):
+        subprocess.run(["pdftoppm", "-r", "20", "-f", str(page), "-l", str(page), "-png", str(d / "deck.pdf"), str(d / f"pg{page}")],
+                       check=True)
+        im = Image.open(next(d.glob(f"pg{page}*.png"))).convert("RGB")
+        px = im.getpixel((im.width // 2, im.height // 2 + im.height // 4))
+        assert all(abs(a - b) <= 3 for a, b in zip(px, want)), (page, px, want)
+    assert "Light again" in pages(d / "deck.pdf")[10]
+
+
+def test_dark_frame_on_a_dark_livery(tmp_path):
+    """[enginedark] under nasa-dark (a dark livery, livery.sty's \\engine@mode dark) changes nothing:
+    the page is the livery's background, as the frame without the key."""
+    if not (shutil.which("xelatex") and shutil.which("latexmk")):
+        pytest.skip("xelatex and latexmk")
+    from PIL import Image
+    tex = DECK.split("\\begin{document}")[0].replace("liveries/ncar", "liveries/nasa-dark")
+    tex += "\\begin{document}\n\\begin{frame}[enginedark]{Dark}Text.\\end{frame}\n\\begin{frame}{Plain}Text.\\end{frame}\n\\end{document}\n"
+    r, log = compile_tex(tmp_path, "dd", tex)
+    assert r.returncode == 0, log[-2000:]
+    px = []
+    for page in (1, 2):
+        subprocess.run(["pdftoppm", "-r", "20", "-f", str(page), "-l", str(page), "-png", str(tmp_path / "dd.pdf"), str(tmp_path / f"p{page}")], check=True)
+        im = Image.open(next(tmp_path.glob(f"p{page}*.png"))).convert("RGB")
+        px.append(im.getpixel((im.width // 2, im.height // 2 + im.height // 4)))
+    assert px[0] == px[1], px
+
+
 def test_unnumbered_divider(deck):
     """\\enginesectionunnumbered draws a divider outside the count: no eyebrow, its subtitle, and
     the next \\section is still section 2."""
     d, _ = deck
-    texts = pages(d / "deck.pdf")[9:]
+    texts = pages(d / "deck.pdf")[11:]
     words = [" ".join(t.replace("TEST MARKING", "").split()) for t in texts]
     assert words[0] == "SECTION 1 Numbered Its subtitle" and "In the section" in words[1], words
     assert words[2] == "Backup A subtitle", words[2]

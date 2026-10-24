@@ -51,8 +51,11 @@
   \ifx\engine@tmpa\engine@tmpb\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
 \setbeamersize{text margin left=\engine@margin,text margin right=\engine@margin}
 
-% brand lockup shown at the top right of content frames
-\def\engine@framelogo{\enginelogo[height=\engine@logoheight]{light}}
+% brand lockup shown at the top right of content frames (a dark frame's, [enginedark]: the dark
+% role's mark, livery.sty's \engine@mark@dark@logo)
+\newif\ifengine@darkframe
+\def\engine@framelogo{\ifengine@darkframe\includegraphics[height=\engine@logoheight]{\csname engine@mark@dark@logo\endcsname}%
+  \else\enginelogo[height=\engine@logoheight]{light}\fi}
 % a user \logo{...} (or Quarto's `logo:') is beamer's secondary logo: set in
 % the footline, bottom right, at its natural size (as in beamer's default
 % themes), so beamer reserves room for it and content stops
@@ -68,10 +71,14 @@
       \ifdim\wd\engine@userlogo<0.8\paperwidth\hskip\engine@margin\fi}%
     \vskip0.01\paperheight}}
 \newdimen\engine@logowidth
+\newdimen\engine@lightlogowidth \newdimen\engine@darklogowidth   % the content mark's and the dark frame's
 \AtBeginDocument{%
-  \settowidth\engine@logowidth{\engine@framelogo}%
-  \ifengine@framelogo\else\engine@logowidth=0pt\fi
-  \engine@ifcorner{\engine@geom@logocorner}{none}{\engine@logowidth=0pt}{}}
+  \settowidth\engine@lightlogowidth{\engine@framelogo}%
+  \begingroup\engine@darkframetrue\global\setbox\@tempboxa\hbox{\engine@framelogo}\endgroup
+  \engine@darklogowidth=\wd\@tempboxa
+  \ifengine@framelogo\else\engine@lightlogowidth=0pt \engine@darklogowidth=0pt\fi
+  \engine@ifcorner{\engine@geom@logocorner}{none}{\engine@lightlogowidth=0pt \engine@darklogowidth=0pt}{}%
+  \engine@logowidth=\engine@lightlogowidth}
 % the sign-off lockup (signoff in livery.yml), at the foot, when the livery has one: the field
 % role's (#1: background on a content frame), livery.sty's \engine@mark@<role>@signoff
 \def\engine@signoff#1{%
@@ -355,8 +362,10 @@
   \begin{tikzpicture}[x=1pt,y=1pt]
     \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
     \engine@ifstyle{normal}{%
-      \engine@art{content}%
-      \ifengine@waves\engine@lines{\engine@waveshift@content}{BrandSurface}\fi
+      \ifengine@darkframe\else   % a dark frame: on the dark role, no content art or waves
+        \engine@art{content}%
+        \ifengine@waves\engine@lines{\engine@waveshift@content}{BrandSurface}\fi
+      \fi
       \ifengine@framelogo
         \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
           \node[anchor=north west,inner sep=0pt]
@@ -366,7 +375,7 @@
             at (\paperwidth-\engine@logoinset,\paperheight-\engine@logotop) {\engine@framelogo};
         }}%
       \fi
-      \engine@signoff{background}%
+      \ifengine@darkframe\engine@signoff{dark}\else\engine@signoff{background}\fi
     }{}%
     \engine@ifstyle{title}{\engine@drawcomp{\engine@titlecomp}{title}}{}%
     \engine@ifstyle{closing}{\engine@drawcomp{\engine@closingcomp}{closing}}{}%
@@ -449,16 +458,23 @@
 \def\engine@touchedcolors{normal text,title,subtitle,author,institute,date,%
 frametitle,framesubtitle,structure,item,subitem,subsubitem,local structure,%
 enumerate item,alerted text,block title,block body,block title example,%
-block body example,block title alerted,block body alerted}
+block body example,block title alerted,block body alerted,%
+background canvas,frametitle rule,page number in head/foot,footline,caption,footnote}
+% the colors a dark frame swaps outside beamer's (the inner theme draws with them), snapshotted at
+% \begin{document} as EngineLight<name> and put back on reset; a card reads the snapshots
+\def\engine@darkswapped{BrandMuted,BrandPrimaryContrast,enginetableband,enginetablerule}
 \def\engine@colorslots{thcfg,thcbg,thcinherits,thcuse}
 \def\engine@copycolors#1#2{% #1 -> #2 prefixes, for every touched color & slot
   \@for\engine@c:=\engine@touchedcolors\do{%
     \@for\engine@s:=\engine@colorslots\do{%
       \expandafter\let\csname #2\engine@s @\engine@c\expandafter\endcsname
         \csname #1\engine@s @\engine@c\endcsname}}}
-\AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}}
+\AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}%
+  \@for\engine@c:=\engine@darkswapped\do{\colorlet{EngineLight\engine@c}{\engine@c}}}
 \def\engine@resetframe{%
   \def\engine@framestyle{normal}\global\engine@haspanelfalse\global\engine@galn=\z@   % no gallery carried over
+  \engine@darkframefalse\engine@logowidth=\engine@lightlogowidth
+  \@for\engine@c:=\engine@darkswapped\do{\colorlet{\engine@c}{EngineLight\engine@c}}%
   % the text color too: a field's hook (\engine@fieldcolors) sets it where the frame's group
   % does not undo it, so the frame after a closing slide had white body text
   \def\engine@framehook{\usebeamercolor[fg]{normal text}}%
@@ -486,6 +502,37 @@ block body example,block title alerted,block body alerted}
 \define@key{beamerframe}{engineclosing}[true]{%
   \def\engine@framestyle{closing}%
   \engine@atframe{\engine@fieldcolors{EngineC\engine@closingcomp Text}}}
+
+% [enginedark]: a content frame on the livery's dark role ({.brand-dark}): its text on-dark, its
+% accents (bullets, alerts, the subtitle, a table's head rule) secondary, its muted text (notes,
+% captions, footnotes) dark-muted, the hairline and table rules dark-rule, the bands dark-band, the
+% dark role's mark and sign-off, no content art or waves. A card keeps its colors (its text
+% BrandText, its label and big number the light snapshots). On a dark livery (livery.sty's
+% \engine@mode) a no-op: its every frame is dark.
+\providecommand\engine@mode{light}
+\define@key{beamerframe}{enginedark}[true]{%
+  \def\engine@tmpa{dark}\ifx\engine@mode\engine@tmpa\else
+    \engine@darkframetrue
+    \engine@atframe{\engine@darkcolors}%
+  \fi}
+\def\engine@darkcolors{%
+  \setbeamercolor{background canvas}{bg=BrandDark}%
+  \engine@fieldcolors{BrandOnDark}%
+  \setbeamercolor{alerted text}{fg=BrandSecondary}%
+  \setbeamercolor{framesubtitle}{fg=BrandSecondary}%
+  \setbeamercolor{structure}{fg=BrandSecondary}%
+  \setbeamercolor{item}{fg=BrandSecondary}%
+  \setbeamercolor{subitem}{fg=BrandSecondary}%
+  \setbeamercolor{subsubitem}{fg=BrandSecondary}%
+  \setbeamercolor{enumerate item}{fg=BrandSecondary}%
+  \setbeamercolor{frametitle rule}{fg=BrandDarkRule}%
+  \setbeamercolor{page number in head/foot}{fg=BrandOnDark}%
+  \setbeamercolor{footline}{fg=BrandOnDark}%
+  \setbeamercolor{caption}{fg=BrandDarkMuted}%
+  \setbeamercolor{footnote}{fg=BrandDarkMuted}%
+  \colorlet{BrandMuted}{BrandDarkMuted}\colorlet{BrandPrimaryContrast}{BrandSecondary}%
+  \colorlet{enginetableband}{BrandDarkBand}\colorlet{enginetablerule}{BrandDarkRule}%
+  \engine@logowidth=\engine@darklogowidth}
 
 % \engine@fieldcolors{<color>}: every text color for a field in <color>
 \def\engine@fieldcolors#1{%
