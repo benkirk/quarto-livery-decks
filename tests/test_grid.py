@@ -50,6 +50,10 @@ AGENDA = ('# One\n\n## Where we are {.agenda}\n\n# Two\n\n## Two body\n\nText.\n
 FOLDED = ('## Lead under a figure\n\n![⟦engine:lead⟧\\\n**The headline** of it\\\nA plain line.\\\n⟦engine:end⟧](p.jpg)\n\n'
           '## Lead over a table\n\n::: {.lead}\n**The headline** of it\n:::\n\n| a | b | c | d |\n|---|---|---|---|\n| 1 | 2 | 3 | 4 |\n\n'
           'Table: Millions of core-hours.\n\n::: notes\nengine-layout: note\n:::\n')   # slides 21 and 22
+PICTURED = ('## Pictured cards\n\n:::: {.columns}\n::: {.column .card}\n### One\n\n![The caption](p.jpg)\n\nA line under it.\n:::\n'
+            '::: {.column .card}\n### Two\nText only.\n:::\n::::\n\n'
+            '## Pictured column\n\n:::: {.columns}\n::: {.column}\nAbove.\n\n![](p.jpg)\n\nBelow.\n:::\n'
+            '::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n')   # slides 23 and 24
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -57,7 +61,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
       '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
-      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA + '\n' + FOLDED)
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA + '\n' + FOLDED + '\n' + PICTURED)
 STEP = """
 import sys
 from pathlib import Path
@@ -161,9 +165,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 23, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 25, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -268,6 +272,49 @@ def test_cards(deck):
     big = next(p for p in body if p.text == "$20M")
     assert label.runs[0]._r.find("{*}rPr").get("cap") == "all", "the label in caps"
     assert big.runs[0].font.size.pt == livery_mod.half_pt(livery["type"]["roles"]["display"]["pt"]), "the big number's size"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_pictured_cards(deck):
+    """A picture in a card (figures.py): inside the card's group, the card's width less its pads, its
+    aspect kept, a body pad under the head; its caption box right under it, centered, the caption
+    size, muted; the cards one height; no picture shape outside the drawn ones, no marker left."""
+    import livery as livery_mod
+    from PIL import Image
+    livery, prs, _ = deck
+    slide = prs.slides[23]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert "Card 1 picture" in {sh.name for sh in flat(by["Card 1"].shapes)}, "the picture outside its card's group"
+    pic, cap, fill = by["Card 1 picture"], by["Card 1 picture caption"], by["Card 1 fill"]
+    v, h = (round(x * livery_mod.type_pt(livery, "body") * 12700) for x in livery["boxes"]["card"]["pad"])
+    assert abs(pic.width - (fill.width - 2 * h)) <= 2 and abs(pic.left - (fill.left + h)) <= 2, f"the picture {pic.left, pic.width}"
+    iw, ih = Image.open(IMAGE).size
+    assert abs(pic.width / pic.height - iw / ih) < 0.01, "the picture's aspect"
+    head = by["Card 1 title"]
+    assert pic.top == head.top + head.height + v, "a body pad under the head"
+    assert cap.top == pic.top + pic.height and cap.text_frame.text == "The caption", "the caption under the picture"
+    run = cap.text_frame.paragraphs[0].runs[0]
+    assert run.font.size.pt == livery_mod.half_pt(livery_mod.type_pt(livery, "caption")), "the caption size"
+    assert str(run.font.color.rgb) == livery["roles"]["muted"][1:], "the caption muted"
+    assert cap.text_frame.paragraphs[0]._p.find("{*}pPr").get("algn") == "ctr", "the caption centered"
+    assert by["Card 1 body 2"].text_frame.text == "A line under it." and by["Card 1 body 2"].top >= cap.top + cap.height
+    assert by["Card 1 fill"].height == by["Card 2 fill"].height, "the cards one height"
+    assert [sh.name for sh in flat(slide.shapes) if sh.shape_type == 13] == ["Card 1 picture"], "a picture of pandoc's"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_pictured_column(deck):
+    """A picture in a plain column of a three-column slide: between that column's text boxes, at the
+    column's width, centered in it; one slide (pandoc split it before)."""
+    livery, prs, _ = deck
+    assert len(prs.slides) == 25, f"{len(prs.slides)} slides: a pictured slide split"
+    slide = prs.slides[24]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    pic, (x, w) = by["Column 1 picture"], boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])[0]
+    assert abs(pic.left - x) <= 6 and abs(pic.width - w) <= 6, f"the picture {pic.left, pic.width}, want {x, w}"
+    above, below = by["Column 1"], by["Column 1 3"]
+    assert above.text_frame.text == "Above." and below.text_frame.text == "Below."
+    assert above.top + above.height <= pic.top and pic.top + pic.height <= below.top, "the picture between its text"
     assert "⟦" not in slide._element.xml, "a marker left"
 
 

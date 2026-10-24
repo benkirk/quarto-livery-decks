@@ -236,6 +236,20 @@ def style_runs(p, size=None, bold=None, color=None, caps=False):
             set_fill(el, color)
 
 
+CAPTION_PT = livery_mod.type_pt(LIVERY, "caption")
+
+
+def caption_para(p, color=None):
+    """A caption paragraph (a gallery's, a picture's in a cell): centered, no space before it, the
+    caption size, muted (or color, a six-digit hex)."""
+    ppr = p.find(qn("a:pPr"))
+    if ppr is None:
+        ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
+    ppr.set("algn", "ctr")
+    space_before(p, 0)
+    style_runs(p, CAPTION_PT, color=color or livery_mod.hex(LIVERY, "muted"))
+
+
 def body_box(slide, x, y, w, h, paragraphs, name):
     """A text box that renders as the body placeholder does: the master's body list style (bullets,
     sizes, spacing per level) in its lstStyle and its insets, word wrap, shrink on overflow; the
