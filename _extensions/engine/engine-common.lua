@@ -958,6 +958,17 @@ local function top_rails(blocks, livery, who, draw)
                    function(r, kind) return draw(kind, r) end, who, "list")
 end
 
+-- An image src Quarto rendered (under figure-*/ or *_files/: an executed cell's plot or a baked
+-- diagram), gone from disk by the time the pptx steps run.
+local function is_rendered(src)
+  return src:match("figure%-[%w%-]+/") ~= nil or src:match("_files/") ~= nil
+end
+
+-- An image src as a file path: percent-decoded (pandoc writes a space as %20).
+local function decode_src(src)
+  return (src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
+end
+
 -- Image galleries (::: {.gallery cols= rows= fit= height=}): a div of image files, each its own paragraph
 -- (`![Caption](path)` a Figure, `![](path)` a Para of one Image), drawn as a grid of equal cells in every
 -- format. gallery_items() reads one: { cols, rows, fit, height = number|nil, items = { { src, caption =
@@ -1067,7 +1078,7 @@ local function gallery_items(div, who)
     if linked then return refuse("image inside a link is not drawn (links round gallery images are deferred)") end
     if not imgs then return refuse("holds image files, each its own paragraph; a plot or diagram is not drawn") end
     for _, img in ipairs(imgs) do
-      if img.src:match("figure%-[%w%-]+/") or img.src:match("_files/") then
+      if is_rendered(img.src) then
         return refuse("holds image files; " .. img.src .. " is an executed cell's plot or a baked diagram, not drawn")
       end
       img.attributes["width"], img.attributes["height"] = nil, nil   -- the cell sizes the picture
@@ -1116,7 +1127,7 @@ end
 -- <output>_files/mediabag/<src> (out: the output file, PANDOC_STATE.output_file), and names that.
 -- Beamer's alone; here so tests/test_gallery.py reaches it.
 local function latex_file(src, out)
-  local file = src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+  local file = decode_src(src)
   local _, bytes = pandoc.mediabag.lookup(src)
   if not bytes then return file end
   local stem = (out or "index.tex"):gsub("%.[^.%/]*$", "")
@@ -1211,5 +1222,5 @@ return {
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
   cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
-  latex_file = latex_file,
+  latex_file = latex_file, is_rendered = is_rendered, decode_src = decode_src,
 }

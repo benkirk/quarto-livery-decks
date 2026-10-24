@@ -135,8 +135,8 @@ end
 -- caption, `⟦engine:end⟧`; nil when its bytes must ride along and cannot (warned of)
 local function picture_marks(fig, title)
   local attrs = "picture src=" .. encode(fig.src)
-  if fig.src:match("figure%-[%w%-]+/") or fig.src:match("_files/") then   -- gone from disk by the pptx steps
-    local path = fig.src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+  if C.is_rendered(fig.src) then   -- gone from disk by the pptx steps
+    local path = C.decode_src(fig.src)
     if not path:match("^/") then path = pandoc.path.join({ pandoc.system.get_working_directory(), path }) end
     local f = io.open(path, "rb")
     local data = f and f:read("a")
@@ -180,8 +180,9 @@ end
 local function flow(blocks, title, out, cell)
   for _, b in ipairs(blocks) do
     local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
-    local fig, linked
+    local fig, linked, tbl
     if cell then fig, linked = C.cell_figure(b) end
+    if cell and b.t == "Table" then tbl = C.simple_table(b) end
     if label or big then
       out:insert(prefixed(label and "label" or "big", label or big))
     elseif b.t == "Div" and C.has_class(b, "strip") then   -- a strip keeps its box: grid.py draws it
@@ -200,8 +201,8 @@ local function flow(blocks, title, out, cell)
     elseif linked then
       warn(title, "a linked picture in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
-    elseif cell and b.t == "Table" and C.simple_table(b) then
-      out:extend(table_marks(C.simple_table(b)))
+    elseif tbl then
+      out:extend(table_marks(tbl))
     elseif cell and b.t == "Div" and not C.is_notes(b) then   -- a cell with its code beside its plot: unwrapped
       flow(b.content, title, out, cell)
     elseif cell and b.t == "Table" then
