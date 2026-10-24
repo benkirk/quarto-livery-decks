@@ -4,10 +4,10 @@ them (engine-common.lua), and pptx_steps/marking.py.
     python3 -m pytest tests/test_marking.py
 
 The build places each named strip by its edge, offset, width and alignment, in the livery's order.
-The pptx step draws every strip on every slide with the deck's text (pandoc records `marking:` in
-docProps/custom.xml when it is a string, slide-layout.lua flattens a map to `engine-marking-<name>`),
-else the strip's default, and none for `none` or a strip without a default. The step runs in a
-subprocess, under the livery its LIVERY_DIR names. Needs pandoc ($QUARTO_PANDOC).
+slide-layout.lua (under a `quarto` shim) writes every strip's text to docProps/custom.xml as
+`engine-marking-<name>` from engine-common.lua's one reader of the deck's `marking:` (the deck's text,
+else the strip's default, "none" for no strip), and the pptx step draws each strip on every slide.
+The step runs in a subprocess, under the livery its LIVERY_DIR names. Needs pandoc ($QUARTO_PANDOC).
 """
 
 import json
@@ -20,7 +20,7 @@ import pytest
 import livery as livery_mod
 import livery_build as lb
 
-from conftest import ENGINE, ROOT, lua_common
+from conftest import ENGINE, ROOT, lua_common, slide_layout_shim
 
 DEMO = "This presentation contains no sensitive information"
 STEP = """
@@ -65,9 +65,10 @@ def test_names_and_order():
 def strips(pandoc_deck, tmp, name, front, livery_dir=None):
     """The markings (name, text, size in pt) on each slide of a two-slide deck after the steps, under
     the livery name (or the directory livery_dir)."""
-    md = (f"---\n{front}---\n\n" if front else "") + "## a\n\nOne.\n\n## b\n\nTwo.\n"
-    pandoc_deck(tmp, md, "t.pptx")
-    env = {**os.environ, "LIVERY_DIR": str(livery_dir or ROOT / "liveries" / name), "PYTHONPATH": str(ENGINE)}
+    d = livery_dir or ROOT / "liveries" / name
+    md = f"---\nlivery: {d}\n{front}---\n\n## a\n\nOne.\n\n## b\n\nTwo.\n"   # the filter reads the livery's strips
+    pandoc_deck(tmp, md, "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
+    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
     subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, check=True, capture_output=True)
     from pptx import Presentation
     prs = Presentation(str(tmp / "t.pptx"))
@@ -79,7 +80,7 @@ def strips(pandoc_deck, tmp, name, front, livery_dir=None):
     ("nasa-jsc-eg", "", DEMO),                       # the livery's default
     ("nasa-jsc-eg", "marking: CUI\n", "CUI"),        # the deck's own
     ("nasa-jsc-eg", "marking: none\n", None),        # turned off
-    ("nasa-jsc-eg", "engine-marking-banner: none\n", None),   # turned off by name (slide-layout.lua's flattening)
+    ("nasa-jsc-eg", "marking: {banner: none}\n", None),   # turned off by name
     ("ncar", "", None),                              # no default, no strip
     ("ncar", "marking: CUI//SP-EXPT\n", "CUI//SP-EXPT"),
 ])
@@ -104,8 +105,8 @@ def two(tmp_path_factory, tmp_livery):
 @pytest.mark.parametrize("front, want", [
     ("", [("Marking banner", "TOP", 14), ("Marking legend", "FOOT", 8)]),        # both defaults, each its size
     ("marking: CUI\n", [("Marking banner", "CUI", 14), ("Marking legend", "FOOT", 8)]),   # a string: the first
-    ("engine-marking-legend: LEGEND\n", [("Marking banner", "TOP", 14), ("Marking legend", "LEGEND", 8)]),
-    ("engine-marking-legend: none\n", [("Marking banner", "TOP", 14)]),
+    ("marking: {legend: LEGEND}\n", [("Marking banner", "TOP", 14), ("Marking legend", "LEGEND", 8)]),
+    ("marking: {legend: none}\n", [("Marking banner", "TOP", 14)]),
     ("marking: none\n", []),                                                     # none: every strip off
 ])
 def test_two_strips(pandoc_deck, tmp_path, two, front, want):

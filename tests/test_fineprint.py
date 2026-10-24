@@ -18,7 +18,7 @@ import sys
 
 import pytest
 
-from conftest import ENGINE, ROOT, pandoc_exe, run
+from conftest import ENGINE, ROOT, pandoc_exe, run, slide_layout_shim
 
 NAME = "fp"
 TEXT = "First notice, (a) and (b).\n\nSecond notice."
@@ -29,12 +29,6 @@ from pptx import Presentation
 from pptx_steps import slide_layout
 p = Path(sys.argv[1]); prs = Presentation(p); slide_layout.run(prs, p); prs.save(p)
 """
-SHIM = """
-quarto = { doc = { is_format = function(f) return f == "pptx" end },
-           log = { warning = function(s) io.stderr:write("WARNING: " .. s .. "\\n") end } }
-PANDOC_SCRIPT_FILE = "{filter}"
-dofile(PANDOC_SCRIPT_FILE)
-"""   # slide-layout.lua under plain pandoc: the format test, the log, its own path (engine-common.lua beside it)
 
 
 def flavor(tmp, compositions):
@@ -72,9 +66,7 @@ def test_text_on_a_closing_fails(tmp_path):
 
 def flatten(tmp_path, front):
     """slide-layout.lua's engine-fineprint for the front matter (None: not set)."""
-    shim = tmp_path / "shim.lua"
-    shim.write_text(SHIM.replace("{filter}", str(ENGINE / "slide-layout.lua")))
-    r = subprocess.run([pandoc_exe(), "--lua-filter", str(shim), "-t", "json"], input=f"---\n{front}---\n\n## a\n\nx\n",
+    r = subprocess.run([pandoc_exe(), "--lua-filter", str(slide_layout_shim(tmp_path)), "-t", "json"], input=f"---\n{front}---\n\n## a\n\nx\n",
                        text=True, capture_output=True, check=True)
     m = json.loads(r.stdout)["meta"].get("engine-fineprint")
     return m and m["c"]
@@ -95,9 +87,7 @@ def drawn(pandoc_deck, tmp, d, front):
     """The cover's Fineprint box after slide-layout.lua and the step: (its paragraphs, size pt, color
     hex, anchor), or None."""
     tmp.mkdir()
-    shim = tmp / "shim.lua"
-    shim.write_text(SHIM.replace("{filter}", str(ENGINE / "slide-layout.lua")))
-    pandoc_deck(tmp, f"---\ntitle: A deck\n{front}---\n\n## a\n\nOne.\n", "t.pptx", "--lua-filter", str(shim))
+    pandoc_deck(tmp, f"---\ntitle: A deck\n{front}---\n\n## a\n\nOne.\n", "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
     env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
     r = subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr

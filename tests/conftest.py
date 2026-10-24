@@ -4,7 +4,8 @@ pytest.ini puts _extensions/engine on the path, so a test imports the engine's t
 (`import livery_build`, `from pptx_steps import svg_fallback`) as the tools import each other.
 Here: ROOT and ENGINE; `livery`, a test argument that runs the test once per bundled livery, named
 by it; `run`, the livery command as a subprocess; `pandoc_exe`, pandoc's path; `lua_common`,
-engine-common.lua's functions on markdown under `pandoc lua` with a `quarto` shim; `pandoc_deck`,
+engine-common.lua's functions on markdown under `pandoc lua` with a `quarto` shim; `slide_layout_shim`,
+the pptx filter as a `--lua-filter` for plain pandoc; `pandoc_deck`,
 a pptx pandoc writes from markdown, as its zip parts; `tmp_livery`, a bundled livery copied with one
 top-level block replaced and built; `flat`, a slide's shapes with the ones in groups. The rules that keep the
 suite parallel (`-n auto --dist loadfile`): a test writes only under tmp_path or tmp_path_factory,
@@ -52,6 +53,20 @@ def pandoc_exe():
     if not exe:
         pytest.fail("pandoc not found: set QUARTO_PANDOC or source etc/config_env.sh")
     return exe
+
+
+def slide_layout_shim(tmp: Path) -> Path:
+    """slide-layout.lua under plain pandoc, as `--lua-filter <this>` for pandoc_deck: a `quarto` shim
+    (the format test, the log, json), its own path (engine-common.lua beside it), written into tmp.
+    A deck without `livery:` gets the bundled ncar; name the livery a test builds."""
+    shim = tmp / "slide-layout-shim.lua"
+    shim.write_text(
+        'quarto = { doc = { is_format = function(f) return f == "pptx" end },\n'
+        '           log = { warning = function(s) io.stderr:write("WARNING: " .. s .. "\\n") end },\n'
+        '           json = { decode = pandoc.json.decode } }\n'
+        f'PANDOC_SCRIPT_FILE = "{ENGINE / "slide-layout.lua"}"\n'
+        'dofile(PANDOC_SCRIPT_FILE)\n')
+    return shim
 
 
 def lua_common(tmp_path, body, md, *args):

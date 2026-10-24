@@ -449,9 +449,9 @@ local function load_livery(meta, extdir, who)
   return livery
 end
 
--- The deck's `marking:`, the one reader of it every format uses: a string (or inlines) sets the
--- livery's first strip, `none` turns every strip off, a map sets strips by name (`none` drops one).
--- {all = Inlines | "none" | nil, by_name = {<name> = Inlines | "none"}}.
+-- The deck's `marking:` (marking_texts reads it, the one reader every format uses): a string (or
+-- inlines) sets the livery's first strip, `none` turns every strip off, a map sets strips by name
+-- (`none` drops one). {all = Inlines | "none" | nil, by_name = {<name> = Inlines | "none"}}.
 local function deck_marking(meta)
   local mk, d = meta["marking"], { by_name = {} }
   if mk == nil then return d end
@@ -1033,7 +1033,7 @@ return {
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
   content_heading = content_heading, take_layout = take_layout,
-  theme_options = theme_options, load_livery = load_livery, deck_marking = deck_marking, marking_texts = marking_texts,
+  theme_options = theme_options, load_livery = load_livery, marking_texts = marking_texts,
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,

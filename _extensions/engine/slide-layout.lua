@@ -7,9 +7,10 @@
 -- every notes Div on a slide, so the line joins any notes the author wrote.
 -- .closing becomes `closing` (the template's Closing layout), the slide holding ::: {#refs}
 -- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
--- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), and a
--- map `marking:` the strings `engine-marking-<name>` (C.deck_marking; pandoc records a map as empty too),
--- and `fineprint:` the string `engine-fineprint`, a line per paragraph.
+-- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), the
+-- marking strips' texts the strings `engine-marking-<name>` (C.marking_texts, the one reader of
+-- `marking:`; pandoc records a map as empty too), and `fineprint:` the string `engine-fineprint`, a
+-- line per paragraph.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -94,11 +95,19 @@ local function fineprint_meta(meta)
   meta["engine-fineprint"] = pandoc.MetaString(table.concat(lines, "\n"))
 end
 
--- a map marking: as one string per strip it names, for pptx_steps/marking.py (a plain string arrives
--- as `marking` already)
+-- every marking strip's text, one string per strip, for pptx_steps/marking.py, which draws and never
+-- decides: C.marking_texts reads the deck's marking: over the livery's defaults as HTML and PDF do
+-- (the livery: C.load_livery, as the other filters find it; the step sees only docProps/custom.xml,
+-- where pandoc records a map as an empty string), "none" for a strip with no text
+local EXTDIR = pandoc.path.directory(PANDOC_SCRIPT_FILE)
+if not pandoc.path.is_absolute(EXTDIR) then
+  EXTDIR = pandoc.path.join({ pandoc.system.get_working_directory(), EXTDIR })
+end
+
 local function marking_meta(meta)
-  for name, w in pairs(C.deck_marking(meta).by_name) do
-    meta["engine-marking-" .. name] = pandoc.MetaString(w == "none" and "none" or pandoc.utils.stringify(w))
+  local livery = C.load_livery(meta, EXTDIR, "slide-layout")
+  for _, t in ipairs(C.marking_texts(meta, livery.marking, "slide-layout")) do
+    meta["engine-marking-" .. t.strip.name] = pandoc.MetaString(t.text and pandoc.utils.stringify(t.text) or "none")
   end
 end
 
