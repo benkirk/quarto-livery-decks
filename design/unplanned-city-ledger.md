@@ -30,7 +30,7 @@ branched from, not a window read).
   read in four area passes, 31 findings, Ben picked Tier 1 and 2, then finding 9 of Tier 3
   (`design/sweep-136-149-handoff.md`)
 - End commit: `de1ce55`
-- Done (#PR): the fixes that move a render: the PDF's lead, strip and caution body on a dark
+- Done (#150): the fixes that move a render: the PDF's lead, strip and caution body on a dark
   frame kept the livery's text (on-dark on their light fills before: `\engine@lightcolors`,
   `\engine@lightbox`); HTML's marking strips and watermark on every slide by one tail walk
   (`add_tail()`: a `---` slide or the blocks before the first heading had none; under nasa-ccp
