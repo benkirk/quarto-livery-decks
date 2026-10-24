@@ -47,7 +47,7 @@ same as body text in every format.
 | `livery_mpl.figsize("half")` | one of two columns; `figsize("full", height=0.6)` a wide, short plot |
 | `livery_mpl.shade_family(c, n)` | `n` tints of `c` toward the surface, as the families are built |
 | `livery_mpl.surface`, `livery_mpl.mix(a, b, t)` | the background the plot sits on; `a` moved toward `b` by `t` in OKLab (a color between two, a tint toward the surface) |
-| `with livery_mpl.dark():` | a `{.brand-dark}` slide: the dark chrome and colors where that slide is dark (HTML, a dark livery); `surface` is the dark one inside |
+| `with livery_mpl.dark():` | a `{.brand-dark}` slide: the dark chrome and colors, in every format (each draws that slide on the livery's dark role); `surface` is the dark one inside |
 | `with livery_mpl.raster():` | the figures shown inside as PNG (200 dpi unless given) where the deck draws vector: one heavy time series, the rest of the deck still SVG. `plt.show()` inside the block |
 | `with livery_mpl.dense():` | small multiples: every text size scaled together, by 0.65 unless given, to the half point (a 3 x 4 grid at the slide's sizes leaves no room for the data) |
 | colormaps | `livery` (the default, the livery's own map), `livery_r`, `livery_div` (diverging), `livery_seq_<ramp>`, each with a `_dark` twin |

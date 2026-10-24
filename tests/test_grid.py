@@ -50,6 +50,13 @@ AGENDA = ('# One\n\n## Where we are {.agenda}\n\n# Two\n\n## Two body\n\nText.\n
 FOLDED = ('## Lead under a figure\n\n![⟦engine:lead⟧\\\n**The headline** of it\\\nA plain line.\\\n⟦engine:end⟧](p.jpg)\n\n'
           '## Lead over a table\n\n::: {.lead}\n**The headline** of it\n:::\n\n| a | b | c | d |\n|---|---|---|---|\n| 1 | 2 | 3 | 4 |\n\n'
           'Table: Millions of core-hours.\n\n::: notes\nengine-layout: note\n:::\n')   # slides 21 and 22
+PICTURED = ('## Pictured cards\n\n:::: {.columns}\n::: {.column .card}\n### One\n\n![The caption](p.jpg)\n\nA line under it.\n:::\n'
+            '::: {.column .card}\n### Two\nText only.\n:::\n::::\n\n'
+            '## Pictured column\n\n:::: {.columns}\n::: {.column}\nAbove.\n\n![](p.jpg)\n\nBelow.\n:::\n'
+            '::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
+            '## Tabled columns\n\n:::: {.columns}\n::: {.column}\nLeft.\n:::\n::: {.column}\nAbove.\n\n'
+            '| Year | Hours | Users |\n|---|--:|---|\n| 2024 | **12** | 300 |\n| 2025 | 18 | 410 |\n\nTable: Core-hours, millions.\n:::\n'
+            '::: {.column}\nRight.\n:::\n::::\n')   # slides 23 to 25
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -57,14 +64,14 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
       '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
-      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA + '\n' + FOLDED)
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA + '\n' + FOLDED + '\n' + PICTURED)
 STEP = """
 import sys
 from pathlib import Path
 from pptx import Presentation
-from pptx_steps import columns, grid, slide_layout
+from pptx_steps import columns, grid, slide_layout, style_tables
 p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); prs.save(p)
+slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); style_tables.run(prs, p); prs.save(p)
 """   # the driver's order
 
 
@@ -161,9 +168,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 23, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 26, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -260,6 +267,10 @@ def test_cards(deck):
     assert str(ol.line.color.rgb) == livery["boxes"]["card"]["outline-color"][1:], "the pick's outline color"
     assert ol.line.width == round(livery["boxes"]["card"]["outline"] * prs.slide_height), "the outline's width"
     assert "Card 2 outline" not in by, "an outline on a card not picked"
+    border = by["Card 2 border"]   # every card's hairline (boxes.card.border); the pick's outline replaces it, a solid card has none
+    assert str(border.line.color.rgb) == livery["boxes"]["card"]["border-color"][1:], "the hairline's color"
+    assert border.line.width == max(round(livery["boxes"]["card"]["border"] * prs.slide_height), 1), "the hairline's width"
+    assert "Card 1 border" not in by and "Card 3 border" not in by, "a border on a picked or a solid card"
     title = by["Card 1 title"].text_frame.paragraphs[0].runs[0].font
     assert title.bold and title.size.pt == livery_mod.half_pt(livery["type"]["roles"]["subhead"]["pt"]), "the title's look"
     assert str(title.color.rgb) == role("primary-text"), "the title on the role in primary-text"
@@ -268,6 +279,71 @@ def test_cards(deck):
     big = next(p for p in body if p.text == "$20M")
     assert label.runs[0]._r.find("{*}rPr").get("cap") == "all", "the label in caps"
     assert big.runs[0].font.size.pt == livery_mod.half_pt(livery["type"]["roles"]["display"]["pt"]), "the big number's size"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_pictured_cards(deck):
+    """A picture in a card (figures.py): inside the card's group, the card's width less its pads, its
+    aspect kept, a body pad under the head; its caption box right under it, centered, the caption
+    size, muted; the cards one height; no picture shape outside the drawn ones, no marker left."""
+    import livery as livery_mod
+    from PIL import Image
+    livery, prs, _ = deck
+    slide = prs.slides[23]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert "Card 1 picture" in {sh.name for sh in flat(by["Card 1"].shapes)}, "the picture outside its card's group"
+    pic, cap, fill = by["Card 1 picture"], by["Card 1 picture caption"], by["Card 1 fill"]
+    v, h = (round(x * livery_mod.type_pt(livery, "body") * 12700) for x in livery["boxes"]["card"]["pad"])
+    assert abs(pic.width - (fill.width - 2 * h)) <= 2 and abs(pic.left - (fill.left + h)) <= 2, f"the picture {pic.left, pic.width}"
+    iw, ih = Image.open(IMAGE).size
+    assert abs(pic.width / pic.height - iw / ih) < 0.01, "the picture's aspect"
+    head = by["Card 1 title"]
+    assert pic.top == head.top + head.height + v, "a body pad under the head"
+    assert cap.top == pic.top + pic.height and cap.text_frame.text == "The caption", "the caption under the picture"
+    run = cap.text_frame.paragraphs[0].runs[0]
+    assert run.font.size.pt == livery_mod.half_pt(livery_mod.type_pt(livery, "caption")), "the caption size"
+    assert str(run.font.color.rgb) == livery["roles"]["muted"][1:], "the caption muted"
+    assert cap.text_frame.paragraphs[0]._p.find("{*}pPr").get("algn") == "ctr", "the caption centered"
+    assert by["Card 1 body 2"].text_frame.text == "A line under it." and by["Card 1 body 2"].top >= cap.top + cap.height
+    assert by["Card 1 fill"].height == by["Card 2 fill"].height, "the cards one height"
+    assert [sh.name for sh in flat(slide.shapes) if sh.shape_type == 13] == ["Card 1 picture"], "a picture of pandoc's"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_pictured_column(deck):
+    """A picture in a plain column of a three-column slide: between that column's text boxes, at the
+    column's width, centered in it; one slide (pandoc split it before)."""
+    livery, prs, _ = deck
+    assert len(prs.slides) == 26, f"{len(prs.slides)} slides: a pictured or tabled slide split"
+    slide = prs.slides[24]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    pic, (x, w) = by["Column 1 picture"], boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])[0]
+    assert abs(pic.left - x) <= 6 and abs(pic.width - w) <= 6, f"the picture {pic.left, pic.width}, want {x, w}"
+    above, below = by["Column 1"], by["Column 1 3"]
+    assert above.text_frame.text == "Above." and below.text_frame.text == "Below."
+    assert above.top + above.height <= pic.top and pic.top + pic.height <= below.top, "the picture between its text"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_tabled_column(deck):
+    """A table in the middle of three plain columns (figures.py's draw_table()): a native table at the
+    middle column's frame, three columns, under the column's text; the header row bold in caps after
+    style_tables, a cell's bold run kept; its caption under it; no marker left."""
+    livery, prs, _ = deck
+    slide = prs.slides[25]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    t, (x, w) = by["Column 2 table"], boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])[1]
+    assert t.has_table and len(t.table.columns) == 3 and len(t.table.rows) == 3, "a 3x3 table"
+    assert abs(t.left - x) <= 6 and abs(t.width - w) <= 6, f"the table {t.left, t.width}, want {x, w}"
+    assert abs(sum(c.width for c in t.table.columns) - t.width) <= 3, "the grid columns sum to the frame (style_tables rounds)"
+    assert by["Column 2"].text_frame.text == "Above." and by["Column 2"].top + by["Column 2"].height <= t.top
+    head = t.table.cell(0, 0).text_frame.paragraphs[0].runs[0]._r.find("{*}rPr")
+    assert t.table.cell(0, 0).text == "Year" and head.get("b") == "1" and head.get("cap") == "all", "the header styled"
+    assert t.table.cell(1, 1).text_frame.paragraphs[0].runs[0].font.bold, "a cell's bold run"
+    algn = lambda r, c: t.table.cell(r, c).text_frame.paragraphs[0]._p.find("{*}pPr").get("algn")
+    assert (algn(1, 1), algn(1, 0)) == ("r", None), "a right-aligned column, a default one"
+    cap = by["Column 2 table caption"]
+    assert cap.text_frame.text == "Core-hours, millions." and cap.top == t.top + t.height, "the caption under the table"
     assert "⟦" not in slide._element.xml, "a marker left"
 
 

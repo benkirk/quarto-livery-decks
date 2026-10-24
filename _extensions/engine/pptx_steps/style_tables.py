@@ -17,13 +17,12 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .common import LIVERY, em, is_table, rpr
+from .common import DARK_INK, LIGHT_INK, LIVERY, em, is_table, on_dark, palette, rpr
 from .measure import PX, other_size   # EMU per revealjs px (1600 px wide)
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
-HEAD_RULE   = (3 * PX, livery_mod.hex(LIVERY, "primary"))       # 3px solid var(--engine-primary)
-ROW_RULE    = (1 * PX, livery_mod.blend(LIVERY, "table-rule"))  # mix(foreground, surface, 20%)
-BAND_FILL   = livery_mod.blend(LIVERY, "table-band")            # surface at 60% on white
+HEAD_RULE   = 3 * PX                   # 3px solid var(--engine-primary)
+ROW_RULE    = 1 * PX                   # the table-rule blend, mix(foreground, surface, 20%)
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = LIVERY["type"]["tracking"]   # the small caps' letter spacing, em (type.tracking, every format)
 CELL_MAR    = em(0.4, livery_mod.type_pt(LIVERY, "table"))   # EMU: HTML's 0.3em padding, its line height
@@ -91,7 +90,9 @@ def _rebalance(tbl):
         col.set("w", str(round(total * share / norm)))
 
 
-def style_table(tbl, base):
+def style_table(tbl, base, ink=LIGHT_INK):
+    """A table styled in ink (common.palette(): the head rule primary's, the row rules and bands the
+    table blends; on a dark slide secondary, the dark blends, and every cell's text on-dark)."""
     tbl_pr = tbl.find(qn("a:tblPr"))
     tbl_pr.attrib.pop("bandRow", None)
     style_id = tbl_pr.find(qn("a:tableStyleId"))
@@ -107,11 +108,13 @@ def style_table(tbl, base):
         body_index = i - 1 if header else i
         band = not is_head and body_index % 2 == 1
         for tc in tr.findall(qn("a:tc")):
-            _style_cell(tc, HEAD_RULE if is_head else ROW_RULE, BAND_FILL if band else None)
+            _style_cell(tc, (HEAD_RULE, ink["primary"]) if is_head else (ROW_RULE, ink["table-rule"]), ink["table-band"] if band else None)
             tc_pr = tc.find(qn("a:tcPr"))   # the cell's top and bottom margin, as HTML's padded rows
             tc_pr.set("marT", str(CELL_MAR)); tc_pr.set("marB", str(CELL_MAR))
             if is_head:
                 _header_runs(tc, base)
+    if ink is DARK_INK:   # the cells' text on the dark slide
+        on_dark(list(tbl.iter(qn("a:p"))), ink["foreground"])
     _rebalance(tbl)
 
 
@@ -122,6 +125,6 @@ def run(prs, path: Path) -> None:
         base = other_size(slide)
         for shape in slide.shapes:
             if is_table(shape):
-                style_table(shape.table._tbl, base)
+                style_table(shape.table._tbl, base, palette(slide))
                 styled += 1
     print(f"style_tables: styled {styled} table(s) → {path.name}")

@@ -24,35 +24,20 @@ that line. One group, "Gallery": "Gallery k picture", "Gallery k caption", "Gall
 import sys
 from urllib.parse import unquote
 
-from lxml import etree
 from pptx.enum.text import MSO_ANCHOR
-from pptx.oxml.ns import qn
 from pptx.util import Emu
 
 import livery as livery_mod
 
-from .common import BOXES, GEOM, LIVERY, SLACK, body_box, fit_picture, group, pads, rect, slide_title, space_before, style_runs
+from .common import BOXES, GEOM, LIVERY, SLACK, body_box, caption_para, fit_picture, group, pads, rect, slide_title
 from .measure import text_height
 from .svg_fallback import DPI, rasterize_svg   # an .svg item's PNG at the deck's fig-dpi
-
-CAPTION_PT = livery_mod.type_pt(LIVERY, "caption")
-MUTED = livery_mod.hex(LIVERY, "muted")
 
 
 def cells(x, y, w, h, cols, rows, gap):
     """The cells' frames (x, y, w, h EMU), row-major: the box less the gaps, shared equally both ways."""
     cw, ch = round((w - gap * (cols - 1)) / cols), round((h - gap * (rows - 1)) / rows)
     return [(x + c * (cw + gap), y + r * (ch + gap), cw, ch) for r in range(rows) for c in range(cols)]
-
-
-def _caption(p):
-    """A caption paragraph: centered, no space before it, the caption size, muted."""
-    ppr = p.find(qn("a:pPr"))
-    if ppr is None:
-        ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
-    ppr.set("algn", "ctr")
-    space_before(p, 0)
-    style_runs(p, CAPTION_PT, color=MUTED)
 
 
 def draw_gallery(slide, box, attrs, items, caption, slide_width, slide_height, deck_dir):
@@ -74,7 +59,7 @@ def draw_gallery(slide, box, attrs, items, caption, slide_width, slide_height, d
         x, y, w, h = pad, pad, slide_width - 2 * pad, slide_height - pad - floor - cap
         if caption:
             for p in caption:
-                _caption(p)
+                caption_para(p)
             cb = body_box(slide, pad, slide_height - floor - cap, slide_width - 2 * pad, cap, caption, "Gallery caption")
             cb.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
             shapes.append(cb)
@@ -86,7 +71,7 @@ def draw_gallery(slide, box, attrs, items, caption, slide_width, slide_height, d
         cb = None
         if paras:
             for p in paras:
-                _caption(p)
+                caption_para(p)
             cb = body_box(slide, cx + hpad, cy, max(cw - 2 * hpad, 1), ch, paras, f"Gallery {k} caption")
             tf = cb.text_frame
             tf.margin_top, tf.margin_bottom, tf.margin_left, tf.margin_right = vpad, 0, 0, 0   # vpad: under the picture

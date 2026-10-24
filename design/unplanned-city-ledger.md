@@ -229,8 +229,8 @@ branched from, not a window read).
   is done: the gallery sprint, `design/gallery-handoff.md`.)
 - Deferred by the gallery sprint (2026-10-22): links round gallery images; vector (SVG) gallery
   images in pptx (rasterized now: an svgBlip twin per picture is svg_fallback's zip surgery); cells
-  of unequal size (spans or weights); a picture or table inside a grid-slide column, which the
-  gallery's disk read could now reach.
+  of unequal size (spans or weights). (A picture or table inside a grid-slide column is done: the
+  cells-dark sprint, `design/cells-dark-handoff.md`; vector pictures there are rasterized too.)
 - From the agenda-quote sprint (#134): pptx draws a quote in a plain column of a grid slide but
   still flattens a strip there to its text (`grid.py` `_flat()`; `_plain_column()` could take the
   strip too); `measure.py` measures an italic quote face upright (`font()` takes a weight, no

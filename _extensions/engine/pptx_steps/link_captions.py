@@ -20,11 +20,10 @@ from pptx.util import Pt
 
 import livery as livery_mod
 
-from .common import LIVERY, is_picture
+from .common import LIVERY, is_picture, palette
 
 NAME       = "link-caption"
 SIZE       = Pt(livery_mod.type_pt(LIVERY, "caption"))   # the caption role
-COLOR      = RGBColor.from_string(livery_mod.color(LIVERY, "muted"))
 BAND_WIDTH = 0.6                             # of the slide; clear of number and date
 BAND_TOP   = 0.056                           # of the height, above the slide's bottom edge
 BAND_TALL  = 0.04
@@ -69,6 +68,6 @@ def run(prs, path: Path) -> None:
         run = para.add_run()
         run.text = url.split("://", 1)[-1]
         run.font.size = SIZE
-        run.font.color.rgb = COLOR
+        run.font.color.rgb = RGBColor.from_string(palette(slide)["muted"])   # a dark slide's dark-muted
         added += 1
     print(f"link_captions: captioned {added} linked picture slide(s) → {path.name}")

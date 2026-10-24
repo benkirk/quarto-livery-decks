@@ -5,6 +5,10 @@
   "blends": {
     "alert-text": "#958459",
     "caution-fill": "#F6F2E7",
+    "dark-band": "#0F0F0F",
+    "dark-code": "#1F1F1F",
+    "dark-muted": "#B2B2B2",
+    "dark-rule": "#404040",
     "rule": "#AAA8A3",
     "table-band": "#F8F6F2",
     "table-rule": "#C2C0BA"
@@ -17,6 +21,8 @@
       "number-width": 2
     },
     "card": {
+      "border": 0.0016,
+      "border-color": "#AAA8A3",
       "fill": "#FFFFFF",
       "head-pad": [
         0.35,
@@ -1085,6 +1091,40 @@
     "tab": true,
     "top": 0.0489
   },
+  "furniture": {
+    "marks": {
+      "bottom-left": {
+        "box": [
+          0.06,
+          0.9249999999999999,
+          0.2453175,
+          0.04
+        ],
+        "mark": "signoff"
+      },
+      "bottom-right": null,
+      "top-left": null,
+      "top-right": null
+    },
+    "rule": [
+      0.06,
+      0.1444,
+      0.88,
+      0.0016
+    ],
+    "tab": [
+      0,
+      0.0489,
+      0.018,
+      0.0778
+    ],
+    "title": [
+      0.06,
+      0.0489,
+      0.88,
+      0.0778
+    ]
+  },
   "geometry": {
     "body": [
       0.06,
@@ -1175,6 +1215,10 @@
       "caution-fill": "BrandCautionFill",
       "code-text": "BrandCodeText",
       "dark": "BrandDark",
+      "dark-band": "BrandDarkBand",
+      "dark-code": "BrandDarkCode",
+      "dark-muted": "BrandDarkMuted",
+      "dark-rule": "BrandDarkRule",
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
@@ -1228,6 +1272,10 @@
   ],
   "marks": {
     "background": {
+      "logo": "logos/cu-boulder-lockup.png",
+      "signoff": "logos/cu-boulder-lockup.png"
+    },
+    "dark": {
       "logo": "logos/cu-boulder-lockup.png",
       "signoff": "logos/cu-boulder-lockup.png"
     },

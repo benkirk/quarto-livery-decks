@@ -56,6 +56,13 @@ local function holds_shape(blk)
   return found
 end
 
+-- Whether a block holds a table anywhere inside it.
+local function holds_table(blk)
+  local found = false
+  pandoc.walk_block(blk, { Table = function() found = true end })
+  return found
+end
+
 -- A slide boundary: a heading at or above the slide level, or a rule.
 local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
@@ -132,7 +139,8 @@ end
 -- The slide kinds a composition draws (their classes on the slide's heading; not content slides), and
 -- the per-slide layout classes of a content slide (take_layout()).
 local SLIDE_KINDS = { feature = true, closing = true, full = true }
-local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, caution = true, wide = true }
+local LAYOUT_CLASSES = { hcenter = true, vcenter = true, center = true, fill = true, caution = true, wide = true,
+                         ["brand-dark"] = true }
 
 -- A content slide's heading: at the slide level, with none of the kinds' classes (SLIDE_KINDS by
 -- default; a format that treats a kind as content passes its own set).
@@ -148,7 +156,7 @@ end
 -- scale="S"), taken off it: { h, v, fill, caution, wide, scale } (scale the string, or nil), or nil
 -- when it has none. A scale that is not a number is dropped with a warning (who: the filter).
 local function take_layout(blk, who)
-  local h, v, fill, caution, wide, found = false, false, false, false, false, false
+  local h, v, fill, caution, wide, dark, found = false, false, false, false, false, false, false
   local kept = pandoc.List({})
   for _, c in ipairs(blk.classes) do
     if LAYOUT_CLASSES[c] then
@@ -158,6 +166,7 @@ local function take_layout(blk, who)
       fill = fill or c == "fill"
       caution = caution or c == "caution"
       wide = wide or c == "wide"
+      dark = dark or c == "brand-dark"
     else
       kept:insert(c)
     end
@@ -173,7 +182,7 @@ local function take_layout(blk, who)
   end
   if not found then return nil end
   blk.classes = kept
-  return { h = h, v = v, fill = fill, caution = caution, wide = wide, scale = scale }
+  return { h = h, v = v, fill = fill, caution = caution, wide = wide, dark = dark, scale = scale }
 end
 
 -- themeoptions: a list or a comma-separated string of key=value (a bare key is "true"). Returns
@@ -566,8 +575,64 @@ local function is_quote(b)
   return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
 end
 
+-- A row of columns (a .columns div) holding a .card and a table anywhere in it: no format draws it as
+-- cards (beamer's card boxes cannot hold a longtable; a pptx table is a graphic frame no group of a
+-- card's shapes holds), so every format draws the row as plain columns, warned of. The one test.
+local function tabled_row(div)
+  if div.t ~= "Div" or not has_class(div, "columns") then return false end
+  local carded, tabled = false, false
+  for _, c in ipairs(column_shares(div)) do
+    if has_class(c, "card") then carded = true end
+    if holds_table(c) then tabled = true end
+  end
+  return carded and tabled
+end
+
+-- A table pptx draws natively in a grid column: { cols, header (a header row), rows = {{inlines, ...}, ...}
+-- (the header row first when there is one), aligns = {"l"|"c"|"r"|"d", ...} (a column's alignment, d
+-- its default), caption = inlines or nil }; nil when it is not simple: a
+-- cell spanning rows or columns, a cell of more than one block or of a block that is not a
+-- paragraph, more than one header row, an intermediate head or a foot.
+local function simple_table(tbl)
+  if tbl.t ~= "Table" then return nil end
+  local cols = #tbl.colspecs
+  local rows, header = {}, false
+  local function take(row)
+    if #row.cells ~= cols then return false end
+    local out = {}
+    for _, cell in ipairs(row.cells) do
+      if cell.row_span ~= 1 or cell.col_span ~= 1 then return false end
+      local blocks = cell.contents
+      if #blocks > 1 then return false end
+      local b = blocks[1]
+      if b and b.t ~= "Plain" and b.t ~= "Para" then return false end
+      table.insert(out, b and b.content or pandoc.Inlines({}))
+    end
+    table.insert(rows, out)
+    return true
+  end
+  if #tbl.head.rows > 1 or #tbl.foot.rows > 0 then return nil end
+  if #tbl.head.rows == 1 then
+    if not take(tbl.head.rows[1]) then return nil end
+    header = true
+  end
+  for _, body in ipairs(tbl.bodies) do
+    if #body.head > 0 then return nil end
+    for _, row in ipairs(body.body) do
+      if not take(row) then return nil end
+    end
+  end
+  local caption = pandoc.utils.blocks_to_inlines(tbl.caption.long or {})
+  local aligns = {}
+  for k, spec in ipairs(tbl.colspecs) do
+    aligns[k] = ({ AlignLeft = "l", AlignCenter = "c", AlignRight = "r" })[spec[1]] or "d"
+  end
+  return { cols = cols, header = header, rows = rows, aligns = aligns, caption = #caption > 0 and caption or nil }
+end
+
 -- A grid slide, the one list (the prose elsewhere says "what is_grid() counts"): the columns div has
--- more than two columns, a .card column, or a column holding a quote (unless a column holds a picture
+-- more than two columns, a .card column (unless the row holds a table: tabled_row(), plain columns in
+-- every format), or a column holding a quote (unless a column holds a picture
 -- or table, which a grid column cannot: the slide stays pandoc's, the quote its own); or the slide (its
 -- blocks) has a .lead, a .strip, a .steps, a .timeline, a .gallery or a quote of its own. pptx draws one
 -- from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py and gallery.py); pandoc's two placeholders
@@ -576,8 +641,9 @@ local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
   local quoted, pictured = false, false   -- a quote in a column: its box is grid.py's to draw
+  local tabled = tabled_row(div)           -- a card row with a table is plain columns
   for _, c in ipairs(cols) do
-    if has_class(c, "card") then return true end
+    if has_class(c, "card") and not tabled then return true end
     c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
     if holds_shape(c) then pictured = true end
   end
@@ -876,6 +942,66 @@ local function para_images(b)
   return #imgs > 0 and imgs or nil
 end
 
+-- A picture in a grid column or a card, as every format draws it: { src, caption = inlines or nil,
+-- image = the Image, sized = its width= when the author gave one (it keeps that size) } for a Figure
+-- of one image (its caption the Figure's, else the alt text), a Para or Plain of one image (the alt
+-- text), Quarto's PDF figure (latex_figure()), or an executed cell's or a Quarto figure's Div whose
+-- one block of substance, wrappers unwrapped, is one of those. nil otherwise; nil, true for an image
+-- inside a link (para_images()'s linked), which the caller warns of.
+local FIGURE_DIVS = { "cell", "cell-output-display", "quarto-figure", "quarto-float" }
+
+local function cell_figure(b)
+  local img, caption, linked
+  if b.t == "Figure" and #b.content == 1 then
+    local imgs
+    imgs, linked = para_images(b.content[1])
+    img = imgs and #imgs == 1 and imgs[1] or nil
+    caption = pandoc.utils.blocks_to_inlines(b.caption.long or {})
+  elseif b.t == "Para" or b.t == "Plain" then
+    local imgs
+    imgs, linked = para_images(b)
+    img = imgs and #imgs == 1 and imgs[1] or nil
+  elseif b.t == "Div" then
+    img, caption = latex_figure(b)
+    if not img then
+      local wrapper = false
+      for _, c in ipairs(FIGURE_DIVS) do if has_class(b, c) then wrapper = true end end
+      if not wrapper then return nil end
+      local inner = {}
+      local function gather(blocks)
+        for _, x in ipairs(blocks) do
+          if x.t == "Div" and not latex_figure(x) then gather(x.content) else table.insert(inner, x) end
+        end
+      end
+      gather(b.content)
+      if #inner ~= 1 then return nil end
+      return cell_figure(inner[1])
+    end
+  end
+  if linked then return nil, true end
+  if not img then return nil end
+  if not caption or #caption == 0 then caption = #img.caption > 0 and img.caption or nil end
+  return { src = img.src, caption = caption, image = img, sized = img.attributes["width"] }
+end
+
+-- data as base64 (RFC 4648, padded): pandoc's Lua has no encoder (quarto.base64 is Quarto's, and the
+-- tests run plain pandoc); grid-pptx.lua carries an executed plot's bytes in its picture marker.
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+local function base64(data)
+  local out = {}
+  for i = 1, #data, 3 do
+    local a, b, c = data:byte(i, i + 2)
+    local n = (a << 16) | ((b or 0) << 8) | (c or 0)
+    local q = { (n >> 18) & 63, (n >> 12) & 63, (n >> 6) & 63, n & 63 }
+    for k = 1, 4 do q[k] = B64:sub(q[k] + 1, q[k] + 1) end
+    if not b then q[3] = "=" end
+    if not c then q[4] = "=" end
+    out[#out + 1] = table.concat(q)
+  end
+  return table.concat(out)
+end
+
 local function gallery_items(div, who)
   local function refuse(why)
     warn(who .. ": a .gallery " .. why .. "; left as it is")
@@ -1027,7 +1153,7 @@ return {
   has_class = has_class, warn = warn, column_shares = column_shares, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
-  is_note = is_note, split_full = split_full, holds_shape = holds_shape, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  is_note = is_note, split_full = split_full, holds_shape = holds_shape, holds_table = holds_table, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
   slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, is_aside = is_aside, split_notes = split_notes,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
@@ -1037,6 +1163,7 @@ return {
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
+  cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file,
 }

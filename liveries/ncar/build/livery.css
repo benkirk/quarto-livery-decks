@@ -26,6 +26,10 @@
   --engine-caution-fill: #FFF9DA;
   --engine-alert-text: #B5540A;
   --engine-rule: #A9B8CB;
+  --engine-dark-rule: #405269;
+  --engine-dark-band: #102643;
+  --engine-dark-code: #1F344F;
+  --engine-dark-muted: #B3BAC3;
   --engine-logo-h: 58px;
   --engine-logo-w: 228.2px;
   --engine-logo-aspect: 3.934;
@@ -127,6 +131,8 @@
   --engine-card-radius: 10.8px;
   --engine-card-outline: 3px;
   --engine-card-outline-color: #00818F;
+  --engine-card-border: 1.4px;
+  --engine-card-border-color: #A9B8CB;
   --engine-card-pad: 0.5em 0.8em;
   --engine-card-head-pad: 0.35em 0.8em;
   --engine-card-pad-x: 0.8em;
@@ -187,7 +193,7 @@
   --engine-status-serious: #974C00;
   --engine-status-critical: #A82E29;
 }
-.reveal .slides section.slide.brand-dark {
+.reveal .slides section.slide.engine-dark {
   --engine-data-1: #4687EA;
   --engine-data-2: #D9772C;
   --engine-data-3: #11A0B0;
@@ -211,10 +217,16 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
+html:root {
+  --engine-mark-background-logo: url("NSF-NCAR_Logo_FullColor_RGB.png");
+  --engine-mark-primary-logo: url("NSF-NCAR_Logo_Color-White_RGB.png");
+  --engine-mark-dark-logo: url("NSF-NCAR_Logo_Color-White_RGB.png");
+}
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("NSF-NCAR_Logo_FullColor_RGB.png"); }
+.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("NSF-NCAR_Logo_Color-White_RGB.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("mesa-lab.jpg") center / cover no-repeat; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
@@ -1176,3 +1188,31 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   --engine-cmp-eyebrow-display: none;
   background: none;
 }
+/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */
+.reveal .slides section.slide.engine-dark {
+  --engine-foreground: #FFFFFF;
+  --engine-muted: #B3BAC3;
+  --engine-primary-contrast: #42C0FF;
+  --engine-primary: #42C0FF;
+  --engine-table-rule: #405269;
+  --engine-table-band: #102643;
+  --r-main-color: #FFFFFF;
+  --r-heading-color: #FFFFFF;
+  color: #FFFFFF;
+  --engine-title-color: #FFFFFF;
+  --engine-title-rule-color: #405269;
+}
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout),
+.reveal .slides section.slide.engine-dark.engine-caution > .engine-body {
+  --engine-foreground: #00357A;
+  --engine-muted: #6B7C99;
+  --engine-primary-contrast: #0057C2;
+  --engine-primary: #0057C2;
+  --engine-table-rule: #C1CBD7;
+  --engine-table-band: #F7F6F5;
+  --r-main-color: #00357A;
+  --r-heading-color: #00357A;
+  color: #00357A;
+}
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }

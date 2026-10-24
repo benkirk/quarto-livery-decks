@@ -28,6 +28,10 @@
   --engine-caution-fill: #2E1D02;
   --engine-alert-text: #FF4458;
   --engine-rule: #E1E1E1;
+  --engine-dark-rule: #404040;
+  --engine-dark-band: #0F0F0F;
+  --engine-dark-code: #1F1F1F;
+  --engine-dark-muted: #B2B2B2;
   --engine-logo-h: 116.1px;
   --engine-logo-w: 141.0px;
   --engine-logo-aspect: 1.2146;
@@ -137,6 +141,8 @@
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;
   --engine-card-outline-color: #00BC71;
+  --engine-card-border: 1.4px;
+  --engine-card-border-color: #E1E1E1;
   --engine-card-pad: 0.5em 0.8em;
   --engine-card-head-pad: 0.35em 0.8em;
   --engine-card-pad-x: 0.8em;
@@ -215,14 +221,24 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
-.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark) { background: url("content.jpg") center / cover no-repeat; }
+.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.engine-dark) { background: url("content.jpg") center / cover no-repeat; }
+html:root {
+  --engine-mark-background-logo: url("meatball.png");
+  --engine-mark-background-signoff: url("eg-footer.png");
+  --engine-mark-primary-logo: url("meatball.png");
+  --engine-mark-primary-signoff: url("eg-footer.png");
+  --engine-mark-dark-logo: url("meatball.png");
+  --engine-mark-dark-signoff: url("eg-footer.png");
+}
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("meatball.png"); }
+.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("meatball.png"); }
-.reveal .slides section .engine-signoff { background-image: url("eg-footer.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
+.reveal .slides section .engine-signoff { background-image: var(--engine-mark-background-signoff); }
 .reveal .slides section.engine-field .engine-signoff,
-.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("eg-footer.png"); }
+.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: var(--engine-mark-primary-signoff); }
+.reveal .slides section.engine-dark .engine-signoff { background-image: var(--engine-mark-dark-signoff); }
 html .reveal .slides section ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "•"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #FFFFFF; line-height: inherit; }

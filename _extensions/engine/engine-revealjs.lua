@@ -27,8 +27,9 @@ The same Markdown as the beamer theme (engine-beamer.lua):
       drawn as its caption: the caption size, muted, centered (.engine-note)
 
   ## Title {.brand-dark}
-      content slide on Space, white text, the white-reversed logo (HTML only;
-      pptx and beamer draw an ordinary slide)
+      a content slide on the livery's dark role (.engine-dark): its text on-dark,
+      its accents secondary, the dark role's marks, no content art or waves (the
+      pptx and the PDF draw it too); a no-op on a dark livery
 
   metadata `livery: <dir>`, `themeoptions: [title=light]`, `titlegraphic:`,
   `fineprint:` (`none`, else the livery's default), `institute:` -- as for beamer; HTML also reads `autofit=false`
@@ -147,7 +148,7 @@ end
 -- before the footnote hoist (which reaches into it), and becomes raw tags afterwards
 -- (unwrap_layout), since pandoc turns a Div that starts with a heading into a
 -- <section>.  The classes go on the slide; the script and the scss act on them.
-local function wrap_layout(blocks)
+local function wrap_layout(blocks, livery)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
     local blk = blocks[i]
@@ -161,6 +162,10 @@ local function wrap_layout(blocks)
       if lay.fill then blk.classes:insert("engine-fill") end
       if lay.caution then blk.classes:insert("engine-caution") end
       if lay.wide then blk.classes:insert("engine-wide") end
+      if lay.dark and livery.mode ~= "dark" then   -- the slide on the dark role (a dark livery's slides are)
+        blk.classes:insert("engine-dark")
+        blk.attributes["data-background-color"] = livery.roles.dark
+      end
       if lay.scale then blk.attributes["data-engine-scale"] = lay.scale end
       local slide
       slide, i = C.slide_from(blocks, i, slide_level)
@@ -289,6 +294,11 @@ local function card_columns(blocks, livery)
   end
   return blocks:walk({ Div = function(d)   -- a card's default role is by its place in the row
     if not has_class(d, "columns") then return nil end
+    if C.tabled_row(d) then   -- plain columns, as every format draws the row (role= is ARIA's: off)
+      C.warn("engine-revealjs: a table in a card: the row is drawn as plain columns")
+      for _, col in ipairs(C.column_shares(d)) do col.attributes["role"] = nil end
+      return d
+    end
     for k, col in ipairs(C.column_shares(d)) do card(col, k) end
     return d
   end })
@@ -743,7 +753,7 @@ function Pandoc(doc)
   doc.blocks = cited
 
   local out = pandoc.Blocks({})
-  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(galleries(rails(doc.blocks, livery)))), livery), livery), livery))), 0
+  local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(galleries(rails(doc.blocks, livery)))), livery), livery), livery)), livery), 0
   local secs = C.sections(blocks, slide_level)   -- the dividers, for an agenda slide
   local total = 0   -- the numbered ones, for section.progress
   for _, sec in ipairs(secs) do if sec.number then total = total + 1 end end
@@ -861,17 +871,12 @@ function Pandoc(doc)
       end
       out:insert(html("</ol>"))
       out:extend(notes)
-    elseif blk.t == "Header" and blk.level == slide_level and has_class(blk, "brand-dark") then
-      blk.attributes["data-background-color"] = c.dark
-      blk.classes:insert("engine-field")
-      out:insert(blk)
-      i = i + 1
     else
       out:insert(blk)
       i = i + 1
       -- (not over a slide's own background image: the waves sit above
       -- reveal's background layer)
-      if content_art and blk.t == "Header" and blk.level == slide_level
+      if content_art and blk.t == "Header" and blk.level == slide_level and not has_class(blk, "engine-dark")
           and not blk.attributes["background"] and not blk.attributes["background-image"]
           and not blk.attributes["data-background-image"] then
         out:insert(html(content_art))

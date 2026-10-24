@@ -297,6 +297,28 @@ mpirun -n 4 ./a.out
   \end{enginecards}
 \end{frame}
 
+\begin{frame}{Pictures in cards}
+  % a card's \linewidth is its body's width: a picture there fills the card, aspect kept;
+  % \enginenote under it is a caption in the caption look
+  \begin{enginecards}{3}
+    \begin{enginecard}{Aurora}{}
+      \includegraphics[width=\linewidth]{images/gallery-4.jpg}
+      \enginenote{Over the limb, from the station}
+      A picture takes the card's width.
+    \end{enginecard}
+    \begin{enginecard}{Helene}{}
+      \includegraphics[width=\linewidth]{images/gallery-5.jpg}
+      \enginenote{September 2024}
+      Its caption sits under it.
+    \end{enginecard}
+    \begin{enginecard}{Liftoff}{}
+      \includegraphics[width=\linewidth]{images/gallery-6.jpg}
+      \enginenote{Artemis I}
+      The cards stay one height.
+    \end{enginecard}
+  \end{enginecards}
+\end{frame}
+
 \begin{frame}{Steps inside cards}
   % a card's body is boxed before the row is drawn, and beamer's overlays survive that: \item<+->,
   % \pause and \uncover all work inside a card. \uncover keeps the row one height across the
@@ -435,13 +457,14 @@ mpirun -n 4 ./a.out
   \note{A full frame takes one image, then an optional \texttt{\textbackslash enginefullcaption}.}
 \end{frame}
 
-\begin{frame}{A list, step by step}
+\begin{frame}[enginedark]{Dark slide, step by step}
+  % [enginedark]: the frame on the livery's dark role, its text on-dark, its accents secondary, the
+  % dark role's mark (a no-op on a dark livery: make variants builds this deck under nasa-dark);
   % beamer's overlays: <+-> reveals the items one at a time (one page per step)
   \begin{itemize}
   \item<+-> \texttt{\textbackslash item<+->} reveals a list one item at a time
   \item<+-> one PDF page per step
-  \item<+-> a dark slide is the dark livery's: \texttt{make variants} builds this deck under
-    \texttt{nasa-dark}
+  \item<+-> \texttt{[enginedark]} sets the frame on the dark role
   \end{itemize}
 \end{frame}
 

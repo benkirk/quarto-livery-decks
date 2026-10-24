@@ -50,7 +50,7 @@ import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
 from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
-                     marker_spans, pads, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
+                     marker_spans, on_dark, pads, palette, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
@@ -203,11 +203,11 @@ def note_style(slide):
     split_br(tf._txBody)
     spans = marker_spans(tf._txBody.findall(qn("a:p")))   # a lead folded in after the caption: grid.py's
     for i, p in enumerate(tf.paragraphs):
-        if i in spans or style_footnotes.style(p):
+        if i in spans or style_footnotes.style(p, color=palette(slide)["muted"]):
             continue
         p.alignment = PP_ALIGN.CENTER
-        for r in p.runs:
-            r.font.size, r.font.color.rgb = CAP_SIZE, CAP_COLOR
+        for r in p.runs:   # muted: the dark slide's dark-muted (palette())
+            r.font.size, r.font.color.rgb = CAP_SIZE, RGBColor.from_string(palette(slide)["muted"])
     return True
 
 
@@ -680,6 +680,47 @@ def draw_feature(slide, width, height, photo):
             _recolor(shape, text, livery_mod.type_pt(LIVERY, "body"))
 
 
+def draw_dark(slide, width, height, words):
+    """A {.brand-dark} slide on a light livery: the slide on the dark role (its background a solid
+    fill, common.is_dark()), the master's furniture hidden (showMasterSp: no content art, no waves)
+    and redrawn from livery.json furniture: the tab in the accent ("Dark tab"), the hairline in the
+    dark-rule blend ("Dark rule"), the dark role's mark and sign-off in their corners ("Dark logo",
+    "Dark signoff"), at the back; the title and the slide number on-dark, and every body
+    placeholder's text that takes the master's color (on_dark()), but a grid slide's marker spans
+    (grid.py draws those lines, a card's or a lead's on its own fill) and a caution slide's body
+    (on its own field). The steps after this read the swapped colors from common.palette()."""
+    slide._element.set("showMasterSp", "0")
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = _rgb("dark")
+    fu = LIVERY["furniture"]
+    made = []
+    if fu["tab"]:
+        made.append(_rect(slide, fu["tab"], width, height, livery_mod.hex(LIVERY, "accent"), name="Dark tab"))
+    if fu["rule"]:   # the line along y, h its width
+        x, y, w, h = fu["rule"]
+        made.append(_rect(slide, [x, y - h / 2, w, h], width, height, livery_mod.hex(LIVERY, "dark-rule"), name="Dark rule"))
+    for corner in sorted(c for c, mk in fu["marks"].items() if mk):
+        mk = fu["marks"][corner]
+        path = livery_mod.mark(LIVERY, "dark", mk["mark"])
+        if path:
+            made.append(_box_picture(slide, Path(LIVERY["dir"]) / path, mk["box"], width, height, f"Dark {mk['mark']}"))
+    tree = slide.shapes._spTree
+    for sh in reversed(made):   # at the back, after the tree's own properties
+        tree.remove(sh._element)
+        tree.insert(2, sh._element)
+    on = livery_mod.hex(LIVERY, "on-dark")
+    for sh in slide.placeholders:
+        kind = sh.placeholder_format.type
+        if kind == PP_PLACEHOLDER.SLIDE_NUMBER:
+            for para in sh.text_frame.paragraphs:
+                para.font.color.rgb = _rgb("on-dark")
+        elif kind in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE):
+            _recolor(sh, _rgb("on-dark"))
+        elif is_body(sh) and "caution" not in words:
+            paras = sh.text_frame._txBody.findall(qn("a:p"))
+            on_dark(paras, on, marker_spans(paras))
+
+
 def add_slide_number(slide):
     """The layout's slide-number placeholder, copied onto the slide (pandoc leaves it out)."""
     for sh in slide.placeholders:
@@ -747,6 +788,8 @@ def run(prs, path: Path) -> None:
                 print("slide_layout: WARNING: {.full} slide %r needs one picture and at most a "
                       "caption; left as it is" % slide_title(slide), file=sys.stderr)
         else:
+            if "dark" in words and LIVERY["mode"] != "dark":   # before the note's style, which reads palette()
+                draw_dark(slide, w, h, words)
             note = "note" in words and note_style(slide)
             if "references" in words:
                 references_style(slide)

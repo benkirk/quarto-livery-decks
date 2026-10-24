@@ -41,6 +41,11 @@
 \definecolor{BrandCautionFill}{HTML}{FFF5D9}
 \definecolor{BrandAlertText}{HTML}{A9254D}
 \definecolor{BrandRule}{HTML}{A8A9AA}
+\definecolor{BrandDarkRule}{HTML}{708090}
+\definecolor{BrandDarkBand}{HTML}{4C5F74}
+\definecolor{BrandDarkCode}{HTML}{58697D}
+\definecolor{BrandDarkMuted}{HTML}{C6CCD3}
+\def\engine@mode{light}   % dark: light text on a dark background (a dark frame is every frame)
 % the roles and blends by name (a card's or strip's role=): \engine@role@<name> is its color
 \expandafter\def\csname engine@role@primary\endcsname{BrandPrimary}
 \expandafter\def\csname engine@role@primary-text\endcsname{BrandPrimaryText}
@@ -61,9 +66,15 @@
 \expandafter\def\csname engine@role@caution-fill\endcsname{BrandCautionFill}
 \expandafter\def\csname engine@role@alert-text\endcsname{BrandAlertText}
 \expandafter\def\csname engine@role@rule\endcsname{BrandRule}
-% marks: light on the background field, dark on primary (the print lockup when there is one)
-\def\engine@logo@light{\engineliverydir logos/ccp-emblem}
-\def\engine@logo@dark{\engineliverydir logos/ccp-emblem}
+\expandafter\def\csname engine@role@dark-rule\endcsname{BrandDarkRule}
+\expandafter\def\csname engine@role@dark-band\endcsname{BrandDarkBand}
+\expandafter\def\csname engine@role@dark-code\endcsname{BrandDarkCode}
+\expandafter\def\csname engine@role@dark-muted\endcsname{BrandDarkMuted}
+% marks per field role: \engine@mark@<role>@<name> (a name's print lockup when there is one);
+% \enginelogo{light|dark} draws background's and primary's logo
+\expandafter\def\csname engine@mark@background@logo\endcsname{\engineliverydir logos/ccp-emblem}
+\expandafter\def\csname engine@mark@primary@logo\endcsname{\engineliverydir logos/ccp-emblem}
+\expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/ccp-emblem}
 % fonts: the base family's files, by weight and style
 \def\engine@font@family{TeX Gyre Heros}
 \def\engine@font@dir{\engineliverydir fonts/}
@@ -145,6 +156,8 @@
 \def\engine@boxes@card@radius{0}
 \def\engine@boxes@card@outline{0.0033}
 \definecolor{EngineBoxesCardOutlineColor}{HTML}{002E62}
+\def\engine@boxes@card@border{0.0016}
+\definecolor{EngineBoxesCardBorderColor}{HTML}{A8A9AA}
 \def\engine@boxes@card@pady{0.5}\def\engine@boxes@card@padx{0.8}
 \def\engine@boxes@card@headpady{0.35}\def\engine@boxes@card@headpadx{0.8}
 \def\engine@boxes@card@roles{primary,secondary,accent}

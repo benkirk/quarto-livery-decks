@@ -260,6 +260,66 @@ Publish the HTML; hand out the pptx and PDF.
 :::
 ::::
 
+## Pictures in cards
+
+:::: {.columns}
+::: {.column .card}
+### Aurora
+
+![Over the limb, from the station](images/gallery-4.jpg)
+
+A picture takes the card's width.
+:::
+::: {.column .card}
+### Helene
+
+![September 2024](images/gallery-5.jpg)
+
+Its caption sits under it.
+:::
+::: {.column .card}
+### Liftoff
+
+![Artemis I](images/gallery-6.jpg)
+
+The cards stay one height.
+:::
+::::
+
+::: {.notes}
+A picture in a card, or in a column of three or more, takes the column's width in every
+format, its aspect kept, with `![Caption](path)`'s caption under it. A plot cell works too.
+:::
+
+## A table between two columns
+
+:::: {.columns}
+::: {.column width="25%"}
+**Three systems**
+
+One allocation covers them all.
+:::
+::: {.column width="50%"}
+| System  | Cores per node | Nodes |
+|:--------|---------------:|------:|
+| Derecho |            128 | 2,488 |
+| Casper  |             36 |   100 |
+| Gust    |            128 |    16 |
+
+: Cores per node as scheduled
+:::
+::: {.column width="25%"}
+**Reading it**
+
+The table takes its column's width; its caption sits under it.
+:::
+::::
+
+::: {.notes}
+A simple table (no merged cells, one paragraph a cell) in a column of three or more is drawn
+natively in the pptx. A table inside a card is not: that row is drawn as plain columns.
+:::
+
 ## A process, step by step
 
 ::: {.steps}
@@ -376,8 +436,8 @@ No title, logo or rule is drawn; the title stays in the source.
 
 ## Dark slide, step by step {.brand-dark}
 
-`{.brand-dark}` sets an HTML slide on the livery's dark role, its text in the `on-dark`
-role; pptx and PDF draw an ordinary slide.
+`{.brand-dark}` sets a content slide on the livery's dark role in every format: its text in
+the `on-dark` role, its accents in `secondary`, the dark role's mark.
 
 ::: {.incremental}
 - `::: {.incremental}` reveals a list one item at a time

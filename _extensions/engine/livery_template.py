@@ -23,7 +23,7 @@ from pathlib import Path
 
 import livery as livery_mod
 import pptx_waves
-from livery_build import ART_KINDS, SLOT_ROLES, TITLE_GAP
+from livery_build import ART_KINDS, SLOT_ROLES
 from livery_charts import custom_colors
 
 # the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
@@ -92,7 +92,6 @@ class Builder:
         self.levels = [round(p * 100) for p in t["levels"]]
         # absolute lengths drawn for the 540 pt canvas (indents, insets), scaled onto this one
         self.k = H_EMU / 6858000
-        self.logo_corner = self.geom["logo"].get("corner", "top-right")
         self.number_corner = self.geom.get("pagenumber", {}).get("corner", "bottom-left")
         self.sid = 10
 
@@ -165,19 +164,10 @@ class Builder:
 
     # ------------------------------------------------------------------ master
     def master(self):
-        g = self.geom; m, tab = g["margin"], g["tab-width"]
-        ft = self.L["frametitle"]   # the band (frametitle.top/height/rule-y): tab and title in it, the rule at rule-y
-        title_top, band_h, rule_y = ft["top"], ft["height"], ft["rule-y"]
+        g = self.geom; m = g["margin"]
+        fu = self.L["furniture"]   # the content furniture's boxes (livery_build.furniture(): tab, rule, title, marks by corner)
         _, body_top, _, body_h = g["body"]   # the content body (geometry.body: below a taller mark, to body-bottom)
         body_bottom = body_top + body_h
-        logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
-        corner = self.logo_corner
-        inset = g["logo"].get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
-        beside = inset + logo_w + TITLE_GAP   # the title's edge on the mark's side
-        title_x = beside if corner == "top-left" else m
-        title_w = 1 - 2 * m - (beside - m if corner != "none" else 0)
-        if ft.get("symmetric") and corner != "none":   # the room mirrored: a centered title on the slide's center
-            title_x, title_w = beside, 1 - 2 * beside
         # the ladder: the livery's five list levels (type.levels), the first the body
         sizes = self.levels
         ind, tabsz, ins = (round(v * self.k) for v in (livery_mod.BODY_INDENT_PT * 12700, 457200, 45720))   # 18 pt, 0.5 and 0.05 in on 7.5 in
@@ -203,14 +193,17 @@ class Builder:
         other = "".join(f'<a:lvl{i}pPr marL="{tabsz * (i - 1)}" algn="l" defTabSz="{tabsz}"><a:defRPr sz="{self.sz("table")}" kern="1200">'
                         f'{fill("tx1")}<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/>'
                         f'</a:defRPr></a:lvl{i}pPr>' for i in range(1, 10))
+        ft = self.L["frametitle"]
+        # each built even when the livery has none (its id taken, as the master always numbered them), then dropped
         tab_sp = (f'<p:sp><p:nvSpPr><p:cNvPr id="{self.next_id()}" name="Title tab"/><p:cNvSpPr/><p:nvPr userDrawn="1"/>'
-                  f'</p:nvSpPr><p:spPr>{xfrm(0, title_top, tab, band_h)}<a:prstGeom prst="rect"><a:avLst/>'
+                  f'</p:nvSpPr><p:spPr>{xfrm(*(fu["tab"] or (0, 0, 0, 0)))}<a:prstGeom prst="rect"><a:avLst/>'
                   f'</a:prstGeom>{fill("accent4")}<a:ln><a:noFill/></a:ln></p:spPr></p:sp>')
+        rx, ry, rw, rh = fu["rule"] or (0, 0, 0, 0)   # a line along y, h its width
         rule = (f'<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="{self.next_id()}" name="Title rule"/><p:cNvCxnSpPr/>'
-                f'<p:nvPr userDrawn="1"/></p:nvCxnSpPr><p:spPr>{xfrm(m, rule_y, 1 - 2 * m, 0)}'
-                f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="{emu(ft["rule-width"], H_EMU)}">'
+                f'<p:nvPr userDrawn="1"/></p:nvCxnSpPr><p:spPr>{xfrm(rx, ry, rw, 0)}'
+                f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="{emu(rh, H_EMU)}">'
                 f'{srgb(ft["rule-color"])}</a:ln></p:spPr></p:cxnSp>')
-        title = self.ph("Title Placeholder", "title", None, xfrm(title_x, title_top, title_w, band_h),
+        title = self.ph("Title Placeholder", "title", None, xfrm(*fu["title"]),
                         'vert="horz" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/><a:x',
                         "", "Click to edit Master title style")
         # (the bodyPr trick above closes the element; restate it plainly)
@@ -224,18 +217,14 @@ class Builder:
         waves = "".join(self.own(pptx_waves.wave_shapes(self.waves["lines"], self.sid + 1, W_EMU, H_EMU,
                                                         self.waves["shift"]["content"], "lt2"))) if self.waves else ""
         art = self.art_pic("rId4", "content")   # under everything (the layouts with a field hide the master)
-        logo = "" if corner == "none" else self.pic("rId2", "Logo (light)", inset if corner == "top-left" else 1 - inset - logo_w,
-                                                    g["logo"]["top"], logo_w, logo_h)
-        so = ""
-        if self.signoff:   # the content slides' sign-off, the light one in its corner
-            h = self.signoff["height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
-            x = m if self.signoff["corner"] == "bottom-left" else 1 - m - w
-            so = self.pic("rId3", "Sign-off (light)", x, 1 - self.signoff["bottom"] - h, w, h)
-        ft = self.L.get("frametitle", {})   # the livery's content title: no tab, no rule, centered, its color
+        # the content mark and sign-off in their corners (the light ones: the background role's), the mark first
+        boxes = {mk["mark"]: mk["box"] for mk in fu["marks"].values() if mk}
+        logo = self.pic("rId2", "Logo (light)", *boxes["logo"]) if "logo" in boxes else ""
+        so = self.pic("rId3", "Sign-off (light)", *boxes["signoff"]) if "signoff" in boxes else ""
+        tab_sp = tab_sp if fu["tab"] else ""
+        rule = rule if fu["rule"] else ""
         tc = ft.get("color")   # the body text's slot unless the livery colors titles apart (frametitle.color)
         title_fill = fill("tx1") if not tc or tc.upper() == self.L["roles"]["foreground"].upper() else srgb(tc)
-        tab_sp = tab_sp if ft.get("tab", True) else ""
-        rule = rule if ft.get("rule", True) else ""
         shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo + so
         return (XMLDECL + f'<p:sldMaster {NSDECL}><p:cSld><p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg>'
                 f'<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'

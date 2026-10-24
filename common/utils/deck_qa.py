@@ -376,7 +376,7 @@ def html_findings(slides):
         if s["fit"] < floor - 0.05:
             hints.append("%s: HTML autofit shrank it to %.2f; the PDF (no autofit) may "
                          "overflow" % (tag, s["fit"]))
-        special = {"engine-layout", "feature", "closing", "brand-dark"}
+        special = {"engine-layout", "feature", "closing", "engine-dark"}
         if s["kind"] in ("text", "columns") and s["use"] <= SHORT_USE and not special & set(cls):
             hints.append('%s: short (%s, uses %.0f%% of the body); try {.vcenter scale="1.15"}'
                          % (tag, s["kind"], 100 * s["use"]))

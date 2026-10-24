@@ -5,6 +5,10 @@
   "blends": {
     "alert-text": "#A4001F",
     "caution-fill": "#FFF5D9",
+    "dark-band": "#0F0F0F",
+    "dark-code": "#1F1F1F",
+    "dark-muted": "#B2B2B2",
+    "dark-rule": "#404040",
     "rule": "#B0B1B2",
     "table-band": "#F6F7F8",
     "table-rule": "#C6C6C8"
@@ -17,6 +21,8 @@
       "number-width": 2
     },
     "card": {
+      "border": 0.0016,
+      "border-color": "#B0B1B2",
       "fill": "#FFFFFF",
       "head-pad": [
         0.35,
@@ -1318,6 +1324,48 @@
     "tab": true,
     "top": 0.0489
   },
+  "furniture": {
+    "marks": {
+      "bottom-left": {
+        "box": [
+          0.06,
+          0.9369999999999999,
+          0.3497759999999999,
+          0.028
+        ],
+        "mark": "signoff"
+      },
+      "bottom-right": null,
+      "top-left": null,
+      "top-right": {
+        "box": [
+          0.8887590624999999,
+          0.045,
+          0.05124093749999999,
+          0.075
+        ],
+        "mark": "logo"
+      }
+    },
+    "rule": [
+      0.06,
+      0.1444,
+      0.88,
+      0.0016
+    ],
+    "tab": [
+      0,
+      0.0489,
+      0.018,
+      0.0778
+    ],
+    "title": [
+      0.06,
+      0.0489,
+      0.8037590625,
+      0.0778
+    ]
+  },
   "geometry": {
     "body": [
       0.06,
@@ -1372,6 +1420,10 @@
       "caution-fill": "BrandCautionFill",
       "code-text": "BrandCodeText",
       "dark": "BrandDark",
+      "dark-band": "BrandDarkBand",
+      "dark-code": "BrandDarkCode",
+      "dark-muted": "BrandDarkMuted",
+      "dark-rule": "BrandDarkRule",
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
@@ -1433,6 +1485,10 @@
     "background": {
       "logo": "logos/meatball.png",
       "signoff": "logos/nasa-name.png"
+    },
+    "dark": {
+      "logo": "logos/meatball-rule.png",
+      "signoff": "logos/nasa-name-white.png"
     },
     "primary": {
       "logo": "logos/meatball-rule.png",

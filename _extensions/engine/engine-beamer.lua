@@ -140,7 +140,8 @@ local function hoist_footnotes(blocks)
   return out
 end
 
--- Per-slide layout controls (C.take_layout; .fill means nothing here): the body goes in a Div
+-- Per-slide layout controls (C.take_layout; .fill means nothing here; .brand-dark the frame key
+-- enginedark, which the theme makes a no-op on a dark livery): the body goes in a Div
 -- before the footnote hoist (which reaches into it) and becomes raw LaTeX afterwards (unwrap_layout).
 local used = { hcenter = false }
 
@@ -153,6 +154,7 @@ local function wrap_layout(blocks)
     local lay = C.content_heading(blk, slide_level, CONTENT_KINDS) and C.take_layout(blk, "engine-beamer")
     if lay then
       if lay.v then add_frameoption(blk, "c") end
+      if lay.dark then add_frameoption(blk, "enginedark") end   -- a no-op on a dark livery (the theme's)
       local slide
       slide, i = C.slide_from(blocks, i, slide_level)
       local body, notes = C.split_notes(slide)
@@ -246,15 +248,38 @@ end
 -- \begin{enginecard}[role=<role>,pick,solid]{<title>}{<sub>} round its body (a plain column beside
 -- cards is [plain]{}{}), [..]{.label} and [..]{.big} lines as \enginelabel and \enginebig;
 -- beamerinnerthemeEngine.sty sets the bodies first, so the row's cards take one height. A table
--- cannot sit in a box (longtable): the row stays plain columns, warned of. A column's role= is
+-- cannot sit in a box (longtable): the row stays plain columns, warned of (C.tabled_row(), every
+-- format's test). A column's role= is
 -- checked here (C.box_role(): all three formats warn alike on an unknown name) and reaches the
 -- theme as the role's name; a column without one writes no key, the theme's default by place.
+
+-- A picture in a card is the card's width unless the author sized it (pandoc then writes
+-- width=1\linewidth, the card's body, \engine@hsize); Quarto's figure float (C.latex_figure()) cannot sit
+-- in the card's box ("Not in outer par mode"), so its image is kept, centered, and its caption
+-- becomes an \enginenote under it, the caption look a ::: note has.
+local function card_picture(img)
+  if not (img.attributes["width"] or img.attributes["height"]) then img.attributes["width"] = "100%" end
+  return img
+end
 
 local function card_body(blocks)
   local out = pandoc.Blocks({})
   for _, b in ipairs(blocks) do
     local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
-    if label or big then
+    local img, caption = C.latex_figure(b)
+    local imgs = C.para_images(b)
+    if img then
+      out:insert(pandoc.Para({ pandoc.RawInline("latex", "{\\centering "), card_picture(img), pandoc.RawInline("latex", "\\par}") }))
+      if caption then
+        local il = pandoc.Inlines({ pandoc.RawInline("latex", "\\enginenote{") })
+        il:extend(caption)
+        il:insert(pandoc.RawInline("latex", "}"))
+        out:insert(pandoc.Para(il))
+      end
+    elseif imgs and #imgs == 1 then
+      card_picture(imgs[1])
+      out:insert(b)
+    elseif label or big then
       local il = pandoc.Inlines({ pandoc.RawInline("latex", label and "\\enginelabel{" or "\\enginebig{") })
       il:extend(label or big)
       il:insert(pandoc.RawInline("latex", "}"))
@@ -272,14 +297,13 @@ local function card_rows(blocks, livery)
   local function row(d)
     if not has_class(d, "columns") then return nil end
     local cols, shares = C.column_shares(d)
-    local any, tabled = false, false
+    local any = false
     for _, col in ipairs(cols) do
       if has_class(col, "card") then any = true end
-      col:walk({ Table = function() tabled = true end })
     end
     if not any then return nil end
-    if tabled then
-      C.warn("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
+    if C.tabled_row(d) then
+      C.warn("engine-beamer: slide \"" .. title .. "\": a table in a card: the row is drawn as plain columns")
       return nil
     end
     local spec = {}

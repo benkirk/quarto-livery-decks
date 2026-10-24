@@ -335,12 +335,16 @@
 \newcommand{\supertinyfont}[1]{{\fontsize{5}{6}\selectfont #1}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Logos: the livery's light (on white and the surface color) and dark (on the brand
-% field) lockups, \engine@logo@light and \engine@logo@dark from livery.sty.
+% Logos: livery.sty's marks per field role, \engine@mark@<role>@<name> (logo, signoff); light
+% is the content slides' (the background role's) logo, dark the brand field's (primary's), any
+% other word a role's.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \enginelogo[<includegraphics opts>]{light|dark}
+% \enginelogo[<includegraphics opts>]{light|dark|<role>}
+\def\engine@markrole@light{background}
+\def\engine@markrole@dark{primary}
 \newcommand{\enginelogo}[2][height=1cm]{%
-  \includegraphics[#1]{\csname engine@logo@#2\endcsname}}
+  \ifcsname engine@markrole@#2\endcsname\edef\engine@logorole{\csname engine@markrole@#2\endcsname}\else\edef\engine@logorole{#2}\fi
+  \includegraphics[#1]{\csname engine@mark@\engine@logorole @logo\endcsname}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code listings

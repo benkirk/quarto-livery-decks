@@ -25,6 +25,10 @@
   --engine-caution-fill: #FFF5D9;
   --engine-alert-text: #A9254D;
   --engine-rule: #A8A9AA;
+  --engine-dark-rule: #708090;
+  --engine-dark-band: #4C5F74;
+  --engine-dark-code: #58697D;
+  --engine-dark-muted: #C6CCD3;
   --engine-logo-h: 96.3px;
   --engine-logo-w: 93.6px;
   --engine-logo-aspect: 0.9717;
@@ -130,6 +134,8 @@
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;
   --engine-card-outline-color: #002E62;
+  --engine-card-border: 1.4px;
+  --engine-card-border-color: #A8A9AA;
   --engine-card-pad: 0.5em 0.8em;
   --engine-card-head-pad: 0.35em 0.8em;
   --engine-card-pad-x: 0.8em;
@@ -208,7 +214,7 @@
   --engine-status-serious: #B45C00;
   --engine-status-critical: #B63B35;
 }
-.reveal .slides section.slide.brand-dark {
+.reveal .slides section.slide.engine-dark {
   --engine-data-1: #256EE4;
   --engine-data-2: #EF483F;
   --engine-data-3: #F29D49;
@@ -238,11 +244,17 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
-.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark) { background: url("content.jpg") center / cover no-repeat; }
+.reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.engine-dark) { background: url("content.jpg") center / cover no-repeat; }
+html:root {
+  --engine-mark-background-logo: url("ccp-emblem.png");
+  --engine-mark-primary-logo: url("ccp-emblem.png");
+  --engine-mark-dark-logo: url("ccp-emblem.png");
+}
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("ccp-emblem.png"); }
+.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("ccp-emblem.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
 html .reveal .slides section ul > li::before { content: "●"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
@@ -1218,3 +1230,31 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   --engine-cmp-eyebrow-display: none;
   background: none;
 }
+/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */
+.reveal .slides section.slide.engine-dark {
+  --engine-foreground: #FFFFFF;
+  --engine-muted: #C6CCD3;
+  --engine-primary-contrast: #F3AB10;
+  --engine-primary: #F3AB10;
+  --engine-table-rule: #708090;
+  --engine-table-band: #4C5F74;
+  --r-main-color: #FFFFFF;
+  --r-heading-color: #FFFFFF;
+  color: #FFFFFF;
+  --engine-title-color: #FFFFFF;
+  --engine-title-rule-color: #708090;
+}
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout),
+.reveal .slides section.slide.engine-dark.engine-caution > .engine-body {
+  --engine-foreground: #000000;
+  --engine-muted: #5C5E62;
+  --engine-primary-contrast: #002E62;
+  --engine-primary: #41556B;
+  --engine-table-rule: #C0C1C2;
+  --engine-table-band: #F6F7F8;
+  --r-main-color: #000000;
+  --r-heading-color: #000000;
+  color: #000000;
+}
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }

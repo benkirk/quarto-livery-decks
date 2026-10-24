@@ -16,6 +16,59 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
+## [Unreleased]
+
+Pictures and tables in a grid slide's columns and cards in pptx, and the dark content slide in
+every format (`design/cells-dark-handoff.md`).
+
+### Decks
+
+- A picture in a card, or in a column of three or more, is drawn in the pptx at the column's
+  width (a card's less its pads), its aspect kept, the caption under it in the caption look,
+  as HTML and the PDF draw it; before, pandoc drew it as a shape of its own and split the slide.
+  An executed plot or a baked diagram works too. A simple table in such a column is a native
+  pptx table at the column's width. A table in a card is not drawn as a card in any format: the
+  row is drawn as plain columns, with a warning (the PDF's rule, now everyone's). The sample
+  deck shows both ("Pictures in cards", "A table between two columns"); docs/authoring.md
+  "Columns" and "Cards and lead boxes".
+
+- `{.brand-dark}` is a dark slide in every format: the content slide on the livery's dark role,
+  its text on-dark, its accents secondary, the dark role's mark and sign-off, the hairline,
+  table rules and muted text in dark blends; a card, lead, strip or caution body keeps its own
+  colors. pptx and the PDF drew an ordinary slide before, and HTML wore the field's mark (nsi's
+  black lockup on black; now its white one) and colored a card's text white on white. Under a
+  dark livery the class does nothing. docs/authoring.md "Front matter and slide kinds".
+
+- Every card has a hairline round its edge in every format (`boxes.card.border`, 0.0016 of the
+  slide's height, in the `rule` blend, the title hairline's): on a white card fill the body now
+  has an edge. A picked card's outline replaces it; a solid card has none.
+
+### Liveries
+
+- `boxes.card.border` and `border-color` (the card's hairline); `border: 0` turns it off.
+- Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
+  corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
+  `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its
+  `marks` always holds the dark role (primary's unless `marks.dark` names its own). In LaTeX the
+  marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is unchanged.
+
+### Plots
+
+- A plot cell in a card or a grid column takes the column's width in the pptx, as in HTML and
+  the PDF (the plots deck's "Plots in cards").
+- `with livery_mpl.dark():` draws the dark chrome and colors in every format, since every format
+  draws a `{.brand-dark}` slide dark; its `force=` argument is gone (it was the only way to have
+  it outside HTML).
+
+### LaTeX
+
+- `\begin{frame}[enginedark]{...}`: a content frame on the livery's dark role, as the Quarto
+  `{.brand-dark}` slide (a no-op under a dark livery); the cookbook's "Dark slide, step by step".
+- A card's `\linewidth` takes a picture at the card's width with `\enginenote{...}` as its caption
+  (the cookbook's "Pictures in cards").
+- The marks are `\engine@mark@<role>@<name>` in `livery.sty` (`\engine@logo@light|dark` and
+  `\engine@signoff@light|dark` are gone); `\enginelogo{light|dark}` is unchanged.
+
 ## [26.10.11] - 2026-10-23
 
 The first consumer deck's friction list (#133, `design/consumer-friction-handoff.md`): the pptx

@@ -15,15 +15,17 @@ import os
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
+import yaml
 
 import livery_build as lb
 
 from conftest import ENGINE, ROOT, run
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
+FRACTIONS = ("gap", "rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
 EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
        ("quote", "attribution-gap"), ("note", "gap"),
        ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
@@ -60,6 +62,8 @@ def test_every_key(livery):
     assert f"\\definecolor{{EngineGlyphDone}}{{HTML}}{{{b['status']['done'][1:]}}}" in sty
     assert f"\\def\\engine@boxes@caution@padx{{{b['caution']['pad'][1]}}}" in sty
     assert f"\\definecolor{{EngineBoxesCardOutlineColor}}{{HTML}}{{{b['card']['outline-color'][1:]}}}" in sty
+    assert f"\\definecolor{{EngineBoxesCardBorderColor}}{{HTML}}{{{b['card']['border-color'][1:]}}}" in sty
+    assert f"--engine-card-border-color: {b['card']['border-color']};" in css
     assert f"--engine-rail-line-color: {b['rail']['line-color']};" in css
     assert f"--engine-rail-fill: {b['rail']['fill'] or 'transparent'};" in css
     assert ("EngineBoxesRailFill" in sty) == (b["rail"]["fill"] is not None), "a null fill defines no color"
@@ -110,6 +114,39 @@ def test_colors_resolve(tmp_path, tmp_livery):
     assert rc == 0, err
     assert j["boxes"]["gallery"]["fill"] == j["roles"]["surface"] and j["boxes"]["gallery"]["gap"] == 0.02, "a tile look"
     assert j["boxes"]["gallery"]["pad"] == lb.BOXES["gallery"]["pad"], "its other keys the defaults"
+
+
+def test_dark_blends_and_marks(livery):
+    """The dark content slide's data: the four blends, on-dark into the dark role (dark-rule 25%,
+    dark-band 6%, dark-code 12%, dark-muted 70%), in livery.json, the css and the sty; marks per
+    field role, the dark role's primary's unless the livery names its own; the css's per-role
+    properties and the .engine-dark rule reading the dark role's mark."""
+    import livery as livery_mod
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    css, sty = (livery / "build" / "livery.css").read_text(), (livery / "build" / "livery.sty").read_text()
+    r = j["roles"]
+    for name, share in (("dark-rule", 0.25), ("dark-band", 0.06), ("dark-code", 0.12), ("dark-muted", 0.70)):
+        want = livery_mod.mix(r["on-dark"], r["dark"], share)
+        assert j["blends"][name] == want, (name, j["blends"][name], want)
+        assert f"--engine-{name}: {want};" in css, name
+        tex = "Brand" + "".join(w.title() for w in name.split("-"))
+        assert f"\\definecolor{{{tex}}}{{HTML}}{{{want[1:]}}}" in sty, tex
+    assert set(j["marks"]) >= {"background", "primary", "dark"}
+    if "dark" not in (yaml.safe_load((livery / "livery.yml").read_text()).get("marks") or {}):
+        assert j["marks"]["dark"]["logo"] == j["marks"]["primary"]["logo"], "the dark role wears primary's mark"
+    for role, m in j["marks"].items():
+        assert f'--engine-mark-{role}-logo: url("{Path(m["logo"]).name}");' in css, role
+        assert f"\\csname engine@mark@{role}@logo\\endcsname" in sty, role
+    assert ".reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }" in css
+    assert "engine@logo@" not in sty and "engine@signoff@" not in sty, "the old names"
+
+
+def test_nsi_dark_mark():
+    """nsi's dark slide wears its white lockup (marks.dark), not primary's black one: the HTML dark
+    slide drew the black lockup on black while it borrowed the field's class."""
+    css = (ROOT / "liveries" / "nsi" / "build" / "livery.css").read_text()
+    assert '--engine-mark-dark-logo: url("nsi-lockup-white.png");' in css
+    assert '--engine-mark-primary-logo: url("nsi-lockup-black.png");' in css
 
 
 @pytest.mark.parametrize("boxes, expect", [

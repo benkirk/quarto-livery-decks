@@ -6,11 +6,14 @@ A two-column slide keeps the Two Content layout (pandoc's placeholders idx 1 and
 carry `engine-columns: <share> <share>` (engine-common.lua's column_shares(): width= or an equal
 share of what is left), with `wide` when slide-layout.lua's line says so, and no marker paragraph.
 A three-column slide is flattened into one placeholder with its markers, every column's text kept;
-a picture in it is warned of. pandoc's pptx writer itself keeps only the first two `.column`s: the
+a picture in it or in a card is a picture marker (an executed plot's bytes carried in it), a
+linked one warned of. engine-common.lua's cell_figure() and base64() under `pandoc lua`. pandoc's pptx writer itself keeps only the first two `.column`s: the
 premise is checked without the filter, and when pandoc writes the third, the flattening's reason
 for three columns is gone. Needs pandoc ($QUARTO_PANDOC).
 """
 
+import base64
+import json
 import re
 import shutil
 import subprocess
@@ -18,7 +21,7 @@ import zipfile
 
 import pytest
 
-from conftest import ENGINE, ROOT, pandoc_exe
+from conftest import ENGINE, ROOT, lua_common, pandoc_exe
 
 FILTER = ENGINE / "grid-pptx.lua"
 COL = "::: {{.column{}}}\n{}\n:::\n"
@@ -66,7 +69,190 @@ def test_three_flattened(rendered):
     assert t.count("⟦engine:column⟧") == 3 and t.count("⟦engine:end⟧") == 4, "column markers"
     assert all(w in t for w in ("AAA", "BBB", "CCC")), "a column's text lost"
     assert '"Three"' not in err, "a warning for a text grid"
-    assert 'slide "Picture": a picture/table in a card or a 3+ column slide is not drawn' in err, f"no picture warning: {err!r}"
+    assert '"Picture"' not in err, f"a warning for a picture in a column: {err!r}"
+
+
+def paras_of(xml):
+    return ["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in re.findall(r"<a:p>.*?</a:p>", xml)]
+
+
+def test_picture_marked(rendered):
+    """A picture in a three-column slide's column: a picture marker and its end inside the column's
+    span, no picture shape, and no untitled continuation (pandoc drew it as a shape of its own and
+    split the slide before)."""
+    _, slides, _ = rendered
+    parts = sorted((n for n in slides if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)), key=lambda n: int(re.search(r"\d+", n).group()))
+    assert len(parts) == 5, f"the picture slide split: {len(parts)} slides"
+    xml = next(slides[n] for n in parts if "HHH" in text(slides, n))
+    assert "<p:pic>" not in xml, "pandoc drew the picture"
+    paras = paras_of(xml)
+    i = paras.index("⟦engine:column⟧")
+    assert paras[i + 1:i + 4] == ["⟦engine:picture src=p.png⟧", "⟦engine:end⟧", "⟦engine:end⟧"], paras
+
+
+def marked(tmp_path, md):
+    """The filter's slides on md (rendered in tmp_path): (the warnings, each slide's paragraphs)."""
+    out = tmp_path / "m.pptx"
+    r = subprocess.run([pandoc_exe(), "--lua-filter", str(FILTER), "-o", str(out)], input=md, text=True, cwd=tmp_path,
+                       check=True, capture_output=True)
+    with zipfile.ZipFile(out) as z:
+        names = sorted((n for n in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)), key=lambda n: int(re.search(r"\d+", n).group()))
+        return r.stderr, [paras_of(z.read(n).decode()) for n in names]
+
+
+def test_card_picture_marked(tmp_path):
+    """A captioned figure in a card: its marker, the caption a paragraph, its end, before the card's
+    next line; a sized image carries its width; a linked one stays in the flow, warned of."""
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / "p.png")
+    md = ("## Cards\n\n:::: {.columns}\n::: {.column .card}\n### One\n\n![The caption](p.png)\n\nA line\n:::\n"
+          "::: {.column .card}\n![](p.png){width=50%}\n:::\n::::\n\n"
+          "## Linked\n\n:::: {.columns}\n::: {.column .card}\n[![](p.png)](https://example.org)\n:::\n::: {.column}\nx\n:::\n::::\n")
+    err, slides = marked(tmp_path, md)
+    one = slides[0]
+    i = one.index("⟦engine:picture src=p.png⟧")
+    assert one[i - 1] == "⟦engine:title⟧One" and one[i + 1:i + 4] == ["The caption", "⟦engine:end⟧", "A line"], one
+    assert "⟦engine:picture src=p.png size=50%⟧" in one, one
+    assert 'slide "Linked": a linked picture in a card or a 3+ column slide is not drawn in pptx' in err, err
+    assert not any("⟦engine:picture" in p for s in slides[1:] for p in s), "a linked picture marked"
+
+
+def test_plot_bytes_carried(tmp_path):
+    """An executed cell's plot (a src under figure-pptx/ in <deck>_files/: gone from disk when the
+    pptx steps run) rides in its marker as base64 of the file's bytes; a missing one is warned of
+    and left in the flow."""
+    d = tmp_path / "t_files" / "figure-pptx"
+    d.mkdir(parents=True)
+    png = (ROOT / "decks" / "quickstart" / "screenshots" / "hero.png").read_bytes()
+    (d / "cell-2-output-1.png").write_bytes(png)
+    cell = ("::: {{.cell}}\n```python\nplot()\n```\n::: {{.cell-output .cell-output-display}}\n"
+            "![](t_files/figure-pptx/{}){{fig-alt=\"x\"}}\n:::\n:::\n")
+    md = ("## Plot\n\n:::: {.columns}\n::: {.column .card}\n" + cell.format("cell-2-output-1.png") + ":::\n"
+          "::: {.column .card}\n" + cell.format("missing.png") + ":::\n::::\n")
+    err, slides = marked(tmp_path, md)
+    m = next(p for p in slides[0] if p.startswith("⟦engine:picture"))
+    assert m.startswith("⟦engine:picture src=t_files/figure-pptx/cell-2-output-1.png data="), m[:120]
+    assert base64.b64decode(m[:-1].split(" data=")[1]) == png, "the bytes carried are not the file's"
+    assert "plot()" in slides[0], "the cell's code lost"
+    assert "missing.png cannot be read" in err, err
+
+
+TABLE = "| a | b | c |\n|---|--:|---|\n| 1 | **2** | |\n| 4 | 5 | 6 |\n\nTable: The caption.\n"
+LISTED = "+------+------+\n| a    | b    |\n+======+======+\n| - x  | 2    |\n| - y  |      |\n+------+------+\n"
+
+
+def test_table_marked(tmp_path):
+    """A simple table in a three-column slide's column: its marker (cols, header), a row marker per row,
+    a paragraph per cell led by ⟦engine:cell⟧ (an empty one the prefix alone), the caption, its end; a
+    table with a list in a cell warned of and left (pandoc draws it); a row with a card and a table
+    flattened as plain columns, warned of, in three columns and in two (pandoc's, its table native)."""
+    three = lambda mid, card="": ("## {}\n\n:::: {{.columns}}\n::: {{.column" + card + "}}\nLeft\n:::\n::: {{.column}}\n" + mid
+                                  + ":::\n::: {{.column}}\nRight\n:::\n::::\n\n")
+    md = (three(TABLE).format("Tabled") + three(LISTED).format("Listed") + three(TABLE, " .card").format("Carded")
+          + "## Two\n\n:::: {.columns}\n::: {.column .card}\n### A\nx\n:::\n::: {.column}\n" + TABLE + ":::\n::::\n")
+    err, slides = marked(tmp_path, md)
+    one = slides[0]
+    i = one.index("⟦engine:table cols=3 header align=d,r,d⟧")
+    assert one[i:i + 16] == ["⟦engine:table cols=3 header align=d,r,d⟧", "⟦engine:row⟧", "⟦engine:cell⟧a", "⟦engine:cell⟧b", "⟦engine:cell⟧c",
+                             "⟦engine:row⟧", "⟦engine:cell⟧1", "⟦engine:cell⟧2", "⟦engine:cell⟧", "⟦engine:row⟧", "⟦engine:cell⟧4",
+                             "⟦engine:cell⟧5", "⟦engine:cell⟧6", "The caption.", "⟦engine:end⟧", "⟦engine:end⟧"], one[i:]
+    assert 'slide "Tabled"' not in err, err
+    assert 'slide "Listed": a table with spans or blocks in its cells is not drawn in a grid column' in err, err
+    assert not any("⟦engine:table" in p for p in slides[1]), "a listed table marked"
+    assert 'slide "Carded": a table in a card: the row is drawn as plain columns' in err, err
+    carded = next(s for s in slides if "⟦engine:table cols=3 header align=d,r,d⟧" in s and s is not one)
+    assert not any(p.startswith("⟦engine:column card") for p in carded), "the carded row drawn as cards"
+    assert 'slide "Two": a table in a card: the row is drawn as plain columns' in err, err
+    assert not any("⟦engine:" in p for p in slides[-1]), "a two-column tabled row flattened"
+
+
+# cell_figure() on each top-level block of the markdown from stdin, as JSON lines ({src, caption,
+# sized} or {nil, linked}); with arg[2] "latexfig" a Figure in Quarto's PDF shape first (test_gallery's);
+# with "b64" base64() of each line of stdin
+CELL = r"""
+local src = io.read("a")
+if arg[2] == "b64" then
+  for line in (src .. "\n"):gmatch("(.-)\n") do io.write(C.base64(line) .. "\n") end
+  return
+end
+local doc = pandoc.read(src, "markdown")
+if arg[2] == "latexfig" then
+  doc = doc:walk({ Figure = function(f)
+    local img
+    f = f:walk({ Image = function(im) im.caption = pandoc.Inlines({}); img = im; return im end })
+    local cap = pandoc.Inlines({ pandoc.RawInline("latex", "\\caption"), pandoc.RawInline("latex", "{") })
+    cap:extend(pandoc.utils.blocks_to_inlines(f.caption.long)); cap:insert(pandoc.RawInline("latex", "}"))
+    return pandoc.Div({ pandoc.RawBlock("latex-merge", "\\begin{figure}[H]"),
+      pandoc.Para({ pandoc.RawInline("latex", "{\\centering "), img, pandoc.RawInline("latex", "\n\n}") }),
+      pandoc.Para(cap), pandoc.RawBlock("latex-merge", "\\end{figure}%") })
+  end })
+end
+for _, b in ipairs(doc.blocks) do
+  local fig, linked = C.cell_figure(b)
+  io.write(pandoc.json.encode(fig and { src = fig.src, caption = fig.caption and pandoc.utils.stringify(fig.caption) or pandoc.json.null,
+    sized = fig.sized or pandoc.json.null } or { ["nil"] = true, linked = linked or false }) .. "\n")
+end
+"""
+
+
+def test_cell_figure(tmp_path):
+    """The shapes a picture in a cell takes: a Figure (its caption), an image paragraph (sized), an
+    executed cell's Div of one picture, Quarto's PDF figure; not a cell with its code beside the
+    picture, two images, or text; an image in a link nil and linked."""
+    md = ("![A caption](a.png)\n\n![](b.png){width=40%}\n\n"
+          "::: {.cell}\n::: {.cell-output-display}\n![](c.png)\n:::\n:::\n\n"
+          "::: {.cell}\n```\ncode\n```\n::: {.cell-output-display}\n![](d.png)\n:::\n:::\n\n"
+          "![](e.png) ![](f.png)\n\nSome text\n\n[![](g.png)](https://example.org)\n")
+    out, warnings = lua_common(tmp_path, CELL, md)
+    got = [json.loads(x) for x in out.splitlines()]
+    assert got == [{"src": "a.png", "caption": "A caption", "sized": None}, {"src": "b.png", "caption": None, "sized": "40%"},
+                   {"src": "c.png", "caption": None, "sized": None}, {"nil": True, "linked": False},
+                   {"nil": True, "linked": False}, {"nil": True, "linked": False}, {"nil": True, "linked": True}], got
+    assert not warnings, warnings
+    out, _ = lua_common(tmp_path, CELL, "![The PDF caption](h.png)\n", "latexfig")
+    assert json.loads(out) == {"src": "h.png", "caption": "The PDF caption", "sized": None}, out
+
+
+# simple_table() of each table and tabled_row() of each .columns div, as JSON lines
+TABLES = r"""
+local doc = pandoc.read(io.read("a"), "markdown")
+doc.blocks:walk({ Table = function(t)
+  local s = C.simple_table(t)
+  local rows = {}
+  for _, r in ipairs(s and s.rows or {}) do
+    local cells = {}
+    for _, c in ipairs(r) do table.insert(cells, pandoc.utils.stringify(c)) end
+    table.insert(rows, cells)
+  end
+  io.write(pandoc.json.encode(s and { cols = s.cols, header = s.header, rows = rows,
+    caption = s.caption and pandoc.utils.stringify(s.caption) or pandoc.json.null } or { ["nil"] = true }) .. "\n")
+end, Div = function(d)
+  if C.has_class(d, "columns") then io.write(pandoc.json.encode({ tabled = C.tabled_row(d) }) .. "\n") end
+end })
+"""
+
+
+def test_simple_table(tmp_path):
+    """A pipe table: its columns, its header row first, a cell's inlines, its caption; a headerless
+    one; one with a list in a cell, or a cell spanning two columns, nil. tabled_row(): a card and a
+    table in one row, not a card alone or a table alone."""
+    span = "+---+---+\n| a     |\n+===+===+\n| 1 | 2 |\n+---+---+\n"
+    headless = "+---+---+\n| 1 | 2 |\n+---+---+\n"
+    row = lambda a, b: ":::: {.columns}\n::: {.column" + a + "}\nx\n:::\n::: {.column}\n" + b + ":::\n::::\n\n"
+    md = TABLE + "\n" + headless + "\n" + LISTED + "\n" + span + "\n" + row(" .card", TABLE) + row(" .card", "y\n") + row("", TABLE)
+    out, _ = lua_common(tmp_path, TABLES, md)
+    got = [json.loads(x) for x in out.splitlines()]
+    assert got[0] == {"cols": 3, "header": True, "rows": [["a", "b", "c"], ["1", "2", ""], ["4", "5", "6"]], "caption": "The caption."}, got[0]
+    assert got[1] == {"cols": 2, "header": False, "rows": [["1", "2"]], "caption": None}, got[1]
+    assert got[2] == {"nil": True} and got[3] == {"nil": True}, got[2:4]
+    tabled = [g["tabled"] for g in got if "tabled" in g]
+    assert tabled == [True, False, False], tabled
+
+
+def test_base64(tmp_path):
+    """base64() against Python's, RFC 4648's vectors and some bytes past ASCII."""
+    lines = ["", "f", "fo", "foo", "foob", "fooba", "foobar", "⟦engine⟧ ü"]
+    out, _ = lua_common(tmp_path, CELL, "\n".join(lines), "b64")
+    assert out.splitlines() == [base64.b64encode(x.encode()).decode() for x in lines], out
 
 
 def test_pandoc_still_drops_the_third(rendered):

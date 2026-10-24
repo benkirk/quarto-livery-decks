@@ -20,7 +20,7 @@ local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "
 
 -- the layout controls (C.take_layout, as the other formats read them) and the slide kinds
 -- (C.SLIDE_KINDS), as the words of the notes line, in one order
-local WORDS = { "hcenter", "vcenter", "fill", "full", "caution", "feature", "closing", "wide", "references" }
+local WORDS = { "hcenter", "vcenter", "fill", "full", "caution", "feature", "closing", "wide", "dark", "references" }
 
 local function take_layout(blk, refs)
   local lay = C.take_layout(blk, "slide-layout")
@@ -30,7 +30,7 @@ local function take_layout(blk, refs)
   end
   blk.classes = kept
   if lay then
-    have.hcenter, have.vcenter, have.fill, have.caution, have.wide = lay.h, lay.v, lay.fill, lay.caution, lay.wide
+    have.hcenter, have.vcenter, have.fill, have.caution, have.wide, have.dark = lay.h, lay.v, lay.fill, lay.caution, lay.wide, lay.dark
   end
   have.references = refs   -- the slide holding ::: {#refs} (C.refs_heading())
   local words = {}

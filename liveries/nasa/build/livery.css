@@ -33,6 +33,10 @@
   --engine-caution-fill: #FFF5D9;
   --engine-alert-text: #A4001F;
   --engine-rule: #B0B1B2;
+  --engine-dark-rule: #404040;
+  --engine-dark-band: #0F0F0F;
+  --engine-dark-code: #1F1F1F;
+  --engine-dark-muted: #B2B2B2;
   --engine-logo-h: 67.5px;
   --engine-logo-w: 82.0px;
   --engine-logo-aspect: 1.2146;
@@ -142,6 +146,8 @@
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;
   --engine-card-outline-color: #0B6BCB;
+  --engine-card-border: 1.4px;
+  --engine-card-border-color: #B0B1B2;
   --engine-card-pad: 0.5em 0.8em;
   --engine-card-head-pad: 0.35em 0.8em;
   --engine-card-pad-x: 0.8em;
@@ -208,7 +214,7 @@
   --engine-status-serious: #B45C00;
   --engine-status-critical: #B63B35;
 }
-.reveal .slides section.slide.brand-dark {
+.reveal .slides section.slide.engine-dark {
   --engine-data-1: #256EE4;
   --engine-data-2: #EF483F;
   --engine-data-3: #F29D49;
@@ -239,13 +245,23 @@ html:root {
   --mermaid-label-fg-color: var(--engine-primary-contrast);
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
+html:root {
+  --engine-mark-background-logo: url("meatball.png");
+  --engine-mark-background-signoff: url("nasa-name.png");
+  --engine-mark-primary-logo: url("meatball-rule.png");
+  --engine-mark-primary-signoff: url("nasa-name-white.png");
+  --engine-mark-dark-logo: url("meatball-rule.png");
+  --engine-mark-dark-signoff: url("nasa-name-white.png");
+}
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("meatball.png"); }
+.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("meatball-rule.png"); }
-.reveal .slides section .engine-signoff { background-image: url("nasa-name.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
+.reveal .slides section .engine-signoff { background-image: var(--engine-mark-background-signoff); }
 .reveal .slides section.engine-field .engine-signoff,
-.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: url("nasa-name-white.png"); }
+.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: var(--engine-mark-primary-signoff); }
+.reveal .slides section.engine-dark .engine-signoff { background-image: var(--engine-mark-dark-signoff); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("earth-limb.jpg") center / cover no-repeat; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
@@ -1216,3 +1232,31 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --engine-cmp-eyebrow-display: none;
   background: none;
 }
+/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */
+.reveal .slides section.slide.engine-dark {
+  --engine-foreground: #FFFFFF;
+  --engine-muted: #B2B2B2;
+  --engine-primary-contrast: #8A8D8F;
+  --engine-primary: #8A8D8F;
+  --engine-table-rule: #404040;
+  --engine-table-band: #0F0F0F;
+  --r-main-color: #FFFFFF;
+  --r-heading-color: #FFFFFF;
+  color: #FFFFFF;
+  --engine-title-color: #FFFFFF;
+  --engine-title-rule-color: #404040;
+}
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout),
+.reveal .slides section.slide.engine-dark.engine-caution > .engine-body {
+  --engine-foreground: #1C1C1C;
+  --engine-muted: #5C5E62;
+  --engine-primary-contrast: #0032A0;
+  --engine-primary: #0032A0;
+  --engine-table-rule: #C6C6C8;
+  --engine-table-band: #F6F7F8;
+  --r-main-color: #1C1C1C;
+  --r-heading-color: #1C1C1C;
+  color: #1C1C1C;
+}
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
+.reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }

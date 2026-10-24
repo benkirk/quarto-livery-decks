@@ -45,7 +45,7 @@ Keep this directory beside your script, or put it on PYTHONPATH. Without the hel
 - livery_mpl.figsize("full" | "half"): a slide's content area or one of two columns, in inches;
   a figure at this size has the slide's text sizes ({body} pt labels on a {canvas} in slide)
 - colormaps: livery (sequential), livery_div (diverging), livery_seq_<ramp>, each with _dark
-- with livery_mpl.dark(force=True): the dark chrome and colors, for a dark slide or page
+- with livery_mpl.dark(): the dark chrome and colors, for a dark slide or page
 - livery_mpl.use(path): another livery (a directory, or another bundle)
 - fonts/: the livery's fonts and their licenses
 

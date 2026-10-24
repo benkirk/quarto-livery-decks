@@ -104,6 +104,10 @@
   "blends": {
     "alert-text": "#B5540A",
     "caution-fill": "#FFF9DA",
+    "dark-band": "#102643",
+    "dark-code": "#1F344F",
+    "dark-muted": "#B3BAC3",
+    "dark-rule": "#405269",
     "rule": "#A9B8CB",
     "table-band": "#F7F6F5",
     "table-rule": "#C1CBD7"
@@ -116,6 +120,8 @@
       "number-width": 2
     },
     "card": {
+      "border": 0.0016,
+      "border-color": "#A9B8CB",
       "fill": "#FFFFFF",
       "head-pad": [
         0.35,
@@ -1165,6 +1171,40 @@
     "tab": true,
     "top": 0.0489
   },
+  "furniture": {
+    "marks": {
+      "bottom-left": null,
+      "bottom-right": null,
+      "top-left": null,
+      "top-right": {
+        "box": [
+          0.8238626499999999,
+          0.0533,
+          0.11613734999999999,
+          0.0644
+        ],
+        "mark": "logo"
+      }
+    },
+    "rule": [
+      0.06,
+      0.1444,
+      0.88,
+      0.0016
+    ],
+    "tab": [
+      0,
+      0.0489,
+      0.018,
+      0.0778
+    ],
+    "title": [
+      0.06,
+      0.0489,
+      0.7388626500000001,
+      0.0778
+    ]
+  },
   "geometry": {
     "body": [
       0.06,
@@ -1216,6 +1256,10 @@
       "caution-fill": "BrandCautionFill",
       "code-text": "BrandCodeText",
       "dark": "BrandDark",
+      "dark-band": "BrandDarkBand",
+      "dark-code": "BrandDarkCode",
+      "dark-muted": "BrandDarkMuted",
+      "dark-rule": "BrandDarkRule",
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
@@ -1289,6 +1333,10 @@
     "background": {
       "logo": "logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.png",
       "logo-print": "logos/NSF-NCAR-UCAR_Logo_FullColor_RGB.pdf"
+    },
+    "dark": {
+      "logo": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.png",
+      "logo-print": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.pdf"
     },
     "primary": {
       "logo": "logos/NSF-NCAR-UCAR_Logo_Color-White_RGB.png",

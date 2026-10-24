@@ -13,7 +13,13 @@ its pads, or in a plain column between its text boxes); `⟦engine:agenda curren
 section `⟦engine:item n=k state=..⟧` ... `⟦engine:end⟧`, and a last `⟦engine:end⟧`, the agenda
 (draw_agenda(): a number box beside a text box per row); `⟦engine:gallery cols=c rows=r fit=f ..⟧`, per
 image `⟦engine:item src=..⟧`, its caption, `⟦engine:end⟧`, and a last `⟦engine:end⟧`, an image gallery
-(gallery.py's draw_gallery(), which reads the files from the deck's directory). This
+(gallery.py's draw_gallery(), which reads the files from the deck's directory); in a column or a card,
+`⟦engine:picture src=..[ data=..][ size=..]⟧`, its caption, `⟦engine:end⟧`, a picture (figures.py's
+draw_picture(): the column's width, its aspect kept, its caption under it; "Column n picture",
+"Card n picture", a card's inside its pads and its group; pictures give way, never below PIC_FLOOR
+em, when the text beside them needs the room); in a plain column, `⟦engine:table cols=n[ header]⟧`,
+per row `⟦engine:row⟧` and its cells led by `⟦engine:cell⟧`, its caption, `⟦engine:end⟧`, a native
+table (figures.py's draw_table(), "Column n table", which style_tables styles after). This
 parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
@@ -43,10 +49,11 @@ from pptx.util import Pt
 import livery as livery_mod
 
 from .columns import rules
+from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
-from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, em, fit_table, group, inset,
-                     is_body, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title, space_before,
-                     split_br, style_runs)
+from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
+                     inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title,
+                     space_before, split_br, style_runs)
 from .slide_layout import NOTE_GAP, frame_note, note_style, table_height, use_layout
 from .measure import text_height
 
@@ -54,6 +61,7 @@ PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a ca
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
 PIC_FLOOR = 2   # em of the body type: the least height a picture keeps when the lead under it needs its room
+BOXED = re.compile(r"^(Card \d+|Lead|Strip)$")   # a box with a fill of its own: it keeps its colors on a dark slide
 
 
 def _attrs(rest):
@@ -106,13 +114,15 @@ def parse(paragraphs):
         elif kind == "lead" and not stack:
             seg = ("lead", attrs, [])
             segs.append(seg); stack.append(seg)
-        elif kind in ("strip", "quote"):   # in a column, an item of its flow; else a segment of its own
+        elif kind in ("strip", "quote", "picture", "table"):   # in a column, an item of its flow; else a segment of its own
             seg = (kind, attrs, [])
             if stack and stack[-1][0] == "column":
                 stack[-1][2].append(seg)
-            elif not stack:
+            elif not stack and kind not in ("picture", "table"):   # a column's alone (grid-pptx.lua's cell)
                 segs.append(seg)
             stack.append(seg)
+        elif kind in ("row", "cell") and stack and stack[-1][0] == "table":   # a row's opener, an empty cell: draw_table's
+            stack[-1][2].append(p)
         elif kind == "end" and stack:
             stack.pop()
     return segs if any(s[0] != "text" for s in segs) else None
@@ -172,8 +182,8 @@ def _card_text(paras, solid):
     head, body = [], []
     on_role = _hex("primary-text")
     for p in paras:
-        if isinstance(p, tuple):   # a strip: its own lines styled as a card's body; a quote: draw_quote's
-            body.append(p if p[0] == "quote" else (p[0], p[1], _card_text(p[2], solid)[1]))
+        if isinstance(p, tuple):   # a strip: its own lines styled as a card's body; a quote, a picture: their drawers'
+            body.append(p if p[0] in ("quote", "picture") else (p[0], p[1], _card_text(p[2], solid)[1]))   # a table: never (tabled_row())
             continue
         kind = _prefix(p)
         _close(p)
@@ -329,11 +339,31 @@ def draw_agenda(slide, x, y, w, room, items):
     return min(h, room)
 
 
-def _plain_column(slide, x, y, w, room, items, name, slide_height):
+def _yield_pictures(pics, over, slide):
+    """The drawn pictures [(picture, caption box)] shorter by over (EMU) in all, each by its share of
+    their heights and to no less than PIC_FLOOR em: the room text beside them needs. The EMU taken."""
+    total = sum(pic.height for pic, _ in pics)
+    if over <= 0 or not total:
+        return 0
+    taken = 0
+    for pic, cb in pics:
+        by = min(round(over * pic.height / total), max(pic.height - em(PIC_FLOOR), 0))
+        shrink_picture(pic, cb, by)
+        taken += by
+    if taken < over:
+        print(f"grid: WARNING: slide {slide_title(slide)!r}: a column's pictures and text need more room than it has",
+              file=sys.stderr)
+    return taken
+
+
+def _plain_column(slide, x, y, w, room, items, name, slide_height, deck_dir):
     """A plain column's flow (a strip's lines as text: a plain column draws no strip) as its parts,
-    [(kind, text box, bar or None)]: one text box, or, when it holds a quote, its text runs and its
-    quotes (draw_quote(), at the column's width) in order, each at y; _place() stacks them."""
-    if not any(isinstance(it, tuple) and it[0] == "quote" for it in items):
+    [(kind, shape, other)]: one text box, or, when it holds a quote, a picture or a table, its text runs,
+    its quotes (draw_quote(), at the column's width: (quote, text box, bar)), its pictures
+    (draw_picture(): (picture, picture, caption box or None)) and its tables (draw_table(): (table,
+    frame, caption box or None)) in order, each at y, the pictures shortened when the column passes
+    the room; _place() stacks them."""
+    if not any(isinstance(it, tuple) and it[0] in ("quote", "picture", "table") for it in items):
         return [("text", body_box(slide, x, y, w, room, _flat(items), name), None)]
     parts, run = [], []
 
@@ -348,26 +378,55 @@ def _plain_column(slide, x, y, w, room, items, name, slide_height):
             tb, bar = draw_quote(slide, x, y, w, room, it[2], _quote_color(it[1], slide), slide_height,
                                  f"{name} quote {sum(1 for p in parts if p[0] == 'quote') + 1}")
             parts.append(("quote", tb, bar))
+        elif isinstance(it, tuple) and it[0] == "picture":
+            text()
+            k = sum(1 for p in parts if p[0] == "picture") + 1
+            drawn = draw_picture(slide, x, y, w, room, it[1], it[2], deck_dir, f"{name} picture" + (f" {k}" if k > 1 else ""))
+            if drawn is None:   # not drawn (warned of): its caption stays text
+                run.extend(it[2])
+                continue
+            parts.append(("picture", drawn[0], drawn[1]))
+        elif isinstance(it, tuple) and it[0] == "table":
+            text()
+            k = sum(1 for p in parts if p[0] == "table") + 1
+            drawn = draw_table(slide, x, y, w, room, it[1], it[2], f"{name} table" + (f" {k}" if k > 1 else ""))
+            if drawn is not None:
+                parts.append(("table", drawn[0], drawn[1]))
         else:
             run.extend(it[2] if isinstance(it, tuple) else [it])
     text()
+    _yield_pictures([(p, cb) for kind, p, cb in parts if kind == "picture"], int(_column_height(parts, slide) * SLACK) - room, slide)
     return parts
 
 
+def _part_height(kind, sh, other, slide):
+    """A plain column part's measured height: a text run's text, a quote's box, a picture with its caption."""
+    if kind == "quote":
+        return sh.height
+    if kind in ("picture", "table"):
+        return sh.height + (other.height if other is not None else 0)
+    return int(text_height(sh, slide))
+
+
 def _column_height(parts, slide):
-    """A plain column's measured height: its text runs' and its quotes' heights added."""
-    return sum(tb.height if kind == "quote" else int(text_height(tb, slide)) for kind, tb, _ in parts)
+    """A plain column's measured height: its parts' heights added."""
+    return sum(_part_height(kind, sh, other, slide) for kind, sh, other in parts)
 
 
 def _place(slide, parts, y, h):
     """A plain column's parts stacked from y, each text run its measured height and the last running
-    to y + h (one text box: at y, h tall, as before quotes); a quote grouped once in place ("<name>")."""
+    to y + h (one text box: at y, h tall, as before quotes); a quote grouped once in place ("<name>"),
+    a picture or a table with its caption under it."""
     cy = y
     for i, (kind, tb, bar) in enumerate(parts):
         if kind == "quote":
             tb.top = bar.top = cy
             group(slide, [bar, tb], tb.name[:-len(" text")])
             cy += tb.height
+            continue
+        if kind in ("picture", "table"):
+            place_picture(tb, bar, cy)
+            cy += _part_height(kind, tb, bar, slide)
             continue
         th = max(y + h - cy, 0) if i == len(parts) - 1 else int(text_height(tb, slide) * SLACK)
         tb.top, tb.height = cy, th
@@ -388,11 +447,12 @@ def _pick_role(attrs, default, slide):
 ROLES = BOXES["card"]["roles"]   # a card without role=: by its place in the row
 
 
-def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
+def draw_cards(slide, columns, frames, y, room, n_col, slide_height, deck_dir):
     """A row of cards (and plain columns beside them): each card a head band in its role over a
     body on boxes.card.fill (all of it the role's on a .solid card), rounded by card.radius, a
     .pick outlined in outline-color; its body a stack of text and strips (each at the card's full
-    width); each head its own text's height (as HTML's) and the cards one height, the row's
+    width), quotes and pictures (inside its pads, a picture a body pad below what is above it, shortened
+    when the card would pass the room); each head its own text's height (as HTML's) and the cards one height, the row's
     tallest, capped at the room left. Returns the row's height and the column boxes' count."""
     card = BOXES["card"]
     radius = round(card["radius"] * slide_height)
@@ -402,14 +462,14 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
     for k, ((_, attrs, paras), (x, w)) in enumerate(zip(columns, frames), 1):
         n_col += 1
         if not attrs.get("card"):
-            cards.append(dict(plain=_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height), attrs=attrs))
+            cards.append(dict(plain=_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height, deck_dir), attrs=attrs))
             continue
         solid = attrs.get("solid")
         head, items = _card_text(paras, solid)
         hb = body_box(slide, x, y, w, room, head, f"Card {n_col} title") if head else None
         if hb is not None:
             inset(hb.text_frame, hv, hh)
-        parts, run, n_strip, n_quote = [], [], 0, 0   # the body: text boxes, strips and quotes, in order
+        parts, run, n_strip, n_quote, n_pic = [], [], 0, 0, 0   # the body: text boxes, strips, quotes and pictures, in order
         def text_part():
             nonlocal run
             if run or not parts:
@@ -424,6 +484,15 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
                 tb, r = draw_quote(slide, x + bh, y, w - 2 * bh, room, it[2], _quote_color(it[1], slide), slide_height,
                                    f"Card {n_col} quote {n_quote}")
                 parts.append(("quote", tb, r, tb.height))
+            elif isinstance(it, tuple) and it[0] == "picture":   # inside the body's pads, a pad below what is above
+                drawn = draw_picture(slide, x + bh, y, w - 2 * bh, max(room - bv, 0), it[1], it[2], deck_dir,
+                                     f"Card {n_col} picture" + (f" {n_pic + 1}" if n_pic else ""))
+                if drawn is None:   # not drawn (warned of): its caption stays text
+                    run.extend(it[2])
+                    continue
+                text_part() if run else None
+                n_pic += 1
+                parts.append(("picture", drawn[0], drawn[1], bv + drawn[2]))
             elif isinstance(it, tuple):
                 text_part() if run else None
                 n_strip += 1
@@ -431,11 +500,16 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
                 parts.append(("strip", tb, r, tb.height + 2 * em(BOXES["strip"]["gap"])))   # its room: the gap above and below
             else:
                 run.append(it)
-        if run or not parts or parts[-1][0] in ("strip", "quote"):
+        if run or not parts or parts[-1][0] in ("strip", "quote", "picture"):
             text_part()
         first = hb if hb is not None else parts[0][1]
         head_h = _card_height(hb, slide) if hb is not None else 0
         body_h = sum(h for _, _, _, h in parts)   # measured, no slack: the last part runs to the foot
+        pics = [(sh, cb) for kind, sh, cb, _ in parts if kind == "picture"]
+        if pics and _yield_pictures(pics, head_h + body_h - int(room / SLACK), slide):   # the card past the room
+            parts = [(kind, sh, r, bv + sh.height + (r.height if r is not None else 0)) if kind == "picture" else (kind, sh, r, h)
+                     for kind, sh, r, h in parts]
+            body_h = sum(h for _, _, _, h in parts)
         cards.append(dict(attrs=attrs, k=k, x=x, w=w, n=n_col, hb=hb, parts=parts, first=first, head_h=head_h, h=head_h + body_h))
     total = min(int(max(c["h"] for c in cards if "plain" not in c) * SLACK), room)   # the slack once, at the foot
     for c in cards:
@@ -450,11 +524,18 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height):
         if attrs.get("pick"):
             mine.append(shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
                                line=(_hex(card["outline-color"]), round(card["outline"] * slide_height))))
+        elif not solid and card["border"] > 0:   # every card's hairline, drawn as the pick's outline
+            mine.append(shape(slide, x, y, w, total, radius, None, f"Card {n} border",
+                               line=(_hex(card["border-color"]), max(round(card["border"] * slide_height), 1))))
         if hb is not None:
             hb.top, hb.height = y, head_h
         cy = y + head_h
         gap = em(BOXES["strip"]["gap"])   # a strip sits boxes.strip.gap inside its room, above and below
         for i, (kind, tb, r, h) in enumerate(c["parts"]):
+            if kind == "picture":
+                place_picture(tb, r, cy + bv)
+                cy += h
+                continue
             if i == len(c["parts"]) - 1 and kind == "text":   # the last text runs to the card's foot
                 h = max(y + total - cy, 0)
             inset_y = gap if kind == "strip" else 0
@@ -612,14 +693,14 @@ def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
         frames = column_frames(left, width, shares[:len(columns)] or [1 / len(columns)] * len(columns), slide_width)
         room = max(bottom - y, 0)
         if any(c[1].get("card") for c in columns):
-            h, n_col = draw_cards(slide, columns, frames, y, room, n_col, slide_height)
+            h, n_col = draw_cards(slide, columns, frames, y, room, n_col, slide_height, deck_dir)
             rules(slide, frames, y, h, slide_width, slide_height)
             y += h
             continue
         cols = []
         for (_, attrs, paras), (x, w) in zip(columns, frames):
             n_col += 1
-            cols.append(_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height))
+            cols.append(_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height, deck_dir))
         h = room
         tallest = min(max(_column_height(c, slide) for c in cols), room)
         if any(s[0] == "text" for s in later):   # text below: the row as tall as its tallest column
@@ -684,6 +765,10 @@ def run(prs, path: Path) -> None:
                 for sh in slide.shapes:
                     if sh._element not in before or sh._element is ph._element:
                         sh.top -= over
+            if is_dark(slide):   # what grid drew outside a box takes the dark ink (a card, lead or strip keeps its own)
+                for sh in slide.shapes:
+                    if sh._element not in before and not BOXED.match(sh.name):
+                        darken(sh._element)
             if beside:   # the note's look, which slide_layout skipped beside two bodies (one is left now)
                 note_style(slide)
             notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]

@@ -114,6 +114,71 @@ def take_marker(slide, key):
     return words
 
 
+# a light livery's dark content slide ({.brand-dark}): the colors a step draws with there, the
+# light ones swapped as livery.css swaps the roles (livery_build.DARK_SWAP; background to the field)
+LIGHT_INK = {k: livery_mod.hex(LIVERY, k) for k in ("foreground", "muted", "primary-contrast", "primary", "table-rule",
+                                                     "table-band", "background")}
+DARK_INK = {**LIGHT_INK, **({k: livery_mod.hex(LIVERY, v) for k, v in (
+    ("foreground", "on-dark"), ("muted", "dark-muted"), ("primary-contrast", "secondary"), ("primary", "secondary"),
+    ("table-rule", "dark-rule"), ("table-band", "dark-band"), ("background", "dark"))} if LIVERY["mode"] != "dark" else {})}
+
+
+def is_dark(slide) -> bool:
+    """A light livery's dark content slide: its background a solid fill of the dark role
+    (slide_layout.draw_dark()), or, for a step before that one, its engine-layout notes line naming
+    dark (slide-layout.lua's). Never on a dark livery, where the class is a no-op."""
+    if LIVERY["mode"] == "dark":
+        return False
+    bg = slide._element.find(qn("p:cSld") + "/" + qn("p:bg"))
+    clr = bg.find(".//" + qn("a:srgbClr")) if bg is not None else None
+    if clr is not None and clr.get("val", "").upper() == DARK_INK["background"]:
+        return True
+    if slide.has_notes_slide:
+        for line in slide.notes_slide.notes_text_frame.text.splitlines():
+            if line.strip().startswith("engine-layout:") and "dark" in line.split(":", 1)[1].split():
+                return True
+    return False
+
+
+def palette(slide) -> dict:
+    """The six-digit hexes a step draws with on this slide, by the light role or blend they stand
+    for (foreground, muted, primary-contrast, primary, table-rule, table-band, background): the
+    livery's, or on a dark slide (is_dark()) the dark ones, on-dark, dark-muted, secondary, the
+    dark table blends, the dark role."""
+    return DARK_INK if is_dark(slide) else LIGHT_INK
+
+
+def on_dark(paragraphs, hexv, skip=()):
+    """Every run of the paragraphs that takes its color from the master (no a:solidFill of its own)
+    in hexv; a run a step colored keeps its color. skip: the indexes left alone."""
+    for i, p in enumerate(paragraphs):
+        if i in skip:
+            continue
+        for r in p.iter(qn("a:r")):
+            el = rpr(r)
+            if el.find(qn("a:solidFill")) is None:
+                set_fill(el, hexv)
+
+
+# a light ink -> its dark twin (palette()'s swap), the foreground last: it wins where a livery's
+# foreground is also one of the others
+DARK_MAP = {LIGHT_INK[k]: DARK_INK[k] for k in ("muted", "primary-contrast", "primary", "foreground")}
+
+
+def darken(el):
+    """A drawn shape's (an element's) ink for a dark slide: every run that takes the master's color
+    on-dark, and a run, fill or line in one of the light inks of palette() in its dark twin
+    (muted to dark-muted, primary and primary-contrast to secondary, foreground to on-dark); any
+    other color kept."""
+    for r in el.iter(qn("a:r")):
+        if rpr(r).find(qn("a:solidFill")) is None:
+            set_fill(rpr(r), DARK_INK["foreground"])
+    for clr in el.iter(qn("a:srgbClr")):
+        v = (clr.get("val") or "").upper()
+        if v in DARK_MAP and clr.getparent().tag == qn("a:solidFill"):
+            clr.set("val", DARK_MAP[v])
+
+
 def column_frames(left, width, shares, slide_width):
     """(left, width) in EMU of each column in a box (left, width EMU): its share of the box less
     the gaps (boxes.columns.gap of the slide's width); columns.py's and grid.py's one formula."""
@@ -234,6 +299,20 @@ def style_runs(p, size=None, bold=None, color=None, caps=False):
             el.set("cap", "all"); el.set("spc", str(round(sz * TRACKING)))
         if color is not None:
             set_fill(el, color)
+
+
+CAPTION_PT = livery_mod.type_pt(LIVERY, "caption")
+
+
+def caption_para(p, color=None):
+    """A caption paragraph (a gallery's, a picture's in a cell): centered, no space before it, the
+    caption size, muted (or color, a six-digit hex)."""
+    ppr = p.find(qn("a:pPr"))
+    if ppr is None:
+        ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
+    ppr.set("algn", "ctr")
+    space_before(p, 0)
+    style_runs(p, CAPTION_PT, color=color or livery_mod.hex(LIVERY, "muted"))
 
 
 def body_box(slide, x, y, w, h, paragraphs, name):

@@ -9,6 +9,10 @@
   "blends": {
     "alert-text": "#A9254D",
     "caution-fill": "#FFF5D9",
+    "dark-band": "#4C5F74",
+    "dark-code": "#58697D",
+    "dark-muted": "#C6CCD3",
+    "dark-rule": "#708090",
     "rule": "#A8A9AA",
     "table-band": "#F6F7F8",
     "table-rule": "#C0C1C2"
@@ -21,6 +25,8 @@
       "number-width": 2
     },
     "card": {
+      "border": 0.0016,
+      "border-color": "#A8A9AA",
       "fill": "#FFFFFF",
       "head-pad": [
         0.35,
@@ -1382,6 +1388,30 @@
     "tab": false,
     "top": 0.07
   },
+  "furniture": {
+    "marks": {
+      "bottom-left": null,
+      "bottom-right": null,
+      "top-left": {
+        "box": [
+          0.008,
+          0.0728,
+          0.058484193749999996,
+          0.107
+        ],
+        "mark": "logo"
+      },
+      "top-right": null
+    },
+    "rule": null,
+    "tab": null,
+    "title": [
+      0.09148419375,
+      0.07,
+      0.8170316125,
+      0.117
+    ]
+  },
   "geometry": {
     "body": [
       0.04,
@@ -1481,6 +1511,10 @@
       "caution-fill": "BrandCautionFill",
       "code-text": "BrandCodeText",
       "dark": "BrandDark",
+      "dark-band": "BrandDarkBand",
+      "dark-code": "BrandDarkCode",
+      "dark-muted": "BrandDarkMuted",
+      "dark-rule": "BrandDarkRule",
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",
@@ -1566,6 +1600,9 @@
   ],
   "marks": {
     "background": {
+      "logo": "logos/ccp-emblem.png"
+    },
+    "dark": {
       "logo": "logos/ccp-emblem.png"
     },
     "primary": {

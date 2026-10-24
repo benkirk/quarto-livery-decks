@@ -7,6 +7,10 @@
   "blends": {
     "alert-text": "#958459",
     "caution-fill": "#F6F2E7",
+    "dark-band": "#0F0F0F",
+    "dark-code": "#1F1F1F",
+    "dark-muted": "#B2B2B2",
+    "dark-rule": "#404040",
     "rule": "#AAA8A3",
     "table-band": "#F8F6F2",
     "table-rule": "#C2C0BA"
@@ -19,6 +23,8 @@
       "number-width": 2
     },
     "card": {
+      "border": 0.0016,
+      "border-color": "#AAA8A3",
       "fill": "#FFFFFF",
       "head-pad": [
         0.35,
@@ -1168,6 +1174,38 @@
     "tab": false,
     "top": 0.0489
   },
+  "furniture": {
+    "marks": {
+      "bottom-left": {
+        "box": [
+          0.06,
+          0.9199999999999999,
+          0.17766562500000002,
+          0.05
+        ],
+        "mark": "signoff"
+      },
+      "bottom-right": null,
+      "top-left": {
+        "box": [
+          0.015,
+          0.04,
+          0.138965625,
+          0.135
+        ],
+        "mark": "logo"
+      },
+      "top-right": null
+    },
+    "rule": null,
+    "tab": null,
+    "title": [
+      0.178965625,
+      0.0489,
+      0.761034375,
+      0.0778
+    ]
+  },
   "geometry": {
     "body": [
       0.06,
@@ -1259,6 +1297,10 @@
       "caution-fill": "BrandCautionFill",
       "code-text": "BrandCodeText",
       "dark": "BrandDark",
+      "dark-band": "BrandDarkBand",
+      "dark-code": "BrandDarkCode",
+      "dark-muted": "BrandDarkMuted",
+      "dark-rule": "BrandDarkRule",
       "foreground": "BrandText",
       "highlight": "BrandHighlight",
       "muted": "BrandMuted",

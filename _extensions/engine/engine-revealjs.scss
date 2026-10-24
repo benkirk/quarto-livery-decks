@@ -216,8 +216,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   background: var(--engine-title-rule-color);
 }
 .reveal .slides section.slide.level2.feature::before,
-.reveal .slides section.slide.level2.closing::before,
-.reveal .slides section.slide.level2.brand-dark::before { content: none; }
+.reveal .slides section.slide.level2.closing::before { content: none; }
 
 // body text
 .reveal .slides section {
@@ -478,14 +477,16 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   background: var(--engine-card-fill);
   border-radius: var(--engine-card-radius);
   overflow: hidden;
-  &.engine-pick::after {
+  &::after {   // every card's hairline (boxes.card.border), an overlay as the pick's outline
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color);
+    box-shadow: inset 0 0 0 var(--engine-card-border) var(--engine-card-border-color);
     pointer-events: none;
   }
+  &.engine-solid::after { box-shadow: none; }
+  &.engine-pick::after { box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color); }
   .engine-card-head {
     background: var(--engine-card-role);
     color: var(--engine-primary-text);
@@ -516,6 +517,15 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
     .engine-card-head { background: none; }
     &, p, li, strong, .engine-label, .engine-big { color: var(--engine-primary-text); }
   }
+}
+// a picture in a card or a column: at most the column's width, its aspect kept, centered, its caption
+// under it in the caption look, boxes.note.gap below the picture (a ::: note's); a table no wider
+// than its column (pptx draws both at the column's width, the PDF's card at \linewidth)
+.reveal .slides section :is(.engine-card-body, .columns .column) {
+  img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  figure { margin: 0; }
+  figcaption { @include caption; margin-top: var(--engine-note-gap); }
+  table { max-width: 100%; }
 }
 // ::: {.strip role=...}: a band tinted in its role (boxes.strip.tint over the background), at a
 // card's full width in a card; on a solid card the role itself, its text primary-text
@@ -1059,25 +1069,15 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 }
 
 // ---------------------------------------------------------------------------
-// .brand-dark: a content slide on Space
+// .engine-dark ({.brand-dark}, engine-revealjs.lua): a content slide on the dark role. livery.css
+// swaps the roles its text reads (foreground to on-dark, muted to dark-muted, primary and
+// primary-contrast to secondary, the table blends to the dark ones, the hairline to dark-rule) and
+// restores them in a box with a fill of its own (a card, a lead, a strip, a callout, a caution
+// body); reveal's has-dark-background colors links and the slide number. Here what reads no role.
 // ---------------------------------------------------------------------------
-.reveal .slides section.slide.brand-dark {
-  &, h2, h3, p, li, td, th, strong, .alert { color: var(--engine-on-dark); }   // roles.on-dark
-  h3, .alert { color: var(--engine-secondary); }
-  a { color: var(--engine-secondary); }
-  ul > li::before { background: var(--engine-secondary); }
-  ul ul > li::before { background: none; border-color: var(--engine-secondary); }
-  ul ul ul > li::before { background: var(--engine-secondary); }
-  ol > li::marker { color: var(--engine-secondary); }
-  table th { color: var(--engine-on-dark); border-bottom-color: var(--engine-secondary) !important; }
-  table td { border-bottom-color: color-mix(in srgb, var(--engine-on-dark) 25%, transparent) !important; }
-  table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--engine-on-dark) 6%, transparent); }
-  :not(pre) > code { background: color-mix(in srgb, var(--engine-on-dark) 12%, transparent); color: var(--engine-warning); }
-  // the hairline, lightened
-  &::before {
-    content: "" !important;
-    background: color-mix(in srgb, var(--engine-on-dark) 25%, transparent) !important;
-  }
+.reveal .slides section.slide.engine-dark :not(pre) > code:not(:is(.engine-card, .engine-lead, .engine-strip, .callout) *) {
+  background: var(--engine-dark-code);
+  color: var(--engine-warning);
 }
 
 // ---------------------------------------------------------------------------
