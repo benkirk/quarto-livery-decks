@@ -43,6 +43,10 @@ every format (`design/cells-dark-handoff.md`).
   slide's height, in the `rule` blend, the title hairline's): on a white card fill the body now
   has an edge. A picked card's outline replaces it; a solid card has none.
 
+- nasa-ccp: the NASA insignia at the title bar's right end is a vector mark in every format (the
+  content slides' top-right mark and the dividers' sign-off), where it was a bitmap in the bar's
+  art; the bar's title gives it room on both sides.
+
 ### Liveries
 
 - `boxes.card.border` and `border-color` (the card's hairline); `border: 0` turns it off.

@@ -38,7 +38,7 @@ patch.edgecolor: FFFFFF
 figure.facecolor: none
 figure.edgecolor: none
 figure.titlesize: 16
-figure.figsize: 12.27, 5.65
+figure.figsize: 12.27, 5.64
 figure.constrained_layout.use: True
 savefig.facecolor: none
 savefig.edgecolor: none

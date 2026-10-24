@@ -90,7 +90,7 @@
   --engine-title-height: 105.3px;
   --engine-title-rule-y: 162px;
   --engine-title-rule-width: 1.4px;
-  --engine-body-top: 182.1px;
+  --engine-body-top: 182.5px;
   --engine-title-rule-color: #A8A9AA;
   --engine-section-eyebrow-gap: 0.33em;
   --engine-section-subtitle-gap: 0.66em;
@@ -98,8 +98,8 @@
   --engine-title-text-align: center;
   --engine-title-tab: none;
   --engine-title-rule: none;
-  --engine-title-left: calc(12.8px + 40px + 93.6px);
-  --engine-title-right: calc(12.8px + 40px + 93.6px);
+  --engine-title-left: calc(23.4px + 40px + 115.9px);
+  --engine-title-right: calc(23.4px + 40px + 115.9px);
   --engine-title-color: #FFFFFF;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
@@ -239,12 +239,18 @@ html:root {
 .reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.engine-dark) { background: url("content.jpg") center / cover no-repeat; }
 html:root {
   --engine-mark-background-logo: url("ccp-emblem.png");
+  --engine-mark-background-insignia: url("meatball.png");
   --engine-mark-primary-logo: url("ccp-emblem.png");
+  --engine-mark-primary-insignia: url("meatball.png");
   --engine-mark-dark-logo: url("ccp-emblem.png");
+  --engine-mark-dark-insignia: url("meatball.png");
 }
 .reveal .slides section.slide .engine-mark-top-left { top: 65.5px; left: 12.8px; width: 93.6px; height: 96.3px; background-position: left top; background-image: var(--engine-mark-background-logo); }
 .reveal .slides section.engine-field .engine-mark-top-left { background-image: var(--engine-mark-primary-logo); }
 .reveal .slides section.engine-dark .engine-mark-top-left { background-image: var(--engine-mark-dark-logo); }
+.reveal .slides section.slide .engine-mark-top-right { top: 67px; right: 23.4px; width: 115.9px; height: 95.4px; background-position: right top; background-image: var(--engine-mark-background-insignia); }
+.reveal .slides section.engine-field .engine-mark-top-right { background-image: var(--engine-mark-primary-insignia); }
+.reveal .slides section.engine-dark .engine-mark-top-right { background-image: var(--engine-mark-dark-insignia); }
 html .reveal .slides section ul > li::before { content: "●"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
@@ -1094,13 +1100,13 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   --engine-cmp-mark-h: 96.3px;
   --engine-cmp-mark-r: 1420.8px;
   --engine-cmp-mark-b: 738.2px;
-  --engine-cmp-signoff-display: none;
-  --engine-cmp-signoff-x: 0px;
-  --engine-cmp-signoff-y: 0px;
-  --engine-cmp-signoff-w: 0px;
-  --engine-cmp-signoff-h: 0px;
-  --engine-cmp-signoff-r: 1600px;
-  --engine-cmp-signoff-b: 900px;
+  --engine-cmp-signoff-display: block;
+  --engine-cmp-signoff-x: 1460.8px;
+  --engine-cmp-signoff-y: 67px;
+  --engine-cmp-signoff-w: 115.8px;
+  --engine-cmp-signoff-h: 95.4px;
+  --engine-cmp-signoff-r: 23.4px;
+  --engine-cmp-signoff-b: 737.5px;
   --engine-cmp-column-display: block;
   --engine-cmp-column-x: 64px;
   --engine-cmp-column-y: 396px;
@@ -1135,6 +1141,7 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   background: url("section.jpg") center / cover no-repeat;
 }
 .reveal .slides section.slide.engine-section::after { background-image: url("ccp-emblem.png"); }
+.reveal .slides section.slide.engine-section .engine-signoff { background-image: url("meatball.png"); }
 .reveal .slides section.slide.level2.feature {
   --engine-cmp-field-display: none;
   --engine-cmp-field-x: 0px;

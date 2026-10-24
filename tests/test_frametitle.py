@@ -85,9 +85,8 @@ def test_furniture(livery):
     for corner, mk in fu["marks"].items():
         if mk is None:
             continue
-        pic = by["Logo (light)" if mk["mark"] == "logo" else "Sign-off (light)"]
+        pic = by[{"logo": "Logo", "signoff": "Sign-off"}.get(mk["mark"], f"Mark {mk['mark']}") + " (light)"]
         assert (pic.left, pic.top, pic.width, pic.height) == frame(mk["box"]), (corner, mk["mark"])
-        assert corner.startswith("top") == (mk["mark"] == "logo"), "a content mark at the top, a sign-off at the foot"
     if livery.name == "nsi":
         assert fu["tab"] is None and fu["rule"] is None, "nsi: no tab, no hairline"
     if livery.name == "ncar":

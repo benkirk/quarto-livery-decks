@@ -221,7 +221,12 @@ def read(d: Path) -> dict:
     merged = {"brand": brand, **{k: v for k, v in knobs.items() if k != "extends"}}
     parent = knobs.get("extends")
     if parent:   # pptx.scheme holds only explicit overrides; resolve() fills the rest from the roles
-        merged = merge(rebase(read(d.parent / parent), d.parent / parent, d), merged)
+        base = rebase(read(d.parent / parent), d.parent / parent, d)
+        pm = (base.get("geometry") or {}).get("marks") or {}
+        for c, e in ((knobs.get("geometry") or {}).get("marks") or {}).items():
+            if e and pm.get(c) and e.get("mark", pm[c]["mark"]) != pm[c]["mark"]:
+                pm[c] = None   # a corner entry naming another mark replaces the parent's, not merges over it
+        merged = merge(base, merged)
     return merged
 
 

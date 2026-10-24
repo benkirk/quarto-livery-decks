@@ -405,11 +405,11 @@
     "figsize": {
       "full": [
         12.27,
-        5.65
+        5.64
       ],
       "half": [
         5.93,
-        5.65
+        5.64
       ]
     },
     "light": {
@@ -911,7 +911,17 @@
       },
       "panel": null,
       "photo": null,
-      "signoff": null,
+      "signoff": {
+        "box": [
+          0.913,
+          0.0745,
+          0.0724,
+          0.106
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
       "waves": null
     },
     "title": {
@@ -1377,7 +1387,7 @@
   "engine": "26.10.11",
   "frametitle": {
     "align": "center",
-    "body": 0.2023,
+    "body": 0.2028,
     "color": "#FFFFFF",
     "height": 0.117,
     "rule": false,
@@ -1401,23 +1411,31 @@
         ],
         "mark": "logo"
       },
-      "top-right": null
+      "top-right": {
+        "box": [
+          0.9129794750000001,
+          0.0745,
+          0.072420525,
+          0.106
+        ],
+        "mark": "insignia"
+      }
     },
     "rule": null,
     "tab": null,
     "title": [
-      0.09148419375,
+      0.11202052500000001,
       0.07,
-      0.8170316125,
+      0.77595895,
       0.117
     ]
   },
   "geometry": {
     "body": [
       0.04,
-      0.2023,
+      0.2028,
       0.92,
-      0.7527
+      0.7522
     ],
     "body-bottom": 0.955,
     "full": {
@@ -1440,7 +1458,15 @@
         "title-height": 0.16,
         "top": 0.0728
       },
-      "top-right": null
+      "top-right": {
+        "aspect": 1.2146,
+        "dark": "meatball",
+        "height": 0.106,
+        "inset": 0.0146,
+        "light": "meatball",
+        "mark": "insignia",
+        "top": 0.0745
+      }
     },
     "pagenumber": {
       "corner": "bottom-right"
@@ -1605,12 +1631,15 @@
   ],
   "marks": {
     "background": {
+      "insignia": "../nasa/logos/meatball.png",
       "logo": "logos/ccp-emblem.png"
     },
     "dark": {
+      "insignia": "../nasa/logos/meatball.png",
       "logo": "logos/ccp-emblem.png"
     },
     "primary": {
+      "insignia": "../nasa/logos/meatball.png",
       "logo": "logos/ccp-emblem.png"
     }
   },

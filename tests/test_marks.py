@@ -133,6 +133,22 @@ def test_null_drops_a_parents_corner(tmp_path):
     assert L["geometry"]["marks"]["top-right"]["mark"] == "logo", "the other corner inherited"
 
 
+def test_another_mark_replaces_the_parents_entry(tmp_path):
+    """A flavor's corner entry naming another mark replaces its parent's (nasa-ccp's insignia over
+    nasa's logo corner), so none of the parent's keys (its *-height) leak into it; one naming the same
+    mark, or none, merges over it (ncarucar's aspect)."""
+    L = resolved(tmp_path, "ins", "geometry:\n  marks:\n    top-right: {mark: insignia, light: meatball, dark: meatball, aspect: 1.2}\n"
+                 "    top-left: {mark: logo, aspect: 1, title-height: 0.2}\n", parent="nasa")
+    tr = L["geometry"]["marks"]["top-right"]
+    assert tr == {"mark": "insignia", "light": "meatball", "dark": "meatball", "aspect": 1.2, "height": lb.MARK["height"],
+                  "top": lb.MARK["top"]}, "the parent's top-right entry not merged in"
+    assert L["compositions"]["title"]["mark"]["box"][3] == 0.2, "the cover's mark: the logo entry's title-height"
+    j = json.loads((ROOT / "liveries" / "nasa-ccp" / "build" / "livery.json").read_text())
+    assert set(j["marks"]["background"]) == {"logo", "insignia"} and j["marks"]["background"]["insignia"].endswith("meatball.png")
+    assert j["compositions"]["section"]["signoff"]["box"][0] == pytest.approx(j["furniture"]["marks"]["top-right"]["box"][0], abs=1e-3), \
+        "the divider's insignia where the content slide's is"
+
+
 @pytest.mark.parametrize("knobs, why", [
     ("geometry:\n  marks:\n    top-left: {mark: logo, aspect: 1}\n", "top-right.mark: 'logo' is already geometry.marks.top-left's"),
     ("geometry:\n  marks:\n    bottom-left: {mark: emblem, light: ncar-color, dark: ncar-color, aspect: 1, top: 0.1}\n",
@@ -156,7 +172,7 @@ def test_bundled_corners():
             "ncarucar": {"top-right": "logo"}, "cu": {"bottom-left": "signoff"},
             "nsi": {"top-left": "logo", "bottom-left": "signoff"}, "nasa": {"top-right": "logo", "bottom-left": "signoff"},
             "nasa-dark": {"top-right": "logo", "bottom-left": "signoff"}, "nasa-jsc-eg": {"top-right": "logo", "bottom-left": "signoff"},
-            "nasa-ccp": {"top-left": "logo"}}
+            "nasa-ccp": {"top-left": "logo", "top-right": "insignia"}}
     for name, corners in want.items():
         g = json.loads((ROOT / "liveries" / name / "build" / "livery.json").read_text())["geometry"]["marks"]
         assert {c: e["mark"] for c, e in g.items() if e} == corners, name
