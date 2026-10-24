@@ -53,6 +53,7 @@ from .measure import text_height
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
+PIC_FLOOR = 2   # em of the body type: the least height a picture keeps when the lead under it needs its room
 
 
 def _attrs(rest):
@@ -669,7 +670,13 @@ def run(prs, path: Path) -> None:
             y = lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent)
             bottom = round(GEOM["body-bottom"] * prs.slide_height)
             if above and y > bottom:   # the lead needs more room than the caption had: the picture yields
-                over = y - bottom
+                # no further than PIC_FLOOR em of its height: past that the lead runs over the foot, warned,
+                # rather than the picture going negative (python-pptx refuses it and the build fails)
+                room = min(pic.height for pic in above) - em(PIC_FLOOR)
+                over = max(0, min(y - bottom, room))
+                if y - bottom > room:
+                    print(f"grid: WARNING: slide {prs.slides.index(slide) + 1}: the lead under the picture needs more room "
+                          f"than the picture has; it runs past the body's foot", file=sys.stderr)
                 for pic in above:
                     k, middle = (pic.height - over) / pic.height, pic.left + pic.width // 2
                     pic.width, pic.height = int(pic.width * k), pic.height - over
