@@ -11,25 +11,18 @@ The step runs in a subprocess, under the livery its LIVERY_DIR names. Needs pand
 """
 
 import json
-import os
+import re
 import subprocess
-import sys
 
 import pytest
 
 import livery as livery_mod
 import livery_build as lb
 
-from conftest import ENGINE, ROOT, lua_common, slide_layout_shim
+from conftest import ENGINE, ROOT, lua_common, pandoc_exe, run_steps, slide_layout_shim
 
 DEMO = "This presentation contains no sensitive information"
-STEP = """
-import sys
-from pathlib import Path
-from pptx import Presentation
-from pptx_steps import marking, type_step
-p = Path(sys.argv[1]); prs = Presentation(p); marking.run(prs, p); type_step.run(prs, p); prs.save(p)
-"""   # the driver's order: the strips before the size step, which scales them as HTML and PDF do
+STEPS = ["marking", "type_step"]   # the driver's order: the strips before the size step, which scales them as HTML and PDF do
 TWO = """  banner: {text: TOP, fill: primary, bold: true, size: 14}
   legend: {text: FOOT, edge: bottom, width: 0.7, size: 8}
 """   # a two-strip block for ncar (tmp_livery)
@@ -68,8 +61,7 @@ def strips(pandoc_deck, tmp, name, front, livery_dir=None):
     d = livery_dir or ROOT / "liveries" / name
     md = f"---\nlivery: {d}\n{front}---\n\n## a\n\nOne.\n\n## b\n\nTwo.\n"   # the filter reads the livery's strips
     pandoc_deck(tmp, md, "t.pptx", "--lua-filter", str(slide_layout_shim(tmp)))
-    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
-    subprocess.run([sys.executable, "-c", STEP, str(tmp / "t.pptx")], env=env, check=True, capture_output=True)
+    run_steps(tmp / "t.pptx", STEPS, d)
     from pptx import Presentation
     prs = Presentation(str(tmp / "t.pptx"))
     return [[(sh.name, sh.text_frame.text, sh.text_frame.paragraphs[0].runs[0].font.size.pt)
@@ -147,3 +139,40 @@ def test_deck_marking(tmp_path, front, want, warned):
     out, warnings = lua_common(tmp_path, DECK_MARKING, f"---\n{front}---\n\nx\n" if front else "x\n", strips)
     assert out.split() == want
     assert bool(warnings) == warned, warnings
+
+
+# engine-revealjs.lua under plain pandoc: the `quarto` it calls (the dependency and header text are
+# Quarto's to place, so they go nowhere here; its json gives nil for null, as Quarto's does)
+REVEAL_SHIM = """
+local function nonull(v)
+  if v == pandoc.json.null then return nil end
+  if type(v) == "table" then for k, x in pairs(v) do v[k] = nonull(x) end end
+  return v
+end
+quarto = {{ utils = {{ resolve_path = function(p) return "{engine}/" .. p end }},
+           doc = {{ is_format = function(f) return f == "revealjs" or f == "html" end,
+                   add_html_dependency = function() end, include_text = function() end }},
+           log = {{ warning = function(s) io.stderr:write("WARNING: " .. s .. "\\n") end }},
+           json = {{ decode = function(s) return nonull(pandoc.json.decode(s, false)) end }} }}
+PANDOC_SCRIPT_FILE = "{engine}/engine-revealjs.lua"
+dofile(PANDOC_SCRIPT_FILE)
+"""
+
+
+def test_html_every_slide(tmp_path):
+    # HTML's strips and watermark on every slide, as PDF and pptx draw them: one opened by a rule and
+    # the blocks before the first heading too (nasa-ccp: two strips by default), each slide's last
+    shim = tmp_path / "reveal-shim.lua"
+    shim.write_text(REVEAL_SHIM.format(engine=ENGINE))
+    md = (f"---\nlivery: {ROOT / 'liveries' / 'nasa-ccp'}\nwatermark: DRAFT\n---\n\nLead.\n\n## a\n\nOne.\n\n"
+          "---\n\nUntitled.\n\n# Part\n\n## b\n\nTwo.\n")
+    html = subprocess.run([pandoc_exe(), "-t", "revealjs", "--slide-level", "2", "--lua-filter", str(shim)],
+                          input=md, text=True, capture_output=True, check=True, cwd=tmp_path).stdout
+    slides = [s for s in re.split(r"<section\b", html)[1:] if not s.startswith(">")]   # not a divider's stack
+    texts = ["Lead", "One", "Untitled", "Part", "Two"]
+    assert [next(t for t in texts if t in s) for s in slides] == texts, "a slide per heading, rule and lead"
+    for s, t in zip(slides, texts):
+        got = re.findall(r'class="engine-(marking engine-marking-\w+|watermark)"', s)
+        assert got == ["marking engine-marking-banner", "marking engine-marking-legend", "watermark"], (t, got)
+        assert s.rstrip().endswith("</section>") and "engine-watermark" in s.rsplit("<div", 1)[-1], \
+            f"{t}: the watermark is not the slide's last element"

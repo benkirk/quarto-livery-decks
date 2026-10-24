@@ -4,9 +4,10 @@
 -- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
 -- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
 -- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
--- rails, quotes, galleries and the agenda, the theme options, the livery, the deck's markings. What
--- a format does with the result stays in its filter: the drawers (wrap_layout, hoist_footnotes,
--- size_plots, the cards, strips, rails, galleries, quotes and the agenda's rows).
+-- rails, quotes, galleries and the agenda, a grid cell's picture or table, the theme options, the
+-- livery, the deck's marking strips, watermark and cover fine print. What a format does with the
+-- result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
+-- strips, rails, galleries, quotes and the agenda's rows, the tail of every slide).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do
@@ -49,7 +50,8 @@ local function default_livery(extdir)
 end
 
 -- Whether a block holds a picture or a table anywhere inside it: pandoc's pptx writer draws either
--- as a shape of its own, outside any text, so a card, a rail item or a grid column cannot hold one.
+-- as a shape of its own, outside any text, so a rail item cannot hold one, and a grid column or card
+-- holds one only as cell_figure() or simple_table() reads it (grid-pptx.lua's picture and table markers).
 local function holds_shape(blk)
   local found = false
   pandoc.walk_block(blk, { Image = function() found = true end, Table = function() found = true end })
@@ -153,8 +155,9 @@ local function content_heading(blk, level, kinds)
 end
 
 -- The per-slide layout controls on a heading (.hcenter, .vcenter, .center, .fill, .caution, .wide,
--- scale="S"), taken off it: { h, v, fill, caution, wide, scale } (scale the string, or nil), or nil
--- when it has none. A scale that is not a number is dropped with a warning (who: the filter).
+-- .brand-dark, scale="S"), taken off it: { h, v, fill, caution, wide, dark, scale } (scale the
+-- string, or nil), or nil when it has none. A scale that is not a number is dropped with a warning
+-- (who: the filter).
 local function take_layout(blk, who)
   local h, v, fill, caution, wide, dark, found = false, false, false, false, false, false, false
   local kept = pandoc.List({})
@@ -182,6 +185,12 @@ local function take_layout(blk, who)
   end
   if not found then return nil end
   blk.classes = kept
+  if dark and (kept:includes("full") or kept:includes("feature")) then   -- the picture fills it: every format alike
+    local name = pandoc.utils.stringify(blk.content)   -- a .full frame's title is gone in beamer by now
+    warn(who .. ": {.brand-dark} on the {." .. (kept:includes("full") and "full" or "feature") .. "} slide "
+      .. (name ~= "" and ("\"" .. name .. "\"") or ("#" .. blk.identifier)) .. " is ignored")
+    dark = false
+  end
   return { h = h, v = v, fill = fill, caution = caution, wide = wide, dark = dark, scale = scale }
 end
 
@@ -510,6 +519,33 @@ local function watermark_text(meta, livery)
   return type(t) == "string" and t ~= "" and pandoc.Inlines(t) or nil
 end
 
+-- The cover's composition name (livery.json compositions): the band title's, else a photo cover's when
+-- the deck's titlegraphic: or the livery's art.titlegraphic gives one (`titlegraphic: none`: the plain
+-- cover), its light variant under light (the caller's title=light, false under a band).
+local function cover_name(meta, livery, light)
+  if livery.title and livery.title.style == "band" then return "title-band" end
+  local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
+  local photo = tg and tg ~= "none" or (not tg and livery.art and type(livery.art.titlegraphic) == "string")
+  return (photo and "title-photo" or "title") .. (light and "-light" or "")
+end
+
+-- The cover's fine print (the one reader every format uses): the deck's `fineprint:` (Blocks as
+-- written, inlines as one Plain; `none`, no blocks), else the composition's default paragraphs
+-- (livery.json compositions.<cover>.fineprint.paragraphs), each a Para. Returns the Blocks (empty:
+-- none) and whether the deck set them (beamer's theme holds the livery's default itself).
+local function fineprint_paragraphs(meta, comp)
+  local fp = meta["fineprint"]
+  if fp ~= nil then
+    if pandoc.utils.stringify(fp) == "none" then return pandoc.Blocks({}), true end
+    local ty = pandoc.utils.type(fp)
+    if ty == "Blocks" then return fp, true end
+    return pandoc.Blocks({ pandoc.Plain(ty == "Inlines" and fp or pandoc.Inlines(pandoc.utils.stringify(fp))) }), true
+  end
+  local paras = pandoc.Blocks({})
+  for _, p in ipairs(comp and comp.fineprint and comp.fineprint.paragraphs or {}) do paras:insert(pandoc.Para(pandoc.Inlines(p))) end
+  return paras, false
+end
+
 -- A .columns div's columns and their shares of the row, the gaps taken out first, as every format
 -- lays them out: a column's width= ("55%" or "0.55") is its share, the columns without one share
 -- what is left equally, and shares that add to more than 1 are scaled down to 1 (less than 1
@@ -741,9 +777,6 @@ local MARKED = { ["☒"] = "done", ["[!]"] = "warn", ["[-]"] = "fail" }
 local LITERAL = { ["✓"] = "done", ["⚠"] = "warn", ["✗"] = "fail" }
 local GLYPHS = { done = "✓", warn = "⚠", fail = "✗" }
 
--- status_item(item, marked): an item's (a list of blocks) status, "done" | "warn" | "fail", and the
--- item with its leading glyph normalized to the glyph's Str (✓ ⚠ ✗, no variation selector) and a
--- Space; nil when it is not one. marked: inside a card or a .status list, where [x] [!] [-] count.
 -- A quote's parts: { role (role= when it is a role or a blend of the livery, else nil: the box's
 -- bar-color, boxes.quote; a name that is neither is warned of), body (its source lines each a
 -- paragraph, split_lines()), attribution (the last line's inlines after its leading —, – or --,
@@ -796,6 +829,9 @@ local function quote_blocks(blocks, livery, who, draw)
     BlockQuote = function(b) return draw(quote_parts(b, livery, who)), false end })
 end
 
+-- status_item(item, marked): an item's (a list of blocks) status, "done" | "warn" | "fail", and the
+-- item with its leading glyph normalized to the glyph's Str (✓ ⚠ ✗, no variation selector) and a
+-- Space; nil when it is not one. marked: inside a card or a .status list, where [x] [!] [-] count.
 local function status_item(item, marked)
   local first = item[1]
   if not first or (first.t ~= "Plain" and first.t ~= "Para") then return nil end
@@ -925,6 +961,17 @@ local function top_rails(blocks, livery, who, draw)
                    function(r, kind) return draw(kind, r) end, who, "list")
 end
 
+-- An image src Quarto rendered (under figure-*/ or *_files/: an executed cell's plot or a baked
+-- diagram), gone from disk by the time the pptx steps run.
+local function is_rendered(src)
+  return src:match("figure%-[%w%-]+/") ~= nil or src:match("_files/") ~= nil
+end
+
+-- An image src as a file path: percent-decoded (pandoc writes a space as %20).
+local function decode_src(src)
+  return (src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
+end
+
 -- Image galleries (::: {.gallery cols= rows= fit= height=}): a div of image files, each its own paragraph
 -- (`![Caption](path)` a Figure, `![](path)` a Para of one Image), drawn as a grid of equal cells in every
 -- format. gallery_items() reads one: { cols, rows, fit, height = number|nil, items = { { src, caption =
@@ -954,7 +1001,8 @@ local function para_images(b)
   return #imgs > 0 and imgs or nil
 end
 
--- A picture in a grid column or a card, as every format draws it: { src, caption = inlines or nil,
+-- A picture in a grid column or a card, as grid-pptx.lua and beamer's cards read it (an executed plot
+-- reaches beamer's as raw LaTeX, engine-plots.lua's, and stays pandoc's): { src, caption = inlines or nil,
 -- image = the Image, sized = its width= when the author gave one (it keeps that size) } for a Figure
 -- of one image (its caption the Figure's, else the alt text), a Para or Plain of one image (the alt
 -- text), Quarto's PDF figure (latex_figure()), or an executed cell's or a Quarto figure's Div whose
@@ -1034,7 +1082,7 @@ local function gallery_items(div, who)
     if linked then return refuse("image inside a link is not drawn (links round gallery images are deferred)") end
     if not imgs then return refuse("holds image files, each its own paragraph; a plot or diagram is not drawn") end
     for _, img in ipairs(imgs) do
-      if img.src:match("figure%-[%w%-]+/") or img.src:match("_files/") then
+      if is_rendered(img.src) then
         return refuse("holds image files; " .. img.src .. " is an executed cell's plot or a baked diagram, not drawn")
       end
       img.attributes["width"], img.attributes["height"] = nil, nil   -- the cell sizes the picture
@@ -1083,7 +1131,7 @@ end
 -- <output>_files/mediabag/<src> (out: the output file, PANDOC_STATE.output_file), and names that.
 -- Beamer's alone; here so tests/test_gallery.py reaches it.
 local function latex_file(src, out)
-  local file = src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+  local file = decode_src(src)
   local _, bytes = pandoc.mediabag.lookup(src)
   if not bytes then return file end
   local stem = (out or "index.tex"):gsub("%.[^.%/]*$", "")
@@ -1172,11 +1220,11 @@ return {
   quote_blocks = quote_blocks,
   content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery, marking_texts = marking_texts,
-  watermark_text = watermark_text,
+  watermark_text = watermark_text, cover_name = cover_name, fineprint_paragraphs = fineprint_paragraphs,
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
   cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
-  latex_file = latex_file,
+  latex_file = latex_file, is_rendered = is_rendered, decode_src = decode_src,
 }

@@ -153,7 +153,11 @@ pick.
   Findings in disjoint files can go to agents in worktrees in parallel (the Python steps, the
   inner theme, the scss ran beside the Lua work); a worktree is cut from `main`'s head, so the
   brief names the branch tip to reset to, and each agent takes its own baseline there and proves
-  its commits flat before the lead cherry-picks them.
+  its commits flat before the lead cherry-picks them. Quarto ignores the project of a deck under a
+  hidden directory (the Agent tool's `.claude/worktrees/`: `quarto inspect` shows no project, so
+  the render takes the extension's defaults, ncar's template, and `LIVERY=` reaches only the
+  Python steps): an agent renders its proofs from a `git archive` of its commit, or a copy of the
+  deck, outside it (#136–#149). `make test` is unaffected.
 - **If output could move**, capture it before and after and compare, by what can move:
   `tests/parity.sh baseline` on `origin/main` and `check` on the branch (every deck of
   quickstart, sample, fixtures and plots under ncar, cu and nsi; same checkout, same day);

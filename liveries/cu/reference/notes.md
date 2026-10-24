@@ -64,9 +64,9 @@ each. The lockup library (ucomm-exten2.colorado.edu, CU login) has the stacked v
 Until 2026-10-16 the deck's RIO lockup stood in; it now belongs to the nsi flavor, which uses it.
 The black-text lockup serves the gold field too (`logo.medium.dark`), the gold being light. The
 brand wants the lockup as a "sign off" at the bottom, so it is the
-livery's `signoff` (bottom-left, the deck's placement), `geometry.logo.corner` is `none` (no mark
-top right; the NSI flavor puts its own mark top-left) and the page number sits bottom-right as in
-the deck.
+livery's `geometry.marks.bottom-left` (`mark: signoff`, the deck's placement), with no other corner
+(no mark top right; the NSI flavor puts its own mark top-left), and the page number sits
+bottom-right as in the deck.
 
 ## Art
 

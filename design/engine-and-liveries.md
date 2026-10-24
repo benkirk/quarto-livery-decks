@@ -376,8 +376,12 @@ written up for a fresh session in `docs/design/composition-handoff.md`. Done 202
 sprint is a dated handoff in this directory with a state line naming its PR: the LaTeX
 authors' layer (`latex-first-class-handoff.md`, #129) and the element series under the goal at
 the head of this document (`citations-handoff.md` #131, `steps-timelines-handoff.md` #132,
-`agenda-quote-handoff.md` #134, `gallery-handoff.md` #135); what the sweeps find is
-`unplanned-city-ledger.md`.
+`agenda-quote-handoff.md` #134, `gallery-handoff.md` #135), the themes' numbers as livery keys
+(`one-look-one-key-handoff.md` #138), the first consumer's friction list
+(`consumer-friction-handoff.md` #145) and the static-content catalogue's two sprints
+(`roadmap-catalogue.md`: `cells-dark-handoff.md` #148, `marks-watermark-mpl-handoff.md` #149);
+what the sweeps find is `unplanned-city-ledger.md`, each window's handoff beside it
+(`sweep-129-135-handoff.md` #136, `sweep-136-149-handoff.md`).
 
 ## 8. Verification
 

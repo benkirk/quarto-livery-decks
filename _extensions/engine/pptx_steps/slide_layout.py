@@ -48,12 +48,11 @@ from pptx.util import Emu, Pt
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
-from . import docprops, measure, style_footnotes, style_tables
-from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
+from . import docprops, measure, style_footnotes
+from .common import (BAND, BOXES, GEOM, K, LAYOUT_KEY, LIVERY, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
                      marker_spans, on_dark, pads, palette, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
-from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
+from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, table_height, text_height
 
-MARKER    = "engine-layout:"
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
 FULL_FLOOR = LIVERY["geometry"]["full"]["footline"]  # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
@@ -69,7 +68,6 @@ CAUTION_BAR  = livery_mod.color(LIVERY, "warning")
 SLIDE_H      = Pt(LIVERY["type"]["canvas"]["h"])   # the canvas height: bars are fractions of it
 CAUTION_W    = Emu(round(BOXES["caution"]["bar"] * SLIDE_H))
 WAVES        = LIVERY.get("art", {}).get("waves")
-BAND         = (LIVERY.get("title") or {}).get("style") == "band"
 COMP         = LIVERY["compositions"]   # the title, closing, section and feature slides as boxes
 
 
@@ -81,39 +79,6 @@ def _scale_paragraphs(paragraphs, scale, size_at):
         for r in p._p.iter(qn("a:rPr"), qn("a:endParaRPr")):
             sz = int(r.get("sz")) if r.get("sz") else base
             r.set("sz", str(round(livery_mod.half_pt(sz * scale / 100) * 100)))   # to the half point
-
-
-def _table_height(table, other, biggest, pad=2 * style_tables.CELL_MAR):
-    """A table's height: each row as tall as its cell of most lines, measured in the livery's base
-    face in its column's width (less the cell's margins), at the table's biggest size, plus pad a
-    row: the cell's top and bottom margins as style_tables sets them (it runs after this step, so
-    the cells still carry PowerPoint's defaults here)."""
-    widths = [col.width for col in table.columns]
-    total = 0
-    for row in table.rows:
-        most = 1
-        for cell, w in zip(row.cells, widths):
-            tf = cell.text_frame
-            inner = w - cell.margin_left - cell.margin_right
-            n = 0
-            for p in tf.paragraphs:
-                sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
-                n += para_lines(p, measure.BODY, Pt(sz / 100), inner)
-            most = max(most, n)
-        total += int(most * Pt(biggest / 100) * LINE + pad)
-    return total
-
-
-def table_height(shape, slide):
-    """A table's measured height on its slide (_table_height at the slide's size): what a note
-    under it or a slide centering it reads, since the frame's own height is pandoc's nominal."""
-    other = other_size(slide)
-    return _table_height(shape.table, other, _biggest(shape.table, other))
-
-
-def _biggest(table, other):
-    """The size (hundredths of a point) of a table's biggest run, at least other."""
-    return max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
 
 
 def caution_box(slide, shape, vcenter):
@@ -161,7 +126,6 @@ def lay_out(slide, words, width):
         elif is_table(shape):
             other = other_size(slide)
             rows = list(shape.table.rows)
-            biggest = other
             for row in rows:
                 for cell in row.cells:
                     tf = cell.text_frame
@@ -169,11 +133,8 @@ def lay_out(slide, words, width):
                         for r in tf._txBody.iter(qn("a:r")):
                             rpr(r)
                         _scale_paragraphs(tf.paragraphs, scale, lambda lvl: other)
-                    for r in tf._txBody.iter(qn("a:rPr")):
-                        if r.get("sz"):
-                            biggest = max(biggest, int(r.get("sz")))
             if vcenter and rows:
-                est = _table_height(shape.table, other, biggest)
+                est = table_height(shape, slide)
                 if est < shape.height:
                     shape.top = shape.top + (shape.height - est) // 2
                     shape.height = est
@@ -203,7 +164,7 @@ def note_style(slide):
     split_br(tf._txBody)
     spans = marker_spans(tf._txBody.findall(qn("a:p")))   # a lead folded in after the caption: grid.py's
     for i, p in enumerate(tf.paragraphs):
-        if i in spans or style_footnotes.style(p, color=palette(slide)["muted"]):
+        if i in spans or style_footnotes.style(p, palette(slide)["muted"]):
             continue
         p.alignment = PP_ALIGN.CENTER
         for r in p.runs:   # muted: the dark slide's dark-muted (palette())
@@ -439,7 +400,7 @@ def draw_cover(slide, width, height, photo, comp):
     sign-off in their boxes. Returns the next free shape id."""
     tree = slide.shapes._spTree
     x, y, w, h = comp["photo"]["box"]
-    _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Photo"
+    _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = PHOTO
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
     slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]] if comp["field"] else "tx2"   # field: null draws none
     shapes = pptx_waves.comp_shapes(WAVES and WAVES["lines"], comp, sid, width, height, field_slot=slot,
@@ -522,16 +483,16 @@ def cover_byline(prs, slide, comp, width, height):
 
 
 def cover_fineprint(prs, slide, comp, width, height):
-    """A cover's fine print (compositions: fineprint), as HTML and beamer draw it: the deck's
-    fineprint: (slide-layout.lua's engine-fineprint, a line per paragraph; `none`, none), else the
-    livery's default paragraphs, as one text box in its box, hanging from its top or standing on its
-    bottom, left-aligned in its role's color, the fineprint size at its leading. PowerPoint cannot
-    flow it, so a text taller than its box is warned."""
+    """A cover's fine print (compositions: fineprint), as HTML and beamer draw it: slide-layout.lua's
+    engine-fineprint (engine-common.lua's one reader: the deck's fineprint:, else the livery's
+    default; a line per paragraph, `none` for none), as one text box in its box, hanging from its top
+    or standing on its bottom, left-aligned in its role's color, the fineprint size at its leading.
+    PowerPoint cannot flow it, so a text taller than its box is warned."""
     fp = comp.get("fineprint")
-    deck = docprops.prop(prs, "engine-fineprint")
-    if not fp or not fp.get("box") or deck == "none":
+    text = docprops.prop(prs, "engine-fineprint")
+    if not fp or not fp.get("box") or not text or text == "none":
         return
-    paras = [p for p in (deck.split("\n") if deck else fp.get("paragraphs") or []) if p.strip()]
+    paras = [p for p in text.split("\n") if p.strip()]
     if not paras:
         return
     x, y, w, h = fp["box"]
@@ -639,7 +600,7 @@ def draw_feature(slide, width, height, photo):
     x, y, w, h = c["column"]["box"]
     text = _rgb(c["column"]["role"])
     if c["bar"]:
-        _back_picture(slide, photo, 0, 0, width, height).name = "Photo"
+        _back_picture(slide, photo, 0, 0, width, height).name = PHOTO
         bar = _rect(slide, c["bar"]["box"], width, height, livery_mod.hex(LIVERY, c["bar"]["role"]), c["bar"]["opacity"], "Feature bar")
         tree = slide.shapes._spTree
         tree.remove(bar._element); tree.insert(3, bar._element)   # over the photo, under the text
@@ -759,7 +720,7 @@ def run(prs, path: Path) -> None:
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
-    markers = [take_marker(slide, MARKER) for slide in prs.slides]
+    markers = [take_marker(slide, LAYOUT_KEY) for slide in prs.slides]
     for slide, words in zip(prs.slides, markers):   # before numbering: the number is the new layout's
         if words and "closing" in words:
             if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
@@ -800,7 +761,9 @@ def run(prs, path: Path) -> None:
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
         band_stack(prs.slides[0], w, h)
     if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
-        cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
+        cover = livery_mod.comp_of(prs.slides[0].slide_layout.name, BAND)
+        if graphic is not None and not BAND:   # the photo cover's own boxes
+            cover = cover.replace("title", "title-photo")
         cover_byline(prs, prs.slides[0], COMP[cover], w, h)
         cover_fineprint(prs, prs.slides[0], COMP[cover], w, h)
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {path.name}")

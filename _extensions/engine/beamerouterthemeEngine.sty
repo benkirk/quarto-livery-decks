@@ -479,9 +479,9 @@ frametitle,framesubtitle,structure,item,subitem,subsubitem,local structure,%
 enumerate item,alerted text,block title,block body,block title example,%
 block body example,block title alerted,block body alerted,%
 background canvas,frametitle rule,page number in head/foot,footline,caption,footnote}
-% the colors a dark frame swaps outside beamer's (the inner theme draws with them), snapshotted at
-% \begin{document} as EngineLight<name> and put back on reset; a card reads the snapshots
-\def\engine@darkswapped{BrandMuted,BrandPrimaryContrast,enginetableband,enginetablerule}
+% the colors a dark frame swaps outside beamer's (the inner theme draws with them; livery.sty's
+% \engine@darkswapped, \engine@darkswap), snapshotted at \begin{document} as EngineLight<name> and
+% put back on reset; a card reads the snapshots
 \def\engine@colorslots{thcfg,thcbg,thcinherits,thcuse}
 \def\engine@copycolors#1#2{% #1 -> #2 prefixes, for every touched color & slot
   \@for\engine@c:=\engine@touchedcolors\do{%
@@ -490,14 +490,18 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
         \csname #1\engine@s @\engine@c\endcsname}}}
 \AtBeginDocument{\engine@copycolors{beamer@}{engine@saved@}%
   \@for\engine@c:=\engine@darkswapped\do{\colorlet{EngineLight\engine@c}{\engine@c}}}
+% \engine@lightcolors: the light frame's colors back, beamer's and the swapped ones (on reset, and
+% in a box of a dark frame with a fill of its own, \engine@lightbox)
+\def\engine@lightcolors{%
+  \@for\engine@c:=\engine@darkswapped\do{\colorlet{\engine@c}{EngineLight\engine@c}}%
+  \engine@copycolors{engine@saved@}{beamer@}}
 \def\engine@resetframe{%
   \def\engine@framestyle{normal}\global\engine@haspanelfalse\global\engine@galn=\z@   % no gallery carried over
   \engine@darkframefalse\engine@ftroom{light}%
-  \@for\engine@c:=\engine@darkswapped\do{\colorlet{\engine@c}{EngineLight\engine@c}}%
   % the text color too: a field's hook (\engine@fieldcolors) sets it where the frame's group
   % does not undo it, so the frame after a closing slide had white body text
   \def\engine@framehook{\usebeamercolor[fg]{normal text}}%
-  \engine@copycolors{engine@saved@}{beamer@}}
+  \engine@lightcolors}
 \let\engine@envkey\KV@beamerframe@environment
 \def\KV@beamerframe@environment#1{\engine@resetframe\engine@envkey{#1}}
 
@@ -526,7 +530,8 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
 % accents (bullets, alerts, the subtitle, a table's head rule) secondary, its muted text (notes,
 % captions, footnotes) dark-muted, the hairline and table rules dark-rule, the bands dark-band, the
 % dark role's mark and sign-off, no content art or waves. A card keeps its colors (its text
-% BrandText, its label and big number the light snapshots). On a dark livery (livery.sty's
+% BrandText, its label and big number the light snapshots), and so does a caution body, a lead and a
+% strip (the inner theme's \engine@lightbox). On a dark livery (livery.sty's
 % \engine@mode) a no-op: its every frame is dark.
 \providecommand\engine@mode{light}
 \define@key{beamerframe}{enginedark}[true]{%
@@ -549,8 +554,7 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
   \setbeamercolor{footline}{fg=BrandOnDark}%
   \setbeamercolor{caption}{fg=BrandDarkMuted}%
   \setbeamercolor{footnote}{fg=BrandDarkMuted}%
-  \colorlet{BrandMuted}{BrandDarkMuted}\colorlet{BrandPrimaryContrast}{BrandSecondary}%
-  \colorlet{enginetableband}{BrandDarkBand}\colorlet{enginetablerule}{BrandDarkRule}%
+  \engine@darkswap
   \engine@ftroom{dark}}
 
 % \engine@fieldcolors{<color>}: every text color for a field in <color>

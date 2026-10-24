@@ -130,3 +130,23 @@ def test_the_watermark_is_furniture(deck_qa, monkeypatch):
     monkeypatch.setattr(deck_qa, "WATERMARK", "DRAFT")
     assert deck_qa.pdf_problems(W, H, words, []) == [("past the right margin", repr("A"))], "the body's A, a line tall, stays"
     assert ".engine-watermark" in deck_qa.MEASURE_JS.split("const skip = ")[1].split(";")[0]
+
+
+def test_a_bottom_right_frame_number_is_furniture(deck_qa, monkeypatch):
+    """The frame number in the bottom right (cu, nsi, the NASA liveries; the pptx as LibreOffice
+    draws it puts it past the text's margin) is no text past the right margin, and the footline
+    beside it is no footer overrun (the pptx's linked-image URL, a caption's height, at the middle);
+    a body word past the margin, or one that meets the number, still is."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "WATERMARK", "")
+    number = (352, 190, 358, 196, "7")
+    body = (30, 40, 120, 48, "Body")
+    assert deck_qa.pdf_problems(W, H, [body, number], []) == []
+    past = (330, 60, 356, 68, "beyond")
+    assert deck_qa.pdf_problems(W, H, [body, number, past], []) == [("past the right margin", repr("beyond"))]
+    url = (160, 186, 200, 196, "ncar.ucar.edu/")
+    assert deck_qa.pdf_problems(W, H, [body, number, url], []) == []
+    meets = (300, 186, 349, 196, "running-into-it")
+    assert deck_qa.pdf_problems(W, H, [body, number, meets], []) == [("into the footer", repr("running-into-it"))]

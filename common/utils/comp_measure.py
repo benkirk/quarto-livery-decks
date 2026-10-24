@@ -14,7 +14,6 @@ and a table; exits 1 when a --fail-on format is over tolerance.
 """
 
 import argparse
-import glob
 import os
 import re
 import subprocess

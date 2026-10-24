@@ -9,13 +9,11 @@ has no swap (the class is a no-op there).
 """
 
 import json
-import os
 import subprocess
-import sys
 
 import pytest
 
-from conftest import ENGINE, ROOT, flat, lua_common, pandoc_exe, slide_layout_shim
+from conftest import ENGINE, ROOT, flat, lua_common, pandoc_exe, run_steps, slide_layout_shim
 
 # take_layout() on each heading of the markdown from stdin: {dark, classes} or {nil}
 HARNESS = r"""
@@ -36,6 +34,16 @@ def test_take_layout_dark(tmp_path):
     got = [json.loads(x) for x in out.splitlines()]
     assert got == [{"dark": True, "classes": ["mine"]}, {"dark": True, "classes": []}, {"nil": True}], got
     assert not warnings
+
+
+def test_take_layout_dark_ignored(tmp_path):
+    """A .full or .feature slide ignores .brand-dark in every format (the picture fills it): not
+    dark, the class taken off, one warning each."""
+    out, warnings = lua_common(tmp_path, HARNESS, "## F {.full .brand-dark}\n\n## P {.feature .brand-dark}\n")
+    got = [json.loads(x) for x in out.splitlines()]
+    assert got == [{"dark": False, "classes": ["full"]}, {"dark": False, "classes": ["feature"]}], got
+    assert warnings == ['t: {.brand-dark} on the {.full} slide "F" is ignored',
+                        't: {.brand-dark} on the {.feature} slide "P" is ignored'], warnings
 
 
 def test_css_swaps_on_a_light_livery():
@@ -79,9 +87,7 @@ def dark_deck(request, tmp_path_factory):
     subprocess.run([pandoc_exe(), "--lua-filter", str(slide_layout_shim(tmp)), "--lua-filter", str(ENGINE / "grid-pptx.lua"),
                     "--reference-doc", str(d / "template.pptx"), "-o", str(out)],
                    input=f"---\nlivery: {d}\n---\n\n" + DECK, text=True, cwd=tmp, check=True, capture_output=True)
-    env = {**os.environ, "LIVERY_DIR": str(d), "PYTHONPATH": str(ENGINE)}
-    r = subprocess.run([sys.executable, str(ENGINE / "pptx_post.py"), str(out)], env=env, cwd=tmp, capture_output=True, text=True)
-    assert r.returncode == 0, r.stderr
+    run_steps(out, None, d)
     from pptx import Presentation
     return name, json.loads((d / "build" / "livery.json").read_text()), Presentation(str(out))
 

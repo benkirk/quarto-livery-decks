@@ -19,7 +19,6 @@ liveries/README.md's acceptance, not this test's. The scaffolds are built once p
 """
 
 import json
-import os
 import re
 import subprocess
 import sys
@@ -28,7 +27,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import ENGINE, ROOT, run
+from conftest import ENGINE, ROOT, bare_env, run
 
 VERSION = re.search(r"^version:\s*(\S+)", (ENGINE / "_extension.yml").read_text(), re.M)[1]
 
@@ -149,7 +148,7 @@ def test_livery_mpl_version(tmp_path):
              "with m.dense(0.5): assert plt.rcParams['font.size'] == round(f) / 2, 'dense'\n"
              "assert plt.rcParams['font.size'] == f and m.surface and m.mix('#000000', '#FFFFFF', 0) == '#000000'\n"
              "with m.raster(): pass   # outside a kernel: nothing to switch")
-    env = {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+    env = bare_env()
     for where, kw in (("engine", {"env": {**env, "LIVERY_DIR": str(ROOT / "liveries" / "ncar"),
                                           "PYTHONPATH": str(ENGINE / "mpl")}}),
                       ("bundle", {"env": env, "cwd": tmp_path / "bundle"})):
@@ -187,7 +186,7 @@ def test_use_zip(tmp_path):
     (once), its base family registered from there, ncar's slots; in a subprocess, its own env."""
     z = tmp_path / "ncar-charts.zip"
     assert run("zip", "--charts", ROOT / "liveries" / "ncar", "-o", z).returncode == 0
-    env = {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+    env = bare_env()
     (tmp_path / "empty").mkdir()
     r = subprocess.run([sys.executable, "-c", USE_ZIP, str(z), str(ROOT / "liveries" / "ncar" / "build" / "livery.json")],
                        capture_output=True, text=True, cwd=tmp_path / "empty",
@@ -273,6 +272,19 @@ def test_mono_code_typeface(tmp_path):
     assert run("mono", ROOT / "liveries" / "ncar").stdout.strip() == "", "a livery without a code face"
 
 
+def test_furniture_skip_lists_agree():
+    """The HTML autofit's furniture (engine-revealjs.js FURNITURE: the elements that are not a
+    slide's body) is skipped by make qa's measurement too (deck_qa.py MEASURE_JS's skip list, which
+    adds its own): a furniture element added to one alone is a body to the other. An item the QA
+    skips more broadly (aside for aside.notes) counts."""
+    js = (ENGINE / "engine-revealjs.js").read_text()
+    furniture = {s.strip() for s in re.search(r'FURNITURE = "([^"]*)"', js).group(1).split(",")}
+    qa = (ROOT / "common" / "utils" / "deck_qa.py").read_text()
+    skip = {s.strip() for s in re.search(r"const skip = '([^']*)'", qa).group(1).split(",")}
+    missing = {s for s in furniture if s not in skip and s.split(".")[0] not in skip}
+    assert not missing, f"deck_qa.py's MEASURE_JS skip list lacks {missing}"
+
+
 def test_no_private_imports():
     """A step or tool imports no other module's `_private` name: what two modules need is public in
     pptx_steps/common.py, measure.py or livery.py (the #126 sweep found grid.py and columns.py on
@@ -288,10 +300,17 @@ def test_no_private_imports():
 def test_slide_kinds_agree():
     """The slide kinds a composition draws (feature, closing, full) are named once in Lua
     (engine-common.lua SLIDE_KINDS) and must appear in the two lists that cannot read it: the HTML
-    autofit's NEVER selector (engine-revealjs.js) and livery_build's content-art selector."""
+    autofit's NEVER selector (engine-revealjs.js) and livery_build's content-art selector; with the
+    layout classes (LAYOUT_CLASSES) they are slide-layout.lua's notes-line WORDS, a hand list in its
+    own order (.center is hcenter and vcenter there, .brand-dark the word dark; references its own)."""
     lua = (ENGINE / "engine-common.lua").read_text()
     kinds = set(re.findall(r"(\w+) = true", re.search(r"SLIDE_KINDS = \{([^}]*)\}", lua).group(1)))
     assert kinds == {"feature", "closing", "full"}, kinds
+    classes = set(re.findall(r'\[?"?([\w-]+)"?\]? = true', re.search(r"LAYOUT_CLASSES = \{([^}]*)\}", lua).group(1)))
+    words = set(re.findall(r'"([\w-]+)"', re.search(r"local WORDS = \{([^}]*)\}",
+                                                    (ENGINE / "slide-layout.lua").read_text()).group(1)))
+    want = {"dark" if c == "brand-dark" else c for c in classes - {"center"}} | kinds | {"references"}
+    assert words == want, f"slide-layout.lua WORDS: missing {want - words}, extra {words - want}"
     js = (ENGINE / "engine-revealjs.js").read_text()
     never = set(re.findall(r"\.([\w-]+)", re.search(r'NEVER = "([^"]*)"', js).group(1)))
     assert kinds <= never, f"engine-revealjs.js NEVER lacks {kinds - never}"
@@ -350,3 +369,14 @@ def test_placeholders_watermark(tmp_path, tmp_livery):
     rc, err, _ = tmp_livery(tmp_path, "  text: INTERNAL\n", key="watermark")
     assert rc == 0, err
     assert json.loads(run("placeholders", tmp_path / "liveries" / "ncar").stdout) == {"watermark": "SAMPLE"}
+
+
+def test_placeholders_output(tmp_path):
+    """placeholders -o: the same file written, DECK_META=<its absolute path> printed (make's argument,
+    one $(...) in a caller); for a livery without defaults nothing printed and nothing written."""
+    r = run("placeholders", ROOT / "liveries" / "nasa-ccp", "-o", "sub/p.yml", cwd=tmp_path)
+    f = tmp_path / "sub" / "p.yml"
+    assert r.returncode == 0 and r.stdout == f"DECK_META={f.resolve()}\n", r.stdout + r.stderr
+    assert f.read_text() == run("placeholders", ROOT / "liveries" / "nasa-ccp").stdout
+    r = run("placeholders", ROOT / "liveries" / "ncar", "-o", tmp_path / "n.yml")
+    assert r.returncode == 0 and r.stdout == "" and not (tmp_path / "n.yml").exists(), r.stdout

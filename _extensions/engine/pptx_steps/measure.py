@@ -1,7 +1,8 @@
 """Text measured in the livery's own fonts (PIL): the pptx steps' one measurer. It counts the lines
 paragraphs wrap to in a width, greedily, as PowerPoint wraps them, and from them a shape's text
 height (text_height(): the lines of each paragraph in the face and size the pptx shows it, one LINE
-per line, plus the paragraph spacing), which the steps that cut a box to its text read.
+per line, plus the paragraph spacing) and a table's (table_height()), which the steps that cut a box
+to its text, or place a note under a table, read.
 
 Sizes and widths are the revealjs theme's slide pixels (1600 x 900 over the livery's canvas,
 livery.json type.canvas): font() takes points of type, lines() and runs_lines() a width in
@@ -21,7 +22,7 @@ from pptx.util import Pt
 
 import livery as livery_mod
 
-from .common import BODY_PT, K, LIVERY
+from .common import BODY_PT, CELL_MAR, K, LIVERY
 
 CANVAS = LIVERY["type"]["canvas"]
 PX = CANVAS["w"] * 12700 / 1600             # EMU per slide pixel
@@ -195,6 +196,30 @@ def pieces(p, family, size, weight=None):
 def para_lines(p, family, size, width, weight=None):
     """The lines a paragraph wraps to in width (EMU), measured in the faces the pptx shows."""
     return runs_lines(pieces(p, family, size, weight), width / PX)
+
+
+def table_height(shape, slide):
+    """A table's measured height on its slide (EMU): each row as tall as its cell of most lines,
+    measured in the livery's base face in its column's width (less the cell's margins), at the
+    table's biggest size (at least the slide's other size), plus the cell's top and bottom margins
+    as style_tables sets them (CELL_MAR: it runs after the steps that read this, so the cells still
+    carry PowerPoint's defaults). What a note under it, a slide centering it or a flow above it
+    reads, since the frame's own height is pandoc's nominal."""
+    table, other = shape.table, other_size(slide)
+    biggest = max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
+    widths = [col.width for col in table.columns]
+    total = 0
+    for row in table.rows:
+        most = 1
+        for cell, w in zip(row.cells, widths):
+            inner = w - cell.margin_left - cell.margin_right
+            n = 0
+            for p in cell.text_frame.paragraphs:
+                sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
+                n += para_lines(p, BODY, Pt(sz / 100), inner)
+            most = max(most, n)
+        total += int(most * Pt(biggest / 100) * LINE + 2 * CELL_MAR)
+    return total
 
 
 def text_height(shape, slide, family=None, weight=None, gap=None):

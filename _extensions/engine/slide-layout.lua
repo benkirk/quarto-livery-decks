@@ -1,5 +1,5 @@
 -- pptx only. The theme's per-slide layout controls (.hcenter, .vcenter,
--- .center, scale="S", .fill, .full, .caution, .feature, .wide; see the engine's engine-revealjs.lua) mean nothing
+-- .center, scale="S", .fill, .full, .caution, .feature, .wide, .brand-dark; C.take_layout) mean nothing
 -- to pandoc's pptx writer, which drops slide classes. Carry them to
 -- the engine's pptx_steps/slide_layout.py as one speaker-notes line,
 --   engine-layout: hcenter vcenter scale=1.4
@@ -9,8 +9,9 @@
 -- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
 -- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), the
 -- marking strips' texts the strings `engine-marking-<name>` (C.marking_texts, the one reader of
--- `marking:`; pandoc records a map as empty too), and `fineprint:` the string `engine-fineprint`, a
--- line per paragraph.
+-- `marking:`; pandoc records a map as empty too), the watermark's text `engine-watermark`
+-- (C.watermark_text) and the cover's fine print `engine-fineprint`, a line per paragraph
+-- (C.fineprint_paragraphs), each `none` for none.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -68,11 +69,11 @@ local function byline_meta(meta)
   if #institutes > 0 then meta["engine-institute"] = pandoc.MetaString(table.concat(institutes, "\n")) end
 end
 
--- the deck's fineprint: as one string, a line per paragraph (pandoc records Blocks in the pptx as
--- their text run together), for slide_layout.py's cover; `none` stays none
-local function fineprint_meta(meta)
-  local fp = meta["fineprint"]
-  if fp == nil then return end
+-- the cover's fine print (C.fineprint_paragraphs: the deck's fineprint:, else the cover composition's
+-- default) as one string, a line per paragraph (pandoc records Blocks in the pptx as their text run
+-- together), for slide_layout.py's cover, which draws and never decides; "none" for none
+local function fineprint_meta(meta, livery)
+  local fp = C.fineprint_paragraphs(meta, livery.compositions[C.cover_name(meta, livery, light_title(meta))])
   local lines = {}
   local function parts(inl)   -- a line break parts a paragraph too: Quarto reads a metadata file's
     local run = pandoc.Inlines({})   -- blank line as one
@@ -82,17 +83,10 @@ local function fineprint_meta(meta)
     end
     table.insert(lines, pandoc.utils.stringify(run))
   end
-  local ty = pandoc.utils.type(fp)
-  if ty == "Blocks" then
-    for _, b in ipairs(fp) do
-      if b.t == "Para" or b.t == "Plain" then parts(b.content) else table.insert(lines, pandoc.utils.stringify(b)) end
-    end
-  elseif ty == "Inlines" then
-    parts(fp)
-  else
-    lines = { pandoc.utils.stringify(fp) }
+  for _, b in ipairs(fp) do
+    if b.t == "Para" or b.t == "Plain" then parts(b.content) else table.insert(lines, pandoc.utils.stringify(b)) end
   end
-  meta["engine-fineprint"] = pandoc.MetaString(table.concat(lines, "\n"))
+  meta["engine-fineprint"] = pandoc.MetaString(#lines > 0 and table.concat(lines, "\n") or "none")
 end
 
 -- every marking strip's text, one string per strip, for pptx_steps/marking.py, which draws and never
@@ -123,7 +117,7 @@ function Pandoc(doc)
   local livery = C.load_livery(doc.meta, EXTDIR, "slide-layout")   -- once, for every reader of it
   marking_meta(doc.meta, livery)
   watermark_meta(doc.meta, livery)
-  fineprint_meta(doc.meta)
+  fineprint_meta(doc.meta, livery)
   local level = C.slide_level()
   local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
   local refs = C.refs_heading(blocks, level)

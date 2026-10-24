@@ -36,9 +36,10 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
 - `{.brand-dark}` is a dark slide in every format: the content slide on the livery's dark role,
   its text on-dark, its accents secondary, the dark role's mark and sign-off, the hairline,
   table rules and muted text in dark blends; a card, lead, strip or caution body keeps its own
-  colors. pptx and the PDF drew an ordinary slide before, and HTML wore the field's mark (nsi's
-  black lockup on black; now its white one) and colored a card's text white on white. Under a
-  dark livery the class does nothing. docs/authoring.md "Front matter and slide kinds".
+  colors (inline code in it too). pptx and the PDF drew an ordinary slide before, and HTML wore
+  the field's mark (nsi's black lockup on black; now its white one) and colored a card's text
+  white on white. Under a dark livery the class does nothing, and a `{.full}` or `{.feature}`
+  slide ignores it with a warning (the picture fills the slide). docs/authoring.md "Front matter and slide kinds".
 
 - Every card has a hairline round its edge in every format (`boxes.card.border`, 0.0016 of the
   slide's height, in the `rule` blend, the title hairline's): on a white card fill the body now
@@ -52,6 +53,21 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
 - nasa-ccp: the NASA insignia at the title bar's right end is a vector mark in every format (the
   content slides' top-right mark and the dividers' sign-off), where it was a bitmap in the bar's
   art; the bar's title gives it room on both sides.
+
+- HTML draws the marking strips and the watermark on every slide, as PDF and pptx do: a slide
+  opened by `---`, or the blocks before the first heading, had none (no CUI banner under
+  nasa-ccp). Under nasa-ccp and nasa-jsc-eg a slide whose body starts with columns or cards now
+  takes the same gap under the title as under the other liveries.
+
+- A table's head rule is `primary-contrast` in every format (the PDF's was; HTML and pptx drew
+  `primary`, which differs on cu, nsi, ucar, ucp and the NASA flavors: a thin rule in a light
+  gold or teal hardly read), and each rule is one width everywhere, 3 px of 900 under the header
+  and 1 px under a row, so the PDF's head rule and last rule are thinner. On a `{.brand-dark}`
+  slide the head rule stays `secondary`. `boxes.table` under Liveries.
+
+- `make qa` no longer reports a bottom-right slide number (cu, nsi, the NASA liveries) as past
+  the right margin on every pptx slide, nor a linked picture's URL beside it as running into the
+  footer: its pptx hints are the real ones.
 
 ### Liveries
 
@@ -81,11 +97,16 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
   counter-clockwise), `size` (points on the canvas; default 120 on the default 13.33 x 7.5 in
   canvas, scaled to the livery's), and a default `text` every deck shows (none by default).
   `livery placeholders` gives a default text SAMPLE.
-- Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
-  corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
-  `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its
-  `marks` always holds the dark role (primary's unless `marks.dark` names its own). In LaTeX the
-  marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is unchanged.
+- `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by corner) and
+  the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and `dark-muted` (on-dark
+  into the dark role; `blends:` in `livery.yml` may set any of them), and its `marks` always holds
+  the dark role (primary's unless `marks.dark` names its own): all derived, nothing to do for
+  them. In LaTeX the marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is
+  unchanged.
+- `boxes.table` (optional): a table's rules, `head-rule` and `rule` (widths, of the slide's height;
+  0.0033 and 0.0011) and `head-rule-color` (a role or blend name, `primary-contrast` by default).
+- `livery placeholders <dir> -o FILE` writes the sample-text metadata file and prints
+  `DECK_META=<file>` for make's command line (nothing for a livery without default markings).
 
 ### Plots
 
@@ -108,6 +129,8 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
 
 - `\begin{frame}[enginedark]{...}`: a content frame on the livery's dark role, as the Quarto
   `{.brand-dark}` slide (a no-op under a dark livery); the cookbook's "Dark slide, step by step".
+  `enginelead`, `enginestrip` and `enginecaution` on it keep the livery's text on their light
+  fills.
 - A card's `\linewidth` takes a picture at the card's width with `\enginenote{...}` as its caption
   (the cookbook's "Pictures in cards").
 - `\enginewatermark{DRAFT}` in the preamble: the watermark on every frame, behind the body

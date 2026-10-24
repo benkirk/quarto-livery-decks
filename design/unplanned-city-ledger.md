@@ -21,6 +21,53 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-10-24: window #136–#149
+
+- Mode: window
+- Range: `f493a70..de1ce55` (#136 the sweep of #127–#135, #138 the themes sweep, #139 the docs
+  sweep, #145 consumer friction, #146 nasa-ccp and the named strips, #148 cells and the dark
+  slide, #149 corner marks, the watermark and livery_mpl on pip; releases 26.10.9–26.10.11);
+  read in four area passes, 31 findings, Ben picked Tier 1 and 2, then finding 9 of Tier 3
+  (`design/sweep-136-149-handoff.md`)
+- End commit: `de1ce55`
+- Done (#150): the fixes that move a render: the PDF's lead, strip and caution body on a dark
+  frame kept the livery's text (on-dark on their light fills before: `\engine@lightcolors`,
+  `\engine@lightbox`); HTML's marking strips and watermark on every slide by one tail walk
+  (`add_tail()`: a `---` slide or the blocks before the first heading had none; under nasa-ccp
+  and nasa-jsc-eg a columns row now takes Quarto's 0.8em like every other livery's); `.full` and
+  `.feature` ignore `.brand-dark` in every format, warned (beamer drew the frame dark); an HTML
+  dark slide's inline code in a caution body, and in a lead, strip, card or callout (yellow on
+  the light fill), off the field; the table's rules as `boxes.table` (finding 9, Ben's pick
+  after the Tier 1 and 2 work: the head rule primary-contrast in every format, one width per
+  rule, the PDF's thinner). `make qa`'s pptx hints read a bottom-right number as the footline
+  (nsi: sample 49 → 1, quickstart 13 → 0, plots 15 → 1, fixtures 50 → 5). The dark slide's
+  swapped roles one list, `livery.DARK_SWAP` (`DARK_INK`, `\engine@darkswap`/`\engine@darkswapped`
+  and the css's code rules from it); the cover's fine print through one reader,
+  `C.fineprint_paragraphs()` (`engine-fineprint` always written, `none` for none); `comp_of()`
+  and `FIELD_LAYOUTS` in `livery.py`, `BAND` and `PHOTO` in common; `C.is_rendered()`,
+  `C.decode_src()`, a grid cell's table parsed once; beamer's `card_body` on `cell_figure()`
+  (flat: the PDF's plot cells are raw LaTeX by then); `measure.table_height()`, `CELL_MAR` in
+  common; `peek_marker()` and `LAYOUT_KEY`; the JS's `FURNITURE` list with deck_qa's pinned to
+  it; `linked-images.lua` on the muted role, its livery load gone; the dead keyword defaults
+  and unused names; `LEAD_GAP` named (the flat option); conftest's `run_steps`, `flavor`,
+  `title_ph`, `bare_env`; `livery placeholders -o`; CI's pip probe trimmed to the wheel and the
+  PDF's family; slide-layout.lua's `WORDS` pinned; the comments, cu's and nsi's reference notes,
+  the quickstart's pipeline diagram and formats.md's step list, the changelog's wording, the
+  window's handoff State lines and the design log
+- Tried and dropped: none
+- Open: `QA_PPTX_FAIL=1` on CI's sample `make qa` waits on the one hint left there, the caution
+  slide's ⚠︎ overlapping its title's first letter as LibreOffice draws the pptx (sample s31,
+  plots s13, each fixture's s5): fix or exempt the glyph, then flip it; seen while fixing the
+  dark boxes, not rendered: HTML links in a box on a dark slide take secondary on the light
+  fill (`section.has-dark-background a`), a code block on a dark slide may take the warning ink
+  on its light field (`has-dark-background code` matches `pre code`), beamer's
+  `\engine@agenda@next{\color{BrandText}}` on a dark frame, a beamer card on a dark frame keeping
+  only its text, label and number (its bullets and alerts secondary); the step harness's other
+  copies (`test_grid`, `test_footnotes`, `test_gallery`, `test_quote`, `test_status`,
+  `test_section_subtitle`; hand flavors in `test_compositions`, `test_cover_field`,
+  `test_schema`, `test_cli`) could take `run_steps` and `flavor`; pyflakes' f-strings without
+  placeholders at `livery_build.py`, `livery_inspect.py`, `pptx_waves.py`
+
 ## 2026-10-23: area docs (the user-facing docs after #138)
 
 - Mode: area (`docs`, the user-facing part: README.md, docs/*.md, liveries/README.md,
@@ -44,9 +91,9 @@ branched from, not a window read).
   hairline, not worth six HTML builds until the plots change; `01-title.png` and `pdf.png` carry
   `date: last-modified`, so every reshoot after an edit churns them by the date alone (the
   screenshot recipe could pin the date); CLAUDE.md "The engine" names `sample.png` as what `make
-  previews` makes, now three images (out of this sweep's scope); the Unreleased section's "white
-  as before on every bundled livery" wording is right but the README's livery table still says
-  "the white-rule insignia" for nasa's mark (a mark's own color, left)
+  previews` makes, now three images (out of this sweep's scope). (The README's "white-rule
+  insignia" for nasa's mark is right, the window sweep #136–#149 found: `logo.dark` is
+  `meatball-rule`, `liveries/nasa/_brand.yml`.)
 
 ## 2026-10-22: area themes (the "one look, one key" sprint)
 
@@ -246,6 +293,30 @@ branched from, not a window read).
   box, columns) than under ncar, whose content waves add a child (found by the corner-marks
   sprint's parity, 2026-10-24: one marks box per slide keeps it as it was). A theme rule zeroing
   that margin, or pinning it, would make it livery-independent; it moves pixels, so a sweep pick.
+- The beamer theme's six `ex` gaps (CLAUDE.md "Divider subtitles": every gap `em`): the title to
+  subtitle `-0.25ex` (outer theme), `block begin` `-0.2ex`, the feature subtitle's gap `0.3ex`
+  under the bar style and `0.5ex` under cover (two numbers for one gap), the subsection page
+  `0.8ex` (`\midrule`'s went with `boxes.table`); `em` of the element, a sub-point render move
+  (window #136–#149, finding 26).
+- Inline code on a field: four tints in HTML, three of them hand numbers (the section subtitle's
+  and the closing's 16%, the feature panel's 14%, the dark slide's `dark-code` blend); beamer and
+  pptx draw none. The composed fields could read `--engine-dark-code`; HTML only, slightly lighter
+  (finding 27).
+- The cover fine print's `opacity: 0.85` is HTML's alone (`engine-revealjs.scss`); beamer and pptx
+  draw the role's color: drop it, or a `fineprint.opacity` key all three read (finding 28).
+- `emit_css` restates `corner_room()` (its own inset + 40px + width, unclamped at 0 where
+  `title_room()` is); beamer measures the room itself (`\engine@measureroom`, light and dark
+  passes); `\engine@corner@<c>@aspect` is emitted and never read. The css could read
+  `title_room()` (flat on the bundled ten); beamer could take the emitted room per role, or the
+  dead emit goes: a decision on beamer's measuring (finding 29).
+- An absolute `DECK_META` or `LIVERY_DIR` under a host symlink crosses into the container
+  unresolved: `Make.container` realpaths the mounts but passes the variables as typed, so
+  `make pptx DECK_META=/tmp/p.yml` on a Mac without quarto stops "No rule to make target
+  '/tmp/p.yml'" (`/tmp` is `/private/tmp`); the inner command line could restate both as real
+  paths, checked under make 3.81 and by `smoke-test.sh` per runtime (finding 30).
+- The page number's place is three hand numbers (beamer's `0.075\paperheight` and `0.035`, a twin
+  of `geometry.full-footline`; the scss's `50px`/`14px`; `livery_build.py`'s `'50px'`;
+  `livery_template.py`): `geometry.pagenumber.{inset, bottom}` beside `corner` (finding 31).
 - Deferred by the corner-marks sprint (2026-10-24, `design/marks-watermark-mpl-handoff.md` open
   question 2): composed slides taking named corners (their mark and sign-off slots and the logo
   entry's `*-height` keys stay as they were).

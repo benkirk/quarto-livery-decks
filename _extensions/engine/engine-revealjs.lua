@@ -434,29 +434,19 @@ local function add_marks(blocks, livery)
   return out
 end
 
--- the marking strips (livery.json marking; each one's text the deck's marking:, else its default)
--- on every slide, feature and full ones too: raw divs livery.css places and colors
-local function add_marking(blocks, text)
-  if not text then return blocks end
-  local out = pandoc.Blocks({})
+-- every slide's tail: the marking strips (livery.json marking; each one's text the deck's marking:,
+-- else its default; raw divs livery.css places and colors, over everything) and the watermark
+-- (C.watermark_text: the deck's watermark:, else the livery's default) as the LAST element: z-index -1
+-- in the scss puts it under the body in flow and, later in the DOM than the art and the waves (z-index
+-- -1 too), over them. On every slide, feature, full and untitled ones too, as PDF and pptx draw them: a
+-- slide ends at the next heading at or above the slide level, a top-level rule, or the deck's end, and
+-- blocks before the first heading are a slide of their own; the title slide's is title-slide.html's.
+local function add_tail(blocks, text)
+  if text == "" then return blocks end
+  local function starts(blk) return (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule" end
+  local out, open = pandoc.Blocks({}), #blocks > 0 and not starts(blocks[1])
   for _, blk in ipairs(blocks) do
-    out:insert(blk)
-    if blk.t == "Header" and (blk.level == 1 or blk.level == slide_level) then
-      out:insert(html(text))
-    end
-  end
-  return out
-end
-
--- the watermark (C.watermark_text: the deck's watermark:, else the livery's default) as the LAST
--- element of every slide: z-index -1 in the scss puts it under the body in flow and, later in the
--- DOM than the art and the waves (z-index -1 too), over them. A slide ends at the next heading at or
--- above the slide level, a top-level rule, or the deck's end; the title slide's is title-slide.html's.
-local function add_watermark(blocks, text)
-  if not text then return blocks end
-  local out, open = pandoc.Blocks({}), false
-  for _, blk in ipairs(blocks) do
-    if (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule" then
+    if starts(blk) then
       if open then out:insert(html(text)) end
       open = true
     end
@@ -751,26 +741,21 @@ function Pandoc(doc)
     opts.autofit == "false" and ",'engine-no-autofit'" or ""))
 
   -- title slide: the composition by the band, a photo (the deck's or the livery's) and light
+  local tcomp = comps[C.cover_name(meta, livery, light)]
   local tg = meta["titlegraphic"] and pandoc.utils.stringify(meta["titlegraphic"])
   local nophoto = tg == "none"   -- `titlegraphic: none`: the plain cover, not the livery's default
   if nophoto then tg = nil; meta["titlegraphic"] = nil end
   local default_photo = not tg and not nophoto and livery.art and type(livery.art.titlegraphic) == "string"
-  local tcomp = comps[band and "title-band" or ((tg or default_photo) and "title-photo" or "title") .. (light and "-light" or "")]
   local bg, fieldclass = field_of(tcomp)
   title_slide_attributes(meta, { ["data-background-color"] = bg })
   meta["engine-title-art"] = pandoc.RawInline("html", comp_art(tcomp, r, (tg or default_photo) and photo_img(tg) or nil))
   meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
   -- a cover's byline with a box of its own (livery.json compositions): title-slide.html's second stack
   if tcomp.byline and tcomp.byline.box then meta["engine-byline"] = true end
-  -- the cover's fine print (title-slide.html): the deck's fineprint: (none: none), else the livery's default
-  local fp = meta["fineprint"]
-  if fp and pandoc.utils.stringify(fp) == "none" then
-    meta["fineprint"] = nil
-  elseif not fp and tcomp.fineprint and tcomp.fineprint.paragraphs then
-    local paras = pandoc.Blocks({})
-    for _, para in ipairs(tcomp.fineprint.paragraphs) do paras:insert(pandoc.Para(pandoc.Inlines(para))) end
-    meta["fineprint"] = pandoc.MetaBlocks(paras)
-  end
+  -- the cover's fine print (title-slide.html): C.fineprint_paragraphs, the deck's fineprint: (none:
+  -- none), else the livery's default
+  local fp = C.fineprint_paragraphs(meta, tcomp)
+  meta["fineprint"] = #fp > 0 and pandoc.MetaBlocks(fp) or nil
   -- the marking strips, as HTML: each with its text (C.marking_texts: the deck's marking:, else the
   -- strip's default), in the livery's order; livery.css places and colors each by its class
   local divs = {}
@@ -926,6 +911,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = add_watermark(mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_marks(out, livery), marking)))), watermark)
+  doc.blocks = add_tail(mark_notes(unwrap_layout(hoist_footnotes(add_marks(out, livery)))), (marking or "") .. (watermark or ""))
   return doc
 end

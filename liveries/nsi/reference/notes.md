@@ -29,9 +29,9 @@ NSI brand guide: the deck and the CU rules are the guide.
   field's `art.title`; the campus photo is `art.titlegraphic`, which a deck's `titlegraphic:`
   replaces. The deck's title is centred in the band with the date under it; ours keeps the
   engine's date / title / subtitle / rule / author column, left-aligned with the tab.
-- **Content slides**: the NSI mark top left (`geometry.logo.corner: top-left`), 0.085 of the
+- **Content slides**: the NSI mark top left (`geometry.marks.top-left`, `mark: logo`), 0.085 of the
   height (the deck's 0.135 would cross the title rule; it centres its title, ours stays left of
-  the tab beside the mark), the RIO sign-off bottom left (nsi's own `signoff`, in cu's slot)
+  the tab beside the mark), the RIO sign-off bottom left (nsi's own image on cu's `bottom-left` entry)
   and the page number bottom right (cu's), the satellite photo as `art.content`.
 - **Closing** (deck slide 27): under the band style the closing slide wears the band's field and
   the title art (no `art.closing`), with the two white lockups in the strip (`marks.dark`, the
@@ -72,7 +72,7 @@ Ben compared a content slide with the master deck's slide 20 ("MSSC Secure Resea
 Infrastructure", Lindsay's): her NSI mark is larger (0.135 of the height, from 0.04), her titles
 are centred beside it, with no gold tab and no hairline. nsi now says `frametitle: {align: center,
 tab: false, rule: false}` and the mark's `top: 0.04, height: 0.135, inset: 0.015` (near the paper's edge,
-as hers, not at the text margin; `geometry.logo.inset`, engine 3.8.0); the body starts below the
+as hers, not at the text margin; `geometry.marks.top-left.inset`, engine 3.8.0); the body starts below the
 mark (0.197; `frametitle.body`, engine 3.8.0). Still different from hers, left as they are: the
 titles' condensed face in HTML and PDF (Heros Condensed, the brand's headline rule; her deck sets
 regular-width Helvetica Neue Bold, as the pptx does), her ~18 pt body with black bullets, and her

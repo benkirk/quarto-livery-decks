@@ -16,8 +16,6 @@ embedded later by embed_fonts.py; a deck's title photo by slide_layout.py.
 Rewrites in place with fixed zip timestamps, so an unchanged rebuild is byte-identical.
 """
 
-import json
-import sys
 import zipfile
 from pathlib import Path
 
@@ -43,12 +41,6 @@ EXTRA_LAYOUTS = ["Closing", "Title Slide (light)", "Closing (light)"]
 ALL_LAYOUTS = LAYOUTS + EXTRA_LAYOUTS
 LAYOUT_TYPES = {"Closing": "obj", "Closing (light)": "obj", "Title Slide (light)": "title", "Title Slide": "title", "Title and Content": "obj", "Section Header": "secHead",
                 "Two Content": "twoObj", "Comparison": "twoTxTwoObj", "Content with Caption": "objTx", "Blank": "blank"}
-
-
-# the layouts drawn from a composition: layout -> (composition, its band variant, kind of text)
-FIELD_LAYOUTS = {"Title Slide": ("title", "title-band", "title"), "Title Slide (light)": ("title-light", None, "title"),
-                 "Section Header": ("section", None, "section"), "Closing": ("closing", "closing-band", "closing"),
-                 "Closing (light)": ("closing-light", None, "closing")}
 
 
 def emu(frac, axis):
@@ -319,15 +311,12 @@ class Builder:
                                '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--', "", "").split("<!--")[0])
         return out
 
-    def comp_name(self, name):
-        base, band, _ = FIELD_LAYOUTS[name]
-        return band if self.band and band else base
-
     def field_layout(self, name, livery_dir):
         """A layout drawn from its composition: the art, the waves (or a straight field), the band
         with the default photo in its box, the mark and sign-off in theirs (rId4, rId5, rId2, rId3),
         the column's placeholders, the slide number."""
-        c, kind = self.comps[self.comp_name(name)], FIELD_LAYOUTS[name][2]
+        comp = livery_mod.comp_of(name, self.band)
+        c, kind = self.comps[comp], comp.split("-")[0]   # its kind of text: title, section or closing
         field = ROLE_SLOT[c["field"]["role"]]
         shapes = [self.pic("rId4", f"Art ({c['art']})", 0, 0, 1, 1)] if c["art"] else []
         if c["band"]:
@@ -345,8 +334,8 @@ class Builder:
 
     def media_for(self, name):
         """{rId: media name} a field layout's composition wears: its mark, sign-off, art and photo."""
-        c, out = self.comps[self.comp_name(name)], {}
-        comp = self.comp_name(name)
+        comp = livery_mod.comp_of(name, self.band)
+        c, out = self.comps[comp], {}
         if c["mark"]:
             out["rId2"] = f"mark-{comp}"       # its file, the composition's own (livery.json img)
         if c["signoff"]:
@@ -360,7 +349,6 @@ class Builder:
     def content_layout(self, name):
         g, m = self.geom, self.geom["margin"]
         _, body_top, _, h = g["body"]   # the content body's box (geometry.body)
-        body_bottom = body_top + h
         inherit_title = self.ph("Title 1", "title", None, "", 'vert="horz"', "", "Click to edit Master title style")
         shapes = [inherit_title]
         gap, half = self.L["boxes"]["columns"]["gap"], g["half"]   # the column gap and the Two Content half (livery.json)
@@ -418,7 +406,7 @@ class Builder:
         parts = {}
         # media, numbered in this order: the master's marks (by rId) and art, then each field layout's
         names = [f"{n}-background" for n in sorted(self.mark_rids, key=self.mark_rids.get)] + (["art-content"] if "content" in self.art else [])
-        names += [n for lay in FIELD_LAYOUTS for n in self.media_for(lay).values()]
+        names += [n for lay in livery_mod.FIELD_LAYOUTS for n in self.media_for(lay).values()]
         def path_of(n):
             kind, _, key = n.partition("-")
             if kind in ("mark", "signoff") and key in self.comps:   # a composition's own file
@@ -446,10 +434,10 @@ class Builder:
         parts["ppt/slideMasters/_rels/slideMaster1.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(rels)}</Relationships>'
         for i, name in enumerate(ALL_LAYOUTS, 1):
             self.sid = 10
-            xml = self.field_layout(name, livery_dir) if name in FIELD_LAYOUTS else self.content_layout(name)
+            xml = self.field_layout(name, livery_dir) if name in livery_mod.FIELD_LAYOUTS else self.content_layout(name)
             parts[f"ppt/slideLayouts/slideLayout{i}.xml"] = xml
             r = [f'<Relationship Id="rId1" Type="{REL}/slideMaster" Target="../slideMasters/slideMaster1.xml"/>']
-            if name in FIELD_LAYOUTS:
+            if name in livery_mod.FIELD_LAYOUTS:
                 r += [image_rel(rid, m) for rid, m in self.media_for(name).items()]
             parts[f"ppt/slideLayouts/_rels/slideLayout{i}.xml.rels"] = XMLDECL + f'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{"".join(r)}</Relationships>'
         parts["ppt/presentation.xml"] = (XMLDECL + f'<p:presentation {NSDECL} saveSubsetFonts="1" autoCompressPictures="0">'
@@ -478,8 +466,8 @@ class Builder:
                                      '<Slides>0</Slides></Properties>')
         exts = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "svg": "image/svg+xml"}
         defaults = ''.join(f'<Default Extension="{e}" ContentType="{t}"/>' for e, t in exts.items() if any(n.endswith("." + e) for n in parts))
-        overrides = (f'<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'
-                     f'<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>'
+        overrides = ('<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'
+                     '<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>'
                      + "".join(f'<Override PartName="/ppt/slideLayouts/slideLayout{i}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>' for i in range(1, len(ALL_LAYOUTS) + 1))
                      + '<Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>'
                      '<Override PartName="/ppt/presProps.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presProps+xml"/>'

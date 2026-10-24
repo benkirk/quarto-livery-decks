@@ -1,6 +1,6 @@
 -- A linked image, [![](shot.png)](https://...), gets a visible link line on
 -- its slide in every format, so a viewer knows the picture opens the live page:
---   revealjs  the slide's footer, muted
+--   revealjs  the slide's footer, muted (.engine-link-line, the scss)
 --   beamer    a tiny muted line, bottom center (a TikZ overlay); a linked
 --             image taller than 68% is capped there to keep the line clear
 --   pptx      nothing here: anything after an image splits the slide, so
@@ -9,9 +9,7 @@
 -- linked image's URL.
 
 local C = dofile(pandoc.path.join({ pandoc.path.directory(PANDOC_SCRIPT_FILE), "engine-common.lua" }))   -- beside this filter
-local EXTDIR = pandoc.path.directory(PANDOC_SCRIPT_FILE)
 
-local MUTED             -- the livery's muted role, hex without '#'
 local PDF_MAX = 68      -- % height that leaves the PDF foot line clear of a 16:9 shot
 
 -- PDF: a linked 16:9 screenshot at {height="72%"} reaches the page foot, under
@@ -41,15 +39,15 @@ end
 local function link_line(url)
   local label = url:gsub("^https?://", "")
   if quarto.doc.is_format("revealjs") then
-    local link = pandoc.Link(label, url, "", pandoc.Attr("", {}, { style = "color:#" .. MUTED }))
+    local link = pandoc.Link(label, url, "", pandoc.Attr("", { "engine-link-line" }))
     return pandoc.Div({ pandoc.Plain({ link }) }, pandoc.Attr("", { "footer" }))
   elseif quarto.doc.is_format("beamer") then
     local tex = label:gsub("([_%%#&~^$])", "\\%1")
     return pandoc.RawBlock("latex", string.format(
       "\\begin{tikzpicture}[remember picture, overlay]"
         .. "\\node[anchor=south] at ([yshift=1mm]current page.south)"
-        .. " {\\tiny\\href{%s}{\\textcolor[HTML]{%s}{%s}}};\\end{tikzpicture}",
-      (url:gsub("[%%#]", "\\%0")), MUTED, tex))
+        .. " {\\tiny\\href{%s}{\\textcolor{BrandMuted}{%s}}};\\end{tikzpicture}",
+      (url:gsub("[%%#]", "\\%0")), tex))
   end
 end
 
@@ -57,7 +55,6 @@ function Pandoc(doc)
   if not (quarto.doc.is_format("revealjs") or quarto.doc.is_format("beamer")) then
     return nil
   end
-  MUTED = (C.load_livery(doc.meta, EXTDIR, "linked-images.lua").roles.muted:gsub("#", ""))   -- `livery:` in the metadata
   local level = C.slide_level()
   local out, url = pandoc.Blocks({}), nil
   local function close_slide()

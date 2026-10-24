@@ -166,6 +166,8 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+  --engine-boxes-table-head-rule: 3px;
+  --engine-boxes-table-rule: 1px;
 }
 .reveal .slides section .engine-marking-banner {
   --engine-marking-x: 160px;
@@ -233,6 +235,7 @@ html:root {
 .reveal .slides section.slide .engine-mark-bottom-left { bottom: 31.5px; left: var(--engine-margin); width: 392.5px; height: 36px; background-position: left bottom; background-image: var(--engine-mark-background-signoff); }
 .reveal .slides section.engine-field .engine-mark-bottom-left { background-image: var(--engine-mark-primary-signoff); }
 .reveal .slides section.engine-dark .engine-mark-bottom-left { background-image: var(--engine-mark-dark-signoff); }
+.reveal .slides section table { --engine-boxes-table-head-rule-color: var(--engine-primary-contrast); }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;
@@ -1219,5 +1222,7 @@ html .reveal .slides section.slide.level2.closing.engine-band .engine-signoff { 
   --r-heading-color: #000000;
   color: #000000;
 }
+.reveal .slides section.slide.engine-dark :not(pre) > code:not(:is(.engine-card, .engine-lead, .engine-strip, .callout, .engine-caution > .engine-body) *) { background: var(--engine-dark-code); color: var(--engine-warning); }
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout) code, .reveal .slides section.slide.engine-dark.engine-caution > .engine-body code { color: var(--engine-code-text, var(--engine-dark)); }
 .reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
 .reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }

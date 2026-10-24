@@ -165,6 +165,8 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+  --engine-boxes-table-head-rule: 3px;
+  --engine-boxes-table-rule: 1px;
 }
 .reveal .slides section .engine-marking-banner {
   --engine-marking-x: 0px;
@@ -258,6 +260,7 @@ html:root {
 html .reveal .slides section ul > li::before { content: "●"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
+.reveal .slides section table { --engine-boxes-table-head-rule-color: var(--engine-primary-contrast); }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;
@@ -1257,5 +1260,7 @@ html .reveal .slides section.slide.level2.closing.engine-band::after { backgroun
   --r-heading-color: #000000;
   color: #000000;
 }
+.reveal .slides section.slide.engine-dark :not(pre) > code:not(:is(.engine-card, .engine-lead, .engine-strip, .callout, .engine-caution > .engine-body) *) { background: var(--engine-dark-code); color: var(--engine-warning); }
+.reveal .slides section.slide.engine-dark :is(.engine-card, .engine-lead, .engine-strip, .callout) code, .reveal .slides section.slide.engine-dark.engine-caution > .engine-body code { color: var(--engine-code-text, var(--engine-dark)); }
 .reveal .slides section.slide.engine-dark svg:has(> g.graph) > g.graph > polygon:first-of-type { fill: transparent; stroke: transparent; }
 .reveal .slides section.slide.engine-dark svg:has(> g.graph) { filter: invert(1) hue-rotate(180deg); }

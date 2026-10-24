@@ -27,12 +27,14 @@
   var MAXFILL = 3.0;
   var NEVER = ".engine-section, .closing, .feature, .full, .quarto-title-block";
   var NOSHRINK = ".scrollable, .no-autofit";
+  // a slide's furniture, not its body: deck_qa.py's MEASURE_JS skips these too (tests/test_cli.py)
+  var FURNITURE = "h2, aside.notes, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, script, style";
 
   function contentBottom(s) {
     var b = 0;
     for (var i = 0; i < s.children.length; i++) {
       var c = s.children[i];
-      if (c.matches("h2, aside.notes, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, script, style")) continue;
+      if (c.matches(FURNITURE)) continue;
       b = Math.max(b, c.offsetTop + c.offsetHeight);
     }
     return b;

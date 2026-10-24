@@ -1,6 +1,6 @@
 # Roadmap: closing the static-content catalogue (two sprints, a sweep, a release)
 
-**State (2026-10-24):** sprint A merged as #148 (squash `bb671e1`; its handoff's State line has the departures); sprint B executed as PR #149 (stacked on #148, rebased onto main after it merged; its handoff's State line has the departures), awaiting `/pr-review`; the sweep and the release not started. Planned by the reviewing session after #146 and release 26.10.11, from three code explorations and two design passes. Ben's picks of 2026-10-24 are marked where they fall.
+**State (2026-10-24):** sprint A merged as #148 (squash `bb671e1`; its handoff's State line has the departures); sprint B merged as #149 (squash `de1ce55`, after its review's fix `45f67b3`; its handoff's State line has the departures); the window sweep of #136–#149 is `sweep-136-149-handoff.md`, then the release 26.10.12. Planned by the reviewing session after #146 and release 26.10.11, from three code explorations and two design passes. Ben's picks of 2026-10-24 are marked where they fall.
 
 ## Context
 

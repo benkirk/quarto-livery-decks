@@ -41,6 +41,11 @@ SPC_BEFORE = (0.5, 0.3)
 # the template's body indent (a:lvl1pPr marL, the bullet's), points on its 540 pt canvas: the
 # template builder writes it, and measure.py takes it off a text box's width
 BODY_INDENT_PT = 18
+# a light livery's dark content slide ({.brand-dark}): the roles and blends it swaps, light -> dark
+# (its text, muted text, accents and table blends); a box with a fill of its own keeps the light
+# ones. livery_build writes livery.css's and livery.sty's swaps from it, the pptx steps their inks
+DARK_SWAP = {"foreground": "on-dark", "muted": "dark-muted", "primary-contrast": "secondary", "primary": "secondary",
+             "table-rule": "dark-rule", "table-band": "dark-band"}
 
 
 def livery_dir(path: str | os.PathLike | None = None) -> Path:
@@ -139,6 +144,20 @@ def mark(livery: dict, role: str, kind: str = "logo") -> str | None:
     compositions' slot). A role marks: does not name wears primary's."""
     m = livery["marks"].get(role, livery["marks"]["primary"])
     return m.get(kind)
+
+
+# the pptx layouts drawn from a composition (livery_template.py's, which the steps read back by
+# layout name): layout -> (composition, its band variant)
+FIELD_LAYOUTS = {"Title Slide": ("title", "title-band"), "Title Slide (light)": ("title-light", None),
+                 "Section Header": ("section", None), "Closing": ("closing", "closing-band"),
+                 "Closing (light)": ("closing-light", None)}
+
+
+def comp_of(layout: str, band: bool) -> str | None:
+    """The composition a pptx layout is drawn from (a band livery's cover and closing are the
+    band's), None for a content layout."""
+    base, alt = FIELD_LAYOUTS.get(layout, (None, None))
+    return alt if band and alt else base
 
 
 def files(livery: dict) -> list[tuple[str, str]]:
@@ -244,6 +263,17 @@ def placeholders(d: str) -> str:
     return json.dumps(meta, ensure_ascii=False, indent=1) + "\n" if meta else ""
 
 
+def placeholders_to(d: str, f: Path) -> str:
+    """placeholders() written to f: `DECK_META=<f, absolute>`, make's argument, or "" (nothing
+    written) for a livery without defaults."""
+    if not (meta := placeholders(d)):
+        return ""
+    f = f.resolve()
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(meta)
+    return f"DECK_META={f}"
+
+
 ENGINE = Path(__file__).resolve().parent
 QUICKSTART = ENGINE.parents[1] / "decks" / "quickstart"   # the framework's, for check --qa
 
@@ -258,13 +288,8 @@ def check_qa(d: Path) -> bool:
         return False
     bundled = (ENGINE.parents[1] / "liveries" / d.name).resolve() == d.resolve()
     which = f"LIVERY={d.name}" if bundled else f"LIVERY_DIR={d.resolve()}"
-    extra = []
-    if meta := placeholders(str(d)):
-        f = QUICKSTART / "_qa" / f"placeholders-{d.name}.yml"
-        f.parent.mkdir(exist_ok=True)
-        f.write_text(meta)
-        extra = [f"DECK_META={f}"]
-    ok = subprocess.run(["make", "-C", str(QUICKSTART), "qa", which, *extra]).returncode == 0
+    meta = placeholders_to(str(d), QUICKSTART / "_qa" / f"placeholders-{d.name}.yml")
+    ok = subprocess.run(["make", "-C", str(QUICKSTART), "qa", which, *([meta] if meta else [])]).returncode == 0
     print(f"{d.name}: {'ok   ' if ok else 'FAIL '} make -C decks/quickstart qa {which}")
     return ok
 
@@ -318,9 +343,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("-o", "--output", type=Path)
     p.add_argument("--check", action="store_true", help="exit 1 if the file is not the schema's")
     for name, help in (("deps", "the files a deck build reads (Make.common)"),
-                       ("mono", "the code face's family, or nothing"), ("figsize", "the plots' default size"),
-                       ("placeholders", "sample text over the default markings, for published images (DECK_META)")):
+                       ("mono", "the code face's family, or nothing"), ("figsize", "the plots' default size")):
         sub.add_parser(name, help=help).add_argument("dir")
+    p = sub.add_parser("placeholders", help="sample text over the default markings, for published images (DECK_META)")
+    p.add_argument("dir")
+    p.add_argument("-o", "--output", type=Path, help="write it here and print DECK_META=<file> (default: stdout)")
     a = ap.parse_args(argv)
 
     if a.cmd == "new":
@@ -360,9 +387,13 @@ def main(argv: list[str] | None = None) -> int:
     elif a.cmd == "schema":
         import livery_schema
         return livery_schema.write_doc(a.output or livery_schema.REFERENCE, a.check)
+    elif a.cmd == "placeholders":
+        if not a.output:
+            print(placeholders(a.dir), end="")
+        elif meta := placeholders_to(a.dir, a.output):
+            print(meta)
     else:
-        print({"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize,
-               "placeholders": placeholders}[a.cmd](a.dir), end="" if a.cmd == "placeholders" else "\n")
+        print({"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}[a.cmd](a.dir))
     return 0
 
 

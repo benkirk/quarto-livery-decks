@@ -49,6 +49,10 @@ BLENDS = [
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
+# livery_mod.DARK_SWAP's keys a dark frame does not swap as colors: foreground is beamer's normal
+# text there (BrandText stays the light text a card and a filled box read), and primary is a
+# card head's and a block title's field, which keep it as HTML's boxes do
+BEAMER_DARK_KEEPS = ("foreground", "primary")
 # livery role -> the LaTeX color the themes read (the 14 roles; livery.json latex.roles carries them
 # and the blends' names to the beamer filter); on-dark is derived unless a livery names it
 ROLE_TEX = {"primary": "BrandPrimary", "primary-text": "BrandPrimaryText",
@@ -162,7 +166,15 @@ BOXES = {
     # width of the text width, and in em of the footnote type the gap under the rule, the marker's hang
     # and the step between entries; the pptx styles them in place (hang, gap, step; no rule)
     "footnote": {"rule": 0.0022, "rule-length": 0.075, "rule-color": "rule", "width": 0.6, "gap": 0.55, "hang": 0.9, "step": 0.3},
+    # a table's rules, of the height: head-rule under the header row (3 px of 900), in head-rule-color, a role
+    # or blend name (primary-contrast: a thin rule must read on the background, as the rail's marks; a dark
+    # slide's swap reaches it), and rule under each body row (1 px of 900; beamer's under the last), in the
+    # table-rule blend
+    "table": {"head-rule": 0.0033, "head-rule-color": "primary-contrast", "rule": 0.0011},
 }
+# a box's role keys: a role or blend name kept as a name, so a drawer resolves it where a dark slide's
+# swap applies (the rail's default role, the table's head rule)
+BOX_ROLE_NAMES = {"rail": ("role",), "table": ("head-rule-color",)}
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color", "border-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
@@ -478,10 +490,10 @@ def boxes(b: dict, hexof, roles=()) -> dict:
             hexof(r, f"{box}.roles[{i}]")
             if roles and (r.startswith("#") or r not in roles):
                 sys.exit(f"livery.yml: boxes.{box}.roles[{i}]: {r!r} is not a role")
-        if "role" in v:   # a role or blend name, kept as a name (the rail's default: role= resolves through it)
-            hexof(v["role"], f"{box}.role")
-            if v["role"].startswith("#"):
-                sys.exit(f"livery.yml: boxes.{box}.role: {v['role']!r} is a hex, not a role or blend")
+        for k in BOX_ROLE_NAMES.get(box, ()):   # a role or blend name, kept as a name
+            hexof(v[k], f"{box}.{k}")
+            if v[k].startswith("#"):
+                sys.exit(f"livery.yml: boxes.{box}.{k}: {v[k]!r} is a hex, not a role or blend")
         out[box] = v
     return out
 
@@ -949,6 +961,12 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% the roles and blends by name (a card's or strip's role=): \\engine@role@<name> is its color")
     for role, tex in livery["latex"]["roles"].items():   # hyphenated names: through \csname
         L.append(f"\\expandafter\\def\\csname engine@role@{role}\\endcsname{{{tex}}}")
+    swap = {ROLE_TEX.get(k) or BEAMER_BLENDS[k]: ROLE_TEX.get(v) or tex_name("brand-" + v, {})
+            for k, v in livery_mod.DARK_SWAP.items() if k not in BEAMER_DARK_KEEPS}
+    L.append("% the dark frame ([enginedark]): \\engine@darkswap its swapped colors, \\engine@darkswapped their names")
+    L.append("% (the outer theme's EngineLight<name> snapshots, put back on reset and in a box with a fill of its own)")
+    L.append(f"\\def\\engine@darkswapped{{{','.join(swap)}}}")
+    L.append("\\def\\engine@darkswap{" + "".join(f"\\colorlet{{{a}}}{{{b}}}" for a, b in swap.items()) + "}")
     stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
     L.append("% marks per field role: \\engine@mark@<role>@<name> (a name's print lockup when there is one);")
     L.append("% \\enginelogo{light|dark} draws background's and primary's logo")
@@ -1353,6 +1371,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
             glyph = bu["glyphs"][min(i, len(bu["glyphs"]) - 1)]
             L.append(f'html {sel} {{ content: "{glyph}"; background: none; border: 0; border-radius: 0; width: auto; '
                      f'height: auto; top: 0; left: -1em; color: {bu["color"]}; line-height: inherit; }}')
+    # a table's head rule in its role (boxes.table.head-rule-color), resolved on the table: on :root a dark
+    # slide's swap would not reach it
+    L.append(f".reveal .slides section table {{ --engine-boxes-table-head-rule-color: "
+             f"var(--engine-{livery['boxes']['table']['head-rule-color']}); }}")
     L += emit_css_compositions(livery)
     if livery.get("mode") == "dark":
         L += emit_css_dark()
@@ -1411,6 +1433,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-footnote-rule-color: {fn['rule-color']};", f"--engine-footnote-width: {round(fn['width'] * 100, 2):g}%;",
           f"--engine-footnote-gap: {fn['gap']:g}em;", f"--engine-footnote-hang: {fn['hang']:g}em;",
           f"--engine-footnote-step: {fn['step']:g}em;"]
+    tb = b["table"]   # the head rule's color is set on the table itself (emit_css), where a dark slide's swap reaches it
+    p += [f"--engine-boxes-table-head-rule: {px(tb['head-rule'])};", f"--engine-boxes-table-rule: {px(tb['rule'])};"]
     return p
 
 
@@ -1514,30 +1538,32 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
     return "\n".join([x for x in head if x] + [f"{k}: {v}" for k, v in rc]) + "\n"
 
 
-# the roles a light livery's dark slide ({.brand-dark}, .engine-dark) swaps, as pptx's
-# common.palette(): its text, muted text, accents and table blends; restored inside a box with a
-# fill of its own (DARK_BOXES), which keeps its colors
-DARK_SWAP = {"foreground": "on-dark", "muted": "dark-muted", "primary-contrast": "secondary", "primary": "secondary",
-             "table-rule": "dark-rule", "table-band": "dark-band"}
+# the boxes with a fill of their own on a light livery's dark slide (.engine-dark), which keep the
+# livery's colors (livery_mod.DARK_SWAP undone), and a caution slide's body field
 DARK_BOXES = (".engine-card", ".engine-lead", ".engine-strip", ".callout")
+CAUTION_BODY = ".engine-caution > .engine-body"
 
 
 def emit_css_dark_slide(livery: dict) -> list[str]:
     """A light livery's dark content slide: on the slide the roles of DARK_SWAP take their dark
     values (and reveal's text colors, which :root computed once, the title on-dark whatever
-    frametitle.color says, and the hairline the dark-rule blend); in a box of DARK_BOXES (and a caution slide's body field) the livery's own; inline
-    Graphviz turned to the dark as a dark livery's (lightness flipped, hues kept). Live mermaid
-    reads :root (deferred)."""
+    frametitle.color says, and the hairline the dark-rule blend), inline code on the dark-code
+    field; in a box of DARK_BOXES and a caution slide's body field the livery's own, its code's ink
+    too (reveal's has-dark-background rule would paint it the warning); inline Graphviz turned to
+    the dark as a dark livery's (lightness flipped, hues kept). Live mermaid reads :root (deferred)."""
     c = {**livery["roles"], **livery["blends"]}
     def swap(to):
-        p = [f"--engine-{k}: {c[v if to else k]};" for k, v in DARK_SWAP.items()]
+        p = [f"--engine-{k}: {c[v if to else k]};" for k, v in livery_mod.DARK_SWAP.items()]
         fg = c["on-dark" if to else "foreground"]
         return "\n  ".join(p + [f"--r-main-color: {fg};", f"--r-heading-color: {fg};", f"color: {fg};"])
     sel = ".reveal .slides section.slide.engine-dark"
-    boxes = ",\n".join([f"{sel} :is({', '.join(DARK_BOXES)})", f"{sel}.engine-caution > .engine-body"])
+    inside = [f"{sel} :is({', '.join(DARK_BOXES)})", f"{sel}{CAUTION_BODY}"]
+    boxed = ", ".join(DARK_BOXES + (CAUTION_BODY,))
     return ["/* the dark slide (.engine-dark): the dark roles on it, the livery's in a box of its own */",
             f"{sel} {{\n  {swap(True)}\n  --engine-title-color: {c['on-dark']};\n  --engine-title-rule-color: {c['dark-rule']};\n}}",
-            f"{boxes} {{\n  {swap(False)}\n}}",
+            ",\n".join(inside) + f" {{\n  {swap(False)}\n}}",
+            f"{sel} :not(pre) > code:not(:is({boxed}) *) {{ background: var(--engine-dark-code); color: var(--engine-warning); }}",
+            ", ".join(f"{s} code" for s in inside) + " { color: var(--engine-code-text, var(--engine-dark)); }",
             f"{sel} svg:has(> g.graph) > g.graph > polygon:first-of-type {{ fill: transparent; stroke: transparent; }}",
             f"{sel} svg:has(> g.graph) {{ filter: invert(1) hue-rotate(180deg); }}"]
 

@@ -30,6 +30,8 @@ GEOM = LIVERY["geometry"]
 BODY_PT = livery_mod.type_pt(LIVERY, "body")       # pads are em of the body type
 TRACKING = LIVERY["type"]["tracking"]              # small caps' letter spacing, em of the run's size (type.tracking)
 SLACK = 1.1                                        # measured height x this: autofit stays idle
+BAND = (LIVERY.get("title") or {}).get("style") == "band"   # the band title: its cover and closing compositions
+PHOTO = "Photo"                                    # a cover's or feature's photo (slide_layout), which marks the slide
 NOT_BODY = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
             PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
 # a:pPr's children, in schema order: a bullet's elements go before the rest
@@ -94,33 +96,41 @@ def rect(slide, x, y, w, h, hexv: str, name=None, behind=None):
     return r
 
 
+LAYOUT_KEY = "engine-layout:"   # the notes line slide-layout.lua writes (and single-body.lua, for a note)
+
+
+def _marker_lines(slide, key):
+    """[(paragraph, its words after key)] for each of the slide's notes lines that start with key."""
+    tf = slide.notes_slide.notes_text_frame if slide.has_notes_slide else None
+    if tf is None:
+        return []
+    return [(p, p.text.strip()[len(key):].split()) for p in tf.paragraphs if p.text.strip().startswith(key)]
+
+
+def peek_marker(slide, key):
+    """take_marker()'s words, the lines left in place (a step reading another step's line)."""
+    lines = _marker_lines(slide, key)
+    return [w for _, words in lines for w in words] if lines else None
+
+
 def take_marker(slide, key):
     """The words of the slide's notes lines that start with key, those paragraphs removed (for
-    engine-layout:, slide-layout.lua writes one, single-body.lua another for a note; columns.py
+    LAYOUT_KEY, slide-layout.lua writes one, single-body.lua another for a note; columns.py
     reads grid-pptx.lua's engine-columns:). None when the slide has no such line."""
-    if not slide.has_notes_slide:
-        return None
-    tf = slide.notes_slide.notes_text_frame
-    if tf is None:
-        return None
-    words = None
-    for p in tf.paragraphs:
-        if p.text.strip().startswith(key):
-            words = (words or []) + p.text.strip()[len(key):].split()
-            body = p._p.getparent()
-            body.remove(p._p)
-            if body.find(qn("a:p")) is None:
-                etree.SubElement(body, qn("a:p"))
-    return words
+    lines = _marker_lines(slide, key)
+    for p, _ in lines:
+        body = p._p.getparent()
+        body.remove(p._p)
+        if body.find(qn("a:p")) is None:
+            etree.SubElement(body, qn("a:p"))
+    return [w for _, words in lines for w in words] if lines else None
 
 
 # a light livery's dark content slide ({.brand-dark}): the colors a step draws with there, the
-# light ones swapped as livery.css swaps the roles (livery_build.DARK_SWAP; background to the field)
-LIGHT_INK = {k: livery_mod.hex(LIVERY, k) for k in ("foreground", "muted", "primary-contrast", "primary", "table-rule",
-                                                     "table-band", "background")}
-DARK_INK = {**LIGHT_INK, **({k: livery_mod.hex(LIVERY, v) for k, v in (
-    ("foreground", "on-dark"), ("muted", "dark-muted"), ("primary-contrast", "secondary"), ("primary", "secondary"),
-    ("table-rule", "dark-rule"), ("table-band", "dark-band"), ("background", "dark"))} if LIVERY["mode"] != "dark" else {})}
+# light ones swapped as livery.css swaps the roles (livery_mod.DARK_SWAP; background to the field)
+LIGHT_INK = {k: livery_mod.hex(LIVERY, k) for k in (*livery_mod.DARK_SWAP, "background")}
+DARK_INK = {**LIGHT_INK, **({k: livery_mod.hex(LIVERY, v) for k, v in {**livery_mod.DARK_SWAP, "background": "dark"}.items()}
+                            if LIVERY["mode"] != "dark" else {})}
 
 
 def is_dark(slide) -> bool:
@@ -133,11 +143,7 @@ def is_dark(slide) -> bool:
     clr = bg.find(".//" + qn("a:srgbClr")) if bg is not None else None
     if clr is not None and clr.get("val", "").upper() == DARK_INK["background"]:
         return True
-    if slide.has_notes_slide:
-        for line in slide.notes_slide.notes_text_frame.text.splitlines():
-            if line.strip().startswith("engine-layout:") and "dark" in line.split(":", 1)[1].split():
-                return True
-    return False
+    return "dark" in (peek_marker(slide, LAYOUT_KEY) or [])
 
 
 def palette(slide) -> dict:
@@ -194,6 +200,9 @@ def column_frames(left, width, shares, slide_width):
 def em(v, pt=BODY_PT):
     """v em of a type size (pt, the body's by default) in EMU, rounded (Pt() truncates 91439.99)."""
     return Emu(round(v * pt * 12700))
+
+
+CELL_MAR = em(0.4, livery_mod.type_pt(LIVERY, "table"))   # a table cell's top and bottom margin: HTML's 0.3em padding, its line height
 
 
 def pads(box, key="pad"):
@@ -304,15 +313,15 @@ def style_runs(p, size=None, bold=None, color=None, caps=False):
 CAPTION_PT = livery_mod.type_pt(LIVERY, "caption")
 
 
-def caption_para(p, color=None):
+def caption_para(p):
     """A caption paragraph (a gallery's, a picture's in a cell): centered, no space before it, the
-    caption size, muted (or color, a six-digit hex)."""
+    caption size, muted (on a dark slide grid.darken() recolors it)."""
     ppr = p.find(qn("a:pPr"))
     if ppr is None:
         ppr = etree.Element(qn("a:pPr")); p.insert(0, ppr)
     ppr.set("algn", "ctr")
     space_before(p, 0)
-    style_runs(p, CAPTION_PT, color=color or livery_mod.hex(LIVERY, "muted"))
+    style_runs(p, CAPTION_PT, color=livery_mod.hex(LIVERY, "muted"))
 
 
 def body_box(slide, x, y, w, h, paragraphs, name):

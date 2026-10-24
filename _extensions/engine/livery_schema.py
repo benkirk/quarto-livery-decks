@@ -10,7 +10,6 @@ standard) only what the engine reads is checked. Errors read `<file>: <path>: <m
 """
 
 import json
-import sys
 from pathlib import Path
 
 import jsonschema

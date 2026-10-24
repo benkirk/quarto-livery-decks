@@ -54,13 +54,15 @@ from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
                      inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title,
                      space_before, split_br, style_runs)
-from .slide_layout import NOTE_GAP, frame_note, note_style, table_height, use_layout
-from .measure import text_height
+from .slide_layout import NOTE_GAP, frame_note, note_style, use_layout
+from .measure import table_height, text_height
 
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
 PIC_FLOOR = 2   # em of the body type: the least height a picture keeps when the lead under it needs its room
+LEAD_GAP = 0.5   # em of the body type: a lead's flow under pandoc's caption box, and a table under the flow
+                 # (slide_layout.NOTE_GAP is a note's under its table; boxes.note.gap a caption's under its picture)
 BOXED = re.compile(r"^(Card \d+|Lead|Strip)$")   # a box with a fill of its own: it keeps its colors on a dark slide
 
 
@@ -741,7 +743,7 @@ def run(prs, path: Path) -> None:
             # all four of a placeholder's sides at once: it inherits its frame, and setting one alone
             # leaves the rest at 0 (pandoc's caption box carries a frame, a Content with Caption's text box none)
             if above:   # pandoc's caption box, under the picture: the flow starts just below it
-                ph.left, ph.top, ph.width, ph.height = ph.left, max(sh.top + sh.height for sh in above) + em(0.5), ph.width, ph.height
+                ph.left, ph.top, ph.width, ph.height = ph.left, max(sh.top + sh.height for sh in above) + em(LEAD_GAP), ph.width, ph.height
             beside = [sh for sh in slide.shapes if is_table(sh) and sh.left >= ph.left + ph.width - em(1)]
             if beside:   # a lead before a table: pandoc's Content with Caption set them side by side
                 use_layout(prs, slide, "Title and Content")
@@ -774,7 +776,7 @@ def run(prs, path: Path) -> None:
             notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]
             for t in beside:   # the table under the flow, as wide as the body, its note under it
                 fit_table(t, left, width)
-                t.top, t.height = y + em(0.5), table_height(t, slide)
+                t.top, t.height = y + em(LEAD_GAP), table_height(t, slide)
                 for note in notes:   # under the table, raised when the text would pass the body's foot
                     frame_note(note, slide, left, width, t.top + t.height + NOTE_GAP, bottom)
             done += 1

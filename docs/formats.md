@@ -123,11 +123,15 @@ Per deck, `make pptx` runs:
      executed plot's marker carries) and a simple table in a column, a native table.
    - `status_glyphs`: makes a status item's ✓ ⚠ ✗ its bullet, in the livery's status color.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
-     over a rule in the primary color, thin rules between rows, every second row banded, the
-     blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
+     over a rule in `boxes.table`'s role, primary-contrast by default, thin rules between rows,
+     every second row banded, the blends from `livery_build.py`; the widths `boxes.table`'s, as
+     HTML and PDF draw them); pandoc always writes "Medium Style 2", so the look is set
      cell by cell, and evenly split columns are re-split by content.
    - `marking`: the marking strips on every slide (a deck's `marking:`, else each strip's
      default text; see [authoring.md "Front matter and slide kinds"](authoring.md#front-matter-and-slide-kinds)).
+   - `watermark`: a deck's `watermark:` (or the livery's default text) on every slide, turned and
+     faint, behind the slide's first shape that holds text; after every step that adds a slide's
+     shapes.
    - `type_step`: applies a deck's `type-body:` or `type-scale:` (see [authoring.md "Text sizes and the slide size"](authoring.md#text-sizes-and-the-slide-size)),
      last, to every size the steps before it set (the strip's too, as HTML and PDF scale it).
 

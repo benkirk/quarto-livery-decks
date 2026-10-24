@@ -12,7 +12,8 @@ whose pick moves (`pick=<2>`) is two pages, and the frame whose step holds an `\
 default; the marking is on every page; a quote reads with its attribution, in a card too; an unnumbered divider has no eyebrow and leaves the count alone; the agenda lists the numbered
 sections, a hand subtitle under its title, the Backup not; a third card or step on a row opened for two is the share
 error; a gallery under its caption line, a bare [enginefull] frame filled with one, and four images on
-three cells or thirteen in all the gallery's errors. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
+three cells or thirteen in all the gallery's errors; on a dark frame the lead, the strips and the
+caution body keep the livery's text on their light fills, read off the page. A second deck cites with biblatex (author-year, bibtex, as the cookbook): the citation reads
 on its frame, `\footcite` sets beamer's footnote there, the entries are on the References frame,
 and its log has no Overfull line; skipped without biblatex. Skipped without xelatex (CI's latex
 job runs in the image, which has TeX).
@@ -309,6 +310,37 @@ def test_dark_frame_on_a_dark_livery(tmp_path):
         im = Image.open(next(tmp_path.glob(f"p{page}*.png"))).convert("RGB")
         px.append(im.getpixel((im.width // 2, im.height // 2 + im.height // 4)))
     assert px[0] == px[1], px
+
+
+DARK_BOXES = r"""\begin{frame}[enginedark]{Dark boxes}
+\begin{enginelead}LEADWORD on the lead fill.\end{enginelead}
+\begin{enginestrip}STRIPWORD on the strip tint.\end{enginestrip}
+\begin{enginestrip}[role=secondary]ROLEWORD on a secondary strip.\end{enginestrip}
+\begin{enginecaution}CAUTIONWORD in the body.\begin{itemize}\item ITEMWORD in a list\end{itemize}\end{enginecaution}
+\begin{enginequote}{}QUOTEWORD on the dark role.\end{enginequote}
+\end{frame}
+"""
+
+
+def test_dark_frame_boxes(tmp_path):
+    """On an [enginedark] frame the lead, a strip and the caution body keep the livery's text on
+    their light fills (once on-dark there, invisible); the quote, unfilled, stays on-dark. Read off
+    the page: the darkest pixel in each word's box is dark, the quote's brightest light."""
+    if not (shutil.which("xelatex") and shutil.which("latexmk")):
+        pytest.skip("xelatex and latexmk")
+    from PIL import Image
+    tex = DECK.split("\\begin{document}")[0] + "\\begin{document}\n" + DARK_BOXES + "\\end{document}\n"
+    r, log = compile_tex(tmp_path, "db", tex)
+    assert r.returncode == 0, log[-2000:]
+    dpi = 100
+    subprocess.run(["pdftoppm", "-r", str(dpi), "-png", "-singlefile", str(tmp_path / "db.pdf"), str(tmp_path / "db")], check=True)
+    im = Image.open(tmp_path / "db.png").convert("L")
+    words = subprocess.run(["pdftotext", "-bbox", str(tmp_path / "db.pdf"), "-"], capture_output=True, text=True).stdout
+    for word in ("LEADWORD", "STRIPWORD", "ROLEWORD", "CAUTIONWORD", "ITEMWORD", "QUOTEWORD"):
+        m = re.search(rf'xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">{word}<', words)
+        assert m, word
+        lo, hi = im.crop(tuple(round(float(v) * dpi / 72) for v in m.groups())).getextrema()
+        assert (hi > 200) if word == "QUOTEWORD" else (lo < 100), (word, lo, hi)
 
 
 def test_unnumbered_divider(deck):

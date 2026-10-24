@@ -6,8 +6,11 @@ Here: ROOT and ENGINE; `livery`, a test argument that runs the test once per bun
 by it; `run`, the livery command as a subprocess; `pandoc_exe`, pandoc's path; `lua_common`,
 engine-common.lua's functions on markdown under `pandoc lua` with a `quarto` shim; `slide_layout_shim`,
 the pptx filter as a `--lua-filter` for plain pandoc; `pandoc_deck`,
-a pptx pandoc writes from markdown, as its zip parts; `tmp_livery`, a bundled livery copied with one
-top-level block replaced and built; `flat`, a slide's shapes with the ones in groups. The rules that keep the
+a pptx pandoc writes from markdown, as its zip parts; `run_steps`, pptx steps (or the driver) on a
+deck under a livery; `tmp_livery`, a bundled livery copied with one top-level block replaced and
+built; `flavor`, a livery extending a bundled one; `flat`, a slide's shapes with the ones in groups;
+`title_ph`, a master's title placeholder; `bare_env`, the environment without the livery and plot
+variables. The rules that keep the
 suite parallel (`-n auto --dist loadfile`): a test writes only under tmp_path or tmp_path_factory,
 never the tree; no os.chdir or os.environ mutation in-process (a subprocess gets its own env=);
 expensive setup is a module-scoped fixture, and loadfile keeps a file's tests on one worker.
@@ -79,6 +82,32 @@ def lua_common(tmp_path, body, md, *args):
     return r.stdout, [w[len("WARNING: "):] for w in r.stderr.splitlines() if w.startswith("WARNING: ")]
 
 
+def run_steps(pptx: Path, steps, livery_dir: Path):
+    """pptx_steps modules by name (in order, as the driver runs them; None: the driver, pptx_post.py)
+    on pptx in place, in a subprocess under LIVERY_DIR=livery_dir: the run, asserted to succeed."""
+    if steps is None:
+        cmd = [str(ENGINE / "pptx_post.py"), str(pptx)]
+    else:
+        calls = "; ".join(f"{s}.run(prs, p)" for s in steps)
+        cmd = ["-c", "import sys\nfrom pathlib import Path\nfrom pptx import Presentation\n"
+                     f"from pptx_steps import {', '.join(steps)}\n"
+                     f"p = Path(sys.argv[1]); prs = Presentation(p); {calls}; prs.save(p)\n", str(pptx)]
+    env = {**os.environ, "LIVERY_DIR": str(livery_dir), "PYTHONPATH": str(ENGINE)}
+    r = subprocess.run([sys.executable, *cmd], env=env, cwd=pptx.parent, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    return r
+
+
+def title_ph(master):
+    """A slide master's (or layout's) title placeholder."""
+    return next(s for s in master.placeholders if s.placeholder_format.type == 1)
+
+
+def bare_env():
+    """os.environ without LIVERY_DIR, PYTHONPATH and MATPLOTLIBRC (a subprocess's env= that finds no livery)."""
+    return {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+
+
 def flat(shapes):
     """Every shape, the ones in groups too (a card, a lead, a strip is a group of its shapes)."""
     for sh in shapes:
@@ -118,3 +147,17 @@ def tmp_livery():
         return r.returncode, r.stderr, j
 
     return make
+
+
+def flavor(tmp: Path, name: str, knobs: str, parent: str = "ncar") -> Path:
+    """A livery name extending the bundled parent (linked beside it in tmp) with the given livery.yml
+    body, unbuilt: its directory."""
+    tmp.mkdir(parents=True, exist_ok=True)
+    if not (tmp / parent).exists():
+        (tmp / parent).symlink_to(ROOT / "liveries" / parent)
+    d = tmp / name
+    d.mkdir()
+    (d / "_brand.yml").write_text("{}\n")
+    (d / "livery.yml").write_text(f"schema: 1\nname: {name}\nextends: {parent}\n{knobs}")
+    (d / "template.pptx").write_text("")   # resolve() only warns without one
+    return d

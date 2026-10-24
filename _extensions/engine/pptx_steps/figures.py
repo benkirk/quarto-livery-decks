@@ -34,8 +34,7 @@ from pptx.parts.image import Image
 from pptx.util import Emu
 
 from .common import BOXES, CAPTION_PT, SLACK, body_box, caption_para, em, fit_picture, para_text, slide_title
-from .measure import text_height
-from .slide_layout import table_height
+from .measure import table_height, text_height
 from .svg_fallback import DPI, rasterize_svg   # an .svg's PNG at the deck's fig-dpi
 
 EMU_PER = {"in": 914400, "cm": 360000, "mm": 36000, "pt": 12700, "px": 9525, "": 9525}   # pandoc's bare number: pixels
