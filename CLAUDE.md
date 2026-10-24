@@ -415,7 +415,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   [width=<f>\paperwidth]}`; pptx needs nothing (pandoc places a picture at its natural size, fit
   to the placeholder). Plot text then measures the slide's (HTML 1.00, PDF 1.00, pptx 1.01).
   `livery zip --charts` (`make charts-zip`) packs the style, the helper, `livery.json`, the fonts and
-  licenses and the swatch sheet; `release.yml` attaches one per livery.
+  licenses and the swatch sheet; `release.yml` attaches one per livery. The helper is also pip's,
+  installed from its subdirectory (`_extensions/engine/mpl/pyproject.toml`: hatchling, the version
+  read from `_extension.yml`, no sdist; decks/plots/README.md "Outside the decks") and configured
+  by `livery_mpl.use("<name>-charts.zip")`, unpacked once into `$XDG_CACHE_HOME/livery_mpl/`; CI's
+  latex job installs it into a clean venv and plots from a bundle.
 - **Marks and numbers** are livery parameters (`geometry.marks.<corner>`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. A content slide wears one mark per corner, any of the four,
@@ -600,8 +604,8 @@ it does, by area, beyond the format notes above:
   `EXPECTED_DELTAS` names every decided change of a box, `test_schema.py` (the generated
   `REFERENCE.md` current too), `test_docs.py` (every relative link and `#anchor` in the tracked
   `*.md` files resolves, every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a
-  heading that exists, `design/` exempt; the consumer example's release pins and the changelog's
-  link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
+  heading that exists, `design/` exempt; the release pins of the consumer example and the plots'
+  pip install, and the changelog's link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
   Overfull, a moving pick's pages, the `role=` warning, the share error, and a deck citing with
   biblatex; skipped without TeX), `test_footnotes.py` (engine-common.lua under `pandoc lua` with a
   `quarto` shim: the lift's markers and warnings, `ensure_refs`; the pptx filter and steps; the
@@ -627,8 +631,9 @@ it does, by area, beyond the format notes above:
   (`release.yml` checks). `engine-revealjs.lua` reads it from there and names the HTML dependency
   by it (`engine-revealjs-<version>`), so a bump changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
-  liveries/*/` in the same PR (CI's `--check`) and the consumer example's `@v<version>` and
-  image tag in docs/other-repos.md (`tests/test_docs.py` holds them to it), and `livery deps`
+  liveries/*/` in the same PR (CI's `--check`), the consumer example's `@v<version>` and
+  image tag in docs/other-repos.md and the pip install's `@v<version>` in decks/plots/README.md
+  (`tests/test_docs.py` holds them to it), and `livery deps`
   warns a deck build when a livery's stamp is another version. **Tags are immutable**: another release in the month is
   the next `N`; `release.yml` refuses a tag whose release exists, that is not `YY.MM.N`, or whose
   month is still to come. `CHANGELOG.md` (Decks, Liveries, Plots,

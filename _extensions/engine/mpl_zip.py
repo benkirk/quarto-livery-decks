@@ -46,7 +46,9 @@ Keep this directory beside your script, or put it on PYTHONPATH. Without the hel
   a figure at this size has the slide's text sizes ({body} pt labels on a {canvas} in slide)
 - colormaps: livery (sequential), livery_div (diverging), livery_seq_<ramp>, each with _dark
 - with livery_mpl.dark(): the dark chrome and colors, for a dark slide or page
-- livery_mpl.use(path): another livery (a directory, or another bundle)
+- livery_mpl.use(path): another livery (a directory, another bundle, or a bundle's zip)
+- pip: `pip install "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v{engine}#subdirectory=_extensions/engine/mpl"`
+  installs the helper alone; then `livery_mpl.use("{name}-charts.zip")` loads this bundle as it is
 - fonts/: the livery's fonts and their licenses
 
 These names, livery_mpl.__all__ and the colormaps, are the helper's stable API.

@@ -9,7 +9,8 @@ text file, the word README or a `.md` path followed by a quoted section name, na
 that exists in that file (README is the root README.md; a path is from the repository root, else
 relative to the file). Fenced and inline code are skipped. `design/` is exempt: its handoffs are
 dated records of the sections of their day. The consumer workflow example in docs/other-repos.md
-pins the engine's version (`@v<version>`, the image tag), so a release bumps it with the rest.
+and the pip install in decks/plots/README.md pin the engine's version (`@v<version>`, the image
+tag), so a release bumps them with the rest.
 """
 
 import os
@@ -141,17 +142,19 @@ def test_pointers():
     assert not bad, "\n".join(bad)
 
 
-# 3. the consumer example's release pins: every `@vX.Y.Z` and image tag in docs/other-repos.md is
-# the engine's version, so the release PR that bumps `_extension.yml` bumps the example too
+# 3. the release pins: every `@vX.Y.Z` and image tag in the consumer example (docs/other-repos.md)
+# and the plots' pip install (decks/plots/README.md) is the engine's version, so the release PR
+# that bumps `_extension.yml` bumps them too
 PIN = re.compile(r"@v(\d+\.\d+\.\d+)\b|quarto-livery-decks:(\d+\.\d+\.\d+)\b")
 
 
-def test_consumer_pins():
+@pytest.mark.parametrize("doc", ["docs/other-repos.md", "decks/plots/README.md"])
+def test_release_pins(doc):
     import livery
     version = livery.engine_version()
-    pins = [m.group(1) or m.group(2) for m in PIN.finditer(text_of("docs/other-repos.md"))]
-    assert pins, "docs/other-repos.md: no release pin in the consumer workflow example"
-    assert set(pins) == {version}, f"docs/other-repos.md pins {sorted(set(pins))}; the engine is {version}"
+    pins = [m.group(1) or m.group(2) for m in PIN.finditer(text_of(doc))]
+    assert pins, f"{doc}: no release pin"
+    assert set(pins) == {version}, f"{doc} pins {sorted(set(pins))}; the engine is {version}"
 
 
 # 4. the changelog's link block: every `## [x.y.z]` section has its release link, and

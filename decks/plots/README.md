@@ -130,6 +130,23 @@ livery: `releases/latest/download/<name>-charts.zip`. Its README and `livery_mpl
 name the engine that packed it, and its `livery.json` carries the same `engine` and `schema`
 stamp as the livery's build.
 
+Or install the helper with pip (Python 3.10 or later; it brings matplotlib) and hand it a
+bundle's zip as it is:
+
+```sh
+pip install "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v26.10.11#subdirectory=_extensions/engine/mpl"
+```
+
+```python
+import livery_mpl                         # installed: imports unconfigured, so use() first
+livery_mpl.use("ncar-charts.zip")         # or a livery's directory, or an unpacked bundle
+```
+
+`use()` unpacks the zip once into `$XDG_CACHE_HOME/livery_mpl/` (else `~/.cache/livery_mpl/`),
+again only when the zip is newer, and registers its fonts from there. Pin the release whose
+bundles you use: `livery_mpl.__version__` is the release installed. The decks never install it:
+`Make.common` puts the helper on `PYTHONPATH`.
+
 ## Rebuilding the images
 
 `make gallery` here writes `screenshots/liveries.png` and `palettes.png` (committed). Rerun it

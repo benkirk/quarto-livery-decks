@@ -195,6 +195,21 @@ def test_use_zip(tmp_path):
     assert r.returncode == 0, r.stderr.strip()[-400:]
 
 
+def test_pyproject_version_source():
+    """mpl/pyproject.toml, the pip package: the version is the engine's, read by hatchling's regex
+    source from _extension.yml (multiline, as hatchling searches), no sdist (it could not carry
+    that file), the one module in the wheel. CI's latex job installs it into a clean venv."""
+    import tomllib
+    p = tomllib.loads((ENGINE / "mpl" / "pyproject.toml").read_text())
+    assert p["project"]["name"] == "livery-mpl" and p["project"]["dynamic"] == ["version"], p["project"]
+    v = p["tool"]["hatch"]["version"]
+    assert v["source"] == "regex" and (ENGINE / "mpl" / v["path"]).resolve() == (ENGINE / "_extension.yml").resolve(), v
+    m = re.search(v["pattern"], (ENGINE / "_extension.yml").read_text(), re.M)
+    assert m and m["version"] == VERSION, f"the pattern reads {m and m['version']!r}; the engine is {VERSION}"
+    targets = p["tool"]["hatch"]["build"]["targets"]
+    assert "sdist" not in targets and targets["wheel"]["only-include"] == ["livery_mpl.py"], targets
+
+
 # the first-use fixes (#87)
 BIN = ROOT / "bin" / "livery"
 

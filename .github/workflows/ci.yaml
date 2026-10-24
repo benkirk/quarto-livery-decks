@@ -365,6 +365,42 @@ jobs:
       - name: Test the engine (make test)
         run: make test
 
+      # livery_mpl as pip installs it (#81): a clean venv, the package from its subdirectory (the
+      # wheel built in the tree, its version read from _extension.yml), then a probe away from the
+      # checkout with no framework on the paths: a bare import is unconfigured, use() on ncar's
+      # charts zip unpacks it under XDG_CACHE_HOME, the version is the engine's, the base family
+      # is registered from the cache, the cycle is livery.json's and a PDF plot embeds the family
+      - name: Install livery_mpl with pip and plot from a charts zip
+        run: |
+          rm -rf /tmp/venv /tmp/xdg /tmp/pip-probe && mkdir /tmp/pip-probe
+          /opt/conda-env/bin/python -m venv /tmp/venv
+          /tmp/venv/bin/pip install -q ./_extensions/engine/mpl
+          python3 _extensions/engine/livery.py zip --charts liveries/ncar -o /tmp/pip-probe/ncar-charts.zip
+          cat > /tmp/pip-probe/probe.py <<'PY'
+          import json, os, sys, zipfile
+          from pathlib import Path
+          import livery_mpl, matplotlib.pyplot as plt
+          from matplotlib import font_manager as fm
+          z, version, out = sys.argv[1:4]
+          assert "site-packages" in livery_mpl.__file__ and livery_mpl.livery == {}, (livery_mpl.__file__, livery_mpl.livery)
+          livery_mpl.use(z)
+          L = json.loads(zipfile.ZipFile(z).read("livery.json"))
+          assert livery_mpl.__version__ == version == L["engine"], (livery_mpl.__version__, version, L["engine"])
+          cache = Path(os.environ["XDG_CACHE_HOME"], "livery_mpl", f"{Path(z).stem}-{version}").resolve()
+          mine = {f.name for f in fm.fontManager.ttflist if Path(f.fname).resolve().is_relative_to(cache)}
+          assert L["typography"]["base"] in mine, (cache, mine)
+          assert [c.upper() for c in plt.rcParams["axes.prop_cycle"].by_key()["color"]] == L["charts"][L["charts"]["mode"]]["categorical"]
+          fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
+          ax.plot([0, 1, 2], [0, 1, 3], label="a"); ax.set_xlabel("x"); ax.legend()
+          fig.savefig(out)
+          print(livery_mpl.__file__, livery_mpl.__version__, sorted(mine), file=sys.stderr)
+          print(L["typography"]["base"].replace(" ", ""))
+          PY
+          version=$(sed -n 's/^version:[[:space:]]*//p' _extensions/engine/_extension.yml)
+          family=$(cd /tmp/pip-probe && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC XDG_CACHE_HOME=/tmp/xdg \
+            /tmp/venv/bin/python probe.py ncar-charts.zip "$version" plot.pdf | tail -1)
+          pdffonts /tmp/pip-probe/plot.pdf | tee /dev/stderr | grep -c "$family" >/dev/null
+
       # the starter (talk.tex), the examples (template, paper, mathfonts, the Quarto demo) and
       # template.tex's brand, title, aspect-ratio, pdfTeX and math-font variants; the demo's
       # HTML too, the one deck on the default livery (no livery: key)

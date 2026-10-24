@@ -87,6 +87,11 @@ every format (`design/cells-dark-handoff.md`).
   and `livery_mpl.use(...)` configures it. `use()` takes a charts bundle's zip as it is
   (`use("ncar-charts.zip")`), unpacked once into `$XDG_CACHE_HOME` (else `~/.cache`)
   `/livery_mpl/<name>-charts-<engine>/`, or an unpacked bundle's directory. Decks are unchanged.
+- `livery_mpl` installs with pip from its subdirectory at a release's tag, `pip install
+  "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v<x.y.z>#subdirectory=_extensions/engine/mpl"`
+  (Python 3.10 or later; matplotlib 3.6 or later), its `__version__` the release's; then
+  `livery_mpl.use("<name>-charts.zip")` with that release's bundle. decks/plots/README.md
+  "Outside the decks".
 
 ### LaTeX
 
