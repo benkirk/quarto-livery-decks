@@ -684,11 +684,12 @@ def run(prs, path: Path) -> None:
                 for sh in slide.shapes:
                     if sh._element not in before or sh._element is ph._element:
                         sh.top -= over
+            if beside:   # the note's look, which slide_layout skipped beside two bodies (one is left now)
+                note_style(slide)
+            notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]
             for t in beside:   # the table under the flow, as wide as the body, its note under it
                 fit_table(t, left, width)
                 t.top, t.height = y + em(0.5), table_height(t, slide)
-                notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]
-                note_style(slide)   # the note's look, which slide_layout skipped beside two bodies (one is left now)
                 for note in notes:   # under the table, raised when the text would pass the body's foot
                     frame_note(note, slide, left, width, t.top + t.height + NOTE_GAP, bottom)
             done += 1
