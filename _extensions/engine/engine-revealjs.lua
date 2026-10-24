@@ -289,6 +289,11 @@ local function card_columns(blocks, livery)
   end
   return blocks:walk({ Div = function(d)   -- a card's default role is by its place in the row
     if not has_class(d, "columns") then return nil end
+    if C.tabled_row(d) then   -- plain columns, as every format draws the row (role= is ARIA's: off)
+      C.warn("engine-revealjs: a table in a card: the row is drawn as plain columns")
+      for _, col in ipairs(C.column_shares(d)) do col.attributes["role"] = nil end
+      return d
+    end
     for k, col in ipairs(C.column_shares(d)) do card(col, k) end
     return d
   end })

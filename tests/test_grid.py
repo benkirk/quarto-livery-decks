@@ -53,7 +53,10 @@ FOLDED = ('## Lead under a figure\n\n![⟦engine:lead⟧\\\n**The headline** of 
 PICTURED = ('## Pictured cards\n\n:::: {.columns}\n::: {.column .card}\n### One\n\n![The caption](p.jpg)\n\nA line under it.\n:::\n'
             '::: {.column .card}\n### Two\nText only.\n:::\n::::\n\n'
             '## Pictured column\n\n:::: {.columns}\n::: {.column}\nAbove.\n\n![](p.jpg)\n\nBelow.\n:::\n'
-            '::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n')   # slides 23 and 24
+            '::: {.column}\nBBB\n:::\n::: {.column}\nCCC\n:::\n::::\n\n'
+            '## Tabled columns\n\n:::: {.columns}\n::: {.column}\nLeft.\n:::\n::: {.column}\nAbove.\n\n'
+            '| Year | Hours | Users |\n|---|---|---|\n| 2024 | **12** | 300 |\n| 2025 | 18 | 410 |\n\nTable: Core-hours, millions.\n:::\n'
+            '::: {.column}\nRight.\n:::\n::::\n')   # slides 23 to 25
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -66,9 +69,9 @@ STEP = """
 import sys
 from pathlib import Path
 from pptx import Presentation
-from pptx_steps import columns, grid, slide_layout
+from pptx_steps import columns, grid, slide_layout, style_tables
 p = Path(sys.argv[1]); prs = Presentation(p)
-slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); prs.save(p)
+slide_layout.run(prs, p); columns.run(prs, p); grid.run(prs, p); style_tables.run(prs, p); prs.save(p)
 """   # the driver's order
 
 
@@ -165,9 +168,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 25, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 26, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -307,7 +310,7 @@ def test_pictured_column(deck):
     """A picture in a plain column of a three-column slide: between that column's text boxes, at the
     column's width, centered in it; one slide (pandoc split it before)."""
     livery, prs, _ = deck
-    assert len(prs.slides) == 25, f"{len(prs.slides)} slides: a pictured slide split"
+    assert len(prs.slides) == 26, f"{len(prs.slides)} slides: a pictured or tabled slide split"
     slide = prs.slides[24]
     by = {sh.name: sh for sh in flat(slide.shapes)}
     pic, (x, w) = by["Column 1 picture"], boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])[0]
@@ -315,6 +318,26 @@ def test_pictured_column(deck):
     above, below = by["Column 1"], by["Column 1 3"]
     assert above.text_frame.text == "Above." and below.text_frame.text == "Below."
     assert above.top + above.height <= pic.top and pic.top + pic.height <= below.top, "the picture between its text"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_tabled_column(deck):
+    """A table in the middle of three plain columns (figures.py's draw_table()): a native table at the
+    middle column's frame, three columns, under the column's text; the header row bold in caps after
+    style_tables, a cell's bold run kept; its caption under it; no marker left."""
+    livery, prs, _ = deck
+    slide = prs.slides[25]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    t, (x, w) = by["Column 2 table"], boxes(livery, prs.slide_width, [0.3333, 0.3333, 0.3333])[1]
+    assert t.has_table and len(t.table.columns) == 3 and len(t.table.rows) == 3, "a 3x3 table"
+    assert abs(t.left - x) <= 6 and abs(t.width - w) <= 6, f"the table {t.left, t.width}, want {x, w}"
+    assert abs(sum(c.width for c in t.table.columns) - t.width) <= 3, "the grid columns sum to the frame (style_tables rounds)"
+    assert by["Column 2"].text_frame.text == "Above." and by["Column 2"].top + by["Column 2"].height <= t.top
+    head = t.table.cell(0, 0).text_frame.paragraphs[0].runs[0]._r.find("{*}rPr")
+    assert t.table.cell(0, 0).text == "Year" and head.get("b") == "1" and head.get("cap") == "all", "the header styled"
+    assert t.table.cell(1, 1).text_frame.paragraphs[0].runs[0].font.bold, "a cell's bold run"
+    cap = by["Column 2 table caption"]
+    assert cap.text_frame.text == "Core-hours, millions." and cap.top == t.top + t.height, "the caption under the table"
     assert "⟦" not in slide._element.xml, "a marker left"
 
 

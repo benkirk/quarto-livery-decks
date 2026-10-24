@@ -573,8 +573,59 @@ local function is_quote(b)
   return (b.t == "Div" and has_class(b, "quote")) or b.t == "BlockQuote"
 end
 
+-- A row of columns (a .columns div) holding a .card and a table anywhere in it: no format draws it as
+-- cards (beamer's card boxes cannot hold a longtable; a pptx table is a graphic frame no group of a
+-- card's shapes holds), so every format draws the row as plain columns, warned of. The one test.
+local function tabled_row(div)
+  if div.t ~= "Div" or not has_class(div, "columns") then return false end
+  local carded, tabled = false, false
+  for _, c in ipairs(column_shares(div)) do
+    if has_class(c, "card") then carded = true end
+    if holds_table(c) then tabled = true end
+  end
+  return carded and tabled
+end
+
+-- A table pptx draws natively in a grid column: { cols, header (a header row), rows = {{inlines, ...}, ...}
+-- (the header row first when there is one), caption = inlines or nil }; nil when it is not simple: a
+-- cell spanning rows or columns, a cell of more than one block or of a block that is not a
+-- paragraph, more than one header row, an intermediate head or a foot.
+local function simple_table(tbl)
+  if tbl.t ~= "Table" then return nil end
+  local cols = #tbl.colspecs
+  local rows, header = {}, false
+  local function take(row)
+    if #row.cells ~= cols then return false end
+    local out = {}
+    for _, cell in ipairs(row.cells) do
+      if cell.row_span ~= 1 or cell.col_span ~= 1 then return false end
+      local blocks = cell.contents
+      if #blocks > 1 then return false end
+      local b = blocks[1]
+      if b and b.t ~= "Plain" and b.t ~= "Para" then return false end
+      table.insert(out, b and b.content or pandoc.Inlines({}))
+    end
+    table.insert(rows, out)
+    return true
+  end
+  if #tbl.head.rows > 1 or #tbl.foot.rows > 0 then return nil end
+  if #tbl.head.rows == 1 then
+    if not take(tbl.head.rows[1]) then return nil end
+    header = true
+  end
+  for _, body in ipairs(tbl.bodies) do
+    if #body.head > 0 then return nil end
+    for _, row in ipairs(body.body) do
+      if not take(row) then return nil end
+    end
+  end
+  local caption = pandoc.utils.blocks_to_inlines(tbl.caption.long or {})
+  return { cols = cols, header = header, rows = rows, caption = #caption > 0 and caption or nil }
+end
+
 -- A grid slide, the one list (the prose elsewhere says "what is_grid() counts"): the columns div has
--- more than two columns, a .card column, or a column holding a quote (unless a column holds a picture
+-- more than two columns, a .card column (unless the row holds a table: tabled_row(), plain columns in
+-- every format), or a column holding a quote (unless a column holds a picture
 -- or table, which a grid column cannot: the slide stays pandoc's, the quote its own); or the slide (its
 -- blocks) has a .lead, a .strip, a .steps, a .timeline, a .gallery or a quote of its own. pptx draws one
 -- from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py and gallery.py); pandoc's two placeholders
@@ -583,8 +634,9 @@ local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
   local quoted, pictured = false, false   -- a quote in a column: its box is grid.py's to draw
+  local tabled = tabled_row(div)           -- a card row with a table is plain columns
   for _, c in ipairs(cols) do
-    if has_class(c, "card") then return true end
+    if has_class(c, "card") and not tabled then return true end
     c:walk({ Div = function(d) if is_quote(d) then quoted = true end end, BlockQuote = function() quoted = true end })
     if holds_shape(c) then pictured = true end
   end
@@ -1104,7 +1156,7 @@ return {
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
-  cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64,
+  cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file,
 }

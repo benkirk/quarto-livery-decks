@@ -17,7 +17,9 @@ image `⟦engine:item src=..⟧`, its caption, `⟦engine:end⟧`, and a last `�
 `⟦engine:picture src=..[ data=..][ size=..]⟧`, its caption, `⟦engine:end⟧`, a picture (figures.py's
 draw_picture(): the column's width, its aspect kept, its caption under it; "Column n picture",
 "Card n picture", a card's inside its pads and its group; pictures give way, never below PIC_FLOOR
-em, when the text beside them needs the room). This
+em, when the text beside them needs the room); in a plain column, `⟦engine:table cols=n[ header]⟧`,
+per row `⟦engine:row⟧` and its cells led by `⟦engine:cell⟧`, its caption, `⟦engine:end⟧`, a native
+table (figures.py's draw_table(), "Column n table", which style_tables styles after). This
 parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
@@ -47,7 +49,7 @@ from pptx.util import Pt
 import livery as livery_mod
 
 from .columns import rules
-from .figures import draw_picture, place_picture, shrink_picture
+from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, em, fit_table, group, inset,
                      is_body, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title, space_before,
@@ -111,13 +113,15 @@ def parse(paragraphs):
         elif kind == "lead" and not stack:
             seg = ("lead", attrs, [])
             segs.append(seg); stack.append(seg)
-        elif kind in ("strip", "quote", "picture"):   # in a column, an item of its flow; else a segment of its own
+        elif kind in ("strip", "quote", "picture", "table"):   # in a column, an item of its flow; else a segment of its own
             seg = (kind, attrs, [])
             if stack and stack[-1][0] == "column":
                 stack[-1][2].append(seg)
-            elif not stack and kind != "picture":   # a picture is a column's alone (grid-pptx.lua's cell)
+            elif not stack and kind not in ("picture", "table"):   # a column's alone (grid-pptx.lua's cell)
                 segs.append(seg)
             stack.append(seg)
+        elif kind in ("row", "cell") and stack and stack[-1][0] == "table":   # a row's opener, an empty cell: draw_table's
+            stack[-1][2].append(p)
         elif kind == "end" and stack:
             stack.pop()
     return segs if any(s[0] != "text" for s in segs) else None
@@ -178,7 +182,7 @@ def _card_text(paras, solid):
     on_role = _hex("primary-text")
     for p in paras:
         if isinstance(p, tuple):   # a strip: its own lines styled as a card's body; a quote, a picture: their drawers'
-            body.append(p if p[0] in ("quote", "picture") else (p[0], p[1], _card_text(p[2], solid)[1]))
+            body.append(p if p[0] in ("quote", "picture") else (p[0], p[1], _card_text(p[2], solid)[1]))   # a table: never (tabled_row())
             continue
         kind = _prefix(p)
         _close(p)
@@ -353,11 +357,12 @@ def _yield_pictures(pics, over, slide):
 
 def _plain_column(slide, x, y, w, room, items, name, slide_height, deck_dir):
     """A plain column's flow (a strip's lines as text: a plain column draws no strip) as its parts,
-    [(kind, shape, other)]: one text box, or, when it holds a quote or a picture, its text runs, its
-    quotes (draw_quote(), at the column's width: (quote, text box, bar)) and its pictures
-    (draw_picture(): (picture, picture, caption box or None)) in order, each at y, the pictures
-    shortened when the column passes the room; _place() stacks them."""
-    if not any(isinstance(it, tuple) and it[0] in ("quote", "picture") for it in items):
+    [(kind, shape, other)]: one text box, or, when it holds a quote, a picture or a table, its text runs,
+    its quotes (draw_quote(), at the column's width: (quote, text box, bar)), its pictures
+    (draw_picture(): (picture, picture, caption box or None)) and its tables (draw_table(): (table,
+    frame, caption box or None)) in order, each at y, the pictures shortened when the column passes
+    the room; _place() stacks them."""
+    if not any(isinstance(it, tuple) and it[0] in ("quote", "picture", "table") for it in items):
         return [("text", body_box(slide, x, y, w, room, _flat(items), name), None)]
     parts, run = [], []
 
@@ -380,6 +385,12 @@ def _plain_column(slide, x, y, w, room, items, name, slide_height, deck_dir):
                 run.extend(it[2])
                 continue
             parts.append(("picture", drawn[0], drawn[1]))
+        elif isinstance(it, tuple) and it[0] == "table":
+            text()
+            k = sum(1 for p in parts if p[0] == "table") + 1
+            drawn = draw_table(slide, x, y, w, room, it[1], it[2], f"{name} table" + (f" {k}" if k > 1 else ""))
+            if drawn is not None:
+                parts.append(("table", drawn[0], drawn[1]))
         else:
             run.extend(it[2] if isinstance(it, tuple) else [it])
     text()
@@ -391,7 +402,7 @@ def _part_height(kind, sh, other, slide):
     """A plain column part's measured height: a text run's text, a quote's box, a picture with its caption."""
     if kind == "quote":
         return sh.height
-    if kind == "picture":
+    if kind in ("picture", "table"):
         return sh.height + (other.height if other is not None else 0)
     return int(text_height(sh, slide))
 
@@ -404,7 +415,7 @@ def _column_height(parts, slide):
 def _place(slide, parts, y, h):
     """A plain column's parts stacked from y, each text run its measured height and the last running
     to y + h (one text box: at y, h tall, as before quotes); a quote grouped once in place ("<name>"),
-    a picture with its caption under it."""
+    a picture or a table with its caption under it."""
     cy = y
     for i, (kind, tb, bar) in enumerate(parts):
         if kind == "quote":
@@ -412,7 +423,7 @@ def _place(slide, parts, y, h):
             group(slide, [bar, tb], tb.name[:-len(" text")])
             cy += tb.height
             continue
-        if kind == "picture":
+        if kind in ("picture", "table"):
             place_picture(tb, bar, cy)
             cy += _part_height(kind, tb, bar, slide)
             continue

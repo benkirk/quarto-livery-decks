@@ -246,7 +246,8 @@ end
 -- \begin{enginecard}[role=<role>,pick,solid]{<title>}{<sub>} round its body (a plain column beside
 -- cards is [plain]{}{}), [..]{.label} and [..]{.big} lines as \enginelabel and \enginebig;
 -- beamerinnerthemeEngine.sty sets the bodies first, so the row's cards take one height. A table
--- cannot sit in a box (longtable): the row stays plain columns, warned of. A column's role= is
+-- cannot sit in a box (longtable): the row stays plain columns, warned of (C.tabled_row(), every
+-- format's test). A column's role= is
 -- checked here (C.box_role(): all three formats warn alike on an unknown name) and reaches the
 -- theme as the role's name; a column without one writes no key, the theme's default by place.
 
@@ -272,14 +273,13 @@ local function card_rows(blocks, livery)
   local function row(d)
     if not has_class(d, "columns") then return nil end
     local cols, shares = C.column_shares(d)
-    local any, tabled = false, false
+    local any = false
     for _, col in ipairs(cols) do
       if has_class(col, "card") then any = true end
-      col:walk({ Table = function() tabled = true end })
     end
     if not any then return nil end
-    if tabled then
-      C.warn("engine-beamer: slide \"" .. title .. "\": a table in a card is drawn as a plain column")
+    if C.tabled_row(d) then
+      C.warn("engine-beamer: slide \"" .. title .. "\": a table in a card: the row is drawn as plain columns")
       return nil
     end
     local spec = {}

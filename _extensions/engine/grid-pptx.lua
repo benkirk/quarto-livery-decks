@@ -31,7 +31,11 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   executed cell's plot or a baked diagram (a src under `figure-*/` or `*_files/`) is gone from disk
   when the pptx steps run, so its bytes ride in the marker as ` data=<base64>`, at most
   PICTURE_MAX; past that, unreadable or inside a link, the picture stays in the flow, where pandoc
-  splits the slide, warned of, as does any other picture or table there. A two-column slide holding
+  splits the slide, warned of. A simple table there (engine-common.lua's simple_table(): no spans, a
+  paragraph a cell) is `⟦engine:table cols=n[ header]⟧`, per row `⟦engine:row⟧` and its cells each a
+  paragraph led by `⟦engine:cell⟧`, the caption a paragraph, `⟦engine:end⟧`, drawn natively by
+  figures.py; any other stays in the flow, warned of. A row with a card and a table (tabled_row()) is
+  flattened as plain columns, warned of, as HTML and the PDF draw it. A two-column slide holding
   a quote beside a picture or table stays pandoc's (is_grid() false), its quote pandoc's own
   blockquote, warned of.
 - Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
@@ -155,9 +159,22 @@ local function picture_marks(fig, title)
   return out
 end
 
+-- a simple table's marks (C.simple_table()'s t): `⟦engine:table cols=n[ header]⟧`, per row `⟦engine:row⟧`
+-- and a paragraph per cell led by `⟦engine:cell⟧`, the caption, `⟦engine:end⟧`
+local function table_marks(t)
+  local out = pandoc.Blocks({ marker("table cols=" .. t.cols .. (t.header and " header" or "")) })
+  for _, row in ipairs(t.rows) do
+    out:insert(marker("row"))
+    for _, cell in ipairs(row) do out:insert(prefixed("cell", cell)) end
+  end
+  if t.caption then out:insert(pandoc.Para(t.caption)) end
+  out:insert(marker("end"))
+  return out
+end
+
 -- a column's blocks, its divs unwrapped (the flow has no divs), a [..]{.label} or [..]{.big} line
--- led by its prefix marker; in a grid column or card (cell) a picture marked (picture_marks()), any
--- other picture or table warned of
+-- led by its prefix marker; in a grid column or card (cell) a picture and a simple table marked
+-- (picture_marks(), table_marks()), any other picture or table warned of
 local function flow(blocks, title, out, cell)
   for _, b in ipairs(blocks) do
     local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
@@ -181,8 +198,13 @@ local function flow(blocks, title, out, cell)
     elseif linked then
       warn(title, "a linked picture in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
+    elseif cell and b.t == "Table" and C.simple_table(b) then
+      out:extend(table_marks(C.simple_table(b)))
     elseif cell and b.t == "Div" and not C.is_notes(b) then   -- a cell with its code beside its plot: unwrapped
       flow(b.content, title, out, cell)
+    elseif cell and b.t == "Table" then
+      warn(title, "a table with spans or blocks in its cells is not drawn in a grid column in pptx; left in the flow")
+      out:insert(b)
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
@@ -200,8 +222,10 @@ local function flatten(d, title)
   local widths = {}
   for k = 1, #cols do widths[k] = share(shares[k]) end
   local out = pandoc.Blocks({ marker("columns widths=" .. table.concat(widths, ",")) })
+  local tabled = C.tabled_row(d)   -- a card row with a table: plain columns, as every format draws it
+  if tabled then warn(title, "a table in a card: the row is drawn as plain columns") end
   for _, col in ipairs(cols) do
-    local card = C.card_attrs(col, "")   -- "": no role= (grid.py takes the livery's by place)
+    local card = not tabled and C.card_attrs(col, "")   -- "": no role= (grid.py takes the livery's by place)
     if card then   -- its band's title and sub led by their prefix markers (no heading: no spcBef)
       local role = card.role ~= "" and (" role=" .. card.role) or ""   -- none: grid.py's, by place
       out:insert(marker("column card" .. role .. (card.pick and " pick" or "") .. (card.solid and " solid" or "")))
@@ -251,6 +275,9 @@ local function mark(blocks, title, level)
   for k, b in ipairs(blocks) do   -- a plain one's quotes (beside a picture or table) stay pandoc's, warned of
     if b.t == "Div" and C.has_class(b, "columns") then
       grid[k] = C.is_grid(b, blocks)
+      if not grid[k] and C.tabled_row(b) then   -- two columns: pandoc's, its table drawn in its column
+        warn(title, "a table in a card: the row is drawn as plain columns")
+      end
       if not grid[k] then
         b = b:walk({ Div = function(d)   -- a plain columns slide stays pandoc's: a gallery in a column its pictures,
           if C.is_gallery(d) then        -- unwrapped (pandoc draws no picture held in a Div)

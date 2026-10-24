@@ -136,6 +136,35 @@ def test_plot_bytes_carried(tmp_path):
     assert "missing.png cannot be read" in err, err
 
 
+TABLE = "| a | b | c |\n|---|---|---|\n| 1 | **2** | |\n| 4 | 5 | 6 |\n\nTable: The caption.\n"
+LISTED = "+------+------+\n| a    | b    |\n+======+======+\n| - x  | 2    |\n| - y  |      |\n+------+------+\n"
+
+
+def test_table_marked(tmp_path):
+    """A simple table in a three-column slide's column: its marker (cols, header), a row marker per row,
+    a paragraph per cell led by ⟦engine:cell⟧ (an empty one the prefix alone), the caption, its end; a
+    table with a list in a cell warned of and left (pandoc draws it); a row with a card and a table
+    flattened as plain columns, warned of, in three columns and in two (pandoc's, its table native)."""
+    three = lambda mid, card="": ("## {}\n\n:::: {{.columns}}\n::: {{.column" + card + "}}\nLeft\n:::\n::: {{.column}}\n" + mid
+                                  + ":::\n::: {{.column}}\nRight\n:::\n::::\n\n")
+    md = (three(TABLE).format("Tabled") + three(LISTED).format("Listed") + three(TABLE, " .card").format("Carded")
+          + "## Two\n\n:::: {.columns}\n::: {.column .card}\n### A\nx\n:::\n::: {.column}\n" + TABLE + ":::\n::::\n")
+    err, slides = marked(tmp_path, md)
+    one = slides[0]
+    i = one.index("⟦engine:table cols=3 header⟧")
+    assert one[i:i + 16] == ["⟦engine:table cols=3 header⟧", "⟦engine:row⟧", "⟦engine:cell⟧a", "⟦engine:cell⟧b", "⟦engine:cell⟧c",
+                             "⟦engine:row⟧", "⟦engine:cell⟧1", "⟦engine:cell⟧2", "⟦engine:cell⟧", "⟦engine:row⟧", "⟦engine:cell⟧4",
+                             "⟦engine:cell⟧5", "⟦engine:cell⟧6", "The caption.", "⟦engine:end⟧", "⟦engine:end⟧"], one[i:]
+    assert 'slide "Tabled"' not in err, err
+    assert 'slide "Listed": a table with spans or blocks in its cells is not drawn in a grid column' in err, err
+    assert not any("⟦engine:table" in p for p in slides[1]), "a listed table marked"
+    assert 'slide "Carded": a table in a card: the row is drawn as plain columns' in err, err
+    carded = next(s for s in slides if "⟦engine:table cols=3 header⟧" in s and s is not one)
+    assert not any(p.startswith("⟦engine:column card") for p in carded), "the carded row drawn as cards"
+    assert 'slide "Two": a table in a card: the row is drawn as plain columns' in err, err
+    assert not any("⟦engine:" in p for p in slides[-1]), "a two-column tabled row flattened"
+
+
 # cell_figure() on each top-level block of the markdown from stdin, as JSON lines ({src, caption,
 # sized} or {nil, linked}); with arg[2] "latexfig" a Figure in Quarto's PDF shape first (test_gallery's);
 # with "b64" base64() of each line of stdin
@@ -181,6 +210,42 @@ def test_cell_figure(tmp_path):
     assert not warnings, warnings
     out, _ = lua_common(tmp_path, CELL, "![The PDF caption](h.png)\n", "latexfig")
     assert json.loads(out) == {"src": "h.png", "caption": "The PDF caption", "sized": None}, out
+
+
+# simple_table() of each table and tabled_row() of each .columns div, as JSON lines
+TABLES = r"""
+local doc = pandoc.read(io.read("a"), "markdown")
+doc.blocks:walk({ Table = function(t)
+  local s = C.simple_table(t)
+  local rows = {}
+  for _, r in ipairs(s and s.rows or {}) do
+    local cells = {}
+    for _, c in ipairs(r) do table.insert(cells, pandoc.utils.stringify(c)) end
+    table.insert(rows, cells)
+  end
+  io.write(pandoc.json.encode(s and { cols = s.cols, header = s.header, rows = rows,
+    caption = s.caption and pandoc.utils.stringify(s.caption) or pandoc.json.null } or { ["nil"] = true }) .. "\n")
+end, Div = function(d)
+  if C.has_class(d, "columns") then io.write(pandoc.json.encode({ tabled = C.tabled_row(d) }) .. "\n") end
+end })
+"""
+
+
+def test_simple_table(tmp_path):
+    """A pipe table: its columns, its header row first, a cell's inlines, its caption; a headerless
+    one; one with a list in a cell, or a cell spanning two columns, nil. tabled_row(): a card and a
+    table in one row, not a card alone or a table alone."""
+    span = "+---+---+\n| a     |\n+===+===+\n| 1 | 2 |\n+---+---+\n"
+    headless = "+---+---+\n| 1 | 2 |\n+---+---+\n"
+    row = lambda a, b: ":::: {.columns}\n::: {.column" + a + "}\nx\n:::\n::: {.column}\n" + b + ":::\n::::\n\n"
+    md = TABLE + "\n" + headless + "\n" + LISTED + "\n" + span + "\n" + row(" .card", TABLE) + row(" .card", "y\n") + row("", TABLE)
+    out, _ = lua_common(tmp_path, TABLES, md)
+    got = [json.loads(x) for x in out.splitlines()]
+    assert got[0] == {"cols": 3, "header": True, "rows": [["a", "b", "c"], ["1", "2", ""], ["4", "5", "6"]], "caption": "The caption."}, got[0]
+    assert got[1] == {"cols": 2, "header": False, "rows": [["1", "2"]], "caption": None}, got[1]
+    assert got[2] == {"nil": True} and got[3] == {"nil": True}, got[2:4]
+    tabled = [g["tabled"] for g in got if "tabled" in g]
+    assert tabled == [True, False, False], tabled
 
 
 def test_base64(tmp_path):
