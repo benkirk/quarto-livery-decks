@@ -146,6 +146,20 @@ def mark(livery: dict, role: str, kind: str = "logo") -> str | None:
     return m.get(kind)
 
 
+# the pptx layouts drawn from a composition (livery_template.py's, which the steps read back by
+# layout name): layout -> (composition, its band variant)
+FIELD_LAYOUTS = {"Title Slide": ("title", "title-band"), "Title Slide (light)": ("title-light", None),
+                 "Section Header": ("section", None), "Closing": ("closing", "closing-band"),
+                 "Closing (light)": ("closing-light", None)}
+
+
+def comp_of(layout: str, band: bool) -> str | None:
+    """The composition a pptx layout is drawn from (a band livery's cover and closing are the
+    band's), None for a content layout."""
+    base, alt = FIELD_LAYOUTS.get(layout, (None, None))
+    return alt if band and alt else base
+
+
 def files(livery: dict) -> list[tuple[str, str]]:
     """Every livery-relative file the data names, with what names it; a logo's or art file's
     same-named .pdf (which LaTeX picks) too, when it exists."""

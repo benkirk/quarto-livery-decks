@@ -30,6 +30,8 @@ GEOM = LIVERY["geometry"]
 BODY_PT = livery_mod.type_pt(LIVERY, "body")       # pads are em of the body type
 TRACKING = LIVERY["type"]["tracking"]              # small caps' letter spacing, em of the run's size (type.tracking)
 SLACK = 1.1                                        # measured height x this: autofit stays idle
+BAND = (LIVERY.get("title") or {}).get("style") == "band"   # the band title: its cover and closing compositions
+PHOTO = "Photo"                                    # a cover's or feature's photo (slide_layout), which marks the slide
 NOT_BODY = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
             PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
 # a:pPr's children, in schema order: a bullet's elements go before the rest

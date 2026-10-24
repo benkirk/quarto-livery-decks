@@ -23,23 +23,17 @@ from pptx.util import Pt
 import livery as livery_mod
 
 from . import docprops
-from .common import LIVERY, is_dark
+from .common import BAND, LIVERY, PHOTO, is_dark
 
 WM = LIVERY["watermark"]   # color hex, opacity, angle (degrees counter-clockwise), size in points
-BAND = (LIVERY.get("title") or {}).get("style") == "band"
-# a composed slide's composition, by its layout (livery_template.FIELD_LAYOUTS' names); a band
-# livery's cover and closing are the band's
-LAYOUT_COMP = {"Title Slide": "title-band" if BAND else "title", "Title Slide (light)": "title-light",
-               "Section Header": "section", "Closing": "closing-band" if BAND else "closing",
-               "Closing (light)": "closing-light"}
 
 
 def ink(slide) -> str:
     """The watermark's six-digit hex on this slide (the module's docstring)."""
     if is_dark(slide):
         return livery_mod.hex(LIVERY, "on-dark")
-    comp = LAYOUT_COMP.get(slide.slide_layout.name)
-    if comp is None and any(sh.name == "Photo" for sh in slide.shapes):   # slide_layout.draw_feature()'s
+    comp = livery_mod.comp_of(slide.slide_layout.name, BAND)   # a composed slide's, by its layout
+    if comp is None and any(sh.name == PHOTO for sh in slide.shapes):   # slide_layout.draw_feature()'s
         comp = "feature"
     return livery_mod.hex(LIVERY, LIVERY["compositions"][comp]["column"]["role"] if comp else WM["color"])
 

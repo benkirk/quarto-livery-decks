@@ -49,7 +49,7 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
-from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
+from .common import (BAND, BOXES, GEOM, K, LIVERY, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
                      marker_spans, on_dark, pads, palette, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
@@ -69,7 +69,6 @@ CAUTION_BAR  = livery_mod.color(LIVERY, "warning")
 SLIDE_H      = Pt(LIVERY["type"]["canvas"]["h"])   # the canvas height: bars are fractions of it
 CAUTION_W    = Emu(round(BOXES["caution"]["bar"] * SLIDE_H))
 WAVES        = LIVERY.get("art", {}).get("waves")
-BAND         = (LIVERY.get("title") or {}).get("style") == "band"
 COMP         = LIVERY["compositions"]   # the title, closing, section and feature slides as boxes
 
 
@@ -439,7 +438,7 @@ def draw_cover(slide, width, height, photo, comp):
     sign-off in their boxes. Returns the next free shape id."""
     tree = slide.shapes._spTree
     x, y, w, h = comp["photo"]["box"]
-    _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = "Photo"
+    _back_picture(slide, photo, int(x * width), int(y * height), int(w * width), int(h * height)).name = PHOTO
     sid = max(int(e.get("id")) for e in tree.iter(qn("p:cNvPr"))) + 1
     slot = pptx_waves.ROLE_SLOT[comp["field"]["role"]] if comp["field"] else "tx2"   # field: null draws none
     shapes = pptx_waves.comp_shapes(WAVES and WAVES["lines"], comp, sid, width, height, field_slot=slot,
@@ -639,7 +638,7 @@ def draw_feature(slide, width, height, photo):
     x, y, w, h = c["column"]["box"]
     text = _rgb(c["column"]["role"])
     if c["bar"]:
-        _back_picture(slide, photo, 0, 0, width, height).name = "Photo"
+        _back_picture(slide, photo, 0, 0, width, height).name = PHOTO
         bar = _rect(slide, c["bar"]["box"], width, height, livery_mod.hex(LIVERY, c["bar"]["role"]), c["bar"]["opacity"], "Feature bar")
         tree = slide.shapes._spTree
         tree.remove(bar._element); tree.insert(3, bar._element)   # over the photo, under the text
@@ -800,7 +799,9 @@ def run(prs, path: Path) -> None:
     if BAND and len(prs.slides) and prs.slides[0].slide_layout.name == "Title Slide":   # after any re-framing
         band_stack(prs.slides[0], w, h)
     if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
-        cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
+        cover = livery_mod.comp_of(prs.slides[0].slide_layout.name, BAND)
+        if graphic is not None and not BAND:   # the photo cover's own boxes
+            cover = cover.replace("title", "title-photo")
         cover_byline(prs, prs.slides[0], COMP[cover], w, h)
         cover_fineprint(prs, prs.slides[0], COMP[cover], w, h)
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {path.name}")
