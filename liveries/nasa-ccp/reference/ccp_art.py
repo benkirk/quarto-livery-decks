@@ -4,9 +4,10 @@ usage: python3 -I ccp_art.py <CCP template.pptx> <livery dir>
 The art is drawn here, not rendered: the template's furniture is two pictures and a gradient, all on
 white. Its title bar (a 1280 x 90 JPEG) and cover banner (2000 x 364) each have the NASA insignia
 baked into them as a small bitmap; it is painted out (each row interpolated across its box, on a sky
-that is smooth there) and the bar gets the insignia back from the vector, liveries/nasa/logos/
-meatball.svg, at the art's resolution. The cover's insignia is a composition mark instead (vector in
-every format). The CUI banner, the legend, the CCP emblem and the notices are the engine's.
+that is smooth there) and drawn back by the engine in vector (liveries/nasa/logos/meatball.svg): the
+bar's as the content slides' top-right mark (geometry.marks) and the dividers' sign-off, the cover's
+as its composition's mark; the boxes printed here are theirs. The CUI banner, the legend, the CCP
+emblem and the notices are the engine's.
 
 The CCP emblem and lockup are NASA's own vectors (the CCP Program Collector Card, 2014), from
 Wikimedia Commons, public domain in the US, use restricted by 14 CFR 1221 (reference/notes.md):
@@ -18,7 +19,6 @@ from pptx import Presentation
 from PIL import Image, ImageFilter
 
 SRC, OUT = Path(sys.argv[1]), Path(sys.argv[2])
-NASA = OUT.parent / "nasa" / "logos" / "meatball.svg"
 COMMONS = "https://upload.wikimedia.org/wikipedia/commons/"
 LOGOS = {   # name: the Commons file (File:NASA_Commercial_Crew_Program_logo....svg)
     "ccp-lockup": COMMONS + "e/ee/NASA_Commercial_Crew_Program_logo.svg",              # with the wordmark
@@ -68,15 +68,6 @@ def svg_png(svg, height):
     return Image.open(io.BytesIO(run("rsvg-convert", "-h", str(height), str(svg)))).convert("RGBA")
 
 
-def place_insignia(art, pic_box, pic_size, b):
-    """the vector insignia, centered on the baked one's box b (picture pixels) mapped into the art"""
-    (px0, py0, pw, ph), (iw, ih) = pic_box, pic_size
-    x0, y0, x1, y1 = px0 + b[0] * pw / iw, py0 + b[1] * ph / ih, px0 + (b[2] + 1) * pw / iw, py0 + (b[3] + 1) * ph / ih
-    m = svg_png(NASA, round((y1 - y0) * 0.92))
-    art.alpha_composite(m, (round((x0 + x1 - m.width) / 2), round((y0 + y1 - m.height) / 2)))
-    return x0, y0, x1, y1
-
-
 prs = Presentation(SRC)
 master = prs.slide_masters[0]
 layouts = {l.name: l for l in master.slide_layouts}
@@ -95,11 +86,16 @@ bx, bw = 0, W   # the picture overhangs the slide by a hair at the left; flush h
 def with_bar():
     art = Image.new("RGBA", (W, H), "white")
     art.paste(bar.resize((bw, bh), Image.LANCZOS), (bx, by))
-    place_insignia(art, (bx, by, bw, bh), bar.size, bar_ins)
     return art
 
 
-# content slides: white, the bar with the vector insignia
+# where the bar's insignia was, in the art: the engine's top-right mark (its height 0.92 of the box, centered)
+iw, ih = bar.size
+x0, y0 = bx + bar_ins[0] * bw / iw, by + bar_ins[1] * bh / ih
+x1, y1 = bx + (bar_ins[2] + 1) * bw / iw, by + (bar_ins[3] + 1) * bh / ih
+print("bar insignia box", [round(x0 / W, 4), round(y0 / H, 4), round((x1 - x0) / W, 4), round((y1 - y0) / H, 4)])
+
+# content slides: white, the bar (its insignia the engine's mark)
 with_bar().convert("RGB").save(OUT / "art" / "content.jpg", quality=88, optimize=True)
 
 # dividers: the bar, and the band under it, slate at its top fading to white by its middle

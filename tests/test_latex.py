@@ -344,6 +344,35 @@ def test_marking_on_every_page(deck):
     assert all("TEST MARKING" in t for t in pages(d / "deck.pdf"))
 
 
+WATERMARKED = r"""
+\documentclass[aspectratio=169]{beamer}
+\usetheme[livery=liveries/ncar,fonts=bundled]{Engine}
+\enginewatermark{DRAFT}
+\title{A title}
+\begin{document}
+\begin{frame}\titlepage\end{frame}
+\section{Part one}
+\begin{frame}{Content}One line of body text.\end{frame}
+\begin{frame}[enginedark]{Dark}A dark frame.\end{frame}
+\end{document}
+"""
+
+
+def test_watermark_on_every_page(deck):
+    """\\enginewatermark{}: the word on every page, the cover, the divider, a content frame and a dark
+    one (pdftotext -raw keeps the turned word whole; -layout splits it into its letters among the
+    body's lines, so a document of its own, not DECK); none with no word and no default."""
+    d, _ = deck
+    r, log = compile_tex(d, "wm", WATERMARKED)
+    assert r.returncode == 0, log[-1500:]
+    n = int(re.search(r"Pages:\s+(\d+)", subprocess.run(["pdfinfo", str(d / "wm.pdf")], capture_output=True, text=True).stdout).group(1))
+    raw = [subprocess.run(["pdftotext", "-f", str(k), "-l", str(k), "-raw", str(d / "wm.pdf"), "-"], capture_output=True, text=True).stdout
+           for k in range(1, n + 1)]
+    assert n == 4 and all("DRAFT" in t for t in raw), raw
+    r, log = compile_tex(d, "plain", WATERMARKED.replace("\\enginewatermark{DRAFT}\n", ""))
+    assert r.returncode == 0 and not any("DRAFT" in t for t in pages(d / "plain.pdf"))
+
+
 NAMED = r"""
 \documentclass[aspectratio=169]{beamer}
 \usetheme[livery=liveries/ncar,fonts=bundled]{Engine}

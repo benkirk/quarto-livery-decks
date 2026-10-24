@@ -19,7 +19,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 ## [Unreleased]
 
 Pictures and tables in a grid slide's columns and cards in pptx, and the dark content slide in
-every format (`design/cells-dark-handoff.md`).
+every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark on every slide and
+`livery_mpl` from pip (`design/marks-watermark-mpl-handoff.md`).
 
 ### Decks
 
@@ -43,9 +44,43 @@ every format (`design/cells-dark-handoff.md`).
   slide's height, in the `rule` blend, the title hairline's): on a white card fill the body now
   has an edge. A picked card's outline replaces it; a solid card has none.
 
+- `watermark: DRAFT` in a deck's front matter (any text) puts a faint diagonal word across every
+  slide, behind the content, in every format. On a content slide it wears the livery's
+  `watermark.color`, on a cover, divider, closing or photo slide that slide's text color, on a
+  `{.brand-dark}` slide on-dark. `watermark: none` drops a livery's default. docs/authoring.md.
+
+- nasa-ccp: the NASA insignia at the title bar's right end is a vector mark in every format (the
+  content slides' top-right mark and the dividers' sign-off), where it was a bitmap in the bar's
+  art; the bar's title gives it room on both sides.
+
 ### Liveries
 
+- **Reshape: `geometry.logo` and `signoff` became `geometry.marks.<corner>`**, one mark per corner,
+  any of the four (`top-left`, `top-right`, `bottom-left`, `bottom-right`), each naming its mark;
+  no alias, so a livery of your own moves its keys:
+  - `geometry.logo: {corner: top-right, height, top, aspect, inset, title-height, ...}` is
+    `geometry.marks.top-right: {mark: logo, height, top, aspect, inset, title-height, ...}` (its
+    `corner:` names the entry; `corner: none` is no entry);
+  - `signoff: {light, dark, aspect, height, bottom, corner: bottom-left}` is
+    `geometry.marks.bottom-left: {mark: signoff, light, dark, aspect, height, bottom}`;
+  - `signoff: null` in a flavor is `geometry.marks.<its corner>: null`;
+  - `marks.<role>` names an image for `logo` and every name a corner wears; a corner's `light` and
+    `dark` are the background and primary defaults.
+
+  A flavor's corner merges over its parent's, unless it names another mark, which replaces it.
+  The bundled ten moved alike (cu's corner-none logo block is gone; nsi's mark is `top-left`
+  over cu's `bottom-left` sign-off; nasa-ccp's `top-left` and `top-right`), and draw as before.
+  `livery.css` loses `--engine-logo-*` and `--engine-signoff-*` (an `.engine-mark-<corner>` rule
+  per corner), `livery.sty` `\engine@geom@logo*` and `\engine@signoff*` (`\engine@corners` and
+  `\engine@corner@<corner>@<key>`). In HTML a content slide's marks are elements now
+  (`.engine-marks > .engine-mark-<corner>`), not the slide's `::after`: an `overrides/livery-extra.css`
+  rule on the old pseudo-element moves to them.
 - `boxes.card.border` and `border-color` (the card's hairline); `border: 0` turns it off.
+- `watermark:` (optional): the watermark's look, `color` (a role, blend, palette name or hex;
+  default the foreground, a content slide's), `opacity` (0.08), `angle` (30, degrees
+  counter-clockwise), `size` (points on the canvas; default 120 on the default 13.33 x 7.5 in
+  canvas, scaled to the livery's), and a default `text` every deck shows (none by default).
+  `livery placeholders` gives a default text SAMPLE.
 - Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
   corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
   `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its
@@ -59,6 +94,15 @@ every format (`design/cells-dark-handoff.md`).
 - `with livery_mpl.dark():` draws the dark chrome and colors in every format, since every format
   draws a `{.brand-dark}` slide dark; its `force=` argument is gone (it was the only way to have
   it outside HTML).
+- `import livery_mpl` with no livery to find no longer raises: the module imports unconfigured
+  and `livery_mpl.use(...)` configures it. `use()` takes a charts bundle's zip as it is
+  (`use("ncar-charts.zip")`), unpacked once into `$XDG_CACHE_HOME` (else `~/.cache`)
+  `/livery_mpl/<name>-charts-<engine>/`, or an unpacked bundle's directory. Decks are unchanged.
+- `livery_mpl` installs with pip from its subdirectory at a release's tag, `pip install
+  "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v<x.y.z>#subdirectory=_extensions/engine/mpl"`
+  (Python 3.10 or later; matplotlib 3.6 or later), its `__version__` the release's; then
+  `livery_mpl.use("<name>-charts.zip")` with that release's bundle. decks/plots/README.md
+  "Outside the decks".
 
 ### LaTeX
 
@@ -66,6 +110,8 @@ every format (`design/cells-dark-handoff.md`).
   `{.brand-dark}` slide (a no-op under a dark livery); the cookbook's "Dark slide, step by step".
 - A card's `\linewidth` takes a picture at the card's width with `\enginenote{...}` as its caption
   (the cookbook's "Pictures in cards").
+- `\enginewatermark{DRAFT}` in the preamble: the watermark on every frame, behind the body
+  (`{}` turns a livery's default off).
 - The marks are `\engine@mark@<role>@<name>` in `livery.sty` (`\engine@logo@light|dark` and
   `\engine@signoff@light|dark` are gone); `\enginelogo{light|dark}` is unchanged.
 

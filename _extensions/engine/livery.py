@@ -134,9 +134,9 @@ def font_file(livery: dict, family: str, weight: int = 400, italic: bool = False
 
 
 def mark(livery: dict, role: str, kind: str = "logo") -> str | None:
-    """The mark (kind logo) or sign-off (kind signoff) a field of this role wears, relative to the
-    livery dir; None for a sign-off when the livery has none. A role marks: does not name wears
-    primary's."""
+    """The image of the mark named kind (logo, signoff, any name geometry.marks wears) a field of this
+    role wears, relative to the livery dir; None for a name no corner wears (logo is always there: the
+    compositions' slot). A role marks: does not name wears primary's."""
     m = livery["marks"].get(role, livery["marks"]["primary"])
     return m.get(kind)
 
@@ -150,7 +150,7 @@ def files(livery: dict) -> list[tuple[str, str]]:
         out += [(f["path"], f"font {font['family']}") for f in font.get("files", [])]
     images = [(img["path"], f"logo {k}") for k, img in livery["logo"].get("images", {}).items()]
     for role, m in livery.get("marks", {}).items():
-        images += [(m[k], f"marks {role} {k}") for k in ("logo", "logo-print", "signoff") if k in m]
+        images += [(path, f"marks {role} {k}") for k, path in m.items()]
     images += [(v, f"art {kind}") for kind, v in (livery.get("art") or {}).items() if isinstance(v, str)]
     for path, what in images:
         out.append((path, what))
@@ -216,9 +216,9 @@ def placeholders(d: str) -> str:
     """A metadata file (YAML) that puts sample text over the livery's default markings and cover
     notice, for the images we publish (Make.common's DECK_META; gallery.py): no screenshot of ours
     reads as a real restricted deck. Each strip with a default text gets a SAMPLE marking (the
-    first a CUI one, the rest a legend), a cover notice its own shape in Lorem ipsum (the first
-    paragraph a SAMPLE heading, a "(a)" label kept), so the layout is the real one's. Nothing for a
-    livery without defaults."""
+    first a CUI one, the rest a legend), a default watermark SAMPLE, a cover notice its own shape
+    in Lorem ipsum (the first paragraph a SAMPLE heading, a "(a)" label kept), so the layout is the
+    real one's. Nothing for a livery without defaults."""
     import json
     import re
     L = load(d)
@@ -226,6 +226,8 @@ def placeholders(d: str) -> str:
     strips = {s["name"]: SAMPLE_MARKINGS[min(i, 1)] for i, s in enumerate(L.get("marking") or []) if s.get("text")}
     if strips:
         meta["marking"] = strips
+    if (L.get("watermark") or {}).get("text"):
+        meta["watermark"] = "SAMPLE"
     paras = next((c["fineprint"]["paragraphs"] for c in L.get("compositions", {}).values()
                   if (c.get("fineprint") or {}).get("paragraphs")), None)
     if paras:

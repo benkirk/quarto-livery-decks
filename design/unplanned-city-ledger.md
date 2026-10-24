@@ -241,3 +241,11 @@ branched from, not a window read).
   inlines between raw wrappers in the citations sprint, and the note could take the same shape.
 - A long reference list in HTML (30 entries on one slide) shrinks to the autofit floor, then
   scrolls under Quarto's `scrollable` and runs over the slide number; the PDF breaks the frame.
+- Quarto's `.reveal .slide .columns:nth-child(3) { margin-block-start: 0.8em }` counts a slide's
+  children, so a body that starts with columns sits 0.8em lower under cu and nsi (heading, marks
+  box, columns) than under ncar, whose content waves add a child (found by the corner-marks
+  sprint's parity, 2026-10-24: one marks box per slide keeps it as it was). A theme rule zeroing
+  that margin, or pinning it, would make it livery-independent; it moves pixels, so a sweep pick.
+- Deferred by the corner-marks sprint (2026-10-24, `design/marks-watermark-mpl-handoff.md` open
+  question 2): composed slides taking named corners (their mark and sign-off slots and the logo
+  entry's `*-height` keys stay as they were).

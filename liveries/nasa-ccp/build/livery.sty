@@ -73,8 +73,24 @@
 % marks per field role: \engine@mark@<role>@<name> (a name's print lockup when there is one);
 % \enginelogo{light|dark} draws background's and primary's logo
 \expandafter\def\csname engine@mark@background@logo\endcsname{\engineliverydir logos/ccp-emblem}
+\expandafter\def\csname engine@mark@background@insignia\endcsname{\engineliverydir ../nasa/logos/meatball}
 \expandafter\def\csname engine@mark@primary@logo\endcsname{\engineliverydir logos/ccp-emblem}
+\expandafter\def\csname engine@mark@primary@insignia\endcsname{\engineliverydir ../nasa/logos/meatball}
 \expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/ccp-emblem}
+\expandafter\def\csname engine@mark@dark@insignia\endcsname{\engineliverydir ../nasa/logos/meatball}
+% the content slides' marks by corner (geometry.marks): \engine@corners the worn ones, each one's
+% \engine@corner@<corner>@<key>: mark (its name in \engine@mark@<role>@<name>), height, top or bottom, aspect, inset
+\def\engine@corners{top-left,top-right}
+\expandafter\def\csname engine@corner@top-left@mark\endcsname{logo}
+\expandafter\def\csname engine@corner@top-left@height\endcsname{0.107}
+\expandafter\def\csname engine@corner@top-left@top\endcsname{0.0728}
+\expandafter\def\csname engine@corner@top-left@aspect\endcsname{0.9717}
+\expandafter\def\csname engine@corner@top-left@inset\endcsname{0.008}
+\expandafter\def\csname engine@corner@top-right@mark\endcsname{insignia}
+\expandafter\def\csname engine@corner@top-right@height\endcsname{0.106}
+\expandafter\def\csname engine@corner@top-right@top\endcsname{0.0745}
+\expandafter\def\csname engine@corner@top-right@aspect\endcsname{1.2146}
+\expandafter\def\csname engine@corner@top-right@inset\endcsname{0.0146}
 % fonts: the base family's files, by weight and style
 \def\engine@font@family{TeX Gyre Heros}
 \def\engine@font@dir{\engineliverydir fonts/}
@@ -101,7 +117,7 @@
 \def\engine@ft@height{0.117}
 \def\engine@ft@ruley{0.18}
 \def\engine@ft@rulewidth{0.0016}
-\def\engine@ft@bodytop{0.2023}
+\def\engine@ft@bodytop{0.2028}
 \definecolor{EngineFrametitleRuleColor}{HTML}{A8A9AA}
 \definecolor{EngineFrametitleColor}{HTML}{FFFFFF}
 \def\engine@ft@symmetric{}
@@ -131,6 +147,13 @@
 \def\engine@marking@legend@type{{0.625}{1.2}}
 \definecolor{EngineMarkinglegendText}{HTML}{5C5E62}
 \def\engine@marking@legend@default{MAY CONTAIN PROPRIETARY AND/OR LIMITED RIGHTS DATA; NOT REVIEWED FOR EXPORT CONTROL}
+% the watermark (watermark:): color, opacity, angle (degrees counter-clockwise), size as the
+% body's ratio with its leading, and the default text the deck's \enginewatermark{} replaces
+\definecolor{EngineWatermarkColor}{HTML}{000000}
+\def\engine@watermark@opacity{0.08}
+\def\engine@watermark@angle{30}
+\def\engine@watermark@type{{7.5}{1}}
+\def\engine@watermark@default{}
 % boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
 % its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row
 \def\engine@boxes@columns@gap{0.03}
@@ -193,14 +216,6 @@
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.04}
 \def\engine@geom@tabwidth{0.018}
-\def\engine@geom@logocorner{top-left}
-\def\engine@geom@logoheight{0.107}
-\def\engine@geom@logotop{0.0728}
-\def\engine@geom@logoaspect{0.9717}
-\def\engine@geom@logotitleheight{0.16}
-\def\engine@geom@logosectionheight{0.11}
-\def\engine@geom@logoclosingheight{0.16}
-\def\engine@geom@logoinset{0.008}
 \def\engine@geom@pagenumbercorner{bottom-right}
 \def\engine@geom@sectiontop{0.1333}
 \def\engine@geom@sectionbottom{0.0889}
@@ -210,7 +225,7 @@
 \def\engine@geom@bodybottom{0.955}
 \def\engine@geom@widemargin{0.02}
 \def\engine@geom@half{0.445}
-\def\engine@geom@bodyheight{0.7527}
+\def\engine@geom@bodyheight{0.7522}
 \def\engine@art@title{\engineliverydir art/title}
 \def\engine@art@section{\engineliverydir art/section}
 \def\engine@art@closing{\engineliverydir art/title}
@@ -556,6 +571,10 @@
 \def\engine@c@section@mark@y{0.0728}
 \def\engine@c@section@mark@w{0.104}
 \def\engine@c@section@mark@h{0.107}
+\def\engine@c@section@signoff@x{0.913}
+\def\engine@c@section@signoff@y{0.0745}
+\def\engine@c@section@signoff@w{0.0724}
+\def\engine@c@section@signoff@h{0.106}
 \def\engine@c@section@column@x{0.04}
 \def\engine@c@section@column@y{0.44}
 \def\engine@c@section@column@w{0.92}
@@ -566,6 +585,7 @@
 \def\engine@c@section@column@tab{false}
 \def\engine@c@section@column@align{center}
 \def\engine@c@section@mark@img{\engineliverydir logos/ccp-emblem}
+\def\engine@c@section@signoff@img{\engineliverydir ../nasa/logos/meatball}
 \def\engine@c@section@art{\engineliverydir art/section}
 \def\engine@c@feature@photo@x{0}
 \def\engine@c@feature@photo@y{0}

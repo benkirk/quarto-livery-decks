@@ -72,10 +72,13 @@
 \expandafter\def\csname engine@mark@primary@signoff\endcsname{\engineliverydir logos/cu-boulder-lockup}
 \expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/cu-boulder-lockup}
 \expandafter\def\csname engine@mark@dark@signoff\endcsname{\engineliverydir logos/cu-boulder-lockup}
-% the sign-off lockup's box (signoff)
-\def\engine@signoffheight{0.04}
-\def\engine@signoffbottom{0.035}
-\def\engine@signoffcorner{bottom-left}
+% the content slides' marks by corner (geometry.marks): \engine@corners the worn ones, each one's
+% \engine@corner@<corner>@<key>: mark (its name in \engine@mark@<role>@<name>), height, top or bottom, aspect, inset
+\def\engine@corners{bottom-left}
+\expandafter\def\csname engine@corner@bottom-left@mark\endcsname{signoff}
+\expandafter\def\csname engine@corner@bottom-left@height\endcsname{0.04}
+\expandafter\def\csname engine@corner@bottom-left@bottom\endcsname{0.035}
+\expandafter\def\csname engine@corner@bottom-left@aspect\endcsname{10.903}
 % fonts: the base family's files, by weight and style
 \def\engine@font@family{TeX Gyre Heros}
 \def\engine@font@dir{\engineliverydir fonts/}
@@ -124,6 +127,13 @@
 \def\engine@marking@banner@type{{0.5625}{1.2}}
 \definecolor{EngineMarkingbannerText}{HTML}{565A5C}
 \def\engine@marking@banner@default{}
+% the watermark (watermark:): color, opacity, angle (degrees counter-clockwise), size as the
+% body's ratio with its leading, and the default text the deck's \enginewatermark{} replaces
+\definecolor{EngineWatermarkColor}{HTML}{000000}
+\def\engine@watermark@opacity{0.08}
+\def\engine@watermark@angle{30}
+\def\engine@watermark@type{{7.5}{1}}
+\def\engine@watermark@default{}
 % boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
 % its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row
 \def\engine@boxes@columns@gap{0.03}
@@ -181,13 +191,6 @@
 % geometry, in fractions of the slide
 \def\engine@geom@margin{0.06}
 \def\engine@geom@tabwidth{0.018}
-\def\engine@geom@logocorner{none}
-\def\engine@geom@logoheight{0.0644}
-\def\engine@geom@logotop{0.0533}
-\def\engine@geom@logoaspect{10.903}
-\def\engine@geom@logotitleheight{0.09}
-\def\engine@geom@logosectionheight{0.08}
-\def\engine@geom@logoclosingheight{0.1}
 \def\engine@geom@pagenumbercorner{bottom-right}
 \def\engine@geom@sectiontop{0.1333}
 \def\engine@geom@sectionbottom{0.0889}

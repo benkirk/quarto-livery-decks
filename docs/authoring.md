@@ -70,6 +70,13 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   strips, by name (a CUI `banner` at the top and a `legend` at the foot, say): the plain
   string sets the first, and a map sets them by name, `marking: {banner: "CUI//SP-EXPT", legend:
   none}`; a strip the deck does not name keeps its default.
+- `watermark: DRAFT` (any text) puts a faint diagonal word across every slide, in every format:
+  centered, turned, behind the content (a review copy's mark). Its look is the livery's
+  `watermark:` (a color, an opacity, an angle and a size; 8% of the foreground, 30 degrees, by
+  default): on a content slide that color, on a cover, divider, closing or photo slide the
+  slide's own text color, on a `{.brand-dark}` slide on-dark, so it reads on every field. A
+  livery may set default text every deck under it shows; `watermark: none` drops it. A box
+  placed on its own (a `{.full}` figure, a photo slide's panel) covers it.
 - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
   OpenType math font) changes the math font; the default is New Computer
   Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key

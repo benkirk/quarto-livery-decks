@@ -183,7 +183,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
-  as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
+  as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
+  `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
   measuring (`text_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
@@ -324,6 +325,22 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>`
   (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, after every step that
   sets a size, reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
+- **Watermark** (a deck's `watermark: DRAFT`, `none` dropping a livery's default; the livery's
+  `watermark:` the look, always in `livery.json` from `livery_build.WATERMARK`, the default size
+  120 pt on the default canvas scaled to the livery's): `engine-common.lua`'s `watermark_text()` the
+  one reader; on a content slide the livery's color, on a composed slide its composition's column
+  role, on a dark slide on-dark (Ben's pick, 2026-10-24: it reads on every field), in all three.
+  HTML: `add_watermark()` writes `.engine-watermark` as the LAST element of every slide (and
+  `title-slide.html` the title's): z-index -1 puts it under the body in flow and, later in the DOM
+  than the art and waves (z-index -1 too), over them; an absolute box (a `.full` figure, the
+  feature panel) covers it. PDF: `\enginewatermark{}` (the filter writes it), drawn by the
+  background template after every style and before the marking strips (`EngineC<comp>Text` on a
+  composed frame). pptx: slide-layout.lua's `engine-watermark`, `pptx_steps/watermark.py`: a
+  turned text box "Watermark" with an `a:alpha` run, inserted before the slide's first shape that
+  holds text (behind the title; over a cover's field and marks, a feature's photo and bar; the
+  composition by layout name, a feature by its "Photo" shape). `deck_qa` skips the element, and
+  its PDF word checks drop the turned word's pieces (pdftotext `-bbox` gives letters in boxes as
+  tall as the word; `-raw` keeps it whole). `decks/fixtures/draft.qmd` is CI's and parity's deck.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
   since a dark livery's `dark` stays a field color; the `on-dark` role (derived: whichever of
@@ -360,7 +377,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `livery_mpl.dark()` applies in every format. A baked diagram on it stays light (deferred).
 - **Content title**: `livery.yml` `frametitle: {align: left|center, symmetric, color, tab, rule, top,
   height, rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
-  slide 20; its mark at the paper's edge, `geometry.logo.inset: 0.015`). The band is the three
+  slide 20; its mark at the paper's edge, `geometry.marks.top-left.inset: 0.015`). The band is the three
   fractions of the height (defaults 44, 70 and 130 px of 900: the title centered in
   `top..top+height`, a taller one growing down, the tab the band's height, the hairline at
   `rule-y`, `rule-width` thick (0.0016: the PDF's 0.4 pt, 1.4 px of 900) in `rule-color` (a role, blend or hex, default the
@@ -415,16 +432,34 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   [width=<f>\paperwidth]}`; pptx needs nothing (pandoc places a picture at its natural size, fit
   to the placeholder). Plot text then measures the slide's (HTML 1.00, PDF 1.00, pptx 1.01).
   `livery zip --charts` (`make charts-zip`) packs the style, the helper, `livery.json`, the fonts and
-  licenses and the swatch sheet; `release.yml` attaches one per livery.
-- **Marks and numbers** are livery parameters (`signoff`, `geometry.logo.corner`,
+  licenses and the swatch sheet; `release.yml` attaches one per livery. The helper is also pip's,
+  installed from its subdirectory (`_extensions/engine/mpl/pyproject.toml`: hatchling, the version
+  read from `_extension.yml`, no sdist; decks/plots/README.md "Outside the decks") and configured
+  by `livery_mpl.use("<name>-charts.zip")`, unpacked once into `$XDG_CACHE_HOME/livery_mpl/`; CI's
+  latex job installs it into a clean venv and plots from a bundle.
+- **Marks and numbers** are livery parameters (`geometry.marks.<corner>`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
-  and `livery_template.py` all honor. Which mark and sign-off a field wears goes by
+  and `livery_template.py` all honor. A content slide wears one mark per corner, any of the four,
+  each named (`mark:`; `logo` is the compositions' mark, `signoff` their sign-off, any other name
+  one of its own, nasa-ccp's `insignia`): `livery_build.corner_marks()` resolves them (a flavor's
+  entry merges over its parent's unless it names another mark, which replaces it, `read()`; `null`
+  drops one), `furniture.marks` holds their boxes, and the drawers loop: beamer's
+  `\engine@drawcorner` over `\engine@corners` and `\engine@corner@<corner>@<key>`, livery.css's
+  `.engine-mark-<corner>` rule per field role (background, `.engine-field` primary, `.engine-dark`
+  dark) on the elements `add_marks()` writes in ONE `.engine-marks` box per content slide (Quarto's
+  `.columns:nth-child(3)` margin counts a slide's children: the body's place among them must not
+  depend on the livery), the template master's picture per corner in `CORNERS` order (logo `rId2`
+  always, other names `rId3`, `rId5`, `rId6`; "Logo (light)", "Sign-off (light)", "Mark <name>
+  (light)"). `livery.json`'s keys are sorted, so a reader walks `CORNERS`. The content title gives
+  way to each top mark on its side by one formula, `livery_build.title_room()` (furniture's title
+  box, `--engine-title-left|right`; beamer restates it on the marks it measures, the dark role's
+  on a dark frame). Which image each name is on a field goes by
   its role (`marks:`; `livery.json` always has `marks`, read with
-  `livery.mark(livery, role, "logo"|"signoff")`): content slides `background`,
+  `livery.mark(livery, role, name)`): content slides `background`,
   dividers, covers and the cover closing `primary`, the band title and closing
   `title.field`. A composed slide's are its composition's: `compositions.<name>.mark|signoff`
   resolve to files (`img`, `img-print`), by `image:` (a `logo.images` name; a light variant keeps
-  it) else the role's, and every drawer reads those (nasa-jsc-eg names its patches so). Defaults: background `logo.medium.light`/`signoff.light`, primary the
+  it) else the role's, and every drawer reads those (nasa-jsc-eg names its patches so). Defaults: background `logo.medium.light` and each corner's `light`, primary the
   dark ones, any other role primary's (nsi: black mark on gold, white on the band). pandoc writes no slide-number box, so
   `slide_layout.py` copies the layout's placeholder onto every slide; a livery's
   `typography.headings` may be a second font family (cu: TeX Gyre Heros Cn).
@@ -503,7 +538,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
   cache, so `Make.common` is `.NOTPARALLEL`. `decks/fixtures/` is such a directory:
-  `photo` (a `titlegraphic:` title) and `light` (`title=light`) on one `_body.qmd`, in
+  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, in
   CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
   ncar, cu and nsi).
 - **Installed brand fonts**: a livery may name a proprietary face (`installed-fonts`, cu:
@@ -586,8 +621,8 @@ it does, by area, beyond the format notes above:
   `EXPECTED_DELTAS` names every decided change of a box, `test_schema.py` (the generated
   `REFERENCE.md` current too), `test_docs.py` (every relative link and `#anchor` in the tracked
   `*.md` files resolves, every `README "X"` or `<guide>.md "X"` pointer in a tracked file names a
-  heading that exists, `design/` exempt; the consumer example's release pins and the changelog's
-  link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
+  heading that exists, `design/` exempt; the release pins of the consumer example and the plots'
+  pip install, and the changelog's link block), `test_latex.py` (a deck on the theme's LaTeX layer compiled with XeLaTeX: no
   Overfull, a moving pick's pages, the `role=` warning, the share error, and a deck citing with
   biblatex; skipped without TeX), `test_footnotes.py` (engine-common.lua under `pandoc lua` with a
   `quarto` shim: the lift's markers and warnings, `ensure_refs`; the pptx filter and steps; the
@@ -613,8 +648,9 @@ it does, by area, beyond the format notes above:
   (`release.yml` checks). `engine-revealjs.lua` reads it from there and names the HTML dependency
   by it (`engine-revealjs-<version>`), so a bump changes every HTML deck's paths. `livery build`
   stamps it (and the livery's `schema`) into `build/livery.json`, so a bump means `livery build
-  liveries/*/` in the same PR (CI's `--check`) and the consumer example's `@v<version>` and
-  image tag in docs/other-repos.md (`tests/test_docs.py` holds them to it), and `livery deps`
+  liveries/*/` in the same PR (CI's `--check`), the consumer example's `@v<version>` and
+  image tag in docs/other-repos.md and the pip install's `@v<version>` in decks/plots/README.md
+  (`tests/test_docs.py` holds them to it), and `livery deps`
   warns a deck build when a livery's stamp is another version. **Tags are immutable**: another release in the month is
   the next `N`; `release.yml` refuses a tag whose release exists, that is not `YY.MM.N`, or whose
   month is still to come. `CHANGELOG.md` (Decks, Liveries, Plots,

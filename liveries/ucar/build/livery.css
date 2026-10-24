@@ -30,10 +30,6 @@
   --engine-dark-band: #102643;
   --engine-dark-code: #1F344F;
   --engine-dark-muted: #B3BAC3;
-  --engine-logo-h: 46.4px;
-  --engine-logo-w: 183.3px;
-  --engine-logo-aspect: 3.95;
-  --engine-logo-top: 48px;
   --engine-margin: 96px;
   --engine-tab-width: 28.8px;
   --engine-wide-margin: 48px;
@@ -91,10 +87,6 @@
   --engine-type-level4: 0.9;
   --engine-type-level5: 0.8889;
   --engine-font-family: "Poppins";
-  --engine-logo-left: auto;
-  --engine-logo-right: var(--engine-margin);
-  --engine-logo-position: right top;
-  --engine-logo-content: "";
   --engine-title-top: 44px;
   --engine-title-height: 70px;
   --engine-title-rule-y: 130px;
@@ -104,10 +96,14 @@
   --engine-section-eyebrow-gap: 0.33em;
   --engine-section-subtitle-gap: 0.66em;
   --engine-title-left: var(--engine-margin);
-  --engine-title-right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
+  --engine-title-right: calc(var(--engine-margin) + 40px + 183.3px);
   --engine-title-color: #00357A;
   --engine-pagenumber-left: 50px;
   --engine-pagenumber-right: auto;
+  --engine-watermark-color: #00357A;
+  --engine-watermark-opacity: 0.08;
+  --engine-watermark-angle: 30deg;
+  --engine-watermark-size: calc(200px * var(--engine-type-scale, 1));
   --engine-column-gap: 48px;
   --engine-column-rule: 0px;
   --engine-caution-bar: 8px;
@@ -222,11 +218,9 @@ html:root {
   --engine-mark-primary-logo: url("UCAR-Logo_White_RGB.png");
   --engine-mark-dark-logo: url("UCAR-Logo_White_RGB.png");
 }
-.reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
-.reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
-.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
+.reveal .slides section.slide .engine-mark-top-right { top: 48px; right: var(--engine-margin); width: 183.3px; height: 46.4px; background-position: right top; background-image: var(--engine-mark-background-logo); }
+.reveal .slides section.engine-field .engine-mark-top-right { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.engine-dark .engine-mark-top-right { background-image: var(--engine-mark-dark-logo); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("mesa-lab.jpg") center / cover no-repeat; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {

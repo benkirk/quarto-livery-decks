@@ -55,13 +55,22 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      where installed, and `pptx.typeface` (and `heading-typeface`, and `code-typeface` for the
      pptx's code when the brand template names an installed one).
    - **Marks.** The brand's logos in `_brand.yml` in place of the placeholder (an RGB PNG for
-     the web, the same name as `.pdf` for LaTeX), a `signoff` lockup if the brand wants one at
-     the foot, and `marks` when a field needs another mark than the defaults (`background` wears
-     `logo.medium.light`, `primary` the dark one, every other field primary's). One composed slide
-     wears a given image with `compositions.<name>.mark.image` or `.signoff.image` (a
-     `logo.images` name); its light variant keeps it.
-   - **Geometry.** The scaffold's fractions are ncar's; set the lockup's `geometry.logo.aspect`,
-     the marks' corners, and `logo.inset` to put the content mark nearer the paper's edge.
+     the web, the same name as `.pdf` for LaTeX). A content slide wears one mark per corner,
+     `geometry.marks.<corner>` (`top-left`, `top-right`, `bottom-left`, `bottom-right`), each
+     naming its mark (`mark:`) and placing it (`height`, `top` or `bottom`, `aspect`, `inset`
+     from the side edge, default the margin): the scaffold's `top-right` is `mark: logo`, the
+     compositions' mark (with its `title-height`, `section-height`, `closing-height`); a lockup at
+     the foot is `mark: signoff`, the compositions' sign-off (cu's `bottom-left`); any other name
+     is a mark of its own (nasa-ccp's `insignia`). A corner's `light` and `dark` name its image on
+     the paper and on the primary field (the logo's default `logo.medium.light|dark`); `marks:`
+     names another per field role (`background`, `primary`, `dark`, any role) when a field needs
+     it. A flavor's corner merges over its parent's, a corner naming another mark replaces it, and
+     `null` drops it. One composed slide wears a given image with
+     `compositions.<name>.mark.image` or `.signoff.image` (a `logo.images` name); its light
+     variant keeps it.
+   - **Geometry.** The scaffold's fractions are ncar's; set the lockup's `aspect` on its corner,
+     and `inset` to put a mark nearer the paper's edge (the content title gives way to each top
+     mark on its side).
      `geometry.wide-margin` is a `{.wide}` slide's side margin (default half the margin),
      `geometry.body-bottom` the content body's foot.
    - **Boxes.** `boxes:` holds the numbers every format draws its columns and boxes with: the

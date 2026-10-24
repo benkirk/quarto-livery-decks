@@ -6,7 +6,8 @@ schema: 1
 # cover, each the template's text by default (over-marking is the safe failure) and each a deck's
 # to replace (`marking:`, `fineprint:`; docs/authoring.md). The title bar, the cover banner and the
 # divider band are art drawn from the template (reference/ccp_art.py); the CCP emblem, the lockup
-# and the cover's insignia are vector marks. reference/notes.md has the sources and the decisions.
+# and the insignia (the bar's and the cover's) are vector marks. reference/notes.md has the sources
+# and the decisions.
 name: nasa-ccp
 extends: nasa
 
@@ -18,8 +19,6 @@ roles:
   muted: ccp-gray
   dark: ccp-slate
 
-signoff: null             # the template has no agency name at the foot (nasa's)
-
 marks:                    # content slides: the CCP emblem at the title bar's left end
   background: {logo: ccp-emblem}
   primary: {logo: ccp-emblem}
@@ -27,12 +26,25 @@ marks:                    # content slides: the CCP emblem at the title bar's le
 geometry:
   margin: 0.04            # the template's body inset (0.125 in of 13.333) widened a little for HTML
   body-bottom: 0.955      # above the legend
-  logo:
-    corner: top-left      # the emblem on the bar; the insignia at its right end is in the art
-    top: 0.0728           # the template's (under the CUI banner, inside the bar)
-    height: 0.107
-    aspect: 0.9717        # the cropped Commons SVG's box
-    inset: 0.008
+  marks:
+    top-left:             # the emblem at the bar's left end
+      mark: logo
+      top: 0.0728         # the template's (under the CUI banner, inside the bar)
+      height: 0.107
+      aspect: 0.9717      # the cropped Commons SVG's box
+      inset: 0.008
+      title-height: 0.16  # nasa's, which held them on its top-right entry
+      section-height: 0.11
+      closing-height: 0.16
+    top-right:            # the NASA insignia at the bar's right end, where the template bakes it (painted
+      mark: insignia      # out of the art: reference/ccp_art.py prints its box); nasa's vector
+      light: meatball
+      dark: meatball
+      top: 0.0745
+      height: 0.106
+      aspect: 1.2146      # nasa's insignia
+      inset: 0.0146
+    bottom-left: null     # the template has no agency name at the foot (nasa's)
   pagenumber:
     corner: bottom-right
 
@@ -73,7 +85,7 @@ marking:                  # the template's two markings, on every slide; a deck'
 art:
   title: art/title.jpg      # the banner: Dragon, Starliner and the station over the sky (insignia out)
   closing: art/title.jpg
-  content: art/content.jpg  # the title bar, the insignia drawn back from the vector at its right end
+  content: art/content.jpg  # the title bar (its insignia the top-right mark)
   section: art/section.jpg  # the bar and the slate band fading to white under it
   titlegraphic: null        # the cover is the banner, not nasa's Earth limb
 
@@ -119,7 +131,7 @@ compositions:             # boxes [x, y, w, h], fractions of the slide, from the
     art: section
     field: {role: background}
     mark: {role: background, image: ccp-emblem, box: [0.008, 0.0728, 0.104, 0.107]}
-    signoff: null
+    signoff: {role: background, image: meatball, box: [0.913, 0.0745, 0.0724, 0.106]}   # the bar's insignia, as content slides'
     column: {role: foreground, box: [0.04, 0.44, 0.92, 0.18], anchor: middle, align: center, tab: false, rule: null}   # on the band's foot
 
 installed-fonts:          # Helvetica itself where the machine has it (Macs: HTML; PDF under fonts=brand)

@@ -17,25 +17,25 @@ roles:
   warning: yellow
   dark: black
 
-signoff:                  # the agency name at the foot: with the insignia top right, the brand's
-  light: nasa-name        # preferred identifier (insignia upper right, agency name left, one line)
-  dark: nasa-name-white
-  aspect: 22.208          # the outlined name, 2665 x 120 px
-  height: 0.028
-  bottom: 0.035
-  corner: bottom-left
-
 geometry:                 # fractions of the slide (of its width: margin, tab, full.pad)
   margin: 0.06
   tab-width: 0.018
-  logo:
-    corner: top-right     # the insignia, as the reference deck places it
-    height: 0.075         # 0.42 in on the 5.625 in canvas, 68 px on a 900 px slide (minimum: 37 px)
-    top: 0.045
-    aspect: 1.2146        # the insignia's box with the vector, 583 x 480
-    title-height: 0.16
-    section-height: 0.11
-    closing-height: 0.16
+  marks:
+    top-right:            # the insignia, as the reference deck places it
+      mark: logo
+      height: 0.075       # 0.42 in on the 5.625 in canvas, 68 px on a 900 px slide (minimum: 37 px)
+      top: 0.045
+      aspect: 1.2146      # the insignia's box with the vector, 583 x 480
+      title-height: 0.16
+      section-height: 0.11
+      closing-height: 0.16
+    bottom-left:          # the agency name at the foot: with the insignia top right, the brand's
+      mark: signoff       # preferred identifier (insignia upper right, agency name left, one line)
+      light: nasa-name
+      dark: nasa-name-white
+      aspect: 22.208      # the outlined name, 2665 x 120 px
+      height: 0.028
+      bottom: 0.035
   pagenumber:
     corner: bottom-right  # the reference deck's
   section:

@@ -1,0 +1,28 @@
+# livery_mpl as a package (#81), installed from this subdirectory at a release's tag:
+#   pip install "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v<x.y.z>#subdirectory=_extensions/engine/mpl"
+# then livery_mpl.use("<name>-charts.zip"), a release's charts bundle (decks/plots/README.md
+# "Outside the decks"). The decks never install it: Make.common puts this directory on PYTHONPATH.
+# The version is the engine's, read from ../_extension.yml when the wheel is built, so there is no
+# sdist (it could not carry that file): pip builds the wheel in the tree, from git or a checkout.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "livery-mpl"
+dynamic = ["version"]
+description = "matplotlib in a quarto-livery-decks livery's chart colors, fonts and type sizes"
+requires-python = ">=3.10"
+dependencies = ["matplotlib>=3.6"]
+
+[project.urls]
+Source = "https://github.com/benkirk/quarto-livery-decks"
+
+[tool.hatch.version]
+source = "regex"
+path = "../_extension.yml"
+pattern = '^version:\s*(?P<version>\S+)'
+
+[tool.hatch.build.targets.wheel]
+only-include = ["livery_mpl.py"]

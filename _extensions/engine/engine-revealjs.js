@@ -32,7 +32,7 @@
     var b = 0;
     for (var i = 0; i < s.children.length; i++) {
       var c = s.children[i];
-      if (c.matches("h2, aside.notes, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marking, script, style")) continue;
+      if (c.matches("h2, aside.notes, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, script, style")) continue;
       b = Math.max(b, c.offsetTop + c.offsetHeight);
     }
     return b;

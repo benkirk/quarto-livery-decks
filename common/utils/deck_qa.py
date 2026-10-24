@@ -40,12 +40,16 @@ EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - g
                           # on a {.wide} slide (columns keep to the text width, onlytextwidth)
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
 STRIPS = []           # set in main(): the livery's marking strips' boxes, furniture the text checks skip
+WATERMARK = ""        # set per deck in main(): the watermark's text (an HTML slide's), which the text checks skip
+WM_HEIGHT = 0.0       # set in main(): the watermark's size, of the page's height (livery.json watermark)
 
 MEASURE_JS = r"""
 (i) => {
   const s = Reveal.getSlides()[i];
   const h = s.querySelector(':scope > h2');
-  if (!s.classList.contains('level2') || !h) return {level2: false};
+  const wm = s.querySelector(':scope > .engine-watermark');   // its text: the PDF's word checks skip it
+  const watermark = wm ? wm.textContent.trim() : null;
+  if (!s.classList.contains('level2') || !h) return {level2: false, watermark};
   const cls = [...s.classList];
   // a gallery caption past its cell (one line, nowrap: its text overflows the box)
   const galleryCapOver = [...s.querySelectorAll('.engine-gallery-item figcaption')].some(
@@ -66,13 +70,13 @@ MEASURE_JS = r"""
     }
     return {level2: true, title: h.textContent.trim(), cls: cls.join(' '), kind: 'full',
             use, fit: 1, scale: 1, overRight: false,
-            capOver: !!cap && cap.scrollHeight > cap.clientHeight + 1, noFigure: !fig, galleryCapOver};
+            capOver: !!cap && cap.scrollHeight > cap.clientHeight + 1, noFigure: !fig, galleryCapOver, watermark};
   }
   const sr = s.getBoundingClientRect(), cs = getComputedStyle(s);
   const shift = parseFloat(s.style.getPropertyValue('--engine-shift')) || 0;
   const fit = parseFloat(s.style.getPropertyValue('--engine-fit')) || 1;
   const scale = parseFloat(s.getAttribute('data-engine-scale')) || 1;
-  const skip = 'h2, svg.engine-waves, .engine-footnotes, .engine-signoff, .engine-marking, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
+  const skip = 'h2, svg.engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
   for (const k of kids) for (const e of [k, ...k.querySelectorAll('*')]) {
@@ -101,7 +105,7 @@ MEASURE_JS = r"""
           // the right edge: the padding, or on a {.wide} slide the wide margin the body widens to
           overRight: right > sr.width - (s.classList.contains('engine-wide')
             ? parseFloat(cs.getPropertyValue('--engine-wide-margin')) : parseFloat(cs.paddingRight)) + 16,  // inline-code padding overhangs
-          noteWrap, galleryCapOver, tableBox};
+          noteWrap, galleryCapOver, tableBox, watermark};
 }
 """
 
@@ -226,6 +230,9 @@ def pdf_problems(w, h, words, lines, slide=None):
     # a marking strip's words are the livery's furniture (a full-width banner, a legend at the foot)
     words = [wd for wd in words if not any(x <= (wd[0] + wd[2]) / 2 / w <= x + bw and y <= (wd[1] + wd[3]) / 2 / h <= y + bh
                                            for x, y, bw, bh in STRIPS)]
+    # the watermark's: furniture too, turned across the slide, which pdftotext gives as glyphs or pieces of
+    # its text in boxes as tall as the turned letters (a body word that is one is a line's height)
+    words = [wd for wd in words if not (WATERMARK and wd[4] in WATERMARK and wd[3] - wd[1] > 0.4 * WM_HEIGHT * h)]
     wide = slide is None or "engine-wide" in slide.get("cls", "").split()
     edge = w * (WIDE_EDGE if wide else EDGE) + TOL
     for x0, y0, x1, y1, t in words:
@@ -516,7 +523,7 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, WIDE_EDGE, STRIPS
+    global EDGE, WIDE_EDGE, STRIPS, WATERMARK, WM_HEIGHT
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
@@ -524,6 +531,7 @@ def main():
     geom = livery["geometry"]
     EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
     STRIPS = [s["box"] for s in livery.get("marking") or []]
+    WM_HEIGHT = livery["watermark"]["size"] / livery["type"]["canvas"]["h"]
     pptx_fail = os.environ.get("QA_PPTX_FAIL") == "1"
 
     html_res = check_html(args.decks, qa)
@@ -539,6 +547,7 @@ def main():
         failed |= bool(tags)
         report += ["source " + h for h in tags]
         html_n, slides = html_res.get(deck, (None, []))
+        WATERMARK = next((s["watermark"] for s in slides if s.get("watermark")), "")
         pdf_n, pdf_lines = check_pdf(deck, qa, slides)
         pptx_n, markers = pptx_scan(deck)
         counts = {"pptx": pptx_n, "pdf": pdf_n, "html": html_n}

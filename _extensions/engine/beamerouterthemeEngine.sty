@@ -3,9 +3,8 @@
 %
 % Page furniture, following the brand's slide template (Brand Guide p26):
 %   content frames: accent tab at the left edge beside a bold title, hairline
-%   rule, the mark top-right (geometry.logo.corner: top-right | top-left | none),
-%   page number bottom-left (geometry.pagenumber.corner), and the livery's
-%   sign-off lockup at the foot when it has one (signoff.*).
+%   rule, a mark in each corner the livery wears (geometry.marks: the NSF NCAR
+%   lockup top-right), page number bottom-left (geometry.pagenumber.corner).
 %
 % Every page is drawn by the `background' template according to a page
 % style: normal | title | section | closing | feature | full.
@@ -38,24 +37,38 @@
 % (the fractions are the livery's: engine@geom@* in its build/livery.sty)
 \newdimen\engine@margin      \engine@margin=\engine@geom@margin\paperwidth
 \newdimen\engine@tabwidth    \engine@tabwidth=\engine@geom@tabwidth\paperwidth
-\newdimen\engine@logoheight  \engine@logoheight=\engine@geom@logoheight\paperheight
-\newdimen\engine@logotop     \engine@logotop=\engine@geom@logotop\paperheight
-% the content mark's distance from its edge: geometry.logo.inset, else the margin
-\newdimen\engine@logoinset
-\AtBeginDocument{\ifdefined\engine@geom@logoinset\engine@logoinset=\engine@geom@logoinset\paperwidth
-  \else\engine@logoinset=\engine@margin\fi}
-\providecommand\engine@geom@logocorner{top-right}
 \providecommand\engine@geom@pagenumbercorner{bottom-left}
+\providecommand\engine@corners{}
 % \engine@ifcorner{<macro>}{<value>}{<true>}{<false>}
 \def\engine@ifcorner#1#2{\edef\engine@tmpa{#1}\def\engine@tmpb{#2}%
   \ifx\engine@tmpa\engine@tmpb\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
 \setbeamersize{text margin left=\engine@margin,text margin right=\engine@margin}
 
-% brand lockup shown at the top right of content frames (a dark frame's, [enginedark]: the dark
-% role's mark, livery.sty's \engine@mark@dark@logo)
+% the content frames' marks, one per corner the livery wears (geometry.marks: livery.sty's
+% \engine@corners and \engine@corner@<corner>@<key>), each the field role's image of its name,
+% \engine@mark@<role>@<name>: the background role's, a dark frame's ([enginedark]) the dark role's
 \newif\ifengine@darkframe
-\def\engine@framelogo{\ifengine@darkframe\includegraphics[height=\engine@logoheight]{\csname engine@mark@dark@logo\endcsname}%
-  \else\enginelogo[height=\engine@logoheight]{light}\fi}
+\def\engine@ck#1#2{\csname engine@corner@#1@#2\endcsname}
+\def\engine@cornerimage#1{\includegraphics[height=\engine@ck{#1}{height}\paperheight]%
+  {\csname engine@mark@\ifengine@darkframe dark\else background\fi @\engine@ck{#1}{mark}\endcsname}}
+% \engine@ifworn{<corner>}{<true>}{<false>}: the corner wears a mark (logo=false drops the logo's)
+\def\engine@ifworn#1#2#3{\ifcsname engine@corner@#1@mark\endcsname
+    \engine@ifcorner{\engine@ck{#1}{mark}}{logo}{\ifengine@framelogo#2\else#3\fi}{#2}%
+  \else#3\fi}
+% \engine@cornerinset{<corner>}: its distance from its side edge into \engine@cx (inset, else the margin)
+\newdimen\engine@cx \newdimen\engine@cy
+\def\engine@cornerinset#1{\ifcsname engine@corner@#1@inset\endcsname\engine@cx=\engine@ck{#1}{inset}\paperwidth
+  \else\engine@cx=\engine@margin\fi}
+% \engine@drawcorner{<corner>}: its mark at its corner, its inset from the side and its top or bottom
+\def\engine@drawcorner#1{\engine@cornerinset{#1}%
+  \engine@ifcorner{#1}{top-left}{\engine@cy=\engine@ck{#1}{top}\paperheight
+    \node[anchor=north west,inner sep=0pt] at (\engine@cx,\paperheight-\engine@cy) {\engine@cornerimage{#1}};}{}%
+  \engine@ifcorner{#1}{top-right}{\engine@cy=\engine@ck{#1}{top}\paperheight
+    \node[anchor=north east,inner sep=0pt] at (\paperwidth-\engine@cx,\paperheight-\engine@cy) {\engine@cornerimage{#1}};}{}%
+  \engine@ifcorner{#1}{bottom-left}{%
+    \node[anchor=south west,inner sep=0pt] at (\engine@cx,\engine@ck{#1}{bottom}\paperheight) {\engine@cornerimage{#1}};}{}%
+  \engine@ifcorner{#1}{bottom-right}{%
+    \node[anchor=south east,inner sep=0pt] at (\paperwidth-\engine@cx,\engine@ck{#1}{bottom}\paperheight) {\engine@cornerimage{#1}};}{}}
 % a user \logo{...} (or Quarto's `logo:') is beamer's secondary logo: set in
 % the footline, bottom right, at its natural size (as in beamer's default
 % themes), so beamer reserves room for it and content stops
@@ -70,27 +83,31 @@
     \hbox to\paperwidth{\hfil\usebox\engine@userlogo
       \ifdim\wd\engine@userlogo<0.8\paperwidth\hskip\engine@margin\fi}%
     \vskip0.01\paperheight}}
-\newdimen\engine@logowidth
-\newdimen\engine@lightlogowidth \newdimen\engine@darklogowidth   % the content mark's and the dark frame's
-\AtBeginDocument{%
-  \settowidth\engine@lightlogowidth{\engine@framelogo}%
-  \begingroup\engine@darkframetrue\global\setbox\@tempboxa\hbox{\engine@framelogo}\endgroup
-  \engine@darklogowidth=\wd\@tempboxa
-  \ifengine@framelogo\else\engine@lightlogowidth=0pt \engine@darklogowidth=0pt\fi
-  \engine@ifcorner{\engine@geom@logocorner}{none}{\engine@lightlogowidth=0pt \engine@darklogowidth=0pt}{}%
-  \engine@logowidth=\engine@lightlogowidth}
-% the sign-off lockup (signoff in livery.yml), at the foot, when the livery has one: the field
-% role's (#1: background on a content frame), livery.sty's \engine@mark@<role>@signoff
-\def\engine@signoff#1{%
-  \ifcsname engine@mark@#1@signoff\endcsname
-    \engine@ifcorner{\engine@signoffcorner}{bottom-right}{%
-      \node[anchor=south east,inner sep=0pt] at (\paperwidth-\engine@margin,\engine@signoffbottom\paperheight)
-        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@mark@#1@signoff\endcsname}};
-    }{%
-      \node[anchor=south west,inner sep=0pt] at (\engine@margin,\engine@signoffbottom\paperheight)
-        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@mark@#1@signoff\endcsname}};
-    }%
+% the content title's room beside the top corners' marks (livery_build.title_room(), restated on the
+% marks measured here): a corner's inset, its mark's width and frametitle's gap, less the margin, on
+% its side; frametitle.symmetric gives both sides the larger. Measured for the background role's marks
+% and the dark role's; \engine@ftroom{light|dark} sets the frame's (\engine@resetframe, \engine@darkcolors)
+\newdimen\engine@ftroomleft \newdimen\engine@ftroomright
+\newdimen\engine@lightroomleft \newdimen\engine@lightroomright
+\newdimen\engine@darkroomleft \newdimen\engine@darkroomright
+\def\engine@measureroom#1#2{% <corner> <dimen's name>
+  \csname #2\endcsname=0pt
+  \engine@ifworn{#1}{\settowidth{\csname #2\endcsname}{\engine@cornerimage{#1}}\engine@cornerinset{#1}%
+    \advance\csname #2\endcsname by \dimexpr\engine@cx+\engine@ft@gap\paperwidth-\engine@margin\relax
+    \ifdim\csname #2\endcsname<0pt \csname #2\endcsname=0pt \fi}{}}
+\def\engine@measurerooms#1{% light | dark, the role whose marks \ifengine@darkframe draws now
+  \engine@measureroom{top-left}{engine@#1roomleft}%
+  \engine@measureroom{top-right}{engine@#1roomright}%
+  \ifdefined\engine@ft@symmetric
+    \ifdim\csname engine@#1roomleft\endcsname<\csname engine@#1roomright\endcsname
+      \csname engine@#1roomleft\endcsname=\csname engine@#1roomright\endcsname
+    \else\csname engine@#1roomright\endcsname=\csname engine@#1roomleft\endcsname\fi
   \fi}
+\def\engine@ftroom#1{\engine@ftroomleft=\csname engine@#1roomleft\endcsname
+  \engine@ftroomright=\csname engine@#1roomright\endcsname}
+\AtBeginDocument{\engine@measurerooms{light}%
+  \engine@darkframetrue\engine@measurerooms{dark}\engine@darkframefalse
+  \engine@ftroom{light}}
 
 % ---------------------------------------------------------------------------
 % frame title
@@ -101,20 +118,12 @@
 % panel (enginefeaturepanel) starts below where the panel would
 \def\engine@featurespace{\def\engine@comp{feature}\nointerlineskip
   \vbox to \engine@ifc{panel@y}{\engine@cv{panel@y}}{0.5}\paperheight{\vfil}}
-% the title's start beside the mark: its inset, its width and the gap (frametitle.gap, HTML's 40 px)
-\def\engine@ftbeside{\ifdim\engine@logowidth>0pt
-  \hskip\dimexpr\engine@logowidth+\engine@ft@gap\paperwidth+\engine@logoinset-\engine@margin\relax\fi}
 \def\engine@frametitle{%
   \nointerlineskip
   \@tempdima=\paperwidth
   \advance\@tempdima by -2\engine@margin
-  \ifdim\engine@logowidth>0pt
-    \engine@ifstyle{normal}{\advance\@tempdima by -\engine@logowidth
-      \advance\@tempdima by -\engine@ft@gap\paperwidth
-      \advance\@tempdima by \dimexpr\engine@margin-\engine@logoinset\relax
-      \ifdefined\engine@ft@symmetric   % the room mirrored about the slide's axis (frametitle.symmetric)
-        \@tempdima=\dimexpr\paperwidth-(\engine@logowidth+\engine@ft@gap\paperwidth+\engine@logoinset)*2\relax\fi}{}%
-  \fi
+  \engine@ifstyle{normal}{\advance\@tempdima by -\engine@ftroomleft   % the room beside the marks
+    \advance\@tempdima by -\engine@ftroomright}{}%
   \setbox\@tempboxa=\vbox{%
     \hsize=\@tempdima
     \def\engine@tmp{center}\ifx\engine@ft@align\engine@tmp\centering\else\raggedright\fi
@@ -140,8 +149,7 @@
          \smash{\vrule width\engine@tabwidth height\dimexpr\ht\@tempboxa+0.5\@tempdimc\relax
                 depth\dimexpr\dp\@tempboxa+0.5\@tempdimc\relax}}\fi
         \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
-        % a top-left mark (or a mirrored room): the title starts beside it
-        \engine@ifcorner{\engine@geom@logocorner}{top-left}{\engine@ftbeside}{\ifdefined\engine@ft@symmetric\engine@ftbeside\fi}%
+        \hskip\engine@ftroomleft   % a top-left mark (or a mirrored room): the title starts beside it
       }{\hskip\engine@margin}%
       \box\@tempboxa}%
     % the gap under the title: to rule-y, at least the band's own (rule-y less the band's foot)
@@ -366,24 +374,35 @@
         \engine@art{content}%
         \ifengine@waves\engine@lines{\engine@waveshift@content}{BrandSurface}\fi
       \fi
-      \ifengine@framelogo
-        \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
-          \node[anchor=north west,inner sep=0pt]
-            at (\engine@logoinset,\paperheight-\engine@logotop) {\engine@framelogo};
-        }{\engine@ifcorner{\engine@geom@logocorner}{none}{}{%
-          \node[anchor=north east,inner sep=0pt]
-            at (\paperwidth-\engine@logoinset,\paperheight-\engine@logotop) {\engine@framelogo};
-        }}%
-      \fi
-      \ifengine@darkframe\engine@signoff{dark}\else\engine@signoff{background}\fi
+      \@for\engine@c:=\engine@corners\do{\engine@ifworn{\engine@c}{\engine@drawcorner{\engine@c}}{}}%
     }{}%
     \engine@ifstyle{title}{\engine@drawcomp{\engine@titlecomp}{title}}{}%
     \engine@ifstyle{closing}{\engine@drawcomp{\engine@closingcomp}{closing}}{}%
     \engine@ifstyle{section}{\engine@drawcomp{section}{section}}{}%
     \engine@ifstyle{feature}{\engine@drawcomp{feature}{feature}}{}%
     \engine@ifstyle{full}{\engine@drawfullbg}{}%
+    \engine@drawwatermark
     \engine@drawmarking
   \end{tikzpicture}}
+
+% the watermark (watermark:), on every frame, centered and turned, behind the body and over the
+% art, field and waves: its text the deck's (\enginewatermark{<text>} in the preamble, which the Quarto
+% filter writes for watermark:; {} for none), else the livery's default; in the livery's color on a
+% content frame, a composed frame's text color (EngineC<composition>Text), on-dark on a dark frame
+\providecommand\engine@watermark@default{}
+\newcommand\enginewatermark[1]{\gdef\engine@watermarktext{#1}}
+\def\engine@drawwatermark{%
+  \ifdefined\engine@watermarktext\let\engine@wm\engine@watermarktext\else\let\engine@wm\engine@watermark@default\fi
+  \ifx\engine@wm\@empty\else
+    \ifengine@darkframe\def\engine@wmcolor{BrandOnDark}\else\def\engine@wmcolor{EngineWatermarkColor}\fi
+    \engine@ifstyle{title}{\edef\engine@wmcolor{EngineC\engine@titlecomp Text}}{}%
+    \engine@ifstyle{closing}{\edef\engine@wmcolor{EngineC\engine@closingcomp Text}}{}%
+    \engine@ifstyle{section}{\def\engine@wmcolor{EngineCsectionText}}{}%
+    \engine@ifstyle{feature}{\def\engine@wmcolor{EngineCfeatureText}}{}%
+    \node[anchor=center,inner sep=0pt,rotate=\engine@watermark@angle,opacity=\engine@watermark@opacity,
+          text=\engine@wmcolor,font=\expandafter\engine@fsof\engine@watermark@type\selectfont\bfseries]
+      at (0.5\paperwidth,0.5\paperheight) {\engine@wm};
+  \fi}
 
 % the marking strips (livery.yml marking:, in order), on every frame, over everything: each one's
 % text the deck's (\enginemarking[<name>]{<text>} in the preamble, which the Quarto filter writes
@@ -473,7 +492,7 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
   \@for\engine@c:=\engine@darkswapped\do{\colorlet{EngineLight\engine@c}{\engine@c}}}
 \def\engine@resetframe{%
   \def\engine@framestyle{normal}\global\engine@haspanelfalse\global\engine@galn=\z@   % no gallery carried over
-  \engine@darkframefalse\engine@logowidth=\engine@lightlogowidth
+  \engine@darkframefalse\engine@ftroom{light}%
   \@for\engine@c:=\engine@darkswapped\do{\colorlet{\engine@c}{EngineLight\engine@c}}%
   % the text color too: a field's hook (\engine@fieldcolors) sets it where the frame's group
   % does not undo it, so the frame after a closing slide had white body text
@@ -532,7 +551,7 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
   \setbeamercolor{footnote}{fg=BrandDarkMuted}%
   \colorlet{BrandMuted}{BrandDarkMuted}\colorlet{BrandPrimaryContrast}{BrandSecondary}%
   \colorlet{enginetableband}{BrandDarkBand}\colorlet{enginetablerule}{BrandDarkRule}%
-  \engine@logowidth=\engine@darklogowidth}
+  \engine@ftroom{dark}}
 
 % \engine@fieldcolors{<color>}: every text color for a field in <color>
 \def\engine@fieldcolors#1{%

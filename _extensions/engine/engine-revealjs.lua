@@ -62,6 +62,9 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
 
   metadata `marking: "CUI"` (the first strip) or `marking: {<name>: "...", <name>: none}`
       the marking strips on every slide (the livery places and colors them)
+  metadata `watermark: DRAFT`
+      a faint diagonal word across every slide, behind the content (the livery's look;
+      `none` drops a livery's default)
 
 Layout lives in engine-revealjs.scss; colors, fonts and logos come from the livery
 (`livery:` in the metadata, else the bundled liveries/ncar): its build/livery.css,
@@ -403,17 +406,29 @@ local function unwrap_layout(blocks)
   return out
 end
 
--- the sign-off lockup's box on every content, section and closing slide (the title slide's is
--- in title-slide.html); livery.css shows and places it when the livery has one. Raw tags, not
--- a Div (the <section> trap).
-local SIGNOFF_SKIP = { feature = true, full = true }   -- a closing slide wears it
+-- the marks: on a content slide one box per corner the livery wears (geometry.marks), which
+-- livery.css places and fills (.engine-mark-<corner>), in one .engine-marks box over the slide
+-- (always there, empty or not: Quarto's `.columns:nth-child(3)` margin counts a slide's children,
+-- so the body's place among them must not depend on the livery); on a divider and a closing the
+-- composition's sign-off box (the title slide's is in title-slide.html). None on a feature or
+-- full slide. Raw tags, not a Div (the <section> trap).
+local MARK_SKIP = { feature = true, full = true }   -- a closing slide wears its composition's
+local CORNERS = { "top-left", "top-right", "bottom-left", "bottom-right" }
 
-local function add_signoff(blocks)
+local function add_marks(blocks, livery)
+  local worn = {}
+  for _, c in ipairs(CORNERS) do
+    if type(livery.geometry.marks[c]) == "table" then table.insert(worn, c) end
+  end
   local out = pandoc.Blocks({})
   for _, blk in ipairs(blocks) do
     out:insert(blk)
-    if (blk.t == "Header" and blk.level == 1) or C.content_heading(blk, slide_level, SIGNOFF_SKIP) then
+    if (blk.t == "Header" and blk.level == 1) or (C.content_heading(blk, slide_level, MARK_SKIP) and has_class(blk, "closing")) then
       out:insert(html('<div class="engine-signoff"></div>'))
+    elseif C.content_heading(blk, slide_level, MARK_SKIP) then
+      local marks = {}
+      for _, c in ipairs(worn) do table.insert(marks, '<div class="engine-mark engine-mark-' .. c .. '"></div>') end
+      out:insert(html('<div class="engine-marks">' .. table.concat(marks) .. '</div>'))
     end
   end
   return out
@@ -430,6 +445,24 @@ local function add_marking(blocks, text)
       out:insert(html(text))
     end
   end
+  return out
+end
+
+-- the watermark (C.watermark_text: the deck's watermark:, else the livery's default) as the LAST
+-- element of every slide: z-index -1 in the scss puts it under the body in flow and, later in the
+-- DOM than the art and the waves (z-index -1 too), over them. A slide ends at the next heading at or
+-- above the slide level, a top-level rule, or the deck's end; the title slide's is title-slide.html's.
+local function add_watermark(blocks, text)
+  if not text then return blocks end
+  local out, open = pandoc.Blocks({}), false
+  for _, blk in ipairs(blocks) do
+    if (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule" then
+      if open then out:insert(html(text)) end
+      open = true
+    end
+    out:insert(blk)
+  end
+  if open then out:insert(html(text)) end
   return out
 end
 
@@ -638,9 +671,14 @@ local function add_dependency(livery)
   end
   table.sort(roles)
   table.insert(roles, 1, "primary"); table.insert(roles, 1, "background")
-  for _, role in ipairs(roles) do
-    add(livery.marks[role].logo)
-    if livery.marks[role].signoff then add(livery.marks[role].signoff) end
+  for _, role in ipairs(roles) do   -- each role's logo first, then its other names sorted (no print twin: LaTeX's)
+    local names = {}
+    for n in pairs(livery.marks[role]) do
+      if n ~= "logo" and not n:match("%-print$") then table.insert(names, n) end
+    end
+    table.sort(names)
+    table.insert(names, 1, "logo")
+    for _, n in ipairs(names) do add(livery.marks[role][n]) end
   end
   local comps = {}   -- every composition's own mark and sign-off files (an image: of its own)
   for k in pairs(livery.compositions or {}) do table.insert(comps, k) end
@@ -744,6 +782,11 @@ function Pandoc(doc)
   end
   local marking = #divs > 0 and table.concat(divs) or nil
   if marking then meta["engine-marking"] = pandoc.RawInline("html", marking) end
+  -- the watermark, as HTML: the same element on the title slide (title-slide.html) and every slide's end
+  local wtext = C.watermark_text(meta, livery)
+  local watermark = wtext and ('<div class="engine-watermark">'
+    .. pandoc.write(pandoc.Pandoc({ pandoc.Plain(wtext) }), "html"):gsub("%s+$", "") .. '</div>') or nil
+  if watermark then meta["engine-watermark"] = pandoc.RawInline("html", watermark) end
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   -- the references slide (a deck that cites without one gets it last): .engine-references (the scss)
@@ -883,6 +926,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_signoff(out), marking))))
+  doc.blocks = add_watermark(mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_marks(out, livery), marking)))), watermark)
   return doc
 end

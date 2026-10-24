@@ -58,10 +58,12 @@ files). `installed-fonts` names Helvetica itself, which HTML uses on a Mac and P
 - **The NASA insignia**: nasa's vector (`liveries/nasa/logos/meatball.svg`, the Brand Center's,
   2024 colors), inherited. The template has it twice as bitmaps baked into its art: in the title
   bar's JPEG (1280 x 90) and in the cover banner (2000 x 364). `reference/ccp_art.py` paints both
-  out; the cover's comes back as the composition's mark (vector in every format), the bar's is
-  drawn back into the content and divider art from the SVG at the art's 3840 px. The engine draws
-  one mark per content slide (the emblem's corner); a second, vector one in the other corner is
-  a follow-up (design/engine-and-liveries.md, "one mark per field").
+  out and prints where they were; both come back in vector in every format: the bar's as the
+  content slides' top-right mark (`geometry.marks.top-right`, `mark: insignia`, its box the
+  drawn insignia's, measured on the old art: top 0.0745, height 0.106, right inset 0.0146) and
+  the dividers' sign-off (`compositions.section.signoff`, the same box), the cover's as the
+  composition's mark. Until the corner marks (2026-10-24) the engine drew one mark per content
+  slide, so the bar's insignia was drawn back into the art from the SVG.
 - **The CCP emblem and lockup**: NASA's own vectors from the CCP Program Collector Card (2014), on
   Wikimedia Commons, public domain in the US (PD-USGov), their use restricted like every NASA
   insignia (14 CFR 1221):

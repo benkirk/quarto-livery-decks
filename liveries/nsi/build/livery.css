@@ -33,10 +33,6 @@
   --engine-dark-band: #0F0F0F;
   --engine-dark-code: #1F1F1F;
   --engine-dark-muted: #B2B2B2;
-  --engine-logo-h: 121.5px;
-  --engine-logo-w: 222.3px;
-  --engine-logo-aspect: 1.83;
-  --engine-logo-top: 36px;
   --engine-margin: 96px;
   --engine-tab-width: 28.8px;
   --engine-wide-margin: 48px;
@@ -95,10 +91,6 @@
   --engine-type-level5: 0.9167;
   --engine-font-family: "TeX Gyre Heros";
   --engine-heading-font-family: "TeX Gyre Heros Cn";
-  --engine-logo-left: 24px;
-  --engine-logo-right: auto;
-  --engine-logo-position: left top;
-  --engine-logo-content: "";
   --engine-title-top: 44px;
   --engine-title-height: 70px;
   --engine-title-rule-y: 130px;
@@ -111,18 +103,15 @@
   --engine-title-text-align: center;
   --engine-title-tab: none;
   --engine-title-rule: none;
-  --engine-title-left: calc(24px + 40px + var(--engine-logo-w));
+  --engine-title-left: calc(24px + 40px + 222.3px);
   --engine-title-right: var(--engine-margin);
   --engine-title-color: #000000;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
-  --engine-signoff-display: block;
-  --engine-signoff-h: 45px;
-  --engine-signoff-w: 284.3px;
-  --engine-signoff-bottom: 27px;
-  --engine-signoff-left: var(--engine-margin);
-  --engine-signoff-right: auto;
-  --engine-signoff-position: left bottom;
+  --engine-watermark-color: #000000;
+  --engine-watermark-opacity: 0.08;
+  --engine-watermark-angle: 30deg;
+  --engine-watermark-size: calc(200px * var(--engine-type-scale, 1));
   --engine-column-gap: 48px;
   --engine-column-rule: 0px;
   --engine-caution-bar: 8px;
@@ -245,15 +234,12 @@ html:root {
   --engine-mark-dark-logo: url("nsi-lockup-white.png");
   --engine-mark-dark-signoff: url("rio-lockup-white.png");
 }
-.reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
-.reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
-.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
-.reveal .slides section .engine-signoff { background-image: var(--engine-mark-background-signoff); }
-.reveal .slides section.engine-field .engine-signoff,
-.reveal .slides section.engine-title.engine-field .engine-signoff { background-image: var(--engine-mark-primary-signoff); }
-.reveal .slides section.engine-dark .engine-signoff { background-image: var(--engine-mark-dark-signoff); }
+.reveal .slides section.slide .engine-mark-top-left { top: 36px; left: 24px; width: 222.3px; height: 121.5px; background-position: left top; background-image: var(--engine-mark-background-logo); }
+.reveal .slides section.engine-field .engine-mark-top-left { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.engine-dark .engine-mark-top-left { background-image: var(--engine-mark-dark-logo); }
+.reveal .slides section.slide .engine-mark-bottom-left { bottom: 27px; left: var(--engine-margin); width: 284.3px; height: 45px; background-position: left bottom; background-image: var(--engine-mark-background-signoff); }
+.reveal .slides section.engine-field .engine-mark-bottom-left { background-image: var(--engine-mark-primary-signoff); }
+.reveal .slides section.engine-dark .engine-mark-bottom-left { background-image: var(--engine-mark-dark-signoff); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("campus.jpg") center / cover no-repeat; }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {

@@ -93,8 +93,8 @@ def _livery(d: Path, name: str, aspect: float, typeface: str, heading: str | Non
          "# every key: liveries/REFERENCE.md", "roles:",
          "  primary-text: lt1", "  primary-contrast: dk2", "  accent: accent4", "  highlight: accent2",
          '  muted: "#6B7280"', "  surface: lt2", "  warning: accent5", "  dark: accent3", "",
-         "geometry:", "  margin: 0.06", "  tab-width: 0.018", "  logo:", "    height: 0.0644", "    top: 0.0533",
-         f"    aspect: {aspect}", "  full:", "    pad: 0.025", "    footline: 0.075", "    caption: 0.06", "",
+         "geometry:", "  margin: 0.06", "  tab-width: 0.018", "  marks:", "    top-right:", "      mark: logo",
+         "      height: 0.0644", "      top: 0.0533", f"      aspect: {aspect}", "  full:", "    pad: 0.025", "    footline: 0.075", "    caption: 0.06", "",
          "section:", "  label: Section", "", "pptx:", f"  typeface: {typeface}"]
     if heading and heading != typeface:
         L.append(f"  heading-typeface: {heading}")

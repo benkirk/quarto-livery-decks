@@ -159,6 +159,10 @@ def _tables(path: str, node: dict, schema: dict, out: list):
             if p != "compositions.title":
                 continue
             p = "compositions.<name>"
+        if path == "geometry.marks":   # every corner's entry is the same: one table stands for the four
+            if p != "geometry.marks.top-left":
+                continue
+            p = "geometry.marks.<corner>"
         _tables(p, v, schema, out)
 
 

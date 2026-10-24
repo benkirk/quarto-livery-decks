@@ -71,10 +71,10 @@ NCAR = ROOT / "liveries" / "ncar"
 CASES = {
     "no schema": (lambda k: k.pop("schema"), "livery.yml: (top): 'schema' is required"),
     "schema 2": (lambda k: k.update(schema=2), "livery.yml: schema: 2 is not a schema this engine reads (1)"),
-    "misspelt key": (lambda k: k["geometry"]["logo"].update(corne="top-left"), "livery.yml: geometry.logo.corne: unknown key"),
+    "misspelt key": (lambda k: k["geometry"]["marks"]["top-right"].update(corne="top-left"), "livery.yml: geometry.marks.top-right.corne: unknown key"),
     "unknown top key": (lambda k: k.update(aspect="16:9"), "livery.yml: aspect: unknown key"),
     "fraction > 1": (lambda k: k["geometry"].update(margin=1.5), "livery.yml: geometry.margin: 1.5 is greater than the maximum of 1"),
-    "bad corner": (lambda k: k["geometry"]["logo"].update(corner="middle"), "livery.yml: geometry.logo.corner: 'middle' is not one of"),
+    "bad corner": (lambda k: k["geometry"]["marks"].update(middle={"mark": "logo"}), "livery.yml: geometry.marks.middle: unknown key"),
     "bad hex": (lambda k: k["roles"].update(accent="#FAA1"), "livery.yml: roles.accent: '#FAA1' is not"),
     "charts key": (lambda k: k["charts"].update(colours=[]), "livery.yml: charts.colours: unknown key"),
     "charts dark key": (lambda k: k["charts"].setdefault("dark", {}).update(cycle=[]), "livery.yml: charts.dark.cycle: unknown key"),
