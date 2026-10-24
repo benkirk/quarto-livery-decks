@@ -456,7 +456,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   them rebuilds all of them, and on the livery's files (`livery.py deps`: `build/`, the
   template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
   rebuilds the decks, and on the engine's sources (`ENGINE_FILES`: its Lua, Python, `.sty`,
-  `.scss`, `.html`, `.theme`, `_extension.yml`, `pptx_steps/` and `mpl/`; the `_extensions` link's
+  `.scss`, `.js`, `.html`, `.theme`, `_extension.yml`, `pptx_steps/` and `mpl/`; the `_extensions` link's
   target is a directory, whose mtime an edit inside never moves). The `_livery` link is order-only (make stats a link's target, the
   directory, which would look stale forever after a switch); the `.livery` stamp is the
   prerequisite, and holds the livery's directory, so a `LIVERY_DIR` switch under one name rebuilds too. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`

@@ -124,7 +124,7 @@ FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fi
 # link's target is a directory, whose mtime an edit inside it never moves, so an engine change
 # left every deck up to date (#133). The Lua and theme files serve all three formats.
 ENGINE_DIR   := $(FRAMEWORK_ROOT)_extensions/engine
-ENGINE_FILES := $(wildcard $(ENGINE_DIR)/*.lua $(ENGINE_DIR)/*.py $(ENGINE_DIR)/*.sty $(ENGINE_DIR)/*.scss \
+ENGINE_FILES := $(wildcard $(ENGINE_DIR)/*.lua $(ENGINE_DIR)/*.py $(ENGINE_DIR)/*.sty $(ENGINE_DIR)/*.scss $(ENGINE_DIR)/*.js \
                 $(ENGINE_DIR)/*.html $(ENGINE_DIR)/*.theme $(ENGINE_DIR)/_extension.yml $(ENGINE_DIR)/pptx_steps/*.py \
                 $(ENGINE_DIR)/mpl/*.py)
 DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES) $(ENGINE_FILES)
