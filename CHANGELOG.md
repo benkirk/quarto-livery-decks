@@ -39,8 +39,13 @@ every format (`design/cells-dark-handoff.md`).
   black lockup on black; now its white one) and colored a card's text white on white. Under a
   dark livery the class does nothing. docs/authoring.md "Front matter and slide kinds".
 
+- Every card has a hairline round its edge in every format (`boxes.card.border`, 0.0016 of the
+  slide's height, in the `rule` blend, the title hairline's): on a white card fill the body now
+  has an edge. A picked card's outline replaces it; a solid card has none.
+
 ### Liveries
 
+- `boxes.card.border` and `border-color` (the card's hairline); `border: 0` turns it off.
 - Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
   corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
   `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its

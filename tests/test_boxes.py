@@ -25,7 +25,7 @@ import livery_build as lb
 from conftest import ENGINE, ROOT, run
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "bar", "outline", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
+FRACTIONS = ("gap", "rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
 EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
        ("quote", "attribution-gap"), ("note", "gap"),
        ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
@@ -62,6 +62,8 @@ def test_every_key(livery):
     assert f"\\definecolor{{EngineGlyphDone}}{{HTML}}{{{b['status']['done'][1:]}}}" in sty
     assert f"\\def\\engine@boxes@caution@padx{{{b['caution']['pad'][1]}}}" in sty
     assert f"\\definecolor{{EngineBoxesCardOutlineColor}}{{HTML}}{{{b['card']['outline-color'][1:]}}}" in sty
+    assert f"\\definecolor{{EngineBoxesCardBorderColor}}{{HTML}}{{{b['card']['border-color'][1:]}}}" in sty
+    assert f"--engine-card-border-color: {b['card']['border-color']};" in css
     assert f"--engine-rail-line-color: {b['rail']['line-color']};" in css
     assert f"--engine-rail-fill: {b['rail']['fill'] or 'transparent'};" in css
     assert ("EngineBoxesRailFill" in sty) == (b["rail"]["fill"] is not None), "a null fill defines no color"

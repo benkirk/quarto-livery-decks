@@ -131,6 +131,8 @@
   --engine-card-radius: 10.8px;
   --engine-card-outline: 3px;
   --engine-card-outline-color: #00818F;
+  --engine-card-border: 1.4px;
+  --engine-card-border-color: #A9B8CB;
   --engine-card-pad: 0.5em 0.8em;
   --engine-card-head-pad: 0.35em 0.8em;
   --engine-card-pad-x: 0.8em;

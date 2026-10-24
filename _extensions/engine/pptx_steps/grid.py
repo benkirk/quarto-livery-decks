@@ -524,6 +524,9 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height, deck_dir):
         if attrs.get("pick"):
             mine.append(shape(slide, x, y, w, total, radius, None, f"Card {n} outline",
                                line=(_hex(card["outline-color"]), round(card["outline"] * slide_height))))
+        elif not solid and card["border"] > 0:   # every card's hairline, drawn as the pick's outline
+            mine.append(shape(slide, x, y, w, total, radius, None, f"Card {n} border",
+                               line=(_hex(card["border-color"]), max(round(card["border"] * slide_height), 1))))
         if hb is not None:
             hb.top, hb.height = y, head_h
         cy = y + head_h

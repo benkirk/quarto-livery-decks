@@ -267,6 +267,10 @@ def test_cards(deck):
     assert str(ol.line.color.rgb) == livery["boxes"]["card"]["outline-color"][1:], "the pick's outline color"
     assert ol.line.width == round(livery["boxes"]["card"]["outline"] * prs.slide_height), "the outline's width"
     assert "Card 2 outline" not in by, "an outline on a card not picked"
+    border = by["Card 2 border"]   # every card's hairline (boxes.card.border); the pick's outline replaces it, a solid card has none
+    assert str(border.line.color.rgb) == livery["boxes"]["card"]["border-color"][1:], "the hairline's color"
+    assert border.line.width == max(round(livery["boxes"]["card"]["border"] * prs.slide_height), 1), "the hairline's width"
+    assert "Card 1 border" not in by and "Card 3 border" not in by, "a border on a picked or a solid card"
     title = by["Card 1 title"].text_frame.paragraphs[0].runs[0].font
     assert title.bold and title.size.pt == livery_mod.half_pt(livery["type"]["roles"]["subhead"]["pt"]), "the title's look"
     assert str(title.color.rgb) == role("primary-text"), "the title on the role in primary-text"

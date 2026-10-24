@@ -671,10 +671,13 @@ it does, by area, beyond the format notes above:
   a grid slide; `grid-pptx.lua` writes `⟦engine:lead⟧`, `⟦engine:column card role=... pick
   solid⟧`, `⟦engine:strip role=...⟧` (each closed by `⟦engine:end⟧`) and prefix markers
   `⟦engine:title⟧`/`sub`/`label`/`big`; `grid.py` draws native shapes ("Card n fill", "Card n head",
-  "Lead fill", "Card n strip k"...), one group per card, lead or strip ("Card n", "Lead", "Strip": a
+  "Lead fill", "Card n strip k", "Card n border"...), one group per card, lead or strip ("Card n", "Lead", "Strip": a
   click selects it whole; tests look inside groups), under text boxes whose `lstStyle` is the master's body style
   (bullets and sizes as the placeholder's), each head its own height, a row's cards one height;
-  `status_glyphs.py` makes a glyph the bullet (`a:buChar`); a picture in a card is
+  `status_glyphs.py` makes a glyph the bullet (`a:buChar`). Every card but a picked or solid one
+  wears `boxes.card.border`, a hairline drawn as the pick's outline is in all three formats (HTML
+  the card's overlay ring, the PDF the tcolorbox frame, a `pick=<n>` card's other steps a
+  `borderline`). A picture in a card is
   `figures.py`'s inside the card's pads and group ("Card n picture", "Card n picture caption"),
   and pictures give way (to `PIC_FLOOR` em) when the card's text needs the room. HTML: raw tags (a
   Div opening with a heading would become a `<section>`), the role a custom property (`role` is

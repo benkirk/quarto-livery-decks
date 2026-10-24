@@ -477,14 +477,16 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   background: var(--engine-card-fill);
   border-radius: var(--engine-card-radius);
   overflow: hidden;
-  &.engine-pick::after {
+  &::after {   // every card's hairline (boxes.card.border), an overlay as the pick's outline
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color);
+    box-shadow: inset 0 0 0 var(--engine-card-border) var(--engine-card-border-color);
     pointer-events: none;
   }
+  &.engine-solid::after { box-shadow: none; }
+  &.engine-pick::after { box-shadow: inset 0 0 0 var(--engine-card-outline) var(--engine-card-outline-color); }
   .engine-card-head {
     background: var(--engine-card-role);
     color: var(--engine-primary-text);

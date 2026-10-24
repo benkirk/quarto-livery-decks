@@ -26,6 +26,8 @@
       "number-width": 2
     },
     "card": {
+      "border": 0.0016,
+      "border-color": "#E1E1E1",
       "fill": "#1C2026",
       "head-pad": [
         0.35,

@@ -644,7 +644,9 @@
   \expandafter\gdef\csname engine@card@sub@\the\engine@ncards\endcsname{#3}%
   \engine@cardw=\engine@sharewidth{\csname engine@cards@share@\the\engine@ncards\endcsname}{\engine@cards@n}%
   \expandafter\xdef\csname engine@card@w@\the\engine@ncards\endcsname{\the\engine@cardw}%
-  \engine@cardrule=\z@ \ifengine@cardpick\engine@cardrule=\engine@boxes@card@outline\paperheight\fi
+  \engine@cardrule=\z@   % the frame: a pick's outline, else every card's hairline (boxes.card.border; none when solid)
+  \ifengine@cardpick\engine@cardrule=\engine@boxes@card@outline\paperheight
+  \else\ifengine@cardsolid\else\ifengine@cardplain\else\engine@cardrule=\engine@boxes@card@border\paperheight\fi\fi\fi
   \expandafter\xdef\csname engine@card@rule@\the\engine@ncards\endcsname{\the\engine@cardrule}%
   \def\engine@tmpa{#2#3}\ifx\engine@tmpa\@empty\else   % the head's height, the row's tallest
     \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@headpadx em\relax\relax
@@ -696,11 +698,15 @@
   \else
     \engine@hasopt{solid}%
     \ifin@\edef\engine@tmpb{colback=\engine@crole,coltext=BrandPrimaryText,colframe=\engine@crole}%
-    \else\def\engine@tmpb{colback=EngineBoxesCardFill,colframe=EngineBoxesCardFill,coltext=BrandText}\fi
+    \else\def\engine@tmpb{colback=EngineBoxesCardFill,colframe=EngineBoxesCardBorderColor,coltext=BrandText}\fi
     \expandafter\engine@add\expandafter{\engine@tmpb}%
     \ifx\engine@ctitle\@empty\else\engine@add{title={\engine@cardtitle}}\fi
   \fi
-  \engine@hasopt{pick}\ifin@\engine@add{colframe=EngineBoxesCardOutlineColor}\fi
+  \engine@hasopt{pick}\ifin@\engine@add{colframe=EngineBoxesCardOutlineColor}%
+  \else\ifdim\csname engine@card@rule@#1\endcsname>\engine@boxes@card@border\paperheight   % a pick on other steps: its frame
+    \engine@hasopt{solid}\ifin@\else   % reserved, the fill's, and the hairline at its edge
+      \engine@add{colframe=EngineBoxesCardFill,borderline={\the\dimexpr\engine@boxes@card@border\paperheight\relax}{0pt}{EngineBoxesCardBorderColor}}\fi
+  \fi\fi
   \expandafter\engine@begincard\expandafter{\engine@ckeys}\box\engine@cardbox{#1}\end{tcolorbox}}
 
 % ---------------------------------------------------------------------------

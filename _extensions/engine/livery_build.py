@@ -134,6 +134,7 @@ BOXES = {
     "note": {"gap": 0.3},   # a ::: note under a figure or table: its distance under it, em of the caption type
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     "card": {"fill": "background", "radius": 0, "outline": 0.0033, "outline-color": "highlight",
+             "border": 0.0016, "border-color": "rule",   # every card's hairline (a pick's outline replaces it; none on a solid card)
              "pad": [0.5, 0.8], "head-pad": [0.35, 0.8],
              "roles": ["primary", "secondary", "accent"]},   # a card without role=: by its place in the row
     "strip": {"tint": 0.18, "pad": [0.3, 0.8], "gap": 0.3},   # 0.18: caution-fill's share (BLENDS), one tint recipe;
@@ -159,7 +160,7 @@ BOXES = {
     "footnote": {"rule": 0.0022, "rule-length": 0.075, "rule-color": "rule", "width": 0.6, "gap": 0.55, "hang": 0.9, "step": 0.3},
 }
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
-BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color"), "status": ("done", "warn", "fail"),
+BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color", "border-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
@@ -1319,6 +1320,7 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
         p.append(f'--engine-quote-family: "{quote["family"]}";')
     p += [f"--engine-card-fill: {card['fill']};", f"--engine-card-radius: {px(card['radius'])};",
           f"--engine-card-outline: {px(card['outline'])};", f"--engine-card-outline-color: {card['outline-color']};",
+          f"--engine-card-border: {px(card['border'])};", f"--engine-card-border-color: {card['border-color']};",
           f"--engine-card-pad: {pad(card['pad'])};", f"--engine-card-head-pad: {pad(card['head-pad'])};",
           f"--engine-card-pad-x: {card['pad'][1]:g}em;"]   # a strip reaches the card's edges by it
     p += [f"--engine-strip-tint: {round(strip['tint'] * 100, 2):g}%;", f"--engine-strip-pad: {pad(strip['pad'])};",
