@@ -3,7 +3,7 @@
 # at fontscale 0.75 and linewidth 1 (livery_gp.py's), set before this file is loaded.
 # @livery_dark after the load draws for a dark slide; @livery_div the diverging palette.
 livery_font = "TeX Gyre Heros,9"
-set termoption font livery_font
+if (GPVAL_TERM ne "unknown") set termoption font livery_font
 set xlabel font ",16"
 set ylabel font ",16"
 set x2label font ",16"

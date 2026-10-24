@@ -240,10 +240,12 @@ def test_gp(livery: Path):
     if shutil.which("gnuplot"):
         out = {}
         for m in ("light", "dark"):
-            # one -e a line: a line's macros expand before any of it runs
-            r = subprocess.run(["gnuplot", "-d", "-e", f"load '{d / 'build' / 'livery.gp'}'", "-e", f"@livery_{m}",
-                                "-e", "@livery_div", "-e", "print livery_mode, ' ', livery_text"], capture_output=True, text=True)
-            assert r.returncode == 0, f"{d.name}: livery.gp under gnuplot: {r.stderr}"
+            # one -e a line: a line's macros expand before any of it runs; a cairo terminal first, as
+            # the README says, and once with none (a display-less gnuplot's `unknown`)
+            for term in (["-e", "set terminal pdfcairo fontscale 0.75 linewidth 1", "-e", "set output '/dev/null'"], []):
+                r = subprocess.run(["gnuplot", "-d", *term, "-e", f"load '{d / 'build' / 'livery.gp'}'", "-e", f"@livery_{m}",
+                                    "-e", "@livery_div", "-e", "print livery_mode, ' ', livery_text"], capture_output=True, text=True)
+                assert r.returncode == 0, f"{d.name}: livery.gp under gnuplot {term}: {r.stderr}"
             out[m] = r.stderr.split()
         for m in ("light", "dark"):
             assert out[m] == [m, ch["chrome"][m]["text"]], f"{d.name}: gnuplot read {out[m]} for {m}"

@@ -1606,7 +1606,8 @@ def emit_gp(livery: dict) -> str:
          "# at fontscale 0.75 and linewidth 1 (livery_gp.py's), set before this file is loaded.",
          "# @livery_dark after the load draws for a dark slide; @livery_div the diverging palette.",
          f'livery_font = "{family},{pt("caption"):g}"',
-         "set termoption font livery_font",
+         # no terminal yet (gnuplot -d without a display: `unknown`) takes no font: set it later
+         'if (GPVAL_TERM ne "unknown") set termoption font livery_font',
          f'set xlabel font ",{pt("body"):g}"', f'set ylabel font ",{pt("body"):g}"',
          f'set x2label font ",{pt("body"):g}"', f'set y2label font ",{pt("body"):g}"',
          f'set cblabel font ",{pt("body"):g}"', f'set title font ",{pt("body"):g}"',
