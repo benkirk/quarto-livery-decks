@@ -11,7 +11,7 @@ quickstart deck, write Markdown. What each release changed is in [`CHANGELOG.md`
 
 The same quickstart deck under each livery (title, divider, content, closing):
 
-![The quickstart deck under the ncar, cu, nsi, nasa, nasa-dark and nasa-jsc-eg liveries](decks/quickstart/screenshots/liveries.png)
+![The quickstart deck under the ncar, cu, nsi, nasa, nasa-dark, nasa-jsc-eg and nasa-ccp liveries](decks/quickstart/screenshots/liveries.png)
 
 Two example decks ship with the framework:
 
