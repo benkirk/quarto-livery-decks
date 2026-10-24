@@ -216,9 +216,9 @@ jobs:
           ls plots_files/figure-revealjs/*.png   # the raster() slide, the deck's one PNG in HTML
           if grep -l '<text' plots_files/figure-revealjs/*.svg; then echo '::error::SVG plot with <text>'; exit 1; fi
           grep -c 'class="engine-plot"' plots.html >/dev/null
-          test "$(unzip -l plots.pptx | grep -c 'ppt/media/image')" -ge 10
-          test "$(unzip -l plots.pptx | grep -c 'ppt/media/image.*\.svg')" -ge 9   # the plots, vector,
-          test "$(unzip -p plots.pptx 'ppt/slides/*.xml' | grep -o 'asvg:svgBlip' | wc -l)" -ge 9   # each with a PNG
+          test "$(unzip -l plots.pptx | grep -c 'ppt/media/image')" -ge 12
+          test "$(unzip -l plots.pptx | grep -c 'ppt/media/image.*\.svg')" -ge 11   # the plots (gnuplot's two too), vector,
+          test "$(unzip -p plots.pptx 'ppt/slides/*.xml' | grep -o 'asvg:svgBlip' | wc -l)" -ge 11   # each with a PNG
           pdffonts plots.pdf | grep -q Poppins
 
       - name: Upload the decks
@@ -517,7 +517,8 @@ jobs:
           fi
 
       # the charts bundle unpacked alone, no framework on the paths: a script beside it plots in the
-      # livery's colors and embeds its bundled font, registered from the bundle
+      # livery's colors and embeds its bundled font, registered from the bundle, with matplotlib
+      # and with gnuplot (livery_gp.py and livery.gp, the fonts through its fontconfig file)
       - name: Pack and try the charts bundle
         run: |
           make -C decks/quickstart charts-zip LIVERY="$LIVERY"
@@ -541,11 +542,14 @@ jobs:
           fig, ax = plt.subplots(figsize=livery_mpl.figsize("half"))
           ax.plot([0, 1, 2], [0, 1, 3], label="a"); ax.set_xlabel("x"); ax.legend()
           fig.savefig("/tmp/charts-plot.pdf")
+          import livery_gp
+          livery_gp.plot("set xlabel 'x'; plot x title 'a'", kind="half").save("/tmp/charts-gp.pdf")
           print(L["typography"]["base"].replace(" ", ""))
           PY
           engine_yml="$PWD/_extensions/engine/_extension.yml"   # before the cd below
-          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC ENGINE_YML="$engine_yml" python3 /tmp/charts-plot.py | tail -1)
+          family=$(cd /tmp && env -u LIVERY_DIR -u PYTHONPATH -u MATPLOTLIBRC -u GNUPLOT_LIB ENGINE_YML="$engine_yml" python3 /tmp/charts-plot.py | tail -1)
           pdffonts /tmp/charts-plot.pdf | tee /dev/stderr | grep -c "$family" >/dev/null
+          pdffonts /tmp/charts-gp.pdf | tee /dev/stderr | grep -c "$family" >/dev/null
 
       # the title, divider, closing and feature slides of every format against the livery's
       # compositions (comp_measure.py; pptx through the image's LibreOffice). Report-only

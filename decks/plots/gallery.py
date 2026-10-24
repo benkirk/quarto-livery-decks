@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """The plots README's images: `make gallery` in decks/plots/ writes, in screenshots/:
 
-  liveries.png  four HTML slides of this deck per livery in LIVERIES (built with `make html
-                LIVERY=<name>`): the lines, the hue families, the heatmap and the dark slide
+  liveries.png  five HTML slides of this deck per livery in LIVERIES (built with `make html
+                LIVERY=<name>`): the lines, the hue families, the heatmap, the dark slide and
+                the gnuplot slide
   palettes.png  each livery's chart colors from its build/livery.json: the categorical slots, the
                 default color map and the diverging scale, on its light and its dark surface
 
@@ -22,7 +23,7 @@ from deck_qa import serve  # noqa: E402
 DECK, OUT = "plots", "screenshots"
 LIVERIES = ["ncar", "ucar", "cu", "nsi", "nasa", "nasa-dark"]
 COLUMNS = ["Lines take the categorical slots", "A stacked area in hue families",
-           "A heatmap on the sequential map", "On a dark slide"]
+           "A heatmap on the sequential map", "On a dark slide", "gnuplot in the livery"]
 LIVERIES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "liveries")
 
 
@@ -113,7 +114,7 @@ def main():
             subprocess.run(["make", "html", f"LIVERY={livery}"], check=True, stdout=subprocess.DEVNULL)
             os.mkdir(os.path.join(tmp, livery))
             cells += shots(os.path.join(tmp, livery))
-        grid(cells, os.path.join(OUT, "liveries.png"), len(COLUMNS), 400, LIVERIES)
+        grid(cells, os.path.join(OUT, "liveries.png"), len(COLUMNS), 360, LIVERIES)
     palettes(os.path.join(OUT, "palettes.png"))
     if LIVERIES[-1] != LIVERIES[0]:
         subprocess.run(["make", "html", f"LIVERY={LIVERIES[0]}"], check=True, stdout=subprocess.DEVNULL)
