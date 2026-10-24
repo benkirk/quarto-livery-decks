@@ -7,7 +7,8 @@
 -- every notes Div on a slide, so the line joins any notes the author wrote.
 -- .closing becomes `closing` (the template's Closing layout), the slide holding ::: {#refs}
 -- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
--- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty).
+-- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), and a
+-- map `marking:` the strings `engine-marking-<name>` (C.deck_marking; pandoc records a map as empty too).
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -65,9 +66,18 @@ local function byline_meta(meta)
   if #institutes > 0 then meta["engine-institute"] = pandoc.MetaString(table.concat(institutes, "\n")) end
 end
 
+-- a map marking: as one string per strip it names, for pptx_steps/marking.py (a plain string arrives
+-- as `marking` already)
+local function marking_meta(meta)
+  for name, w in pairs(C.deck_marking(meta).by_name) do
+    meta["engine-marking-" .. name] = pandoc.MetaString(w == "none" and "none" or pandoc.utils.stringify(w))
+  end
+end
+
 function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   byline_meta(doc.meta)
+  marking_meta(doc.meta)
   local level = C.slide_level()
   local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
   local refs = C.refs_heading(blocks, level)

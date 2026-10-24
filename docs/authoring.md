@@ -57,9 +57,12 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   limb); `titlegraphic: none` keeps the plain cover.
 - `fineprint: "..."` adds small print under the title block.
 - `marking: "CUI"` (any text) puts a marking strip on every slide, in every format: a
-  restriction or distribution marking. Where it sits, how wide, its fill and its colors are
+  restriction or distribution marking. Where it sits, how wide, its fill, size and colors are
   the livery's `marking:`, and a livery may set default text every deck under it shows
-  (nasa-jsc-eg does); `marking: none` turns a livery's default off.
+  (nasa-jsc-eg does); `marking: none` turns every default off. A livery may have several
+  strips, by name (a CUI `banner` at the top and a `legend` at the foot, say): the plain
+  string sets the first, and a map sets them by name, `marking: {banner: "CUI//SP-EXPT", legend:
+  none}`; a strip the deck does not name keeps its default.
 - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
   OpenType math font) changes the math font; the default is New Computer
   Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key

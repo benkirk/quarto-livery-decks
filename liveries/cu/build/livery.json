@@ -1202,23 +1202,28 @@
       "light": "cu-color"
     }
   },
-  "marking": {
-    "align": "center",
-    "bold": false,
-    "box": [
-      0.1,
-      0.004,
-      0.8,
-      0.03
-    ],
-    "color": "#565A5C",
-    "edge": "top",
-    "fill": null,
-    "height": 0.03,
-    "offset": 0.004,
-    "text": null,
-    "width": 0.8
-  },
+  "marking": [
+    {
+      "align": "center",
+      "bold": false,
+      "box": [
+        0.1,
+        0.004,
+        0.8,
+        0.03
+      ],
+      "color": "#565A5C",
+      "edge": "top",
+      "fill": null,
+      "height": 0.03,
+      "leading": 1.2,
+      "name": "banner",
+      "offset": 0.004,
+      "size": 9,
+      "text": null,
+      "width": 0.8
+    }
+  ],
   "marks": {
     "background": {
       "logo": "logos/cu-boulder-lockup.png",

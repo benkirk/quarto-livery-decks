@@ -93,8 +93,8 @@ stacked area the yellow family's darker shades go olive.
 ## Marking strip
 
 The template has a marking placeholder on every layout, a strip at the top edge ("Click to edit
-CUI Marking": x 0.111, width 0.777, y 0.004, height 0.028, centered, no fill). `marking:` draws it
-in every format, white bold on the cover photo's regolith violet `#6840F0` so it stands out (Ben,
+CUI Marking": x 0.111, width 0.777, y 0.004, height 0.028, centered, no fill). `marking.banner`
+draws it in every format, white bold on the cover photo's regolith violet `#6840F0` so it stands out (Ben,
 2026-10-21: `fill: eg-violet`, `color: white`, `bold: true`, each its own knob; 5.9:1), with demo
 text as the livery's default: "This
 presentation contains no sensitive information; but if it did, here's where the disclaimer would

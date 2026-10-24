@@ -52,8 +52,8 @@ def post(path: Path) -> None:
     # are styled before slide_layout, whose scale= leaves them at their size; columns after it,
     # which leaves a columns slide's frames alone (its {.wide} words are its own line's); grid
     # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes);
-    # tables after all of those, re-split inside their final frames; the marking strip before
-    # type_step, so a deck's type step scales it as HTML and PDF do; type_step last, since it
+    # tables after all of those, re-split inside their final frames; the marking strips before
+    # type_step, so a deck's type step scales them as HTML and PDF do; type_step last, since it
     # multiplies every size the steps before it set.
     style_footnotes.run(prs, path)
     link_captions.run(prs, path)            # a linked picture's URL, a box pandoc cannot add
@@ -62,7 +62,7 @@ def post(path: Path) -> None:
     grid.run(prs, path)                     # a grid slide (what is_grid() counts) drawn from grid-pptx.lua's markers, its gallery by gallery.py
     status_glyphs.run(prs, path)            # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
     style_tables.run(prs, path)
-    marking.run(prs, path)                  # the marking strip, on every slide
+    marking.run(prs, path)                  # the marking strips, on every slide
     type_step.run(prs, path)                # a deck's type-body:/type-scale:
     prs.save(str(path))
 

@@ -173,7 +173,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
-  HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
+  HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
@@ -536,7 +536,7 @@ it does, by area, beyond the format notes above:
   `role=` resolves through livery.sty's `\engine@role@<name>`, else a defined color, else a
   `Package Engine Warning` and the default by place in `\engine@boxes@card@roles`),
   `enginestrip[role=]`, `enginestatus` with `\done`/`\warn`/`\fail` (local to it) and
-  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking{}`,
+  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking[<strip>]{}`,
   `enginequote[role=]{Attribution}`, `\engineagenda`, `\enginesectionunnumbered{Title}{Sub}`,
   `enginegallery[cols=,rows=,fit=,height=]` with `\engineimage[Caption]{file}` (and the bare
   `[enginefull]` frame key, which a gallery fills). The

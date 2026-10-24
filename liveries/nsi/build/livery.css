@@ -118,15 +118,6 @@
   --engine-signoff-left: var(--engine-margin);
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
-  --engine-marking-x: 160px;
-  --engine-marking-y: 3.6px;
-  --engine-marking-w: 1280px;
-  --engine-marking-h: 27px;
-  --engine-marking-justify: center;
-  --engine-marking-align: center;
-  --engine-marking-fill: transparent;
-  --engine-marking-text: #565A5C;
-  --engine-marking-weight: 400;
   --engine-column-gap: 48px;
   --engine-column-rule: 0px;
   --engine-caution-bar: 8px;
@@ -183,6 +174,18 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+}
+.reveal .slides section .engine-marking-banner {
+  --engine-marking-x: 160px;
+  --engine-marking-y: 3.6px;
+  --engine-marking-w: 1280px;
+  --engine-marking-h: 27px;
+  --engine-marking-justify: center;
+  --engine-marking-align: center;
+  --engine-marking-fill: transparent;
+  --engine-marking-text: #565A5C;
+  --engine-marking-weight: 400;
+  --engine-marking-size: calc(15px * var(--engine-type-scale, 1));
 }
 /* chart colors (livery.json charts) */
 :root {

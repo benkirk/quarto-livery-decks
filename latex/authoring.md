@@ -4,7 +4,7 @@ The theme is beamer with a livery; everything beamer does works. What this page 
 layer the engine draws the framework's slide patterns with, written as a hand author writes it:
 columns at shares, a lead box, cards, strips, status lists, quotes, the agenda, steps and
 timelines, image galleries, a caution box, notes, slide footnotes and citations, a scale group,
-the marking strip. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
+the marking strips. `examples/sample.tex` is the cookbook, the twin of the Quarto cookbook
 `decks/sample/sample.qmd` slide for slide (`make examples` here); `make variants` builds it under
 `cu`, under the dark livery `nasa-dark` and at 4:3. Four of its pattern slides under three
 liveries:
@@ -44,7 +44,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Note under a figure or table (the caption's look: small, muted, centered) | `\enginenote{...}` |
 | Scale the body (its lists, tables and code with it) | `\begin{enginescale}{1.4} ... \end{enginescale}`; beamer's `[shrink]` goes the other way, down to fit |
 | Center a short slide's body | `\begin{frame}[c]`; a list as a block: `\begin{center}\begin{varwidth}{\linewidth}` (the `varwidth` package) |
-| Marking strip on every slide (`marking:` in a Quarto deck) | `\enginemarking{CUI}` in the preamble, where the livery places it; `\enginemarking{}` turns a livery's default off |
+| Marking strips on every slide (`marking:` in a Quarto deck) | `\enginemarking{CUI}` in the preamble sets the livery's first strip, `\enginemarking[legend]{...}` one by its name; `{}` turns a strip's default off |
 | Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first in the frame and again after the content, then `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` |
 | A numbered footnote (beamer's), in the slide footnotes' look | `\footnote{...}`: muted, its mark bold in the accent, under the same short rule |
 | Citations (biblatex, author-year) | `\usepackage[style=authoryear,backend=bibtex]{biblatex}` and `\addbibresource{references.bib}` in the preamble (`backend=biber` where biber is installed); `\parencite{key}`, `\textcite{key}`, `\footcite{key}` (a footnote at the frame's foot) |

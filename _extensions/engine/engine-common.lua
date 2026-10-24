@@ -4,9 +4,9 @@
 -- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
 -- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
 -- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
--- rails, quotes, galleries and the agenda, the theme options, the livery. What a format does with
--- the result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
--- strips, rails, galleries, quotes and the agenda's rows).
+-- rails, quotes, galleries and the agenda, the theme options, the livery, the deck's markings. What
+-- a format does with the result stays in its filter: the drawers (wrap_layout, hoist_footnotes,
+-- size_plots, the cards, strips, rails, galleries, quotes and the agenda's rows).
 
 local function has_class(el, cls)
   for _, c in ipairs(el.classes) do
@@ -447,6 +447,46 @@ local function load_livery(meta, extdir, who)
   local ok, real = pcall(pandoc.system.with_working_directory, dir, pandoc.system.get_working_directory)
   livery.dir = ok and real or dir
   return livery
+end
+
+-- The deck's `marking:`, the one reader of it every format uses: a string (or inlines) sets the
+-- livery's first strip, `none` turns every strip off, a map sets strips by name (`none` drops one).
+-- {all = Inlines | "none" | nil, by_name = {<name> = Inlines | "none"}}.
+local function deck_marking(meta)
+  local mk, d = meta["marking"], { by_name = {} }
+  if mk == nil then return d end
+  local function word(v)
+    if pandoc.utils.stringify(v) == "none" then return "none" end
+    return pandoc.utils.type(v) == "Inlines" and v or pandoc.Inlines(pandoc.utils.stringify(v))
+  end
+  if pandoc.utils.type(mk) == "table" then
+    for k, v in pairs(mk) do d.by_name[k] = word(v) end
+  else
+    d.all = word(mk)
+  end
+  return d
+end
+
+-- Each of the livery's marking strips (livery.json marking, in order) with its text: the deck's
+-- word on it (deck_marking), else its default; nil, no strip. A name the livery has no strip of is
+-- warned and ignored. {{strip = <strip>, text = Inlines | nil}, ...}.
+local function marking_texts(meta, strips, who)
+  local d, out, known = deck_marking(meta), {}, {}
+  for i, s in ipairs(strips or {}) do
+    known[s.name] = true
+    local w = d.all == "none" and "none" or d.by_name[s.name] or (i == 1 and d.all or nil)
+    local text = nil
+    if w and w ~= "none" then
+      text = w
+    elseif not w and type(s.text) == "string" then
+      text = pandoc.Inlines(s.text)
+    end
+    table.insert(out, { strip = s, text = text })
+  end
+  for k in pairs(d.by_name) do
+    if not known[k] then warn(who .. ": marking." .. k .. " is not a marking strip of the livery; ignored") end
+  end
+  return out
 end
 
 -- A .columns div's columns and their shares of the row, the gaps taken out first, as every format
@@ -993,7 +1033,7 @@ return {
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
   content_heading = content_heading, take_layout = take_layout,
-  theme_options = theme_options, load_livery = load_livery,
+  theme_options = theme_options, load_livery = load_livery, deck_marking = deck_marking, marking_texts = marking_texts,
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,

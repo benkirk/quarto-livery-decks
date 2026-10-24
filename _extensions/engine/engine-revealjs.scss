@@ -152,7 +152,8 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
 // no logo on busy photos (Brand Guide p11); a feature's marks are its composition's (none on the bar)
 .reveal .slides section.slide.full .engine-signoff { display: none; }
 
-// the marking strip (livery.yml marking:): on every slide, over everything, in slide pixels
+// the marking strips (livery.yml marking:): on every slide, over everything, in slide pixels;
+// livery.css sets each one's properties on .engine-marking-<name>
 .reveal .slides section .engine-marking {
   position: absolute;
   left: var(--engine-marking-x);
@@ -166,7 +167,7 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   background: var(--engine-marking-fill, transparent);
   color: var(--engine-marking-text);
   font-weight: var(--engine-marking-weight, 400);
-  font-size: var(--engine-type-marking, 15px);
+  font-size: var(--engine-marking-size, var(--engine-type-marking, 15px));
   line-height: var(--engine-leading-marking, 1.2);
   margin: 0;
   z-index: 10;

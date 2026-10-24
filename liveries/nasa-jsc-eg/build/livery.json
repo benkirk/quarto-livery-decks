@@ -1505,23 +1505,28 @@
       "light": "meatball"
     }
   },
-  "marking": {
-    "align": "center",
-    "bold": true,
-    "box": [
-      0.1115,
-      0.004,
-      0.777,
-      0.028
-    ],
-    "color": "#FFFFFF",
-    "edge": "top",
-    "fill": "#6840F0",
-    "height": 0.028,
-    "offset": 0.004,
-    "text": "This presentation contains no sensitive information; but if it did, here's where the disclaimer would go",
-    "width": 0.777
-  },
+  "marking": [
+    {
+      "align": "center",
+      "bold": true,
+      "box": [
+        0.1115,
+        0.004,
+        0.777,
+        0.028
+      ],
+      "color": "#FFFFFF",
+      "edge": "top",
+      "fill": "#6840F0",
+      "height": 0.028,
+      "leading": 1.2,
+      "name": "banner",
+      "offset": 0.004,
+      "size": 13,
+      "text": "This presentation contains no sensitive information; but if it did, here's where the disclaimer would go",
+      "width": 0.777
+    }
+  ],
   "marks": {
     "background": {
       "logo": "../nasa/logos/meatball.png",

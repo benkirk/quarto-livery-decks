@@ -53,8 +53,8 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
   metadata `fineprint: "..."`
       small print under the title block, e.g. an NSF funding statement
 
-  metadata `marking: "CUI"`
-      the marking strip on every frame (\enginemarking; the livery places it)
+  metadata `marking: "CUI"` (the first strip) or `marking: {<name>: "...", <name>: none}`
+      the marking strips on every frame (\enginemarking[<name>]; the livery places them)
 
   metadata `themeoptions: [title=light, footer=full, ...]`
       options for \usetheme{Engine} (see beamerthemeEngine.sty)
@@ -737,13 +737,12 @@ function Pandoc(doc)
     doc.meta["header-includes"] = hi
   end
 
-  -- the marking strip's text (marking:; `none` turns the livery's default off): the theme draws it
-  local mk = doc.meta["marking"]
-  if mk then
-    local text = pandoc.utils.stringify(mk) == "none" and "" or
-      (pandoc.utils.type(mk) == "Inlines" and inlines_to_latex(mk) or pandoc.utils.stringify(mk))
+  -- the marking strips' texts (marking:, C.marking_texts; `none` turns a default off): the theme draws them
+  if doc.meta["marking"] then
     local hi = header_includes(doc)
-    hi:insert(pandoc.Blocks({ latex("\\enginemarking{" .. text .. "}") }))
+    for _, t in ipairs(C.marking_texts(doc.meta, LIVERY.marking, "engine-beamer")) do
+      hi:insert(pandoc.Blocks({ latex("\\enginemarking[" .. t.strip.name .. "]{" .. (t.text and inlines_to_latex(t.text) or "") .. "}") }))
+    end
     doc.meta["header-includes"] = hi
   end
 

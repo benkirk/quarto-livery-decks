@@ -520,7 +520,12 @@
     },
     "marking": {
       "type": "object",
-      "description": "A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here.",
+      "description": "The marking strips on every slide (restriction or distribution markings, CUI and the like), by name, in order: a CUI banner at the top and a legend at the foot, say. A strip's text is the deck's `marking:` (front matter: a string sets the first strip, `none` turns every strip off, `{<name>: text}` sets one, `{<name>: none}` drops one), else its text here.",
+      "x-key": "<name>",
+      "propertyNames": {"pattern": "^[a-z]+$"},
+      "additionalProperties": {
+      "type": ["object", "null"],
+      "description": "A strip's look and default text, by its name (lower-case letters; null drops a parent's strip).",
       "additionalProperties": false,
       "properties": {
         "text": {
@@ -562,7 +567,13 @@
           "$ref": "#/$defs/color-or-role",
           "description": "Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill)."
         },
-        "bold": {"type": "boolean", "default": false, "description": "Its text in bold."}
+        "bold": {"type": "boolean", "default": false, "description": "Its text in bold."},
+        "size": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Its text's size in points on the pptx canvas (default: the `marking` type role)."
+        }
+      }
       }
     },
     "boxes": {
@@ -1021,7 +1032,7 @@
           "description": "The closing slide's headline."
         },
         "pagenumber": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The page number."},
-        "marking": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The marking strip's text."},
+        "marking": {"type": "number", "exclusiveMinimum": 0, "default": 9, "description": "The marking strips' text (a strip's own size overrides it)."},
         "display": {"type": "number", "exclusiveMinimum": 0, "default": 40, "description": "A card's big number (`[$20M]{.big}`)."},
         "quote": {"type": "number", "exclusiveMinimum": 0, "default": 24, "description": "A quote block's text (its attribution is `caption`)."},
         "footer": {

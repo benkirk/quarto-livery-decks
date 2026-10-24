@@ -367,20 +367,32 @@
     \engine@drawmarking
   \end{tikzpicture}}
 
-% the marking strip (livery.yml marking:), on every frame, over everything: the deck's text
-% (\enginemarking{<text>} in the preamble, which the Quarto filter writes for marking:; {} for
-% none), else the livery's default
-\providecommand\engine@marking@default{}
-\newcommand\enginemarking[1]{\gdef\engine@markingtext{#1}}
-\def\engine@drawmarking{%
-  \ifdefined\engine@markingtext\let\engine@mk\engine@markingtext\else\let\engine@mk\engine@marking@default\fi
-  \ifx\engine@mk\@empty\else\@ifundefined{engine@marking@x}{}{%
-    \engine@bw=\engine@marking@w\paperwidth \engine@bh=\engine@marking@h\paperheight
-    \engine@bx=\engine@marking@x\paperwidth
-    \engine@by=\dimexpr\paperheight-\engine@marking@y\paperheight-\engine@bh\relax
-    \@ifundefined{engine@marking@fill}{}{\fill[EngineMarkingFill] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}%
-    \node[anchor=center,inner sep=0pt,text width=\engine@bw,align=\engine@marking@align,
-      font={\engine@fs{marking}\selectfont\@ifundefined{engine@marking@bold}{}{\bfseries}},text=EngineMarkingText] at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};}\fi}
+% the marking strips (livery.yml marking:, in order), on every frame, over everything: each one's
+% text the deck's (\enginemarking[<name>]{<text>} in the preamble, which the Quarto filter writes
+% for marking:; no name is the first strip; {} for none), else the strip's default
+\providecommand\engine@markings{}
+\providecommand\engine@firstmarking{}
+\newcommand\enginemarking[2][\engine@firstmarking]{%
+  \@ifundefined{engine@marking@#1@x}%
+    {\PackageWarning{Engine}{\string\enginemarking: #1 is not a marking strip of the livery}}%
+    {\expandafter\gdef\csname engine@markingtext@#1\endcsname{#2}}}
+\def\engine@drawmarking{\@for\engine@mkname:=\engine@markings\do{%
+  \ifx\engine@mkname\@empty\else\expandafter\engine@drawstrip\expandafter{\engine@mkname}\fi}}
+\def\engine@drawstrip#1{%
+  \@ifundefined{engine@markingtext@#1}%
+    {\expandafter\let\expandafter\engine@mk\csname engine@marking@#1@default\endcsname}%
+    {\expandafter\let\expandafter\engine@mk\csname engine@markingtext@#1\endcsname}%
+  \ifx\engine@mk\@empty\else
+    \engine@bw=\csname engine@marking@#1@w\endcsname\paperwidth
+    \engine@bh=\csname engine@marking@#1@h\endcsname\paperheight
+    \engine@bx=\csname engine@marking@#1@x\endcsname\paperwidth
+    \engine@by=\dimexpr\paperheight-\csname engine@marking@#1@y\endcsname\paperheight-\engine@bh\relax
+    \edef\engine@mkalign{\csname engine@marking@#1@align\endcsname}%
+    \@ifundefined{engine@marking@#1@fill}{}{\fill[EngineMarking#1Fill] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}%
+    \node[anchor=center,inner sep=0pt,text width=\engine@bw,align=\engine@mkalign,
+      font={\expandafter\expandafter\expandafter\engine@fsof\csname engine@marking@#1@type\endcsname\selectfont
+        \@ifundefined{engine@marking@#1@bold}{}{\bfseries}},text=EngineMarking#1Text]
+      at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};\fi}
 
 % full frame: the image contained (never cropped) between a thin margin and
 % the footline, with the caption line, if any, just above the footline; or, on a

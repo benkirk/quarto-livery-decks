@@ -79,14 +79,17 @@
 % the divider stack's gaps (section:), em of the eyebrow and of the subtitle
 \def\engine@section@eyebrowgap{0.33}
 \def\engine@section@subtitlegap{0.66}
-% the marking strip (marking:); its text is the deck's \enginemarking, else this default
-\def\engine@marking@x{0.1}
-\def\engine@marking@y{0.004}
-\def\engine@marking@w{0.8}
-\def\engine@marking@h{0.03}
-\def\engine@marking@align{center}
-\definecolor{EngineMarkingText}{HTML}{6B7C99}
-\def\engine@marking@default{}
+% the marking strips (marking:); each one's text is the deck's \enginemarking[<name>], else its default
+\def\engine@markings{banner}
+\def\engine@firstmarking{banner}
+\def\engine@marking@banner@x{0.1}
+\def\engine@marking@banner@y{0.004}
+\def\engine@marking@banner@w{0.8}
+\def\engine@marking@banner@h{0.03}
+\def\engine@marking@banner@align{center}
+\def\engine@marking@banner@type{{0.5833}{1.2}}
+\definecolor{EngineMarkingbannerText}{HTML}{6B7C99}
+\def\engine@marking@banner@default{}
 % boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
 % its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row
 \def\engine@boxes@columns@gap{0.03}

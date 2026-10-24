@@ -5,8 +5,8 @@ pytest.ini puts _extensions/engine on the path, so a test imports the engine's t
 Here: ROOT and ENGINE; `livery`, a test argument that runs the test once per bundled livery, named
 by it; `run`, the livery command as a subprocess; `pandoc_exe`, pandoc's path; `lua_common`,
 engine-common.lua's functions on markdown under `pandoc lua` with a `quarto` shim; `pandoc_deck`,
-a pptx pandoc writes from markdown, as its zip parts; `tmp_livery`, a bundled livery copied with a
-boxes: block and built; `flat`, a slide's shapes with the ones in groups. The rules that keep the
+a pptx pandoc writes from markdown, as its zip parts; `tmp_livery`, a bundled livery copied with one
+top-level block replaced and built; `flat`, a slide's shapes with the ones in groups. The rules that keep the
 suite parallel (`-n auto --dist loadfile`): a test writes only under tmp_path or tmp_path_factory,
 never the tree; no os.chdir or os.environ mutation in-process (a subprocess gets its own env=);
 expensive setup is a module-scoped fixture, and loadfile keeps a file's tests on one worker.
@@ -89,14 +89,15 @@ def pandoc_deck():
 
 @pytest.fixture(scope="session")
 def tmp_livery():
-    """make(tmp, boxes, name="ncar"): the livery copied into tmp/liveries/<name> with a boxes: block
-    in place of its own, built: (return code, stderr, livery.json or None)."""
-    def make(tmp: Path, boxes: str, name: str = "ncar"):
+    """make(tmp, block, name="ncar", key="boxes"): the livery copied into tmp/liveries/<name> with a
+    top-level key: block (its indented lines) in place of its own, built: (return code, stderr,
+    livery.json or None)."""
+    def make(tmp: Path, block: str, name: str = "ncar", key: str = "boxes"):
         d = tmp / "liveries" / name
         shutil.copytree(ROOT / "liveries" / name, d, ignore=shutil.ignore_patterns("build", "*.pptx", "reference"))
         y = d / "livery.yml"
-        text = re.sub(r"\nboxes:.*?\n\n", "\n", y.read_text(), flags=re.S)   # the livery's own block out
-        y.write_text(text.replace("\npptx:", f"\nboxes:\n{boxes}\npptx:", 1))
+        text = re.sub(rf"\n{key}:.*?\n\n", "\n", y.read_text(), flags=re.S)   # the livery's own block out
+        y.write_text(text.replace("\npptx:", f"\n{key}:\n{block}\npptx:", 1))
         r = run("build", d)
         j = json.loads((d / "build" / "livery.json").read_text()) if r.returncode == 0 else None
         return r.returncode, r.stderr, j
