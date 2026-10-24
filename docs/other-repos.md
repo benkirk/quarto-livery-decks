@@ -99,9 +99,9 @@ permissions:
   id-token: write
 jobs:
   decks:
-    uses: benkirk/quarto-livery-decks/.github/workflows/build-decks.yaml@v26.10.10
+    uses: benkirk/quarto-livery-decks/.github/workflows/build-decks.yaml@v26.10.11
     with:
-      image: ghcr.io/benkirk/quarto-livery-decks:26.10.10              # the submodule's release
+      image: ghcr.io/benkirk/quarto-livery-decks:26.10.11              # the submodule's release
       decks: docs/presentations/roadmap docs/presentations/samuel   # deck directories
       pages: docs/presentations/samuel                              # optional: its `make site`
 ```
@@ -111,7 +111,7 @@ default `pptx html pdf`), `livery` (a `LIVERY=` for every deck; default each Mak
 `image` (default `ghcr.io/benkirk/quarto-livery-decks:latest`, the newest release), `pages`
 (one deck directory whose `make site` is deployed) and `retention-days` (the outputs' life on
 the run, 14). The outputs are the run's `decks` artifact: the Actions tab, or `gh run download`.
-A submodule consumer pins the workflow (`@v26.10.10`; `@main` follows the framework's main) and
+A submodule consumer pins the workflow (`@v26.10.11`; `@main` follows the framework's main) and
 `image:` to the version its submodule carries, so the workflow, the image and the deck
 Makefile's framework agree. The example above pins the framework's current release (a test
 holds it to `_extension.yml`'s version, so a release bumps it).
