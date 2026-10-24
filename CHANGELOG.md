@@ -69,12 +69,17 @@ seams a 42-slide deck found that `make qa` could not see, and the checks that se
   drops a parent's strip; names are lower-case letters.
 - `compositions.title.fineprint.text` (new, optional) is the cover's default small print,
   paragraphs a blank line apart; set on `title` it reaches every cover.
+- `frametitle.color` (new, optional; default the foreground) colors the content titles apart
+  from the body, for titles on a bar of their own, and `frametitle.symmetric` (default false)
+  mirrors the title's room beside the mark, so a centered title sits on the slide's center.
 
 ### LaTeX
 
 - `make clean` in `latex/` works on a tree whose `talk-cu.tex` variant is already gone.
 - `\enginemarking[<name>]{...}` sets a marking strip by its name; with no name it is the first
   strip, as before. An unknown name warns.
+- Beside a top-left mark, a content title's gap is 0.025 of the width, as HTML and the pptx
+  template have it (it was 0.03): titles start 0.005 of the width nearer the mark.
 - `\titlefineprint{}` now means "no fine print"; without the command a cover shows the
   livery's default, if it has one.
 

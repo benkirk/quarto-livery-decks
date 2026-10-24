@@ -23,7 +23,7 @@ from pathlib import Path
 
 import livery as livery_mod
 import pptx_waves
-from livery_build import ART_KINDS, SLOT_ROLES
+from livery_build import ART_KINDS, SLOT_ROLES, TITLE_GAP
 from livery_charts import custom_colors
 
 # the canvas in EMU: the livery's (livery.json type.canvas, pptx.size), set by Builder; 13.333 x 7.5 in
@@ -173,8 +173,11 @@ class Builder:
         logo_h = g["logo"]["height"]; logo_w = logo_h * g["logo"]["aspect"] * H_EMU / W_EMU
         corner = self.logo_corner
         inset = g["logo"].get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
-        title_x = inset + logo_w + 0.025 if corner == "top-left" else m
-        title_w = 1 - 2 * m - (logo_w + 0.025 + inset - m if corner != "none" else 0)
+        beside = inset + logo_w + TITLE_GAP   # the title's edge on the mark's side
+        title_x = beside if corner == "top-left" else m
+        title_w = 1 - 2 * m - (beside - m if corner != "none" else 0)
+        if ft.get("symmetric") and corner != "none":   # the room mirrored: a centered title on the slide's center
+            title_x, title_w = beside, 1 - 2 * beside
         # the ladder: the livery's five list levels (type.levels), the first the body
         sizes = self.levels
         ind, tabsz, ins = (round(v * self.k) for v in (livery_mod.BODY_INDENT_PT * 12700, 457200, 45720))   # 18 pt, 0.5 and 0.05 in on 7.5 in
@@ -228,7 +231,9 @@ class Builder:
             h = self.signoff["height"]; w = h * self.signoff["aspect"] * H_EMU / W_EMU
             x = m if self.signoff["corner"] == "bottom-left" else 1 - m - w
             so = self.pic("rId3", "Sign-off (light)", x, 1 - self.signoff["bottom"] - h, w, h)
-        ft = self.L.get("frametitle", {})   # the livery's content title: no tab, no rule, centred
+        ft = self.L.get("frametitle", {})   # the livery's content title: no tab, no rule, centered, its color
+        tc = ft.get("color")   # the body text's slot unless the livery colors titles apart (frametitle.color)
+        title_fill = fill("tx1") if not tc or tc.upper() == self.L["roles"]["foreground"].upper() else srgb(tc)
         tab_sp = tab_sp if ft.get("tab", True) else ""
         rule = rule if ft.get("rule", True) else ""
         shapes = art + waves + tab_sp + rule + title + body + self.chrome() + logo + so
@@ -241,7 +246,7 @@ class Builder:
                 f'<p:sldLayoutIdLst>' + "".join(f'<p:sldLayoutId id="{2147483649 + i}" r:id="rId{10 + i}"/>' for i in range(len(ALL_LAYOUTS))) +
                 f'</p:sldLayoutIdLst><p:txStyles><p:titleStyle><a:lvl1pPr algn="{"ctr" if ft.get("align") == "center" else "l"}" defTabSz="{tabsz}" rtl="0" eaLnBrk="1" '
                 f'latinLnBrk="0" hangingPunct="1"><a:spcBef><a:spcPct val="0"/></a:spcBef><a:buNone/>'
-                f'<a:defRPr sz="{self.sz("frametitle")}" b="1" kern="1200" baseline="0">{fill("tx1")}<a:latin typeface="+mj-lt"/>'
+                f'<a:defRPr sz="{self.sz("frametitle")}" b="1" kern="1200" baseline="0">{title_fill}<a:latin typeface="+mj-lt"/>'
                 f'<a:ea typeface="+mj-ea"/><a:cs typeface="+mj-cs"/></a:defRPr></a:lvl1pPr></p:titleStyle>'
                 f'<p:bodyStyle>{body_lvls}</p:bodyStyle><p:otherStyle><a:defPPr><a:defRPr lang="en-US"/></a:defPPr>{other}'
                 f'</p:otherStyle></p:txStyles></p:sldMaster>')
@@ -265,7 +270,7 @@ class Builder:
 
     def column(self, c, kind):
         """The text placeholders, derived from the composition's column: a title's date, title (with
-        its tab), rule and subtitle stacked from the column's top, or centred on its middle; a
+        its tab), rule and subtitle stacked from the column's top, or centered on its middle; a
         closing's headline (bottom-anchored) over its body; a section's title and subtitle about
         the column's middle (section_subtitle.py places them on each slide)."""
         col = c["column"]; x, y, w, h = col["box"]; role = col["role"]
@@ -294,7 +299,7 @@ class Builder:
             out.append(self.ph("Subtitle", "subTitle", 1, xfrm(x, sub_y, w, sub_h),
                                no_inset.format("t") + self.field_text("subtitle", role=role, align=al) + '</a:lstStyle><a:p><a:r><a:rPr lang="en-US"/><a:t>Subtitle</a:t></a:r></a:p></p:txBody></p:sp><!--',
                                "", "").split("<!--")[0])
-        elif kind == "closing":   # split at the middle: a short headline and body sit on the column's centre;
+        elif kind == "closing":   # split at the middle: a short headline and body sit on the column's center;
             top = col["anchor"] == "top"   # from the top, the headline hangs from it (slide_layout's closing_top()
             hh = 0.5 * h                   # sets the body under the measured headline on each slide)
             out += tab(y + 0.012 if top else y + hh - 0.09, 0.075)

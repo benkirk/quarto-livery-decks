@@ -12,7 +12,7 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
   ::: note
   A remark under a figure or table.
   :::
-      drawn as its caption: the caption size, muted, centred (\enginenote)
+      drawn as its caption: the caption size, muted, centered (\enginenote)
 
   ## Thank you! {.closing}
       closing frame on the brand field; the heading becomes the large

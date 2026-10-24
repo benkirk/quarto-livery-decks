@@ -109,6 +109,7 @@
   --engine-section-subtitle-gap: 0.66em;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: calc(var(--engine-margin) + 40px + var(--engine-logo-w));
+  --engine-title-color: #FFFFFF;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
   --engine-signoff-display: block;

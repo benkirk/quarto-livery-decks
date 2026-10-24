@@ -400,7 +400,7 @@ local function is_figure(blk)
 end
 
 -- ::: note: a remark under a figure or table, drawn as its caption (the caption role, muted,
--- centred) in every format
+-- centered) in every format
 local function is_note(blk)
   return blk.t == "Div" and has_class(blk, "note")
 end

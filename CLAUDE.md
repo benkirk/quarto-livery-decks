@@ -330,8 +330,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
-- **Content title**: `livery.yml` `frametitle: {align: left|center, tab, rule, top, height,
-  rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
+- **Content title**: `livery.yml` `frametitle: {align: left|center, symmetric, color, tab, rule, top,
+  height, rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
   slide 20; its mark at the paper's edge, `geometry.logo.inset: 0.015`). The band is the three
   fractions of the height (defaults 44, 70 and 130 px of 900: the title centered in
   `top..top+height`, a taller one growing down, the tab the band's height, the hairline at
@@ -339,7 +339,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rule` blend the column rules use; a hex in `livery.json`)), always emitted (`\engine@ft@*`,
   `EngineFrametitleRuleColor`, `--engine-title-*`) and read by the outer theme, the scss and the
   template's master alike; the body starts `livery_build.BODY_GAP` under the hairline or below a
-  taller mark (`livery.json` `frametitle.body`, derived, not a key).
+  taller mark (`livery.json` `frametitle.body`, derived, not a key). `color` (default the
+  foreground) is for a title on a bar of its own: `EngineFrametitleColor`,
+  `--engine-title-color`, the template's title style (`tx1` when it is the foreground);
+  `symmetric` mirrors the room beside the mark (`livery_build.TITLE_GAP`, 0.025 of the width in
+  every drawer), so a centered title sits on the slide's center.
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
   pandoc's `monofont` in pptx (nasa: DM Mono); `pptx.code-typeface` overrides the pptx's with an

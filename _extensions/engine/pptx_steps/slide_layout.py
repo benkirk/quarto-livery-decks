@@ -11,7 +11,7 @@ stay inside; pptx cannot move them). full: the one picture fills the slide, no t
 art, pandoc's caption box centered under it in the muted color, the slide number kept; a gallery's
 full slide (grid-pptx.lua's marker in its body) only loses its furniture here, grid.py fills it.
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
-paragraph, the note's in the caption size and muted color, centred, a footnote's left as
+paragraph, the note's in the caption size and muted color, centered, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
 references (slide-layout.lua's word for the slide holding ::: {#refs}, which citeproc fills): every
 body paragraph in the footnote size with a hanging indent and a little space above, as HTML and
@@ -192,7 +192,7 @@ def _note_parts(slide):
 
 def note_style(slide):
     """note (a `::: note` single-body.lua folded into the caption box): each line a paragraph, the
-    note's in the caption size and muted color, centred, as full_slide draws its caption; a
+    note's in the caption size and muted color, centered, as full_slide draws its caption; a
     footnote line keeps style_footnotes' look. Before lay_out, whose scale= then sizes the note
     with the body; False (slide untouched) when the slide is not one picture or table and its
     caption."""
@@ -360,8 +360,8 @@ def band_photo(slide, width, height, photo):
 
 
 def band_stack(slide, width, height):
-    """The band's title stack (date, title, subtitle, rule and author) centred on the column's
-    middle, as HTML and PDF centre theirs. pandoc puts the subtitle and the author in one
+    """The band's title stack (date, title, subtitle, rule and author) centered on the column's
+    middle, as HTML and PDF center theirs. pandoc puts the subtitle and the author in one
     paragraph of the subtitle placeholder, a blank line between them: the rule (a layout shape,
     moved onto the slide; this deck's Title Slide layout serves the title slide alone) goes in
     that blank line, under a subtitle alone, or over an author alone. From the

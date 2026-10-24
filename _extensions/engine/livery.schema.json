@@ -485,6 +485,16 @@
           "description": "The title's alignment in the room beside the mark.",
           "default": "left"
         },
+        "symmetric": {
+          "type": "boolean",
+          "description": "The title's room mirrored about the slide's axis: the mark's side's gap on both sides, so a centered title sits on the slide's center, not the room's.",
+          "default": false
+        },
+        "color": {
+          "type": "string",
+          "description": "The title's color: a role, a blend or a palette name (default: foreground, the body text's), for titles on a bar of their own.",
+          "default": "foreground"
+        },
         "tab": {
           "type": "boolean",
           "description": "The accent tab at the paper's edge beside the title.",

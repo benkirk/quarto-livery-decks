@@ -399,6 +399,8 @@ Content slides' titles.
 | key | type | default | |
 |---|---|---|---|
 | `align` | `left` \| `center` | `"left"` | The title's alignment in the room beside the mark. |
+| `symmetric` | boolean | `false` | The title's room mirrored about the slide's axis: the mark's side's gap on both sides, so a centered title sits on the slide's center, not the room's. |
+| `color` | string | `"foreground"` | The title's color: a role, a blend or a palette name (default: foreground, the body text's), for titles on a bar of their own. |
 | `tab` | boolean | `true` | The accent tab at the paper's edge beside the title. |
 | `rule` | boolean | `true` | The hairline under the title. |
 | `top` | fraction | `0.0489` | The band's top, a fraction of the height; the title is centered in the band and a taller one grows down. |

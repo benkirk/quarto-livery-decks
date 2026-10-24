@@ -1075,11 +1075,13 @@
   "frametitle": {
     "align": "left",
     "body": 0.1667,
+    "color": "#000000",
     "height": 0.0778,
     "rule": true,
     "rule-color": "#AAA8A3",
     "rule-width": 0.0016,
     "rule-y": 0.1444,
+    "symmetric": false,
     "tab": true,
     "top": 0.0489
   },

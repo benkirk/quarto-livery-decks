@@ -66,8 +66,9 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
 # 900): the title centered in top..top+height (a taller one grows down), the hairline at rule-y,
 # rule-width thick (0.4 pt of the PDF's 254 pt paper, 1.4 px of 900; Ben's pick from the side-by-side)
 # in rule-color (a role, blend or hex; resolved to hex in the json)
-FRAMETITLE = {"align": "left", "tab": True, "rule": True, "top": 0.0489, "height": 0.0778, "rule-y": 0.1444,
-              "rule-width": 0.0016, "rule-color": "rule"}
+FRAMETITLE = {"align": "left", "symmetric": False, "tab": True, "rule": True, "top": 0.0489, "height": 0.0778,
+              "rule-y": 0.1444, "rule-width": 0.0016, "rule-color": "rule", "color": "foreground"}
+TITLE_GAP = 0.025   # a content title's gap beside the mark, of the width (HTML's 40 px of 1600)
 BODY_GAP = 0.0223   # the content body's top under the hairline, or under a taller mark: 20 px of 900 (0.1444 + it rounds to the 0.1667 the formats drew)
 # the divider stack's gaps (livery.yml section:), em of the element above the gap: the eyebrow's under
 # it (of the eyebrow type), the subtitle's above it (of the section subtitle type). These and the note
@@ -271,6 +272,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
         sys.exit(f"{d.name}: frametitle.align {out['frametitle']['align']!r} is not left or center")
     rc = out["frametitle"]["rule-color"]   # the hairline's color as hex: a role, a blend (the default) or a palette name
     out["frametitle"]["rule-color"] = roles.get(rc) or blends.get(rc) or hex_of(rc, ("livery.yml", "frametitle.rule-color"))
+    tc = out["frametitle"]["color"]   # the title's color as hex: a role (the body text's by default), a blend or a palette name
+    out["frametitle"]["color"] = roles.get(tc) or blends.get(tc) or hex_of(tc, ("livery.yml", "frametitle.color"))
     # the body's top (derived, not a key): BODY_GAP under the hairline, or under a taller mark in a top corner
     lg = (out.get("geometry") or {}).get("logo") or {}
     below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
@@ -519,7 +522,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
         x = m if so["corner"] == "bottom-left" else 1 - m - w
         return {"role": role, "box": _box(x, 1 - so["bottom"] - h, w, h)}
 
-    def strip(role):   # the band's strip: the sign-off in its corner, the mark opposite, centred
+    def strip(role):   # the band's strip: the sign-off in its corner, the mark opposite, centered
         mid, left = (1 + t["bottom"]) / 2, None
         sig = None
         if so:
@@ -894,6 +897,10 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for k, tex in (("top", "top"), ("height", "height"), ("rule-y", "ruley"), ("rule-width", "rulewidth"), ("body", "bodytop")):
         L.append(f"\\def\\engine@ft@{tex}{{{ft[k]}}}")
     L.append(f"\\definecolor{{EngineFrametitleRuleColor}}{{HTML}}{{{ft['rule-color'][1:]}}}")
+    L.append(f"\\definecolor{{EngineFrametitleColor}}{{HTML}}{{{ft['color'][1:]}}}")
+    if ft["symmetric"]:   # the title's room mirrored about the slide's axis: a centered title on the slide's center
+        L.append("\\def\\engine@ft@symmetric{}")
+    L.append(f"\\def\\engine@ft@gap{{{TITLE_GAP}}}")
     L.append("% the divider stack's gaps (section:), em of the eyebrow and of the subtitle")
     for k in SECTION:
         L.append(f"\\def\\engine@section@{k.replace('-', '')}{{{livery['section'][k]}}}")
@@ -1149,7 +1156,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
     corner = logo.get("corner", "top-right")
     margin = "var(--engine-margin)"
     inset = px(logo["inset"], W) if "inset" in logo else margin   # the mark's distance from its edge
-    beside = f"calc({inset} + 40px + var(--engine-logo-w))"
+    beside = f"calc({inset} + {round(TITLE_GAP * W)}px + var(--engine-logo-w))"
     props.append(f"--engine-logo-left: {inset if corner == 'top-left' else 'auto'};")
     props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
     props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
@@ -1168,8 +1175,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append("--engine-title-tab: none;")
     if not ft["rule"]:
         props.append("--engine-title-rule: none;")
-    props.append(f"--engine-title-left: {beside if corner == 'top-left' else margin};")
-    props.append(f"--engine-title-right: {beside if corner == 'top-right' else margin};")
+    sym = ft["symmetric"] and corner != "none"   # the room mirrored: the mark's side's gap on both sides
+    props.append(f"--engine-title-left: {beside if corner == 'top-left' or sym else margin};")
+    props.append(f"--engine-title-right: {beside if corner == 'top-right' or sym else margin};")
+    props.append(f"--engine-title-color: {ft['color']};")
     pn = geom.get("pagenumber", {}).get("corner", "bottom-left")
     props.append(f"--engine-pagenumber-left: {'auto' if pn == 'bottom-right' else '50px'};")
     props.append(f"--engine-pagenumber-right: {'50px' if pn == 'bottom-right' else 'auto'};")

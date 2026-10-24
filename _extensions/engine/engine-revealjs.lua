@@ -24,7 +24,7 @@ The same Markdown as the beamer theme (engine-beamer.lua):
   ::: note
   A remark under a figure or table.
   :::
-      drawn as its caption: the caption size, muted, centred (.engine-note)
+      drawn as its caption: the caption size, muted, centered (.engine-note)
 
   ## Title {.brand-dark}
       content slide on Space, white text, the white-reversed logo (HTML only;

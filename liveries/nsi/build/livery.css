@@ -109,6 +109,7 @@
   --engine-title-rule: none;
   --engine-title-left: calc(24px + 40px + var(--engine-logo-w));
   --engine-title-right: var(--engine-margin);
+  --engine-title-color: #000000;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
   --engine-signoff-display: block;

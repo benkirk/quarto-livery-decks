@@ -1155,11 +1155,13 @@
   "frametitle": {
     "align": "left",
     "body": 0.1667,
+    "color": "#00357A",
     "height": 0.0778,
     "rule": true,
     "rule-color": "#A9B8CB",
     "rule-width": 0.0016,
     "rule-y": 0.1444,
+    "symmetric": false,
     "tab": true,
     "top": 0.0489
   },

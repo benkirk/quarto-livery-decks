@@ -93,14 +93,19 @@
 % panel (enginefeaturepanel) starts below where the panel would
 \def\engine@featurespace{\def\engine@comp{feature}\nointerlineskip
   \vbox to \engine@ifc{panel@y}{\engine@cv{panel@y}}{0.5}\paperheight{\vfil}}
+% the title's start beside the mark: its inset, its width and the gap (frametitle.gap, HTML's 40 px)
+\def\engine@ftbeside{\ifdim\engine@logowidth>0pt
+  \hskip\dimexpr\engine@logowidth+\engine@ft@gap\paperwidth+\engine@logoinset-\engine@margin\relax\fi}
 \def\engine@frametitle{%
   \nointerlineskip
   \@tempdima=\paperwidth
   \advance\@tempdima by -2\engine@margin
   \ifdim\engine@logowidth>0pt
     \engine@ifstyle{normal}{\advance\@tempdima by -\engine@logowidth
-      \advance\@tempdima by -0.03\paperwidth
-      \advance\@tempdima by \dimexpr\engine@margin-\engine@logoinset\relax}{}%
+      \advance\@tempdima by -\engine@ft@gap\paperwidth
+      \advance\@tempdima by \dimexpr\engine@margin-\engine@logoinset\relax
+      \ifdefined\engine@ft@symmetric   % the room mirrored about the slide's axis (frametitle.symmetric)
+        \@tempdima=\dimexpr\paperwidth-(\engine@logowidth+\engine@ft@gap\paperwidth+\engine@logoinset)*2\relax\fi}{}%
   \fi
   \setbox\@tempboxa=\vbox{%
     \hsize=\@tempdima
@@ -127,9 +132,8 @@
          \smash{\vrule width\engine@tabwidth height\dimexpr\ht\@tempboxa+0.5\@tempdimc\relax
                 depth\dimexpr\dp\@tempboxa+0.5\@tempdimc\relax}}\fi
         \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
-        % a top-left mark: the title starts beside it
-        \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
-          \ifdim\engine@logowidth>0pt\hskip\dimexpr\engine@logowidth+0.03\paperwidth+\engine@logoinset-\engine@margin\relax\fi}{}%
+        % a top-left mark (or a mirrored room): the title starts beside it
+        \engine@ifcorner{\engine@geom@logocorner}{top-left}{\engine@ftbeside}{\ifdefined\engine@ft@symmetric\engine@ftbeside\fi}%
       }{\hskip\engine@margin}%
       \box\@tempboxa}%
     % the gap under the title: to rule-y, at least the band's own (rule-y less the band's foot)
@@ -301,7 +305,7 @@
   \node[anchor=north west,inner sep=0pt] at (\engine@bx,\engine@by+\engine@bh)
     {\includegraphics[height=\engine@bh]{\engine@cv{#1@img}}};}{}}
 % \engine@cnode{<stack>}: the text column, its stack (a \vbox \engine@bw wide; no text width, which
-% would set it as a paragraph) from the top or centred by the column's anchor
+% would set it as a paragraph) from the top or centered by the column's anchor
 \def\engine@cnode{\engine@pnode{column}{Text}}
 % \engine@pnode{<part>}{<color suffix>}{<stack>}: a text part (the column, a cover's byline) in its box
 \def\engine@pnode#1#2#3{\engine@box{#1}%
@@ -316,7 +320,7 @@
   \engine@ifc{byline@x}{\engine@pnode{byline}{Byline}{\engine@textstack{byline}}}{}\engine@cfineprint}
 \def\engine@ctext@section{\engine@cnode{\engine@sectionstack}}
 \def\engine@ctext@closing{\engine@cnode{\engine@closingstack}}
-% the feature: the frame title in the column (centred on the bar, or the cover's stack) and the
+% the feature: the frame title in the column (centered on the bar, or the cover's stack) and the
 % body (enginefeaturepanel, beamerinnerthemeEngine.sty) on the panel or under the title
 \def\engine@ctext@feature{%
   \ifx\beamer@frametitle\@empty\else

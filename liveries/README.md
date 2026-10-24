@@ -74,7 +74,8 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      only what differs from the engine's (REFERENCE.md has every key): ncar rounds its cards and
      keeps its warn and fail glyphs off its yellow, which is unreadable as text on white;
      nasa-jsc-eg rules its columns.
-   - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
+   - **Slide styles.** `frametitle` for the content titles (`align`, `symmetric` to center on the
+     slide rather than beside the mark, a `color` of their own, the accent `tab`, the
      hairline `rule` with its `rule-width` and `rule-color`, and the band's `top`, `height` and
      `rule-y` as fractions of the height, one set every format draws); `title: {style: band, ...}`
      for a band title instead of the cover (nsi);
