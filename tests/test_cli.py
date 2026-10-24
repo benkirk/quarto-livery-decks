@@ -6,9 +6,11 @@
 size reach the livery), and a flavor (`--extends`) each pass `livery all` (build, template, check)
 as they stand; `new` refuses a non-empty directory and a parent that is not beside it; `zip` packs
 both bundles; every bundled build/livery.json records the engine's version and its schema, and
-`deps` warns when a build records another; `livery_mpl.__version__` is the engine's, in the engine
-and in an unpacked charts bundle, and its `dense()` halves the type and restores it, `raster()` is
-a no-op outside a kernel; and the first-use fixes (#87): `bin/livery` runs the command (through a
+`deps` warns when a build records another; `livery_mpl.__version__` is the engine's, in the engine,
+in an unpacked charts bundle and installed (pip's metadata), it imports with no livery found
+(unconfigured), `use()` on a bundle's zip unpacks it once into the cache and loads it, its
+`dense()` halves the type and restores it, `raster()` is a no-op outside a kernel; and the
+first-use fixes (#87): `bin/livery` runs the command (through a
 link too), `all` does not warn of the template it builds, `check` is quiet but for warnings,
 failures and a summary (`-v` for all), a bad palette name names its key, and a scaffold outside
 the repo points its editor at the real schema. The decks under a scaffold are CI's and
@@ -131,9 +133,17 @@ def test_deps_warns_on_another_engine(tmp_path):
 
 
 def test_livery_mpl_version(tmp_path):
-    """livery_mpl's version: the engine's in the engine, the packing engine's in a bundle."""
+    """livery_mpl's version: the engine's in the engine, the packing engine's in a bundle, the
+    distribution's installed (a dist-info beside the module, as pip leaves it: no pip, no network);
+    with no livery found, the engine's and the installed module import unconfigured."""
     run("zip", "--charts", ROOT / "liveries" / "ncar", "-o", tmp_path / "c.zip")
     zipfile.ZipFile(tmp_path / "c.zip").extractall(tmp_path / "bundle")
+    site = tmp_path / "site"
+    (site / f"livery_mpl-{VERSION}.dist-info").mkdir(parents=True)
+    (site / f"livery_mpl-{VERSION}.dist-info" / "METADATA").write_text(
+        f"Metadata-Version: 2.4\nName: livery-mpl\nVersion: {VERSION}\n")
+    (site / "livery_mpl.py").write_bytes((ENGINE / "mpl" / "livery_mpl.py").read_bytes())
+    (tmp_path / "empty").mkdir()
     probe = ("import livery_mpl as m, matplotlib.pyplot as plt; print(m.__version__); "
              "assert all(hasattr(m, n) for n in m.__all__); f = plt.rcParams['font.size']\n"
              "with m.dense(0.5): assert plt.rcParams['font.size'] == round(f) / 2, 'dense'\n"
@@ -146,6 +156,43 @@ def test_livery_mpl_version(tmp_path):
         r = subprocess.run([sys.executable, "-c", probe], capture_output=True, text=True, **kw)
         assert r.returncode == 0 and r.stdout.strip() == VERSION, \
             f"livery_mpl in the {where}: {r.stdout.strip()!r} {r.stderr.strip()[-200:]}"
+    bare = "import livery_mpl as m; assert m.livery == {} and m.colors == [], m.livery; print(m.__version__)"
+    for where, path in (("engine", ENGINE / "mpl"), ("installed", site)):
+        r = subprocess.run([sys.executable, "-c", bare], capture_output=True, text=True,
+                           env={**env, "PYTHONPATH": str(path)}, cwd=tmp_path / "empty")
+        assert r.returncode == 0 and r.stdout.strip() == VERSION, \
+            f"livery_mpl {where}, no livery: {r.stdout.strip()!r} {r.stderr.strip()[-200:]}"
+
+
+USE_ZIP = r"""
+import json, os, sys
+from pathlib import Path
+import livery_mpl as m
+from matplotlib import font_manager as fm
+z, ncar = Path(sys.argv[1]), json.loads(Path(sys.argv[2]).read_text())
+d = Path(os.environ["XDG_CACHE_HOME"]) / "livery_mpl" / f"ncar-charts-{ncar['engine']}"
+m.use(z)
+assert (d / "livery.json").is_file(), f"not unpacked into {d}"
+mine = {f.name for f in fm.fontManager.ttflist if Path(f.fname).is_relative_to(d / "fonts")}
+assert ncar["typography"]["base"] in mine, f"the base family is not registered from {d}: {mine}"
+assert m.colors == ncar["charts"][ncar["charts"]["mode"]]["categorical"], m.colors
+t = (d / "livery.json").stat().st_mtime_ns
+m.use(z)
+assert (d / "livery.json").stat().st_mtime_ns == t, "a second use() unpacked again"
+"""
+
+
+def test_use_zip(tmp_path):
+    """use() on a charts bundle's zip: unpacked under $XDG_CACHE_HOME/livery_mpl/<stem>-<engine>/
+    (once), its base family registered from there, ncar's slots; in a subprocess, its own env."""
+    z = tmp_path / "ncar-charts.zip"
+    assert run("zip", "--charts", ROOT / "liveries" / "ncar", "-o", z).returncode == 0
+    env = {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
+    (tmp_path / "empty").mkdir()
+    r = subprocess.run([sys.executable, "-c", USE_ZIP, str(z), str(ROOT / "liveries" / "ncar" / "build" / "livery.json")],
+                       capture_output=True, text=True, cwd=tmp_path / "empty",
+                       env={**env, "PYTHONPATH": str(ENGINE / "mpl"), "XDG_CACHE_HOME": str(tmp_path / "xdg")})
+    assert r.returncode == 0, r.stderr.strip()[-400:]
 
 
 # the first-use fixes (#87)

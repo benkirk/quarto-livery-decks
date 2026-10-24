@@ -3,11 +3,17 @@ fonts and type sizes (design/charts-and-plots.md, section 8).
 
     import livery_mpl                      # in a deck's first cell, `#| include: false`
 
-On import: the Agg backend outside a Jupyter kernel, the livery's fonts registered with
-addfont(), build/livery.mplstyle applied (Make.common's MATPLOTLIBRC already did, without the
-fonts), the colormaps registered and `livery` made the default. The livery is found as the
-engine's reader finds it: an argument to use(), $LIVERY_DIR, a `_livery` link in the current
-directory, else a livery.json beside this file (the charts bundle, mpl_zip.py).
+    import livery_mpl                      # installed by pip: call use() first
+    livery_mpl.use("ncar-charts.zip")      # a release's charts bundle, or a livery's directory
+
+On import: the Agg backend outside a Jupyter kernel and, when a livery is found, use(): the
+livery's fonts registered with addfont(), build/livery.mplstyle applied (Make.common's
+MATPLOTLIBRC already did, without the fonts), the colormaps registered and `livery` made the
+default. The livery is found as the engine's reader finds it: an argument to use(), $LIVERY_DIR,
+a `_livery` link in the current directory, else a livery.json beside this file (the charts
+bundle, mpl_zip.py). With none (pip's install) the module imports unconfigured, `livery` empty.
+A bundle's zip given to use() is unpacked once into $XDG_CACHE_HOME (else ~/.cache)
+/livery_mpl/<zip stem>-<engine>/, again only when the zip is newer.
 
     livery_mpl.colors          the categorical slots of the livery's mode, in order
     livery_mpl.cycle           the same as a cycler (axes.prop_cycle)
@@ -27,8 +33,9 @@ directory, else a livery.json beside this file (the charts bundle, mpl_zip.py).
     with livery_mpl.dark():    the dark chrome, slots and maps, for a dark slide: a {.brand-dark}
                                slide, which every format draws on the dark role, or any slide of
                                a dark livery
-    livery_mpl.use(path)       load another livery (a directory, or a bundle's)
-    livery_mpl.__version__     the engine's version (a bundle's: the engine that packed it)
+    livery_mpl.use(path)       load another livery (a directory, a bundle's, or a bundle's zip)
+    livery_mpl.__version__     the engine's version (a bundle's: the engine that packed it; pip's:
+                               the release it was installed from)
 
 Colormaps: livery (the default sequential map), livery_r, livery_div (diverging), one
 livery_seq_<ramp> per sequential ramp, each with a _dark twin (the dark selections), all
@@ -42,6 +49,7 @@ in CHANGELOG.md.
 import json
 import os
 import sys
+import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -63,7 +71,8 @@ __all__ = ["__version__", "use", "colors", "cycle", "families", "status", "muted
 
 def _engine_version() -> str:
     """The engine's version: its _extension.yml beside this file's directory (in the engine), else
-    the stamp in the livery.json beside this file (a charts bundle: the engine that packed it)."""
+    the stamp in the livery.json beside this file (a charts bundle: the engine that packed it),
+    else the installed distribution's (pip's, which pyproject.toml read from _extension.yml)."""
     ext = HERE.parent / "_extension.yml"
     if ext.exists():
         for line in ext.read_text().splitlines():
@@ -71,19 +80,41 @@ def _engine_version() -> str:
                 return line.split(":", 1)[1].strip()
     if (HERE / "livery.json").exists():
         return json.loads((HERE / "livery.json").read_text()).get("engine", "unknown")
-    return "unknown"
+    from importlib.metadata import PackageNotFoundError, version
+    try:
+        return version("livery-mpl")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 __version__ = _engine_version()
 
 
-def _find(path=None) -> Path:
+def _unpack(z) -> Path:
+    """A charts bundle's zip unpacked into $XDG_CACHE_HOME (else ~/.cache)/livery_mpl/<stem>-<engine>/,
+    unless an unpacking newer than the zip is there; livery.json last, so a broken one is redone."""
+    z = Path(z).resolve()
+    with zipfile.ZipFile(z) as zf:
+        engine = json.loads(zf.read("livery.json")).get("engine", "unknown")
+        d = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "livery_mpl" / f"{z.stem}-{engine}"
+        stamp = d / "livery.json"
+        if not stamp.exists() or stamp.stat().st_mtime < z.stat().st_mtime:
+            for n in sorted(zf.namelist(), key=lambda n: n == "livery.json"):
+                zf.extract(n, d)
+    return d
+
+
+def _find(path=None) -> Path | None:
+    """livery.json of the first livery found (the module's docstring), else None."""
+    if path and str(path).endswith(".zip"):
+        path = _unpack(path)
     for c in (path, os.environ.get("LIVERY_DIR"), "_livery"):
-        if c and (Path(c) / "build" / "livery.json").exists():
-            return Path(c).resolve() / "build" / "livery.json"
+        for f in ("build/livery.json", "livery.json"):   # a livery's directory, an unpacked bundle
+            if c and (Path(c) / f).exists():
+                return Path(c).resolve() / f
     if (HERE / "livery.json").exists():
         return HERE / "livery.json"
-    raise FileNotFoundError("no livery: pass a directory, export LIVERY_DIR, or run where _livery links")
+    return None
 
 
 # -- OKLab (Björn Ottosson), for the colormaps' interpolation ------------------------------------
@@ -154,9 +185,12 @@ def _register(name, cmap):
 
 def use(path=None) -> dict:
     """Load a livery (see the module's docstring), register its fonts and colormaps, apply its
-    style; called on import. Returns livery.json."""
+    style; called on import when a livery is found. Returns livery.json."""
     global livery, charts, mode, colors, cycle, families, status, muted, surface, style
     f = _find(path)
+    if f is None:
+        raise FileNotFoundError("no livery: pass a directory or a charts bundle's zip, export LIVERY_DIR, "
+                                "or run where _livery links")
     livery = json.loads(f.read_text())
     base = f.parent.parent if f.parent.name == "build" else f.parent   # the livery dir, or the bundle
     for font in livery.get("typography", {}).get("fonts", []):
@@ -295,4 +329,5 @@ def raster(dpi: float = 200):
         set_matplotlib_formats(*was)
 
 
-use()
+if _find():
+    use()

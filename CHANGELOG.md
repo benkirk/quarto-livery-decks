@@ -83,6 +83,10 @@ every format (`design/cells-dark-handoff.md`).
 - `with livery_mpl.dark():` draws the dark chrome and colors in every format, since every format
   draws a `{.brand-dark}` slide dark; its `force=` argument is gone (it was the only way to have
   it outside HTML).
+- `import livery_mpl` with no livery to find no longer raises: the module imports unconfigured
+  and `livery_mpl.use(...)` configures it. `use()` takes a charts bundle's zip as it is
+  (`use("ncar-charts.zip")`), unpacked once into `$XDG_CACHE_HOME` (else `~/.cache`)
+  `/livery_mpl/<name>-charts-<engine>/`, or an unpacked bundle's directory. Decks are unchanged.
 
 ### LaTeX
 
