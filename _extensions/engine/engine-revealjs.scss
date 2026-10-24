@@ -1219,6 +1219,7 @@ html.reveal-print .reveal .slides {
 }
 .reveal section.has-light-background a, .reveal section.has-light-background a:hover,
 .reveal .footer a { color: var(--engine-primary-contrast); }
+.reveal .footer a.engine-link-line { color: var(--engine-muted); }   // linked-images.lua's link line
 .reveal section.has-dark-background a, .reveal section.has-dark-background a:hover { color: var(--engine-secondary); }
 .reveal section.has-dark-background code { color: var(--engine-warning); }
 .reveal pre { background-color: var(--engine-surface); }
