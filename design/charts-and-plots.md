@@ -272,7 +272,9 @@ must pass the ncar pins unchanged; if they fail, the checks are wrong.
   `<a:custClrLst>` in `theme1.xml`, each color named ("Data 1 · Blue"), shown by PowerPoint as
   a Custom Colors row in every color picker (section 7).
 
-Later and cheap, not this work: a Plotly template or a Vega theme from the same data.
+Later and cheap, not this work: a Plotly template or a Vega theme from the same data. gnuplot
+(`build/livery.gp`) and R (`build/livery.R`, a derived `-r` image) are designed in
+`plots-gnuplot-and-r.md`.
 
 ## 7. PowerPoint: the colors are already baked in
 
