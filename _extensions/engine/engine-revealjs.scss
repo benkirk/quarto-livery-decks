@@ -895,6 +895,7 @@ div.reveal div.slides section.engine-title.quarto-title-block {
     justify-content: var(--engine-cmp-fineprint-justify);
     font-size: calc(var(--engine-type-fineprint, 0.4) * 1em);
     line-height: var(--engine-leading-fineprint, 1.4);
+    text-align: left;   // as the PDF and pptx set it, whatever the column's alignment
     opacity: 0.85;
     color: var(--engine-cmp-fineprint-color);
     p { margin: 0; line-height: var(--engine-leading-fineprint, 1.4); }

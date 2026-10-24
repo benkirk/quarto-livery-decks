@@ -292,7 +292,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   a composed slide's text and rule in all three. The cover's `fineprint` box holds the deck's
   `fineprint:`, else the livery's `fineprint.text` (set on `title`, every cover's; `none` drops
   it): beamer's `\engine@cfineprint`, `title-slide.html`, `slide_layout.py`'s `cover_fineprint()`
-  (from `engine-fineprint`, a line per paragraph). **`make measure`**
+  (from `engine-fineprint`, a line per paragraph or line break). **`make measure`**
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the

@@ -73,8 +73,21 @@ local function fineprint_meta(meta)
   local fp = meta["fineprint"]
   if fp == nil then return end
   local lines = {}
-  if pandoc.utils.type(fp) == "Blocks" then
-    for _, b in ipairs(fp) do table.insert(lines, pandoc.utils.stringify(b)) end
+  local function parts(inl)   -- a line break parts a paragraph too: Quarto reads a metadata file's
+    local run = pandoc.Inlines({})   -- blank line as one
+    for _, i in ipairs(inl) do
+      if i.t == "LineBreak" then table.insert(lines, pandoc.utils.stringify(run)); run = pandoc.Inlines({})
+      else run:insert(i) end
+    end
+    table.insert(lines, pandoc.utils.stringify(run))
+  end
+  local ty = pandoc.utils.type(fp)
+  if ty == "Blocks" then
+    for _, b in ipairs(fp) do
+      if b.t == "Para" or b.t == "Plain" then parts(b.content) else table.insert(lines, pandoc.utils.stringify(b)) end
+    end
+  elseif ty == "Inlines" then
+    parts(fp)
   else
     lines = { pandoc.utils.stringify(fp) }
   end

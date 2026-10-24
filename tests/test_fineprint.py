@@ -5,9 +5,9 @@
 
 A tmp flavor of ncar sets a two-paragraph default on `title`: the build gives every cover its
 paragraphs and refuses the text on a closing. slide-layout.lua (under a `quarto` shim) flattens the
-deck's fineprint: to `engine-fineprint`, a line per paragraph; the pptx step draws the deck's, else
-the default, in the box, size and color the livery gives, and none for `fineprint: none`. Needs
-pandoc ($QUARTO_PANDOC).
+deck's fineprint: to `engine-fineprint`, a line per paragraph (a line break parts one too: Quarto
+reads a metadata file's blank line as one); the pptx step draws the deck's, else the default, in
+the box, size and color the livery gives, and none for `fineprint: none`. Needs pandoc.
 """
 
 import json
@@ -83,6 +83,7 @@ def flatten(tmp_path, front):
 @pytest.mark.parametrize("front, want", [
     ("fineprint: One line.\n", "One line."),
     ("fineprint: |\n  First para.\n\n  Second para.\n", "First para.\nSecond para."),
+    ("fineprint: \"First line.\\\\\\nSecond line.\"\n", "First line.\nSecond line."),   # a line break
     ("fineprint: none\n", "none"),
     ("title: T\n", None),
 ])
