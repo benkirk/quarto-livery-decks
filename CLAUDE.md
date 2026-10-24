@@ -34,9 +34,9 @@ Sans from `liveries/nasa` as its stand-in face, a placeholder mark; `--from <dec
 (`livery_template.py`), `check [--swatch] [--qa]` (`livery_check.py`; `--qa` runs the quickstart's
 `make qa` with `LIVERY=` for a bundled livery, else `LIVERY_DIR=`), `all` (build, template,
 check; the root `make livery LIVERY=|LIVERY_DIR=`), `zip [--charts]` (`overleaf_zip.py`,
-`mpl_zip.py`), `schema --doc`, `placeholders` (sample text over a livery's default markings and
+`mpl_zip.py`), `schema --doc`, `placeholders [-o FILE]` (sample text over a livery's default markings and
 cover notice, the `DECK_META` every image we keep is shot under: gallery, `check --qa`, CI's
-measure) and `deps|mono|figsize` for `Make.common`. The modules have no
+measure; `-o` writes it and prints `DECK_META=<file>`, nothing for a livery without defaults) and `deps|mono|figsize` for `Make.common`. The modules have no
 entry points of their own; `livery.py` imports each only when its subcommand runs, so `zip`
 needs nothing beyond Python (the release job).
 `design/engine-and-liveries.md` is the roadmap; its section 10 logged progress up to the first
@@ -186,8 +186,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
   `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
-  steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
-  measuring (`text_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
+  steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`/`peek_marker`, `BAND`, `PHOTO`, the shape tests), `measure.py` the text
+  measuring (`text_height`, `table_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
   that sizes a box (dividers, caution boxes, feature panels, centered tables, the band title) is
   measured by `pptx_steps/measure.py`: PIL on the livery's bundled faces, each run in the face
   the pptx shows (the pptx typeface as its stand-in, titles in the headings family only with a
@@ -301,8 +301,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `cover_byline()` (the institute's first appearance in the pptx); `column.align: center` centers
   a composed slide's text and rule in all three. The cover's `fineprint` box holds the deck's
   `fineprint:`, else the livery's `fineprint.text` (set on `title`, every cover's; `none` drops
-  it): beamer's `\engine@cfineprint`, `title-slide.html`, `slide_layout.py`'s `cover_fineprint()`
-  (from `engine-fineprint`, a line per paragraph or line break). **`make measure`**
+  it): `engine-common.lua`'s `fineprint_paragraphs()` the one reader; beamer's `\engine@cfineprint`
+  (the livery's default in livery.sty, `\titlefineprint` written only for the deck's own),
+  `title-slide.html`, `slide_layout.py`'s `cover_fineprint()` (from `engine-fineprint`, always
+  written, a line per paragraph or line break, `none` for none). **`make measure`**
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
@@ -330,7 +332,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   120 pt on the default canvas scaled to the livery's): `engine-common.lua`'s `watermark_text()` the
   one reader; on a content slide the livery's color, on a composed slide its composition's column
   role, on a dark slide on-dark (Ben's pick, 2026-10-24: it reads on every field), in all three.
-  HTML: `add_watermark()` writes `.engine-watermark` as the LAST element of every slide (and
+  HTML: `add_tail()` writes the marking strips, then `.engine-watermark` as the LAST element, at
+  the end of every slide, one opened by `---` or the blocks before the first heading too (and
   `title-slide.html` the title's): z-index -1 puts it under the body in flow and, later in the DOM
   than the art and waves (z-index -1 too), over them; an absolute box (a `.full` figure, the
   feature panel) covers it. PDF: `\enginewatermark{}` (the filter writes it), drawn by the
@@ -359,17 +362,19 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **The dark slide** (`## Title {.brand-dark}`, a light livery's content slide on the dark role;
   a no-op on a dark livery): a layout class (`take_layout()`'s `dark`). HTML: `.engine-dark` with
   `data-background-color` the dark role; `livery.css` (`emit_css_dark_slide()`) swaps the roles
-  the text reads (`DARK_SWAP`: foreground to on-dark, muted to `dark-muted`, primary and
+  the text reads (`livery.DARK_SWAP`, the one list, which `emit_sty` and `common.DARK_INK` read too: foreground to on-dark, muted to `dark-muted`, primary and
   primary-contrast to secondary, the table blends to `dark-rule`/`dark-band`, the title and
-  hairline with them) and restores them in a box with a fill of its own (`DARK_BOXES`), the
-  chart colors' dark set, Graphviz flipped. pptx: `engine-layout: dark`; `slide_layout.py`'s
+  hairline with them) and restores them in a box with a fill of its own (`DARK_BOXES`, and the
+  caution body; inline code there off the field), the chart colors' dark set, Graphviz flipped. pptx: `engine-layout: dark`; `slide_layout.py`'s
   `draw_dark()` sets the slide's `p:bg`, hides the master (`showMasterSp="0"`) and redraws the
   furniture from `livery.json` `furniture` (the tab, rule, title and marks by corner, `{mark,
   box}`, derived from `frametitle`/`geometry` and read by `livery_template.master()` too),
   the dark role's marks; `common.is_dark()` (the `p:bg`, or before that step the notes line) and
   `common.palette()` give the steps their inks, `darken()` grid's outside a box. PDF: the frame
-  key `enginedark` (`\engine@darkcolors`; `BrandMuted`, `BrandPrimaryContrast` and the table
-  colors swapped and put back on reset, a card reading the `EngineLight*` snapshots; a no-op
+  key `enginedark` (`\engine@darkcolors`; livery.sty's `\engine@darkswap` swaps `BrandMuted`,
+  `BrandPrimaryContrast` and the table colors, put back on reset by `\engine@lightcolors`, a card
+  reading the `EngineLight*` snapshots, a lead, a strip and a caution body the light colors
+  whole, `\engine@lightbox`; a `.full` or `.feature` slide ignores the class, warned, in all three; a no-op
   under `\engine@mode` dark). Marks are per role, `\engine@mark@<role>@<name>` and
   `--engine-mark-<role>-<name>`, `marks` always holding the dark role (`MARK_ROLES`);
   `\enginelogo{light|dark}` reads background's and primary's. The four blends are
@@ -634,7 +639,8 @@ it does, by area, beyond the format notes above:
   `tmp_path`, never the tree, and never changes directory or the environment in-process
   (`tests/conftest.py` has the harness: `ROOT`, `ENGINE`, the per-livery `livery` argument, `run`
   for the livery command, `pandoc_exe`, `lua_common` for engine-common.lua under `pandoc lua`
-  with the `quarto` shim, `pandoc_deck`, `tmp_livery`, `flat`); expensive setup is a module-scoped fixture, which
+  with the `quarto` shim, `pandoc_deck`, `tmp_livery`, `flavor`, `run_steps` for pptx steps in a
+  subprocess, `title_ph`, `bare_env`, `flat`); expensive setup is a module-scoped fixture, which
   `loadfile` keeps on one worker. For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures and plots under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
