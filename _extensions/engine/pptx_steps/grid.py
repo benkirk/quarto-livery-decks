@@ -656,12 +656,14 @@ def run(prs, path: Path) -> None:
                 if MARK.match(para_text(p).strip()):
                     p.getparent().remove(p)
             above = [sh for sh in slide.shapes if is_picture(sh) and sh.top + sh.height <= ph.top]
+            # all four of a placeholder's sides at once: it inherits its frame, and setting one alone
+            # leaves the rest at 0 (pandoc's caption box carries a frame, a Content with Caption's text box none)
             if above:   # pandoc's caption box, under the picture: the flow starts just below it
-                ph.top = max(sh.top + sh.height for sh in above) + em(0.5)
+                ph.left, ph.top, ph.width, ph.height = ph.left, max(sh.top + sh.height for sh in above) + em(0.5), ph.width, ph.height
             beside = [sh for sh in slide.shapes if is_table(sh) and sh.left >= ph.left + ph.width - em(1)]
             if beside:   # a lead before a table: pandoc's Content with Caption set them side by side
                 use_layout(prs, slide, "Title and Content")
-                ph.left, ph.top, ph.width = body_frame(prs, ph)
+                ph.left, ph.top, ph.width, ph.height = body_frame(prs, ph)
             left, width = ph.left, ph.width
             before = {sh._element for sh in slide.shapes}
             y = lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent)
