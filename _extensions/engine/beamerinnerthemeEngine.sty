@@ -387,13 +387,18 @@
 \newdimen\engine@padx \newdimen\engine@pady \newdimen\engine@barw
 \def\engine@barboxin{}   % after \noindent: a strip in a card moves out to the card's edge
 \def\engine@barboxout{}  % after the box: the strip takes that back, so its line measures \hsize
+\def\engine@barboxcolors{}   % in the box: a filled box's \engine@lightbox
+% \engine@lightbox: on a dark frame ([enginedark]) a box with a fill of its own (the caution body,
+% the lead, a strip outside a card) reads as on a light frame, its text and accents the livery's
+% own (the outer theme's \engine@lightcolors), as HTML's and the pptx's; the quote, unfilled, does not
+\def\engine@lightbox{\ifengine@darkframe\engine@lightcolors\usebeamercolor[fg]{normal text}\fi}
 \def\engine@barbox#1{%
   \par\noindent\engine@barboxin\engine@padx=\csname engine@boxes@#1@padx\endcsname em%
   \engine@pady=\csname engine@boxes@#1@pady\endcsname em%
   \ifcsname engine@boxes@#1@bar\endcsname\engine@barw=\csname engine@boxes@#1@bar\endcsname\paperheight
   \else\engine@barw=\z@\fi
   \edef\engine@outerparskip{\the\parskip}% a minipage zeroes it; the box's paragraphs keep the frame's
-  \begin{lrbox}{\engine@barboxbox}%
+  \begin{lrbox}{\engine@barboxbox}\engine@barboxcolors
   \begin{minipage}{\dimexpr\linewidth-\engine@barw-2\engine@padx\relax}\parskip=\engine@outerparskip\relax}
 \def\endengine@barbox#1#2{\end{minipage}\end{lrbox}%
   \setbox\engine@barboxbox=\vbox{\vskip\engine@pady
@@ -401,13 +406,13 @@
   \hbox{{\color{#2}\vrule width \engine@barw}%
     \ifx\relax#1\relax\box\engine@barboxbox
     \else{\setlength\fboxsep{0pt}\colorbox{#1}{\box\engine@barboxbox}}\fi}\engine@barboxout\par}
-\newenvironment{enginecaution}{\engine@barbox{caution}}{\endengine@barbox{enginecautionfill}{BrandWarning}}
+\newenvironment{enginecaution}{\let\engine@barboxcolors\engine@lightbox\engine@barbox{caution}}{\endengine@barbox{enginecautionfill}{BrandWarning}}
 
 % ---------------------------------------------------------------------------
 % lead box: ::: {.lead} before a slide's columns (the Quarto filter writes it), its lines on the
 % lead fill with a bar at its left, a pad's gap under it (livery.sty's boxes.lead)
 % ---------------------------------------------------------------------------
-\newenvironment{enginelead}{\engine@barbox{lead}}%
+\newenvironment{enginelead}{\let\engine@barboxcolors\engine@lightbox\engine@barbox{lead}}%
   {\endengine@barbox{EngineBoxesLeadFill}{EngineBoxesLeadBarColor}\vskip\engine@pady}
 
 % ---------------------------------------------------------------------------
@@ -554,6 +559,7 @@
   \fi
   % boxes.strip.gap above and below it, em of the body (the scss's margin, grid.py's room)
   \par\vskip\engine@boxes@strip@gap em
+  \ifengine@incard\else\let\engine@barboxcolors\engine@lightbox\fi   % in a card, the card's colors
   \engine@barbox{strip}}%
   {\endengine@barbox{engine@strip}{engine@strip}\vskip\engine@boxes@strip@gap em}
 
