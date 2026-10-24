@@ -1,6 +1,6 @@
 # Roadmap: closing the static-content catalogue (two sprints, a sweep, a release)
 
-**State (2026-10-24):** designed, not started; planned by the reviewing session after #146 and release 26.10.11, from three code explorations and two design passes. Ben's picks of 2026-10-24 are marked where they fall.
+**State (2026-10-24):** sprint A executed as PR #148 and reviewed sound (its handoff's State line has the departures); sprint B, the sweep and the release not started. Planned by the reviewing session after #146 and release 26.10.11, from three code explorations and two design passes. Ben's picks of 2026-10-24 are marked where they fall.
 
 ## Context
 

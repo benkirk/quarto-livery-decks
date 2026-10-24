@@ -1,6 +1,6 @@
 # Sprint handoff: pictures and tables in grid columns and cards; the inverted content slide in every format
 
-**State (2026-10-24):** designed, not started; planned by the reviewing session after #146 and release 26.10.11, from three code explorations and two design passes. Ben's picks of 2026-10-24 are marked where they fall.
+**State (2026-10-24):** executed as PR #148 (`decks/cells-dark`, eleven commits on `2a1cf0a`), reviewed sound the same day. Departures from the plan below: a `furniture` corner is `{mark, box}`, not a bare box (`draw_dark()` needs the mark's name); the picture marker's base64 is capped at 6 MB (lxml's 10 MB text-node limit on the base64, not 8); `diagram-dark.lua` runs before `grid-pptx.lua` in the pptx chain so a dark livery's diagram reaches the marker dark; an eleventh commit, Ben's mid-sprint addition, gives every card a hairline (`boxes.card.border`, `border-color`). Ben's picks at the start: the names as proposed, plot bytes as base64, a box on a dark slide keeps its colors, `livery_mpl.dark()` on in every format. Planned by the reviewing session after #146 and release 26.10.11, from three code explorations and two design passes; the squash SHA is in `design/roadmap-catalogue.md` once it merges.
 
 **For a fresh session.** One PR against `main` (branch `decks/cells-dark` from `origin/main` at
 `2a1cf0a`), a commit per item in the order below, squash-merged once, no version bump. Read
