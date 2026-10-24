@@ -1155,11 +1155,13 @@
   "frametitle": {
     "align": "left",
     "body": 0.1667,
+    "color": "#00357A",
     "height": 0.0778,
     "rule": true,
     "rule-color": "#A9B8CB",
     "rule-width": 0.0016,
     "rule-y": 0.1444,
+    "symmetric": false,
     "tab": true,
     "top": 0.0489
   },
@@ -1273,23 +1275,28 @@
       "light": "ucp-color"
     }
   },
-  "marking": {
-    "align": "center",
-    "bold": false,
-    "box": [
-      0.1,
-      0.004,
-      0.8,
-      0.03
-    ],
-    "color": "#6B7C99",
-    "edge": "top",
-    "fill": null,
-    "height": 0.03,
-    "offset": 0.004,
-    "text": null,
-    "width": 0.8
-  },
+  "marking": [
+    {
+      "align": "center",
+      "bold": false,
+      "box": [
+        0.1,
+        0.004,
+        0.8,
+        0.03
+      ],
+      "color": "#6B7C99",
+      "edge": "top",
+      "fill": null,
+      "height": 0.03,
+      "leading": 1.2,
+      "name": "banner",
+      "offset": 0.004,
+      "size": 7,
+      "text": null,
+      "width": 0.8
+    }
+  ],
   "marks": {
     "background": {
       "logo": "logos/UCP-Logo_Color_RGB.png",

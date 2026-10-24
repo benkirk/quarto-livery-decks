@@ -93,14 +93,19 @@
 % panel (enginefeaturepanel) starts below where the panel would
 \def\engine@featurespace{\def\engine@comp{feature}\nointerlineskip
   \vbox to \engine@ifc{panel@y}{\engine@cv{panel@y}}{0.5}\paperheight{\vfil}}
+% the title's start beside the mark: its inset, its width and the gap (frametitle.gap, HTML's 40 px)
+\def\engine@ftbeside{\ifdim\engine@logowidth>0pt
+  \hskip\dimexpr\engine@logowidth+\engine@ft@gap\paperwidth+\engine@logoinset-\engine@margin\relax\fi}
 \def\engine@frametitle{%
   \nointerlineskip
   \@tempdima=\paperwidth
   \advance\@tempdima by -2\engine@margin
   \ifdim\engine@logowidth>0pt
     \engine@ifstyle{normal}{\advance\@tempdima by -\engine@logowidth
-      \advance\@tempdima by -0.03\paperwidth
-      \advance\@tempdima by \dimexpr\engine@margin-\engine@logoinset\relax}{}%
+      \advance\@tempdima by -\engine@ft@gap\paperwidth
+      \advance\@tempdima by \dimexpr\engine@margin-\engine@logoinset\relax
+      \ifdefined\engine@ft@symmetric   % the room mirrored about the slide's axis (frametitle.symmetric)
+        \@tempdima=\dimexpr\paperwidth-(\engine@logowidth+\engine@ft@gap\paperwidth+\engine@logoinset)*2\relax\fi}{}%
   \fi
   \setbox\@tempboxa=\vbox{%
     \hsize=\@tempdima
@@ -127,9 +132,8 @@
          \smash{\vrule width\engine@tabwidth height\dimexpr\ht\@tempboxa+0.5\@tempdimc\relax
                 depth\dimexpr\dp\@tempboxa+0.5\@tempdimc\relax}}\fi
         \hskip\dimexpr\engine@margin-\engine@tabwidth\relax
-        % a top-left mark: the title starts beside it
-        \engine@ifcorner{\engine@geom@logocorner}{top-left}{%
-          \ifdim\engine@logowidth>0pt\hskip\dimexpr\engine@logowidth+0.03\paperwidth+\engine@logoinset-\engine@margin\relax\fi}{}%
+        % a top-left mark (or a mirrored room): the title starts beside it
+        \engine@ifcorner{\engine@geom@logocorner}{top-left}{\engine@ftbeside}{\ifdefined\engine@ft@symmetric\engine@ftbeside\fi}%
       }{\hskip\engine@margin}%
       \box\@tempboxa}%
     % the gap under the title: to rule-y, at least the band's own (rule-y less the band's foot)
@@ -301,7 +305,7 @@
   \node[anchor=north west,inner sep=0pt] at (\engine@bx,\engine@by+\engine@bh)
     {\includegraphics[height=\engine@bh]{\engine@cv{#1@img}}};}{}}
 % \engine@cnode{<stack>}: the text column, its stack (a \vbox \engine@bw wide; no text width, which
-% would set it as a paragraph) from the top or centred by the column's anchor
+% would set it as a paragraph) from the top or centered by the column's anchor
 \def\engine@cnode{\engine@pnode{column}{Text}}
 % \engine@pnode{<part>}{<color suffix>}{<stack>}: a text part (the column, a cover's byline) in its box
 \def\engine@pnode#1#2#3{\engine@box{#1}%
@@ -316,7 +320,7 @@
   \engine@ifc{byline@x}{\engine@pnode{byline}{Byline}{\engine@textstack{byline}}}{}\engine@cfineprint}
 \def\engine@ctext@section{\engine@cnode{\engine@sectionstack}}
 \def\engine@ctext@closing{\engine@cnode{\engine@closingstack}}
-% the feature: the frame title in the column (centred on the bar, or the cover's stack) and the
+% the feature: the frame title in the column (centered on the bar, or the cover's stack) and the
 % body (enginefeaturepanel, beamerinnerthemeEngine.sty) on the panel or under the title
 \def\engine@ctext@feature{%
   \ifx\beamer@frametitle\@empty\else
@@ -328,12 +332,16 @@
       ++(\engine@bw,-\dimexpr\ht\engine@panelbox+\dp\engine@panelbox+2\engine@panelpady\relax);
     \node[anchor=north west,inner sep=0pt] at (\engine@bx+\engine@panelpadx,\@tempdima-\engine@panelpady)
       {\copy\engine@panelbox};}{}\fi}
-\def\engine@cfineprint{\ifx\engine@fineprint\@empty\else\engine@ifc{fineprint@x}{\engine@box{fineprint}%
+\def\engine@cfineprint{\begingroup
+  \ifx\engine@fineprint\relax   % the deck set none: the livery's default, if any
+    \engine@ifc{fineprint@text}{\def\engine@fp{\engine@cv{fineprint@text}}}{\let\engine@fp\@empty}%
+  \else\let\engine@fp\engine@fineprint\fi
+  \ifx\engine@fp\@empty\else\engine@ifc{fineprint@x}{\engine@box{fineprint}%
   \engine@ifcorner{\engine@cv{fineprint@anchor}}{bottom}%
     {\def\engine@tmpc{south west}\@tempdima=\engine@by}%
     {\def\engine@tmpc{north west}\@tempdima=\dimexpr\engine@by+\engine@bh\relax}%
   \node[anchor=\engine@tmpc,inner sep=0pt,text width=\engine@bw,font=\usebeamerfont{title fineprint},
-    text=\engine@ccolor{Fineprint},align=left] at (\engine@bx,\@tempdima) {\engine@fineprint};}{}\fi}
+    text=\engine@ccolor{Fineprint},align=left] at (\engine@bx,\@tempdima) {\engine@fp};}{}\fi\endgroup}
 
 % \engine@art{<kind>}: the livery's static background for a slide kind, if it names one
 \def\engine@art#1{%
@@ -367,20 +375,32 @@
     \engine@drawmarking
   \end{tikzpicture}}
 
-% the marking strip (livery.yml marking:), on every frame, over everything: the deck's text
-% (\enginemarking{<text>} in the preamble, which the Quarto filter writes for marking:; {} for
-% none), else the livery's default
-\providecommand\engine@marking@default{}
-\newcommand\enginemarking[1]{\gdef\engine@markingtext{#1}}
-\def\engine@drawmarking{%
-  \ifdefined\engine@markingtext\let\engine@mk\engine@markingtext\else\let\engine@mk\engine@marking@default\fi
-  \ifx\engine@mk\@empty\else\@ifundefined{engine@marking@x}{}{%
-    \engine@bw=\engine@marking@w\paperwidth \engine@bh=\engine@marking@h\paperheight
-    \engine@bx=\engine@marking@x\paperwidth
-    \engine@by=\dimexpr\paperheight-\engine@marking@y\paperheight-\engine@bh\relax
-    \@ifundefined{engine@marking@fill}{}{\fill[EngineMarkingFill] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}%
-    \node[anchor=center,inner sep=0pt,text width=\engine@bw,align=\engine@marking@align,
-      font={\engine@fs{marking}\selectfont\@ifundefined{engine@marking@bold}{}{\bfseries}},text=EngineMarkingText] at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};}\fi}
+% the marking strips (livery.yml marking:, in order), on every frame, over everything: each one's
+% text the deck's (\enginemarking[<name>]{<text>} in the preamble, which the Quarto filter writes
+% for marking:; no name is the first strip; {} for none), else the strip's default
+\providecommand\engine@markings{}
+\providecommand\engine@firstmarking{}
+\newcommand\enginemarking[2][\engine@firstmarking]{%
+  \@ifundefined{engine@marking@#1@x}%
+    {\PackageWarning{Engine}{\string\enginemarking: #1 is not a marking strip of the livery}}%
+    {\expandafter\gdef\csname engine@markingtext@#1\endcsname{#2}}}
+\def\engine@drawmarking{\@for\engine@mkname:=\engine@markings\do{%
+  \ifx\engine@mkname\@empty\else\expandafter\engine@drawstrip\expandafter{\engine@mkname}\fi}}
+\def\engine@drawstrip#1{%
+  \@ifundefined{engine@markingtext@#1}%
+    {\expandafter\let\expandafter\engine@mk\csname engine@marking@#1@default\endcsname}%
+    {\expandafter\let\expandafter\engine@mk\csname engine@markingtext@#1\endcsname}%
+  \ifx\engine@mk\@empty\else
+    \engine@bw=\csname engine@marking@#1@w\endcsname\paperwidth
+    \engine@bh=\csname engine@marking@#1@h\endcsname\paperheight
+    \engine@bx=\csname engine@marking@#1@x\endcsname\paperwidth
+    \engine@by=\dimexpr\paperheight-\csname engine@marking@#1@y\endcsname\paperheight-\engine@bh\relax
+    \edef\engine@mkalign{\csname engine@marking@#1@align\endcsname}%
+    \@ifundefined{engine@marking@#1@fill}{}{\fill[EngineMarking#1Fill] (\engine@bx,\engine@by) rectangle ++(\engine@bw,\engine@bh);}%
+    \node[anchor=center,inner sep=0pt,text width=\engine@bw,align=\engine@mkalign,
+      font={\expandafter\expandafter\expandafter\engine@fsof\csname engine@marking@#1@type\endcsname\selectfont
+        \@ifundefined{engine@marking@#1@bold}{}{\bfseries}},text=EngineMarking#1Text]
+      at (\engine@bx+0.5\engine@bw,\engine@by+0.5\engine@bh) {\engine@mk};\fi}
 
 % full frame: the image contained (never cropped) between a thin margin and
 % the footline, with the caption line, if any, just above the footline; or, on a

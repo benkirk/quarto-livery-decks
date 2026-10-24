@@ -26,13 +26,13 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `geometry` | object |  | The slides' furniture, in fractions of the slide. |
 | `section` | object |  | Section slides. |
 | `art` | object |  | Pictures and curves behind the fields. A path is relative to the livery. |
-| `signoff` | object |  | A second lockup at the foot of every slide but feature and full ones. |
+| `signoff` | object or null |  | A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's). |
 | `title` | object |  | The cover's composition. |
 | `marks` | map |  | Which mark and sign-off each field wears, by the field's role: background (content slides; default logo.medium.light, signoff.light), primary (covers, sections, the closing; default the dark ones), any other role the primary's. |
 | `compositions` | object |  | Overrides of the composed slides' boxes and colors, by slide; every slide takes the parts of compositions.<name> below. |
 | `feature` | object |  | Feature (photo) slides. |
 | `frametitle` | object |  | Content slides' titles. |
-| `marking` | object |  | A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here. |
+| `marking` | map |  | The marking strips on every slide (restriction or distribution markings, CUI and the like), by name, in order: a CUI banner at the top and a legend at the foot, say. A strip's text is the deck's `marking:` (front matter: a string sets the first strip, `none` turns every strip off, `{<name>: text}` sets one, `{<name>: none}` drops one), else its text here. |
 | `boxes` | object |  | The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default. |
 | `bullets` | object |  | List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface. |
 | `installed-fonts` | object |  | A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}. |
@@ -179,7 +179,7 @@ How far right of the drawn position each slide kind shows them, of the width.
 
 ### `signoff`
 
-A second lockup at the foot of every slide but feature and full ones.
+A second lockup at the foot of every slide but feature and full ones (null: none, a flavor dropping its parent's).
 
 | key | type | default | |
 |---|---|---|---|
@@ -373,6 +373,7 @@ The cover's small print.
 | `role` | role |  | The role it is drawn in. |
 | `box` | box |  | Where it sits. |
 | `anchor` | `top` \| `bottom` |  | Whether the text hangs from the box's top or stands on its bottom. |
+| `text` | string |  | The small print every deck under the livery shows on its cover (a rights notice, a funding statement), paragraphs a blank line apart, plain text; a deck's `fineprint:` replaces it, `fineprint: none` drops it. Set on `title`, it reaches every cover; a cover only. |
 
 ### `compositions.<name>.eyebrow`
 
@@ -398,6 +399,8 @@ Content slides' titles.
 | key | type | default | |
 |---|---|---|---|
 | `align` | `left` \| `center` | `"left"` | The title's alignment in the room beside the mark. |
+| `symmetric` | boolean | `false` | The title's room mirrored about the slide's axis: the mark's side's gap on both sides, so a centered title sits on the slide's center, not the room's. |
+| `color` | string | `"foreground"` | The title's color: a role, a blend or a palette name (default: foreground, the body text's), for titles on a bar of their own. |
 | `tab` | boolean | `true` | The accent tab at the paper's edge beside the title. |
 | `rule` | boolean | `true` | The hairline under the title. |
 | `top` | fraction | `0.0489` | The band's top, a fraction of the height; the title is centered in the band and a taller one grows down. |
@@ -408,7 +411,15 @@ Content slides' titles.
 
 ### `marking`
 
-A marking strip on every slide (a restriction or distribution marking, CUI and the like): its look. Its text is the deck's `marking:` (front matter; `marking: none` turns a livery's default off), else text here.
+The marking strips on every slide (restriction or distribution markings, CUI and the like), by name, in order: a CUI banner at the top and a legend at the foot, say. A strip's text is the deck's `marking:` (front matter: a string sets the first strip, `none` turns every strip off, `{<name>: text}` sets one, `{<name>: none}` drops one), else its text here.
+
+| key | type | default | |
+|---|---|---|---|
+| `<name>` | object or null |  | A strip's look and default text, by its name (lower-case letters; null drops a parent's strip). |
+
+### `marking.<name>`
+
+A strip's look and default text, by its name (lower-case letters; null drops a parent's strip).
 
 | key | type | default | |
 |---|---|---|---|
@@ -421,6 +432,7 @@ A marking strip on every slide (a restriction or distribution marking, CUI and t
 | `fill` | null or color or role |  | A fill behind it, a role, a palette name or a hex, to make it stand out (default: none). |
 | `color` | color or role |  | Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill). |
 | `bold` | boolean | `false` | Its text in bold. |
+| `size` | number |  | Its text's size in points on the pptx canvas (default: the `marking` type role). |
 
 ### `boxes`
 
@@ -686,7 +698,7 @@ Text sizes in points on the pptx.size canvas, whole or half points. A role left 
 | `eyebrow` | number | `11` | The "SECTION n" label over a section slide's heading. |
 | `closing` | number | `40` | The closing slide's headline. |
 | `pagenumber` | number | `9` | The page number. |
-| `marking` | number | `9` | The marking strip's text. |
+| `marking` | number | `9` | The marking strips' text (a strip's own size overrides it). |
 | `display` | number | `40` | A card's big number (`[$20M]{.big}`). |
 | `quote` | number | `24` | A quote block's text (its attribution is `caption`). |
 | `footer` | number | `9` | The footer line (footer=full). |

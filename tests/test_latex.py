@@ -280,6 +280,27 @@ def test_marking_on_every_page(deck):
     assert all("TEST MARKING" in t for t in pages(d / "deck.pdf"))
 
 
+NAMED = r"""
+\documentclass[aspectratio=169]{beamer}
+\usetheme[livery=liveries/ncar,fonts=bundled]{Engine}
+\enginemarking[banner]{NAMED MARKING}
+\enginemarking[nonesuch]{LOST}
+\begin{document}
+\begin{frame}{One}x\end{frame}
+\end{document}
+"""
+
+
+def test_marking_by_name(deck):
+    """\\enginemarking[<strip>]{}: the strip by its name; an unknown name warns and draws nothing."""
+    d, _ = deck
+    r, log = compile_tex(d, "named", NAMED)
+    assert r.returncode == 0, log[-1500:]
+    text = pages(d / "named.pdf")[0]
+    assert "NAMED MARKING" in text and "LOST" not in text, text
+    assert "nonesuch is not a marking strip" in " ".join(log.split()), "the theme warns on an unknown strip"
+
+
 def test_too_many_cards(deck):
     d, _ = deck
     r, log = compile_tex(d, "toomany", TOO_MANY)

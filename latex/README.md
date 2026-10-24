@@ -25,6 +25,7 @@ as a new Overleaf project:
 | `nasa` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip&engine=xelatex) | [nasa-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-overleaf.zip) |
 | `nasa-dark` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip&engine=xelatex) | [nasa-dark-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-dark-overleaf.zip) |
 | `nasa-jsc-eg` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-jsc-eg-overleaf.zip&engine=xelatex) | [nasa-jsc-eg-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-jsc-eg-overleaf.zip) |
+| `nasa-ccp` | [**Open in Overleaf**](https://www.overleaf.com/docs?snip_uri=https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-ccp-overleaf.zip&engine=xelatex) | [nasa-ccp-overleaf.zip](https://github.com/benkirk/quarto-livery-decks/releases/latest/download/nasa-ccp-overleaf.zip) |
 
 By hand: download a zip, then **New Project → Upload Project**, **Menu → Compiler →
 XeLaTeX** and **Recompile**. Under pdfLaTeX the deck builds too, but in Helvetica with
@@ -173,3 +174,4 @@ ever wear that brand. The full list is each livery's `build/livery.sty`:
 - **nasa**: `NASABlue`, `NASARed`, `NASACarbon`, `NASAGray`, `NASASky`, ...; **nasa-dark** adds
   `Graphite`, `LightBlue`, `Cyan`, `LightRed`, `Steel`, `Frost`
 - **nasa-jsc-eg**: those plus `EgYellow`, `EgNavy`, `EgRed`, `EgOrange`, `EgBlue`, `EgGreen`, ...
+- **nasa-ccp**: nasa's plus `CcpPurple`, `CcpSlate`, `CcpRed`, `CcpNavy`, `CcpGold`, `CcpGray`

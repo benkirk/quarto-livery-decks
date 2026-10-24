@@ -11,7 +11,7 @@ stay inside; pptx cannot move them). full: the one picture fills the slide, no t
 art, pandoc's caption box centered under it in the muted color, the slide number kept; a gallery's
 full slide (grid-pptx.lua's marker in its body) only loses its furniture here, grid.py fills it.
 note (single-body.lua's word for a `::: note` folded into the caption box): the box's lines each a
-paragraph, the note's in the caption size and muted color, centred, a footnote's left as
+paragraph, the note's in the caption size and muted color, centered, a footnote's left as
 style_footnotes styled it, and the box moved up to just under the picture or table.
 references (slide-layout.lua's word for the slide holding ::: {#refs}, which citeproc fills): every
 body paragraph in the footnote size with a hanging indent and a little space above, as HTML and
@@ -24,7 +24,8 @@ title slide onto Title Slide (light); a band title ignores it), its placeholders
 copied frames to take the layout's. The title slide with a `titlegraphic:` (docProps/custom.xml;
 else the livery's art.titlegraphic) is drawn from its composition (livery.json compositions):
 the photo at the back, cropped to cover its box, the field and waves over it, the marks in their
-boxes; the band takes the photo into its box over the layout's default. feature: by the
+boxes; the band takes the photo into its box over the layout's default. The cover's byline and fine
+print (the deck's fineprint:, else the livery's default) are text boxes in theirs. feature: by the
 livery's feature.style, the photo under a dark bar with the title and the body on a panel, or the
 cover with the title and body in its column. Footnote paragraphs
 (style_footnotes.py) keep their size. Every slide also gets its layout's slide-number placeholder, which pandoc never writes
@@ -191,7 +192,7 @@ def _note_parts(slide):
 
 def note_style(slide):
     """note (a `::: note` single-body.lua folded into the caption box): each line a paragraph, the
-    note's in the caption size and muted color, centred, as full_slide draws its caption; a
+    note's in the caption size and muted color, centered, as full_slide draws its caption; a
     footnote line keeps style_footnotes' look. Before lay_out, whose scale= then sizes the note
     with the body; False (slide untouched) when the slide is not one picture or table and its
     caption."""
@@ -359,8 +360,8 @@ def band_photo(slide, width, height, photo):
 
 
 def band_stack(slide, width, height):
-    """The band's title stack (date, title, subtitle, rule and author) centred on the column's
-    middle, as HTML and PDF centre theirs. pandoc puts the subtitle and the author in one
+    """The band's title stack (date, title, subtitle, rule and author) centered on the column's
+    middle, as HTML and PDF center theirs. pandoc puts the subtitle and the author in one
     paragraph of the subtitle placeholder, a blank line between them: the rule (a layout shape,
     moved onto the slide; this deck's Title Slide layout serves the title slide alone) goes in
     that blank line, under a subtitle alone, or over an author alone. From the
@@ -518,6 +519,42 @@ def cover_byline(prs, slide, comp, width, height):
             sub.text_frame.text = "\v\v".join(parts)
         else:
             sub._element.getparent().remove(sub._element)
+
+
+def cover_fineprint(prs, slide, comp, width, height):
+    """A cover's fine print (compositions: fineprint), as HTML and beamer draw it: the deck's
+    fineprint: (slide-layout.lua's engine-fineprint, a line per paragraph; `none`, none), else the
+    livery's default paragraphs, as one text box in its box, hanging from its top or standing on its
+    bottom, left-aligned in its role's color, the fineprint size at its leading. PowerPoint cannot
+    flow it, so a text taller than its box is warned."""
+    fp = comp.get("fineprint")
+    deck = docprops.prop(prs, "engine-fineprint")
+    if not fp or not fp.get("box") or deck == "none":
+        return
+    paras = [p for p in (deck.split("\n") if deck else fp.get("paragraphs") or []) if p.strip()]
+    if not paras:
+        return
+    x, y, w, h = fp["box"]
+    box = slide.shapes.add_textbox(int(x * width), int(y * height), int(w * width), int(h * height))
+    box.name = "Fineprint"
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.BOTTOM if fp["anchor"] == "bottom" else MSO_ANCHOR.TOP
+    pt, lead = livery_mod.type_pt(LIVERY, "fineprint"), LIVERY["type"]["roles"]["fineprint"]["leading"]
+    color = RGBColor.from_string(livery_mod.color(LIVERY, fp["role"]))
+    for i, text in enumerate(paras):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.alignment = PP_ALIGN.LEFT
+        p.line_spacing = Pt(pt * lead)   # exact points, which type_step scales with the size
+        r = p.add_run()
+        r.text = text
+        r.font.size = Pt(pt)
+        r.font.color.rgb = color
+    need = sum(para_lines(p, measure.BODY, Pt(pt), box.width) for p in tf.paragraphs) * Pt(pt * lead)
+    if need > box.height:
+        print(f"slide_layout: WARNING: the cover's fine print needs {need / box.height:.2f} times its box; "
+              "it runs past it", file=sys.stderr)
 
 
 def _recolor_byline(date, sub, els, has_subtitle, color):
@@ -722,4 +759,5 @@ def run(prs, path: Path) -> None:
     if len(prs.slides) and prs.slides[0].slide_layout.name.startswith("Title Slide"):   # the cover's byline
         cover = "title-band" if BAND else ("title-photo" if graphic is not None else "title") + ("-light" if light else "")
         cover_byline(prs, prs.slides[0], COMP[cover], w, h)
+        cover_fineprint(prs, prs.slides[0], COMP[cover], w, h)
     print(f"slide_layout: laid out {done} slide(s), numbered {numbered} → {path.name}")

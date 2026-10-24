@@ -24,14 +24,14 @@ The same Markdown as the beamer theme (engine-beamer.lua):
   ::: note
   A remark under a figure or table.
   :::
-      drawn as its caption: the caption size, muted, centred (.engine-note)
+      drawn as its caption: the caption size, muted, centered (.engine-note)
 
   ## Title {.brand-dark}
       content slide on Space, white text, the white-reversed logo (HTML only;
       pptx and beamer draw an ordinary slide)
 
   metadata `livery: <dir>`, `themeoptions: [title=light]`, `titlegraphic:`,
-  `fineprint:`, `institute:` -- as for beamer; HTML also reads `autofit=false`
+  `fineprint:` (`none`, else the livery's default), `institute:` -- as for beamer; HTML also reads `autofit=false`
 
 Overflowing content slides shrink their body text to fit (engine-revealjs.js);
 {.no-autofit} or {.scrollable} on a slide opts out.
@@ -59,8 +59,8 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
       text below; a dot per milestone (filled when - [x]), its bold date above
       and its label below (boxes.rail)
 
-  metadata `marking: "CUI"`
-      the marking strip on every slide (the livery places and colors it)
+  metadata `marking: "CUI"` (the first strip) or `marking: {<name>: "...", <name>: none}`
+      the marking strips on every slide (the livery places and colors them)
 
 Layout lives in engine-revealjs.scss; colors, fonts and logos come from the livery
 (`livery:` in the metadata, else the bundled liveries/ncar): its build/livery.css,
@@ -409,15 +409,15 @@ local function add_signoff(blocks)
   return out
 end
 
--- the marking strip (livery.json marking; its text the deck's marking:, else the livery's default)
--- on every slide, feature and full ones too: a raw div livery.css places and colors
+-- the marking strips (livery.json marking; each one's text the deck's marking:, else its default)
+-- on every slide, feature and full ones too: raw divs livery.css places and colors
 local function add_marking(blocks, text)
   if not text then return blocks end
   local out = pandoc.Blocks({})
   for _, blk in ipairs(blocks) do
     out:insert(blk)
     if blk.t == "Header" and (blk.level == 1 or blk.level == slide_level) then
-      out:insert(html('<div class="engine-marking">' .. text .. '</div>'))
+      out:insert(html(text))
     end
   end
   return out
@@ -714,16 +714,25 @@ function Pandoc(doc)
   meta["engine-title-class"] = fieldclass .. (band and " engine-band" or "") .. (default_photo and " engine-title-photo" or "")
   -- a cover's byline with a box of its own (livery.json compositions): title-slide.html's second stack
   if tcomp.byline and tcomp.byline.box then meta["engine-byline"] = true end
-  -- the marking strip's text, as HTML: the deck's marking: (none: off), else the livery's default
-  local mk, marking = meta["marking"], nil
-  if mk then
-    if pandoc.utils.stringify(mk) ~= "none" then
-      marking = pandoc.write(pandoc.Pandoc({ pandoc.Plain(pandoc.utils.type(mk) == "Inlines" and mk
-        or pandoc.Inlines(pandoc.utils.stringify(mk))) }), "html"):gsub("%s+$", "")
-    end
-  elseif livery.marking and type(livery.marking.text) == "string" then
-    marking = pandoc.write(pandoc.Pandoc({ pandoc.Plain(pandoc.Inlines(livery.marking.text)) }), "html"):gsub("%s+$", "")
+  -- the cover's fine print (title-slide.html): the deck's fineprint: (none: none), else the livery's default
+  local fp = meta["fineprint"]
+  if fp and pandoc.utils.stringify(fp) == "none" then
+    meta["fineprint"] = nil
+  elseif not fp and tcomp.fineprint and tcomp.fineprint.paragraphs then
+    local paras = pandoc.Blocks({})
+    for _, para in ipairs(tcomp.fineprint.paragraphs) do paras:insert(pandoc.Para(pandoc.Inlines(para))) end
+    meta["fineprint"] = pandoc.MetaBlocks(paras)
   end
+  -- the marking strips, as HTML: each with its text (C.marking_texts: the deck's marking:, else the
+  -- strip's default), in the livery's order; livery.css places and colors each by its class
+  local divs = {}
+  for _, t in ipairs(C.marking_texts(meta, livery.marking, "engine-revealjs")) do
+    if t.text then
+      table.insert(divs, '<div class="engine-marking engine-marking-' .. t.strip.name .. '">'
+        .. pandoc.write(pandoc.Pandoc({ pandoc.Plain(t.text) }), "html"):gsub("%s+$", "") .. '</div>')
+    end
+  end
+  local marking = #divs > 0 and table.concat(divs) or nil
   if marking then meta["engine-marking"] = pandoc.RawInline("html", marking) end
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 

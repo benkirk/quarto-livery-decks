@@ -1158,11 +1158,13 @@
   "frametitle": {
     "align": "center",
     "body": 0.1973,
+    "color": "#000000",
     "height": 0.0778,
     "rule": false,
     "rule-color": "#AAA8A3",
     "rule-width": 0.0016,
     "rule-y": 0.1444,
+    "symmetric": false,
     "tab": false,
     "top": 0.0489
   },
@@ -1301,23 +1303,28 @@
       "light": "nsi-color"
     }
   },
-  "marking": {
-    "align": "center",
-    "bold": false,
-    "box": [
-      0.1,
-      0.004,
-      0.8,
-      0.03
-    ],
-    "color": "#565A5C",
-    "edge": "top",
-    "fill": null,
-    "height": 0.03,
-    "offset": 0.004,
-    "text": null,
-    "width": 0.8
-  },
+  "marking": [
+    {
+      "align": "center",
+      "bold": false,
+      "box": [
+        0.1,
+        0.004,
+        0.8,
+        0.03
+      ],
+      "color": "#565A5C",
+      "edge": "top",
+      "fill": null,
+      "height": 0.03,
+      "leading": 1.2,
+      "name": "banner",
+      "offset": 0.004,
+      "size": 9,
+      "text": null,
+      "width": 0.8
+    }
+  ],
   "marks": {
     "background": {
       "logo": "logos/nsi-lockup.png",

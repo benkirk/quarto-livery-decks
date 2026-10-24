@@ -22,11 +22,12 @@ livery; `-v` prints every check.
 | `livery inspect <deck.pptx> [-o report.md] [--media DIR]` | reports on a reference deck (to the terminal, or to `-o`'s file): slide size, theme slots, fonts, layouts and placeholders, colors by frequency, media |
 | `livery build <dir>... [--check]` | validates `livery.yml` and `_brand.yml` against the schema and resolves them into `build/livery.{json,sty,css,theme,mplstyle}`; `--check` fails on a stale `build/` |
 | `livery template <dir> [-o FILE]` | generates `template.pptx` from `build/livery.json` (never edit it by hand) |
-| `livery check <dir>... [--swatch DIR] [--qa]` | build freshness, every file the data names, the template's pandoc compliance and that it rebuilds from the data, contrast warnings, the chart colors' checks (`--swatch`: their contact sheet `DIR/charts-<name>.png`); `--qa` then runs the quickstart deck's `make qa` under the livery |
+| `livery check <dir>... [--swatch DIR] [--qa]` | build freshness, every file the data names, the template's pandoc compliance and that it rebuilds from the data, contrast warnings, the chart colors' checks (`--swatch`: their contact sheet `DIR/charts-<name>.png`); `--qa` then runs the quickstart deck's `make qa` under the livery (its default markings under `placeholders`) |
 | `livery all <dir>... [--qa]` | build, template, check: the loop to rerun after every edit |
 | `livery zip <dir> -o <zip> [--starter FILE] [--photo FILE]` | the Overleaf project: the theme, the livery, the starter deck and the LaTeX cookbook |
 | `livery zip --charts <dir> -o <zip>` | the charts bundle: the plot style and helper for matplotlib outside the decks |
 | `livery schema --doc [--check]` | regenerates [REFERENCE.md](REFERENCE.md) from the schema |
+| `livery placeholders <dir>` | a metadata file (to standard output; nothing for a livery without defaults) that puts sample text over the livery's default marking strips and cover notice: SAMPLE markings and a Lorem ipsum notice of the real one's shape. The images we keep (the gallery, `check --qa`'s contact sheets, CI's) are shot under it, as a deck's `DECK_META=<file>`, so none reads as a real restricted deck |
 
 `make livery LIVERY=<name>` at the top of the repository runs `livery all liveries/<name>`, and
 `make livery LIVERY_DIR=<dir>` a livery anywhere. A deck directory's `make overleaf` and
@@ -74,7 +75,8 @@ From a reference PowerPoint, or a brand guide alone, to a deck in the new brand:
      only what differs from the engine's (REFERENCE.md has every key): ncar rounds its cards and
      keeps its warn and fail glyphs off its yellow, which is unreadable as text on white;
      nasa-jsc-eg rules its columns.
-   - **Slide styles.** `frametitle` for the content titles (`align`, the accent `tab`, the
+   - **Slide styles.** `frametitle` for the content titles (`align`, `symmetric` to center on the
+     slide rather than beside the mark, a `color` of their own, the accent `tab`, the
      hairline `rule` with its `rule-width` and `rule-color`, and the band's `top`, `height` and
      `rule-y` as fractions of the height, one set every format draws); `title: {style: band, ...}`
      for a band title instead of the cover (nsi);

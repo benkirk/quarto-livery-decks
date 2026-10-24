@@ -66,8 +66,9 @@ SLOT_ROLES = {"dk1": "foreground", "lt1": "background", "dk2": "primary", "lt2":
 # 900): the title centered in top..top+height (a taller one grows down), the hairline at rule-y,
 # rule-width thick (0.4 pt of the PDF's 254 pt paper, 1.4 px of 900; Ben's pick from the side-by-side)
 # in rule-color (a role, blend or hex; resolved to hex in the json)
-FRAMETITLE = {"align": "left", "tab": True, "rule": True, "top": 0.0489, "height": 0.0778, "rule-y": 0.1444,
-              "rule-width": 0.0016, "rule-color": "rule"}
+FRAMETITLE = {"align": "left", "symmetric": False, "tab": True, "rule": True, "top": 0.0489, "height": 0.0778,
+              "rule-y": 0.1444, "rule-width": 0.0016, "rule-color": "rule", "color": "foreground"}
+TITLE_GAP = 0.025   # a content title's gap beside the mark, of the width (HTML's 40 px of 1600)
 BODY_GAP = 0.0223   # the content body's top under the hairline, or under a taller mark: 20 px of 900 (0.1444 + it rounds to the 0.1667 the formats drew)
 # the divider stack's gaps (livery.yml section:), em of the element above the gap: the eyebrow's under
 # it (of the eyebrow type), the subtitle's above it (of the section subtitle type). These and the note
@@ -271,6 +272,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
         sys.exit(f"{d.name}: frametitle.align {out['frametitle']['align']!r} is not left or center")
     rc = out["frametitle"]["rule-color"]   # the hairline's color as hex: a role, a blend (the default) or a palette name
     out["frametitle"]["rule-color"] = roles.get(rc) or blends.get(rc) or hex_of(rc, ("livery.yml", "frametitle.rule-color"))
+    tc = out["frametitle"]["color"]   # the title's color as hex: a role (the body text's by default), a blend or a palette name
+    out["frametitle"]["color"] = roles.get(tc) or blends.get(tc) or hex_of(tc, ("livery.yml", "frametitle.color"))
     # the body's top (derived, not a key): BODY_GAP under the hairline, or under a taller mark in a top corner
     lg = (out.get("geometry") or {}).get("logo") or {}
     below = lg.get("top", 0.0533) + lg.get("height", 0.0644) if lg.get("corner", "top-right") != "none" else 0
@@ -279,7 +282,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         v = out.get("geometry", {}).get(corner, {}).get("corner")
         if v is not None and v not in legal:
             sys.exit(f"{d.name}: geometry.{corner}.corner {v!r} is not one of {legal}")
-    if "signoff" in data:   # the sign-off lockup's box; its images (light, dark) are marks defaults
+    if data.get("signoff"):   # the sign-off lockup's box; its images (light, dark) are marks defaults (null: none)
         so = {k: v for k, v in data["signoff"].items() if k not in ("light", "dark")}
         if so.get("corner", "bottom-left") not in ("bottom-left", "bottom-right"):
             sys.exit(f"{d.name}: signoff.corner {so['corner']!r} is not bottom-left or bottom-right")
@@ -290,8 +293,6 @@ def resolve(d: Path) -> tuple[dict, dict]:
     if "title" in data:   # only when set, so a livery without it keeps its build/ unchanged
         out["title"] = band(d.name, data["title"], out)
     out["marks"] = marks(d.name, data, out)
-    out["marking"] = marking(data.get("marking") or {}, out,   # its colors as hex: a role, a palette name or a hex
-                             lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     out["boxes"] = boxes(data.get("boxes") or {},   # its colors as hex, as marking's (a blend too: the rail's rule)
                          lambda c, k: roles.get(c) or blends.get(c) or hex_of(c, ("livery.yml", f"boxes.{k}")), roles)
     qf = out["boxes"]["quote"]["family"]   # a face every format draws: one the livery bundles
@@ -308,6 +309,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
         "color": roles.get(b.get("color", "primary-contrast")) or hex_of(b["color"], ("livery.yml", "bullets.color"))}
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
+    out["marking"] = markings(d.name, data.get("marking") or {}, out,   # colors as hex: a role, a palette name or a hex
+                              lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
         out["charts"] = livery_charts.charts(out, data.get("charts"))
     except ValueError as e:
@@ -322,21 +325,33 @@ def resolve(d: Path) -> tuple[dict, dict]:
     return out, sources
 
 
-def marking(m: dict, out: dict, hexof) -> dict:
-    """The marking strip's look (livery.yml marking:), resolved with its box and its fill and text
-    color as hex (hexof: a role, a palette name or a hex to its hex; every drawer then reads a
-    hex); its text is the deck's marking:, else this default (None: no strip)."""
-    m = {"text": None, "edge": "top", "offset": 0.004, "width": 0.8, "height": 0.03, "align": "center",
-         "fill": None, "bold": False, **m}
-    m.setdefault("color", "primary-text" if m["fill"] else "muted")   # fill and color: two knobs
-    m["color"] = hexof(m["color"], "color")
-    if m["fill"]:
-        m["fill"] = hexof(m["fill"], "fill")
-    margin = out["geometry"]["margin"]
-    x = {"center": (1 - m["width"]) / 2, "left": margin, "right": 1 - margin - m["width"]}[m["align"]]
-    y = m["offset"] if m["edge"] == "top" else 1 - m["offset"] - m["height"]
-    m["box"] = [round(x, 4), round(y, 4), m["width"], m["height"]]
-    return m
+def markings(name: str, spec: dict, out: dict, hexof) -> list:
+    """The marking strips (livery.yml marking:, a map of named strips; null drops a parent's), in the
+    livery's order, each resolved with its name, box, fill and text color as hex (hexof: a role, a
+    palette name or a hex to its hex, given the key's path; every drawer then reads a hex), size in
+    points (the marking role's by default) and leading. A livery without one gets a text-less
+    `banner`, so a deck's marking: shows under any livery. A strip's text is the deck's marking:,
+    else this default (None: no strip)."""
+    role = out["type"]["roles"]["marking"]
+    res = []
+    for n, m in (spec or {"banner": {}}).items():
+        if m is None:
+            continue
+        if not re.fullmatch(r"[a-z]+", n):   # it becomes TeX control-sequence and CSS class names
+            sys.exit(f"{name}: marking.{n}: a strip's name is lower-case letters only")
+        m = {"text": None, "edge": "top", "offset": 0.004, "width": 0.8, "height": 0.03, "align": "center",
+             "fill": None, "bold": False, **m}
+        m.setdefault("color", "primary-text" if m["fill"] else "muted")   # fill and color: two knobs
+        m["color"] = hexof(m["color"], f"{n}.color")
+        if m["fill"]:
+            m["fill"] = hexof(m["fill"], f"{n}.fill")
+        margin = out["geometry"]["margin"]
+        x = {"center": (1 - m["width"]) / 2, "left": margin, "right": 1 - margin - m["width"]}[m["align"]]
+        y = m["offset"] if m["edge"] == "top" else 1 - m["offset"] - m["height"]
+        m["box"] = [round(x, 4), round(y, 4), m["width"], m["height"]]
+        m["size"] = half(m["size"]) if m.get("size") is not None else role["pt"]
+        res.append({"name": n, **m, "leading": role["leading"]})
+    return res
 
 
 def boxes(b: dict, hexof, roles=()) -> dict:
@@ -507,7 +522,7 @@ def compositions(name: str, data: dict, out: dict) -> dict:
         x = m if so["corner"] == "bottom-left" else 1 - m - w
         return {"role": role, "box": _box(x, 1 - so["bottom"] - h, w, h)}
 
-    def strip(role):   # the band's strip: the sign-off in its corner, the mark opposite, centred
+    def strip(role):   # the band's strip: the sign-off in its corner, the mark opposite, centered
         mid, left = (1 + t["bottom"]) / 2, None
         sig = None
         if so:
@@ -633,6 +648,16 @@ def compositions(name: str, data: dict, out: dict) -> dict:
     for k in COMPOSITIONS:   # every override last; a base's already reached its variants
         if k not in ("title", "closing"):
             res[k] = merge(res[k], over.get(k) or {})
+    for k, v in over.items():   # the small print's default text belongs to a cover
+        if k not in COVERS and ((v or {}).get("fineprint") or {}).get("text"):
+            sys.exit(f"{name}: compositions.{k}.fineprint.text: only a cover has default small print")
+    title_text = (res["title"]["fineprint"] or {}).get("text")
+    for k in COVERS:   # its paragraphs (blank-line apart, white space collapsed): a cover's own, else title's
+        fp = res[k]["fineprint"]
+        if fp:
+            text = fp.pop("text", None) or title_text
+            if text:
+                fp["paragraphs"] = [" ".join(p.split()) for p in re.split(r"\n\s*\n", text.strip())]
     for c in res.values():   # the column's text alignment, left unless a livery centers it
         if c["column"]:
             c["column"].setdefault("align", "left")
@@ -872,23 +897,33 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     for k, tex in (("top", "top"), ("height", "height"), ("rule-y", "ruley"), ("rule-width", "rulewidth"), ("body", "bodytop")):
         L.append(f"\\def\\engine@ft@{tex}{{{ft[k]}}}")
     L.append(f"\\definecolor{{EngineFrametitleRuleColor}}{{HTML}}{{{ft['rule-color'][1:]}}}")
+    L.append(f"\\definecolor{{EngineFrametitleColor}}{{HTML}}{{{ft['color'][1:]}}}")
+    if ft["symmetric"]:   # the title's room mirrored about the slide's axis: a centered title on the slide's center
+        L.append("\\def\\engine@ft@symmetric{}")
+    L.append(f"\\def\\engine@ft@gap{{{TITLE_GAP}}}")
     L.append("% the divider stack's gaps (section:), em of the eyebrow and of the subtitle")
     for k in SECTION:
         L.append(f"\\def\\engine@section@{k.replace('-', '')}{{{livery['section'][k]}}}")
-    mk = livery.get("marking")
-    if mk:   # the marking strip: its box (y down), alignment, colors and the livery's default text
-        L.append("% the marking strip (marking:); its text is the deck's \\enginemarking, else this default")
-        for axis, v in zip("xywh", mk["box"]):
-            L.append(f"\\def\\engine@marking@{axis}{{{v}}}")
-        L.append(f"\\def\\engine@marking@align{{{mk['align']}}}")
-        for name, c in (("Text", mk["color"]), ("Fill", mk["fill"])):   # hex: marking() resolved them
-            if c:
-                L.append(f"\\definecolor{{EngineMarking{name}}}{{HTML}}{{{c[1:].upper()}}}")
-        if mk["fill"]:
-            L.append("\\def\\engine@marking@fill{}")
-        if mk["bold"]:
-            L.append("\\def\\engine@marking@bold{}")
-        L.append(f"\\def\\engine@marking@default{{{tex_escape(mk['text'] or '')}}}")
+    mk = livery.get("marking") or []
+    if mk:   # the marking strips, in order: each one's box (y down), alignment, colors, size and default text
+        body = livery["type"]["roles"]["body"]["pt"]
+        L.append("% the marking strips (marking:); each one's text is the deck's \\enginemarking[<name>], else its default")
+        L.append(f"\\def\\engine@markings{{{','.join(s['name'] for s in mk)}}}")
+        L.append(f"\\def\\engine@firstmarking{{{mk[0]['name']}}}")
+        for s in mk:
+            n = s["name"]
+            for axis, v in zip("xywh", s["box"]):
+                L.append(f"\\def\\engine@marking@{n}@{axis}{{{v}}}")
+            L.append(f"\\def\\engine@marking@{n}@align{{{s['align']}}}")
+            L.append(f"\\def\\engine@marking@{n}@type{{{{{round(s['size'] / body, 4)}}}{{{s['leading']}}}}}")
+            for name, c in (("Text", s["color"]), ("Fill", s["fill"])):   # hex: markings() resolved them
+                if c:
+                    L.append(f"\\definecolor{{EngineMarking{n}{name}}}{{HTML}}{{{c[1:].upper()}}}")
+            if s["fill"]:
+                L.append(f"\\def\\engine@marking@{n}@fill{{}}")
+            if s["bold"]:
+                L.append(f"\\def\\engine@marking@{n}@bold{{}}")
+            L.append(f"\\def\\engine@marking@{n}@default{{{tex_escape(s['text'] or '')}}}")
     L += emit_sty_boxes(livery)
     bu = livery.get("bullets")
     if bu:   # the list glyphs per level (bullets:), the last repeating; beamer has three levels
@@ -1040,6 +1075,8 @@ def emit_sty_compositions(livery: dict, stem) -> list[str]:
             d("column@rule@w", col["rule"][0]); d("column@rule@h", col["rule"][1])
         if c["fineprint"]:
             d("fineprint@anchor", c["fineprint"]["anchor"])
+            if c["fineprint"].get("paragraphs"):   # the livery's default small print, unless the deck sets its own
+                d("fineprint@text", "\\par ".join(tex_escape(p) for p in c["fineprint"]["paragraphs"]))
         if c["eyebrow"]:
             e = c["eyebrow"]
             d("eyebrow@label", e["label"])
@@ -1119,7 +1156,7 @@ def emit_css(livery: dict, extra: str = "") -> str:
     corner = logo.get("corner", "top-right")
     margin = "var(--engine-margin)"
     inset = px(logo["inset"], W) if "inset" in logo else margin   # the mark's distance from its edge
-    beside = f"calc({inset} + 40px + var(--engine-logo-w))"
+    beside = f"calc({inset} + {round(TITLE_GAP * W)}px + var(--engine-logo-w))"
     props.append(f"--engine-logo-left: {inset if corner == 'top-left' else 'auto'};")
     props.append(f"--engine-logo-right: {'auto' if corner == 'top-left' else inset};")
     props.append(f"--engine-logo-position: {'left' if corner == 'top-left' else 'right'} top;")
@@ -1138,8 +1175,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append("--engine-title-tab: none;")
     if not ft["rule"]:
         props.append("--engine-title-rule: none;")
-    props.append(f"--engine-title-left: {beside if corner == 'top-left' else margin};")
-    props.append(f"--engine-title-right: {beside if corner == 'top-right' else margin};")
+    sym = ft["symmetric"] and corner != "none"   # the room mirrored: the mark's side's gap on both sides
+    props.append(f"--engine-title-left: {beside if corner == 'top-left' or sym else margin};")
+    props.append(f"--engine-title-right: {beside if corner == 'top-right' or sym else margin};")
+    props.append(f"--engine-title-color: {ft['color']};")
     pn = geom.get("pagenumber", {}).get("corner", "bottom-left")
     props.append(f"--engine-pagenumber-left: {'auto' if pn == 'bottom-right' else '50px'};")
     props.append(f"--engine-pagenumber-right: {'50px' if pn == 'bottom-right' else 'auto'};")
@@ -1152,18 +1191,19 @@ def emit_css(livery: dict, extra: str = "") -> str:
         props.append(f"--engine-signoff-left: {margin if so['corner'] == 'bottom-left' else 'auto'};")
         props.append(f"--engine-signoff-right: {'auto' if so['corner'] == 'bottom-left' else margin};")
         props.append(f"--engine-signoff-position: {'left' if so['corner'] == 'bottom-left' else 'right'} bottom;")
-    mk = livery.get("marking")
-    if mk:   # the marking strip, in slide pixels (its text: engine-revealjs.lua, the deck's or the default)
-        x, y, w, h = mk["box"]
-        props += [f"--engine-marking-x: {px(x, W)};", f"--engine-marking-y: {px(y)};",
-                  f"--engine-marking-w: {px(w, W)};", f"--engine-marking-h: {px(h)};",
-                  f"--engine-marking-justify: {dict(center='center', left='flex-start', right='flex-end')[mk['align']]};",
-                  f"--engine-marking-align: {mk['align']};",
-                  f"--engine-marking-fill: {mk['fill'] or 'transparent'};",   # hex: marking() resolved them
-                  f"--engine-marking-text: {mk['color']};",
-                  f"--engine-marking-weight: {700 if mk['bold'] else 400};"]
     props += emit_css_boxes(livery, px)
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
+    for s in livery.get("marking") or []:   # each marking strip, in slide pixels (its text: engine-revealjs.lua)
+        x, y, w, h = s["box"]
+        sp = [f"--engine-marking-x: {px(x, W)};", f"--engine-marking-y: {px(y)};",
+              f"--engine-marking-w: {px(w, W)};", f"--engine-marking-h: {px(h)};",
+              f"--engine-marking-justify: {dict(center='center', left='flex-start', right='flex-end')[s['align']]};",
+              f"--engine-marking-align: {s['align']};",
+              f"--engine-marking-fill: {s['fill'] or 'transparent'};",   # hex: markings() resolved them
+              f"--engine-marking-text: {s['color']};",
+              f"--engine-marking-weight: {700 if s['bold'] else 400};",
+              f"--engine-marking-size: {tpx(s['size'])};"]
+        L.append(f".reveal .slides section .engine-marking-{s['name']} {{\n  " + "\n  ".join(sp) + "\n}")
     L += emit_css_charts(livery)
     # Quarto sets --mermaid-* on :root from its Sass; html:root outranks it, so mermaid wears the roles
     if mfamily:   # the code face: reveal's code and pre read --r-code-font

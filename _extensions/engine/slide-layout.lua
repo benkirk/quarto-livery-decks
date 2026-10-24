@@ -7,7 +7,10 @@
 -- every notes Div on a slide, so the line joins any notes the author wrote.
 -- .closing becomes `closing` (the template's Closing layout), the slide holding ::: {#refs}
 -- `references` (a deck that cites without one gets it last, C.ensure_refs()); themeoptions title=light becomes
--- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty).
+-- the string `engine-title: light` in the metadata (pandoc records lists in the pptx as empty), the
+-- marking strips' texts the strings `engine-marking-<name>` (C.marking_texts, the one reader of
+-- `marking:`; pandoc records a map as empty too), and `fineprint:` the string `engine-fineprint`, a
+-- line per paragraph.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -65,9 +68,54 @@ local function byline_meta(meta)
   if #institutes > 0 then meta["engine-institute"] = pandoc.MetaString(table.concat(institutes, "\n")) end
 end
 
+-- the deck's fineprint: as one string, a line per paragraph (pandoc records Blocks in the pptx as
+-- their text run together), for slide_layout.py's cover; `none` stays none
+local function fineprint_meta(meta)
+  local fp = meta["fineprint"]
+  if fp == nil then return end
+  local lines = {}
+  local function parts(inl)   -- a line break parts a paragraph too: Quarto reads a metadata file's
+    local run = pandoc.Inlines({})   -- blank line as one
+    for _, i in ipairs(inl) do
+      if i.t == "LineBreak" then table.insert(lines, pandoc.utils.stringify(run)); run = pandoc.Inlines({})
+      else run:insert(i) end
+    end
+    table.insert(lines, pandoc.utils.stringify(run))
+  end
+  local ty = pandoc.utils.type(fp)
+  if ty == "Blocks" then
+    for _, b in ipairs(fp) do
+      if b.t == "Para" or b.t == "Plain" then parts(b.content) else table.insert(lines, pandoc.utils.stringify(b)) end
+    end
+  elseif ty == "Inlines" then
+    parts(fp)
+  else
+    lines = { pandoc.utils.stringify(fp) }
+  end
+  meta["engine-fineprint"] = pandoc.MetaString(table.concat(lines, "\n"))
+end
+
+-- every marking strip's text, one string per strip, for pptx_steps/marking.py, which draws and never
+-- decides: C.marking_texts reads the deck's marking: over the livery's defaults as HTML and PDF do
+-- (the livery: C.load_livery, as the other filters find it; the step sees only docProps/custom.xml,
+-- where pandoc records a map as an empty string), "none" for a strip with no text
+local EXTDIR = pandoc.path.directory(PANDOC_SCRIPT_FILE)
+if not pandoc.path.is_absolute(EXTDIR) then
+  EXTDIR = pandoc.path.join({ pandoc.system.get_working_directory(), EXTDIR })
+end
+
+local function marking_meta(meta)
+  local livery = C.load_livery(meta, EXTDIR, "slide-layout")
+  for _, t in ipairs(C.marking_texts(meta, livery.marking, "slide-layout")) do
+    meta["engine-marking-" .. t.strip.name] = pandoc.MetaString(t.text and pandoc.utils.stringify(t.text) or "none")
+  end
+end
+
 function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   byline_meta(doc.meta)
+  marking_meta(doc.meta)
+  fineprint_meta(doc.meta)
   local level = C.slide_level()
   local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
   local refs = C.refs_heading(blocks, level)

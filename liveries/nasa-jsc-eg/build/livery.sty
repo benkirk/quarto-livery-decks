@@ -114,20 +114,25 @@
 \def\engine@ft@rulewidth{0.0016}
 \def\engine@ft@bodytop{0.1853}
 \definecolor{EngineFrametitleRuleColor}{HTML}{E1E1E1}
+\definecolor{EngineFrametitleColor}{HTML}{FFFFFF}
+\def\engine@ft@gap{0.025}
 % the divider stack's gaps (section:), em of the eyebrow and of the subtitle
 \def\engine@section@eyebrowgap{0.33}
 \def\engine@section@subtitlegap{0.66}
-% the marking strip (marking:); its text is the deck's \enginemarking, else this default
-\def\engine@marking@x{0.1115}
-\def\engine@marking@y{0.004}
-\def\engine@marking@w{0.777}
-\def\engine@marking@h{0.028}
-\def\engine@marking@align{center}
-\definecolor{EngineMarkingText}{HTML}{FFFFFF}
-\definecolor{EngineMarkingFill}{HTML}{6840F0}
-\def\engine@marking@fill{}
-\def\engine@marking@bold{}
-\def\engine@marking@default{This presentation contains no sensitive information; but if it did, here's where the disclaimer would go}
+% the marking strips (marking:); each one's text is the deck's \enginemarking[<name>], else its default
+\def\engine@markings{banner}
+\def\engine@firstmarking{banner}
+\def\engine@marking@banner@x{0.1115}
+\def\engine@marking@banner@y{0.004}
+\def\engine@marking@banner@w{0.777}
+\def\engine@marking@banner@h{0.028}
+\def\engine@marking@banner@align{center}
+\def\engine@marking@banner@type{{0.8125}{1.2}}
+\definecolor{EngineMarkingbannerText}{HTML}{FFFFFF}
+\definecolor{EngineMarkingbannerFill}{HTML}{6840F0}
+\def\engine@marking@banner@fill{}
+\def\engine@marking@banner@bold{}
+\def\engine@marking@banner@default{This presentation contains no sensitive information; but if it did, here's where the disclaimer would go}
 % boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
 % its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row
 \def\engine@boxes@columns@gap{0.03}

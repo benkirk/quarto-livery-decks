@@ -1,0 +1,48 @@
+# NASA Commercial Crew Program (CCP), light: a flavor of nasa in Quarto's brand.yml standard, kept
+# strictly standard; engine knobs are in livery.yml. Values: the CCP PowerPoint template, whose theme
+# slots are Office's defaults, so the colors are its shapes' and the CCP emblem's (reference/notes.md);
+# what is not here (meta, the insignia) is nasa's.
+color:
+  palette:
+    ccp-purple: "#7030A0"    # the CUI banner across every slide's top (7.6:1 under white)
+    ccp-slate: "#41556B"     # the title bar's middle and the divider band's top (7.6:1 on white)
+    ccp-red: "#D21241"       # the emblem's red stripe (5.4:1 on white)
+    ccp-navy: "#002E62"      # the emblem's blue stripe (13.6:1 on white)
+    ccp-gold: "#F3AB10"      # the emblem's ring and star
+    ccp-gray: "#5C5E62"      # muted small text, nasa's gray (6.5:1)
+  primary: ccp-slate
+  secondary: ccp-gold
+  foreground: black
+  background: white
+
+typography:
+  # Helvetica, the template's only face, stood in for by TeX Gyre Heros (its design, GUST Font
+  # License). Restated in full: a flavor's fonts replace the parent's.
+  fonts:
+    - family: TeX Gyre Heros
+      source: file
+      files:
+        - path: fonts/texgyreheros-regular.otf
+          weight: 400
+        - path: fonts/texgyreheros-italic.otf
+          weight: 400
+          style: italic
+        - path: fonts/texgyreheros-bold.otf
+          weight: 700
+        - path: fonts/texgyreheros-bolditalic.otf
+          weight: 700
+          style: italic
+  base: TeX Gyre Heros
+  headings: TeX Gyre Heros
+
+logo:
+  # reference/ccp_art.py fetches the CCP vectors (NASA's, Wikimedia Commons) and renders them: the SVG
+  # kept, a PNG for HTML and pptx, a PDF of the same name (still vector) for LaTeX
+  images:
+    ccp-emblem:
+      path: logos/ccp-emblem.png     # the emblem alone: the title bar's left end
+    ccp-lockup:
+      path: logos/ccp-lockup.png     # the emblem over COMMERCIAL CREW PROGRAM: the cover
+  medium:
+    light: ccp-emblem
+    dark: ccp-emblem

@@ -38,6 +38,11 @@ them in with `{{< include _1-intro.qmd >}}`; quarto skips underscore files
 when rendering, and make treats every `_*.qmd` and `data/*` in the directory
 as a prerequisite of every deck, so editing one rebuilds them all.
 
+`make pptx DECK_META=meta.yml` hands every render a metadata file (Quarto's `--metadata-file`),
+filling the keys the front matter leaves out: a `marking:` for a whole set of decks, say. It is a
+prerequisite too, so a different file rebuilds, and under the container runtime its directory is
+mounted with the deck's.
+
 A deck that needs custom Quarto config (a different reference template,
 extra extensions, etc.) can replace the symlinked `_quarto.yml` with a
 real file: `make` sees the file already exists and skips the symlink
@@ -55,11 +60,16 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
   format, where the livery's title composition places it. Without one the livery's
   default appears (`art.titlegraphic`: ncar's Mesa Lab, nsi's campus, nasa's Earth
   limb); `titlegraphic: none` keeps the plain cover.
-- `fineprint: "..."` adds small print under the title block.
+- `fineprint: "..."` adds small print to the cover (several paragraphs as a `|` block). A livery
+  may give every cover a default (a rights notice: its `compositions.title.fineprint.text`), which
+  the deck's replaces; `fineprint: none` drops it.
 - `marking: "CUI"` (any text) puts a marking strip on every slide, in every format: a
-  restriction or distribution marking. Where it sits, how wide, its fill and its colors are
+  restriction or distribution marking. Where it sits, how wide, its fill, size and colors are
   the livery's `marking:`, and a livery may set default text every deck under it shows
-  (nasa-jsc-eg does); `marking: none` turns a livery's default off.
+  (nasa-jsc-eg does); `marking: none` turns every default off. A livery may have several
+  strips, by name (a CUI `banner` at the top and a `legend` at the foot, say): the plain
+  string sets the first, and a map sets them by name, `marking: {banner: "CUI//SP-EXPT", legend:
+  none}`; a strip the deck does not name keeps its default.
 - `mathfont=stix` (or `lm`, `pagella`, `sans`, `fira`, `poppins`, any
   OpenType math font) changes the math font; the default is New Computer
   Modern Math, scaled to sit with the text font. Quarto's own `mathfont:` key

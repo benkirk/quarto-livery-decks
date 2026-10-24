@@ -1,0 +1,1799 @@
+{
+  "art": {
+    "closing": "art/title.jpg",
+    "content": "art/content.jpg",
+    "section": "art/section.jpg",
+    "title": "art/title.jpg",
+    "titlegraphic": null
+  },
+  "blends": {
+    "alert-text": "#A9254D",
+    "caution-fill": "#FFF5D9",
+    "rule": "#A8A9AA",
+    "table-band": "#F6F7F8",
+    "table-rule": "#C0C1C2"
+  },
+  "boxes": {
+    "agenda": {
+      "current-color": "#002E62",
+      "gap": 0.55,
+      "number-color": "#002E62",
+      "number-width": 2
+    },
+    "card": {
+      "fill": "#FFFFFF",
+      "head-pad": [
+        0.35,
+        0.8
+      ],
+      "outline": 0.0033,
+      "outline-color": "#002E62",
+      "pad": [
+        0.5,
+        0.8
+      ],
+      "radius": 0,
+      "roles": [
+        "primary",
+        "secondary",
+        "accent"
+      ]
+    },
+    "caution": {
+      "bar": 0.0089,
+      "pad": [
+        0.55,
+        0.9
+      ]
+    },
+    "columns": {
+      "gap": 0.03,
+      "rule": 0
+    },
+    "footnote": {
+      "gap": 0.55,
+      "hang": 0.9,
+      "rule": 0.0022,
+      "rule-color": "#A8A9AA",
+      "rule-length": 0.075,
+      "step": 0.3,
+      "width": 0.6
+    },
+    "gallery": {
+      "fill": null,
+      "gap": 0.006,
+      "pad": [
+        0.15,
+        0.15
+      ]
+    },
+    "lead": {
+      "bar": 0.0089,
+      "bar-color": "#D21241",
+      "fill": "#F0F1F3",
+      "pad": [
+        0.55,
+        0.9
+      ]
+    },
+    "note": {
+      "gap": 0.3
+    },
+    "panel": {
+      "pad": [
+        0.6,
+        0.9
+      ]
+    },
+    "quote": {
+      "attribution-gap": 0.5,
+      "bar": 0.0089,
+      "bar-color": "#002E62",
+      "family": null,
+      "pad": [
+        0.3,
+        1.0
+      ],
+      "style": "normal"
+    },
+    "rail": {
+      "badge": 0.05,
+      "dot": 0.02,
+      "fill": null,
+      "line": 0.004,
+      "line-color": "#A8A9AA",
+      "pad": [
+        0.4,
+        0.4
+      ],
+      "ring": 0.2,
+      "role": "primary-contrast"
+    },
+    "references": {
+      "gap": 0.4,
+      "hang": 1.5
+    },
+    "status": {
+      "done": "#002E62",
+      "fail": "#D21241",
+      "warn": "#FFC72C"
+    },
+    "strip": {
+      "gap": 0.3,
+      "pad": [
+        0.3,
+        0.8
+      ],
+      "tint": 0.18
+    }
+  },
+  "bullets": {
+    "color": "#000000",
+    "glyphs": [
+      "\u25cf",
+      "\u2013",
+      "\u25aa"
+    ]
+  },
+  "charts": {
+    "brand": [
+      "#E42E25",
+      "#B25600",
+      "#A37200",
+      "#4B9609",
+      "#00917E",
+      "#5F919E",
+      "#3F83EF",
+      "#8E62EF"
+    ],
+    "chrome": {
+      "dark": {
+        "grid": "#6D7D8E",
+        "spine": "#A5AFBA",
+        "text": "#FFFFFF"
+      },
+      "light": {
+        "grid": "#A8A9AA",
+        "spine": "#5C5E62",
+        "text": "#000000"
+      }
+    },
+    "dark": {
+      "area-alpha": 1.0,
+      "categorical": [
+        "#256EE4",
+        "#EF483F",
+        "#F29D49",
+        "#487682",
+        "#C2B47C",
+        "#609AF6",
+        "#FA8C87",
+        "#79A3AD",
+        "#794BE4",
+        "#F5AF0C",
+        "#4B9609",
+        "#0CC9AC"
+      ],
+      "default-map": "slate",
+      "diverging": [
+        "#83B1FF",
+        "#7D97C4",
+        "#73777E",
+        "#C1847E",
+        "#FF8B7B"
+      ],
+      "families": [
+        [
+          "#256EE4",
+          "#3168BF",
+          "#3862A0"
+        ],
+        [
+          "#EF483F",
+          "#BD5653",
+          "#93595E"
+        ],
+        [
+          "#F29D49",
+          "#BC895D",
+          "#907766"
+        ],
+        [
+          "#487682",
+          "#466C7B",
+          "#456475"
+        ],
+        [
+          "#C2B47C",
+          "#99977A",
+          "#797F76"
+        ],
+        [
+          "#609AF6",
+          "#5785CA",
+          "#4F74A7"
+        ],
+        [
+          "#FA8C87",
+          "#C27D80",
+          "#947079"
+        ],
+        [
+          "#79A3AD",
+          "#688B99",
+          "#597788"
+        ]
+      ],
+      "muted": "#777B82",
+      "published": {
+        "categorical": true,
+        "diverging": false,
+        "sequential": true
+      },
+      "sequential": {
+        "aqua": [
+          "#001C1A",
+          "#00332F",
+          "#004A41",
+          "#007869",
+          "#00917E",
+          "#05B59B",
+          "#0CC9AC",
+          "#42DBC2",
+          "#79F2DF",
+          "#BDFCF2"
+        ],
+        "blue": [
+          "#000B1C",
+          "#011B46",
+          "#003487",
+          "#1159CD",
+          "#256EE4",
+          "#3F83EF",
+          "#609AF6",
+          "#82B0FA",
+          "#AFCDFC",
+          "#D8E6FE"
+        ],
+        "gold": [
+          "#1C1807",
+          "#2E280F",
+          "#403916",
+          "#6B612B",
+          "#7D733E",
+          "#968A53",
+          "#AB9D67",
+          "#C2B47C",
+          "#DED19B",
+          "#F0E9CC"
+        ],
+        "green": [
+          "#001A0B",
+          "#003618",
+          "#004D21",
+          "#007D34",
+          "#00993D",
+          "#09B84F",
+          "#1FCF62",
+          "#45E580",
+          "#8EEDB3",
+          "#C8FADB"
+        ],
+        "lime": [
+          "#0E2100",
+          "#183B00",
+          "#214D00",
+          "#387D00",
+          "#4B9609",
+          "#60B015",
+          "#70C421",
+          "#8BD640",
+          "#B0E879",
+          "#D6FAAF"
+        ],
+        "magenta": [
+          "#1C001A",
+          "#470041",
+          "#820974",
+          "#BF1BAB",
+          "#D42CBD",
+          "#EB3BD1",
+          "#F25FDC",
+          "#F783E4",
+          "#FCAFF0",
+          "#FCD7F6"
+        ],
+        "orange": [
+          "#241000",
+          "#3B1B00",
+          "#5C2B00",
+          "#914500",
+          "#B25600",
+          "#D96A00",
+          "#E88323",
+          "#F29D49",
+          "#FAC48C",
+          "#FCE3CA"
+        ],
+        "purple": [
+          "#0B002B",
+          "#1D0F46",
+          "#3E1C99",
+          "#6337CD",
+          "#794BE4",
+          "#8E62EF",
+          "#A47EF6",
+          "#B799FA",
+          "#D3BEFC",
+          "#E9DFFE"
+        ],
+        "red": [
+          "#260200",
+          "#460401",
+          "#870700",
+          "#C41D14",
+          "#E42E25",
+          "#EF483F",
+          "#F66860",
+          "#FA8C87",
+          "#F7B6B2",
+          "#FEDAD8"
+        ],
+        "slate": [
+          "#08171C",
+          "#112930",
+          "#1D3D47",
+          "#386470",
+          "#487682",
+          "#5F919E",
+          "#79A3AD",
+          "#99B8BF",
+          "#B8D3D9",
+          "#D8EDF2"
+        ],
+        "yellow": [
+          "#291C00",
+          "#422D00",
+          "#573B00",
+          "#825B00",
+          "#A37200",
+          "#C78B00",
+          "#E09D00",
+          "#F5AF0C",
+          "#FFCB47",
+          "#FEEBBE"
+        ]
+      },
+      "sets": {
+        "2": [
+          "#256EE4",
+          "#F29D49"
+        ],
+        "3": [
+          "#256EE4",
+          "#F29D49",
+          "#0CC9AC"
+        ],
+        "4": [
+          "#256EE4",
+          "#F29D49",
+          "#0CC9AC",
+          "#4B9609"
+        ],
+        "5": [
+          "#256EE4",
+          "#F29D49",
+          "#0CC9AC",
+          "#4B9609",
+          "#C2B47C"
+        ]
+      },
+      "status": {
+        "critical": "#B33832",
+        "good": "#007433",
+        "serious": "#B45C00",
+        "warning": "#A27900"
+      },
+      "surface": "#41556B"
+    },
+    "figsize": {
+      "full": [
+        12.27,
+        5.65
+      ],
+      "half": [
+        5.93,
+        5.65
+      ]
+    },
+    "light": {
+      "area-alpha": 0.85,
+      "categorical": [
+        "#1159CD",
+        "#EF483F",
+        "#E8892E",
+        "#386470",
+        "#B0A26A",
+        "#3F83EF",
+        "#8F0800",
+        "#79A3AD",
+        "#3E1C99",
+        "#E09D00",
+        "#387D00",
+        "#0CC9AC"
+      ],
+      "default-map": "slate",
+      "diverging": [
+        "#1159CD",
+        "#8AADE7",
+        "#E9EDF5",
+        "#E29B94",
+        "#C41D14"
+      ],
+      "families": [
+        [
+          "#1159CD",
+          "#6593E2",
+          "#AFCDFC"
+        ],
+        [
+          "#EF483F",
+          "#FA8C87",
+          "#FFC7BF"
+        ],
+        [
+          "#E8892E",
+          "#F3B27E",
+          "#FCE3CA"
+        ],
+        [
+          "#386470",
+          "#78959E",
+          "#B8D3D9"
+        ],
+        [
+          "#B0A26A",
+          "#CAC19B",
+          "#E4E0CD"
+        ],
+        [
+          "#3F83EF",
+          "#82B0FA",
+          "#BFD7FD"
+        ],
+        [
+          "#8F0800",
+          "#BB685A",
+          "#E0B2AA"
+        ],
+        [
+          "#79A3AD",
+          "#A5C1C8",
+          "#D2E0E3"
+        ]
+      ],
+      "muted": "#BDC1C9",
+      "published": {
+        "categorical": true,
+        "diverging": false,
+        "sequential": true
+      },
+      "sequential": {
+        "aqua": [
+          "#BDFCF2",
+          "#79F2DF",
+          "#42DBC2",
+          "#0CC9AC",
+          "#05B59B",
+          "#00917E",
+          "#007869",
+          "#004A41",
+          "#00332F",
+          "#001C1A"
+        ],
+        "blue": [
+          "#D8E6FE",
+          "#AFCDFC",
+          "#82B0FA",
+          "#609AF6",
+          "#3F83EF",
+          "#256EE4",
+          "#1159CD",
+          "#003487",
+          "#011B46",
+          "#000B1C"
+        ],
+        "gold": [
+          "#F0E9CC",
+          "#DED19B",
+          "#C2B47C",
+          "#AB9D67",
+          "#968A53",
+          "#7D733E",
+          "#6B612B",
+          "#403916",
+          "#2E280F",
+          "#1C1807"
+        ],
+        "green": [
+          "#C8FADB",
+          "#8EEDB3",
+          "#45E580",
+          "#1FCF62",
+          "#09B84F",
+          "#00993D",
+          "#007D34",
+          "#004D21",
+          "#003618",
+          "#001A0B"
+        ],
+        "lime": [
+          "#D6FAAF",
+          "#B0E879",
+          "#8BD640",
+          "#70C421",
+          "#60B015",
+          "#4B9609",
+          "#387D00",
+          "#214D00",
+          "#183B00",
+          "#0E2100"
+        ],
+        "magenta": [
+          "#FCD7F6",
+          "#FCAFF0",
+          "#F783E4",
+          "#F25FDC",
+          "#EB3BD1",
+          "#D42CBD",
+          "#BF1BAB",
+          "#820974",
+          "#470041",
+          "#1C001A"
+        ],
+        "orange": [
+          "#FCE3CA",
+          "#FAC48C",
+          "#F29D49",
+          "#E88323",
+          "#D96A00",
+          "#B25600",
+          "#914500",
+          "#5C2B00",
+          "#3B1B00",
+          "#241000"
+        ],
+        "purple": [
+          "#E9DFFE",
+          "#D3BEFC",
+          "#B799FA",
+          "#A47EF6",
+          "#8E62EF",
+          "#794BE4",
+          "#6337CD",
+          "#3E1C99",
+          "#1D0F46",
+          "#0B002B"
+        ],
+        "red": [
+          "#FEDAD8",
+          "#F7B6B2",
+          "#FA8C87",
+          "#F66860",
+          "#EF483F",
+          "#E42E25",
+          "#C41D14",
+          "#870700",
+          "#460401",
+          "#260200"
+        ],
+        "slate": [
+          "#D8EDF2",
+          "#B8D3D9",
+          "#99B8BF",
+          "#79A3AD",
+          "#5F919E",
+          "#487682",
+          "#386470",
+          "#1D3D47",
+          "#112930",
+          "#08171C"
+        ],
+        "yellow": [
+          "#FEEBBE",
+          "#FFCB47",
+          "#F5AF0C",
+          "#E09D00",
+          "#C78B00",
+          "#A37200",
+          "#825B00",
+          "#573B00",
+          "#422D00",
+          "#291C00"
+        ]
+      },
+      "sets": {
+        "2": [
+          "#1159CD",
+          "#E8892E"
+        ],
+        "3": [
+          "#1159CD",
+          "#E8892E",
+          "#0CC9AC"
+        ],
+        "4": [
+          "#1159CD",
+          "#E8892E",
+          "#0CC9AC",
+          "#387D00"
+        ],
+        "5": [
+          "#1159CD",
+          "#E8892E",
+          "#0CC9AC",
+          "#387D00",
+          "#B0A26A"
+        ]
+      },
+      "status": {
+        "critical": "#B63B35",
+        "good": "#2AA654",
+        "serious": "#B45C00",
+        "warning": "#A27900"
+      },
+      "surface": "#FFFFFF"
+    },
+    "mode": "light",
+    "sources": {
+      "dark.categorical": "pinned",
+      "dark.diverging": "derived",
+      "light.categorical": "pinned",
+      "light.diverging": "derived"
+    },
+    "surfaces": {
+      "dark": "#41556B",
+      "light": "#FFFFFF"
+    }
+  },
+  "compositions": {
+    "closing": {
+      "art": "closing",
+      "band": null,
+      "bar": null,
+      "byline": null,
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.1,
+          0.45,
+          0.8,
+          0.3
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.911,
+          0.0679,
+          0.0765,
+          0.1165
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.0095,
+          0.808,
+          0.0795,
+          0.173
+        ],
+        "image": "ccp-lockup",
+        "img": "logos/ccp-lockup.png",
+        "role": "background"
+      },
+      "waves": null
+    },
+    "closing-band": {
+      "art": "closing",
+      "band": null,
+      "bar": null,
+      "byline": null,
+      "column": {
+        "align": "left",
+        "anchor": "middle",
+        "box": [
+          0.04,
+          0.1,
+          0.62,
+          0.59
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.8725,
+          0.78,
+          0.0875,
+          0.16
+        ],
+        "img": "logos/ccp-emblem.png",
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": null
+    },
+    "closing-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "byline": null,
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.1,
+          0.45,
+          0.8,
+          0.3
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.911,
+          0.0679,
+          0.0765,
+          0.1165
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.0095,
+          0.808,
+          0.0795,
+          0.173
+        ],
+        "image": "ccp-lockup",
+        "img": "logos/ccp-lockup.png",
+        "role": "background"
+      },
+      "waves": null
+    },
+    "feature": {
+      "art": null,
+      "band": null,
+      "bar": {
+        "box": [
+          0,
+          0,
+          1,
+          0.2
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "byline": null,
+      "column": {
+        "align": "left",
+        "anchor": "middle",
+        "box": [
+          0.04,
+          0,
+          0.92,
+          0.2
+        ],
+        "role": "background",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": null,
+      "fineprint": null,
+      "mark": null,
+      "panel": {
+        "box": [
+          0.04,
+          0.2556,
+          0.4784,
+          0.6667
+        ],
+        "opacity": 0.72,
+        "role": "dark"
+      },
+      "photo": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "signoff": null,
+      "waves": null
+    },
+    "section": {
+      "art": "section",
+      "band": null,
+      "bar": null,
+      "byline": null,
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.04,
+          0.44,
+          0.92,
+          0.18
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": null,
+      "mark": {
+        "box": [
+          0.008,
+          0.0728,
+          0.104,
+          0.107
+        ],
+        "image": "ccp-emblem",
+        "img": "logos/ccp-emblem.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": null,
+      "waves": null
+    },
+    "title": {
+      "art": "title",
+      "band": null,
+      "bar": null,
+      "byline": {
+        "align": "center",
+        "anchor": "top",
+        "box": [
+          0.01,
+          0.5604,
+          0.98,
+          0.13
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.01,
+          0.3924,
+          0.98,
+          0.1679
+        ],
+        "elements": [
+          "title",
+          "subtitle"
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.4478,
+          0.7,
+          0.5122,
+          0.262
+        ],
+        "paragraphs": [
+          "CCtCap LIMITED RIGHTS NOTICE (DEC 2007) (DEVIATION)",
+          "(a) These data are submitted with limited rights under Government Contract No. SpaceX NNK14MA74C / Boeing NNK14MA75C. These data may be reproduced and used by the Government with the express limitation that they will not, without written permission of the Contractor, be used for purposes of manufacture nor disclosed outside the Government; except that the Government may disclose these data outside the Government to support service contractors and/or pursuant to agreements and contracts related to the International Space Station; provided that the Government makes such disclosure subject to prohibition against further use and disclosure.",
+          "(b) In the event this contract is terminated for Contractor default, the Government shall have Government purpose rights in all data first produced wholly or in part at private expense in performance of this contract.",
+          "(c) This notice shall be marked on any reproduction of these data, in whole or in part.",
+          "Distribution limited to Commercial Crew Transportation Capability (CCtCap) contract support personnel."
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.911,
+          0.0679,
+          0.0765,
+          0.1165
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.0095,
+          0.808,
+          0.0795,
+          0.173
+        ],
+        "image": "ccp-lockup",
+        "img": "logos/ccp-lockup.png",
+        "role": "background"
+      },
+      "waves": null
+    },
+    "title-band": {
+      "art": "title",
+      "band": {
+        "box": [
+          0,
+          0.27,
+          1,
+          0.45
+        ],
+        "role": "primary"
+      },
+      "bar": null,
+      "byline": null,
+      "column": {
+        "align": "left",
+        "anchor": "middle",
+        "box": [
+          0.04,
+          0.27,
+          0.54,
+          0.45
+        ],
+        "elements": [
+          "date",
+          "title",
+          "subtitle",
+          "author",
+          "institute"
+        ],
+        "role": "primary-text",
+        "rule": [
+          0.13,
+          0.0033
+        ],
+        "tab": true
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "dark"
+      },
+      "fineprint": {
+        "anchor": "top",
+        "box": [
+          0.04,
+          0.738,
+          0.54,
+          0.06
+        ],
+        "paragraphs": [
+          "CCtCap LIMITED RIGHTS NOTICE (DEC 2007) (DEVIATION)",
+          "(a) These data are submitted with limited rights under Government Contract No. SpaceX NNK14MA74C / Boeing NNK14MA75C. These data may be reproduced and used by the Government with the express limitation that they will not, without written permission of the Contractor, be used for purposes of manufacture nor disclosed outside the Government; except that the Government may disclose these data outside the Government to support service contractors and/or pursuant to agreements and contracts related to the International Space Station; provided that the Government makes such disclosure subject to prohibition against further use and disclosure.",
+          "(b) In the event this contract is terminated for Contractor default, the Government shall have Government purpose rights in all data first produced wholly or in part at private expense in performance of this contract.",
+          "(c) This notice shall be marked on any reproduction of these data, in whole or in part.",
+          "Distribution limited to Commercial Crew Transportation Capability (CCtCap) contract support personnel."
+        ],
+        "role": "background"
+      },
+      "mark": {
+        "box": [
+          0.8725,
+          0.78,
+          0.0875,
+          0.16
+        ],
+        "img": "logos/ccp-emblem.png",
+        "role": "dark"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.62,
+          0.27,
+          0.38,
+          0.45
+        ]
+      },
+      "signoff": null,
+      "waves": null
+    },
+    "title-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "byline": {
+        "align": "center",
+        "anchor": "top",
+        "box": [
+          0.01,
+          0.5604,
+          0.98,
+          0.13
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.01,
+          0.3924,
+          0.98,
+          0.1679
+        ],
+        "elements": [
+          "title",
+          "subtitle"
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.4478,
+          0.7,
+          0.5122,
+          0.262
+        ],
+        "paragraphs": [
+          "CCtCap LIMITED RIGHTS NOTICE (DEC 2007) (DEVIATION)",
+          "(a) These data are submitted with limited rights under Government Contract No. SpaceX NNK14MA74C / Boeing NNK14MA75C. These data may be reproduced and used by the Government with the express limitation that they will not, without written permission of the Contractor, be used for purposes of manufacture nor disclosed outside the Government; except that the Government may disclose these data outside the Government to support service contractors and/or pursuant to agreements and contracts related to the International Space Station; provided that the Government makes such disclosure subject to prohibition against further use and disclosure.",
+          "(b) In the event this contract is terminated for Contractor default, the Government shall have Government purpose rights in all data first produced wholly or in part at private expense in performance of this contract.",
+          "(c) This notice shall be marked on any reproduction of these data, in whole or in part.",
+          "Distribution limited to Commercial Crew Transportation Capability (CCtCap) contract support personnel."
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.911,
+          0.0679,
+          0.0765,
+          0.1165
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": null,
+      "signoff": {
+        "box": [
+          0.0095,
+          0.808,
+          0.0795,
+          0.173
+        ],
+        "image": "ccp-lockup",
+        "img": "logos/ccp-lockup.png",
+        "role": "background"
+      },
+      "waves": null
+    },
+    "title-photo": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "byline": {
+        "align": "center",
+        "anchor": "top",
+        "box": [
+          0.01,
+          0.5604,
+          0.44,
+          0.13
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.01,
+          0.3924,
+          0.44,
+          0.1679
+        ],
+        "elements": [
+          "title",
+          "subtitle"
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.4478,
+          0.7,
+          0.44,
+          0.262
+        ],
+        "paragraphs": [
+          "CCtCap LIMITED RIGHTS NOTICE (DEC 2007) (DEVIATION)",
+          "(a) These data are submitted with limited rights under Government Contract No. SpaceX NNK14MA74C / Boeing NNK14MA75C. These data may be reproduced and used by the Government with the express limitation that they will not, without written permission of the Contractor, be used for purposes of manufacture nor disclosed outside the Government; except that the Government may disclose these data outside the Government to support service contractors and/or pursuant to agreements and contracts related to the International Space Station; provided that the Government makes such disclosure subject to prohibition against further use and disclosure.",
+          "(b) In the event this contract is terminated for Contractor default, the Government shall have Government purpose rights in all data first produced wholly or in part at private expense in performance of this contract.",
+          "(c) This notice shall be marked on any reproduction of these data, in whole or in part.",
+          "Distribution limited to Commercial Crew Transportation Capability (CCtCap) contract support personnel."
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.911,
+          0.0679,
+          0.0765,
+          0.1165
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.0095,
+          0.808,
+          0.0795,
+          0.173
+        ],
+        "image": "ccp-lockup",
+        "img": "logos/ccp-lockup.png",
+        "role": "background"
+      },
+      "waves": null
+    },
+    "title-photo-light": {
+      "art": null,
+      "band": null,
+      "bar": null,
+      "byline": {
+        "align": "center",
+        "anchor": "top",
+        "box": [
+          0.01,
+          0.5604,
+          0.44,
+          0.13
+        ],
+        "elements": [
+          "author",
+          "institute",
+          "date"
+        ],
+        "role": "foreground"
+      },
+      "column": {
+        "align": "center",
+        "anchor": "middle",
+        "box": [
+          0.01,
+          0.3924,
+          0.44,
+          0.1679
+        ],
+        "elements": [
+          "title",
+          "subtitle"
+        ],
+        "role": "foreground",
+        "rule": null,
+        "tab": false
+      },
+      "eyebrow": null,
+      "field": {
+        "box": [
+          0,
+          0,
+          0.5,
+          1
+        ],
+        "role": "background"
+      },
+      "fineprint": {
+        "anchor": "bottom",
+        "box": [
+          0.4478,
+          0.7,
+          0.44,
+          0.262
+        ],
+        "paragraphs": [
+          "CCtCap LIMITED RIGHTS NOTICE (DEC 2007) (DEVIATION)",
+          "(a) These data are submitted with limited rights under Government Contract No. SpaceX NNK14MA74C / Boeing NNK14MA75C. These data may be reproduced and used by the Government with the express limitation that they will not, without written permission of the Contractor, be used for purposes of manufacture nor disclosed outside the Government; except that the Government may disclose these data outside the Government to support service contractors and/or pursuant to agreements and contracts related to the International Space Station; provided that the Government makes such disclosure subject to prohibition against further use and disclosure.",
+          "(b) In the event this contract is terminated for Contractor default, the Government shall have Government purpose rights in all data first produced wholly or in part at private expense in performance of this contract.",
+          "(c) This notice shall be marked on any reproduction of these data, in whole or in part.",
+          "Distribution limited to Commercial Crew Transportation Capability (CCtCap) contract support personnel."
+        ],
+        "role": "foreground"
+      },
+      "mark": {
+        "box": [
+          0.911,
+          0.0679,
+          0.0765,
+          0.1165
+        ],
+        "image": "meatball",
+        "img": "../nasa/logos/meatball.png",
+        "role": "background"
+      },
+      "panel": null,
+      "photo": {
+        "box": [
+          0.48,
+          0,
+          0.52,
+          1
+        ]
+      },
+      "signoff": {
+        "box": [
+          0.0095,
+          0.808,
+          0.0795,
+          0.173
+        ],
+        "image": "ccp-lockup",
+        "img": "logos/ccp-lockup.png",
+        "role": "background"
+      },
+      "waves": null
+    }
+  },
+  "engine": "26.10.10",
+  "frametitle": {
+    "align": "center",
+    "body": 0.2023,
+    "color": "#FFFFFF",
+    "height": 0.117,
+    "rule": false,
+    "rule-color": "#A8A9AA",
+    "rule-width": 0.0016,
+    "rule-y": 0.18,
+    "symmetric": true,
+    "tab": false,
+    "top": 0.07
+  },
+  "geometry": {
+    "body": [
+      0.04,
+      0.2023,
+      0.92,
+      0.7527
+    ],
+    "body-bottom": 0.955,
+    "full": {
+      "caption": 0.06,
+      "footline": 0.075,
+      "pad": 0.025
+    },
+    "half": 0.445,
+    "logo": {
+      "aspect": 0.9717,
+      "closing-height": 0.16,
+      "corner": "top-left",
+      "height": 0.107,
+      "inset": 0.008,
+      "section-height": 0.11,
+      "title-height": 0.16,
+      "top": 0.0728
+    },
+    "margin": 0.04,
+    "pagenumber": {
+      "corner": "bottom-right"
+    },
+    "section": {
+      "bottom": 0.0889,
+      "top": 0.1333
+    },
+    "tab-width": 0.018,
+    "wide-margin": 0.02
+  },
+  "installed-fonts": {
+    "base": {
+      "faces": {
+        "bold": [
+          "Helvetica Bold",
+          "Helvetica-Bold"
+        ],
+        "bolditalic": [
+          "Helvetica Bold Oblique",
+          "Helvetica-BoldOblique"
+        ],
+        "italic": [
+          "Helvetica Oblique",
+          "Helvetica-Oblique"
+        ],
+        "regular": [
+          "Helvetica",
+          "Helvetica"
+        ]
+      },
+      "family": "Helvetica"
+    },
+    "headings": {
+      "faces": {
+        "bold": [
+          "Helvetica Bold",
+          "Helvetica-Bold"
+        ],
+        "bolditalic": [
+          "Helvetica Bold Oblique",
+          "Helvetica-BoldOblique"
+        ],
+        "italic": [
+          "Helvetica Oblique",
+          "Helvetica-Oblique"
+        ],
+        "regular": [
+          "Helvetica",
+          "Helvetica"
+        ]
+      },
+      "family": "Helvetica"
+    }
+  },
+  "latex": {
+    "colors": {
+      "black": "NASABlack",
+      "carbon": "NASACarbon",
+      "gray": "NASAGray",
+      "light-gray": "NASALightGray",
+      "nasa-blue": "NASABlue",
+      "nasa-red": "NASARed",
+      "silver": "NASASilver",
+      "sky": "NASASky",
+      "white": "NASAWhite",
+      "yellow": "NASAYellow"
+    },
+    "roles": {
+      "accent": "BrandAccent",
+      "alert-text": "BrandAlertText",
+      "background": "BrandBackground",
+      "caution-fill": "BrandCautionFill",
+      "code-text": "BrandCodeText",
+      "dark": "BrandDark",
+      "foreground": "BrandText",
+      "highlight": "BrandHighlight",
+      "muted": "BrandMuted",
+      "on-dark": "BrandOnDark",
+      "primary": "BrandPrimary",
+      "primary-contrast": "BrandPrimaryContrast",
+      "primary-text": "BrandPrimaryText",
+      "rule": "BrandRule",
+      "secondary": "BrandSecondary",
+      "surface": "BrandSurface",
+      "table-band": "BrandTableBand",
+      "table-rule": "BrandTableRule",
+      "warning": "BrandWarning"
+    }
+  },
+  "logo": {
+    "images": {
+      "ccp-emblem": {
+        "path": "logos/ccp-emblem.png"
+      },
+      "ccp-lockup": {
+        "path": "logos/ccp-lockup.png"
+      },
+      "meatball": {
+        "path": "../nasa/logos/meatball.png"
+      },
+      "meatball-rule": {
+        "path": "../nasa/logos/meatball-rule.png"
+      },
+      "nasa-name": {
+        "path": "../nasa/logos/nasa-name.png"
+      },
+      "nasa-name-white": {
+        "path": "../nasa/logos/nasa-name-white.png"
+      }
+    },
+    "medium": {
+      "dark": "ccp-emblem",
+      "light": "ccp-emblem"
+    }
+  },
+  "marking": [
+    {
+      "align": "center",
+      "bold": true,
+      "box": [
+        0.0,
+        0,
+        1,
+        0.066
+      ],
+      "color": "#FFFFFF",
+      "edge": "top",
+      "fill": "#7030A0",
+      "height": 0.066,
+      "leading": 1.2,
+      "name": "banner",
+      "offset": 0,
+      "size": 16,
+      "text": "CUI//SP-EXPT/SP-PROPIN//DL ONLY",
+      "width": 1
+    },
+    {
+      "align": "center",
+      "bold": false,
+      "box": [
+        0.1025,
+        0.968,
+        0.795,
+        0.026
+      ],
+      "color": "#5C5E62",
+      "edge": "bottom",
+      "fill": null,
+      "height": 0.026,
+      "leading": 1.2,
+      "name": "legend",
+      "offset": 0.006,
+      "size": 10,
+      "text": "MAY CONTAIN PROPRIETARY AND/OR LIMITED RIGHTS DATA; NOT REVIEWED FOR EXPORT CONTROL",
+      "width": 0.795
+    }
+  ],
+  "marks": {
+    "background": {
+      "logo": "logos/ccp-emblem.png"
+    },
+    "primary": {
+      "logo": "logos/ccp-emblem.png"
+    }
+  },
+  "mode": "light",
+  "name": "nasa-ccp",
+  "palette": {
+    "black": "#000000",
+    "carbon": "#1C1C1C",
+    "ccp-gold": "#F3AB10",
+    "ccp-gray": "#5C5E62",
+    "ccp-navy": "#002E62",
+    "ccp-purple": "#7030A0",
+    "ccp-red": "#D21241",
+    "ccp-slate": "#41556B",
+    "gray": "#5C5E62",
+    "light-gray": "#F0F1F3",
+    "nasa-blue": "#0032A0",
+    "nasa-red": "#E4002B",
+    "silver": "#8A8D8F",
+    "sky": "#0B6BCB",
+    "white": "#FFFFFF",
+    "yellow": "#FFC72C"
+  },
+  "pptx": {
+    "heading-typeface": "Helvetica",
+    "scheme": {
+      "accent1": "#F3AB10",
+      "accent2": "#002E62",
+      "accent3": "#41556B",
+      "accent4": "#D21241",
+      "accent5": "#FFC72C",
+      "accent6": "#002E62",
+      "dk1": "#000000",
+      "dk2": "#41556B",
+      "folHlink": "#7030A0",
+      "hlink": "#002E62",
+      "lt1": "#FFFFFF",
+      "lt2": "#F0F1F3"
+    },
+    "size": [
+      13.333,
+      7.5
+    ],
+    "template": "template.pptx",
+    "typeface": "Helvetica"
+  },
+  "roles": {
+    "accent": "#D21241",
+    "background": "#FFFFFF",
+    "code-text": "#41556B",
+    "dark": "#41556B",
+    "foreground": "#000000",
+    "highlight": "#002E62",
+    "muted": "#5C5E62",
+    "on-dark": "#FFFFFF",
+    "primary": "#41556B",
+    "primary-contrast": "#002E62",
+    "primary-text": "#FFFFFF",
+    "secondary": "#F3AB10",
+    "surface": "#F0F1F3",
+    "warning": "#FFC72C"
+  },
+  "schema": 1,
+  "section": {
+    "eyebrow-gap": 0.33,
+    "label": null,
+    "subtitle-gap": 0.66,
+    "tab": false
+  },
+  "type": {
+    "body": 0.02963,
+    "canvas": {
+      "h": 540,
+      "w": 960
+    },
+    "levels": [
+      16,
+      15,
+      13,
+      12,
+      11
+    ],
+    "roles": {
+      "author": {
+        "leading": 1.3,
+        "pt": 20,
+        "size": 1.25
+      },
+      "body": {
+        "leading": 1.4,
+        "pt": 16,
+        "size": 1.0
+      },
+      "caption": {
+        "leading": 1.3,
+        "pt": 9,
+        "size": 0.5625
+      },
+      "closing": {
+        "leading": 1.08,
+        "pt": 32,
+        "size": 2.0
+      },
+      "code": {
+        "leading": 1.3,
+        "pt": 10,
+        "size": 0.625
+      },
+      "date": {
+        "leading": 1.2,
+        "pt": 18,
+        "size": 1.125
+      },
+      "display": {
+        "leading": 1.08,
+        "pt": 40,
+        "size": 2.5
+      },
+      "eyebrow": {
+        "leading": 1.2,
+        "pt": 9,
+        "size": 0.5625
+      },
+      "fineprint": {
+        "leading": 1.4,
+        "pt": 8,
+        "size": 0.5
+      },
+      "footer": {
+        "leading": 1.2,
+        "pt": 8,
+        "size": 0.5
+      },
+      "footnote": {
+        "leading": 1.35,
+        "pt": 8,
+        "size": 0.5
+      },
+      "frametitle": {
+        "leading": 1.15,
+        "pt": 28,
+        "size": 1.75
+      },
+      "institute": {
+        "leading": 1.3,
+        "pt": 18,
+        "size": 1.125
+      },
+      "marking": {
+        "leading": 1.2,
+        "pt": 9,
+        "size": 0.5625
+      },
+      "pagenumber": {
+        "leading": 1.2,
+        "pt": 12,
+        "size": 0.75
+      },
+      "quote": {
+        "leading": 1.3,
+        "pt": 24,
+        "size": 1.5
+      },
+      "section": {
+        "leading": 1.08,
+        "pt": 28,
+        "size": 1.75
+      },
+      "sectionsubtitle": {
+        "leading": 1.3,
+        "pt": 20,
+        "size": 1.25
+      },
+      "subhead": {
+        "leading": 1.2,
+        "pt": 16,
+        "size": 1.0
+      },
+      "subtitle": {
+        "leading": 1.3,
+        "pt": 24,
+        "size": 1.5
+      },
+      "table": {
+        "leading": 1.3,
+        "pt": 10,
+        "size": 0.625
+      },
+      "title": {
+        "leading": 1.12,
+        "pt": 32,
+        "size": 2.0
+      }
+    },
+    "tracking": 0.08
+  },
+  "typography": {
+    "base": "TeX Gyre Heros",
+    "fonts": [
+      {
+        "family": "TeX Gyre Heros",
+        "files": [
+          {
+            "path": "fonts/texgyreheros-regular.otf",
+            "weight": 400
+          },
+          {
+            "path": "fonts/texgyreheros-italic.otf",
+            "style": "italic",
+            "weight": 400
+          },
+          {
+            "path": "fonts/texgyreheros-bold.otf",
+            "weight": 700
+          },
+          {
+            "path": "fonts/texgyreheros-bolditalic.otf",
+            "style": "italic",
+            "weight": 700
+          }
+        ],
+        "source": "file"
+      }
+    ],
+    "headings": "TeX Gyre Heros",
+    "monospace": "DM Mono"
+  }
+}

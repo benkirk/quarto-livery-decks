@@ -104,6 +104,7 @@
   --engine-title-tab: none;
   --engine-title-left: var(--engine-margin);
   --engine-title-right: calc(22.4px + 40px + var(--engine-logo-w));
+  --engine-title-color: #FFFFFF;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
   --engine-signoff-display: block;
@@ -113,15 +114,6 @@
   --engine-signoff-left: var(--engine-margin);
   --engine-signoff-right: auto;
   --engine-signoff-position: left bottom;
-  --engine-marking-x: 178.4px;
-  --engine-marking-y: 3.6px;
-  --engine-marking-w: 1243.2px;
-  --engine-marking-h: 25.2px;
-  --engine-marking-justify: center;
-  --engine-marking-align: center;
-  --engine-marking-fill: #6840F0;
-  --engine-marking-text: #FFFFFF;
-  --engine-marking-weight: 700;
   --engine-column-gap: 48px;
   --engine-column-rule: 2px;
   --engine-caution-bar: 8px;
@@ -178,6 +170,18 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+}
+.reveal .slides section .engine-marking-banner {
+  --engine-marking-x: 178.4px;
+  --engine-marking-y: 3.6px;
+  --engine-marking-w: 1243.2px;
+  --engine-marking-h: 25.2px;
+  --engine-marking-justify: center;
+  --engine-marking-align: center;
+  --engine-marking-fill: #6840F0;
+  --engine-marking-text: #FFFFFF;
+  --engine-marking-weight: 700;
+  --engine-marking-size: calc(21.67px * var(--engine-type-scale, 1));
 }
 /* chart colors (livery.json charts) */
 :root {

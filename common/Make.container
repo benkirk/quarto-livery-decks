@@ -22,14 +22,16 @@ endif
 DECKS_HOME ?= $(HOME)/.cache/quarto-livery-decks/home-$(DECKS_IMAGE_TAG)
 
 # What the container sees, at the same paths: the deck's repository (its git toplevel, else the
-# deck directory), this framework, a LIVERY_DIR outside both, and DECKS_BINDS, a site's file
-# systems (an installation's site.mk sets them; each only where it exists, so one list serves
-# hosts with different mounts); FONTS_DIR on /opt/fonts. Real paths: macOS's /tmp and an HPC
-# system's linked project directories are symlinks the container lacks.
+# deck directory), this framework, a LIVERY_DIR outside both, a DECK_META file's directory (a
+# prerequisite of every deck: unmounted, the inner make has no rule for it), and DECKS_BINDS, a
+# site's file systems (an installation's site.mk sets them; each only where it exists, so one list
+# serves hosts with different mounts); FONTS_DIR on /opt/fonts. Real paths: macOS's /tmp and an
+# HPC system's linked project directories are symlinks the container lacks.
 DECKS_BINDS  ?=
 DECKS_PWD    := $(realpath $(CURDIR))
 DECKS_BASE   := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
-                  $(FRAMEWORK_ROOT) $(LIVERY_DIR) $(wildcard $(DECKS_BINDS))))
+                  $(FRAMEWORK_ROOT) $(LIVERY_DIR) $(wildcard $(DECKS_BINDS))) \
+                  $(if $(DECK_META),$(patsubst %/,%,$(dir $(realpath $(DECK_META))))))
 # Symlinks in the deck directory (an image linked in): a target none of the above covers is mounted
 # too, a directory itself or a file's directory, so the link resolves inside. A target whose path
 # has a space is skipped with a warning: make splits words on it, so it cannot be a mount (find

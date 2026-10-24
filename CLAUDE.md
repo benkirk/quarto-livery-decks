@@ -14,8 +14,8 @@ Overleaf packer) was `benkirk/beamer-livery-theme` until 2026-10, when it merged
 history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
-`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`, `nasa-jsc-eg`), built by `livery build`
-into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
+`ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`, `nasa-jsc-eg`, `nasa-ccp`), built by
+`livery build` into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
 validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
 out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
 schema (`livery schema --doc`; `tests/test_schema.py` holds it current). A key is renamed only with Ben's
@@ -34,7 +34,9 @@ Sans from `liveries/nasa` as its stand-in face, a placeholder mark; `--from <dec
 (`livery_template.py`), `check [--swatch] [--qa]` (`livery_check.py`; `--qa` runs the quickstart's
 `make qa` with `LIVERY=` for a bundled livery, else `LIVERY_DIR=`), `all` (build, template,
 check; the root `make livery LIVERY=|LIVERY_DIR=`), `zip [--charts]` (`overleaf_zip.py`,
-`mpl_zip.py`), `schema --doc`, and `deps|mono|figsize` for `Make.common`. The modules have no
+`mpl_zip.py`), `schema --doc`, `placeholders` (sample text over a livery's default markings and
+cover notice, the `DECK_META` every image we keep is shot under: gallery, `check --qa`, CI's
+measure) and `deps|mono|figsize` for `Make.common`. The modules have no
 entry points of their own; `livery.py` imports each only when its subcommand runs, so `zip`
 needs nothing beyond Python (the release job).
 `design/engine-and-liveries.md` is the roadmap; its section 10 logged progress up to the first
@@ -52,7 +54,12 @@ external communication; no official template, so the Brand Center's rules and NA
 public-engagement deck) and its flavor `nasa-dark` (content on black) are the first dark
 livery (see "Dark liveries" below); `nasa-jsc-eg` (the JSC Aeroscience and Flight Mechanics
 Division's template) is `nasa-dark`'s flavor with the template's furniture as art rendered from its
-layouts (`reference/eg_art.py`) and a group's patch as a mark a group's own flavor swaps. The reference decks themselves live on Drive or a laptop,
+layouts (`reference/eg_art.py`) and a group's patch as a mark a group's own flavor swaps; `nasa-ccp`
+(the Commercial Crew Program's template) is `nasa`'s flavor whose markings are the point: a CUI
+banner and a legend as two marking strips and the CCtCap rights notice as the cover's default fine
+print, each the template's text by default and a deck's to replace, its art drawn from the template
+with the baked insignia painted out (`reference/ccp_art.py`), the CCP emblem and lockup NASA's
+vectors. The reference decks themselves live on Drive or a laptop,
 not in git. A livery without `pptx.fonts` embeds nothing (`embed_fonts.py` says so and leaves
 the deck alone); a livery without `art.waves` gets straight-edged title fields in every format.
 
@@ -79,7 +86,9 @@ build pipeline, template constraints and font embedding; `docs/container.md` the
   commit them. Slides are found by title (`SLIDES` in `screenshots.py`), so a
   renamed slide needs that list updated. `make gallery` (`gallery.py`) writes
   `liveries.png`, the deck under every livery (title, divider, content, closing),
-  rebuilding the HTML per `LIVERY`; `screenshots.py` leaves that file alone. Where the MathJax CDN is blocked, set
+  rebuilding the HTML per `LIVERY` (a livery with default markings under `livery placeholders`,
+  passed as `DECK_META`, a metadata file Make.common hands every render: no committed image reads
+  as a real restricted deck); `screenshots.py` leaves that file alone. Where the MathJax CDN is blocked, set
   `MATHJAX` to a local MathJax 2.7 (the npm tarball from registry.npmjs.org),
   or the equations shoot as raw TeX.
 
@@ -173,7 +182,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
-  HTML theme), `marking` (the marking strip, before the size step so a deck's type step scales it
+  HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
   as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
@@ -289,7 +298,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   default), drawn by beamer's `\engine@textstack` in `\engine@pnode`, `title-slide.html`'s second
   stack shown by the `--engine-cmp-<element>-*` properties, and `slide_layout.py`'s
   `cover_byline()` (the institute's first appearance in the pptx); `column.align: center` centers
-  a composed slide's text and rule in all three. **`make measure`**
+  a composed slide's text and rule in all three. The cover's `fineprint` box holds the deck's
+  `fineprint:`, else the livery's `fineprint.text` (set on `title`, every cover's; `none` drops
+  it): beamer's `\engine@cfineprint`, `title-slide.html`, `slide_layout.py`'s `cover_fineprint()`
+  (from `engine-fineprint`, a line per paragraph or line break). **`make measure`**
   (`comp_measure.py`; `MEASURE_FAIL` the formats whose deltas fail, CI report-only) shoots the
   four slides in every format and measures them against the boxes: `_qa/measure.tsv` and the
   contact sheet `_qa/compositions-<livery>.png`; `design/compositions-baseline.md` is the
@@ -327,8 +339,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   and the `enginefull=` frame option the engine filter already wrote. HTML mermaid is live in
   the roles. A light livery is untouched. The pptx theme slots follow the roles, so `dk1`
   holds white (a native `clrMap` swap is a follow-up).
-- **Content title**: `livery.yml` `frametitle: {align: left|center, tab, rule, top, height,
-  rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
+- **Content title**: `livery.yml` `frametitle: {align: left|center, symmetric, color, tab, rule, top,
+  height, rule-y, rule-width, rule-color}` (nsi: centered, no tab, no hairline, as the NSI master deck's
   slide 20; its mark at the paper's edge, `geometry.logo.inset: 0.015`). The band is the three
   fractions of the height (defaults 44, 70 and 130 px of 900: the title centered in
   `top..top+height`, a taller one growing down, the tab the band's height, the hairline at
@@ -336,7 +348,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rule` blend the column rules use; a hex in `livery.json`)), always emitted (`\engine@ft@*`,
   `EngineFrametitleRuleColor`, `--engine-title-*`) and read by the outer theme, the scss and the
   template's master alike; the body starts `livery_build.BODY_GAP` under the hairline or below a
-  taller mark (`livery.json` `frametitle.body`, derived, not a key).
+  taller mark (`livery.json` `frametitle.body`, derived, not a key). `color` (default the
+  foreground) is for a title on a bar of its own: `EngineFrametitleColor`,
+  `--engine-title-color`, the template's title style (`tx1` when it is the foreground);
+  `symmetric` mirrors the room beside the mark (`livery_build.TITLE_GAP`, 0.025 of the width in
+  every drawer), so a centered title sits on the slide's center.
 - **Code face**: `typography.monospace` (brand.yml) with files of its own replaces LM Mono in
   beamer (at 1.0: a mono advancing 0.6 em is HTML's width), `--r-code-font` in HTML and
   pandoc's `monofont` in pptx (nasa: DM Mono); `pptx.code-typeface` overrides the pptx's with an
@@ -536,7 +552,7 @@ it does, by area, beyond the format notes above:
   `role=` resolves through livery.sty's `\engine@role@<name>`, else a defined color, else a
   `Package Engine Warning` and the default by place in `\engine@boxes@card@roles`),
   `enginestrip[role=]`, `enginestatus` with `\done`/`\warn`/`\fail` (local to it) and
-  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking{}`,
+  `\engineglyph`, `enginecaution`, `\enginenote`, `enginescale{S}`, `\enginemarking[<strip>]{}`,
   `enginequote[role=]{Attribution}`, `\engineagenda`, `\enginesectionunnumbered{Title}{Sub}`,
   `enginegallery[cols=,rows=,fit=,height=]` with `\engineimage[Caption]{file}` (and the bare
   `[enginefull]` frame key, which a gallery fills). The

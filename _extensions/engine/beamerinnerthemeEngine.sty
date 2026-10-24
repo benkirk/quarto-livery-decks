@@ -21,8 +21,9 @@
 \providecommand\engine@titlestyle{dark}
 \@ifundefined{ifengine@sectionpages}{\newif\ifengine@sectionpages\engine@sectionpagestrue}{}
 
-% optional fine print under the title block, e.g. an NSF funding statement
-\def\engine@fineprint{}
+% the cover's fine print, e.g. an NSF funding statement: \titlefineprint{<text>}, {} for none;
+% unset (\relax), the livery's default (compositions.<cover>.fineprint.text), if it has one
+\let\engine@fineprint\relax
 \newcommand\titlefineprint[1]{\def\engine@fineprint{#1}}
 
 % the composition column's text alignment (column.align: left | center; \engine@calignof{<comp>}
@@ -238,7 +239,7 @@
 \defbeamertemplate*{section in toc}{Engine}{\engine@agendarow}
 \defbeamertemplate*{section in toc shaded}{Engine}{\engine@agendarow}
 \newcommand\engineagenda{{\engine@agendatrue\c@tocdepth\@ne\vbox{\tableofcontents}}}   % sections only
-% a caption is its text alone, centred (the caption font and color: beamer draws the template
+% a caption is its text alone, centered (the caption font and color: beamer draws the template
 % with both), as HTML and pptx set it: no "Figure 1:" label
 \setbeamertemplate{caption}{{\centering\insertcaption\par}}
 % Quarto loads the caption package (before the theme), which draws its own label: none there either
@@ -310,7 +311,7 @@
     \usebeamerfont{block body}}%
   \setbeamertemplate{#1 end}{\par{\usebeamerfont{block title}\vskip0.33em}}}
 \def\endenginefeaturepanel{\par\egroup}
-% the bar's title, centred on it: the frame title and subtitle
+% the bar's title, centered on it: the frame title and subtitle
 \def\engine@featuretitle{\vbox{\hsize=\engine@bw \engine@calign
   {\usebeamerfont{frametitle}\insertframetitle\par}%
   \ifx\insertframesubtitle\@empty\else
@@ -362,7 +363,7 @@
 
 % ---------------------------------------------------------------------------
 % note: a remark under a figure or table, in the caption's look (the full
-% frame's \enginefullcaption): the caption size, muted, centred.  The Quarto
+% frame's \enginefullcaption): the caption size, muted, centered.  The Quarto
 % filter writes it for a ::: note div (after a table, it first takes back the
 % skip longtable leaves, \LTpost).
 %   \enginenote{121 PiB used of 141 PiB.}

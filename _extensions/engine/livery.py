@@ -203,20 +203,66 @@ def figsize(d: str) -> str:
     return " ".join(str(v) for v in load(d)["charts"]["figsize"]["full"])
 
 
+SAMPLE_MARKINGS = ("SAMPLE — CONTAINS NO CUI",
+                   "SAMPLE MARKING — CONTAINS NO PROPRIETARY OR EXPORT-CONTROLLED DATA")
+LOREM = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
+         "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex "
+         "ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat "
+         "nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit "
+         "anim id est laborum. ")
+
+
+def placeholders(d: str) -> str:
+    """A metadata file (YAML) that puts sample text over the livery's default markings and cover
+    notice, for the images we publish (Make.common's DECK_META; gallery.py): no screenshot of ours
+    reads as a real restricted deck. Each strip with a default text gets a SAMPLE marking (the
+    first a CUI one, the rest a legend), a cover notice its own shape in Lorem ipsum (the first
+    paragraph a SAMPLE heading, a "(a)" label kept), so the layout is the real one's. Nothing for a
+    livery without defaults."""
+    import json
+    import re
+    L = load(d)
+    meta = {}
+    strips = {s["name"]: SAMPLE_MARKINGS[min(i, 1)] for i, s in enumerate(L.get("marking") or []) if s.get("text")}
+    if strips:
+        meta["marking"] = strips
+    paras = next((c["fineprint"]["paragraphs"] for c in L.get("compositions", {}).values()
+                  if (c.get("fineprint") or {}).get("paragraphs")), None)
+    if paras:
+        out = []
+        for i, p in enumerate(paras):
+            if i == 0:
+                out.append("SAMPLE NOTICE — PLACEHOLDER TEXT")
+                continue
+            label = re.match(r"\(\w\)\s*", p)
+            lead = "\\" + label.group(0) if label else ""   # escaped: "(a) " would start a markdown list
+            text = (LOREM * (len(p) // len(LOREM) + 1))[:max(len(p) - len(lead), 20)]
+            out.append(lead + text.rsplit(" ", 1)[0].rstrip(",") + ".")
+        meta["fineprint"] = "\n\n".join(out)
+    return json.dumps(meta, ensure_ascii=False, indent=1) + "\n" if meta else ""
+
+
 ENGINE = Path(__file__).resolve().parent
 QUICKSTART = ENGINE.parents[1] / "decks" / "quickstart"   # the framework's, for check --qa
 
 
 def check_qa(d: Path) -> bool:
     """The quickstart deck's `make qa` under the livery: LIVERY=<name> for one of the framework's
-    liveries, else LIVERY_DIR=<dir>."""
+    liveries, else LIVERY_DIR=<dir>; its default markings, if any, under placeholders() (the
+    contact sheets are images we keep)."""
     import subprocess
     if not (QUICKSTART / "Makefile").exists():
         print(f"{d.name}: --qa needs the framework's decks/quickstart, not found at {QUICKSTART}")
         return False
     bundled = (ENGINE.parents[1] / "liveries" / d.name).resolve() == d.resolve()
     which = f"LIVERY={d.name}" if bundled else f"LIVERY_DIR={d.resolve()}"
-    ok = subprocess.run(["make", "-C", str(QUICKSTART), "qa", which]).returncode == 0
+    extra = []
+    if meta := placeholders(str(d)):
+        f = QUICKSTART / "_qa" / f"placeholders-{d.name}.yml"
+        f.parent.mkdir(exist_ok=True)
+        f.write_text(meta)
+        extra = [f"DECK_META={f}"]
+    ok = subprocess.run(["make", "-C", str(QUICKSTART), "qa", which, *extra]).returncode == 0
     print(f"{d.name}: {'ok   ' if ok else 'FAIL '} make -C decks/quickstart qa {which}")
     return ok
 
@@ -270,7 +316,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("-o", "--output", type=Path)
     p.add_argument("--check", action="store_true", help="exit 1 if the file is not the schema's")
     for name, help in (("deps", "the files a deck build reads (Make.common)"),
-                       ("mono", "the code face's family, or nothing"), ("figsize", "the plots' default size")):
+                       ("mono", "the code face's family, or nothing"), ("figsize", "the plots' default size"),
+                       ("placeholders", "sample text over the default markings, for published images (DECK_META)")):
         sub.add_parser(name, help=help).add_argument("dir")
     a = ap.parse_args(argv)
 
@@ -312,7 +359,8 @@ def main(argv: list[str] | None = None) -> int:
         import livery_schema
         return livery_schema.write_doc(a.output or livery_schema.REFERENCE, a.check)
     else:
-        print({"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize}[a.cmd](a.dir))
+        print({"deps": lambda d: " ".join(deps(d)), "mono": mono, "figsize": figsize,
+               "placeholders": placeholders}[a.cmd](a.dir), end="" if a.cmd == "placeholders" else "\n")
     return 0
 
 

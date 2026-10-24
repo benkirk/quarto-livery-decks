@@ -17,7 +17,7 @@ quarto-livery-decks/
 │   ├── ncar/  ucar/       #   _brand.yml, livery.yml, fonts/, logos/, art/,
 │   ├── ucp/  ncarucar/    #     template.pptx and build/ (both generated, committed),
 │   ├── cu/  nsi/          #     reference/notes.md
-│   └── nasa/  nasa-dark/  nasa-jsc-eg/
+│   └── nasa/  nasa-dark/  nasa-jsc-eg/  nasa-ccp/
 ├── common/                # what decks share:
 │   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
 │   └── utils/
@@ -107,7 +107,7 @@ Per deck, `make pptx` runs:
      draw where the paragraph will land.
    - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,
      bottom center, muted; the caption box is itself the link.
-   - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; points closing and light
+   - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; draws the cover's byline and fine print; points closing and light
      title slides at the template's extra layouts; sets a `::: note` in the caption's look
      under its figure (see [authoring.md "Notes under a figure"](authoring.md#notes-under-a-figure)); copies the slide number onto every slide.
    - `columns`: sets a two-column slide's columns at their widths, the livery's gap between them
@@ -124,7 +124,7 @@ Per deck, `make pptx` runs:
      over a rule in the primary color, thin rules between rows, every second row banded, the
      blends from `livery_build.py`); pandoc always writes "Medium Style 2", so the look is set
      cell by cell, and evenly split columns are re-split by content.
-   - `marking`: the marking strip on every slide (a deck's `marking:`, else the livery's
+   - `marking`: the marking strips on every slide (a deck's `marking:`, else each strip's
      default text; see [authoring.md "Front matter and slide kinds"](authoring.md#front-matter-and-slide-kinds)).
    - `type_step`: applies a deck's `type-body:` or `type-scale:` (see [authoring.md "Text sizes and the slide size"](authoring.md#text-sizes-and-the-slide-size)),
      last, to every size the steps before it set (the strip's too, as HTML and PDF scale it).
@@ -152,6 +152,8 @@ headings face), so slide masters and layouts all dereference to it:
   then a viewer without the faces sees PowerPoint's substitute.
 - **nasa-jsc-eg** names Arial, its template's face, and embeds nothing (every Office has it);
   HTML and PDF set Liberation Sans, its metric twin, where Arial is not installed.
+- **nasa-ccp** names Helvetica, its template's face (Windows substitutes Arial, the same
+  metrics), and embeds nothing; HTML and PDF set TeX Gyre Heros where Helvetica is not installed.
 
 A livery's code face (`typography.monospace` in `_brand.yml`, with files of its own: nasa's
 DM Mono) sets code in all three formats: pandoc's `monofont` in pptx, the code font in HTML

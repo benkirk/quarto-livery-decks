@@ -120,6 +120,10 @@ export MATPLOTLIBRC := $(abspath $(LIVERY_DIR))/build/livery.mplstyle
 export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(PYTHONPATH),:$(PYTHONPATH))
 LIVERY_FIGSIZE := $(shell python3 $(LIVERY_PY) figsize $(LIVERY_DIR))
 FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fig-height:$(word 2,$(LIVERY_FIGSIZE)))
+# DECK_META: a metadata file every render reads (quarto's --metadata-file), filling keys the deck's
+# front matter leaves out: gallery.py's placeholder markings, so no image we commit reads as a real
+# restricted deck. A prerequisite too, so a different file rebuilds.
+META_FILE = $(if $(DECK_META),--metadata-file=$(abspath $(DECK_META)))
 # The engine's sources (the filters, the themes, the pptx steps, the plot helper): the _extensions
 # link's target is a directory, whose mtime an edit inside it never moves, so an engine change
 # left every deck up to date (#133). The Lua and theme files serve all three formats.
@@ -127,7 +131,7 @@ ENGINE_DIR   := $(FRAMEWORK_ROOT)_extensions/engine
 ENGINE_FILES := $(wildcard $(ENGINE_DIR)/*.lua $(ENGINE_DIR)/*.py $(ENGINE_DIR)/*.sty $(ENGINE_DIR)/*.scss $(ENGINE_DIR)/*.js \
                 $(ENGINE_DIR)/*.html $(ENGINE_DIR)/*.theme $(ENGINE_DIR)/_extension.yml $(ENGINE_DIR)/pptx_steps/*.py \
                 $(ENGINE_DIR)/mpl/*.py)
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES) $(ENGINE_FILES)
+DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES) $(ENGINE_FILES) $(DECK_META)
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -217,7 +221,7 @@ _livery: .livery
 	@[ "$$(readlink $@)" = "$(LIVERY_DIR)" ] || ln -sfn $(LIVERY_DIR) $@
 
 define render_pptx
-	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(FIG_SIZE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")
+	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(FIG_SIZE) $(META_FILE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")
 	python3 $(PPTX_POST) $@
 endef
 
@@ -226,11 +230,11 @@ endef
 # a LIVERY switch the deck would wear the old livery's css and marks. So drop it first.
 define render_html
 	rm -rf $(@:.html=_files)/libs/quarto-contrib/engine-revealjs-*
-	ENGINE_FORMAT=html quarto render $< --to engine-revealjs -o $@ $(FIG_SIZE)
+	ENGINE_FORMAT=html quarto render $< --to engine-revealjs -o $@ $(FIG_SIZE) $(META_FILE)
 endef
 
 define render_pdf
-	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@
+	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@ $(META_FILE)
 endef
 
 %.pptx: %.qmd $(DEPS) | _livery
