@@ -59,6 +59,12 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
   nasa-ccp). Under nasa-ccp and nasa-jsc-eg a slide whose body starts with columns or cards now
   takes the same gap under the title as under the other liveries.
 
+- A table's head rule is `primary-contrast` in every format (the PDF's was; HTML and pptx drew
+  `primary`, which differs on cu, nsi, ucar, ucp and the NASA flavors: a thin rule in a light
+  gold or teal hardly read), and each rule is one width everywhere, 3 px of 900 under the header
+  and 1 px under a row, so the PDF's head rule and last rule are thinner. On a `{.brand-dark}`
+  slide the head rule stays `secondary`. `boxes.table` under Liveries.
+
 - `make qa` no longer reports a bottom-right slide number (cu, nsi, the NASA liveries) as past
   the right margin on every pptx slide, nor a linked picture's URL beside it as running into the
   footer: its pptx hints are the real ones.
@@ -97,6 +103,8 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
   the dark role (primary's unless `marks.dark` names its own): all derived, nothing to do for
   them. In LaTeX the marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is
   unchanged.
+- `boxes.table` (optional): a table's rules, `head-rule` and `rule` (widths, of the slide's height;
+  0.0033 and 0.0011) and `head-rule-color` (a role or blend name, `primary-contrast` by default).
 - `livery placeholders <dir> -o FILE` writes the sample-text metadata file and prints
   `DECK_META=<file>` for make's command line (nothing for a livery without default markings).
 

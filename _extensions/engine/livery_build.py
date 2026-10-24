@@ -166,7 +166,15 @@ BOXES = {
     # width of the text width, and in em of the footnote type the gap under the rule, the marker's hang
     # and the step between entries; the pptx styles them in place (hang, gap, step; no rule)
     "footnote": {"rule": 0.0022, "rule-length": 0.075, "rule-color": "rule", "width": 0.6, "gap": 0.55, "hang": 0.9, "step": 0.3},
+    # a table's rules, of the height: head-rule under the header row (3 px of 900), in head-rule-color, a role
+    # or blend name (primary-contrast: a thin rule must read on the background, as the rail's marks; a dark
+    # slide's swap reaches it), and rule under each body row (1 px of 900; beamer's under the last), in the
+    # table-rule blend
+    "table": {"head-rule": 0.0033, "head-rule-color": "primary-contrast", "rule": 0.0011},
 }
+# a box's role keys: a role or blend name kept as a name, so a drawer resolves it where a dark slide's
+# swap applies (the rail's default role, the table's head rule)
+BOX_ROLE_NAMES = {"rail": ("role",), "table": ("head-rule-color",)}
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color", "border-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
@@ -482,10 +490,10 @@ def boxes(b: dict, hexof, roles=()) -> dict:
             hexof(r, f"{box}.roles[{i}]")
             if roles and (r.startswith("#") or r not in roles):
                 sys.exit(f"livery.yml: boxes.{box}.roles[{i}]: {r!r} is not a role")
-        if "role" in v:   # a role or blend name, kept as a name (the rail's default: role= resolves through it)
-            hexof(v["role"], f"{box}.role")
-            if v["role"].startswith("#"):
-                sys.exit(f"livery.yml: boxes.{box}.role: {v['role']!r} is a hex, not a role or blend")
+        for k in BOX_ROLE_NAMES.get(box, ()):   # a role or blend name, kept as a name
+            hexof(v[k], f"{box}.{k}")
+            if v[k].startswith("#"):
+                sys.exit(f"livery.yml: boxes.{box}.{k}: {v[k]!r} is a hex, not a role or blend")
         out[box] = v
     return out
 
@@ -1363,6 +1371,10 @@ def emit_css(livery: dict, extra: str = "") -> str:
             glyph = bu["glyphs"][min(i, len(bu["glyphs"]) - 1)]
             L.append(f'html {sel} {{ content: "{glyph}"; background: none; border: 0; border-radius: 0; width: auto; '
                      f'height: auto; top: 0; left: -1em; color: {bu["color"]}; line-height: inherit; }}')
+    # a table's head rule in its role (boxes.table.head-rule-color), resolved on the table: on :root a dark
+    # slide's swap would not reach it
+    L.append(f".reveal .slides section table {{ --engine-boxes-table-head-rule-color: "
+             f"var(--engine-{livery['boxes']['table']['head-rule-color']}); }}")
     L += emit_css_compositions(livery)
     if livery.get("mode") == "dark":
         L += emit_css_dark()
@@ -1421,6 +1433,8 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-footnote-rule-color: {fn['rule-color']};", f"--engine-footnote-width: {round(fn['width'] * 100, 2):g}%;",
           f"--engine-footnote-gap: {fn['gap']:g}em;", f"--engine-footnote-hang: {fn['hang']:g}em;",
           f"--engine-footnote-step: {fn['step']:g}em;"]
+    tb = b["table"]   # the head rule's color is set on the table itself (emit_css), where a dark slide's swap reaches it
+    p += [f"--engine-boxes-table-head-rule: {px(tb['head-rule'])};", f"--engine-boxes-table-rule: {px(tb['rule'])};"]
     return p
 
 

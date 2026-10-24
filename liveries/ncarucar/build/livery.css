@@ -162,6 +162,8 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+  --engine-boxes-table-head-rule: 3px;
+  --engine-boxes-table-rule: 1px;
 }
 .reveal .slides section .engine-marking-banner {
   --engine-marking-x: 160px;
@@ -222,6 +224,7 @@ html:root {
 .reveal .slides section.engine-field .engine-mark-top-right { background-image: var(--engine-mark-primary-logo); }
 .reveal .slides section.engine-dark .engine-mark-top-right { background-image: var(--engine-mark-dark-logo); }
 .reveal .slides section.engine-title .engine-title-photo-default { background: url("mesa-lab.jpg") center / cover no-repeat; }
+.reveal .slides section table { --engine-boxes-table-head-rule-color: var(--engine-primary-contrast); }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;

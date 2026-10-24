@@ -127,6 +127,11 @@
         0.8
       ],
       "tint": 0.18
+    },
+    "table": {
+      "head-rule": 0.0033,
+      "head-rule-color": "primary-contrast",
+      "rule": 0.0011
     }
   },
   "bullets": null,

@@ -460,6 +460,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
 | `rail` | object |  | Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below. |
+| `table` | object |  | A table's rules, in every format (HTML's th and td borders, the PDF's \midrule and \bottomrule, the pptx's cell borders). |
 | `references` | object |  | The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size. |
 | `gallery` | object |  | Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each. |
 
@@ -596,6 +597,16 @@ Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the 
 | `role` | string | `"primary-contrast"` | The marks' color when the div names no `role=`: a role or blend name (not a hex); primary-contrast, the primary that reads on the background, by default. |
 | `fill` | null or color or role | `null` | A cell behind each item's text, a role, a blend, a palette name or a hex; null for none. |
 | `pad` | [vertical, horizontal] em | `[0.4, 0.4]` | Each item's text's distance from its cell's edges, in em of the body type. |
+
+### `boxes.table`
+
+A table's rules, in every format (HTML's th and td borders, the PDF's \midrule and \bottomrule, the pptx's cell borders).
+
+| key | type | default | |
+|---|---|---|---|
+| `head-rule` | fraction | `0.0033` | The rule under the header row, its width (of the slide's height; 3 px of 900). |
+| `head-rule-color` | string | `"primary-contrast"` | That rule's color: a role or blend name (not a hex), so a dark slide's swap reaches it; primary-contrast, the primary that reads on the background, by default. |
+| `rule` | fraction | `0.0011` | The rule under each body row (the PDF: under the table), its width (of the slide's height; 1 px of 900), in the `table-rule` blend. |
 
 ### `boxes.references`
 

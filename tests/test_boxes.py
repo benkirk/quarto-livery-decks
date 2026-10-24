@@ -22,7 +22,7 @@ import livery_build as lb
 from conftest import ROOT, run, run_steps
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
+FRACTIONS = ("gap", "rule", "head-rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
 EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
        ("quote", "attribution-gap"), ("note", "gap"),
        ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
@@ -43,7 +43,7 @@ def test_every_key(livery):
                 assert v is None or isinstance(v, str), f"{where} is not a family or null"
             elif (box, k) == ("quote", "style"):
                 assert v in ("normal", "italic"), f"{where} is not normal or italic"
-            elif k == "role":   # a role or blend name, kept as a name
+            elif k in lb.BOX_ROLE_NAMES.get(box, ()):   # a role or blend name, kept as a name
                 lv = json.loads((livery / "build" / "livery.json").read_text())
                 assert v in lv["roles"] or v in lv["blends"], f"{where} is not a role or blend"
             elif (box, k) in EMS:
@@ -155,6 +155,7 @@ def test_nsi_dark_mark():
     ("  columns: {gap: 1.5}\n", "boxes.columns.gap: 1.5 is greater than the maximum of 1"),
     ("  caution: {pad: [0.5]}\n", "boxes.caution.pad: "),
     ("  card: {roles: [primary, nope]}\n", "boxes.card.roles[1]: 'nope' is neither"),
+    ("  table: {head-rule-color: '#123456'}\n", "boxes.table.head-rule-color: '#123456' is a hex, not a role or blend"),
 ])
 def test_refused_with_path(tmp_path, tmp_livery, boxes, expect):
     rc, err, _ = tmp_livery(tmp_path, boxes)
@@ -177,6 +178,28 @@ def test_pptx_caution(pandoc_deck, tmp_path, name):
     tf = next(sh for sh in slide.placeholders if sh.has_text_frame and "warning" in sh.text_frame.text).text_frame
     assert (tf.margin_top, tf.margin_left) == (round(c["pad"][0] * body * 12700), round(c["pad"][1] * body * 12700)), \
         "pads in em of the body"
+
+
+def test_pptx_table_rules(pandoc_deck, tmp_path):
+    """A table's head rule is boxes.table.head-rule of the canvas height in its role, the row rule
+    boxes.table.rule in the table-rule blend; on a dark slide the role's swap (cu: primary-contrast,
+    not the primary it was, and secondary on the dark slide)."""
+    import livery as livery_mod
+    table = "| A | B |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |\n"
+    md = f"## Light\n\n{table}\n## Dark\n\n{table}\n::: notes\nengine-layout: dark\n:::\n"
+    pandoc_deck(tmp_path, md, "t.pptx")
+    d = ROOT / "liveries" / "cu"
+    run_steps(tmp_path / "t.pptx", ["style_tables"], d)
+    from pptx import Presentation
+    j = json.loads((d / "build" / "livery.json").read_text())
+    t, h = j["boxes"]["table"], j["type"]["canvas"]["h"] * 12700
+    assert t["head-rule-color"] == "primary-contrast" and j["roles"]["primary-contrast"] != j["roles"]["primary"]
+    want = [livery_mod.hex(j, t["head-rule-color"]), livery_mod.hex(j, livery_mod.DARK_SWAP[t["head-rule-color"]])]
+    for slide, color in zip(Presentation(str(tmp_path / "t.pptx")).slides, want):
+        tbl = next(sh for sh in slide.shapes if sh.has_table).table._tbl
+        rules = [(int(ln.get("w")), ln.find(".//{*}srgbClr").get("val")) for ln in tbl.iter("{*}lnB")]
+        assert rules[0] == (round(t["head-rule"] * h), color), f"the head rule: {rules[0]}"
+        assert rules[-1][0] == round(t["rule"] * h), f"the row rule: {rules[-1]}"
 
 
 def test_bullets(livery, tmp_path):

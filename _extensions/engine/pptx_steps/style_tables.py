@@ -4,8 +4,9 @@
 pandoc writes each table with PowerPoint's "Medium Style 2 - Accent 1" (filled header, banded
 rows) and no way to choose another. This replaces the style with direct cell formatting, which
 PowerPoint and LibreOffice both render, in the livery's colors (engine-revealjs.scss `table`): a
-header row with no fill, bold letter-spaced capitals at 0.8x the body size and a 3 px rule in
-the primary slot (dk2); body rows with a 1 px rule in the derived table-rule blend, every second
+header row with no fill, bold letter-spaced capitals at 0.8x the body size over a rule in
+boxes.table's head-rule-color; body rows with a rule in the derived table-rule blend (the widths
+boxes.table's, of the slide's height), every second
 row filled with the table-band blend; columns left alone when pandoc took widths from the
 source, else re-split in proportion to each column's longest cell, each 10-60% wide.
 Run after slide_layout has scaled the runs (pptx_post.py). Idempotent."""
@@ -15,12 +16,15 @@ from pathlib import Path
 from lxml import etree
 from pptx.oxml.ns import qn
 
-from .common import CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, rpr
-from .measure import PX, other_size   # EMU per revealjs px (1600 px wide)
+import livery as livery_mod
+
+from .common import BOXES, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, rpr
+from .measure import CANVAS, other_size
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
-HEAD_RULE   = 3 * PX                   # 3px solid var(--engine-primary)
-ROW_RULE    = 1 * PX                   # the table-rule blend, mix(foreground, surface, 20%)
+TABLE       = BOXES["table"]
+HEAD_RULE   = TABLE["head-rule"] * CANVAS["h"] * 12700   # EMU; in the role TABLE["head-rule-color"]
+ROW_RULE    = TABLE["rule"] * CANVAS["h"] * 12700        # in the table-rule blend, mix(foreground, surface, 20%)
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = LIVERY["type"]["tracking"]   # the small caps' letter spacing, em (type.tracking, every format)
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
@@ -88,8 +92,11 @@ def _rebalance(tbl):
 
 
 def style_table(tbl, base, ink):
-    """A table styled in ink (common.palette(): the head rule primary's, the row rules and bands the
-    table blends; on a dark slide secondary, the dark blends, and every cell's text on-dark)."""
+    """A table styled in ink (common.palette(): the head rule in boxes.table's role, the row rules and
+    bands the table blends; on a dark slide the role's swap (primary-contrast's secondary), the dark
+    blends, and every cell's text on-dark)."""
+    role = TABLE["head-rule-color"]
+    head = ink[role] if role in ink else livery_mod.hex(LIVERY, role)   # a role the dark slide does not swap: its own
     tbl_pr = tbl.find(qn("a:tblPr"))
     tbl_pr.attrib.pop("bandRow", None)
     style_id = tbl_pr.find(qn("a:tableStyleId"))
@@ -105,7 +112,7 @@ def style_table(tbl, base, ink):
         body_index = i - 1 if header else i
         band = not is_head and body_index % 2 == 1
         for tc in tr.findall(qn("a:tc")):
-            _style_cell(tc, (HEAD_RULE, ink["primary"]) if is_head else (ROW_RULE, ink["table-rule"]), ink["table-band"] if band else None)
+            _style_cell(tc, (HEAD_RULE, head) if is_head else (ROW_RULE, ink["table-rule"]), ink["table-band"] if band else None)
             tc_pr = tc.find(qn("a:tcPr"))   # the cell's top and bottom margin, as HTML's padded rows
             tc_pr.set("marT", str(CELL_MAR)); tc_pr.set("marB", str(CELL_MAR))
             if is_head:

@@ -679,6 +679,16 @@
             }
           }
         },
+        "table": {
+          "type": "object",
+          "description": "A table's rules, in every format (HTML's th and td borders, the PDF's \\midrule and \\bottomrule, the pptx's cell borders).",
+          "additionalProperties": false,
+          "properties": {
+            "head-rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0033, "description": "The rule under the header row, its width (of the slide's height; 3 px of 900)."},
+            "head-rule-color": {"type": "string", "minLength": 1, "default": "primary-contrast", "description": "That rule's color: a role or blend name (not a hex), so a dark slide's swap reaches it; primary-contrast, the primary that reads on the background, by default."},
+            "rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0011, "description": "The rule under each body row (the PDF: under the table), its width (of the slide's height; 1 px of 900), in the `table-rule` blend."}
+          }
+        },
         "references": {
           "type": "object",
           "description": "The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size.",

@@ -999,8 +999,11 @@
   \setlength\aboverulesep{0pt}\setlength\belowrulesep{0pt}%
   \setlength\extrarowheight{0pt}%
   \def\toprule{}%
-  \def\midrule{\arrayrulecolor{BrandPrimaryContrast}\specialrule{1.5pt}{0.3ex}{0pt}}%
-  \def\bottomrule{\arrayrulecolor{enginetablerule}\specialrule{0.6pt}{0pt}{0pt}}}
+  % the rules of boxes.table (livery.sty): the head rule in its role, the last in the table-rule blend,
+  % their widths of the paper's height; the head rule 0.15em under the header (0.3ex of Poppins)
+  \def\midrule{\arrayrulecolor{\csname engine@role@\engine@boxes@table@headrulecolor\endcsname}%
+    \specialrule{\engine@boxes@table@headrule\paperheight}{0.15em}{0pt}}%
+  \def\bottomrule{\arrayrulecolor{enginetablerule}\specialrule{\engine@boxes@table@rule\paperheight}{0pt}{0pt}}}
 \AddToHook{env/longtable/end}{\global\let\CT@arc@\engine@arc}
 
 % ---------------------------------------------------------------------------

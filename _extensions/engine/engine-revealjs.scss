@@ -282,7 +282,8 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
 // quarto's task lists / checkboxes keep their own markers
 .reveal .slides section ul.task-list > li::before { content: none; }
 
-// tables: bold uppercase header over a primary-color rule, hairline rows; centered in the body
+// tables: bold uppercase header over a rule, hairline rows (boxes.table: the widths, the head rule's
+// role, livery.css); centered in the body
 // (or its column), as the PDF centers its longtable and pptx spans the slide
 .reveal .slides section table {
   border-collapse: collapse;
@@ -294,11 +295,11 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
     text-transform: uppercase;
     letter-spacing: var(--engine-tracking);   // type.tracking, every small-caps run
     font-size: 0.8em;
-    border-bottom: 3px solid var(--engine-primary) !important;
+    border-bottom: var(--engine-boxes-table-head-rule) solid var(--engine-boxes-table-head-rule-color) !important;
     padding: 0.35em 0.8em;
   }
   td {
-    border-bottom: 1px solid var(--engine-table-rule) !important;
+    border-bottom: var(--engine-boxes-table-rule) solid var(--engine-table-rule) !important;
     padding: 0.3em 0.8em;
   }
   tbody tr:nth-child(even) { background: var(--engine-table-band); }

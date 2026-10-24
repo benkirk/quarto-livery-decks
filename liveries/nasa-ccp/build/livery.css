@@ -165,6 +165,8 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+  --engine-boxes-table-head-rule: 3px;
+  --engine-boxes-table-rule: 1px;
 }
 .reveal .slides section .engine-marking-banner {
   --engine-marking-x: 0px;
@@ -258,6 +260,7 @@ html:root {
 html .reveal .slides section ul > li::before { content: "●"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
+.reveal .slides section table { --engine-boxes-table-head-rule-color: var(--engine-primary-contrast); }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;
