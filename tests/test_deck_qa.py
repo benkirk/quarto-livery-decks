@@ -63,3 +63,54 @@ def test_a_gallery_caption_past_its_cell_fails(deck_qa, kind):
     assert fails == ['s1 "Six views": a gallery caption runs past its cell; shorten it']
     fails, _ = deck_qa.html_findings([{**slide, "galleryCapOver": False}])
     assert fails == []
+
+
+def test_pptx_scan_counts_slides_and_finds_markers(deck_qa, tmp_path):
+    """pptx_scan: the deck's slide count and the slides whose text still holds a grid marker
+    (`⟦engine:…⟧`, which a step left undrawn): the zip's slide parts alone, no python-pptx."""
+    import zipfile
+    sld = '<p:sld xmlns:p="x" xmlns:a="y"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>%s</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>'
+    with zipfile.ZipFile(tmp_path / "d.pptx", "w") as z:
+        z.writestr("ppt/slides/slide1.xml", sld % "Fine.")
+        z.writestr("ppt/slides/slide2.xml", sld % "⟦engine:lead⟧The headline⟦engine:end⟧")
+        z.writestr("ppt/slides/slide10.xml", sld % "Also fine.")
+        z.writestr("ppt/slideLayouts/slideLayout1.xml", sld % "⟦engine:not a slide⟧")
+    assert deck_qa.pptx_scan(str(tmp_path / "d")) == (3, [2])
+    assert deck_qa.pptx_scan(str(tmp_path / "missing")) == (None, [])
+
+
+# bullets beside the table (a .columns slide): three lines starting at one x, with wrapped
+# continuations hanging at another, each running past that hang: the shape of a bullet list
+BULLETS = [row(80, (20, 110, "• The first bullet, long")), row(86, (28, 100, "continued here")),
+           row(96, (20, 112, "• The second one, long")), row(102, (28, 98, "and its tail")),
+           row(112, (20, 108, "• The third bullet too")), row(118, (28, 104, "wrapping as well"))]
+SPAN = (120 / W, 240 / W)   # the table's box in the HTML, as a share of the width
+
+
+def test_bullets_beside_a_table_are_not_cells(deck_qa):
+    """The rule reads only the lines inside the table's span (MEASURE_JS's tableBox): a bullet
+    column beside the table, whose hanging lines start at an x of their own, is no table column."""
+    page = lines(CAPTION, HEADER, *ROWS, NOTE, *BULLETS)
+    assert deck_qa.table_overruns(page, W, H) != [], "the premise: unscoped, the bullets read as columns"
+    assert deck_qa.table_overruns(page, W, H, SPAN) == []
+    rows = list(ROWS)
+    rows[1] = row(88, (120, 180, "Casper-with-a-long-name DAV"), (228, 240, "36"))
+    out = deck_qa.table_overruns(lines(CAPTION, HEADER, *rows, NOTE, *BULLETS), W, H, SPAN)
+    assert out == [("runs into the next table column", repr("Casper-with-a-long-name DAV"))], "the table's own overrun still found"
+
+
+def test_indented_sub_rows_are_their_column(deck_qa):
+    """A hierarchy table indents its sub-rows a few points right of the first column's edge
+    (the fy27 deck's community portions): three of them are no column of their own, so the
+    parent rows, which run past that x, are not overruns; a row running into the real next
+    column still is."""
+    rows = [row(80, (120, 152, "University"), (160, 172, "HPC"), (232, 240, "37")),
+            row(88, (127, 160, "Large (CHAP)"), (160, 172, "HPC"), (232, 240, "90")),
+            row(96, (127, 158, "Small-scale"), (160, 172, "DAV"), (232, 240, "10")),
+            row(104, (120, 140, "NCAR"), (160, 172, "HPC"), (232, 240, "31")),
+            row(112, (127, 138, "NSC"), (160, 172, "HPC"), (232, 240, "60")),
+            row(120, (127, 140, "Labs"), (160, 172, "HPC"), (232, 240, "30"))]
+    note = row(130, (130, 232, "A note under the table, wider than its columns"))
+    assert deck_qa.table_overruns(lines(HEADER, *rows, note), W, H) == [], "the note under it is no cell either"
+    rows[3] = row(104, (120, 185, "NCAR-with-a-long-name HPC"), (232, 240, "31"))
+    assert deck_qa.table_overruns(lines(HEADER, *rows), W, H) == [("runs into the next table column", repr("NCAR-with-a-long-name HPC"))]

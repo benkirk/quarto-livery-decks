@@ -5,15 +5,20 @@ Reads the already-built <deck>.{html,pdf,pptx} and writes to _qa/:
   report.txt        everything below, per deck (also printed)
   usage.tsv         per HTML slide: kind, body use, fit, layout classes
   names.txt         plain-text names from qa-names.txt (one per line), if the file exists
-  <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png the same for the PDF
+  <deck>-html.png   contact sheet of every HTML slide; <deck>-pdf.png and <deck>-pptx.png the same
+                    for the PDF and the pptx (as LibreOffice draws it)
 Failures (exit 1): slide counts that differ between formats, PDF text past the right margin,
-into the footer band or overlapping other text, HTML content past the right edge, a {.full}
-caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), and a bare
+into the footer band, overlapping other text or running into the next table column (the table's own
+columns: the HTML says where the table is), HTML content past the right edge, a {.full}
+caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a grid
+marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), and a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
-Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
+Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank, and
+the pptx as LibreOffice draws it (pptx_pdf.py) through the PDF's edge, footer and overlap checks
+(QA_PPTX_FAIL=1 makes those failures; <deck>-pptx.png is its contact sheet).
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
 (`python -m playwright install chromium`, or set CHROME to a Chromium binary) and are skipped
-without it.
+without it, the pptx checks LibreOffice (soffice) and are skipped without it.
 """
 
 import argparse
@@ -82,6 +87,11 @@ MEASURE_JS = r"""
   const has = sel => kids.some(k => k.matches(sel) || k.querySelector(sel));
   const kind = has('table') ? 'table' : has('pre') ? 'code'
     : has('img, svg, .cell-output-display') ? 'figure' : has('.columns') ? 'columns' : 'text';
+  // the table's span across the slide (shares of the width): the PDF's column check reads only
+  // the lines inside it, so bullets beside the table in a .columns slide are not its columns
+  const tbl = kind === 'table' && s.querySelector('table');
+  const tableBox = tbl ? [(tbl.getBoundingClientRect().left - sr.left) / sr.width,
+                          (tbl.getBoundingClientRect().right - sr.left) / sr.width] : null;
   // a ::: note paragraph past one line (layout pixels: reveal's scaling leaves offsetHeight alone)
   const noteWrap = [...s.querySelectorAll('.engine-note p')].some(
     p => p.offsetHeight > 1.5 * parseFloat(getComputedStyle(p).lineHeight));
@@ -90,7 +100,7 @@ MEASURE_JS = r"""
           // the right edge: the padding, or on a {.wide} slide the wide margin the body widens to
           overRight: right > sr.width - (s.classList.contains('engine-wide')
             ? parseFloat(cs.getPropertyValue('--engine-wide-margin')) : parseFloat(cs.paddingRight)) + 16,  // inline-code padding overhangs
-          noteWrap, galleryCapOver};
+          noteWrap, galleryCapOver, tableBox};
 }
 """
 
@@ -163,15 +173,27 @@ def frames(pages):
     return out
 
 
-def table_overruns(lines, w, h):
+SPAN_PAD = 0.02   # of the width: the HTML table's span, widened before the PDF's lines are read against it
+INDENT = 0.02     # of the width: an edge this close to the right of a cell's own start is an indented
+                  # sub-row of its column (a hierarchy table's), not the next column
+
+
+def table_overruns(lines, w, h, span=None):
     """Lines crossing a column edge, where an edge is an x that three or more lines start at.
 
     pdftotext keeps each table cell a line of its own, and merges two touching cells into one,
     so a cell that overruns its column is a line spanning the next column's edge. Only a cell
     counts: a line that starts at a column edge itself (a merged cell starts at its own column's),
     or sits within the rows of the column it crosses. A table's caption above it, or a note
-    under it, is wider than its columns but neither."""
+    under it, is wider than its columns but neither, and an edge within INDENT of a cell's own
+    start is its column's indented sub-rows (a hierarchy table's), not a column it crosses.
+    `span` is the table's (left, right) as shares
+    of the width, the HTML's measure of the same slide: only the lines reaching into it are read,
+    so a bullet list beside the table (its hanging lines start at an x of their own) is no column."""
     body = [ln for ln in lines if ln[1] > h * 0.16]          # below the frame title
+    if span:
+        x0, x1 = (span[0] - SPAN_PAD) * w, (span[1] + SPAN_PAD) * w
+        body = [ln for ln in body if ln[2] > x0 and ln[0] < x1]
     starts = {}
     for ln in body:
         starts.setdefault(round(ln[0]), []).append(ln)
@@ -179,7 +201,8 @@ def table_overruns(lines, w, h):
     for a in body:
         in_column = len(starts[round(a[0])]) >= 3
         for x, col in starts.items():
-            if len(col) < 3 or not a[0] + 5 < x < a[2] - 1:
+            # an edge within INDENT of the line's own start is an indented sub-row of its column
+            if len(col) < 3 or not a[0] + max(5, INDENT * w) < x < a[2] - 1:
                 continue
             mid = (a[1] + a[3]) / 2
             if not in_column and not min(b[1] for b in col) <= mid <= max(b[3] for b in col):
@@ -227,7 +250,7 @@ def pdf_problems(w, h, words, lines, slide=None):
             if ho > 1.0 and vo > 0.5 * min(ha, hb):
                 out.append(("overlapping text", "%r/%r" % (a[4], b[4])))
     if slide and slide.get("kind") == "table":
-        out += table_overruns(lines, w, h)
+        out += table_overruns(lines, w, h, slide.get("tableBox"))
     return out
 
 
@@ -358,12 +381,60 @@ def html_findings(slides):
 
 # ------------------------------------------------------------------- pptx, names
 
-def pptx_count(deck):
+def check_pptx(deck, qa, slides, livery):
+    """The pptx as LibreOffice draws it (pptx_pdf.to_pdf), through the PDF checks but the table
+    rule (python-pptx's tables are not longtable's): text past the right margin, into the footer,
+    overlapping; a contact sheet <deck>-pptx.png. Hints, since LibreOffice applies no autofit and
+    substitutes the faces it lacks (a box it overflows PowerPoint may shrink); QA_PPTX_FAIL=1 makes
+    them failures. (lines, skipped-reason)."""
+    import pptx_pdf
     path = deck + ".pptx"
     if not os.path.exists(path):
-        return None
+        return [], None
+    d = os.path.join(qa, deck, "pptx")
+    os.makedirs(d, exist_ok=True)
+    for old in glob.glob(os.path.join(d, "*")):
+        os.remove(old)
+    pdf, why = pptx_pdf.to_pdf(path, livery, d)
+    if pdf is None:
+        return [], why
+    lines = []
+    for n, (w, h, words, text_lines) in enumerate(pdf_pages(pdf), 1):   # a slide a page: no overlays
+        slide = slides[n - 1] if n <= len(slides) else None
+        meta = {**slide, "kind": "pptx"} if slide and slide.get("level2") else None
+        found = {}
+        for kind, detail in pdf_problems(w, h, words, text_lines, meta):
+            found.setdefault(kind, []).append(detail)
+        for kind, details in found.items():
+            more = " (+%d more)" % (len(details) - 3) if len(details) > 3 else ""
+            lines.append("s%d: %s: %s%s" % (n, kind, ", ".join(details[:3]), more))
+    if shutil.which("pdftoppm"):
+        run(["pdftoppm", "-r", "80", "-png", pdf, os.path.join(d, "p")])
+        contact_sheet(sorted(glob.glob(os.path.join(d, "*.png"))), os.path.join(qa, deck + "-pptx.png"))
+    return lines, None
+
+
+MARKER = "⟦engine:"   # grid-pptx.lua's markers, which the pptx steps draw and delete
+
+
+def pptx_scan(deck):
+    """(the pptx's slide count, the slides still holding a grid marker), (None, []) without the
+    file. A marker left in a slide's text is an element the steps did not draw (a lead folded
+    into a figure's caption once reached PowerPoint as its literal text, #133): the steps warn,
+    and this makes it a failure."""
+    path = deck + ".pptx"
+    if not os.path.exists(path):
+        return None, []
+    count, left = 0, []
     with zipfile.ZipFile(path) as z:
-        return sum(1 for f in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", f))
+        for f in z.namelist():
+            m = re.fullmatch(r"ppt/slides/slide(\d+)\.xml", f)
+            if not m:
+                continue
+            count += 1
+            if MARKER in z.read(f).decode("utf-8"):
+                left.append(int(m.group(1)))
+    return count, sorted(left)
 
 
 def plain_names(names):
@@ -443,9 +514,12 @@ def main():
     os.makedirs(qa, exist_ok=True)
     global EDGE, WIDE_EDGE
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
+    sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
-    geom = livery_mod.load()["geometry"]
+    livery = livery_mod.load()
+    geom = livery["geometry"]
     EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
+    pptx_fail = os.environ.get("QA_PPTX_FAIL") == "1"
 
     html_res = check_html(args.decks, qa)
     report, usage, failed = [], ["deck\tslide\tkind\tuse\tfit\ttitle\tclasses"], False
@@ -461,7 +535,8 @@ def main():
         report += ["source " + h for h in tags]
         html_n, slides = html_res.get(deck, (None, []))
         pdf_n, pdf_lines = check_pdf(deck, qa, slides)
-        counts = {"pptx": pptx_count(deck), "pdf": pdf_n, "html": html_n}
+        pptx_n, markers = pptx_scan(deck)
+        counts = {"pptx": pptx_n, "pdf": pdf_n, "html": html_n}
         known = {k: v for k, v in counts.items() if v is not None}
         same = len(set(known.values())) <= 1
         failed |= not same
@@ -473,6 +548,18 @@ def main():
             title = titles.get(int(m.group(1))) if m else None
             report.append("PDF %s%s" % (line, ' ("%s")' % title if title else ""))
         failed |= any(line.startswith("p") for line in pdf_lines)
+        for n in markers:
+            report.append("pptx s%d: a grid marker left in the text (an element the steps did not draw; "
+                          "see their warnings)%s" % (n, ' ("%s")' % titles[n] if titles.get(n) else ""))
+        failed |= bool(markers)
+        pptx_lines, why = check_pptx(deck, qa, slides if same else [], livery)
+        if why:
+            report.append("pptx checks skipped: " + why)
+        for line in pptx_lines:
+            m = re.match(r"s(\d+)", line)
+            title = titles.get(int(m.group(1))) if m else None
+            report.append("%s pptx %s%s" % ("pptx" if pptx_fail else "hint", line, ' ("%s")' % title if title else ""))
+        failed |= pptx_fail and bool(pptx_lines)
         fails, hints = html_findings(slides)
         failed |= bool(fails)
         report += ["HTML " + f for f in fails] + ["hint " + h for h in hints]

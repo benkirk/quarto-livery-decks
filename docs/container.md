@@ -127,7 +127,9 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   `pr-95`), or `sha` for the image of your checkout's own commit. `DECKS_IMAGE` replaces the
   repository (a fork, or a local `make image` build), `DECKS_CONTAINER_IMAGE` the whole reference
   (a digest too), and `APPTAINER_SIF` runs a pulled SIF instead of converting `docker://` again.
-  The build prints the image it uses.
+  The build prints the image it uses, and checks it is there before the run: a release's image
+  appears when its tag is cut, so between a version bump and the tag the default is not pullable,
+  and the build then stops with the ways out (the month's newest tag, `latest`, or the native env).
 - **Per runtime**: Docker runs as your uid; Podman rootless, with SELinux labeling off for the
   run rather than relabeling your tree; Apptainer as you, with `--cleanenv`, so your profile's
   variables (a `TMPDIR`, a locale, a module's paths) stay outside. `FONTS_DIR=path` mounts

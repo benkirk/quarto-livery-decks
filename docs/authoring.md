@@ -67,6 +67,12 @@ deck-level list replaces the shared one, so keep `fonts=bundled` (from the share
 - `waves=false` removes the faint wave lines behind content slides of a
   livery that has them (they are on the pptx master too).
 
+**Conditional content is outside the engine's elements.** Quarto rewrites a
+`::: {.content-visible when-format="pptx"}` (or `.content-hidden`) div before the engine's filters
+run, into a wrapper with no classes of its own, so a `::: {.lead}` or `::: note` inside one is
+plain text to the engine, and a wrapper after a table or figure splits the pptx slide. Write the
+element once for every format; a format-specific variant of an element is not supported.
+
 **Slide kinds**, by a class on the heading (the quickstart deck shows each):
 
 - `## Title {.feature background-image="images/photo.jpg"}` makes a
@@ -187,6 +193,11 @@ Each trades local capacity against a share of the consortium system.
   notes: a lead makes the slide a card slide, and the table would split it. A card slide's
   `.caution` and `.vcenter` do not apply in pptx.
 - The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).
+
+A lead may also follow a figure or precede a table, and lands the same way in every format: under
+the picture (which yields room when the lead needs it) or over the table at the body's width, a
+`::: note` under the table. The sample deck shows both ("A lead under a figure", "A lead over a
+table").
 
 ## Quotes
 
@@ -541,15 +552,21 @@ class), or check it with `make qa`.
 - **Failures:**
   - slide counts that differ between pptx, PDF and HTML;
   - PDF text past the right margin, into the footer, overlapping other text, or running into
-    the next table column;
+    the next table column (the table's own columns: bullets or a plot beside it are not read);
   - HTML content past the right edge, a `{.full}` caption that wraps, and a `::: note`
     paragraph that wraps (each is one caption line);
+  - a pptx slide whose text still holds a grid marker (`⟦engine:…⟧`): an element the pptx steps
+    did not draw, which their warnings name;
   - a bare `<word>` in the sources, outside code and backticks: revealjs reads it as a tag
     (reported as `file:line`).
 - **Hints:**
   - short slides, with the share of the body they use;
   - `.smaller` without `.fill`;
-  - slides the HTML autofit had to shrink.
+  - slides the HTML autofit had to shrink;
+  - the pptx itself, as LibreOffice draws it, through the PDF's right-margin, footer and
+    overlap checks (`QA_PPTX_FAIL=1` makes them failures). LibreOffice applies no autofit and
+    substitutes the faces it lacks, so read these against `_qa/<deck>-pptx.png` before trimming
+    a slide.
 - **Plain names:** list names that belong in backticks in `qa-names.txt` (one per line) in
   the deck directory, and every plain-text use is reported.
 
@@ -564,8 +581,8 @@ shoots those slides in all three formats, measures every edge against its box an
 `_qa/measure.tsv` and a contact sheet, `_qa/compositions-<livery>.png`; `MEASURE_FAIL` names
 the formats whose misses fail the run.
 
-The checks need poppler, Pillow and Playwright, which are all in `conda-env.yaml`
-(`make measure` also LibreOffice, to shoot the pptx). `make conda-env` installs Playwright's
+The checks need poppler, Pillow and Playwright, which are all in `conda-env.yaml`, and the pptx
+checks (and `make measure`'s pptx shots) LibreOffice. `make conda-env` installs Playwright's
 headless Chromium; set `CHROME` to use another build. Without Playwright the HTML checks are
-skipped and the rest run. For Claude Code, the `deck-polish` skill (`.claude/skills/`)
+skipped, without LibreOffice the pptx ones, and the rest run. For Claude Code, the `deck-polish` skill (`.claude/skills/`)
 covers what to do with the findings.

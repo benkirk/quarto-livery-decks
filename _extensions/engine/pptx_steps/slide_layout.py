@@ -49,7 +49,7 @@ import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes, style_tables
 from .common import (BOXES, GEOM, K, LIVERY, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
-                     pads, para_text, ppr_place, rect, rpr, slide_title, take_marker)
+                     marker_spans, pads, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
 
 MARKER    = "engine-layout:"
@@ -101,6 +101,13 @@ def _table_height(table, other, biggest, pad=2 * style_tables.CELL_MAR):
             most = max(most, n)
         total += int(most * Pt(biggest / 100) * LINE + pad)
     return total
+
+
+def table_height(shape, slide):
+    """A table's measured height on its slide (_table_height at the slide's size): what a note
+    under it or a slide centering it reads, since the frame's own height is pandoc's nominal."""
+    other = other_size(slide)
+    return _table_height(shape.table, other, _biggest(shape.table, other))
 
 
 def _biggest(table, other):
@@ -182,24 +189,6 @@ def _note_parts(slide):
     return (texts[0], figs[0]) if len(texts) == 1 and len(figs) == 1 else None
 
 
-def _split_lines(tf):
-    """Each paragraph cut at its line breaks into paragraphs of their own (pandoc writes the
-    caption single-body.lua folded as one paragraph, its lines joined by a:br), so each line keeps
-    its own alignment: a footnote reads from the left under a centred note."""
-    for p in list(tf._txBody.iterchildren(qn("a:p"))):
-        ppr, cur = p.find(qn("a:pPr")), p
-        for el in list(p):
-            if el.tag == qn("a:br"):
-                new = etree.Element(qn("a:p"))
-                if ppr is not None:
-                    new.append(copy.deepcopy(ppr))
-                cur.addnext(new)
-                p.remove(el)
-                cur = new
-            elif cur is not p and el.tag != qn("a:pPr"):
-                cur.append(el)   # moves it, the end-of-paragraph properties too
-
-
 def note_style(slide):
     """note (a `::: note` single-body.lua folded into the caption box): each line a paragraph, the
     note's in the caption size and muted color, centred, as full_slide draws its caption; a
@@ -210,9 +199,10 @@ def note_style(slide):
     if parts is None:
         return False
     tf = parts[0].text_frame
-    _split_lines(tf)
-    for p in tf.paragraphs:
-        if style_footnotes.style(p):
+    split_br(tf._txBody)
+    spans = marker_spans(tf._txBody.findall(qn("a:p")))   # a lead folded in after the caption: grid.py's
+    for i, p in enumerate(tf.paragraphs):
+        if i in spans or style_footnotes.style(p):
             continue
         p.alignment = PP_ALIGN.CENTER
         for r in p.runs:
@@ -244,12 +234,9 @@ def note_place(slide):
     room on the slide shrinks (a table cannot, and the note then stays at the foot)."""
     caption, fig = _note_parts(slide)
     floor = caption.top + caption.height
-    tf = caption.text_frame
-    tf.vertical_anchor = MSO_ANCHOR.TOP
-    est = int(text_height(caption, slide) * SLACK)   # the slack keeps autofit idle, as caution_box
+    est = int(text_height(caption, slide) * SLACK)   # the room the note takes, as frame_note sets it
     if is_table(fig):
-        other = other_size(slide)
-        bottom = fig.top + _table_height(fig.table, other, _biggest(fig.table, other))
+        bottom = fig.top + table_height(fig, slide)
     else:
         bottom = fig.top + fig.height
         room = floor - est - NOTE_GAP
@@ -258,9 +245,18 @@ def note_place(slide):
             fig.width, fig.height = int(fig.width * k), room - fig.top
             fig.left = middle - fig.width // 2
             bottom = room
+    frame_note(caption, slide, caption.left, caption.width, bottom + NOTE_GAP, floor)
+
+
+def frame_note(note, slide, left, width, top, floor):
+    """The note's box at left for width, cut to its text, measured (the slack keeps autofit idle);
+    its top at `top`, or higher when the text would then pass `floor`. Returns its top."""
+    note.text_frame.vertical_anchor = MSO_ANCHOR.TOP
+    est = int(text_height(note, slide) * SLACK)
+    y = min(top, floor - est)
     # all four: a placeholder inherits its frame, and setting one leaves the rest at 0
-    caption.left, caption.top, caption.width, caption.height = (
-        caption.left, min(bottom + NOTE_GAP, floor - est), caption.width, est)
+    note.left, note.top, note.width, note.height = left, y, width, est
+    return y
 
 
 def hide_furniture(slide):
@@ -322,9 +318,10 @@ def use_layout(prs, slide, name):
             for cached in ("target_part", "target_ref"):   # python-pptx lazyproperties: drop the old layout's
                 rel.__dict__.pop(cached, None)
     for sh in slide.placeholders:
-        xfrm = sh._element.spPr.find(qn("a:xfrm"))
+        sppr = sh._element.find(qn("p:spPr"))   # a table's graphicFrame has none; its frame stays
+        xfrm = sppr.find(qn("a:xfrm")) if sppr is not None else None
         if xfrm is not None:
-            sh._element.spPr.remove(xfrm)
+            sppr.remove(xfrm)
     return True
 
 

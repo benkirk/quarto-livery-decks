@@ -455,7 +455,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `_*.qmd` fragments, `data/*`, `images/*` and deck-local `*.lua` filters, so editing any of
   them rebuilds all of them, and on the livery's files (`livery.py deps`: `build/`, the
   template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
-  rebuilds the decks. The `_livery` link is order-only (make stats a link's target, the
+  rebuilds the decks, and on the engine's sources (`ENGINE_FILES`: its Lua, Python, `.sty`,
+  `.scss`, `.js`, `.html`, `.theme`, `_extension.yml`, `pptx_steps/` and `mpl/`; the `_extensions` link's
+  target is a directory, whose mtime an edit inside never moves). The `_livery` link is order-only (make stats a link's target, the
   directory, which would look stale forever after a switch); the `.livery` stamp is the
   prerequisite, and holds the livery's directory, so a `LIVERY_DIR` switch under one name rebuilds too. The HTML recipe deletes `<deck>_files/libs/quarto-contrib/engine-revealjs-*`
   before rendering: that dependency is named for the engine version, and quarto keeps a
@@ -779,7 +781,9 @@ bit while building it:
 - **`chalkboard` blocks `embed-resources`**, and `-M chalkboard:false` does
   not override a format option; set it in the deck's `format:` block.
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
-  overflow and slide-count checks below. Load the `deck-polish` skill for a
+  overflow and slide-count checks below, fails a pptx slide still holding a grid marker, and runs
+  the pptx as LibreOffice draws it (`common/utils/pptx_pdf.py`, shared with `make measure`)
+  through the PDF's edge, footer and overlap checks as hints (`QA_PPTX_FAIL=1`: failures). Load the `deck-polish` skill for a
   format pass, `pr-review` to review a PR by number (`/pr-review N`), and
   `unplanned-city-sweep` after a run of merges or for one area of the tree (its ledger is
   `design/unplanned-city-ledger.md`).

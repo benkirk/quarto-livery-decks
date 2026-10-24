@@ -132,6 +132,10 @@ Per deck, `make pptx` runs:
 `make html` (revealjs) and `make pdf` (beamer) run step 1 with the engine's own format and
 filters, which draw everything step 2 adds to the pptx.
 
+Every output depends on the deck's fragments and the livery's files, and on the engine's own
+sources (its filters, themes, pptx steps and plot helper), so an edit to any of them rebuilds the
+decks; a consumer that pins the framework sees the rebuild when the pin moves.
+
 ## About the fonts
 
 Every livery bundles the fonts its HTML and PDF decks use (the brand's own when they are

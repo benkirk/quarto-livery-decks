@@ -44,6 +44,12 @@ QUOTES = ('## Quote\n\n::: {.quote role="accent"}\nThe purpose of computing\nis 
           '> In a plain column.\n\nAfter.\n:::\n::::\n')
 AGENDA = ('# One\n\n## Where we are {.agenda}\n\n# Two\n\n## Two body\n\nText.\n\n'
           '# Backup {.unnumbered}\n\n## Backup body\n\nText.\n')   # slides 15 to 20
+# a lead after a figure, as single-body.lua folds it into the figure's caption (pandoc: one centered
+# paragraph, a:br between the lines, the markers inline); a lead before a table (pandoc's Content with
+# Caption), the note folded into the table's caption, the notes line single-body.lua writes for it
+FOLDED = ('## Lead under a figure\n\n![⟦engine:lead⟧\\\n**The headline** of it\\\nA plain line.\\\n⟦engine:end⟧](p.jpg)\n\n'
+          '## Lead over a table\n\n::: {.lead}\n**The headline** of it\n:::\n\n| a | b | c | d |\n|---|---|---|---|\n| 1 | 2 | 3 | 4 |\n\n'
+          'Table: Millions of core-hours.\n\n::: notes\nengine-layout: note\n:::\n')   # slides 21 and 22
 MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::\n::: {.column}\n![](p.jpg)\n:::\n::::\n\n'
       '## Wide\n\n:::: {.columns}\n::: {.column}\nLeft\n:::\n::: {.column}\nRight\n:::\n::::\n' + WIDE + '\n'
       '## Wide text\n\nA paragraph.\n' + WIDE + '\n'
@@ -51,7 +57,7 @@ MD = ('## Split\n\n:::: {.columns}\n::: {.column width="55%"}\n- One\n- Two\n:::
       '## Lead\n\n::: {.lead}\n**The headline**\nA plain line under it.\n:::\n\n'
       ':::: {.columns}\n::: {.column}\nLLL\n:::\n::: {.column}\nMMM\n:::\n::::\n\n'
       '## Lead alone\n\n::: {.lead}\nOnly a lead.\n:::\n\n' + CARDS + '\n' + DEFAULTS + '\n'
-      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA)
+      '## Wide table\n\n| a | b | c |\n|---|---|---|\n| 1 | 2 | 3 |\n' + WIDE + '\n' + RAILS + '\n' + QUOTES + '\n' + AGENDA + '\n' + FOLDED)
 STEP = """
 import sys
 from pathlib import Path
@@ -155,9 +161,9 @@ def test_column_rules(deck):
     w = round(livery["boxes"]["columns"]["rule"] * prs.slide_height)
     counts = [sum(sh.name == "Column rule" for sh in s.shapes) for s in prs.slides]
     if w == 0:
-        assert counts == [0] * 21, f"rules under a livery without one: {counts}"
+        assert counts == [0] * 23, f"rules under a livery without one: {counts}"
         return
-    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
+    assert counts == [1, 1, 0, 2, 1, 0, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], f"rules per slide {counts}, want one per gap"
     slide = prs.slides[3]
     cols = sorted((sh for sh in slide.shapes if re.fullmatch(r"Column \d+", sh.name)), key=lambda sh: sh.name)
     for rule, (a, b) in zip(sorted((sh for sh in slide.shapes if sh.name == "Column rule"), key=lambda sh: sh.left), zip(cols, cols[1:])):
@@ -186,6 +192,45 @@ def test_lead(deck):
     by = {sh.name: sh for sh in flat(prs.slides[4].shapes)}
     assert by["Column 1"].top >= by["Lead fill"].top + by["Lead fill"].height, "the columns under the lead"
     assert not body_placeholders(prs.slides[4]), "the emptied placeholder left"
+
+
+def test_lead_under_a_figure(deck):
+    """A lead after a figure reaches the pptx as the figure's caption (single-body.lua's fold): one
+    centered paragraph, its lines parted by a:br, the markers inline. The step parts the lines, drops
+    the fold's centering, and draws the lead under the picture: its group, its lines a paragraph each,
+    left-aligned, the box starting below the picture; no marker left, no 'markers left' warning."""
+    from pptx.enum.text import PP_ALIGN
+    livery, prs, _ = deck
+    slide = prs.slides[21]
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert {"Lead", "Lead fill", "Lead bar", "Lead text"} <= set(by), sorted(by)
+    pic = next(sh for sh in slide.shapes if sh.shape_type == 13)
+    assert by["Lead fill"].top >= pic.top + pic.height, "the lead under the picture"
+    paras = by["Lead text"].text_frame.paragraphs
+    assert [p.text for p in paras] == ["The headline of it", "A plain line."], "a caption line a paragraph"
+    assert all(p.alignment in (None, PP_ALIGN.LEFT) for p in paras), "the fold's centering dropped"
+    assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_lead_over_a_table(deck):
+    """A lead before a table: pandoc lays the slide out on Content with Caption, the lead in the
+    half-width side box beside the table. The step moves the slide onto Title and Content, draws
+    the lead at the body's width, fits the table under it at that width, and anchors the note (the
+    table's caption, pandoc's) at the body's foot under the table; no marker, no notes line left."""
+    livery, prs, _ = deck
+    slide = prs.slides[22]
+    assert slide.slide_layout.name == "Title and Content", slide.slide_layout.name
+    by = {sh.name: sh for sh in flat(slide.shapes)}
+    assert {"Lead", "Lead fill", "Lead text"} <= set(by), sorted(by)
+    table = next(sh for sh in slide.shapes if sh.has_table)
+    fill = by["Lead fill"]
+    assert abs(table.left - fill.left) <= 1 and abs(table.width - fill.width) <= 1, "the table as wide as the lead (the body)"
+    assert table.top >= fill.top + fill.height, "the table under the lead"
+    note = next(sh for sh in slide.shapes if sh.has_text_frame and "core-hours" in sh.text_frame.text)
+    assert note.top >= table.top + table.height, "the note under the table"
+    assert note.top + note.height <= round(livery["geometry"]["body-bottom"] * prs.slide_height) + 1, "the note inside the body"
+    assert "⟦" not in slide._element.xml, "a marker left"
+    assert "engine-layout" not in slide.notes_slide.notes_text_frame.text, "the notes line left"
 
 
 def test_cards(deck):

@@ -82,11 +82,19 @@ local function is_notes(b)
   return b.t == "Div" and has_class(b, "notes")
 end
 
--- A slide's body and its speaker notes, each in their order.
+-- What rides with the notes: the speaker notes, Quarto's vault (`.hidden`), and the
+-- `quarto-auto-generated-content` div (its footer and logo) Quarto appends to a revealjs document,
+-- which lands in the last slide's blocks and is moved out of the slide afterwards. A walker that
+-- validates a slide's body (split_full, agenda_notes, the feature slide) never refuses one of these.
+local function is_aside(b)
+  return b.t == "Div" and (has_class(b, "notes") or has_class(b, "hidden") or has_class(b, "quarto-auto-generated-content"))
+end
+
+-- A slide's body and its speaker notes (the asides with them), each in their order.
 local function split_notes(blocks)
   local body, notes = pandoc.Blocks({}), pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    if is_notes(b) then notes:insert(b) else body:insert(b) end
+    if is_aside(b) then notes:insert(b) else body:insert(b) end
   end
   return body, notes
 end
@@ -397,13 +405,13 @@ local function is_note(blk)
   return blk.t == "Div" and has_class(blk, "note")
 end
 
--- A .full slide's blocks as (figure, caption paragraphs, the notes and hidden divs), or nil when the
--- body holds anything else; a ::: note after the figure is caption. The figure may be a .gallery div
+-- A .full slide's blocks as (figure, caption paragraphs, the asides), or nil when the body holds
+-- anything else; a ::: note after the figure is caption. The figure may be a .gallery div
 -- (is_gallery(); its cells fill the slide).
 local function split_full(blocks)
   local fig, caption, rest = nil, pandoc.Blocks({}), pandoc.Blocks({})
   for _, b in ipairs(blocks) do
-    if b.t == "Div" and (has_class(b, "notes") or has_class(b, "hidden")) then
+    if is_aside(b) then
       rest:insert(b)
     elseif not fig and (is_figure(b) or (b.t == "Div" and has_class(b, "gallery"))) then   -- a gallery fills the slide too
       fig = b
@@ -475,12 +483,12 @@ local function is_agenda(blk, level)
   return blk.t == "Header" and blk.level == level and has_class(blk, "agenda")
 end
 
--- An agenda slide's body (its blocks up to the next slide): the speaker notes kept, anything else
--- warned of and dropped (the engine writes the body). Returns the notes.
+-- An agenda slide's body (its blocks up to the next slide): the speaker notes (and the other asides)
+-- kept, anything else warned of and dropped (the engine writes the body). Returns the notes.
 local function agenda_notes(body, who, title)
   local notes = pandoc.Blocks({})
   for _, b in ipairs(body) do
-    if is_notes(b) then
+    if is_aside(b) then
       notes:insert(b)
     else
       warn(who .. ": the agenda slide \"" .. title .. "\" has a body of its own; the engine writes it, so it is dropped")
@@ -980,7 +988,7 @@ return {
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, holds_shape = holds_shape, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
-  slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, split_notes = split_notes,
+  slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, is_aside = is_aside, split_notes = split_notes,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,

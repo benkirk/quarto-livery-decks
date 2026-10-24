@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 import livery_build as lb
+from conftest import ENGINE, ROOT
 
 C = lb.livery_charts
 
@@ -170,7 +171,40 @@ def test_mplstyle(livery: Path):
     assert rc["text.color"].upper() == ch["chrome"][ch["mode"]]["text"], f"{d.name}: mplstyle text color"
     assert rc["savefig.transparent"] is True and rc["svg.fonttype"] == "path", f"{d.name}: mplstyle not transparent or svg text"
     family = L["typography"].get("base")
-    assert rc["font.sans-serif"][:2] == [family, "DejaVu Sans"], f"{d.name}: mplstyle family {rc['font.sans-serif']}"
+    # the family list itself names the fallback: matplotlib builds its per-glyph chain from
+    # font.family alone, so a generic `sans-serif` there resolves to the base face and a glyph it
+    # lacks (′, →) draws as a box (#133)
+    assert rc["font.family"] == ([family, "DejaVu Sans"] if family else ["DejaVu Sans"]), f"{d.name}: mplstyle family {rc['font.family']}"
+    assert rc["font.sans-serif"][:2] == [family, "DejaVu Sans"], f"{d.name}: mplstyle sans-serif {rc['font.sans-serif']}"
     names = [n for n, _ in C.custom_colors(ch)]
     assert len(names) <= C.SLOTS and all(n.startswith(f"Data {i} · ") for i, n in enumerate(names, 1)), \
         f"{d.name}: custom colors {names}"
+
+
+GLYPHS = r"""
+import logging, sys
+import matplotlib
+matplotlib.use("Agg")
+logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
+import livery_mpl
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(2, 1))
+ax.text(0.1, 0.5, "5′ → 2″ ≤ 3")   # the prime, the arrow: not in Poppins; DejaVu Sans has them
+fig.savefig(sys.argv[1])
+"""
+
+
+def test_missing_glyphs_fall_back(tmp_path):
+    """A character the base face lacks is drawn from DejaVu Sans, not as a box: matplotlib logs
+    "Glyph … missing from font(s)" when it cannot, and the plot under the ncar style logs nothing.
+    A subprocess with its own MPLCONFIGDIR (the font cache), the style and the livery as Make.common
+    passes them."""
+    import os
+    import subprocess
+    import sys
+    d = ROOT / "liveries" / "ncar"
+    env = {**os.environ, "MPLCONFIGDIR": str(tmp_path / "mpl"), "LIVERY_DIR": str(d),
+           "MATPLOTLIBRC": str(d / "build" / "livery.mplstyle"), "PYTHONPATH": str(ENGINE / "mpl")}
+    r = subprocess.run([sys.executable, "-c", GLYPHS, str(tmp_path / "g.png")], env=env, capture_output=True, text=True, check=True)
+    assert "missing from font" not in r.stderr, r.stderr
+    assert (tmp_path / "g.png").stat().st_size > 0
