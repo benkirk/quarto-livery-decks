@@ -196,6 +196,9 @@ def em(v, pt=BODY_PT):
     return Emu(round(v * pt * 12700))
 
 
+CELL_MAR = em(0.4, livery_mod.type_pt(LIVERY, "table"))   # a table cell's top and bottom margin: HTML's 0.3em padding, its line height
+
+
 def pads(box, key="pad"):
     """A box's pads, (vertical, horizontal) in EMU: its em times the body type."""
     v, h = BOXES[box][key]

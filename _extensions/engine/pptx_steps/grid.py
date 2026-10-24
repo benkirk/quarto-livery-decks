@@ -54,8 +54,8 @@ from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
                      inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title,
                      space_before, split_br, style_runs)
-from .slide_layout import NOTE_GAP, frame_note, note_style, table_height, use_layout
-from .measure import text_height
+from .slide_layout import NOTE_GAP, frame_note, note_style, use_layout
+from .measure import table_height, text_height
 
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)

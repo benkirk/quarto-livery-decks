@@ -48,10 +48,10 @@ from pptx.util import Emu, Pt
 import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
-from . import docprops, measure, style_footnotes, style_tables
+from . import docprops, measure, style_footnotes
 from .common import (BAND, BOXES, GEOM, K, LIVERY, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
                      marker_spans, on_dark, pads, palette, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
-from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, text_height
+from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, table_height, text_height
 
 MARKER    = "engine-layout:"
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
@@ -80,39 +80,6 @@ def _scale_paragraphs(paragraphs, scale, size_at):
         for r in p._p.iter(qn("a:rPr"), qn("a:endParaRPr")):
             sz = int(r.get("sz")) if r.get("sz") else base
             r.set("sz", str(round(livery_mod.half_pt(sz * scale / 100) * 100)))   # to the half point
-
-
-def _table_height(table, other, biggest, pad=2 * style_tables.CELL_MAR):
-    """A table's height: each row as tall as its cell of most lines, measured in the livery's base
-    face in its column's width (less the cell's margins), at the table's biggest size, plus pad a
-    row: the cell's top and bottom margins as style_tables sets them (it runs after this step, so
-    the cells still carry PowerPoint's defaults here)."""
-    widths = [col.width for col in table.columns]
-    total = 0
-    for row in table.rows:
-        most = 1
-        for cell, w in zip(row.cells, widths):
-            tf = cell.text_frame
-            inner = w - cell.margin_left - cell.margin_right
-            n = 0
-            for p in tf.paragraphs:
-                sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
-                n += para_lines(p, measure.BODY, Pt(sz / 100), inner)
-            most = max(most, n)
-        total += int(most * Pt(biggest / 100) * LINE + pad)
-    return total
-
-
-def table_height(shape, slide):
-    """A table's measured height on its slide (_table_height at the slide's size): what a note
-    under it or a slide centering it reads, since the frame's own height is pandoc's nominal."""
-    other = other_size(slide)
-    return _table_height(shape.table, other, _biggest(shape.table, other))
-
-
-def _biggest(table, other):
-    """The size (hundredths of a point) of a table's biggest run, at least other."""
-    return max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
 
 
 def caution_box(slide, shape, vcenter):
@@ -160,7 +127,6 @@ def lay_out(slide, words, width):
         elif is_table(shape):
             other = other_size(slide)
             rows = list(shape.table.rows)
-            biggest = other
             for row in rows:
                 for cell in row.cells:
                     tf = cell.text_frame
@@ -168,11 +134,8 @@ def lay_out(slide, words, width):
                         for r in tf._txBody.iter(qn("a:r")):
                             rpr(r)
                         _scale_paragraphs(tf.paragraphs, scale, lambda lvl: other)
-                    for r in tf._txBody.iter(qn("a:rPr")):
-                        if r.get("sz"):
-                            biggest = max(biggest, int(r.get("sz")))
             if vcenter and rows:
-                est = _table_height(shape.table, other, biggest)
+                est = table_height(shape, slide)
                 if est < shape.height:
                     shape.top = shape.top + (shape.height - est) // 2
                     shape.height = est

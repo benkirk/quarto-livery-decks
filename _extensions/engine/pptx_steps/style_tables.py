@@ -15,9 +15,7 @@ from pathlib import Path
 from lxml import etree
 from pptx.oxml.ns import qn
 
-import livery as livery_mod
-
-from .common import DARK_INK, LIGHT_INK, LIVERY, em, is_table, on_dark, palette, rpr
+from .common import CELL_MAR, DARK_INK, LIGHT_INK, LIVERY, is_table, on_dark, palette, rpr
 from .measure import PX, other_size   # EMU per revealjs px (1600 px wide)
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
@@ -25,7 +23,6 @@ HEAD_RULE   = 3 * PX                   # 3px solid var(--engine-primary)
 ROW_RULE    = 1 * PX                   # the table-rule blend, mix(foreground, surface, 20%)
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = LIVERY["type"]["tracking"]   # the small caps' letter spacing, em (type.tracking, every format)
-CELL_MAR    = em(0.4, livery_mod.type_pt(LIVERY, "table"))   # EMU: HTML's 0.3em padding, its line height
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
 
 
