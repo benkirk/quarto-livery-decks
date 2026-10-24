@@ -158,6 +158,34 @@ rescan to the first call.
 - The CHANGELOG under Plots; `decks/plots/README.md` and `design/charts-and-plots.md` section 6
   gain the file.
 
+### 3.6 As built (2026-10-24)
+
+What the implementation learned, where it departs from 3.2 to 3.5:
+- **Datablocks, not string macros.** gnuplot's `@` expansion cuts a long string off silently
+  (about a thousand characters; a palette alone is more), so each mode's commands are a datablock
+  `$livery_<mode>` that the short macro `livery_<mode>` replays line by line (`eval`), and
+  `@livery_div` picks the mode's diverging datablock. A line's macros expand before any of it
+  runs, so `@...` goes on a line of its own (a `load ...; @livery_dark` line read the macro before
+  the file defined it).
+- **Sizes by role**, as the mplstyle's: labels and the title `body`, tics and the key
+  `levels[2]`, the terminal's font `caption`. cairo's text is pango's at 96 dpi, so the runner's
+  terminal is `fontscale 0.75` (then a 10 pt tick measures 10 pt beside matplotlib's), and `lw 1`
+  is half a point at `linewidth 1` (`GP_LW`). The color box's border and the grid are line
+  styles 101 and 102 (`set colorbox border` takes a style; `set grid` drew `lt 0`, dotted).
+- **The palette** is the ramp's steps mixed in OKLab, eight points between two steps
+  (`GP_STEPS`), so gnuplot's RGB interpolation reads as `livery_mpl`'s map.
+- **The runner** imports `livery_mpl` (the plots deck loads matplotlib anyway) and loads the
+  livery's `livery.gp` by its path, so `livery_mpl.use()` picks gnuplot's livery too; it returns a
+  `Plot` whose `_repr_mimebundle_` is the PDF or the SVG (the cell's last line, as
+  `IPython.display.SVG`). Homebrew's pango draws through CoreText, which ignores fontconfig: the
+  runner sets `PANGOCAIRO_BACKEND=fc` beside `FONTCONFIG_FILE` (a bundled face fell back to
+  Helvetica without it). The fontconfig file includes gnuplot's own prefix's configuration
+  (Homebrew's `etc/fonts`), else the system's.
+- **The charts bundle** carries `livery.gp` and `livery_gp.py` (Ben's pick); the pip package does
+  not (yet).
+- The dark slide's field is `with image` over `'++'`: `pm3d` left seams between its quadrangles
+  in the browser, and `set view map` dropped the 2-D axes' labels.
+
 ## 4. R
 
 ### 4.1 A derived image, `-r`
@@ -239,7 +267,7 @@ value a `livery.json` key:
 
 ## 6. Steps
 
-**gnuplot, one PR** (the issue's list):
+**gnuplot, one PR** (the issue's list; done in #155, 2026-10-24, with the departures in 3.6):
 1. `gnuplot-nox` in `Dockerfile` step 1; `smoke-test.sh` asserts `gnuplot --version`.
 2. `emit_gp()` and `outputs()`, the `deps` list, docstrings, CLAUDE.md; `livery build` for every
    livery (the generated files are committed, `--check` in CI).

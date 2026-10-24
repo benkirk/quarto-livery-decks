@@ -15,7 +15,7 @@ history (#57; `git log --follow` reaches back through it); it generalizes
 `benkirk/NCAR_beamer_template`, which is untouched and no longer cherry-picked from (port a fix
 by hand). Each brand is a **livery** directory under `liveries/` (`ncar`, `ucar`,
 `ucp`, `ncarucar`, `cu`, `nsi`, `nasa`, `nasa-dark`, `nasa-jsc-eg`, `nasa-ccp`), built by
-`livery build` into `build/livery.{json,sty,css,theme,mplstyle}`. `livery.yml` starts with `schema: 1` and is
+`livery build` into `build/livery.{json,sty,css,theme,mplstyle,gp}`. `livery.yml` starts with `schema: 1` and is
 validated against `_extensions/engine/livery.schema.json` (`livery_schema.py`; an unknown key or an
 out-of-range value fails the build with its path); `liveries/REFERENCE.md` is generated from the
 schema (`livery schema --doc`; `tests/test_schema.py` holds it current). A key is renamed only with Ben's
@@ -107,7 +107,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `activate.d` scripts export `QUARTO_DENO`, `QUARTO_PANDOC`, etc.; merely
   putting `conda-env/bin` on `PATH` fails with a missing-deno error.
 - **Container**: `ghcr.io/benkirk/quarto-livery-decks` (root `Dockerfile`; `make image` builds it
-  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, `docs/container.md`) carries the conda env, apt TeX Live, LibreOffice, a broad font set and ONE Playwright
+  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, `docs/container.md`) carries the conda env, apt TeX Live, LibreOffice, gnuplot (`gnuplot-nox`), a broad font set and ONE Playwright
   headless Chromium that both Quarto (`QUARTO_CHROMIUM`) and `make qa` (`CHROME`) use, at
   `/opt/pw-browsers/headless_shell`; the framework is at `/opt/quarto-livery-decks`. The activation
   is baked as Dockerfile `ENV` and asserted against conda-forge's `activate.d/quarto.sh` at build
@@ -442,6 +442,15 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   read from `_extension.yml`, no sdist; decks/plots/README.md "Outside the decks") and configured
   by `livery_mpl.use("<name>-charts.zip")`, unpacked once into `$XDG_CACHE_HOME/livery_mpl/`; CI's
   latex job installs it into a clean venv and plots from a bundle.
+  **gnuplot** (`design/plots-gnuplot-and-r.md` section 3): `build/livery.gp` (`emit_gp()`: the
+  mplstyle's numbers as gnuplot commands, each mode a datablock `$livery_<mode>` replayed by the
+  macro `@livery_<mode>`, since `@` expansion cuts a long string off silently; a line's macros
+  expand before it runs, so `@...` on a line of its own), `Make.common` exports `GNUPLOT_LIB`, and
+  `mpl/livery_gp.py`'s `plot(script, kind, height, dark)` (over `livery_mpl`'s reader) renders
+  `pdfcairo` at `fontscale 0.75` (pango's 96 dpi) and returns a `Plot`: the PDF under `pdf`, else
+  `pdftocairo -svg` (glyphs as paths); gnuplot runs with a fontconfig file naming the livery's
+  fonts and `PANGOCAIRO_BACKEND=fc` (Homebrew's pango otherwise uses CoreText). The charts bundle
+  carries both files; the pip wheel does not.
 - **Marks and numbers** are livery parameters (`geometry.marks.<corner>`,
   `geometry.pagenumber.corner`; defaults are NCAR's layout) that the three themes
   and `livery_template.py` all honor. A content slide wears one mark per corner, any of the four,

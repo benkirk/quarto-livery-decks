@@ -29,6 +29,22 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `boxes.card.fill` defaults to `surface` (was `background`); set `card: {fill: background}` for
   the white card. New `boxes.card.tint`, the card's role's share in its body over the fill: `card:
   {fill: background, tint: 0.09}` washes each card in its head's color. Rebuild (`livery build`).
+- `livery build` also writes `build/livery.gp` (gnuplot's style): commit it with the rest of
+  `build/` (`livery build --check` holds it current).
+
+### Plots
+
+- gnuplot in the livery: `import livery_gp`, then `livery_gp.plot("""...""")` (the cell's last line)
+  draws a gnuplot script in the livery's chart colors, font and slide type sizes, at
+  `livery_mpl.figsize()` (`kind="half"`, `height=`), the text as outlines: PDF in the PDF deck,
+  SVG in pptx and HTML. `dark=True` for a `{.brand-dark}` slide; `@livery_div` for the diverging
+  palette; `livery_muted`, `livery_good` ... as colors (`decks/plots/README.md` "gnuplot"). The
+  plots deck has a gnuplot slide and a dark one.
+- Each livery's `build/livery.gp` is gnuplot's style (the categorical slots as linetypes, the
+  chrome, the default map as the palette), and `Make.common` exports `GNUPLOT_LIB`, so a plain
+  gnuplot script can `load 'livery.gp'`. The charts bundle carries `livery.gp` and `livery_gp.py`.
+- The image has gnuplot (`gnuplot-nox`). Natively: `brew install gnuplot`, or your distribution's
+  `gnuplot-nox`.
 
 ## [26.10.12] - 2026-10-24
 
