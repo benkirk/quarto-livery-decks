@@ -182,6 +182,12 @@ local function take_layout(blk, who)
   end
   if not found then return nil end
   blk.classes = kept
+  if dark and (kept:includes("full") or kept:includes("feature")) then   -- the picture fills it: every format alike
+    local name = pandoc.utils.stringify(blk.content)   -- a .full frame's title is gone in beamer by now
+    warn(who .. ": {.brand-dark} on the {." .. (kept:includes("full") and "full" or "feature") .. "} slide "
+      .. (name ~= "" and ("\"" .. name .. "\"") or ("#" .. blk.identifier)) .. " is ignored")
+    dark = false
+  end
   return { h = h, v = v, fill = fill, caution = caution, wide = wide, dark = dark, scale = scale }
 end
 

@@ -38,6 +38,16 @@ def test_take_layout_dark(tmp_path):
     assert not warnings
 
 
+def test_take_layout_dark_ignored(tmp_path):
+    """A .full or .feature slide ignores .brand-dark in every format (the picture fills it): not
+    dark, the class taken off, one warning each."""
+    out, warnings = lua_common(tmp_path, HARNESS, "## F {.full .brand-dark}\n\n## P {.feature .brand-dark}\n")
+    got = [json.loads(x) for x in out.splitlines()]
+    assert got == [{"dark": False, "classes": ["full"]}, {"dark": False, "classes": ["feature"]}], got
+    assert warnings == ['t: {.brand-dark} on the {.full} slide "F" is ignored',
+                        't: {.brand-dark} on the {.feature} slide "P" is ignored'], warnings
+
+
 def test_css_swaps_on_a_light_livery():
     """ncar: on .engine-dark the text's roles take their dark values (on-dark, dark-muted, secondary,
     the dark table blends), reveal's text colors and the hairline with them; a card, lead, strip,
