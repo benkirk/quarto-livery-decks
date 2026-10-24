@@ -1,9 +1,10 @@
-"""Pack one livery's plot style into a charts bundle, for matplotlib outside the decks.
+"""Pack one livery's plot style into a charts bundle, for matplotlib and gnuplot outside the decks.
 
     livery zip --charts <livery dir> -o <zip>
 
-The zip holds, at its top: livery_mpl.py (the engine's helper), build/livery.mplstyle and
-build/livery.json as livery.mplstyle and livery.json (its font paths rewritten to fonts/), every
+The zip holds, at its top: livery_mpl.py and livery_gp.py (the engine's helpers),
+build/livery.mplstyle, build/livery.gp and build/livery.json as livery.mplstyle, livery.gp and
+livery.json (its font paths rewritten to fonts/), every
 font file the livery names (a flavor's parent's too) with the licenses beside them in their
 directories, the chart colors' contact sheet (charts-<name>.png, livery_charts.swatch(); needs
 Pillow) and a README. Unzipped anywhere, `import livery_mpl` in a script beside it (or with the
@@ -47,6 +48,13 @@ Keep this directory beside your script, or put it on PYTHONPATH. Without the hel
 - colormaps: livery (sequential), livery_div (diverging), livery_seq_<ramp>, each with _dark
 - with livery_mpl.dark(): the dark chrome and colors, for a dark slide or page
 - livery_mpl.use(path): another livery (a directory, another bundle, or a bundle's zip)
+- gnuplot: `livery_gp.plot("plot sin(x)")` draws a script in the livery (PDF, or SVG with the text
+  as outlines; needs gnuplot and poppler's pdftocairo); a plain gnuplot script sets a cairo
+  terminal (`set terminal pdfcairo fontscale 0.75 linewidth 1`, which makes its sizes points),
+  then `load 'livery.gp'`: the categorical colors as linetypes, the chrome, the default map as
+  the palette, `@livery_dark` for a dark slide, `@livery_div` the diverging palette (each on a
+  line of its own); its font is found by name (install the fonts/, or on a Mac run gnuplot with
+  PANGOCAIRO_BACKEND=fc and a FONTCONFIG_FILE naming fonts/, as livery_gp.py does)
 - pip: `pip install "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v{engine}#subdirectory=_extensions/engine/mpl"`
   installs the helper alone; then `livery_mpl.use("{name}-charts.zip")` loads this bundle as it is
 - fonts/: the livery's fonts and their licenses
@@ -78,7 +86,9 @@ def bundle(livery_dir: Path) -> dict[str, bytes | Path]:
     data.pop("dir", None)
     out["livery.json"] = (json.dumps(data, indent=2, sort_keys=True) + "\n").encode()
     out["livery.mplstyle"] = d / "build" / "livery.mplstyle"
+    out["livery.gp"] = d / "build" / "livery.gp"
     out["livery_mpl.py"] = ENGINE / "mpl" / "livery_mpl.py"
+    out["livery_gp.py"] = ENGINE / "mpl" / "livery_gp.py"
     ch, ty = data["charts"], data["type"]
     out["README.md"] = README.format(
         name=name, engine=data["engine"], schema=data["schema"], mode=ch["mode"], full_w=ch["figsize"]["full"][0], full_h=ch["figsize"]["full"][1],
