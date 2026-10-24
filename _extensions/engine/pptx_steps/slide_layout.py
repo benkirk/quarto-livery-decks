@@ -49,11 +49,10 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes
-from .common import (BAND, BOXES, GEOM, K, LIVERY, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
+from .common import (BAND, BOXES, GEOM, K, LAYOUT_KEY, LIVERY, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
                      marker_spans, on_dark, pads, palette, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, table_height, text_height
 
-MARKER    = "engine-layout:"
 FULL_PAD   = LIVERY["geometry"]["full"]["pad"]       # full: margin round the figure (of the width),
 FULL_FLOOR = LIVERY["geometry"]["full"]["footline"]  # the footline (slide number) and the caption
 FULL_CAP   = LIVERY["geometry"]["full"]["caption"]   # line (of the height), as the themes draw them
@@ -721,7 +720,7 @@ def run(prs, path: Path) -> None:
             done += 1
         else:
             print(f"slide_layout: WARNING: titlegraphic {graphic} not found", file=sys.stderr)
-    markers = [take_marker(slide, MARKER) for slide in prs.slides]
+    markers = [take_marker(slide, LAYOUT_KEY) for slide in prs.slides]
     for slide, words in zip(prs.slides, markers):   # before numbering: the number is the new layout's
         if words and "closing" in words:
             if use_layout(prs, slide, "Closing (light)" if light else "Closing"):
