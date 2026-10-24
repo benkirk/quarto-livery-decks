@@ -24,10 +24,16 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
   `⟦engine:big⟧`; a `.strip` (in a card or on its own) is `⟦engine:strip role=accent⟧` ...
   `⟦engine:end⟧`; a quote (`::: {.quote}` or a bare `>`, on its own, in a column or in a card) is
   `⟦engine:quote role=r⟧` (role= only when it names one), its lines, an attribution paragraph led by
-  `⟦engine:attribution⟧`, `⟦engine:end⟧`. First-cut limit: a picture or table in a flattened column is not
-  drawn as part of it; it stays in the flow, where pandoc splits the slide, and this warns. So a
-  two-column slide holding a quote beside a picture or table stays pandoc's (is_grid() false), its
-  quote pandoc's own blockquote, warned of.
+  `⟦engine:attribution⟧`, `⟦engine:end⟧`. A picture in a flattened column or card (engine-common.lua's
+  cell_figure(): a figure, an image paragraph, an executed cell's plot) is `⟦engine:picture
+  src=<path>⟧` (percent-encoded as a gallery item's; ` size=<width>` when the author sized it), its
+  caption a paragraph, `⟦engine:end⟧`, for pptx_steps/figures.py to draw at the column's width. An
+  executed cell's plot or a baked diagram (a src under `figure-*/` or `*_files/`) is gone from disk
+  when the pptx steps run, so its bytes ride in the marker as ` data=<base64>`, at most
+  PICTURE_MAX; past that, unreadable or inside a link, the picture stays in the flow, where pandoc
+  splits the slide, warned of, as does any other picture or table there. A two-column slide holding
+  a quote beside a picture or table stays pandoc's (is_grid() false), its quote pandoc's own
+  blockquote, warned of.
 - Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
   (kind=timeline; `start=4` when the ordered list begins past 1: the badges count from it), per
   item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done milestone), its title
@@ -87,6 +93,10 @@ local function encode(src)
     :gsub("⟦", "%%E2%%9F%%A6"):gsub("⟧", "%%E2%%9F%%A7"))
 end
 
+-- the bytes a picture marker carries at most: its base64 (4/3 of them) stays under the 10 MB a text
+-- node may hold in lxml's parser, which python-pptx opens the deck with
+local PICTURE_MAX = 6 * 1024 * 1024
+
 local function share(v)
   return (string.format("%.4f", v):gsub("0+$", ""):gsub("%.$", ""))
 end
@@ -117,11 +127,42 @@ local function quote_marks(q)
   return pandoc.Div(out, pandoc.Attr("", { "engine-quote-marks" }))
 end
 
+-- a picture's marks (C.cell_figure()'s fig): `⟦engine:picture src=..[ data=..][ size=..]⟧`, its
+-- caption, `⟦engine:end⟧`; nil when its bytes must ride along and cannot (warned of)
+local function picture_marks(fig, title)
+  local attrs = "picture src=" .. encode(fig.src)
+  if fig.src:match("figure%-[%w%-]+/") or fig.src:match("_files/") then   -- gone from disk by the pptx steps
+    local path = fig.src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)
+    if not path:match("^/") then path = pandoc.path.join({ pandoc.system.get_working_directory(), path }) end
+    local f = io.open(path, "rb")
+    local data = f and f:read("a")
+    if f then f:close() end
+    if not data then
+      warn(title, fig.src .. " cannot be read; the picture is not drawn in its column, left in the flow")
+      return nil
+    end
+    if #data > PICTURE_MAX then
+      warn(title, string.format("%s is %.1f MB, more than a column's picture carries (%d MB); left in the flow",
+        fig.src, #data / 1048576, PICTURE_MAX // 1048576))
+      return nil
+    end
+    attrs = attrs .. " data=" .. C.base64(data)
+  end
+  if fig.sized then attrs = attrs .. " size=" .. encode(fig.sized) end
+  local out = pandoc.Blocks({ marker(attrs) })
+  if fig.caption then out:insert(pandoc.Para(fig.caption)) end
+  out:insert(marker("end"))
+  return out
+end
+
 -- a column's blocks, its divs unwrapped (the flow has no divs), a [..]{.label} or [..]{.big} line
--- led by its prefix marker, its pictures and tables warned of
-local function flow(blocks, title, out)
+-- led by its prefix marker; in a grid column or card (cell) a picture marked (picture_marks()), any
+-- other picture or table warned of
+local function flow(blocks, title, out, cell)
   for _, b in ipairs(blocks) do
     local label, big = C.lone_span(b, "label"), C.lone_span(b, "big")
+    local fig, linked
+    if cell then fig, linked = C.cell_figure(b) end
     if label or big then
       out:insert(prefixed(label and "label" or "big", label or big))
     elseif b.t == "Div" and C.has_class(b, "strip") then   -- a strip keeps its box: grid.py draws it
@@ -130,10 +171,18 @@ local function flow(blocks, title, out)
       out:insert(marker("end"))
     elseif C.rail_kind(b) then
       warn(title, "a ." .. C.rail_kind(b) .. " inside a column or another div is not drawn; left as its list")
-      flow(b.content, title, out)
+      flow(b.content, title, out, cell)
     elseif C.is_gallery(b) then   -- unwrapped: pandoc's pptx writer draws no picture inside a Div
       warn(title, "a .gallery inside a column or another div is not drawn; left as its pictures")
       out:extend(b.content)
+    elseif fig then
+      local marks = picture_marks(fig, title)
+      if marks then out:extend(marks) else out:insert(b) end
+    elseif linked then
+      warn(title, "a linked picture in a card or a 3+ column slide is not drawn in pptx; left in the flow")
+      out:insert(b)
+    elseif cell and b.t == "Div" and not C.is_notes(b) then   -- a cell with its code beside its plot: unwrapped
+      flow(b.content, title, out, cell)
     elseif is_shape(b) then
       warn(title, "a picture/table in a card or a 3+ column slide is not drawn in pptx; left in the flow")
       out:insert(b)
@@ -158,10 +207,10 @@ local function flatten(d, title)
       out:insert(marker("column card" .. role .. (card.pick and " pick" or "") .. (card.solid and " solid" or "")))
       if card.title then out:insert(prefixed("title", card.title)) end
       if card.sub then out:insert(prefixed("sub", card.sub)) end
-      flow(card.body, title, out)
+      flow(card.body, title, out, true)
     else
       out:insert(marker("column"))
-      flow(col.content, title, out)
+      flow(col.content, title, out, true)
     end
     out:insert(marker("end"))
   end

@@ -56,6 +56,13 @@ local function holds_shape(blk)
   return found
 end
 
+-- Whether a block holds a table anywhere inside it.
+local function holds_table(blk)
+  local found = false
+  pandoc.walk_block(blk, { Table = function() found = true end })
+  return found
+end
+
 -- A slide boundary: a heading at or above the slide level, or a rule.
 local function is_slide_break(blk, level)
   return (blk.t == "Header" and blk.level <= level) or blk.t == "HorizontalRule"
@@ -876,6 +883,66 @@ local function para_images(b)
   return #imgs > 0 and imgs or nil
 end
 
+-- A picture in a grid column or a card, as every format draws it: { src, caption = inlines or nil,
+-- image = the Image, sized = its width= when the author gave one (it keeps that size) } for a Figure
+-- of one image (its caption the Figure's, else the alt text), a Para or Plain of one image (the alt
+-- text), Quarto's PDF figure (latex_figure()), or an executed cell's or a Quarto figure's Div whose
+-- one block of substance, wrappers unwrapped, is one of those. nil otherwise; nil, true for an image
+-- inside a link (para_images()'s linked), which the caller warns of.
+local FIGURE_DIVS = { "cell", "cell-output-display", "quarto-figure", "quarto-float" }
+
+local function cell_figure(b)
+  local img, caption, linked
+  if b.t == "Figure" and #b.content == 1 then
+    local imgs
+    imgs, linked = para_images(b.content[1])
+    img = imgs and #imgs == 1 and imgs[1] or nil
+    caption = pandoc.utils.blocks_to_inlines(b.caption.long or {})
+  elseif b.t == "Para" or b.t == "Plain" then
+    local imgs
+    imgs, linked = para_images(b)
+    img = imgs and #imgs == 1 and imgs[1] or nil
+  elseif b.t == "Div" then
+    img, caption = latex_figure(b)
+    if not img then
+      local wrapper = false
+      for _, c in ipairs(FIGURE_DIVS) do if has_class(b, c) then wrapper = true end end
+      if not wrapper then return nil end
+      local inner = {}
+      local function gather(blocks)
+        for _, x in ipairs(blocks) do
+          if x.t == "Div" and not latex_figure(x) then gather(x.content) else table.insert(inner, x) end
+        end
+      end
+      gather(b.content)
+      if #inner ~= 1 then return nil end
+      return cell_figure(inner[1])
+    end
+  end
+  if linked then return nil, true end
+  if not img then return nil end
+  if not caption or #caption == 0 then caption = #img.caption > 0 and img.caption or nil end
+  return { src = img.src, caption = caption, image = img, sized = img.attributes["width"] }
+end
+
+-- data as base64 (RFC 4648, padded): pandoc's Lua has no encoder (quarto.base64 is Quarto's, and the
+-- tests run plain pandoc); grid-pptx.lua carries an executed plot's bytes in its picture marker.
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+local function base64(data)
+  local out = {}
+  for i = 1, #data, 3 do
+    local a, b, c = data:byte(i, i + 2)
+    local n = (a << 16) | ((b or 0) << 8) | (c or 0)
+    local q = { (n >> 18) & 63, (n >> 12) & 63, (n >> 6) & 63, n & 63 }
+    for k = 1, 4 do q[k] = B64:sub(q[k] + 1, q[k] + 1) end
+    if not b then q[3] = "=" end
+    if not c then q[4] = "=" end
+    out[#out + 1] = table.concat(q)
+  end
+  return table.concat(out)
+end
+
 local function gallery_items(div, who)
   local function refuse(why)
     warn(who .. ": a .gallery " .. why .. "; left as it is")
@@ -1027,7 +1094,7 @@ return {
   has_class = has_class, warn = warn, column_shares = column_shares, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
-  is_note = is_note, split_full = split_full, holds_shape = holds_shape, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
+  is_note = is_note, split_full = split_full, holds_shape = holds_shape, holds_table = holds_table, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
   slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, is_aside = is_aside, split_notes = split_notes,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
@@ -1037,6 +1104,7 @@ return {
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
+  cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file,
 }

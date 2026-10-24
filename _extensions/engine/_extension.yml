@@ -58,6 +58,8 @@ contributes:
       #   slide-layout      the theme's .center/scale= etc. as a notes line, for slide_layout.py
       #   inline-footnotes  a slide's ^[...] notes as slide footnotes († ‡ § ¶ after its dagger
       #                     lines), in place of pandoc's Notes slide; style_footnotes.py styles them
+      #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark (before
+      #                     grid-pptx, which carries a grid column's diagram in its marker)
       #   grid-pptx         a two-column slide's shares as a notes line, for columns.py; a grid
       #                     slide (what engine-common.lua's is_grid() counts: three or more
       #                     columns, a card, a lead, a strip, a rail, a gallery, a quote)
@@ -69,7 +71,6 @@ contributes:
       #                     after one, or a ::: note, move into its caption, at the slide's foot
       #                     (after notes-last; slide_layout.py moves a note up under it)
       #   linked-images     [![](x.png)](url): link_captions.py draws the line (here a no-op)
-      #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark
       reference-doc: ../../liveries/ncar/template.pptx
       highlight-style: ../../liveries/ncar/build/livery.theme
       slide-level: 2
@@ -78,8 +79,8 @@ contributes:
         - strip-raw-figure.lua
         - slide-layout.lua
         - inline-footnotes.lua
+        - diagram-dark.lua
         - grid-pptx.lua
         - notes-last.lua
         - single-body.lua
         - linked-images.lua
-        - diagram-dark.lua
