@@ -25,7 +25,7 @@
     "card": {
       "border": 0.0016,
       "border-color": "#AAA8A3",
-      "fill": "#FFFFFF",
+      "fill": "#F3F0E9",
       "head-pad": [
         0.35,
         0.8
@@ -41,7 +41,8 @@
         "primary",
         "secondary",
         "accent"
-      ]
+      ],
+      "tint": 0
     },
     "caution": {
       "bar": 0.0089,

@@ -485,14 +485,16 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
 // fill, the row's cards one height (the columns' flex stretch); .pick outlined by an overlay
 // above the content (inset, so no layout shift, and it follows the radius; the head's fill and
 // a strip run to the card's edges and would paint over an inset shadow on the card itself, as
-// the PDF and pptx never did); .solid all of it the role's (livery.css: boxes.card)
+// the PDF and pptx never did); .solid all of it the role's (livery.css: boxes.card); the body the
+// card's tint of its role over the fill, code in it on --engine-card-code (off the fill)
 .reveal .slides section .engine-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
   position: relative;
-  background: var(--engine-card-fill);
+  background: color-mix(in srgb, var(--engine-card-role) var(--engine-card-tint), var(--engine-card-fill));
+  &:not(.engine-solid) :is(div.sourceCode, :not(pre) > code) { background: var(--engine-card-code); }   // a solid card's code keeps the slide's, as the PDF's
   border-radius: var(--engine-card-radius);
   overflow: hidden;
   &::after {   // every card's hairline (boxes.card.border), an overlay as the pick's outline

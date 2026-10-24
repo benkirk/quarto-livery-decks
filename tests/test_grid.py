@@ -263,6 +263,8 @@ def test_cards(deck):
     assert geom(by["Card 1 fill"]) == ("roundRect" if rounded else "rect"), "the card's corners"
     assert geom(by["Card 1 head"]) == ("round2SameRect" if rounded else "rect"), "the head band's corners"
     assert "Card 3 head" not in by and str(by["Card 3 fill"].fill.fore_color.rgb) == role("accent"), "a solid card is its role"
+    card = livery["boxes"]["card"]   # the body: the card's tint of its role over the fill
+    assert str(by["Card 2 fill"].fill.fore_color.rgb) == livery_mod.mix(role("secondary"), card["fill"][1:], card["tint"]).lstrip("#").upper(), "the body's fill"
     ol = by["Card 1 outline"]
     assert str(ol.line.color.rgb) == livery["boxes"]["card"]["outline-color"][1:], "the pick's outline color"
     assert ol.line.width == round(livery["boxes"]["card"]["outline"] * prs.slide_height), "the outline's width"

@@ -16,6 +16,20 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
+## [Unreleased]
+
+### Decks
+
+- A card's body is on the livery's surface (NCAR's light gray), off the page as a lead is, where
+  it was the page's own white; code in a card is on the background, so it still stands out. A
+  solid card is unchanged.
+
+### Liveries
+
+- `boxes.card.fill` defaults to `surface` (was `background`); set `card: {fill: background}` for
+  the white card. New `boxes.card.tint`, the card's role's share in its body over the fill: `card:
+  {fill: background, tint: 0.09}` washes each card in its head's color. Rebuild (`livery build`).
+
 ## [26.10.12] - 2026-10-24
 
 Pictures and tables in a grid slide's columns and cards in pptx, and the dark content slide in

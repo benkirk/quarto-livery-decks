@@ -451,7 +451,7 @@ ROLES = BOXES["card"]["roles"]   # a card without role=: by its place in the row
 
 def draw_cards(slide, columns, frames, y, room, n_col, slide_height, deck_dir):
     """A row of cards (and plain columns beside them): each card a head band in its role over a
-    body on boxes.card.fill (all of it the role's on a .solid card), rounded by card.radius, a
+    body on boxes.card.fill under card.tint of its role (all of it the role's on a .solid card), rounded by card.radius, a
     .pick outlined in outline-color; its body a stack of text and strips (each at the card's full
     width), quotes and pictures (inside its pads, a picture a body pad below what is above it, shortened
     when the card would pass the room); each head its own text's height (as HTML's) and the cards one height, the row's
@@ -520,7 +520,8 @@ def draw_cards(slide, columns, frames, y, room, n_col, slide_height, deck_dir):
             continue
         attrs, x, w, n, hb, head_h = c["attrs"], c["x"], c["w"], c["n"], c["hb"], c["head_h"]
         role, solid = _hex(_pick_role(attrs, ROLES[(c["k"] - 1) % len(ROLES)], slide)), attrs.get("solid")
-        mine = [shape(slide, x, y, w, total, radius, role if solid else _hex(card["fill"]), f"Card {n} fill", behind=c["first"])]
+        fill = role if solid else _hex(livery_mod.mix(role, _hex(card["fill"]), card["tint"]))   # the role's tint over the fill
+        mine = [shape(slide, x, y, w, total, radius, fill, f"Card {n} fill", behind=c["first"])]
         if hb is not None and not solid:   # rounded at the top only, square where the body starts
             mine.append(shape(slide, x, y, w, head_h, radius, role, f"Card {n} head", behind=c["first"], top_only=True))
         if attrs.get("pick"):

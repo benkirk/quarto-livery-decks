@@ -126,7 +126,9 @@
   --engine-quote-pad: 0.3em 1em;
   --engine-quote-gap: 0.3em;
   --engine-quote-style: normal;
-  --engine-card-fill: #FFFFFF;
+  --engine-card-fill: #F0F1F3;
+  --engine-card-tint: 0%;
+  --engine-card-code: #FFFFFF;
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;
   --engine-card-outline-color: #002E62;

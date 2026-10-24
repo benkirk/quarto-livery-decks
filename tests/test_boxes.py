@@ -113,6 +113,26 @@ def test_colors_resolve(tmp_path, tmp_livery):
     assert j["boxes"]["gallery"]["pad"] == lb.BOXES["gallery"]["pad"], "its other keys the defaults"
 
 
+def test_card_fill_and_tint(tmp_path, tmp_livery):
+    """A card's body: on the surface by default (code in it on the background), or a tint of its role
+    over a fill (code then on the surface): the json, the css's tint and code, the sty's."""
+    rc, err, j = tmp_livery(tmp_path, "  card: {radius: 0.012}\n")
+    assert rc == 0, err
+    d = tmp_path / "liveries" / "ncar" / "build"
+    css, sty = (d / "livery.css").read_text(), (d / "livery.sty").read_text()
+    r = j["roles"]
+    assert j["boxes"]["card"]["fill"] == r["surface"] and j["boxes"]["card"]["tint"] == 0, "the default: surface, no tint"
+    assert "--engine-card-tint: 0%;" in css and f"--engine-card-code: {r['background']};" in css, "code off the surface"
+    assert f"\\definecolor{{EngineBoxesCardCode}}{{HTML}}{{{r['background'][1:]}}}" in sty
+    rc, err, j = tmp_livery(tmp_path / "wash", "  card: {fill: background, tint: 0.09}\n")
+    assert rc == 0, err
+    d = tmp_path / "wash" / "liveries" / "ncar" / "build"
+    css, sty = (d / "livery.css").read_text(), (d / "livery.sty").read_text()
+    assert j["boxes"]["card"]["fill"] == r["background"] and j["boxes"]["card"]["tint"] == 0.09, "a wash"
+    assert "--engine-card-tint: 9%;" in css and f"--engine-card-code: {r['surface']};" in css, "code on the surface"
+    assert "\\def\\engine@boxes@card@tint{0.09}" in sty
+
+
 def test_dark_blends_and_marks(livery):
     """The dark content slide's data: the four blends, on-dark into the dark role (dark-rule 25%,
     dark-band 6%, dark-code 12%, dark-muted 70%), in livery.json, the css and the sty; marks per

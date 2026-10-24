@@ -208,7 +208,10 @@ Each trades local capacity against a share of the consortium system.
   primary, secondary, accent), so a row's cards differ. The `###` is the band's title, a `[...]{.sub}` paragraph right after it the band's
   second line. `.pick` outlines the chosen card; `.solid` makes the whole card the role's color,
   its text in the livery's primary text color. Every other card has a hairline round its edge
-  (the livery's `boxes.card.border`, in the `rule` blend; `0` draws none). A row's cards are one height.
+  (the livery's `boxes.card.border`, in the `rule` blend; `0` draws none). Its body sits on the
+  livery's surface, off the page as a lead is, and code in it on the background; a livery's
+  `boxes.card.tint` washes each body in its own role instead (`fill: background, tint: 0.09`).
+  A row's cards are one height.
 - **`[...]{.label}`** is a small capitals label, **`[...]{.big}`** a big number, each on a line
   of its own.
 - **`::: {.strip role="accent"}`** is a band tinted in its role, across the card (or on its own,
