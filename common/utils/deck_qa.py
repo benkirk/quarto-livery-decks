@@ -39,6 +39,7 @@ SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
 EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - geometry.wide-margin
                           # on a {.wide} slide (columns keep to the text width, onlytextwidth)
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
+STRIPS = []           # set in main(): the livery's marking strips' boxes, furniture the text checks skip
 
 MEASURE_JS = r"""
 (i) => {
@@ -71,7 +72,7 @@ MEASURE_JS = r"""
   const shift = parseFloat(s.style.getPropertyValue('--engine-shift')) || 0;
   const fit = parseFloat(s.style.getPropertyValue('--engine-fit')) || 1;
   const scale = parseFloat(s.getAttribute('data-engine-scale')) || 1;
-  const skip = 'h2, svg.engine-waves, .engine-footnotes, .engine-signoff, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
+  const skip = 'h2, svg.engine-waves, .engine-footnotes, .engine-signoff, .engine-marking, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
   for (const k of kids) for (const e of [k, ...k.querySelectorAll('*')]) {
@@ -222,6 +223,9 @@ def pdf_problems(w, h, words, lines, slide=None):
     whether the page is {.wide} (a wider right edge) or is a table (column checks); without it the
     wider edge, which any slide may have."""
     out = []
+    # a marking strip's words are the livery's furniture (a full-width banner, a legend at the foot)
+    words = [wd for wd in words if not any(x <= (wd[0] + wd[2]) / 2 / w <= x + bw and y <= (wd[1] + wd[3]) / 2 / h <= y + bh
+                                           for x, y, bw, bh in STRIPS)]
     wide = slide is None or "engine-wide" in slide.get("cls", "").split()
     edge = w * (WIDE_EDGE if wide else EDGE) + TOL
     for x0, y0, x1, y1, t in words:
@@ -512,13 +516,14 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, WIDE_EDGE
+    global EDGE, WIDE_EDGE, STRIPS
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
     livery = livery_mod.load()
     geom = livery["geometry"]
     EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
+    STRIPS = [s["box"] for s in livery.get("marking") or []]
     pptx_fail = os.environ.get("QA_PPTX_FAIL") == "1"
 
     html_res = check_html(args.decks, qa)
