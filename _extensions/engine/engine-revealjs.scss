@@ -517,6 +517,15 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
     &, p, li, strong, .engine-label, .engine-big { color: var(--engine-primary-text); }
   }
 }
+// a picture in a card or a column: at most the column's width, its aspect kept, centered, its caption
+// under it in the caption look, boxes.note.gap below the picture (a ::: note's); a table no wider
+// than its column (pptx draws both at the column's width, the PDF's card at \linewidth)
+.reveal .slides section :is(.engine-card-body, .columns .column) {
+  img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  figure { margin: 0; }
+  figcaption { @include caption; margin-top: var(--engine-note-gap); }
+  table { max-width: 100%; }
+}
 // ::: {.strip role=...}: a band tinted in its role (boxes.strip.tint over the background), at a
 // card's full width in a card; on a solid card the role itself, its text primary-text
 .reveal .slides section .engine-strip {

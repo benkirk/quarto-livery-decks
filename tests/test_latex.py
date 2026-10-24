@@ -105,6 +105,16 @@ No attribution, its own color.
 \begin{enginecard}{OTHER}{}Text.\end{enginecard}
 \end{enginecards}
 \end{frame}
+\begin{frame}{Pictured cards}
+\begin{enginecards}{2}
+\begin{enginecard}{PICTURED}{}
+\includegraphics[width=\linewidth]{g1.png}
+\enginenote{A caption.}
+A line under it.
+\end{enginecard}
+\begin{enginecard}{OTHER}{}Text.\end{enginecard}
+\end{enginecards}
+\end{frame}
 \sectionsubtitle{Its subtitle}
 \section{Numbered}
 \begin{frame}{In the section}A slide.\end{frame}
@@ -228,7 +238,7 @@ def test_compiles_clean(deck):
 def test_pick_moves(deck):
     d, _ = deck
     texts = pages(d / "deck.pdf")
-    assert len(texts) == 15, "the pick=<2> and the \\uncover<2-> frames are two pages, the other eleven one each"
+    assert len(texts) == 16, "the pick=<2> and the \\uncover<2-> frames are two pages, the other twelve one each"
     assert all("Lead and cards" in t for t in texts[:2]) and "Columns" in texts[2] and "Caution" in texts[3]
     assert "Overlays work" not in texts[4] and "Overlays work" in texts[5], "an overlay inside a step"
     for t in texts[4:6]:   # the rail's text in reading order: titles, bodies, dates, labels
@@ -247,11 +257,22 @@ def test_quote(deck):
     assert "role=nosuchrole is not a role of the livery or a color" in " ".join(log.split()), "the warning"
 
 
+def test_pictured_card(deck):
+    """A picture in a card at \\linewidth (the card's body width) with an \\enginenote caption under it:
+    the frame draws the picture and the caption, the card's line after it (test_compiles_clean: no
+    Overfull, so the picture fits the card)."""
+    d, _ = deck
+    t = " ".join(pages(d / "deck.pdf")[8].split())
+    assert "Pictured cards" in t and "A caption." in t and t.index("A caption.") < t.index("A line under it."), t
+    out = subprocess.run(["pdfimages", "-list", "-f", "9", "-l", "9", str(d / "deck.pdf")], capture_output=True, text=True).stdout
+    assert len([l for l in out.splitlines()[2:] if l.split()[2:3] == ["image"]]) >= 1, out
+
+
 def test_unnumbered_divider(deck):
     """\\enginesectionunnumbered draws a divider outside the count: no eyebrow, its subtitle, and
     the next \\section is still section 2."""
     d, _ = deck
-    texts = pages(d / "deck.pdf")[8:]
+    texts = pages(d / "deck.pdf")[9:]
     words = [" ".join(t.replace("TEST MARKING", "").split()) for t in texts]
     assert words[0] == "SECTION 1 Numbered Its subtitle" and "In the section" in words[1], words
     assert words[2] == "Backup A subtitle", words[2]
