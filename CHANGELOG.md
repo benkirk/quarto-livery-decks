@@ -32,6 +32,14 @@ every format (`design/cells-dark-handoff.md`).
   deck shows both ("Pictures in cards", "A table between two columns"); docs/authoring.md
   "Columns" and "Cards and lead boxes".
 
+### Liveries
+
+- Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
+  corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
+  `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its
+  `marks` always holds the dark role (primary's unless `marks.dark` names its own). In LaTeX the
+  marks are `\engine@mark@<role>@<name>`; `\enginelogo{light|dark}` is unchanged.
+
 ### Plots
 
 - A plot cell in a card or a grid column takes the column's width in the pptx, as in HTML and

@@ -25,6 +25,10 @@
   --engine-caution-fill: #FFF5D9;
   --engine-alert-text: #A9254D;
   --engine-rule: #A8A9AA;
+  --engine-dark-rule: #708090;
+  --engine-dark-band: #4C5F74;
+  --engine-dark-code: #58697D;
+  --engine-dark-muted: #C6CCD3;
   --engine-logo-h: 96.3px;
   --engine-logo-w: 93.6px;
   --engine-logo-aspect: 0.9717;
@@ -239,10 +243,16 @@ html:root {
   --mermaid-font-family: var(--engine-font-family), Helvetica, Arial, sans-serif;
 }
 .reveal .slides section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark) { background: url("content.jpg") center / cover no-repeat; }
+html:root {
+  --engine-mark-background-logo: url("ccp-emblem.png");
+  --engine-mark-primary-logo: url("ccp-emblem.png");
+  --engine-mark-dark-logo: url("ccp-emblem.png");
+}
 .reveal .slides section.slide::after,
-.reveal .slides section.engine-title::after { background-image: url("ccp-emblem.png"); }
+.reveal .slides section.engine-title::after { background-image: var(--engine-mark-background-logo); }
 .reveal .slides section.slide.engine-field::after,
-.reveal .slides section.engine-title.engine-field::after { background-image: url("ccp-emblem.png"); }
+.reveal .slides section.engine-title.engine-field::after { background-image: var(--engine-mark-primary-logo); }
+.reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }
 html .reveal .slides section ul > li::before { content: "●"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul > li::before { content: "–"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }
 html .reveal .slides section ul ul ul > li::before { content: "▪"; background: none; border: 0; border-radius: 0; width: auto; height: auto; top: 0; left: -1em; color: #000000; line-height: inherit; }

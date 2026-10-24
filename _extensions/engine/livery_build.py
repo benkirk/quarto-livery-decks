@@ -40,6 +40,12 @@ BLENDS = [
     ("caution-fill", "warning", "background", 0.18),
     ("alert-text", "accent", "dark", 0.72),
     ("rule", "foreground", "surface", 0.30),
+    # the inverted content slide ({.brand-dark}): its hairline and table rules, its banded rows, its
+    # inline code's field and its muted text, on-dark mixed toward the dark role
+    ("dark-rule", "on-dark", "dark", 0.25),
+    ("dark-band", "on-dark", "dark", 0.06),
+    ("dark-code", "on-dark", "dark", 0.12),
+    ("dark-muted", "on-dark", "dark", 0.70),
 ]
 # blend -> the color beamerinnerthemeEngine.sty mixes for it itself, unless livery.sty defines it first
 BEAMER_BLENDS = {"table-band": "enginetableband", "table-rule": "enginetablerule", "caution-fill": "enginecautionfill"}
@@ -76,8 +82,10 @@ BODY_GAP = 0.0223   # the content body's top under the hairline, or under a tall
 SECTION = {"eyebrow-gap": 0.33, "subtitle-gap": 0.66}
 BODY_BOTTOM = 0.9222   # its foot (the pptx body placeholder's; 70 px of 900 above the edge, as HTML pads)
 # the fields every livery has: content slides on the background role, the colored fields (dividers,
-# the cover title and closing, feature covers) on primary; a band title adds its own field role
-MARK_ROLES = ("background", "primary")
+# the cover title and closing, feature covers) on primary, the inverted content slide on dark (primary's
+# marks unless the livery names its own, as every reader fell back to); a band title adds its field role
+MARK_ROLES = ("background", "primary", "dark")
+CORNERS = ("top-left", "top-right", "bottom-left", "bottom-right")   # where a content slide's marks sit
 # Type: every text role's size in points on the pptx canvas, with its leading. The default canvas is
 # 13.333 x 7.5 in (960 x 540 pt); the default sizes are the NSF NCAR template's guidance (body 12 pt
 # on its 405 pt slide, levels 12/11/10/9/8, page title 20, cover title 22, ...) carried onto that
@@ -309,6 +317,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         "color": roles.get(b.get("color", "primary-contrast")) or hex_of(b["color"], ("livery.yml", "bullets.color"))}
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
+    out["furniture"] = furniture(out)
     out["marking"] = markings(d.name, data.get("marking") or {}, out,   # colors as hex: a role, a palette name or a hex
                               lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
@@ -323,6 +332,38 @@ def resolve(d: Path) -> tuple[dict, dict]:
     scheme.update({k: hex_of(v, ("livery.yml", f"pptx.scheme.{k}")) for k, v in out["pptx"].get("scheme", {}).items()})
     out["pptx"]["scheme"] = scheme
     return out, sources
+
+
+def furniture(out: dict) -> dict:
+    """A content slide's furniture, the boxes [x, y, w, h] in slide fractions (y down) every drawer of
+    it reads (livery_template.master() and slide_layout.draw_dark()): the title tab (null without
+    one), the hairline (y its center line, h its width; null without one), the title's box, and the
+    marks by corner, {mark: name, box} or null (the content mark in its top corner, the sign-off in
+    its bottom one). Not rounded: the template's EMUs come from them, as they did from geometry and
+    frametitle, so they must not move. Derived, not a livery.yml key."""
+    g, ft = out["geometry"], out["frametitle"]
+    cw, ch = (out["type"]["canvas"][k] * 12700 for k in ("w", "h"))   # the canvas in EMU: a mark's width is its height's
+    m = g["margin"]
+    lg = g["logo"]
+    corner = lg.get("corner", "top-right")
+    logo_h = lg["height"]; logo_w = logo_h * lg["aspect"] * ch / cw
+    inset = lg.get("inset", m)   # the mark's distance from its edge (geometry.logo.inset)
+    beside = inset + logo_w + TITLE_GAP   # the title's edge on the mark's side
+    title_x = beside if corner == "top-left" else m
+    title_w = 1 - 2 * m - (beside - m if corner != "none" else 0)
+    if ft.get("symmetric") and corner != "none":   # the room mirrored: a centered title on the slide's center
+        title_x, title_w = beside, 1 - 2 * beside
+    marks = dict.fromkeys(CORNERS)
+    if corner != "none":
+        marks[corner] = {"mark": "logo", "box": [inset if corner == "top-left" else 1 - inset - logo_w, lg["top"], logo_w, logo_h]}
+    so = out.get("signoff")
+    if so:
+        h = so["height"]; w = h * so["aspect"] * ch / cw
+        marks[so["corner"]] = {"mark": "signoff", "box": [m if so["corner"] == "bottom-left" else 1 - m - w, 1 - so["bottom"] - h, w, h]}
+    return {"tab": [0, ft["top"], g["tab-width"], ft["height"]] if ft.get("tab", True) else None,
+            "rule": [m, ft["rule-y"], 1 - 2 * m, ft["rule-width"]] if ft.get("rule", True) else None,
+            "title": [title_x, ft["top"], title_w, ft["height"]],
+            "marks": marks}
 
 
 def markings(name: str, spec: dict, out: dict, hexof) -> list:
@@ -830,16 +871,16 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
     L.append("% the roles and blends by name (a card's or strip's role=): \\engine@role@<name> is its color")
     for role, tex in livery["latex"]["roles"].items():   # hyphenated names: through \csname
         L.append(f"\\expandafter\\def\\csname engine@role@{role}\\endcsname{{{tex}}}")
-    marks = livery["marks"]
     stem = lambda p: texpath(Path(p).with_suffix("").as_posix())   # \\includegraphics finds the extension
-    L.append("% marks: light on the background field, dark on primary (the print lockup when there is one)")
-    for variant, role in (("light", "background"), ("dark", "primary")):
-        L.append(f"\\def\\engine@logo@{variant}{{{stem(marks[role].get('logo-print', marks[role]['logo']))}}}")
+    L.append("% marks per field role: \\engine@mark@<role>@<name> (a name's print lockup when there is one);")
+    L.append("% \\enginelogo{light|dark} draws background's and primary's logo")
+    for role, m in livery["marks"].items():   # a role's name may hold a hyphen: through \\csname
+        for name, path in m.items():
+            if not name.endswith("-print"):
+                L.append(f"\\expandafter\\def\\csname engine@mark@{role}@{name}\\endcsname{{{stem(m.get(name + '-print', path))}}}")
     if "signoff" in livery:   # the sign-off lockup at the foot (its corner, height and bottom are geometry)
         so = livery["signoff"]
-        L.append("% the sign-off lockup (signoff), light and dark, and its box")
-        for variant, role in (("light", "background"), ("dark", "primary")):
-            L.append(f"\\def\\engine@signoff@{variant}{{{stem(marks[role]['signoff'])}}}")
+        L.append("% the sign-off lockup's box (signoff)")
         for k in ("height", "bottom", "corner"):
             L.append(f"\\def\\engine@signoff{k}{{{so[k]}}}")
     family, files = base_font(livery)
@@ -1218,17 +1259,21 @@ def emit_css(livery: dict, extra: str = "") -> str:
         # (not a .brand-dark slide, which promises the dark color: white text on the photo vanished)
         sel = "section.slide.level2:not(.engine-section):not(.closing):not(.feature):not(.full):not(.brand-dark)"
         L.append(f'.reveal .slides {sel} {{ background: url("{Path(f).name}") center / cover no-repeat; }}')
-    marks = livery["marks"]
-    light, dark = (Path(marks[r]["logo"]).name for r in ("background", "primary"))
+    # the marks per field role (--engine-mark-<role>-<name>), worn by the content slides (background),
+    # the fields (primary) and the inverted content slide (dark)
+    L.append("html:root {\n" + "".join(f'  --engine-mark-{role}-{name}: url("{Path(path).name}");\n'
+                                       for role, m in livery["marks"].items() for name, path in m.items()
+                                       if not name.endswith("-print")) + "}")
     L.append(".reveal .slides section.slide::after,\n.reveal .slides section.engine-title::after "
-             f'{{ background-image: url("{light}"); }}')
+             "{ background-image: var(--engine-mark-background-logo); }")
     L.append(".reveal .slides section.slide.engine-field::after,\n.reveal .slides section.engine-title.engine-field::after "
-             f'{{ background-image: url("{dark}"); }}')
+             "{ background-image: var(--engine-mark-primary-logo); }")
+    L.append(".reveal .slides section.slide.engine-dark::after { background-image: var(--engine-mark-dark-logo); }")
     if "signoff" in livery:
-        light, dark = (Path(marks[r]["signoff"]).name for r in ("background", "primary"))
-        L.append(f'.reveal .slides section .engine-signoff {{ background-image: url("{light}"); }}')
+        L.append(".reveal .slides section .engine-signoff { background-image: var(--engine-mark-background-signoff); }")
         L.append(".reveal .slides section.engine-field .engine-signoff,\n.reveal .slides section.engine-title.engine-field .engine-signoff "
-                 f'{{ background-image: url("{dark}"); }}')
+                 "{ background-image: var(--engine-mark-primary-signoff); }")
+        L.append(".reveal .slides section.engine-dark .engine-signoff { background-image: var(--engine-mark-dark-signoff); }")
     art = livery.get("art", {})
     if isinstance(art.get("titlegraphic"), str):   # the title photo when a deck sets none
         L.append(f'.reveal .slides section.engine-title .engine-title-photo-default {{ background: url("{Path(art["titlegraphic"]).name}") center / cover no-repeat; }}')

@@ -35,6 +35,10 @@
 \definecolor{BrandCautionFill}{HTML}{FFF5D9}
 \definecolor{BrandAlertText}{HTML}{A4001F}
 \definecolor{BrandRule}{HTML}{B0B1B2}
+\definecolor{BrandDarkRule}{HTML}{404040}
+\definecolor{BrandDarkBand}{HTML}{0F0F0F}
+\definecolor{BrandDarkCode}{HTML}{1F1F1F}
+\definecolor{BrandDarkMuted}{HTML}{B2B2B2}
 % the roles and blends by name (a card's or strip's role=): \engine@role@<name> is its color
 \expandafter\def\csname engine@role@primary\endcsname{BrandPrimary}
 \expandafter\def\csname engine@role@primary-text\endcsname{BrandPrimaryText}
@@ -55,12 +59,19 @@
 \expandafter\def\csname engine@role@caution-fill\endcsname{BrandCautionFill}
 \expandafter\def\csname engine@role@alert-text\endcsname{BrandAlertText}
 \expandafter\def\csname engine@role@rule\endcsname{BrandRule}
-% marks: light on the background field, dark on primary (the print lockup when there is one)
-\def\engine@logo@light{\engineliverydir logos/meatball}
-\def\engine@logo@dark{\engineliverydir logos/meatball-rule}
-% the sign-off lockup (signoff), light and dark, and its box
-\def\engine@signoff@light{\engineliverydir logos/nasa-name}
-\def\engine@signoff@dark{\engineliverydir logos/nasa-name-white}
+\expandafter\def\csname engine@role@dark-rule\endcsname{BrandDarkRule}
+\expandafter\def\csname engine@role@dark-band\endcsname{BrandDarkBand}
+\expandafter\def\csname engine@role@dark-code\endcsname{BrandDarkCode}
+\expandafter\def\csname engine@role@dark-muted\endcsname{BrandDarkMuted}
+% marks per field role: \engine@mark@<role>@<name> (a name's print lockup when there is one);
+% \enginelogo{light|dark} draws background's and primary's logo
+\expandafter\def\csname engine@mark@background@logo\endcsname{\engineliverydir logos/meatball}
+\expandafter\def\csname engine@mark@background@signoff\endcsname{\engineliverydir logos/nasa-name}
+\expandafter\def\csname engine@mark@primary@logo\endcsname{\engineliverydir logos/meatball-rule}
+\expandafter\def\csname engine@mark@primary@signoff\endcsname{\engineliverydir logos/nasa-name-white}
+\expandafter\def\csname engine@mark@dark@logo\endcsname{\engineliverydir logos/meatball-rule}
+\expandafter\def\csname engine@mark@dark@signoff\endcsname{\engineliverydir logos/nasa-name-white}
+% the sign-off lockup's box (signoff)
 \def\engine@signoffheight{0.028}
 \def\engine@signoffbottom{0.035}
 \def\engine@signoffcorner{bottom-left}

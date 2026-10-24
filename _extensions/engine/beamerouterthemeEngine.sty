@@ -72,15 +72,16 @@
   \settowidth\engine@logowidth{\engine@framelogo}%
   \ifengine@framelogo\else\engine@logowidth=0pt\fi
   \engine@ifcorner{\engine@geom@logocorner}{none}{\engine@logowidth=0pt}{}}
-% the sign-off lockup (signoff in livery.yml), at the foot, when the livery has one
+% the sign-off lockup (signoff in livery.yml), at the foot, when the livery has one: the field
+% role's (#1: background on a content frame), livery.sty's \engine@mark@<role>@signoff
 \def\engine@signoff#1{%
-  \ifcsname engine@signoff@#1\endcsname
+  \ifcsname engine@mark@#1@signoff\endcsname
     \engine@ifcorner{\engine@signoffcorner}{bottom-right}{%
       \node[anchor=south east,inner sep=0pt] at (\paperwidth-\engine@margin,\engine@signoffbottom\paperheight)
-        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@signoff@#1\endcsname}};
+        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@mark@#1@signoff\endcsname}};
     }{%
       \node[anchor=south west,inner sep=0pt] at (\engine@margin,\engine@signoffbottom\paperheight)
-        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@signoff@#1\endcsname}};
+        {\includegraphics[height=\engine@signoffheight\paperheight]{\csname engine@mark@#1@signoff\endcsname}};
     }%
   \fi}
 
@@ -365,7 +366,7 @@
             at (\paperwidth-\engine@logoinset,\paperheight-\engine@logotop) {\engine@framelogo};
         }}%
       \fi
-      \engine@signoff{light}%
+      \engine@signoff{background}%
     }{}%
     \engine@ifstyle{title}{\engine@drawcomp{\engine@titlecomp}{title}}{}%
     \engine@ifstyle{closing}{\engine@drawcomp{\engine@closingcomp}{closing}}{}%

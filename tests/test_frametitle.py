@@ -58,3 +58,37 @@ def test_role_name_resolves(tmp_path, tmp_livery):
     rc, err, j = tmp_livery(tmp_path, "  color: primary\n", key="frametitle")
     assert rc == 0, err
     assert j["frametitle"]["color"] == j["roles"]["primary"]
+
+
+def test_furniture(livery):
+    """livery.json furniture: the content furniture's boxes by corner, which the template's master
+    draws: the tab, the rule (its line along y, h its width), the title placeholder and the marks
+    at the master's own frames, to the EMU; a livery without a tab or rule (nsi) has null there."""
+    j = json.loads((livery / "build" / "livery.json").read_text())
+    fu = j["furniture"]
+    assert set(fu["marks"]) == {"top-left", "top-right", "bottom-left", "bottom-right"}, "the corners"
+    m = Presentation(str(livery / "template.pptx")).slide_master
+    W, H = (j["type"]["canvas"][k] * 12700 for k in ("w", "h"))
+    frame = lambda b: (round(b[0] * W), round(b[1] * H), round(b[2] * W), round(b[3] * H))
+    by = {sh.name: sh for sh in m.shapes}
+    ft = j["frametitle"]
+    assert (fu["tab"] is None) == (not ft["tab"]) and (fu["rule"] is None) == (not ft["rule"]), "null where none"
+    if fu["tab"]:
+        t = by["Title tab"]
+        assert (t.left, t.top, t.width, t.height) == frame(fu["tab"]), "the tab"
+    if fu["rule"]:
+        r = by["Title rule"]
+        x, y, w, _ = frame(fu["rule"])
+        assert (r.left, r.top, r.width) == (x, y, w), "the rule's line"
+    ph = next(s for s in m.placeholders if s.placeholder_format.type == 1)   # the title
+    assert (ph.left, ph.top, ph.width, ph.height) == frame(fu["title"]), "the title's box"
+    for corner, mk in fu["marks"].items():
+        if mk is None:
+            continue
+        pic = by["Logo (light)" if mk["mark"] == "logo" else "Sign-off (light)"]
+        assert (pic.left, pic.top, pic.width, pic.height) == frame(mk["box"]), (corner, mk["mark"])
+        assert corner.startswith("top") == (mk["mark"] == "logo"), "a content mark at the top, a sign-off at the foot"
+    if livery.name == "nsi":
+        assert fu["tab"] is None and fu["rule"] is None, "nsi: no tab, no hairline"
+    if livery.name == "ncar":
+        assert fu["marks"]["top-right"]["mark"] == "logo" and fu["tab"][0] == 0, "ncar: the mark top right, the tab at the edge"

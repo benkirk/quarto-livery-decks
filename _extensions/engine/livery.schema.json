@@ -98,6 +98,22 @@
         "rule": {
           "$ref": "#/$defs/color",
           "description": "Hairlines: the content title's rule and the chart grid (default: 30% foreground on surface)."
+        },
+        "dark-rule": {
+          "$ref": "#/$defs/color",
+          "description": "A dark content slide's (`{.brand-dark}`) hairline and table rules (default: 25% on-dark on dark)."
+        },
+        "dark-band": {
+          "$ref": "#/$defs/color",
+          "description": "A dark content slide's banded table rows (default: 6% on-dark on dark)."
+        },
+        "dark-code": {
+          "$ref": "#/$defs/color",
+          "description": "A dark content slide's inline code field (default: 12% on-dark on dark)."
+        },
+        "dark-muted": {
+          "$ref": "#/$defs/color",
+          "description": "A dark content slide's muted text: captions, footnotes (default: 70% on-dark on dark)."
         }
       }
     },

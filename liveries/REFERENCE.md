@@ -73,6 +73,10 @@ Colors the engine blends from the roles, set outright. A value is a palette name
 | `caution-fill` | color |  | The soft field behind a caution slide's body (default: 18% warning on the paper). |
 | `alert-text` | color |  | Warnings and errors in code (default: 72% accent on dark). |
 | `rule` | color |  | Hairlines: the content title's rule and the chart grid (default: 30% foreground on surface). |
+| `dark-rule` | color |  | A dark content slide's (`{.brand-dark}`) hairline and table rules (default: 25% on-dark on dark). |
+| `dark-band` | color |  | A dark content slide's banded table rows (default: 6% on-dark on dark). |
+| `dark-code` | color |  | A dark content slide's inline code field (default: 12% on-dark on dark). |
+| `dark-muted` | color |  | A dark content slide's muted text: captions, footnotes (default: 70% on-dark on dark). |
 
 ### `geometry`
 
