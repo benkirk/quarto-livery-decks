@@ -104,8 +104,7 @@ if not pandoc.path.is_absolute(EXTDIR) then
   EXTDIR = pandoc.path.join({ pandoc.system.get_working_directory(), EXTDIR })
 end
 
-local function marking_meta(meta)
-  local livery = C.load_livery(meta, EXTDIR, "slide-layout")
+local function marking_meta(meta, livery)
   for _, t in ipairs(C.marking_texts(meta, livery.marking, "slide-layout")) do
     meta["engine-marking-" .. t.strip.name] = pandoc.MetaString(t.text and pandoc.utils.stringify(t.text) or "none")
   end
@@ -113,16 +112,17 @@ end
 
 -- the watermark's text for pptx_steps/watermark.py (C.watermark_text: the deck's watermark:, else the
 -- livery's default), "none" for none
-local function watermark_meta(meta)
-  local t = C.watermark_text(meta, C.load_livery(meta, EXTDIR, "slide-layout"))
+local function watermark_meta(meta, livery)
+  local t = C.watermark_text(meta, livery)
   meta["engine-watermark"] = pandoc.MetaString(t and pandoc.utils.stringify(t) or "none")
 end
 
 function Pandoc(doc)
   if light_title(doc.meta) then doc.meta["engine-title"] = pandoc.MetaString("light") end
   byline_meta(doc.meta)
-  marking_meta(doc.meta)
-  watermark_meta(doc.meta)
+  local livery = C.load_livery(doc.meta, EXTDIR, "slide-layout")   -- once, for every reader of it
+  marking_meta(doc.meta, livery)
+  watermark_meta(doc.meta, livery)
   fineprint_meta(doc.meta)
   local level = C.slide_level()
   local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
