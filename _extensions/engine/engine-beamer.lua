@@ -56,6 +56,9 @@ engine-beamer.lua -- Markdown sugar for the engine beamer theme (beamer output o
   metadata `marking: "CUI"` (the first strip) or `marking: {<name>: "...", <name>: none}`
       the marking strips on every frame (\enginemarking[<name>]; the livery places them)
 
+  metadata `watermark: DRAFT` (`none`: not the livery's default either)
+      a faint diagonal word across every frame, behind the content (\enginewatermark)
+
   metadata `themeoptions: [title=light, footer=full, ...]`
       options for \usetheme{Engine} (see beamerthemeEngine.sty)
 
@@ -769,6 +772,15 @@ function Pandoc(doc)
     for _, t in ipairs(C.marking_texts(doc.meta, LIVERY.marking, "engine-beamer")) do
       hi:insert(pandoc.Blocks({ latex("\\enginemarking[" .. t.strip.name .. "]{" .. (t.text and inlines_to_latex(t.text) or "") .. "}") }))
     end
+    doc.meta["header-includes"] = hi
+  end
+
+  -- the watermark's text (watermark:, C.watermark_text; `none` turns a default off, so {}): the theme
+  -- draws it, the livery's default when the deck names none
+  if doc.meta["watermark"] then
+    local t = C.watermark_text(doc.meta, LIVERY)
+    local hi = header_includes(doc)
+    hi:insert(pandoc.Blocks({ latex("\\enginewatermark{" .. (t and inlines_to_latex(t) or "") .. "}") }))
     doc.meta["header-includes"] = hi
   end
 

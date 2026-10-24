@@ -45,6 +45,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | Scale the body (its lists, tables and code with it) | `\begin{enginescale}{1.4} ... \end{enginescale}`; beamer's `[shrink]` goes the other way, down to fit |
 | Center a short slide's body | `\begin{frame}[c]`; a list as a block: `\begin{center}\begin{varwidth}{\linewidth}` (the `varwidth` package) |
 | Marking strips on every slide (`marking:` in a Quarto deck) | `\enginemarking{CUI}` in the preamble sets the livery's first strip, `\enginemarking[legend]{...}` one by its name; `{}` turns a strip's default off |
+| A watermark on every slide (`watermark:` in a Quarto deck) | `\enginewatermark{DRAFT}` in the preamble: the word centered and turned behind the body, in the livery's `watermark:` look (a composed frame's text color, on-dark on a dark frame); `{}` turns a livery's default off |
 | Slide footnote (an aside at the foot, under a short rule) | `\enginefootnotespring` first in the frame and again after the content, then `\begin{enginefootnotes}\enginefootnote{†}{...}\end{enginefootnotes}` |
 | A numbered footnote (beamer's), in the slide footnotes' look | `\footnote{...}`: muted, its mark bold in the accent, under the same short rule |
 | Citations (biblatex, author-year) | `\usepackage[style=authoryear,backend=bibtex]{biblatex}` and `\addbibresource{references.bib}` in the preamble (`backend=biber` where biber is installed); `\parencite{key}`, `\textcite{key}`, `\footcite{key}` (a footnote at the frame's foot) |

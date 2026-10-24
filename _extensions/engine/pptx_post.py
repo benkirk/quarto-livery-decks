@@ -23,7 +23,7 @@ from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
     columns, embed_fonts, enable_autofit, grid, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
-    status_glyphs, style_footnotes, style_tables, svg_fallback, type_step)
+    status_glyphs, style_footnotes, style_tables, svg_fallback, type_step, watermark)
 
 
 def post(path: Path) -> None:
@@ -52,8 +52,10 @@ def post(path: Path) -> None:
     # are styled before slide_layout, whose scale= leaves them at their size; columns after it,
     # which leaves a columns slide's frames alone (its {.wide} words are its own line's); grid
     # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes);
-    # tables after all of those, re-split inside their final frames; the marking strips before
-    # type_step, so a deck's type step scales them as HTML and PDF do; type_step last, since it
+    # tables after all of those, re-split inside their final frames; the marking strips and the
+    # watermark before type_step, so a deck's type step scales them as HTML and PDF do (the
+    # watermark after every step that adds a slide's shapes: it goes behind the first that holds
+    # text, a cover's after its field and marks); type_step last, since it
     # multiplies every size the steps before it set.
     style_footnotes.run(prs, path)
     link_captions.run(prs, path)            # a linked picture's URL, a box pandoc cannot add
@@ -63,6 +65,7 @@ def post(path: Path) -> None:
     status_glyphs.run(prs, path)            # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
     style_tables.run(prs, path)
     marking.run(prs, path)                  # the marking strips, on every slide
+    watermark.run(prs, path)                # the watermark, on every slide, behind the text
     type_step.run(prs, path)                # a deck's type-body:/type-scale:
     prs.save(str(path))
 

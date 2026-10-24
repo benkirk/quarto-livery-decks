@@ -44,7 +44,7 @@ every format (`design/cells-dark-handoff.md`).
   has an edge. A picked card's outline replaces it; a solid card has none.
 
 - `watermark: DRAFT` in a deck's front matter (any text) puts a faint diagonal word across every
-  slide, behind the content: in HTML so far. On a content slide it wears the livery's
+  slide, behind the content, in every format. On a content slide it wears the livery's
   `watermark.color`, on a cover, divider, closing or photo slide that slide's text color, on a
   `{.brand-dark}` slide on-dark. `watermark: none` drops a livery's default. docs/authoring.md.
 
@@ -109,6 +109,8 @@ every format (`design/cells-dark-handoff.md`).
   `{.brand-dark}` slide (a no-op under a dark livery); the cookbook's "Dark slide, step by step".
 - A card's `\linewidth` takes a picture at the card's width with `\enginenote{...}` as its caption
   (the cookbook's "Pictures in cards").
+- `\enginewatermark{DRAFT}` in the preamble: the watermark on every frame, behind the body
+  (`{}` turns a livery's default off).
 - The marks are `\engine@mark@<role>@<name>` in `livery.sty` (`\engine@logo@light|dark` and
   `\engine@signoff@light|dark` are gone); `\enginelogo{light|dark}` is unchanged.
 

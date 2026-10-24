@@ -381,8 +381,28 @@
     \engine@ifstyle{section}{\engine@drawcomp{section}{section}}{}%
     \engine@ifstyle{feature}{\engine@drawcomp{feature}{feature}}{}%
     \engine@ifstyle{full}{\engine@drawfullbg}{}%
+    \engine@drawwatermark
     \engine@drawmarking
   \end{tikzpicture}}
+
+% the watermark (watermark:), on every frame, centered and turned, behind the body and over the
+% art, field and waves: its text the deck's (\enginewatermark{<text>} in the preamble, which the Quarto
+% filter writes for watermark:; {} for none), else the livery's default; in the livery's color on a
+% content frame, a composed frame's text color (EngineC<composition>Text), on-dark on a dark frame
+\providecommand\engine@watermark@default{}
+\newcommand\enginewatermark[1]{\gdef\engine@watermarktext{#1}}
+\def\engine@drawwatermark{%
+  \ifdefined\engine@watermarktext\let\engine@wm\engine@watermarktext\else\let\engine@wm\engine@watermark@default\fi
+  \ifx\engine@wm\@empty\else
+    \ifengine@darkframe\def\engine@wmcolor{BrandOnDark}\else\def\engine@wmcolor{EngineWatermarkColor}\fi
+    \engine@ifstyle{title}{\edef\engine@wmcolor{EngineC\engine@titlecomp Text}}{}%
+    \engine@ifstyle{closing}{\edef\engine@wmcolor{EngineC\engine@closingcomp Text}}{}%
+    \engine@ifstyle{section}{\def\engine@wmcolor{EngineCsectionText}}{}%
+    \engine@ifstyle{feature}{\def\engine@wmcolor{EngineCfeatureText}}{}%
+    \node[anchor=center,inner sep=0pt,rotate=\engine@watermark@angle,opacity=\engine@watermark@opacity,
+          text=\engine@wmcolor,font=\expandafter\engine@fsof\engine@watermark@type\selectfont\bfseries]
+      at (0.5\paperwidth,0.5\paperheight) {\engine@wm};
+  \fi}
 
 % the marking strips (livery.yml marking:, in order), on every frame, over everything: each one's
 % text the deck's (\enginemarking[<name>]{<text>} in the preamble, which the Quarto filter writes
