@@ -16,11 +16,13 @@ month's newest release is also `YY.MM` where a tool supports a moving name: the 
 contract is its `schema:` (1), and what a release asks of you is in its *Liveries* section here.
 A release's entry is written here before its tag is pushed, and becomes its notes on GitHub.
 
-## [Unreleased]
+## [26.10.12] - 2026-10-24
 
 Pictures and tables in a grid slide's columns and cards in pptx, and the dark content slide in
 every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark on every slide and
-`livery_mpl` from pip (`design/marks-watermark-mpl-handoff.md`).
+`livery_mpl` from pip (`design/marks-watermark-mpl-handoff.md`); the sweep of both
+(`design/sweep-136-149-handoff.md`): the dark slide's and the strips' edges, `make qa`'s pptx hints,
+the table rules as livery data.
 
 ### Decks
 
@@ -71,6 +73,10 @@ every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark 
 
 ### Liveries
 
+- **Rebuild your livery** (`livery build <dir>`, or `make livery LIVERY_DIR=<dir>`): the themes
+  read macros and properties only this release's `build/livery.{sty,css,json}` carry (the corner
+  marks, the dark slide's swap, `boxes.table`); a livery built by an earlier release stops the PDF
+  and draws HTML without them.
 - **Reshape: `geometry.logo` and `signoff` became `geometry.marks.<corner>`**, one mark per corner,
   any of the four (`top-left`, `top-right`, `bottom-left`, `bottom-right`), each naming its mark;
   no alias, so a livery of your own moves its keys:
@@ -825,7 +831,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.11...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.12...HEAD
+[26.10.12]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.12
 [26.10.11]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.11
 [26.10.10]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.10
 [26.10.9]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.9
