@@ -147,6 +147,13 @@
 \def\engine@marking@legend@type{{0.625}{1.2}}
 \definecolor{EngineMarkinglegendText}{HTML}{5C5E62}
 \def\engine@marking@legend@default{MAY CONTAIN PROPRIETARY AND/OR LIMITED RIGHTS DATA; NOT REVIEWED FOR EXPORT CONTROL}
+% the watermark (watermark:): color, opacity, angle (degrees counter-clockwise), size as the
+% body's ratio with its leading, and the default text the deck's \enginewatermark{} replaces
+\definecolor{EngineWatermarkColor}{HTML}{000000}
+\def\engine@watermark@opacity{0.08}
+\def\engine@watermark@angle{30}
+\def\engine@watermark@type{{7.5}{1}}
+\def\engine@watermark@default{}
 % boxes (boxes:): the column gap and rule, each box's bar, outline and radius (of the paper),
 % its pads (@pady, @padx: em of the body type), colors, and the card roles by place in a row
 \def\engine@boxes@columns@gap{0.03}

@@ -498,6 +498,18 @@ local function marking_texts(meta, strips, who)
   return out
 end
 
+-- The watermark's text (the one reader every format uses): the deck's `watermark:` (a string or
+-- inlines; `none` drops a default), else the livery's default (livery.json watermark.text); nil, none.
+local function watermark_text(meta, livery)
+  local w = meta["watermark"]
+  if w ~= nil then
+    if pandoc.utils.stringify(w) == "none" then return nil end
+    return pandoc.utils.type(w) == "Inlines" and w or pandoc.Inlines(pandoc.utils.stringify(w))
+  end
+  local t = (livery.watermark or {}).text
+  return type(t) == "string" and t ~= "" and pandoc.Inlines(t) or nil
+end
+
 -- A .columns div's columns and their shares of the row, the gaps taken out first, as every format
 -- lays them out: a column's width= ("55%" or "0.55") is its share, the columns without one share
 -- what is left equally, and shares that add to more than 1 are scaled down to 1 (less than 1
@@ -1160,6 +1172,7 @@ return {
   quote_blocks = quote_blocks,
   content_heading = content_heading, take_layout = take_layout,
   theme_options = theme_options, load_livery = load_livery, marking_texts = marking_texts,
+  watermark_text = watermark_text,
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,

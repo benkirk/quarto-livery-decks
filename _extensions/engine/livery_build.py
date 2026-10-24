@@ -166,6 +166,12 @@ BOXES = {
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color", "border-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
+# the watermark (livery.yml watermark:): a word across every slide, centered, faint and diagonal, behind
+# the content: its default text (null: none; a deck's `watermark:` sets one, `none` drops it), color (a
+# role, a blend, a palette name or a hex; hex in livery.json), opacity, angle (degrees counter-clockwise)
+# and size (points on the canvas; the default's 120 is the default 540 pt canvas's, scaled to the livery's
+# as the type roles a livery leaves out are). Always in livery.json, so a deck's watermark: shows anywhere
+WATERMARK = {"text": None, "color": "foreground", "opacity": 0.08, "angle": 30, "size": 120}
 # installed-fonts faces, and how a bare family string names them (full name, PostScript name)
 FACES = {"regular": ("", ""), "bold": (" Bold", "-Bold"), "italic": (" Italic", "-Italic"),
          "bolditalic": (" Bold Italic", "-BoldItalic")}
@@ -321,6 +327,8 @@ def resolve(d: Path) -> tuple[dict, dict]:
     out["furniture"] = furniture(out)
     out["marking"] = markings(d.name, data.get("marking") or {}, out,   # colors as hex: a role, a palette name or a hex
                               lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
+    out["watermark"] = watermark(data.get("watermark") or {}, out["type"]["canvas"]["h"] / CANVAS[1],
+                                 lambda c: roles.get(c) or blends.get(c) or hex_of(c, ("livery.yml", "watermark.color")))
     try:   # the chart colors, per mode (livery_charts.py; livery.yml charts:)
         out["charts"] = livery_charts.charts(out, data.get("charts"))
     except ValueError as e:
@@ -448,6 +456,14 @@ def markings(name: str, spec: dict, out: dict, hexof) -> list:
         m["size"] = half(m["size"]) if m.get("size") is not None else role["pt"]
         res.append({"name": n, **m, "leading": role["leading"]})
     return res
+
+
+def watermark(spec: dict, canvas: float, hexof) -> dict:
+    """The watermark: block resolved over WATERMARK: its color as hex (hexof: a role, a blend, a palette
+    name or a hex to its hex), its size to the half point, the default's scaled by the canvas (its
+    height over the default's). The schema bounds the numbers."""
+    w = {**WATERMARK, "size": WATERMARK["size"] * canvas, **spec}
+    return {**w, "color": hexof(w["color"]), "size": half(w["size"])}
 
 
 def boxes(b: dict, hexof, roles=()) -> dict:
@@ -1030,6 +1046,14 @@ def emit_sty(livery: dict, sources: dict, extra: str = "") -> str:
             if s["bold"]:
                 L.append(f"\\def\\engine@marking@{n}@bold{{}}")
             L.append(f"\\def\\engine@marking@{n}@default{{{tex_escape(s['text'] or '')}}}")
+    wm = livery["watermark"]   # its look; its text the deck's \enginewatermark, else the default
+    L.append("% the watermark (watermark:): color, opacity, angle (degrees counter-clockwise), size as the")
+    L.append("% body's ratio with its leading, and the default text the deck's \\enginewatermark{} replaces")
+    L.append(f"\\definecolor{{EngineWatermarkColor}}{{HTML}}{{{wm['color'][1:]}}}")
+    L.append(f"\\def\\engine@watermark@opacity{{{wm['opacity']}}}")
+    L.append(f"\\def\\engine@watermark@angle{{{wm['angle']}}}")
+    L.append(f"\\def\\engine@watermark@type{{{{{round(wm['size'] / livery['type']['roles']['body']['pt'], 4)}}}{{1}}}}")
+    L.append(f"\\def\\engine@watermark@default{{{tex_escape(wm['text'] or '')}}}")
     L += emit_sty_boxes(livery)
     bu = livery.get("bullets")
     if bu:   # the list glyphs per level (bullets:), the last repeating; beamer has three levels
@@ -1277,6 +1301,9 @@ def emit_css(livery: dict, extra: str = "") -> str:
     pn = geom.get("pagenumber", {}).get("corner", "bottom-left")
     props.append(f"--engine-pagenumber-left: {'auto' if pn == 'bottom-right' else '50px'};")
     props.append(f"--engine-pagenumber-right: {'50px' if pn == 'bottom-right' else 'auto'};")
+    wm = livery["watermark"]   # the watermark's look (its text: engine-revealjs.lua), its size fixed as the strips'
+    props += [f"--engine-watermark-color: {wm['color']};", f"--engine-watermark-opacity: {wm['opacity']:g};",
+              f"--engine-watermark-angle: {wm['angle']:g}deg;", f"--engine-watermark-size: {tpx(wm['size'])};"]
     props += emit_css_boxes(livery, px)
     L.append(":root {\n  " + "\n  ".join(props) + "\n}")
     for s in livery.get("marking") or []:   # each marking strip, in slide pixels (its text: engine-revealjs.lua)

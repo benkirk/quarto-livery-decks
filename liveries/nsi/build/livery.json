@@ -1636,5 +1636,12 @@
       }
     ],
     "headings": "TeX Gyre Heros Cn"
+  },
+  "watermark": {
+    "angle": 30,
+    "color": "#000000",
+    "opacity": 0.08,
+    "size": 120,
+    "text": null
   }
 }

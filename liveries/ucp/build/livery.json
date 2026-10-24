@@ -1583,5 +1583,12 @@
       }
     ],
     "headings": "Poppins"
+  },
+  "watermark": {
+    "angle": 30,
+    "color": "#00357A",
+    "opacity": 0.08,
+    "size": 90,
+    "text": null
   }
 }

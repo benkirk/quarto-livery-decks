@@ -216,9 +216,9 @@ def placeholders(d: str) -> str:
     """A metadata file (YAML) that puts sample text over the livery's default markings and cover
     notice, for the images we publish (Make.common's DECK_META; gallery.py): no screenshot of ours
     reads as a real restricted deck. Each strip with a default text gets a SAMPLE marking (the
-    first a CUI one, the rest a legend), a cover notice its own shape in Lorem ipsum (the first
-    paragraph a SAMPLE heading, a "(a)" label kept), so the layout is the real one's. Nothing for a
-    livery without defaults."""
+    first a CUI one, the rest a legend), a default watermark SAMPLE, a cover notice its own shape
+    in Lorem ipsum (the first paragraph a SAMPLE heading, a "(a)" label kept), so the layout is the
+    real one's. Nothing for a livery without defaults."""
     import json
     import re
     L = load(d)
@@ -226,6 +226,8 @@ def placeholders(d: str) -> str:
     strips = {s["name"]: SAMPLE_MARKINGS[min(i, 1)] for i, s in enumerate(L.get("marking") or []) if s.get("text")}
     if strips:
         meta["marking"] = strips
+    if (L.get("watermark") or {}).get("text"):
+        meta["watermark"] = "SAMPLE"
     paras = next((c["fineprint"]["paragraphs"] for c in L.get("compositions", {}).values()
                   if (c.get("fineprint") or {}).get("paragraphs")), None)
     if paras:

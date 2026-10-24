@@ -103,6 +103,10 @@
   --engine-title-color: #FFFFFF;
   --engine-pagenumber-left: auto;
   --engine-pagenumber-right: 50px;
+  --engine-watermark-color: #FFFFFF;
+  --engine-watermark-opacity: 0.08;
+  --engine-watermark-angle: 30deg;
+  --engine-watermark-size: calc(200px * var(--engine-type-scale, 1));
   --engine-column-gap: 48px;
   --engine-column-rule: 2px;
   --engine-caution-bar: 8px;

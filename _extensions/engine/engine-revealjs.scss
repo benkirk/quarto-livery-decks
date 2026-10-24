@@ -165,6 +165,32 @@ $body-height: calc(var(--engine-body-bottom) - var(--engine-body-top));
   pointer-events: none;
 }
 
+// the watermark (watermark: in the deck or the livery): centered and turned on every slide, the
+// slide's last element, so at z-index -1 it lies under the body in flow and over the art and waves
+// before it (isolation: isolate keeps that in print); an absolutely placed box (a .full figure, the
+// feature panel) covers it, as the PDF and pptx draw it under the body
+.reveal .slides section .engine-watermark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(calc(-1 * var(--engine-watermark-angle)));
+  color: var(--engine-watermark-color);
+  opacity: var(--engine-watermark-opacity);
+  font-size: var(--engine-watermark-size);
+  font-weight: 700;
+  white-space: nowrap;
+  margin: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+// on a composed slide its composition's text color (white on a field, on the feature's photo), on a
+// dark slide on-dark: watermark.color is the content slides' (Ben's pick: the word reads on every field)
+div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
+.reveal .slides section.slide.engine-section .engine-watermark,
+.reveal .slides section.slide.level2.closing .engine-watermark,
+.reveal .slides section.slide.level2.feature .engine-watermark { color: var(--engine-cmp-text); }
+.reveal .slides section.slide.engine-dark .engine-watermark { color: var(--engine-on-dark); }
+
 // ---------------------------------------------------------------------------
 // content slides: accent tab beside the title, hairline rule, logo
 // ---------------------------------------------------------------------------

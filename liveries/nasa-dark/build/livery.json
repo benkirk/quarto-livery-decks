@@ -1778,5 +1778,12 @@
     ],
     "headings": "Inter",
     "monospace": "DM Mono"
+  },
+  "watermark": {
+    "angle": 30,
+    "color": "#FFFFFF",
+    "opacity": 0.08,
+    "size": 90,
+    "text": null
   }
 }

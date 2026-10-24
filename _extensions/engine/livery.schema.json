@@ -520,6 +520,18 @@
       }
       }
     },
+    "watermark": {
+      "type": "object",
+      "description": "The watermark: a word across every slide, centered, faint and diagonal, behind the content (DRAFT, say). Its text is the deck's `watermark:` (front matter; `none` drops a default), else its text here; the rest is its look, which a deck's word wears under any livery.",
+      "additionalProperties": false,
+      "properties": {
+        "text": {"type": ["string", "null"], "description": "The default text every deck under the livery shows (default: none)."},
+        "color": {"$ref": "#/$defs/color-or-role", "description": "Its color: a role, a blend, a palette name or a hex.", "default": "foreground"},
+        "opacity": {"type": "number", "minimum": 0, "maximum": 1, "description": "Its opacity.", "default": 0.08},
+        "angle": {"type": "number", "minimum": -90, "maximum": 90, "description": "Its angle, degrees counter-clockwise.", "default": 30},
+        "size": {"type": "number", "exclusiveMinimum": 0, "description": "Its size, points on the pptx canvas (to the half point).", "default": 120}
+      }
+    },
     "boxes": {
       "type": "object",
       "description": "The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default.",

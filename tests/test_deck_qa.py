@@ -114,3 +114,17 @@ def test_indented_sub_rows_are_their_column(deck_qa):
     assert deck_qa.table_overruns(lines(HEADER, *rows, note), W, H) == [], "the note under it is no cell either"
     rows[3] = row(104, (120, 185, "NCAR-with-a-long-name HPC"), (232, 240, "31"))
     assert deck_qa.table_overruns(lines(HEADER, *rows), W, H) == [("runs into the next table column", repr("NCAR-with-a-long-name HPC"))]
+
+
+def test_the_watermark_is_furniture(deck_qa, monkeypatch):
+    """A watermark's word is no text past an edge or overlapping (the slide's turned DRAFT spans the
+    page), as a marking strip's is not; the HTML measurement skips its element."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    words = [(100, 60, 360, 150, "DRAFT"), (30, 40, 120, 48, "Body")]
+    monkeypatch.setattr(deck_qa, "WATERMARK", set())
+    assert ("past the right margin", repr("DRAFT")) in deck_qa.pdf_problems(W, H, words, [])
+    monkeypatch.setattr(deck_qa, "WATERMARK", {"DRAFT"})
+    assert deck_qa.pdf_problems(W, H, words, []) == []
+    assert ".engine-watermark" in deck_qa.MEASURE_JS.split("const skip = ")[1].split(";")[0]

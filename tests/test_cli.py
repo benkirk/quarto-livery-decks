@@ -342,3 +342,11 @@ def test_placeholders():
     assert len(paras) == len(want) and paras[0].startswith("SAMPLE"), paras
     assert paras[1].startswith("\\(a) Lorem ipsum"), "a label kept, escaped from markdown's lists"
     assert "NNK14" not in meta["fineprint"] and "CCtCap" not in meta["fineprint"]
+    assert "watermark" not in meta, "nasa-ccp has no default watermark"
+
+
+def test_placeholders_watermark(tmp_path, tmp_livery):
+    """A livery's default watermark is shot as SAMPLE, as a default marking is."""
+    rc, err, _ = tmp_livery(tmp_path, "  text: INTERNAL\n", key="watermark")
+    assert rc == 0, err
+    assert json.loads(run("placeholders", tmp_path / "liveries" / "ncar").stdout) == {"watermark": "SAMPLE"}

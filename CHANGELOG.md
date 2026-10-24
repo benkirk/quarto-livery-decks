@@ -43,6 +43,11 @@ every format (`design/cells-dark-handoff.md`).
   slide's height, in the `rule` blend, the title hairline's): on a white card fill the body now
   has an edge. A picked card's outline replaces it; a solid card has none.
 
+- `watermark: DRAFT` in a deck's front matter (any text) puts a faint diagonal word across every
+  slide, behind the content: in HTML so far. On a content slide it wears the livery's
+  `watermark.color`, on a cover, divider, closing or photo slide that slide's text color, on a
+  `{.brand-dark}` slide on-dark. `watermark: none` drops a livery's default. docs/authoring.md.
+
 - nasa-ccp: the NASA insignia at the title bar's right end is a vector mark in every format (the
   content slides' top-right mark and the dividers' sign-off), where it was a bitmap in the bar's
   art; the bar's title gives it room on both sides.
@@ -70,6 +75,11 @@ every format (`design/cells-dark-handoff.md`).
   (`.engine-marks > .engine-mark-<corner>`), not the slide's `::after`: an `overrides/livery-extra.css`
   rule on the old pseudo-element moves to them.
 - `boxes.card.border` and `border-color` (the card's hairline); `border: 0` turns it off.
+- `watermark:` (optional): the watermark's look, `color` (a role, blend, palette name or hex;
+  default the foreground, a content slide's), `opacity` (0.08), `angle` (30, degrees
+  counter-clockwise), `size` (points on the canvas; default 120 on the default 13.33 x 7.5 in
+  canvas, scaled to the livery's), and a default `text` every deck shows (none by default).
+  `livery placeholders` gives a default text SAMPLE.
 - Nothing to do. `livery.json` gains `furniture` (a content slide's tab, rule, title and marks by
   corner, derived) and the dark slide's four blends, `dark-rule`, `dark-band`, `dark-code` and
   `dark-muted` (on-dark into the dark role; `blends:` in `livery.yml` may set any of them), and its

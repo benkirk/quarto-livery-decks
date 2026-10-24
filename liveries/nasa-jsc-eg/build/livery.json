@@ -1855,5 +1855,12 @@
     ],
     "headings": "Liberation Sans",
     "monospace": "Liberation Mono"
+  },
+  "watermark": {
+    "angle": 30,
+    "color": "#FFFFFF",
+    "opacity": 0.08,
+    "size": 120,
+    "text": null
   }
 }

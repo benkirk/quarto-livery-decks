@@ -32,6 +32,7 @@ Value kinds: a *color* is a `_brand.yml` palette name or a `#RRGGBB` hex; a *rol
 | `feature` | object |  | Feature (photo) slides. |
 | `frametitle` | object |  | Content slides' titles. |
 | `marking` | map |  | The marking strips on every slide (restriction or distribution markings, CUI and the like), by name, in order: a CUI banner at the top and a legend at the foot, say. A strip's text is the deck's `marking:` (front matter: a string sets the first strip, `none` turns every strip off, `{<name>: text}` sets one, `{<name>: none}` drops one), else its text here. |
+| `watermark` | object |  | The watermark: a word across every slide, centered, faint and diagonal, behind the content (DRAFT, say). Its text is the deck's `watermark:` (front matter; `none` drops a default), else its text here; the rest is its look, which a deck's word wears under any livery. |
 | `boxes` | object |  | The columns and boxes every format draws: gaps, bars, rules and radii as fractions of the slide, pads in em of the body type, colors a role, a palette name or a hex. A key left out keeps the engine's default. |
 | `bullets` | object |  | List glyphs per level, in place of each format's own bullet shapes (without it: a dot, a ring, a bar). The glyphs must exist in the pptx typeface. |
 | `installed-fonts` | object |  | A proprietary face to prefer over the bundled stand-in where the machine has it: a family name (its four faces named the usual way) or {family, faces}. |
@@ -428,6 +429,18 @@ A strip's look and default text, by its name (lower-case letters; null drops a p
 | `color` | color or role |  | Its text's color, a role, a palette name or a hex (default: muted, or primary-text over a fill). |
 | `bold` | boolean | `false` | Its text in bold. |
 | `size` | number |  | Its text's size in points on the pptx canvas (default: the `marking` type role). |
+
+### `watermark`
+
+The watermark: a word across every slide, centered, faint and diagonal, behind the content (DRAFT, say). Its text is the deck's `watermark:` (front matter; `none` drops a default), else its text here; the rest is its look, which a deck's word wears under any livery.
+
+| key | type | default | |
+|---|---|---|---|
+| `text` | string or null |  | The default text every deck under the livery shows (default: none). |
+| `color` | color or role | `"foreground"` | Its color: a role, a blend, a palette name or a hex. |
+| `opacity` | fraction | `0.08` | Its opacity. |
+| `angle` | number | `30` | Its angle, degrees counter-clockwise. |
+| `size` | number | `120` | Its size, points on the pptx canvas (to the half point). |
 
 ### `boxes`
 

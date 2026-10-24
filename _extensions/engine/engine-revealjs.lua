@@ -62,6 +62,9 @@ Overflowing content slides shrink their body text to fit (engine-revealjs.js);
 
   metadata `marking: "CUI"` (the first strip) or `marking: {<name>: "...", <name>: none}`
       the marking strips on every slide (the livery places and colors them)
+  metadata `watermark: DRAFT`
+      a faint diagonal word across every slide, behind the content (the livery's look;
+      `none` drops a livery's default)
 
 Layout lives in engine-revealjs.scss; colors, fonts and logos come from the livery
 (`livery:` in the metadata, else the bundled liveries/ncar): its build/livery.css,
@@ -445,6 +448,24 @@ local function add_marking(blocks, text)
   return out
 end
 
+-- the watermark (C.watermark_text: the deck's watermark:, else the livery's default) as the LAST
+-- element of every slide: z-index -1 in the scss puts it under the body in flow and, later in the
+-- DOM than the art and the waves (z-index -1 too), over them. A slide ends at the next heading at or
+-- above the slide level, a top-level rule, or the deck's end; the title slide's is title-slide.html's.
+local function add_watermark(blocks, text)
+  if not text then return blocks end
+  local out, open = pandoc.Blocks({}), false
+  for _, blk in ipairs(blocks) do
+    if (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule" then
+      if open then out:insert(html(text)) end
+      open = true
+    end
+    out:insert(blk)
+  end
+  if open then out:insert(html(text)) end
+  return out
+end
+
 local function hoist_footnotes(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
@@ -761,6 +782,11 @@ function Pandoc(doc)
   end
   local marking = #divs > 0 and table.concat(divs) or nil
   if marking then meta["engine-marking"] = pandoc.RawInline("html", marking) end
+  -- the watermark, as HTML: the same element on the title slide (title-slide.html) and every slide's end
+  local wtext = C.watermark_text(meta, livery)
+  local watermark = wtext and ('<div class="engine-watermark">'
+    .. pandoc.write(pandoc.Pandoc({ pandoc.Plain(wtext) }), "html"):gsub("%s+$", "") .. '</div>') or nil
+  if watermark then meta["engine-watermark"] = pandoc.RawInline("html", watermark) end
   local ccomp = comps[band and "closing-band" or light and "closing-light" or "closing"]
 
   -- the references slide (a deck that cites without one gets it last): .engine-references (the scss)
@@ -900,6 +926,6 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_marks(out, livery), marking))))
+  doc.blocks = add_watermark(mark_notes(unwrap_layout(hoist_footnotes(add_marking(add_marks(out, livery), marking)))), watermark)
   return doc
 end
