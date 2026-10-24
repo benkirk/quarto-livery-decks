@@ -494,7 +494,7 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
   box-sizing: border-box;
   position: relative;
   background: color-mix(in srgb, var(--engine-card-role) var(--engine-card-tint), var(--engine-card-fill));
-  div.sourceCode, :not(pre) > code { background: var(--engine-card-code); }
+  &:not(.engine-solid) :is(div.sourceCode, :not(pre) > code) { background: var(--engine-card-code); }   // a solid card's code keeps the slide's, as the PDF's
   border-radius: var(--engine-card-radius);
   overflow: hidden;
   &::after {   // every card's hairline (boxes.card.border), an overlay as the pick's outline
