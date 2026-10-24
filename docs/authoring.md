@@ -38,6 +38,11 @@ them in with `{{< include _1-intro.qmd >}}`; quarto skips underscore files
 when rendering, and make treats every `_*.qmd` and `data/*` in the directory
 as a prerequisite of every deck, so editing one rebuilds them all.
 
+`make pptx DECK_META=meta.yml` hands every render a metadata file (Quarto's `--metadata-file`),
+filling the keys the front matter leaves out: a `marking:` for a whole set of decks, say. It is a
+prerequisite too, so a different file rebuilds, and under the container runtime its directory is
+mounted with the deck's.
+
 A deck that needs custom Quarto config (a different reference template,
 extra extensions, etc.) can replace the symlinked `_quarto.yml` with a
 real file: `make` sees the file already exists and skips the symlink
