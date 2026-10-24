@@ -19,7 +19,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
 ## [Unreleased]
 
 Pictures and tables in a grid slide's columns and cards in pptx, and the dark content slide in
-every format (`design/cells-dark-handoff.md`).
+every format (`design/cells-dark-handoff.md`); marks in any corner, a watermark on every slide and
+`livery_mpl` from pip (`design/marks-watermark-mpl-handoff.md`).
 
 ### Decks
 

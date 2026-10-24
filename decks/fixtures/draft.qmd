@@ -1,0 +1,9 @@
+---
+title: "Fixture: the watermark"
+subtitle: "watermark: DRAFT, on every slide"
+author: "Parity fixture"
+date: 2026-10-24
+watermark: DRAFT
+---
+
+{{< include _body.qmd >}}

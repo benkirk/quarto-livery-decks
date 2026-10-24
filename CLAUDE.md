@@ -183,7 +183,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
-  as HTML and PDF do) and `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
+  as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
+  `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`, the shape tests), `measure.py` the text
   measuring (`text_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
@@ -324,6 +325,22 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   A deck's size step: front matter `type-body: <pt>` or `type-scale: <factor>`
   (beamer `typescale=`, HTML `--engine-type-scale`; pptx `type_step.py`, after every step that
   sets a size, reads it from `docProps/custom.xml`); `decks/fixtures/small.qmd` is `type-body: 10`.
+- **Watermark** (a deck's `watermark: DRAFT`, `none` dropping a livery's default; the livery's
+  `watermark:` the look, always in `livery.json` from `livery_build.WATERMARK`, the default size
+  120 pt on the default canvas scaled to the livery's): `engine-common.lua`'s `watermark_text()` the
+  one reader; on a content slide the livery's color, on a composed slide its composition's column
+  role, on a dark slide on-dark (Ben's pick, 2026-10-24: it reads on every field), in all three.
+  HTML: `add_watermark()` writes `.engine-watermark` as the LAST element of every slide (and
+  `title-slide.html` the title's): z-index -1 puts it under the body in flow and, later in the DOM
+  than the art and waves (z-index -1 too), over them; an absolute box (a `.full` figure, the
+  feature panel) covers it. PDF: `\enginewatermark{}` (the filter writes it), drawn by the
+  background template after every style and before the marking strips (`EngineC<comp>Text` on a
+  composed frame). pptx: slide-layout.lua's `engine-watermark`, `pptx_steps/watermark.py`: a
+  turned text box "Watermark" with an `a:alpha` run, inserted before the slide's first shape that
+  holds text (behind the title; over a cover's field and marks, a feature's photo and bar; the
+  composition by layout name, a feature by its "Photo" shape). `deck_qa` skips the element, and
+  its PDF word checks drop the turned word's pieces (pdftotext `-bbox` gives letters in boxes as
+  tall as the word; `-raw` keeps it whole). `decks/fixtures/draft.qmd` is CI's and parity's deck.
 - **Dark liveries**: `livery.json` `mode` is `dark` when the background is
   darker than the foreground (nasa-dark). The `code-text` role (default: `dark`) colors code,
   since a dark livery's `dark` stays a field color; the `on-dark` role (derived: whichever of
@@ -521,7 +538,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
   cache, so `Make.common` is `.NOTPARALLEL`. `decks/fixtures/` is such a directory:
-  `photo` (a `titlegraphic:` title) and `light` (`title=light`) on one `_body.qmd`, in
+  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, in
   CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
   ncar, cu and nsi).
 - **Installed brand fonts**: a livery may name a proprietary face (`installed-fonts`, cu:
