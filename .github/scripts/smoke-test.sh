@@ -42,7 +42,9 @@ test "$(run "$img" uname -m)" = "$host"
 run "$img" --help
 run "$img" quarto --version
 run "$img" gnuplot --version   # livery_gp.py's; gnuplot-nox, cairo's terminals
-run "$img" bash -c 'gnuplot -e "set terminal pdfcairo" -e "set output \"/dev/null\"" -e "plot x"'
+# one argument, no shell: Apptainer's run script re-evaluates the arguments and drops backslashes,
+# so an escaped quote inside a `bash -c` string arrives split into words
+run "$img" gnuplot -e "set terminal pdfcairo; set output '/dev/null'; plot x"
 run "$img" bash -c 'echo "QUARTO_CHROMIUM=$QUARTO_CHROMIUM"; "$QUARTO_CHROMIUM" --version'
 run "$img" bash -c 'echo "font families: $(/usr/bin/fc-list : family | sort -u | wc -l), the liveries'"'"' Poppins: $(/usr/bin/fc-list : family | grep -c Poppins)"'
 run "$img" bash -c 'test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0'   # LibreOffice's fontconfig sees them
