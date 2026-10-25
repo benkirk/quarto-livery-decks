@@ -176,7 +176,7 @@ Or install the helper with pip (Python 3.10 or later; it brings matplotlib) and 
 bundle's zip as it is:
 
 ```sh
-pip install "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v26.10.12#subdirectory=_extensions/engine/mpl"
+pip install "livery-mpl @ git+https://github.com/benkirk/quarto-livery-decks@v26.10.13#subdirectory=_extensions/engine/mpl"
 ```
 
 ```python
