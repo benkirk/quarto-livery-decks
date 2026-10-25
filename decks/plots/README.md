@@ -3,10 +3,11 @@
 `plots.qmd` is the cookbook for Python plots in a framework deck: matplotlib and seaborn in the
 livery's chart colors, its font and the slide's own type sizes, in all three formats, with no
 styling code. It shows lines, a seaborn bar chart from pandas, a stacked area in hue families, a
-heatmap, a diverging field, two plots in columns, math in the labels, a dark slide. The design
+heatmap, a diverging field, two plots in columns, math in the labels, a dark slide, and gnuplot
+in the same colors and sizes ([gnuplot](#gnuplot)). The design
 and the color science are in [`design/charts-and-plots.md`](../../design/charts-and-plots.md).
 
-![The plots deck under every livery: lines, hue families, a heatmap, a dark slide](screenshots/liveries.png)
+![The plots deck under every livery: lines, hue families, a heatmap, a dark slide, gnuplot](screenshots/liveries.png)
 
 ## A deck with plots
 
@@ -60,6 +61,46 @@ them is a *Plots* entry in [`CHANGELOG.md`](../../CHANGELOG.md).
 What breaks it: `sns.set_theme()` or `plt.style.use(...)` (they replace the livery's style), a
 hand-picked `figsize` (it changes the text size; for smaller type, `dense()`), a colormap by name
 such as `viridis`, more than eight series (fold the rest into "Other").
+
+## gnuplot
+
+A gnuplot script wears the livery too, through `livery_gp` (beside `livery_mpl`, on the same
+path):
+
+````markdown
+```{python}
+#| include: false
+import livery_gp
+```
+
+## Scaling
+
+```{python}
+livery_gp.plot("""
+set xlabel 'Nodes'; set ylabel 'Time to solution (s)'; set logscale xy 2
+plot 'data/scaling.tsv' using 1:3 with linespoints title 'Solver A', \\
+     '' using 1:2 with lines dt 2 lc rgb livery_muted title 'Ideal'
+""")                               # the cell's last line: Jupyter shows what it returns
+```
+````
+
+The script is plain gnuplot without a terminal or output: `plot()` draws it at
+`livery_mpl.figsize()` (`kind="half"` in a column, `height=0.6` for a short one) on a cairo PDF
+terminal after loading the livery's `build/livery.gp`, so the lines take the categorical slots,
+the axes the chrome, the text the livery's face at the slide's sizes, and `pm3d` or `with image`
+the default map. The PDF deck gets that PDF; pptx and HTML get it as SVG with the text as paths
+(`pdftocairo`). Data paths are the deck directory's. `dark=True` is for a `{.brand-dark}` slide.
+
+In the script, on lines of their own: `@livery_div` for the diverging palette, `@livery_dark` and
+`@livery_light` for either mode. The strings `livery_muted`, `livery_good`, `livery_warning`,
+`livery_serious`, `livery_critical`, `livery_surface` and `livery_text` are the mode's colors
+(`lc rgb livery_muted`). `Make.common` exports `GNUPLOT_LIB`, so a gnuplot script run in a deck's
+`{bash}` cell or recipe can `load 'livery.gp'` itself (after setting a cairo terminal, at
+`fontscale 0.75 linewidth 1`, which makes its sizes points).
+
+gnuplot is in the image (`gnuplot-nox`). Natively, install it (`brew install gnuplot`; on Linux,
+your distribution's `gnuplot-nox`, not conda-forge's, which brings Qt); `livery_gp` says so when
+it is missing. It also needs poppler's `pdftocairo`, which the framework's conda env has.
 
 ## A note under a plot
 
@@ -123,8 +164,9 @@ livery's full contact sheet.
 
 ## Outside the decks
 
-`make charts-zip LIVERY=<name>` (any deck directory) writes `<name>-charts.zip`: the style, the
-helper, `livery.json`, the fonts and their licenses, and the contact sheet. Unzip it beside a
+`make charts-zip LIVERY=<name>` (any deck directory) writes `<name>-charts.zip`: the styles
+(`livery.mplstyle`, `livery.gp`), the helpers (`livery_mpl`, `livery_gp`), `livery.json`, the fonts
+and their licenses, and the contact sheet. Unzip it beside a
 script, `import livery_mpl`, and its plots wear the livery. Every release attaches one per
 livery: `releases/latest/download/<name>-charts.zip`. Its README and `livery_mpl.__version__`
 name the engine that packed it, and its `livery.json` carries the same `engine` and `schema`

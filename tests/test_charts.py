@@ -208,3 +208,123 @@ def test_missing_glyphs_fall_back(tmp_path):
     r = subprocess.run([sys.executable, "-c", GLYPHS, str(tmp_path / "g.png")], env=env, capture_output=True, text=True, check=True)
     assert "missing from font" not in r.stderr, r.stderr
     assert (tmp_path / "g.png").stat().st_size > 0
+
+
+def _gp_mode(text: str, mode: str) -> str:
+    """A livery.gp's datablock of one mode's commands."""
+    return text.split(f"$livery_{mode} << EOD\n", 1)[1].split("\nEOD\n", 1)[0]
+
+
+def test_gp(livery: Path):
+    """build/livery.gp: each mode's datablock holds its categorical slots as linetypes, its chrome
+    and status colors; the sizes are the type roles (as the mplstyle's); the livery's mode is
+    applied last. With gnuplot here the file loads whole, each mode's block to its last line
+    (gnuplot's @ expansion cut a long macro off silently, which this would catch)."""
+    import shutil
+    import subprocess
+    d = livery
+    L = json.loads((d / "build" / "livery.json").read_text())
+    ch, ty = L["charts"], L["type"]
+    text = (d / "build" / "livery.gp").read_text()
+    for m in ("light", "dark"):
+        block = _gp_mode(text, m)
+        lts = [ln.split("'")[1] for ln in block.splitlines() if ln.startswith("set linetype ") and "lc rgb" in ln]
+        assert lts == ch[m]["categorical"], f"{d.name}: livery.gp {m} linetypes {lts}"
+        c = ch["chrome"][m]
+        assert f"set border 3 back lc rgb '{c['spine']}'" in block and f"livery_text = '{c['text']}'" in block, f"{d.name}: {m} chrome"
+        assert f"lc rgb '{c['grid']}'" in block and f"livery_good = '{ch[m]['status']['good']}'" in block, f"{d.name}: {m} grid, status"
+    family = L["typography"].get("base")
+    assert f'livery_font = "{family},{ty["roles"]["caption"]["pt"]:g}"' in text, f"{d.name}: livery.gp font"
+    assert f'set xlabel font ",{ty["roles"]["body"]["pt"]:g}"' in text and f'set tics font ",{ty["levels"][2]:g}"' in text, f"{d.name}: livery.gp sizes"
+    assert text.rstrip().endswith(f"@livery_{ch['mode']}"), f"{d.name}: livery.gp does not apply its mode"
+    if shutil.which("gnuplot"):
+        out = {}
+        for m in ("light", "dark"):
+            # one -e a line: a line's macros expand before any of it runs; a cairo terminal first, as
+            # the README says, and once with none (a display-less gnuplot's `unknown`)
+            for term in (["-e", "set terminal pdfcairo fontscale 0.75 linewidth 1", "-e", "set output '/dev/null'"], []):
+                r = subprocess.run(["gnuplot", "-d", *term, "-e", f"load '{d / 'build' / 'livery.gp'}'", "-e", f"@livery_{m}",
+                                    "-e", "@livery_div", "-e", "print livery_mode, ' ', livery_text"], capture_output=True, text=True)
+                assert r.returncode == 0, f"{d.name}: livery.gp under gnuplot {term}: {r.stderr}"
+            out[m] = r.stderr.split()
+        for m in ("light", "dark"):
+            assert out[m] == [m, ch["chrome"][m]["text"]], f"{d.name}: gnuplot read {out[m]} for {m}"
+
+
+GP = r"""
+import json, sys
+import livery_gp
+p = livery_gp.plot('''
+set xlabel 'Nodes'; set ylabel 'Time (s)'
+plot '-' using 1:2 with linespoints title 'Run A', '-' using 1:2 with linespoints title 'Run B'
+1 10
+2 6
+4 3
+e
+1 12
+2 7
+4 5
+e
+''', kind="half", dark=sys.argv[2] == "dark")
+p.save(sys.argv[1] + ".pdf")
+if p.svg is not None:
+    p.save(sys.argv[1] + ".svg")
+print(json.dumps(list(p._repr_mimebundle_())))
+"""
+
+
+@pytest.mark.skipif(not __import__("shutil").which("gnuplot"), reason="no gnuplot (the image's gnuplot-nox; brew install gnuplot)")
+def test_gp_render(tmp_path):
+    """livery_gp.plot() under ncar, as Make.common runs a deck: the SVG (pptx and HTML) has the text
+    as paths, the figure's size in pt, the first data line in the first categorical color at
+    2 pt (the dark mode's with dark=True); the PDF (beamer) is what Jupyter is handed there and
+    embeds the livery's family."""
+    import os
+    import re
+    import subprocess
+    import sys
+    d = ROOT / "liveries" / "ncar"
+    L = json.loads((d / "build" / "livery.json").read_text())
+    w, h = L["charts"]["figsize"]["half"]
+    for fmt, mode in (("html", "light"), ("html", "dark"), ("pdf", "light")):
+        env = {**os.environ, "LIVERY_DIR": str(d), "ENGINE_FORMAT": fmt, "XDG_CACHE_HOME": str(tmp_path / "cache"),
+               "MPLCONFIGDIR": str(tmp_path / "mpl"), "PYTHONPATH": str(ENGINE / "mpl")}
+        env.pop("GNUPLOT_LIB", None)
+        stem = tmp_path / f"{fmt}-{mode}"
+        r = subprocess.run([sys.executable, "-c", GP, str(stem), mode], env=env, capture_output=True, text=True, cwd=tmp_path)
+        assert r.returncode == 0, r.stderr
+        mimes = json.loads(r.stdout.splitlines()[-1])
+        assert mimes == (["application/pdf"] if fmt == "pdf" else ["image/svg+xml"]), f"{fmt}: {mimes}"
+        fonts = subprocess.run(["pdffonts", f"{stem}.pdf"], capture_output=True, text=True).stdout
+        assert L["typography"]["base"].replace(" ", "") in fonts, f"{fmt}: pdffonts {fonts}"
+        if fmt == "pdf":
+            continue
+        svg = Path(f"{stem}.svg").read_text()
+        assert "<text" not in svg and "<path" in svg, f"{mode}: SVG text not outlined"
+        assert f'width="{w * 72:g}pt"' in svg and f'height="{h * 72:g}pt"' in svg, f"{mode}: SVG size {svg[:300]}"
+        first = re.search(r'stroke-width="2"[^>]*stroke="rgb\(([\d.]+)%, ([\d.]+)%, ([\d.]+)%\)"', svg) or \
+            re.search(r'stroke="rgb\(([\d.]+)%, ([\d.]+)%, ([\d.]+)%\)"[^>]*stroke-width="2"', svg)
+        assert first, f"{mode}: no 2 pt line"
+        got = "#" + "".join(f"{round(float(v) * 2.55):02X}" for v in first.groups())
+        assert got == L["charts"][mode]["categorical"][0], f"{mode}: first line {got}"
+
+
+@pytest.mark.skipif(not __import__("shutil").which("gnuplot"), reason="no gnuplot (the image's gnuplot-nox; brew install gnuplot)")
+def test_gp_bundled_face(tmp_path):
+    """livery_gp.plot() embeds a face the livery bundles but the machine has not installed: nasa's
+    Public Sans. ncar's Poppins is installed on the Macs this runs on, so test_gp_render passes
+    there without livery_gp's fontconfig file; without it (or without PANGOCAIRO_BACKEND=fc,
+    Homebrew's pango then draws through CoreText) a Mac draws this in Helvetica. The image installs
+    every livery's fonts, so there it passes either way."""
+    import os
+    import subprocess
+    import sys
+    d = ROOT / "liveries" / "nasa"
+    family = json.loads((d / "build" / "livery.json").read_text())["typography"]["base"]
+    env = {**os.environ, "LIVERY_DIR": str(d), "ENGINE_FORMAT": "pdf", "XDG_CACHE_HOME": str(tmp_path / "cache"),
+           "MPLCONFIGDIR": str(tmp_path / "mpl"), "PYTHONPATH": str(ENGINE / "mpl")}
+    env.pop("GNUPLOT_LIB", None)
+    r = subprocess.run([sys.executable, "-c", GP, str(tmp_path / "p"), "light"], env=env, capture_output=True, text=True, cwd=tmp_path)
+    assert r.returncode == 0, r.stderr
+    fonts = subprocess.run(["pdffonts", str(tmp_path / "p.pdf")], capture_output=True, text=True).stdout
+    assert family.replace(" ", "") in fonts, f"nasa: pdffonts {fonts}"

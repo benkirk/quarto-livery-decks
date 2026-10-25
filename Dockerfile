@@ -16,13 +16,14 @@ ENV LANG=C.UTF-8
 # 1. The toolchain the recipes call, TeX Live (the list the former ci-liveries workflow proved, the
 #    engine's own CI list: quarto's XeLaTeX render AND the Overleaf zip's bare latexmk, which
 #    cannot install packages the way TinyTeX does; texlive-bibtex-extra is biblatex, for the
-#    cookbook's citations, which bibtex runs), LibreOffice Impress for `make measure`'s pptx leg.
+#    cookbook's citations, which bibtex runs), LibreOffice Impress for `make measure`'s pptx leg,
+#    gnuplot-nox for livery_gp.py (cairo's terminals, ~10 MB; conda-forge's gnuplot pulls Qt).
 #    TinyTeX is per-user ($HOME) and needs the network at render time: not here.
 RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
       ca-certificates curl git rsync unzip zip jq make \
       latexmk texlive-xetex texlive-latex-recommended texlive-latex-extra texlive-bibtex-extra \
       texlive-fonts-recommended texlive-fonts-extra lmodern fonts-lmodern fonts-texgyre-math \
-      poppler-utils libreoffice-impress \
+      poppler-utils libreoffice-impress gnuplot-nox \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Fonts, a rich but bounded set (~200 MB; CJK left out, docs/container.md says how to add it). A
@@ -86,6 +87,7 @@ done <<<"$want"
 test "$bad" -eq 0
 quarto --version
 rsvg-convert --version   # pptx_steps/svg_fallback.py: an SVG plot's PNG fallback
+gnuplot --version        # livery_gp.py: gnuplot's cairo terminals (gnuplot-nox: no Qt, no X)
 EOS
 
 # 5. The bash kernel (executable {bash} cells) and ONE headless Chromium, shared by Quarto

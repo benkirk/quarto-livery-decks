@@ -270,9 +270,13 @@ must pass the ncar pins unchanged; if they fail, the checks are wrong.
   `livery` cycle list, so LaTeX and Overleaf plots match;
 - **`template.pptx`** (`livery_template.py`): the light categorical palette as
   `<a:custClrLst>` in `theme1.xml`, each color named ("Data 1 · Blue"), shown by PowerPoint as
-  a Custom Colors row in every color picker (section 7).
+  a Custom Colors row in every color picker (section 7);
+- **`build/livery.gp`** (`emit_gp()`): the mplstyle's numbers as gnuplot commands, each mode a
+  datablock its macro replays (`@livery_dark`), drawn by `mpl/livery_gp.py`
+  (`plots-gnuplot-and-r.md`, section 3).
 
-Later and cheap, not this work: a Plotly template or a Vega theme from the same data.
+Later and cheap, not this work: a Plotly template or a Vega theme from the same data. R
+(`build/livery.R`, a derived `-r` image) is designed in `plots-gnuplot-and-r.md`.
 
 ## 7. PowerPoint: the colors are already baked in
 

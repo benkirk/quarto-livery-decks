@@ -117,6 +117,8 @@ LIVERY_MONO  := $(shell python3 $(LIVERY_PY) mono $(LIVERY_DIR))
 # slide's size. A cell's own fig-width/fig-height still wins. Not for beamer, whose fig-width is
 # paper inches and sizes its baked diagrams; there livery_mpl sets the plots' size itself.
 export MATPLOTLIBRC := $(abspath $(LIVERY_DIR))/build/livery.mplstyle
+# gnuplot's: `load 'livery.gp'` finds the livery's style (livery_gp.plot() loads it itself)
+export GNUPLOT_LIB  := $(abspath $(LIVERY_DIR))/build
 export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(PYTHONPATH),:$(PYTHONPATH))
 LIVERY_FIGSIZE := $(shell python3 $(LIVERY_PY) figsize $(LIVERY_DIR))
 FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fig-height:$(word 2,$(LIVERY_FIGSIZE)))

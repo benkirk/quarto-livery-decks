@@ -1,6 +1,6 @@
 ---
 title: "Plots in the Livery"
-subtitle: "matplotlib and seaborn in the brand's colors, fonts and sizes"
+subtitle: "matplotlib, seaborn and gnuplot in the brand's colors, fonts and sizes"
 author: "Your Name, Your Lab"
 date: last-modified
 engine: jupyter
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.ndimage import gaussian_filter
 import livery_mpl
+import livery_gp                     # gnuplot in the livery (livery_gp.plot())
 
 rng = np.random.default_rng(2026)   # deterministic: CI and parity render this deck
 ```
@@ -221,6 +222,37 @@ with livery_mpl.raster():
     plt.show()
 ```
 
+## gnuplot in the livery
+
+```{python}
+# livery_gp.plot(): a gnuplot script drawn in the livery (build/livery.gp, loaded first: the
+# categorical slots as linetypes, the chrome, the type sizes), the text as outlines, at the
+# content area's size; the cell's last line, which Jupyter shows
+livery_gp.plot("""
+set xlabel 'Nodes'; set ylabel 'Time to solution (s)'
+set logscale xy 2
+set key top right
+plot 'data/scaling.tsv' using 1:3 with linespoints title 'Solver A', \\
+     '' using 1:4 with linespoints title 'Solver B', \\
+     '' using 1:2 with lines dt 2 lw 2 lc rgb livery_muted title 'Ideal'
+""")
+```
+
+## gnuplot on a dark slide {.brand-dark}
+
+```{python}
+# dark=True: the dark mode's colors, as livery_mpl.dark(); @livery_div, on a line of its own, the
+# diverging palette. '++' samples urange by vrange (default wider than the axes) at samples (x)
+# by isosamples (y): set both ranges to the axes, or the field is a fraction of its pixels
+livery_gp.plot("""
+@livery_div
+set xlabel 'x (km)'; set ylabel 'y (km)'; set cblabel 'Anomaly'
+set xrange [-3:3]; set yrange [-2:2]; set cbrange [-1:1]
+set urange [-3:3]; set vrange [-2:2]; set samples 480; set isosamples 320
+plot '++' using 1:2:(exp(-($1**2 + $2**2) / 3) * sin(2 * $1) * cos($2)) with image notitle
+""", dark=True)
+```
+
 ## ⚠︎ What breaks the style {.caution}
 
 - `sns.set_theme()` or `plt.style.use(...)` replaces the livery's style: leave both out
@@ -241,6 +273,7 @@ with livery_mpl.dark():                    # a {.brand-dark} slide
     ...
 with livery_mpl.raster():                  # this figure as PNG, the deck's others vector
     ...
+livery_gp.plot("plot 'data.tsv' using 1:2")   # gnuplot, in the same colors and sizes
 ```
 
-The style is `build/livery.mplstyle`, generated with the livery's other files.
+The styles are `build/livery.mplstyle` and `build/livery.gp`, generated with the livery's other files.

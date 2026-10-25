@@ -23,7 +23,7 @@ their modules only when run, so `zip` needs nothing beyond Python and the engine
 
 The reader's directory comes from the argument, else $LIVERY_DIR (exported by the framework's
 Make.common), else a `_livery` link in the current directory. `deps` prints
-build/livery.{json,sty,css,theme,mplstyle}, the template and every file the data names (the
+build/livery.{json,sty,css,theme,mplstyle,gp}, the template and every file the data names (the
 parent's too), joined to the directory as given, and warns when another engine version wrote
 build/; deps, mono and figsize print nothing when build/livery.json is missing."""
 
@@ -198,7 +198,7 @@ def deps(d: str) -> list[str]:
         by = f"engine {lv['engine']}" if lv.get("engine") else "an older engine"
         print(f"warning: {d}'s build/ was written by {by}, this is {engine_version()}: rebuild it with "
               f"`livery build {d}`", file=sys.stderr)
-    rel = [f"build/livery.{x}" for x in ("json", "sty", "css", "theme", "mplstyle")] + [p for p, _ in files(lv)]
+    rel = [f"build/livery.{x}" for x in ("json", "sty", "css", "theme", "mplstyle", "gp")] + [p for p, _ in files(lv)]
     return sorted({os.path.normpath(Path(d) / p) for p in rel if (Path(d) / p).exists()})
 
 
