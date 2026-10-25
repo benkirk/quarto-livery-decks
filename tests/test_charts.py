@@ -307,3 +307,24 @@ def test_gp_render(tmp_path):
         assert first, f"{mode}: no 2 pt line"
         got = "#" + "".join(f"{round(float(v) * 2.55):02X}" for v in first.groups())
         assert got == L["charts"][mode]["categorical"][0], f"{mode}: first line {got}"
+
+
+@pytest.mark.skipif(not __import__("shutil").which("gnuplot"), reason="no gnuplot (the image's gnuplot-nox; brew install gnuplot)")
+def test_gp_bundled_face(tmp_path):
+    """livery_gp.plot() embeds a face the livery bundles but the machine has not installed: nasa's
+    Public Sans. ncar's Poppins is installed on the Macs this runs on, so test_gp_render passes
+    there without livery_gp's fontconfig file; without it (or without PANGOCAIRO_BACKEND=fc,
+    Homebrew's pango then draws through CoreText) a Mac draws this in Helvetica. The image installs
+    every livery's fonts, so there it passes either way."""
+    import os
+    import subprocess
+    import sys
+    d = ROOT / "liveries" / "nasa"
+    family = json.loads((d / "build" / "livery.json").read_text())["typography"]["base"]
+    env = {**os.environ, "LIVERY_DIR": str(d), "ENGINE_FORMAT": "pdf", "XDG_CACHE_HOME": str(tmp_path / "cache"),
+           "MPLCONFIGDIR": str(tmp_path / "mpl"), "PYTHONPATH": str(ENGINE / "mpl")}
+    env.pop("GNUPLOT_LIB", None)
+    r = subprocess.run([sys.executable, "-c", GP, str(tmp_path / "p"), "light"], env=env, capture_output=True, text=True, cwd=tmp_path)
+    assert r.returncode == 0, r.stderr
+    fonts = subprocess.run(["pdffonts", str(tmp_path / "p.pdf")], capture_output=True, text=True).stdout
+    assert family.replace(" ", "") in fonts, f"nasa: pdffonts {fonts}"
