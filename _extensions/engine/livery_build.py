@@ -1472,6 +1472,11 @@ def is_cff(path: Path) -> bool:
         return False
 
 
+# a plot's line weights in points, every plot drawer's (emit_mplstyle(), emit_gp(); R's, when
+# built): the data lines, the axis lines and ticks, the grid
+PLOT_LW = {"line": 2.0, "spine": 0.8, "grid": 0.5}
+
+
 def emit_mplstyle(livery: dict, d: Path) -> str:
     """matplotlib's style (Make.common's MATPLOTLIBRC; livery_mpl.py applies it too): the chrome of the
     livery's mode (livery.json charts.chrome), transparent figures so a plot sits on any field, the
@@ -1507,14 +1512,14 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
         ("axes.facecolor", "none"),
         ("axes.labelsize", pt("body")),
         ("axes.titlesize", pt("body")),
-        ("axes.linewidth", 0.8),
+        ("axes.linewidth", PLOT_LW["spine"]),
         ("axes.spines.top", False),
         ("axes.spines.right", False),
         ("axes.grid", True),
         ("axes.axisbelow", True),
         ("axes.prop_cycle", f"cycler('color', [{cycle}])"),
         ("grid.color", h(c["grid"])),
-        ("grid.linewidth", 0.5),
+        ("grid.linewidth", PLOT_LW["grid"]),
         ("xtick.color", h(c["spine"])),
         ("ytick.color", h(c["spine"])),
         ("xtick.labelcolor", h(c["text"])),
@@ -1524,7 +1529,7 @@ def emit_mplstyle(livery: dict, d: Path) -> str:
         ("legend.fontsize", small),
         ("legend.title_fontsize", small),
         ("legend.frameon", False),
-        ("lines.linewidth", 2.0),
+        ("lines.linewidth", PLOT_LW["line"]),
         ("patch.edgecolor", h(ch[mode]["surface"])),
         ("figure.facecolor", "none"),
         ("figure.edgecolor", "none"),
@@ -1580,17 +1585,17 @@ def emit_gp(livery: dict) -> str:
 
     def macro(m):
         c, b = ch["chrome"][m], ch[m]
-        cmds = [f"set linetype {i + 1} lc rgb '{x}' lw {lw(2.0)} pt 7 ps 0.6 dt solid" for i, x in enumerate(b["categorical"])]
+        cmds = [f"set linetype {i + 1} lc rgb '{x}' lw {lw(PLOT_LW['line'])} pt 7 ps 0.6 dt solid" for i, x in enumerate(b["categorical"])]
         cmds += [f"set linetype cycle {len(b['categorical'])}",
-                 f"set border 3 back lc rgb '{c['spine']}' lw {lw(0.8)}",
+                 f"set border 3 back lc rgb '{c['spine']}' lw {lw(PLOT_LW['spine'])}",
                  f"set tics textcolor rgb '{c['text']}'",
-                 f"set style line {GP_GRID} lc rgb '{c['grid']}' lw {lw(0.5)} dt solid",
+                 f"set style line {GP_GRID} lc rgb '{c['grid']}' lw {lw(PLOT_LW['grid'])} dt solid",
                  f"set grid back ls {GP_GRID}",
                  f"set xlabel textcolor rgb '{c['text']}'", f"set ylabel textcolor rgb '{c['text']}'",
                  f"set x2label textcolor rgb '{c['text']}'", f"set y2label textcolor rgb '{c['text']}'",
                  f"set cblabel textcolor rgb '{c['text']}'", f"set title textcolor rgb '{c['text']}'",
                  f"set key textcolor rgb '{c['text']}'",
-                 f"set style line {GP_BORDER} lc rgb '{c['spine']}' lw {lw(0.8)}",
+                 f"set style line {GP_BORDER} lc rgb '{c['spine']}' lw {lw(PLOT_LW['spine'])}",
                  f"set colorbox border {GP_BORDER}",
                  f"set style fill solid 1 border lc rgb '{b['surface']}'",
                  palette(b["sequential"][b["default-map"]])]

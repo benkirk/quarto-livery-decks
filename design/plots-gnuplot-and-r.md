@@ -221,8 +221,9 @@ value a `livery.json` key:
 - `livery <- list(...)`: `colors` (categorical), `families`, `status`, `muted`, `surface`,
   `chrome`, `figsize`, `mode`, and the same for the other mode under `livery$dark`.
 - `theme_livery(base_size = <body pt>)`: `theme_minimal()` with `text` in the base family and
-  `chrome.text`, axis lines and ticks `chrome.spine` at 0.8, the grid `chrome.grid` at 0.5
-  (major only), no panel or plot background (`fill = NA`: the plot sits on any field), legend
+  `chrome.text`, axis lines and ticks `chrome.spine`, the grid `chrome.grid` (major only), at
+  `livery_build.PLOT_LW`'s weights (0.8 and 0.5 pt; the data lines 2), no panel or plot
+  background (`fill = NA`: the plot sits on any field), legend
   without a box, titles `subhead` pt, axis text `levels[2]` pt, captions `caption` pt.
 - `theme_set(theme_livery())`; `options(ggplot2.discrete.colour = livery$colors,
   ggplot2.discrete.fill = livery$colors)`; `scale_colour_livery_c()`/`scale_fill_livery_c()`
