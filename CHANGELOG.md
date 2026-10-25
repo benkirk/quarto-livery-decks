@@ -18,6 +18,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.10.13] - 2026-10-24
+
+Cards on the livery's surface by default, with `boxes.card.tint` for a wash of the card's role
+(#152); gnuplot in the livery's chart colors, font and sizes, beside matplotlib (#153, #155,
+`design/plots-gnuplot-and-r.md`).
+
 ### Decks
 
 - A card's body is on the livery's surface (NCAR's light gray), off the page as a lead is, where
@@ -861,7 +867,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.12...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.13...HEAD
+[26.10.13]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.13
 [26.10.12]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.12
 [26.10.11]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.11
 [26.10.10]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.10
