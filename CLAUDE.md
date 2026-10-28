@@ -686,8 +686,13 @@ it does, by area, beyond the format notes above:
   remark, a `::: note`'s) into its caption, which pandoc draws at the slide's foot;
   `style_footnotes.py` then styles a footnote there, left-aligned. pandoc captions
   a figure from its image's text, not the Figure's caption, so the fold writes both
-  (extending only the Figure's caption dropped the text silently). Anything
-  else after it (a list, code, a second table) still splits, on purpose. Never
+  (extending only the Figure's caption dropped the text silently). A bullet or
+  numbered list there folds in too, as `⟦engine:list⟧` marker paragraphs (a nested
+  list a span of its own; `⟦engine:list ordered start=n⟧`), and `grid.py` draws it as
+  the body's list (a "Body list" box in the master's body style, each item at its
+  level) under the table's measured rows or the picture, the lines beside it
+  left-aligned. Anything else after it (code, a second table, a list item holding
+  more than a line and its sublists) still splits, on purpose. Never
   wrap such a body in a 100% column: pandoc gives the table the whole
   placeholder and silently drops the text after it (the slide count doesn't
   change, so `make qa` can't see it). Content *after* `.columns` still splits,

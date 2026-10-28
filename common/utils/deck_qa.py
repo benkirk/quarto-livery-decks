@@ -93,11 +93,13 @@ MEASURE_JS = r"""
   const has = sel => kids.some(k => k.matches(sel) || k.querySelector(sel));
   const kind = has('table') ? 'table' : has('pre') ? 'code'
     : has('img, svg, .cell-output-display') ? 'figure' : has('.columns') ? 'columns' : 'text';
-  // the table's span across the slide (shares of the width): the PDF's column check reads only
-  // the lines inside it, so bullets beside the table in a .columns slide are not its columns
+  // the table's box on the slide (shares of the width, then of the height): the PDF's column
+  // check reads only the lines inside it, so bullets beside the table in a .columns slide, or a
+  // list under it, are not its columns
   const tbl = kind === 'table' && s.querySelector('table');
-  const tableBox = tbl ? [(tbl.getBoundingClientRect().left - sr.left) / sr.width,
-                          (tbl.getBoundingClientRect().right - sr.left) / sr.width] : null;
+  const tb = tbl && tbl.getBoundingClientRect();
+  const tableBox = tb ? [(tb.left - sr.left) / sr.width, (tb.right - sr.left) / sr.width,
+                         (tb.top - sr.top) / sr.height, (tb.bottom - sr.top) / sr.height] : null;
   // a ::: note paragraph past one line (layout pixels: reveal's scaling leaves offsetHeight alone)
   const noteWrap = [...s.querySelectorAll('.engine-note p')].some(
     p => p.offsetHeight > 1.5 * parseFloat(getComputedStyle(p).lineHeight));
@@ -180,6 +182,7 @@ def frames(pages):
 
 
 SPAN_PAD = 0.02   # of the width: the HTML table's span, widened before the PDF's lines are read against it
+SPAN_VPAD = 0.04  # of the height: its top and bottom, widened alike (the formats fit alike, not to the point)
 INDENT = 0.02     # of the width: an edge this close to the right of a cell's own start is an indented
                   # sub-row of its column (a hierarchy table's), not the next column
 
@@ -195,11 +198,17 @@ def table_overruns(lines, w, h, span=None):
     start is its column's indented sub-rows (a hierarchy table's), not a column it crosses.
     `span` is the table's (left, right) as shares
     of the width, the HTML's measure of the same slide: only the lines reaching into it are read,
-    so a bullet list beside the table (its hanging lines start at an x of their own) is no column."""
+    so a bullet list beside the table (its hanging lines start at an x of their own) is no column;
+    with (top, bottom) after them, shares of the height, only the lines whose middle is within
+    them too, so a paragraph or list under the table, starting at its first column's edge, is no
+    cell."""
     body = [ln for ln in lines if ln[1] > h * 0.16]          # below the frame title
     if span:
         x0, x1 = (span[0] - SPAN_PAD) * w, (span[1] + SPAN_PAD) * w
         body = [ln for ln in body if ln[2] > x0 and ln[0] < x1]
+        if len(span) == 4:
+            y0, y1 = (span[2] - SPAN_VPAD) * h, (span[3] + SPAN_VPAD) * h
+            body = [ln for ln in body if y0 <= (ln[1] + ln[3]) / 2 <= y1]
     starts = {}
     for ln in body:
         starts.setdefault(round(ln[0]), []).append(ln)

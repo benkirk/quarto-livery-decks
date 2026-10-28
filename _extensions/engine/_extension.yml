@@ -68,8 +68,9 @@ contributes:
       #   notes-last        speaker notes before a columns div split the slide; every slide's
       #                     notes move to its end, so any placement is safe
       #   single-body       content after a table or diagram splits the slide; the paragraphs
-      #                     after one, or a ::: note, move into its caption, at the slide's foot
-      #                     (after notes-last; slide_layout.py moves a note up under it)
+      #                     after one, a ::: note, or a list, move into its caption, at the slide's
+      #                     foot (after notes-last; slide_layout.py moves a note up under it, grid.py
+      #                     draws a list as bullets under it)
       #   linked-images     [![](x.png)](url): link_captions.py draws the line (here a no-op)
       reference-doc: ../../liveries/ncar/template.pptx
       highlight-style: ../../liveries/ncar/build/livery.theme

@@ -19,7 +19,11 @@ draw_picture(): the column's width, its aspect kept, its caption under it; "Colu
 "Card n picture", a card's inside its pads and its group; pictures give way, never below PIC_FLOOR
 em, when the text beside them needs the room); in a plain column, `⟦engine:table cols=n[ header]⟧`,
 per row `⟦engine:row⟧` and its cells led by `⟦engine:cell⟧`, its caption, `⟦engine:end⟧`, a native
-table (figures.py's draw_table(), "Column n table", which style_tables styles after). This
+table (figures.py's draw_table(), "Column n table", which style_tables styles after);
+`⟦engine:list⟧` (`⟦engine:list ordered start=n⟧`) ... `⟦engine:end⟧`, a list single-body.lua folded
+into the caption of the table or picture it follows, its items a line each and a nested list a span
+inside it: a "Body list" box under the table's measured rows or the picture, each item at its level
+(the master's body style sets its bullet), the flow's other lines left-aligned. This
 parses the placeholder's paragraphs into segments, text and columns, and lays them top down from the
 placeholder's frame (its top below the title, its foot geometry.body-bottom; its left and width,
 so a {.wide} slide's widening by slide_layout carries over): text before the columns stays in the
@@ -52,8 +56,8 @@ from .columns import rules
 from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
-                     inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, rect, rpr, shape, slide_title,
-                     space_before, split_br, style_runs)
+                     inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, ppr_place, rect, rpr, shape,
+                     slide_title, space_before, split_br, style_runs)
 from .slide_layout import NOTE_GAP, frame_note, note_style, use_layout
 from .measure import table_height, text_height
 
@@ -75,12 +79,28 @@ def _attrs(rest):
     return out
 
 
+def _list_item(p, attrs):
+    """A list's line as the body's list sets it: its level's bullet, indent and size from the box's
+    lstStyle (the master's body style), not the caption's centering and none; a numbered list's
+    number from its start."""
+    ppr = p.get_or_add_pPr()
+    for k in ("algn", "marL", "indent"):
+        ppr.attrib.pop(k, None)
+    for el in list(ppr):
+        if etree.QName(el).localname in ("buNone", "buChar", "buAutoNum", "buFont"):
+            ppr.remove(el)
+    ppr.set("lvl", str(attrs["level"] - 1))
+    if attrs.get("ordered"):
+        ppr_place(ppr, etree.Element(qn("a:buAutoNum"), type="arabicPeriod", startAt=str(attrs.get("start", 1))))
+
+
 def parse(paragraphs):
-    """The flow as segments: ("text", [p]), ("lead", attrs, [p]), ("strip" or "quote", attrs, [p]),
+    """The flow as segments: ("text", [p]), ("list", attrs, [p]), ("lead", attrs, [p]), ("strip" or "quote", attrs, [p]),
     ("columns", shares, [(attrs, [p])]; a strip or quote in a column one of its items),
     (kind, attrs, [("item", attrs, [p])]) for a rail, an agenda or a gallery; None when it holds no
     marker of a box (not a grid slide). Markers nest: a column inside its columns, an item inside its
-    rail, agenda or gallery, each closed by its `end`."""
+    rail, agenda or gallery, each closed by its `end`; a list inside a list (single-body.lua's, folded
+    into a caption) is the outer list's lines a level deeper."""
     segs, stack = [], []   # stack: the open containers, innermost last
 
     def text(p):
@@ -94,6 +114,9 @@ def parse(paragraphs):
             top = stack[-1] if stack else None
             if top is None or top[0] in ("columns", "rail", "agenda", "gallery"):   # a stray paragraph between columns or items: text
                 text(p)
+            elif top[0] == "list":
+                _list_item(p, top[1])
+                top[2].append(p)
             else:
                 top[-1].append(p)
             continue
@@ -116,6 +139,13 @@ def parse(paragraphs):
         elif kind == "lead" and not stack:
             seg = ("lead", attrs, [])
             segs.append(seg); stack.append(seg)
+        elif kind == "list" and (not stack or stack[-1][0] == "list"):   # a nested one adds to the outer list's lines
+            if stack:
+                seg = ("list", {**attrs, "level": stack[-1][1]["level"] + 1}, stack[-1][2])
+            else:
+                seg = ("list", {**attrs, "level": 1}, [])
+                segs.append(seg)
+            stack.append(seg)
         elif kind in ("strip", "quote", "picture", "table"):   # in a column, an item of its flow; else a segment of its own
             seg = (kind, attrs, [])
             if stack and stack[-1][0] == "column":
@@ -654,17 +684,18 @@ def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
             y += draw_gallery(slide, (left, y, width, max(bottom - y, 0)), seg[1], seg[2], caption,
                               slide_width, slide_height, deck_dir)
             continue
-        if seg[0] == "text":
-            if i == 0:   # before the columns: the placeholder keeps it, cut to its text
+        if seg[0] in ("text", "list"):
+            paras = seg[1] if seg[0] == "text" else seg[2]
+            if i == 0 and seg[0] == "text":   # before the columns: the placeholder keeps it, cut to its text
                 body = ph.text_frame._txBody
                 for p in body.findall(qn("a:p")):
-                    if p not in seg[1]:
+                    if p not in paras:
                         body.remove(p)
                 h = min(int(text_height(ph, slide) * SLACK), bottom - y)
                 ph.left, ph.top, ph.width, ph.height = left, y, width, h
                 keep = True
-            else:
-                tb = body_box(slide, left, y, width, max(bottom - y, 0), seg[1], "Body text")
+            else:   # a list in a box of its own, whose lstStyle (the master's body style) has the bullets
+                tb = body_box(slide, left, y, width, max(bottom - y, 0), paras, "Body list" if seg[0] == "list" else "Body text")
                 h = min(int(text_height(tb, slide) * SLACK), max(bottom - y, 0))
                 tb.height = h
             y += h
@@ -733,18 +764,25 @@ def run(prs, path: Path) -> None:
             segs = parse(paragraphs)
             if segs is None:
                 continue
-            for i in marker_spans(paragraphs):   # the fold's centering, off the lines grid draws
-                ppr = paragraphs[i].find(qn("a:pPr"))
-                if ppr is not None:
+            spans = marker_spans(paragraphs)
+            listed = any(s[0] == "list" for s in segs)   # a list after the table or picture: its flow is body text
+            for i, p in enumerate(paragraphs):   # the fold's centering, off the lines grid draws
+                ppr = p.find(qn("a:pPr"))
+                if i in spans and ppr is not None:
                     ppr.attrib.pop("algn", None)
+                elif listed and i not in spans:   # a line beside the list (a footnote is left already)
+                    p.get_or_add_pPr().set("algn", "l")
             for p in paragraphs:   # the marker paragraphs go
                 if MARK.match(para_text(p).strip()):
                     p.getparent().remove(p)
             above = [sh for sh in slide.shapes if is_picture(sh) and sh.top + sh.height <= ph.top]
+            # a list after a table: pandoc's caption box, at the foot, moves up under the table's measured rows
+            tables = [sh.top + table_height(sh, slide) for sh in slide.shapes if is_table(sh) and sh.top < ph.top] if listed else []
             # all four of a placeholder's sides at once: it inherits its frame, and setting one alone
             # leaves the rest at 0 (pandoc's caption box carries a frame, a Content with Caption's text box none)
-            if above:   # pandoc's caption box, under the picture: the flow starts just below it
-                ph.left, ph.top, ph.width, ph.height = ph.left, max(sh.top + sh.height for sh in above) + em(LEAD_GAP), ph.width, ph.height
+            if above or tables:   # pandoc's caption box, under the picture or table: the flow starts just below it
+                under = max([sh.top + sh.height for sh in above] + tables)
+                ph.left, ph.top, ph.width, ph.height = ph.left, under + em(LEAD_GAP), ph.width, ph.height
             beside = [sh for sh in slide.shapes if is_table(sh) and sh.left >= ph.left + ph.width - em(1)]
             if beside:   # a lead before a table: pandoc's Content with Caption set them side by side
                 use_layout(prs, slide, "Title and Content")
