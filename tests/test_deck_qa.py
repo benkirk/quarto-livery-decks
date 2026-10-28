@@ -150,3 +150,19 @@ def test_a_bottom_right_frame_number_is_furniture(deck_qa, monkeypatch):
     assert deck_qa.pdf_problems(W, H, [body, number, url], []) == []
     meets = (300, 186, 349, 196, "running-into-it")
     assert deck_qa.pdf_problems(W, H, [body, number, meets], []) == [("into the footer", repr("running-into-it"))]
+
+
+def test_lines_under_a_table_are_not_cells(deck_qa):
+    """A paragraph under the table at its first column's edge, wider than that column (a list's
+    lead-in, single-body.lua's list under a table): unscoped it reads as a merged cell; the table's
+    box with its top and bottom (MEASURE_JS's tableBox) leaves it out, and the table's own overrun
+    is still found."""
+    under = row(110, (120, 236, "A line under the table, across its columns"))
+    box = (*SPAN, 66 / H, 101 / H)   # the header's top to the last row's foot
+    page = lines(HEADER, *ROWS, under)
+    assert deck_qa.table_overruns(page, W, H) != [], "the premise: unscoped, the line reads as a cell"
+    assert deck_qa.table_overruns(page, W, H, box) == []
+    rows = list(ROWS)
+    rows[2] = row(96, (120, 180, "Gust-with-a-long-name HPC"), (228, 240, "128"))
+    out = deck_qa.table_overruns(lines(HEADER, *rows, under), W, H, box)
+    assert out == [("runs into the next table column", repr("Gust-with-a-long-name HPC"))], "the last row's overrun still found"

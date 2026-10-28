@@ -2,10 +2,14 @@
 -- image (a rendered diagram arrives as a Para holding one Image) onto an
 -- untitled continuation slide; a code block is text and does not split. The
 -- paragraphs after one table or image (a footnote, a remark) move into its
--- caption, which pandoc draws at the slide's foot. Anything else after it
--- (a list, code, a second table) is left to split: an extra slide is visible,
--- where text in a 100% column wrapper was silently dropped. A slide that
--- already holds a columns div is left alone. Runs after notes-last.lua.
+-- caption, which pandoc draws at the slide's foot. A bullet or numbered list
+-- there moves in too, as marker paragraphs (`⟦engine:list⟧`, its items, a
+-- nested list a span of its own, `⟦engine:end⟧`), which grid.py draws as the
+-- body's list under the table or picture. Anything else after it (code, a
+-- second table, a list item holding more than a line and its sublists) is left
+-- to split: an extra slide is visible, where text in a 100% column wrapper was
+-- silently dropped. A slide that already holds a columns div is left alone.
+-- Runs after notes-last.lua.
 -- A `::: note` div of paragraphs folds the same way, and marks its slide with
 -- an `engine-layout: note` notes line: slide_layout.py then draws the caption
 -- box as the note (the caption role, muted, centered, under the picture or
@@ -40,6 +44,39 @@ end
 
 local function is_text(blk)
   return (blk.t == "Para" or blk.t == "Plain") and not is_image_para(blk)
+end
+
+local function is_list(blk)
+  return blk.t == "BulletList" or blk.t == "OrderedList"
+end
+
+local function marker(s)   -- a marker paragraph, as grid-pptx.lua writes them
+  return pandoc.Para({ pandoc.Str("⟦engine:" .. s .. "⟧") })
+end
+
+-- A list as the paragraphs a caption can carry: `⟦engine:list⟧` (`⟦engine:list ordered
+-- start=n⟧`), each item's line, a nested list a span of its own, `⟦engine:end⟧`. nil when an item
+-- holds more than one line of text or anything but text and lists: the slide then splits.
+local function list_paras(blk)
+  local out = pandoc.Blocks({ marker(blk.t == "OrderedList"
+    and "list ordered start=" .. blk.listAttributes.start or "list") })
+  for _, item in ipairs(blk.content) do
+    local lines = 0
+    for _, b in ipairs(item) do
+      if is_text(b) and lines == 0 then
+        out:insert(pandoc.Para(b.content))
+        lines = 1
+      elseif is_list(b) then
+        local inner = list_paras(b)
+        if not inner then return nil end
+        out:extend(inner)
+      else
+        return nil
+      end
+    end
+  end
+  out:insert(marker("end"))
+  return out
 end
 
 -- a note of paragraphs only (anything else in it is left to split, as after a figure)
@@ -158,6 +195,10 @@ local function fold_trailing(body)
     elseif is_text_note(body[i]) then
       paras:extend(body[i].content)
       noted = true
+    elseif is_list(body[i]) then
+      local list = list_paras(body[i])
+      if not list then return body end
+      paras:extend(list)
     else
       return body
     end
