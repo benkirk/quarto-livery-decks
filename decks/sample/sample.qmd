@@ -109,6 +109,28 @@ layout); the engine puts the lead over the table at the body's width and the not
 the foot, as HTML and PDF stack them.
 :::
 
+## A list under a table
+
+| Resource | Type    | Cores per node |
+|:---------|:-------:|---------------:|
+| Derecho  | HPC     |            128 |
+| Casper   | DAV     |             36 |
+| Gust     | HPC     |            128 |
+
+**Which one?** The rule of thumb, by job:
+
+- A tightly coupled MPI run: Derecho
+- Interactive analysis and GPUs: Casper
+  - and its JupyterHub for notebooks
+- A port or a test build: Gust
+
+::: {.notes}
+A list after a table: pandoc's pptx writer moved it onto an untitled slide of its own; the
+engine folds it into the table's caption and draws it back as bullets under the table, the line
+before it left-aligned, as HTML and PDF already set it. Keep each item to one line of text and
+its sublists: an item holding a code block or a second paragraph still splits the pptx slide.
+:::
+
 ## Citing sources
 
 MPAS solves the compressible equations on a C-grid [@skamarock2012]; see also @knuth84.
