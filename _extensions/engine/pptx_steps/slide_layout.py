@@ -49,7 +49,7 @@ import livery as livery_mod
 import pptx_waves   # the waves, shared with the engine's template builder
 
 from . import docprops, measure, style_footnotes
-from .common import (BAND, BOXES, GEOM, K, LAYOUT_KEY, LIVERY, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
+from .common import (BAND, BOXES, GEOM, K, LAYOUT_KEY, LIVERY, NOTE, PHOTO, SLACK, contain_box, em, fit_picture, fit_table, inset, is_body, is_picture, is_table,
                      marker_spans, on_dark, pads, palette, para_text, ppr_place, rect, rpr, slide_title, split_br, take_marker)
 from .measure import LINE, inherited, other_size, para_lines, para_size, pieces, table_height, text_height
 
@@ -163,7 +163,7 @@ def note_style(slide):
     parts = _note_parts(slide)
     if parts is None:
         return False
-    parts[0].name = "Note"   # grid.py's left-align pass (a list under the note) leaves a Note centered
+    parts[0].name = NOTE   # grid.py's left-align pass (a list under the note) leaves a note centered
     tf = parts[0].text_frame
     split_br(tf._txBody)
     spans = marker_spans(tf._txBody.findall(qn("a:p")))   # a lead folded in after the caption: grid.py's

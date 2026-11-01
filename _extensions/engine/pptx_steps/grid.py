@@ -55,7 +55,7 @@ import livery as livery_mod
 from .columns import rules
 from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
-from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
+from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, NOTE, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
                      inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, ppr_place, rect, rpr, shape,
                      slide_title, space_before, split_br, strip_bullets, style_runs)
 from .slide_layout import NOTE_GAP, frame_note, note_style, scale_paragraphs, use_layout
@@ -773,7 +773,7 @@ def run(prs, path: Path) -> None:
                 ppr = p.find(qn("a:pPr"))
                 if i in spans and ppr is not None:
                     ppr.attrib.pop("algn", None)
-                elif listed and i not in spans and ph.name != "Note":   # a line beside the list (a footnote is left
+                elif listed and i not in spans and ph.name != NOTE:     # a line beside the list (a footnote is left
                     p.get_or_add_pPr().set("algn", "l")                 # already; a note keeps its centering, as HTML and PDF)
             for p in paragraphs:   # the marker paragraphs go
                 if MARK.match(para_text(p).strip()):
