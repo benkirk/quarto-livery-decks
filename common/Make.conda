@@ -5,7 +5,7 @@
 # which putting conda-env/bin on PATH is not), with DECKS_RUNTIME=native on its command line so it
 # never dispatches again. Command-line variables ride MAKEFLAGS, which make exports to the child;
 # the same host, so `publish` pushes from inside the run. GNU make 3.81-safe: macOS's make reads
-# this (CLAUDE.md "Runtime").
+# this.
 
 DECKS_CONDA_ENV ?= $(abspath $(FRAMEWORK_ROOT)conda-env)
 
