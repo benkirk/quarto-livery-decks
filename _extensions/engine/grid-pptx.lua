@@ -105,9 +105,7 @@ local function share(v)
   return (string.format("%.4f", v):gsub("0+$", ""):gsub("%.$", ""))
 end
 
-local function marker(s)
-  return pandoc.Para({ pandoc.Str("⟦engine:" .. s .. "⟧") })
-end
+local marker = C.marker   -- the marker paragraph (engine-common.lua's; single-body.lua writes it too)
 
 -- a picture or table: pandoc draws it as a shape of its own, outside any column's text
 local function is_shape(b)

@@ -50,9 +50,7 @@ local function is_list(blk)
   return blk.t == "BulletList" or blk.t == "OrderedList"
 end
 
-local function marker(s)   -- a marker paragraph, as grid-pptx.lua writes them
-  return pandoc.Para({ pandoc.Str("⟦engine:" .. s .. "⟧") })
-end
+local marker = C.marker   -- a marker paragraph, as grid-pptx.lua writes them (engine-common.lua's)
 
 -- A list as the paragraphs a caption can carry: `⟦engine:list⟧` (`⟦engine:list ordered
 -- start=n⟧`), each item's line, a nested list a span of its own, `⟦engine:end⟧`. nil when an item
