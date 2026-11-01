@@ -112,8 +112,8 @@ local function is_shape(b)
   return b.t == "Table" or C.is_figure(b) or (b.t == "Div" and C.holds_shape(b))
 end
 
-local function prefixed(word, inlines)   -- a paragraph led by a prefix marker, for grid.py
-  local il = pandoc.Inlines({ pandoc.Str("⟦engine:" .. word .. "⟧") })
+local function prefixed(word, inlines)   -- a paragraph led by a prefix marker (C.marker_text()), for grid.py
+  local il = pandoc.Inlines({ pandoc.Str(C.marker_text(word)) })
   il:extend(inlines)
   return pandoc.Para(il)
 end

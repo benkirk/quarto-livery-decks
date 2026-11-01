@@ -297,6 +297,20 @@ def test_no_private_imports():
     assert not hits, "\n".join(hits)
 
 
+def test_one_marker_writer():
+    """The pptx marker text `⟦engine:...⟧` is written by engine-common.lua's marker_text() alone:
+    no other Lua file builds the string (grid-pptx.lua's prefixed() did, beside C.marker(), until
+    the #157–#165 sweep). Comments may name it."""
+    hits = []
+    for f in sorted(ENGINE.glob("*.lua")):
+        if f.name == "engine-common.lua":
+            continue
+        for n, line in enumerate(f.read_text().splitlines(), 1):
+            if '"⟦engine:' in line and not line.lstrip().startswith("--"):
+                hits.append(f"{f.relative_to(ROOT)}:{n}: {line.strip()}")
+    assert not hits, "\n".join(hits)
+
+
 def test_slide_kinds_agree():
     """The slide kinds a composition draws (feature, closing, full) are named once in Lua
     (engine-common.lua SLIDE_KINDS) and must appear in the two lists that cannot read it: the HTML
