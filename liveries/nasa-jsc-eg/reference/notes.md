@@ -121,10 +121,10 @@ a label, `field: null` on a photo cover, the marking strip; then marks by image 
 the pptx's code (`pptx.code-typeface`), the hairline between columns (`boxes.columns.rule`),
 column widths in the pptx and three or more columns there, and the template's card look
 (`boxes.card`: the surface fill, an eg-green outline on a picked card), and the template's light
-cover (`art.title-light`). Still open:
+cover (`art.title-light`); then (26.10.12) a picture in a card or in a column of three or more,
+and a simple table in such a column, drawn in the pptx at the column's width (a table in a card
+stays refused in every format). Still open:
 
-- **Pictures and tables in cards and in slides of three or more columns** are not drawn in their
-  column in the pptx yet (the render warns).
 - **The template's 2×2 quadrant layout** (#124), four panels under one title.
 - **A deck-level key to swap the group's patch** (#124): today a group is its own flavor of this
   livery (`compositions.<name>.mark.image`).
@@ -143,5 +143,5 @@ and Title Slide (light). How the rest map:
 - **Title, Content & Image**: two columns, text and picture, `width="67%"` on the text's: the
   engine sets the pptx's columns at their widths, as HTML and PDF.
 - **Title & 3 Column, 3 Image Column, 4 Quadrants**: nothing reaches the layouts; three or four
-  `.column`s are drawn as text boxes at their widths (`{.wide}` for four), but not yet with a
-  picture in a column.
+  `.column`s are drawn as text boxes at their widths (`{.wide}` for four), a picture in a column
+  with them (26.10.12); the quadrants (two rows) are still open.
