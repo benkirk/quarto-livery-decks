@@ -24,8 +24,8 @@ short slide". Don't restate them; use them.
 4. Rebuild and rerun until the report is clean. Then look at the sheets once more.
 5. The pptx is checked too: a slide still holding a grid marker fails, and the deck as
    LibreOffice draws it (the livery's faces in a private profile) runs through the PDF's edge,
-   footer and overlap checks as `hint pptx` lines, with `_qa/<deck>-pptx.png` to read them
-   against (LibreOffice applies no autofit; `QA_PPTX_FAIL=1` makes them failures).
+   footer and overlap checks as `pptx s12: ...` failures, with `_qa/<deck>-pptx.png` to read
+   them against (LibreOffice applies no autofit; `QA_PPTX_FAIL=0` makes them hints).
 
 ## Known fixes
 
@@ -75,9 +75,11 @@ short slide". Don't restate them; use them.
   unnumbered frame with overlays would miscount.
 - **Diagrams are invisible to the PDF text checks** when they are mermaid PNGs. Only the
   HTML autofit hint and the contact sheet catch them.
-- **The pptx checks are hints.** LibreOffice's render is not PowerPoint's (no autofit, its own
-  face substitutions); promote them to failures (`QA_PPTX_FAIL=1` by default) once the sample,
-  quickstart, fixtures and a consumer deck run quiet on the Mac and in the image.
+- **The pptx checks fail, as the PDF's do.** LibreOffice's render is not PowerPoint's (no
+  autofit, its own face substitutions), and the checks allow for the two shapes that showed: a
+  lone symbol's box is the fallback face's (skipped), a big line's font box reaches into the
+  next line's (an overlap must pass `SPILL` of the taller box). A new false shape is a
+  deck_qa.py change with the measured boxes in `tests/test_deck_qa.py`, not a `QA_PPTX_FAIL=0`.
 - **Speed:** about 0.4 s a slide for the HTML pass. If decks grow, skip the screenshots or
   run in parallel.
 - **Theme follow-ups seen in the SAMuel pass:**

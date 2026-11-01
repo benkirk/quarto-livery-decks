@@ -18,6 +18,15 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+
+- `make qa` fails on the pptx's problems as it does on the PDF's: text past the right margin,
+  into the footer or overlapping another word, as LibreOffice draws the deck. The checks allow
+  for LibreOffice's ways (a symbol the livery's face lacks is drawn from a fallback face, whose box
+  is skipped; a big line's font box reaching into the next line's is its leading, not a
+  collision). `QA_PPTX_FAIL=0 make qa` keeps them hints on a machine whose LibreOffice draws
+  otherwise.
+
 ## [26.11.0] - 2026-11-01
 
 The toolchain moves to Quarto 1.10, a deck can carry its own Python packages (`requirements.txt`

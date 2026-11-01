@@ -9,13 +9,13 @@ Reads the already-built <deck>.{html,pdf,pptx} and writes to _qa/:
                     for the PDF and the pptx (as LibreOffice draws it)
 Failures (exit 1): slide counts that differ between formats, PDF text past the right margin,
 into the footer band, overlapping other text or running into the next table column (the table's own
-columns: the HTML says where the table is), HTML content past the right edge, a {.full}
+columns: the HTML says where the table is), the pptx as LibreOffice draws it (pptx_pdf.py) through
+the same edge, footer and overlap checks (QA_PPTX_FAIL=0 demotes those to hints, for a machine whose
+LibreOffice draws otherwise; <deck>-pptx.png is its contact sheet), HTML content past the right edge, a {.full}
 caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a grid
 marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), and a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
-Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank, and
-the pptx as LibreOffice draws it (pptx_pdf.py) through the PDF's edge, footer and overlap checks
-(QA_PPTX_FAIL=1 makes those failures; <deck>-pptx.png is its contact sheet).
+Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
 (`python -m playwright install chromium`, or set CHROME to a Chromium binary) and are skipped
 without it, the pptx checks LibreOffice (soffice) and are skipped without it.
@@ -39,6 +39,10 @@ SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
 EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - geometry.wide-margin
                           # on a {.wide} slide (columns keep to the text width, onlytextwidth)
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
+SYMBOL = ("So", "Sm", "Mn", "Cf")   # a lone symbol word's characters (⚠ ✓ ✗ →, a variation selector): a fallback face's
+SPILL = 0.35          # two words overlap only past this share of the TALLER box's height: a big line's font box
+                      # (Poppins ascends and descends 1.4 em) reaches 20-25% into the next line's as LibreOffice
+                      # leads it; a word inside a title's box, a footnote half over a body line, is 40-100%
 STRIPS = []           # set in main(): the livery's marking strips' boxes, furniture the text checks skip
 WATERMARK = ""        # set per deck in main(): the watermark's text (an HTML slide's), which the text checks skip
 WM_HEIGHT = 0.0       # set in main(): the watermark's size, of the page's height (livery.json watermark)
@@ -259,8 +263,10 @@ def pdf_problems(w, h, words, lines, slide=None):
             # meets the number (in either corner: within 6 pt of its box across), or below the footline
             if (wd[0] < n[2] + 6 and wd[2] > n[0] - 6) or wd[3] > n[3] + TOL:
                 out.append(("into the footer", repr(wd[4])))
-    # a math accent (the tilde of a typeset \tilde\rho) is a word of its own, set over its base
-    solid = [wd for wd in words if not all(unicodedata.combining(c) for c in wd[4])]
+    # a math accent (the tilde of a typeset \tilde\rho) is a word of its own, set over its base; a lone
+    # symbol (⚠ ✓ ✗ →, a variation selector) is drawn from a face the deck's lacks (LibreOffice: the
+    # image's color emoji), so its box is the fallback's, not the deck's: its neighbors still count
+    solid = [wd for wd in words if not all(unicodedata.combining(c) or unicodedata.category(c) in SYMBOL for c in wd[4])]
     for i, a in enumerate(solid):
         for b in solid[i + 1:]:
             vo = min(a[3], b[3]) - max(a[1], b[1])
@@ -270,7 +276,7 @@ def pdf_problems(w, h, words, lines, slide=None):
             # much shorter than the base, and the overlap a sliver (TeX Gyre Heros showed it)
             if min(ha, hb) < 0.75 * max(ha, hb) and ho < 0.5 * min(a[2] - a[0], b[2] - b[0]):
                 continue
-            if ho > 1.0 and vo > 0.5 * min(ha, hb):
+            if ho > 1.0 and vo > 0.5 * min(ha, hb) and vo > SPILL * max(ha, hb):
                 out.append(("overlapping text", "%r/%r" % (a[4], b[4])))
     if slide and slide.get("kind") == "table":
         out += table_overruns(lines, w, h, slide.get("tableBox"))
@@ -407,9 +413,9 @@ def html_findings(slides):
 def check_pptx(deck, qa, slides, livery):
     """The pptx as LibreOffice draws it (pptx_pdf.to_pdf), through the PDF checks but the table
     rule (python-pptx's tables are not longtable's): text past the right margin, into the footer,
-    overlapping; a contact sheet <deck>-pptx.png. Hints, since LibreOffice applies no autofit and
-    substitutes the faces it lacks (a box it overflows PowerPoint may shrink); QA_PPTX_FAIL=1 makes
-    them failures. (lines, skipped-reason)."""
+    overlapping; a contact sheet <deck>-pptx.png. Failures like the PDF's, since the checks learned
+    LibreOffice's ways (no autofit, a fallback face's box for a lone symbol, its leading under a big
+    line); QA_PPTX_FAIL=0 makes them hints again. (lines, skipped-reason)."""
     import pptx_pdf
     path = deck + ".pptx"
     if not os.path.exists(path):
@@ -544,7 +550,7 @@ def main():
     EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
     STRIPS = [s["box"] for s in livery.get("marking") or []]
     WM_HEIGHT = livery["watermark"]["size"] / livery["type"]["canvas"]["h"]
-    pptx_fail = os.environ.get("QA_PPTX_FAIL") == "1"
+    pptx_fail = os.environ.get("QA_PPTX_FAIL", "1") != "0"   # the pptx's problems fail; =0 for hints
 
     html_res = check_html(args.decks, qa)
     report, usage, failed = [], ["deck\tslide\tkind\tuse\tfit\ttitle\tclasses"], False

@@ -904,7 +904,9 @@ bit while building it:
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
   overflow and slide-count checks below, fails a pptx slide still holding a grid marker, and runs
   the pptx as LibreOffice draws it (`common/utils/pptx_pdf.py`, shared with `make measure`)
-  through the PDF's edge, footer and overlap checks as hints (`QA_PPTX_FAIL=1`: failures). Load the `deck-polish` skill for a
+  through the PDF's edge, footer and overlap checks, failures like the PDF's since 26.11.1 (a lone
+  symbol's box is its fallback face's, skipped; an overlap must pass `SPILL` of the taller box, a
+  big line's leading; `QA_PPTX_FAIL=0`: hints). Load the `deck-polish` skill for a
   format pass, `pr-review` to review a PR by number (`/pr-review N`), and
   `unplanned-city-sweep` after a run of merges or for one area of the tree (its ledger is
   `design/unplanned-city-ledger.md`).

@@ -166,3 +166,41 @@ def test_lines_under_a_table_are_not_cells(deck_qa):
     rows[2] = row(96, (120, 180, "Gust-with-a-long-name HPC"), (228, 240, "128"))
     out = deck_qa.table_overruns(lines(HEADER, *rows, under), W, H, box)
     assert out == [("runs into the next table column", repr("Gust-with-a-long-name HPC"))], "the last row's overrun still found"
+
+
+def test_a_lone_symbol_is_the_fallback_faces(deck_qa, monkeypatch):
+    """A word that is one symbol (⚠︎ with its variation selector, ⚠, ✓) is drawn from a face the
+    livery's lacks (the image's LibreOffice: Noto Color Emoji), so its box is the fallback's: no
+    overlap with its neighbor (the sample's caution title and a card's status bullet, the boxes CI's
+    LibreOffice gave, scaled to the page); a letter in the same box still overlaps."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "WATERMARK", "")
+    k = W / 720   # CI's page is 720 pt wide
+    title = [(43.2 * k, 25.0 * k, 93.0 * k, 48.5 * k, "⚠︎"), (72.4 * k, 20.9 * k, 87.1 * k, 56.1 * k, "A")]
+    assert deck_qa.pdf_problems(W, H, title, []) == []
+    letter = [(43.2 * k, 25.0 * k, 93.0 * k, 48.5 * k, "W")] + title[1:]
+    assert deck_qa.pdf_problems(W, H, letter, []) == [("overlapping text", "'W'/'A'")]
+    bullet = [(489.5 * k, 236.8 * k, 504.5 * k, 271.8 * k, "⚠"), (504.5 * k, 251.5 * k, 528.5 * k, 272.7 * k, "Two")]
+    assert deck_qa.pdf_problems(W, H, bullet, []) == []
+    tick = [(52.8 * k, 295.6 * k, 62.8 * k, 309.6 * k, "✓"), (52.8 * k, 295.0 * k, 67.7 * k, 329.9 * k, "⚠")]
+    assert deck_qa.pdf_problems(W, H, tick, []) == []
+
+
+def test_a_big_lines_spill_is_not_a_collision(deck_qa, monkeypatch):
+    """A card's big number (a 53 pt font box, Poppins' 1.4 em) reaches 13 pt into the next line's
+    21 pt box as LibreOffice leads it: no overlap, since 13 is under SPILL of 53; the same reach
+    into a box of its own size is one (a word set inside another's line)."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "WATERMARK", "")
+    k = W / 720
+    big = (271.2 * k, 211.6 * k, 337.9 * k, 264.5 * k, "$5M")
+    nxt = (284.7 * k, 251.5 * k, 327.4 * k, 272.7 * k, "Shared")
+    assert deck_qa.pdf_problems(W, H, [big, nxt], []) == []
+    inside = (284.7 * k, 240.0 * k, 327.4 * k, 262.0 * k, "Shared")   # 22 of its 22 pt inside the big box
+    assert deck_qa.pdf_problems(W, H, [big, inside], []) == [("overlapping text", "'$5M'/'Shared'")]
+    body, foot = (30, 100, 120, 114, "Body"), (30, 107, 90, 117, "footnote")   # a footnote half over a body line
+    assert deck_qa.pdf_problems(W, H, [body, foot], []) == [("overlapping text", "'Body'/'footnote'")]
