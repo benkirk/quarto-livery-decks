@@ -17,7 +17,7 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .common import BOXES, LIVERY, palette, ppr_place, rpr, set_fill
+from .common import BOXES, LIVERY, palette, ppr_place, rpr, set_fill, strip_bullets
 
 GLYPHS = {"✓": "done", "⚠": "warn", "✗": "fail"}
 STATUS = BOXES["status"]
@@ -46,9 +46,7 @@ def mark(p, muted: str) -> bool:
     if ppr is None:
         ppr = etree.Element(qn("a:pPr"))
         p.insert(0, ppr)
-    for name in ("buClrTx", "buClr", "buNone", "buAutoNum", "buChar", "buBlip"):
-        for old in ppr.findall(qn(f"a:{name}")):
-            ppr.remove(old)
+    strip_bullets(ppr)
     kind = GLYPHS[glyph]
     clr = etree.Element(qn("a:buClr"))
     etree.SubElement(clr, qn("a:srgbClr")).set("val", livery_mod.hex(LIVERY, STATUS[kind]))

@@ -20,7 +20,7 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .common import BOXES, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, ppr_place, rpr
+from .common import BOXES, BULLET, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, ppr_place, rpr, strip_bullets
 from .measure import CANVAS, other_size
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
@@ -124,9 +124,6 @@ def style_table(tbl, base, ink):
     _rebalance(tbl)
 
 
-BULLET = ("buClr", "buClrTx", "buSzPct", "buSzPts", "buSzTx", "buFont", "buFontTx", "buChar")
-
-
 def cell_lists(tbl, master):
     """A list in a cell bulleted as the body's list: pandoc writes a list item there as a paragraph
     with a level and no buNone (a plain line has buNone), and a cell inherits no bullet, so each
@@ -151,9 +148,7 @@ def cell_lists(tbl, master):
             ppr_place(ppr, copy.deepcopy(before))
         if ppr.find(qn("a:buAutoNum")) is not None:
             continue
-        for el in list(ppr):
-            if etree.QName(el).localname in BULLET:
-                ppr.remove(el)
+        strip_bullets(ppr)
         for el in lvl:
             if etree.QName(el).localname in BULLET:
                 ppr_place(ppr, copy.deepcopy(el))

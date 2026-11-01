@@ -15,4 +15,4 @@ DECKS_CONTAINER_IMAGE ?= $(DECKS_IMAGE):$(DECKS_IMAGE_TAG)
 # The installation's SIF of that image (`make sif`, docs/container.md "Sharing an installation"),
 # named for its tag: after a pull to a new release, builds go back to docker:// until `make sif`
 # runs again, never onto another release's toolchain.
-DECKS_SIF := $(abspath $(FRAMEWORK_ROOT))/sif/quarto-livery-decks_$(DECKS_IMAGE_TAG).sif
+sif_file := $(abspath $(FRAMEWORK_ROOT))/sif/quarto-livery-decks_$(DECKS_IMAGE_TAG).sif

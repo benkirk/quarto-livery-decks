@@ -1216,15 +1216,20 @@ local function status_lists(blocks, fn)
   end })
 end
 
--- A pptx marker paragraph, `⟦engine:<s>⟧`: what grid-pptx.lua and single-body.lua write for
--- pptx_steps/grid.py to read (common.MARK), one writer.
+-- A pptx marker, `⟦engine:<s>⟧`: what grid-pptx.lua and single-body.lua write for
+-- pptx_steps/grid.py to read (common.MARK), one writer of the text (grid-pptx.lua's prefix
+-- markers lead a paragraph of their own) and of the paragraph holding one.
+local function marker_text(s)
+  return "⟦engine:" .. s .. "⟧"
+end
+
 local function marker(s)
-  return pandoc.Para({ pandoc.Str("⟦engine:" .. s .. "⟧") })
+  return pandoc.Para({ pandoc.Str(marker_text(s)) })
 end
 
 return {
   has_class = has_class, warn = warn, column_shares = column_shares, status_lists = status_lists, is_grid = is_grid, split_lines = split_lines,
-  marker = marker,
+  marker = marker, marker_text = marker_text,
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, holds_shape = holds_shape, holds_table = holds_table, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,

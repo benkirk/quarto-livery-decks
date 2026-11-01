@@ -9,6 +9,11 @@ constants are the canvas scale (K: absolute pads were drawn for the 540 pt canva
 geometry blocks of livery.json, the body type in points, and SLACK, the share a measured text
 height is grown by so PowerPoint's autofit stays idle. measure.py holds the text measuring
 (text_height); this module holds no measuring.
+
+Shape names are the steps' interface: a step that marks a slide for a later one does it by a
+name held here (PHOTO, NOTE), and the names the drawers give their shapes ("Body list", "Lead
+text", "Card n fill", the groups "Card n", "Steps", "Gallery") are what the tests and a reader
+of the deck find.
 """
 
 import copy
@@ -32,11 +37,13 @@ TRACKING = LIVERY["type"]["tracking"]              # small caps' letter spacing,
 SLACK = 1.1                                        # measured height x this: autofit stays idle
 BAND = (LIVERY.get("title") or {}).get("style") == "band"   # the band title: its cover and closing compositions
 PHOTO = "Photo"                                    # a cover's or feature's photo (slide_layout), which marks the slide
+NOTE = "Note"                                      # a ::: note's caption box (slide_layout), which grid leaves centered
 NOT_BODY = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DATE,
             PP_PLACEHOLDER.FOOTER, PP_PLACEHOLDER.SLIDE_NUMBER}
 # a:pPr's children, in schema order: a bullet's elements go before the rest
 PPR_ORDER = ["lnSpc", "spcBef", "spcAft", "buClrTx", "buClr", "buSzTx", "buSzPct", "buSzPts", "buFontTx", "buFont",
              "buNone", "buAutoNum", "buChar", "buBlip", "tabLst", "defRPr", "extLst"]
+BULLET = tuple(n for n in PPR_ORDER if n.startswith("bu"))   # a paragraph's bullet: its color, size, face and kind
 
 
 def is_body(shape) -> bool:
@@ -71,6 +78,14 @@ def set_fill(rpr_el, hexv: str) -> None:
     etree.SubElement(fill, qn("a:srgbClr")).set("val", hexv)
     ln = rpr_el.find(qn("a:ln"))
     ln.addnext(fill) if ln is not None else rpr_el.insert(0, fill)
+
+
+def strip_bullets(ppr) -> None:
+    """Every bullet element (BULLET) off an a:pPr: the paragraph inherits its level's, or takes what the
+    caller places next."""
+    for el in list(ppr):
+        if etree.QName(el).localname in BULLET:
+            ppr.remove(el)
 
 
 def ppr_place(ppr, el) -> None:

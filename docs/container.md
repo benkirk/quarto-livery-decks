@@ -159,7 +159,8 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   The build prints the image it uses, and checks it is there before the run: a release's image
   appears when its tag is cut, so between a version bump and the tag the default is not pullable,
   and the build then stops with the ways out (the month's newest tag, `latest`, or the native env).
-- **Per runtime**: Docker runs as your uid; Podman rootless, with SELinux labeling off for the
+- **Per runtime**: `conda` runs on this host, nothing mounted, so `make publish` pushes inside
+  the one run and a deck's packages install under your own HOME; Docker runs as your uid; Podman rootless, with SELinux labeling off for the
   run rather than relabeling your tree; Apptainer as you, with `--cleanenv`, so your profile's
   variables (a `TMPDIR`, a locale, a module's paths) stay outside. `FONTS_DIR=path` mounts
   your licensed fonts on `/opt/fonts`.

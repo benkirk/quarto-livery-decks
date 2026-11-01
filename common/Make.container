@@ -12,7 +12,7 @@ include $(FRAMEWORK_ROOT)common/image.mk
 # Apptainer runs that SIF when the installation has one (`make sif`) and nothing names another
 # image: a shared checkout's users need no setting. APPTAINER_SIF names any other.
 ifeq ($(origin APPTAINER_SIF)$(origin DECKS_IMAGE)$(origin DECKS_CONTAINER_IMAGE),undefinedfilefile)
-APPTAINER_SIF := $(wildcard $(DECKS_SIF))
+APPTAINER_SIF := $(wildcard $(sif_file))
 endif
 
 # The container's own HOME, on the host, one per release: what your own tools keep in your HOME (a
@@ -32,8 +32,8 @@ endif
 # serves hosts with different mounts); FONTS_DIR on /opt/fonts. Real paths: macOS's /tmp and an
 # HPC system's linked project directories are symlinks the container lacks.
 DECKS_BINDS  ?=
-DECKS_PWD    := $(realpath $(CURDIR))
-DECKS_BASE   := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
+deck_pwd    := $(realpath $(CURDIR))
+mount_base   := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/dev/null),$(CURDIR)) \
                   $(FRAMEWORK_ROOT) $(LIVERY_DIR) $(wildcard $(DECKS_BINDS))) \
                   $(if $(DECK_META),$(patsubst %/,%,$(dir $(realpath $(DECK_META))))))
 # Symlinks in the deck directory (an image linked in): a target none of the above covers is mounted
@@ -41,29 +41,29 @@ DECKS_BASE   := $(sort $(realpath $(or $(shell git rev-parse --show-toplevel 2>/
 # has a space is skipped with a warning: make splits words on it, so it cannot be a mount (find
 # -print0 would not help: make's /bin/sh, dash, has no read -d). (The case patterns' leading "("
 # keeps $(shell)'s parentheses balanced.)
-DECKS_LINKED := $(shell bases='$(DECKS_BASE)'; \
+linked_targets := $(shell bases='$(mount_base)'; \
   find . -maxdepth 3 \( -name .quarto -o -name '*_files' -o -name _qa \) -prune -o -type l \
     ! -name _quarto.yml ! -name _extensions ! -name _livery -print 2>/dev/null | \
   while read -r l; do t=$$(realpath "$$l" 2>/dev/null) || continue; [ -e "$$t" ] || continue; \
     [ -d "$$t" ] || t=$$(dirname "$$t"); c=; \
     case "$$t" in (*[[:space:]]*) echo "Make.container: not mounting $$t, $$l's target: a path with a space cannot be a mount" >&2; continue;; esac; \
     for m in $$bases; do case "$$t/" in ("$$m"/*) c=1;; esac; done; [ -n "$$c" ] || echo "$$t"; done)
-DECKS_MOUNTS := $(sort $(DECKS_BASE) $(DECKS_LINKED))
-DECKS_FONTS  := $(if $(FONTS_DIR),$(realpath $(FONTS_DIR)))
+mounts := $(sort $(mount_base) $(linked_targets))
+fonts_mount  := $(if $(FONTS_DIR),$(realpath $(FONTS_DIR)))
 
 ifeq ($(DECKS_RUNTIME_USED),docker)
 # --user: the outputs are yours; --init: Ctrl-C stops make
-DECKS_RUN = docker run --rm --init --user $(shell id -u):$(shell id -g) -e MAKEFLAGS \
+container_run = docker run --rm --init --user $(shell id -u):$(shell id -g) -e MAKEFLAGS \
   -v $(DECKS_HOME):$(DECKS_HOME) -e HOME=$(DECKS_HOME) \
-  $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
-  -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
+  $(foreach m,$(mounts),-v $(m):$(m)) $(if $(fonts_mount),-v $(fonts_mount):/opt/fonts:ro) \
+  -w $(deck_pwd) $(DECKS_CONTAINER_IMAGE)
 else ifeq ($(DECKS_RUNTIME_USED),podman)
 # rootless: the container's root is you. label=disable rather than :Z, which would relabel the
 # whole repository and framework for SELinux.
-DECKS_RUN = podman run --rm --init --security-opt label=disable -e MAKEFLAGS \
+container_run = podman run --rm --init --security-opt label=disable -e MAKEFLAGS \
   -v $(DECKS_HOME):$(DECKS_HOME) -e HOME=$(DECKS_HOME) \
-  $(foreach m,$(DECKS_MOUNTS),-v $(m):$(m)) $(if $(DECKS_FONTS),-v $(DECKS_FONTS):/opt/fonts:ro) \
-  -w $(DECKS_PWD) $(DECKS_CONTAINER_IMAGE)
+  $(foreach m,$(mounts),-v $(m):$(m)) $(if $(fonts_mount),-v $(fonts_mount):/opt/fonts:ro) \
+  -w $(deck_pwd) $(DECKS_CONTAINER_IMAGE)
 else ifeq ($(DECKS_RUNTIME_USED),apptainer)
 # runs as you, --home the container's own (your real HOME is not mounted); `run`, not `exec`, so
 # the entrypoint seeds matplotlib's font cache.
@@ -71,9 +71,9 @@ else ifeq ($(DECKS_RUNTIME_USED),apptainer)
 # in, and what it names need not exist inside (a profile's TMPDIR=$SCRATCH/tmp stopped Quarto,
 # LC_ALL=en_US.UTF-8 warned); MAKEFLAGS crosses as APPTAINERENV_MAKEFLAGS, which --cleanenv keeps.
 # APPTAINER_SIF: a pulled image, skipping docker://.
-DECKS_RUN = APPTAINERENV_MAKEFLAGS="$$MAKEFLAGS" apptainer run --cleanenv --home $(DECKS_HOME) \
-  $(foreach m,$(DECKS_MOUNTS),--bind $(m)) \
-  $(if $(DECKS_FONTS),--bind $(DECKS_FONTS):/opt/fonts:ro) --pwd $(DECKS_PWD) \
+container_run = APPTAINERENV_MAKEFLAGS="$$MAKEFLAGS" apptainer run --cleanenv --home $(DECKS_HOME) \
+  $(foreach m,$(mounts),--bind $(m)) \
+  $(if $(fonts_mount),--bind $(fonts_mount):/opt/fonts:ro) --pwd $(deck_pwd) \
   $(or $(APPTAINER_SIF),docker://$(DECKS_CONTAINER_IMAGE))
 else
 $(error DECKS_RUNTIME=$(DECKS_RUNTIME): native, docker, podman, apptainer or auto)
@@ -91,24 +91,24 @@ define image_missing
   echo "  or natively after \`source etc/config_env.sh\` (docs/container.md \"Which image\")." >&2; exit 1; }
 endef
 ifeq ($(DECKS_RUNTIME_USED),apptainer)
-DECKS_CHECK = $(if $(APPTAINER_SIF),test -f $(APPTAINER_SIF) || $(image_missing),true)
+image_check = $(if $(APPTAINER_SIF),test -f $(APPTAINER_SIF) || $(image_missing),true)
 else
-DECKS_CHECK = $(DECKS_RUNTIME_USED) image inspect $(DECKS_CONTAINER_IMAGE) >/dev/null 2>&1 || $(DECKS_RUNTIME_USED) pull $(DECKS_CONTAINER_IMAGE) || $(image_missing)
+image_check = $(DECKS_RUNTIME_USED) image inspect $(DECKS_CONTAINER_IMAGE) >/dev/null 2>&1 || $(DECKS_RUNTIME_USED) pull $(DECKS_CONTAINER_IMAGE) || $(image_missing)
 endif
 
 # Every goal waits on the one run. publish builds the site inside and pushes from here, where
 # your git credentials are. A QUARTO_DECKS from the environment (new-deck's Makefile reads it) is
 # passed on: the container's environment is the image's, and the deck must include the same
 # framework inside as here.
-DECKS_GOALS := $(or $(MAKECMDGOALS),pptx)
-.PHONY: $(DECKS_GOALS) decks-container
-$(DECKS_GOALS): decks-container
+goals := $(or $(MAKECMDGOALS),pptx)
+.PHONY: $(goals) decks-container
+$(goals): decks-container
 	@:
 decks-container:
 	@echo "DECKS_RUNTIME=$(DECKS_RUNTIME_USED): $(if $(APPTAINER_SIF),$(APPTAINER_SIF),$(DECKS_CONTAINER_IMAGE))" >&2
-	@$(DECKS_CHECK)
+	@$(image_check)
 	@mkdir -p $(DECKS_HOME)
-	$(DECKS_RUN) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native \
+	$(container_run) make $(patsubst publish,site,$(MAKECMDGOALS)) DECKS_RUNTIME=native \
 	  $(if $(filter environment,$(origin QUARTO_DECKS)),QUARTO_DECKS=$(QUARTO_DECKS))
 ifneq ($(filter publish,$(MAKECMDGOALS)),)
 	$(publish_push)

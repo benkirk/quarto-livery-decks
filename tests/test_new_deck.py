@@ -10,23 +10,17 @@ the container's make (Make.container), which sees only the image's environment. 
 nothing renders.
 """
 
-import os
 import subprocess
 
 import pytest
 
-from conftest import ROOT
+from conftest import ROOT, make_deck, one_line
 
 NEW = ROOT / "bin" / "new-deck"
 
 
 def new(*args):
     return subprocess.run([str(NEW), *map(str, args)], capture_output=True, text=True)
-
-
-def make(d, *args, **env):
-    e = {k: v for k, v in os.environ.items() if k not in ("QUARTO_DECKS", "MAKEFLAGS")}
-    return subprocess.run(["make", "-n", "-C", str(d), *args], capture_output=True, text=True, env={**e, **env})
 
 
 @pytest.fixture(scope="module")
@@ -52,30 +46,26 @@ def test_refuses_nonempty(deck):
 
 
 def test_make_parses(deck):
-    r = make(deck, "pptx", f"QUARTO_DECKS={ROOT}", "DECKS_RUNTIME=native")
+    r = make_deck(deck, "pptx", f"QUARTO_DECKS={ROOT}", "DECKS_RUNTIME=native", dry=True)
     assert r.returncode == 0, f"make -n pptx: {r.stderr.strip()[-300:]}"
 
 
 def test_env_quarto_decks_reaches_container(deck):
     # the container's make gets an environment QUARTO_DECKS; a command line one rides MAKEFLAGS
-    r = make(deck, "pptx", "DECKS_RUNTIME=docker", QUARTO_DECKS=str(ROOT))
+    r = make_deck(deck, "pptx", "DECKS_RUNTIME=docker", QUARTO_DECKS=str(ROOT), dry=True)
     assert r.returncode == 0 and f"DECKS_RUNTIME=native QUARTO_DECKS={ROOT}" in " ".join(r.stdout.replace("\\\n", " ").split()), \
         f"the environment's QUARTO_DECKS is not passed into the container: {(r.stdout + r.stderr).strip()[-300:]}"
 
 
 def test_makefile_quarto_decks_not_passed(deck):
-    r = make(deck, "pptx", "DECKS_RUNTIME=docker")
+    r = make_deck(deck, "pptx", "DECKS_RUNTIME=docker", dry=True)
     assert r.returncode == 0 and "QUARTO_DECKS=" not in r.stdout, "QUARTO_DECKS passed in when the Makefile set it"
-
-
-def flat(r):
-    return " ".join(r.stdout.replace("\\\n", " ").split())
 
 
 def test_conda_runtime_runs_the_env(deck):
     """DECKS_RUNTIME=conda: one `conda run -p <framework>/conda-env` of the same make, native inside."""
-    r = make(deck, "pptx", "DECKS_RUNTIME=conda")
-    assert r.returncode == 0 and f"conda run -p {ROOT.resolve()}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in flat(r), \
+    r = make_deck(deck, "pptx", "DECKS_RUNTIME=conda", dry=True)
+    assert r.returncode == 0 and f"conda run -p {ROOT.resolve()}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in one_line(r.stdout), \
         (r.stdout + r.stderr)[-400:]
 
 
@@ -99,11 +89,11 @@ def test_auto_picks_the_checkout_env_before_the_image(tmp_path):
     (d / "Makefile").write_text(f"include {fw}/Make.common\n")
     (d / "talk.qmd").write_text("---\ntitle: T\n---\n")
     path = f"{stub}:/usr/bin:/bin"   # no quarto, a conda
-    r = make(d, "pptx", "DECKS_RUNTIME=auto", PATH=path)   # auto by name: the image's ENV says native
-    assert r.returncode == 0 and f"conda run -p {fw}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in flat(r), \
+    r = make_deck(d, "pptx", "DECKS_RUNTIME=auto", PATH=path, dry=True)   # auto by name: the image's ENV says native
+    assert r.returncode == 0 and f"conda run -p {fw}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in one_line(r.stdout), \
         (r.stdout + r.stderr)[-400:]
     (fw / "conda-env" / "bin" / "quarto").unlink()   # no env built: a container runtime, or the error
-    r = make(d, "pptx", "DECKS_RUNTIME=auto", PATH=path)
+    r = make_deck(d, "pptx", "DECKS_RUNTIME=auto", PATH=path, dry=True)
     assert "conda run" not in r.stdout, "the env picked with no quarto in it"
 
 
