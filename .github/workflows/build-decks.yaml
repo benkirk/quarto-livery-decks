@@ -54,7 +54,17 @@ jobs:
       - name: Seed the font cache
         run: /usr/local/bin/entrypoint.sh true
 
-      # not DECKS / LIVERY: make would take those from the environment over Make.common's `?=`
+      # a deck's requirements.txt (docs/container.md "From your deck's Makefile"): its installed
+      # packages kept between runs, keyed by the image and the files
+      - name: Cache the decks' Python packages
+        if: hashFiles('**/requirements.txt') != ''
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/quarto-livery-decks
+          key: deck-deps-${{ inputs.image }}-${{ hashFiles('**/requirements.txt') }}
+
+      # not DECKS / LIVERY: make would take those from the environment over Make.common's `?=`;
+      # `deps` first installs a deck's requirements.txt (nothing to do without one)
       - name: Build the decks
         env:
           DECK_DIRS: ${{ inputs.decks }}
@@ -62,7 +72,7 @@ jobs:
           DECK_LIVERY: ${{ inputs.livery }}
         run: |
           for d in $DECK_DIRS; do
-            make -C "$d" $GOALS ${DECK_LIVERY:+LIVERY=$DECK_LIVERY}
+            make -C "$d" deps $GOALS ${DECK_LIVERY:+LIVERY=$DECK_LIVERY}
           done
 
       - name: List the outputs

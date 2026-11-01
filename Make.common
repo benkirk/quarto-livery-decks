@@ -11,9 +11,10 @@
 # DECKS_RUNTIME picks where the toolchain comes from (docs/container.md "From your deck's Makefile"):
 # native, the activated conda env, runs the recipes below; docker, podman or apptainer run the same
 # make once in the published image (common/Make.container); auto, the default, is native when
-# quarto is on PATH, else the first of apptainer, docker, podman installed.
+# quarto is on PATH, else the first of apptainer, docker, podman installed. A deck's own Python
+# packages: a pinned requirements.txt beside its Makefile, installed once by `make deps`.
 
-.PHONY: pptx html pdf all qa measure site publish overleaf charts-zip clean distclean
+.PHONY: pptx html pdf all qa measure site publish overleaf charts-zip deps clean distclean
 
 # Every deck in a directory shares one .quarto/ project cache.
 .NOTPARALLEL:
@@ -84,6 +85,7 @@ LIVERY_PY          := $(FRAMEWORK_ROOT)_extensions/engine/livery.py
 DECK_QA            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
 COMP_MEASURE       := $(FRAMEWORK_ROOT)common/utils/comp_measure.py
 SITE_INDEX         := $(FRAMEWORK_ROOT)common/utils/site_index.py
+DECK_DEPS_PY       := $(FRAMEWORK_ROOT)common/utils/deck_deps.py
 SHARED_QUARTO_YML  := $(FRAMEWORK_ROOT)common/_quarto.yml
 SHARED_EXTENSIONS  := $(FRAMEWORK_ROOT)_extensions
 SHARED_LIVERIES    := $(FRAMEWORK_ROOT)liveries
@@ -119,7 +121,17 @@ LIVERY_MONO  := $(shell python3 $(LIVERY_PY) mono $(LIVERY_DIR))
 export MATPLOTLIBRC := $(abspath $(LIVERY_DIR))/build/livery.mplstyle
 # gnuplot's: `load 'livery.gp'` finds the livery's style (livery_gp.plot() loads it itself)
 export GNUPLOT_LIB  := $(abspath $(LIVERY_DIR))/build
-export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(PYTHONPATH),:$(PYTHONPATH))
+# A deck's own Python packages (docs/container.md "From your deck's Makefile"): requirements.txt
+# beside the Makefile, pinned, installed once by `make deps` (deck_deps.py) into a venv on this
+# env's site-packages under DECKS_DEPS, keyed by the engine, the Python, the platform and the
+# file, so a container's folder is the image's and a native one the env's; in a container HOME
+# is DECKS_HOME, so it lands there. Its site-packages link goes on PYTHONPATH (the kernel
+# inherits it) and is a prerequisite: a missing folder stops the build before quarto (the rule
+# below), an edit re-keys it.
+DECKS_DEPS ?= $(HOME)/.cache/quarto-livery-decks
+DECK_REQS  := $(wildcard requirements.txt)
+DECK_SITE  := $(if $(DECK_REQS),$(shell python3 $(DECK_DEPS_PY) dir $(DECKS_DEPS) $(DECK_REQS))/site-packages)
+export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(DECK_SITE),:$(DECK_SITE))$(if $(PYTHONPATH),:$(PYTHONPATH))
 LIVERY_FIGSIZE := $(shell python3 $(LIVERY_PY) figsize $(LIVERY_DIR))
 FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fig-height:$(word 2,$(LIVERY_FIGSIZE)))
 # DECK_META: a metadata file every render reads (quarto's --metadata-file), filling keys the deck's
@@ -133,7 +145,8 @@ ENGINE_DIR   := $(FRAMEWORK_ROOT)_extensions/engine
 ENGINE_FILES := $(wildcard $(ENGINE_DIR)/*.lua $(ENGINE_DIR)/*.py $(ENGINE_DIR)/*.sty $(ENGINE_DIR)/*.scss $(ENGINE_DIR)/*.js \
                 $(ENGINE_DIR)/*.html $(ENGINE_DIR)/*.theme $(ENGINE_DIR)/_extension.yml $(ENGINE_DIR)/pptx_steps/*.py \
                 $(ENGINE_DIR)/mpl/*.py)
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES) $(ENGINE_FILES) $(DECK_META)
+DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES) $(ENGINE_FILES) $(DECK_META) \
+             $(DECK_REQS) $(DECK_SITE)
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -221,6 +234,22 @@ endif
 # re-render every deck on every run after a switch. Relinked only when it points elsewhere.
 _livery: .livery
 	@[ "$$(readlink $@)" = "$(LIVERY_DIR)" ] || ln -sfn $(LIVERY_DIR) $@
+
+# `make deps` installs requirements.txt (nothing to do without one, or when its folder is there:
+# deck_deps.py says so). The folder's link is checked, never made, as .livery is: a build reaches
+# no network (an HPC compute node has none; `make deps` runs on a login node first), and after
+# `make deps pptx` in one run the test -d, not make's view of the directory, decides.
+deps:
+ifeq ($(DECK_REQS),)
+	@echo "no requirements.txt beside the Makefile: nothing to install"
+else
+	python3 $(DECK_DEPS_PY) install $(DECKS_DEPS) $(DECK_REQS)
+endif
+ifneq ($(DECK_SITE),)
+$(DECK_SITE):
+	@test -d $@ || { echo "requirements.txt's packages are not installed for this Python: $(patsubst %/,%,$(dir $@)) is missing." >&2; \
+	  echo "  Run \`make deps\` first (on a node with network; docs/container.md \"From your deck's Makefile\")." >&2; exit 1; }
+endif
 
 define render_pptx
 	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(FIG_SIZE) $(META_FILE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")

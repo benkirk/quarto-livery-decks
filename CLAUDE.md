@@ -45,8 +45,8 @@ release (26.10.0), since when `CHANGELOG.md` is the record of what ships and
 
 The engine also holds the json reader (`livery.py`, also the command), the wave shapes
 (`pptx_waves.py`) and the pptx post-render steps (`pptx_post.py` over `pptx_steps/`);
-`utils/comp_measure.py`, `deck_qa.py` and `site_index.py` append the engine's directory to
-`sys.path` to import the reader. Onboarding a brand from a reference PowerPoint (design section
+`utils/comp_measure.py`, `deck_qa.py`, `deck_deps.py` and `site_index.py` append the engine's
+directory to `sys.path` to import the reader. Onboarding a brand from a reference PowerPoint (design section
 6): `livery new liveries/<name> --from <deck>` writes `reference/report.md` and the scaffold,
 `make livery` builds and checks it, and the decisions go in `reference/notes.md`. `nsi` (the CU Center for National Security Initiatives) is `cu`'s
 flavor (`extends: cu`) on the band title style (`title: {style: band}`); `nasa` (NASA general,
@@ -151,6 +151,19 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `DECKS_IMAGE`:`DECKS_IMAGE_TAG` (default `_extension.yml`'s version; `sha` the checkout's), or
   `DECKS_CONTAINER_IMAGE`, `APPTAINER_SIF` (all in `common/image.mk`, which the top Makefile's
   `make sif` shares). The image's ENV says native. smoke-test.sh step 3 runs it per runtime.
+- **Deck dependencies** (#158; docs/container.md "From your deck's Makefile"): a pinned
+  `requirements.txt` beside a deck's Makefile; `make deps` (`common/utils/deck_deps.py install`)
+  makes a venv `--system-site-packages --without-pip` on the running Python and pips the file into
+  it (so only what the env lacks is fetched; `pip --target` would re-install numpy over the env's
+  compiled stack), under `DECKS_DEPS` (`$(HOME)/.cache/quarto-livery-decks`, read by the inner make:
+  in a container HOME is `DECKS_HOME`, so no new mount) as
+  `deps-<engine>-py<X.Y>-<os>-<arch>-<sha8 of the file>`, a `.part-*` renamed last with a
+  `site-packages` link at its top as the mark; that link goes first on `PYTHONPATH` and is a
+  prerequisite whose recipe is `test -d` or "run `make deps`" (a build never reaches the network;
+  the key is the inner make's, so it is the image's Python). Unpinned lines fail (`-r`, `-c`, `-e`
+  refused); a `.pth` file is warned of (PYTHONPATH reads none); pip only, no uv (uv's resolver
+  ignores system site-packages by its docs). `tests/test_deck_deps.py` is offline (a wheel made
+  with zipfile); CI's `consumer` job and smoke-test step 3b install a real pin per runtime.
 - **A shared installation** (docs/container.md "Sharing an installation"; NCAR HPC:
   `/glade/work/benkirk/repos/quarto-livery-decks`): `make sif` pulls the checkout's release into
   `sif/quarto-livery-decks_<tag>.sif` (gitignored, kept by `clobber`), which Make.container runs

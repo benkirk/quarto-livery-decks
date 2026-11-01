@@ -266,17 +266,21 @@ jobs:
         with:
           path: ${{ env.FRAMEWORK }}
 
-      # what a consumer commits: a one-line Makefile and its deck
+      # what a consumer commits: a one-line Makefile, its deck, and a requirements.txt for a
+      # package the image lacks (docs/container.md "From your deck's Makefile")
       - name: Write the hello-world deck
         run: |
           mkdir -p "$DECK"
           echo 'include ../framework/Make.common' > "$DECK/Makefile"
+          echo 'tabulate==0.9.0' > "$DECK/requirements.txt"
           cat > "$DECK/hello.qmd" <<'QMD'
           ---
           title: "Hello"
           subtitle: "A deck outside the framework"
           author: "CI"
           date: last-modified
+          engine: jupyter
+          jupyter: python3
           ---
 
           # Section
@@ -290,13 +294,35 @@ jobs:
           | pptx | pandoc and the post-render steps |
           | HTML | the engine revealjs theme |
           | PDF | the engine beamer theme |
+
+          ## A package of the deck's own
+
+          ```{python}
+          import tabulate
+          print("tabulate", tabulate.__version__, "from the deck's requirements.txt")
+          ```
           QMD
+
+      # a build before `make deps` stops before quarto and says what to run
+      - name: A build without the deck's packages says so
+        run: |
+          if make -C "$DECK" pptx 2>"$RUNNER_TEMP/deps-err"; then echo "built without the packages" >&2; exit 1; fi
+          grep -q 'make deps' "$RUNNER_TEMP/deps-err"
+          test ! -e "$DECK/hello.pptx"
+
+      # the packages install once into a venv on the env's, under HOME, keyed by the file
+      - name: Install the deck's packages
+        run: |
+          make -C "$DECK" deps
+          ls -d ~/.cache/quarto-livery-decks/deps-*/site-packages/tabulate
+          again=$(make -C "$DECK" deps)   # not `| grep -q`: grep's early exit is a SIGPIPE under pipefail
+          grep -q 'already installed' <<<"$again"
 
       - name: Build pptx and HTML
         run: timeout 600 make -C "$DECK" pptx html
 
       # each format really came from the framework: the pptx template's divider layout
-      # (through _livery), and the revealjs theme (_extensions)
+      # (through _livery), and the revealjs theme (_extensions); the cell's kernel saw the package
       - name: Check the framework was applied
         run: |
           cd "$DECK"
@@ -304,6 +330,7 @@ jobs:
           unzip -p hello.pptx ppt/slideLayouts/slideLayout3.xml | grep -c 'name="Section Header"' >/dev/null
           unzip -p hello.pptx 'ppt/slides/*.xml' | grep -c 'engine-section-label' >/dev/null
           grep -q 'livery.css' hello.html
+          grep -q "tabulate 0.9.0 from the deck" hello.html
 
       # the static site: one shared libs/, references rewritten, an index
       - name: Build the site
