@@ -25,8 +25,13 @@ them, so the template is generated from the data, like ncar's and cu's, not mapp
 
 ## Roles and palette
 
-The 2024 insignia color guide gives NASA Blue `#0032A0` (PMS 286) and NASA Red `#E4002B` (PMS
-185); the older `#0B3D91` / `#FC3D21` still quoted elsewhere are superseded. The guidelines name
+The 2024 insignia color guide (the Brand Center's `nasa-insignia-colorguide.png`, read 2026-11-01:
+NASA Blue RGB 0 50 160, HEX `#0032A0`, CMYK 100/80/0/12, PMS 286; NASA Red RGB 228 0 43, HEX
+`#E4002B`, CMYK 0/100/100/0, PMS 185) gives ONE set of values for every medium, print and screen
+alike, so these hexes are the guide's own and the roles keep them (#66). The Horizon Design
+System's `nasa-blue` `#1C67E3` and `nasa-red` `#F64137` are a web UI system's tokens ("never for
+dataviz"), not the insignia's colors; only its tints serve here (nasa-dark's `blue-tint`). The
+older `#0B3D91` / `#FC3D21` still quoted elsewhere are superseded. The guidelines name
 PMS 877 (silver) as a preferred insignia background; `silver` is a flat stand-in (`#8A8D8F`).
 The rest is ours: `carbon` `#1C1C1C` text, `gray` `#5C5E62` muted (6.5:1 on white), `light-gray`
 `#F0F1F3` surface, `sky` `#0B6BCB` a second blue for small text (5.3:1), `yellow` `#FFC72C` for

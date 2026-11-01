@@ -1612,8 +1612,8 @@
   "name": "nasa-jsc-eg",
   "palette": {
     "black": "#000000",
+    "blue-tint": "#288BFF",
     "carbon": "#1C1C1C",
-    "cyan": "#00B0F0",
     "eg-blue": "#297DE0",
     "eg-gray": "#959595",
     "eg-green": "#00BC71",

@@ -30,7 +30,7 @@
         0.8
       ],
       "outline": 0.0033,
-      "outline-color": "#00B0F0",
+      "outline-color": "#288BFF",
       "pad": [
         0.5,
         0.8
@@ -118,7 +118,7 @@
       "hang": 1.5
     },
     "status": {
-      "done": "#00B0F0",
+      "done": "#288BFF",
       "fail": "#E4002B",
       "warn": "#FFC72C"
     },
@@ -1518,8 +1518,8 @@
   "name": "nasa-dark",
   "palette": {
     "black": "#000000",
+    "blue-tint": "#288BFF",
     "carbon": "#1C1C1C",
-    "cyan": "#00B0F0",
     "frost": "#E6E8EB",
     "graphite": "#1C2026",
     "gray": "#5C5E62",
@@ -1538,14 +1538,14 @@
     "heading-typeface": "Inter",
     "scheme": {
       "accent1": "#8A8D8F",
-      "accent2": "#00B0F0",
+      "accent2": "#288BFF",
       "accent3": "#000000",
       "accent4": "#E4002B",
       "accent5": "#FFC72C",
       "accent6": "#6E9BFF",
       "dk1": "#FFFFFF",
       "dk2": "#0032A0",
-      "folHlink": "#00B0F0",
+      "folHlink": "#288BFF",
       "hlink": "#6E9BFF",
       "lt1": "#000000",
       "lt2": "#1C2026"
@@ -1563,7 +1563,7 @@
     "code-text": "#E6E8EB",
     "dark": "#000000",
     "foreground": "#FFFFFF",
-    "highlight": "#00B0F0",
+    "highlight": "#288BFF",
     "muted": "#A3A7AD",
     "on-dark": "#FFFFFF",
     "primary": "#0032A0",

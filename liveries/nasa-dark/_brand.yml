@@ -6,7 +6,7 @@ color:
   palette:
     graphite: "#1C2026"      # code, table bands
     light-blue: "#6E9BFF"    # NASA Blue lifted for small text on black (7.8:1)
-    cyan: "#00B0F0"          # the reference deck's own accent color (8.5:1)
+    blue-tint: "#288BFF"     # HDS nasa-blue-tint: NASA Blue's screen tint for small text on black (6.6:1)
     light-red: "#FF4458"     # NASA Red lifted for small text on black (6.2:1)
     steel: "#A3A7AD"         # muted small text (8.7:1)
     frost: "#E6E8EB"         # code text on graphite (13.3:1)
