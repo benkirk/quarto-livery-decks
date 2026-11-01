@@ -8,7 +8,10 @@ the whole file, "The file format is invalid", for one slide with speaker notes. 
 PowerPoint itself writes it: the notes master's colors, unchanged. pandoc's slides lack it too,
 and Keynote takes those.
 
-Idempotent: a notes slide that already has one is left alone."""
+Idempotent: a notes slide that already has one is left alone. REEVALUATE WHEN QUARTO'S PANDOC
+ROLLS (#166): pandoc 3.13 writes `clrMapOvr` on notes slides itself; Quarto 1.10 bundles pandoc
+3.10, which does not (probed 2026-11-01). Being idempotent, this step can stay until the probe
+says the writer's is there, then go."""
 
 import re
 
