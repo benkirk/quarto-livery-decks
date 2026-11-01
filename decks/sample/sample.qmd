@@ -221,7 +221,7 @@ mpirun -n 4 ./a.out
 
 ## Options side by side
 
-::: {.lead}
+::: {.lead scale="1.15"}
 **Three ways to spend the next allocation**
 Each trades local capacity against a share of the consortium system.
 :::

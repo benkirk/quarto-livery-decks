@@ -68,6 +68,45 @@ def test_makefile_quarto_decks_not_passed(deck):
     assert r.returncode == 0 and "QUARTO_DECKS=" not in r.stdout, "QUARTO_DECKS passed in when the Makefile set it"
 
 
+def flat(r):
+    return " ".join(r.stdout.replace("\\\n", " ").split())
+
+
+def test_conda_runtime_runs_the_env(deck):
+    """DECKS_RUNTIME=conda: one `conda run -p <framework>/conda-env` of the same make, native inside."""
+    r = make(deck, "pptx", "DECKS_RUNTIME=conda")
+    assert r.returncode == 0 and f"conda run -p {ROOT.resolve()}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in flat(r), \
+        (r.stdout + r.stderr)[-400:]
+
+
+def test_auto_picks_the_checkout_env_before_the_image(tmp_path):
+    """auto with no quarto on PATH: the framework's own conda-env/ (its bin/quarto there, conda on
+    PATH) before a container runtime. A copy of Make.common and Make.conda stands for a checkout
+    with the env built; the header alone decides, so nothing else of the framework is needed."""
+    fw = tmp_path / "framework"
+    (fw / "common").mkdir(parents=True)
+    (fw / "conda-env" / "bin").mkdir(parents=True)
+    for f in ("Make.common", "common/Make.conda"):
+        (fw / f).write_bytes((ROOT / f).read_bytes())
+    (fw / "conda-env" / "bin" / "quarto").write_text("#!/bin/sh\n")
+    (fw / "conda-env" / "bin" / "quarto").chmod(0o755)
+    stub = tmp_path / "bin"
+    stub.mkdir()
+    (stub / "conda").write_text("#!/bin/sh\n")
+    (stub / "conda").chmod(0o755)
+    d = tmp_path / "talk"
+    d.mkdir()
+    (d / "Makefile").write_text(f"include {fw}/Make.common\n")
+    (d / "talk.qmd").write_text("---\ntitle: T\n---\n")
+    path = f"{stub}:/usr/bin:/bin"   # no quarto, a conda
+    r = make(d, "pptx", "DECKS_RUNTIME=auto", PATH=path)   # auto by name: the image's ENV says native
+    assert r.returncode == 0 and f"conda run -p {fw}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in flat(r), \
+        (r.stdout + r.stderr)[-400:]
+    (fw / "conda-env" / "bin" / "quarto").unlink()   # no env built: a container runtime, or the error
+    r = make(d, "pptx", "DECKS_RUNTIME=auto", PATH=path)
+    assert "conda run" not in r.stdout, "the env picked with no quarto in it"
+
+
 def test_bare_beside_repo(tmp_path):
     b = tmp_path / "repo"
     b.mkdir()

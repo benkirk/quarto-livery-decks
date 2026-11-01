@@ -195,6 +195,16 @@ jobs:
           timeout 900 make -C decks/quickstart all
           timeout 900 make -C decks/fixtures all
 
+      # the whole livery-owner path, run by hand until now (#87): a livery scaffolded from a
+      # reference deck (the built quickstart standing in), built and checked (`all`), then the
+      # quickstart in all three formats under it from outside the repository (check --qa, which runs
+      # `make -C decks/quickstart qa LIVERY_DIR=...`)
+      - name: Scaffold a livery from a deck and check it from outside the repository
+        run: |
+          python3 _extensions/engine/livery.py new /tmp/scaffold --from decks/quickstart/quickstart.pptx
+          python3 _extensions/engine/livery.py all /tmp/scaffold
+          timeout 900 python3 _extensions/engine/livery.py check --qa /tmp/scaffold
+
       # every notes slide carries the color map PowerPoint writes; Keynote refuses a deck with
       # one that lacks it (notes_clrmap.py)
       - name: Check the decks' notes slides

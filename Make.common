@@ -28,13 +28,16 @@ FRAMEWORK_ROOT := $(dir $(lastword $(MAKEFILE_LIST)))
 -include $(FRAMEWORK_ROOT)site.mk
 
 # Where the toolchain comes from. The image runs its make with DECKS_RUNTIME=native on the
-# command line (and in its ENV), so a build inside it never dispatches again.
+# command line (and in its ENV), so a build inside it never dispatches again. With no quarto on
+# PATH, the framework checkout's own conda-env/ (when it exists and conda is on PATH) comes
+# before the image: common/Make.conda runs the same make under `conda run` (#143).
 DECKS_RUNTIME ?= auto
 ifeq ($(DECKS_RUNTIME),auto)
-DECKS_RUNTIME_USED := $(if $(shell command -v quarto 2>/dev/null),native,$(firstword \
-  $(foreach r,apptainer docker podman,$(if $(shell command -v $(r) 2>/dev/null),$(r)))))
+DECKS_RUNTIME_USED := $(if $(shell command -v quarto 2>/dev/null),native,$(if $(and $(wildcard \
+  $(FRAMEWORK_ROOT)conda-env/bin/quarto),$(shell command -v conda 2>/dev/null)),conda,$(firstword \
+  $(foreach r,apptainer docker podman,$(if $(shell command -v $(r) 2>/dev/null),$(r))))))
 ifeq ($(DECKS_RUNTIME_USED),)
-$(error no toolchain: activate the framework's conda env (docs/formats.md), or install Docker, Podman or Apptainer to build in its image (docs/container.md))
+$(error no toolchain: activate the framework's conda env or build it (`make conda-env`, docs/formats.md), or install Docker, Podman or Apptainer to build in its image (docs/container.md))
 endif
 else
 DECKS_RUNTIME_USED := $(DECKS_RUNTIME)
@@ -75,7 +78,9 @@ define publish_push
 	  -e 's#^(git@github\.com:|https://github\.com/)([^/]+)/(.+)$$#https://\2.github.io/\3/$(if $(PUBLISH_PREFIX),$(PUBLISH_PREFIX)/)#p'
 endef
 
-ifneq ($(DECKS_RUNTIME_USED),native)
+ifeq ($(DECKS_RUNTIME_USED),conda)
+include $(FRAMEWORK_ROOT)common/Make.conda
+else ifneq ($(DECKS_RUNTIME_USED),native)
 include $(FRAMEWORK_ROOT)common/Make.container
 else
 # ---- native: the activated conda env (or the image itself) ----

@@ -202,7 +202,8 @@ Each trades local capacity against a share of the consortium system.
 
 - **`::: {.lead}`** sets its lines on the livery's lead fill with an accent bar at its left.
   In a lead and in a card each source line is a line: no blank line between the bold headline
-  and the line under it.
+  and the line under it. `::: {.lead scale="1.25"}` sets its lines at that share of the body
+  size in every format, the box's pads unchanged (the heading's `scale=` sizes the whole slide).
 - **`.card`** on a column draws a head band in its `role=` (any livery role) over a body. A card
   without one takes the livery's `boxes.card.roles` in turn by its place in the row (by default
   primary, secondary, accent), so a row's cards differ. The `###` is the band's title, a `[...]{.sub}` paragraph right after it the band's

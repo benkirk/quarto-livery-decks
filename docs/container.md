@@ -86,9 +86,12 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
 ```
 
 - **`DECKS_RUNTIME`**: `auto`, the default, is `native` when `quarto` is on your PATH (the
-  activated env) and otherwise the first of `apptainer`, `docker`, `podman` installed; any of
-  the four names one. Set it on the command line, in your environment (a shell profile's
-  `export DECKS_RUNTIME=docker`), or in the deck Makefile before its `include`.
+  activated env), else `conda` when the framework checkout has its `conda-env/` (`make
+  conda-env`) and `conda` is on your PATH, and otherwise the first of `apptainer`, `docker`,
+  `podman` installed; any of the five names one. `conda` runs the same make once under `conda
+  run -p <framework>/conda-env`, a real activation, so a checkout with the env built needs no
+  `source etc/config_env.sh` first. Set it on the command line, in your environment (a shell
+  profile's `export DECKS_RUNTIME=docker`), or in the deck Makefile before its `include`.
 - **One container run per make.** Your repository (its git toplevel), the framework checkout and
   a `LIVERY_DIR` outside them are mounted at their own paths: the recipes are your checkout's,
   the toolchain the image's, and the links the build makes resolve on both sides, so native and

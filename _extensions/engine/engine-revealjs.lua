@@ -248,11 +248,14 @@ local function status_items(blocks)
 end
 
 -- A .lead box: raw tags round its blocks (a Div whose first block is a heading becomes a <section>),
--- its source lines each a paragraph (C.split_lines()); the scss draws it from livery.css's boxes
+-- its source lines each a paragraph (C.split_lines()); the scss draws it from livery.css's boxes.
+-- scale="S" (C.scale_attr()) sets its lines at S times the body: font-size on the div, whose pads
+-- are slide pixels, so only the text grows (the heading's scale= sizes the whole slide).
 local function lead_boxes(blocks)
   return blocks:walk({ Div = function(d)
     if not has_class(d, "lead") then return nil end
-    local out = pandoc.Blocks({ html('<div class="engine-lead">') })
+    local scale = C.scale_attr(d, "engine-revealjs.lua: a .lead")
+    local out = pandoc.Blocks({ html('<div class="engine-lead"' .. (scale and (' style="font-size: ' .. scale .. 'em"') or "") .. '>') })
     out:extend(C.split_lines(d.content))
     out:insert(html("</div>"))
     return out
