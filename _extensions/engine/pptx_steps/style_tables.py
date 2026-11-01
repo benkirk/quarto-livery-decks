@@ -8,9 +8,11 @@ header row with no fill, bold letter-spaced capitals at 0.8x the body size over 
 boxes.table's head-rule-color; body rows with a rule in the derived table-rule blend (the widths
 boxes.table's, of the slide's height), every second
 row filled with the table-band blend; columns left alone when pandoc took widths from the
-source, else re-split in proportion to each column's longest cell, each 10-60% wide.
+source, else re-split in proportion to each column's longest cell, each 10-60% wide; a list in a
+cell (a grid table's) bulleted and indented as the body's list, which a cell does not inherit.
 Run after slide_layout has scaled the runs (pptx_post.py). Idempotent."""
 
+import copy
 from pathlib import Path
 
 from lxml import etree
@@ -18,7 +20,7 @@ from pptx.oxml.ns import qn
 
 import livery as livery_mod
 
-from .common import BOXES, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, rpr
+from .common import BOXES, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, ppr_place, rpr
 from .measure import CANVAS, other_size
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
@@ -122,6 +124,41 @@ def style_table(tbl, base, ink):
     _rebalance(tbl)
 
 
+BULLET = ("buClr", "buClrTx", "buSzPct", "buSzPts", "buSzTx", "buFont", "buFontTx", "buChar")
+
+
+def cell_lists(tbl, master):
+    """A list in a cell bulleted as the body's list: pandoc writes a list item there as a paragraph
+    with a level and no buNone (a plain line has buNone), and a cell inherits no bullet, so each
+    item takes its level's indent and bullet from the master's body style (a numbered item keeps
+    pandoc's number), and its spacing above, but for the cell's first line, which stays level with
+    its row's other cells."""
+    style = master.find(".//" + qn("p:bodyStyle"))
+    if style is None:
+        return
+    for p in tbl.iter(qn("a:p")):
+        ppr = p.find(qn("a:pPr"))
+        if ppr is None or ppr.get("lvl") is None or ppr.find(qn("a:buNone")) is not None:
+            continue
+        lvl = style.find(qn(f"a:lvl{int(ppr.get('lvl')) + 1}pPr"))
+        if lvl is None:
+            continue
+        for k in ("marL", "indent"):
+            if lvl.get(k) is not None:
+                ppr.set(k, lvl.get(k))
+        before = lvl.find(qn("a:spcBef"))
+        if before is not None and p.getprevious() is not None and ppr.find(qn("a:spcBef")) is None:
+            ppr_place(ppr, copy.deepcopy(before))
+        if ppr.find(qn("a:buAutoNum")) is not None:
+            continue
+        for el in list(ppr):
+            if etree.QName(el).localname in BULLET:
+                ppr.remove(el)
+        for el in lvl:
+            if etree.QName(el).localname in BULLET:
+                ppr_place(ppr, copy.deepcopy(el))
+
+
 def run(prs, path: Path) -> None:
     """The open deck, changed in place; path for the message."""
     styled = 0
@@ -130,5 +167,6 @@ def run(prs, path: Path) -> None:
         for shape in slide.shapes:
             if is_table(shape):
                 style_table(shape.table._tbl, base, palette(slide))
+                cell_lists(shape.table._tbl, slide.slide_layout.slide_master._element)
                 styled += 1
     print(f"style_tables: styled {styled} table(s) → {path.name}")

@@ -26,6 +26,14 @@ A release's entry is written here before its tag is pushed, and becomes its note
   lacks is fetched. A build whose folder is missing stops before rendering and says to run `make
   deps` (on an HPC system, on a login node: compute nodes have no network). docs/container.md
   "From your deck's Makefile".
+- A bullet or numbered list after a slide's one table or picture stays on the slide in pptx, as
+  bullets under the table or picture, where pandoc moved it onto an untitled slide of its own; HTML
+  and the PDF already drew it there. A list item holding more than one line of text (a code block,
+  a second paragraph) still splits the slide.
+- A bullet list in a table cell (a grid table's) keeps its bullets in pptx, indented and spaced as
+  the body's list; pandoc wrote its items as plain lines there.
+- `make qa` no longer reads a line under a table, at its first column's edge, as a table cell
+  running into the next column in the PDF.
 
 ## [26.10.13] - 2026-10-24
 

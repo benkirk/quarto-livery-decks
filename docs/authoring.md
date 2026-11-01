@@ -447,6 +447,27 @@ A note follows it in the same look, so the two read as one block. A table and it
 (`: A caption` after the table) are centered in every format too, the caption in the same look:
 under the table in HTML and pptx, above it in the PDF, where beamer puts a table's caption.
 
+A bullet or numbered list after the slide's one figure or table is the body's list under it in
+every format, nested items too:
+
+```markdown
+## Why it pays off
+
+| Benefit                  | How the system delivers it                   |
+|--------------------------|----------------------------------------------|
+| A container ready to run | built and contract-checked in CI             |
+
+**Is it worth the work?** The cost is paid once per app and once per question:
+
+- A new app: one `app.yaml` naming the binary
+- A new question: a short experiment file
+```
+
+pandoc's pptx writer would move the list onto an untitled slide of its own; the engine folds it
+into the caption and draws it back as bullets under the table or picture, the lines beside it
+left-aligned. Keep each item to one line of text and its sublists: an item holding a code block or
+a second paragraph still splits the pptx slide, which `make qa`'s slide count catches.
+
 ## Citations and footnotes
 
 A deck cites from a bibliography beside it, as any Quarto document does:
