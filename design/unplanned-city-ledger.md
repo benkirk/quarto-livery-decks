@@ -21,6 +21,44 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-11-01: window #157–#165
+
+- Mode: window
+- Range: `adb9cd2..540f4c5` (#160 the Quarto pin, #162 deck deps, #157 lists under a table or
+  picture and in a cell, #163 nasa-dark's highlight, #165 Quarto 1.10, #164 the issue sweep: lead
+  scale=, the conda runtime, the livery-owner path in CI, the nasa-jsc-eg notes; Release
+  26.10.13 the start); read as one diff with the nine seams of `design/sweep-157-165-handoff.md`,
+  seven findings, Ben picked 1–5 and the convention pass (7) whole
+- End commit: `540f4c5`
+- Done (#167): the bullet elements one tuple (`common.BULLET`, `strip_bullets()`: grid's list
+  pass, style_tables' cell lists and status_glyphs each stripped a hand subset); one writer of the
+  marker text (`C.marker_text()`, `prefixed()` on it, `test_cli` holds no other Lua literal);
+  the note's shape name `common.NOTE` beside `PHOTO`, common's docstring on names as the steps'
+  interface; conftest's `make_deck()` and `one_line()` (two `make()` runners and two line joiners,
+  one named `flat` over conftest's `flat(shapes)`); the make files' names on the GNU manual's
+  rule (upper a knob or read-out, lower the file's own: some thirty private names, `DEPS` →
+  `prereqs`, `DECKS_SIF` → `sif_file`, Make.container's `DECKS_RUN`/`BASE`/`MOUNTS` →
+  `container_run`/`mount_base`/`mounts`) with `tests/test_make_names.py` (the convention, and
+  `make -n --warn-undefined-variables` under four runtimes pinned to the knobs a deck leaves
+  unset, so a mistyped private name fails); the prose (the Quarto floor and the env's pin as two
+  numbers, `deps` in the target list, conda under "Per runtime", the README's checkout env, the
+  sprint-124 State, ci.yaml's consumer comment); the skill's two drift shapes; this handoff
+  committed
+- Tried and dropped: a shared `common/Make.dispatch` for the four-line goal block of
+  `Make.conda` and `Make.container` (DECKS goals, `.PHONY`, the dependency, `@:`): four lines
+  in each against a third file and a run-target variable the 3.81 header must parse, the run
+  lines themselves different (publish maps to site and pushes on the host under a container;
+  runs inside under conda); a lived-in-HOME `report` row for a deps folder of another Python
+  (the key names the Python, so such a folder is simply not matched and the build says `make
+  deps`; nothing seen); renaming the deps block's three names alone (a fourth idiom; the whole
+  pass instead)
+- Open: the sample job's second quickstart build (`livery check --qa /tmp/scaffold`, ~3 min; a
+  `livery` matrix entry would need a scaffold directory); `QA_PPTX_FAIL=1` on CI's sample `make
+  qa` (carried from #136–#149: the caution slide's ⚠︎ as LibreOffice draws it); `notes_clrmap.py`
+  and `single-body.lua`'s table fold to reevaluate when Quarto's pandoc reaches 3.10.1/3.13
+  (#166); `scratchpad/slidediff.py`, the per-slide pixel diff of the 1.10 bump, a home in
+  `common/utils/` if a second bump comes
+
 ## 2026-10-24: window #136–#149
 
 - Mode: window

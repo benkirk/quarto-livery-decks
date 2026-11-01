@@ -95,7 +95,10 @@ Run each pass and collect findings. The examples are real.
   (`_extension.yml` and a hand-copied `VERSION` in `engine-revealjs.lua`, until #108); a size written in points in one
   place and inches in another; a path resolved relative to the deck in one recipe and the
   framework in the next. Pick the house idiom and move the others to it. Grep the idiom across
-  the layer before proposing.
+  the layer before proposing. Two more shapes of it: a test module's helper shadowing conftest's
+  of the same name (`flat(r)` over make's output beside `flat(shapes)`, #157–#165), and a make
+  file's names (upper case a knob or a documented read-out, lower case the file's own:
+  `tests/test_make_names.py` pins it, so a new `:=` name in upper case fails there).
 - **Bypassed helper.** A lifted helper fixes nothing until its call sites use it, and the sites
   that still hand-roll the idiom are invisible to a duplicate grep: each copy is one line.
   After any lift, grep the raw idiom across the layer: a post-step reading a point size from
