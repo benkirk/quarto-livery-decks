@@ -52,12 +52,18 @@ branched from, not a window read).
   (the key names the Python, so such a folder is simply not matched and the build says `make
   deps`; nothing seen); renaming the deps block's three names alone (a fourth idiom; the whole
   pass instead)
-- Open: the sample job's second quickstart build (`livery check --qa /tmp/scaffold`, ~3 min; a
-  `livery` matrix entry would need a scaffold directory); `QA_PPTX_FAIL=1` on CI's sample `make
-  qa` (carried from #136–#149: the caution slide's ⚠︎ as LibreOffice draws it); `notes_clrmap.py`
-  and `single-body.lua`'s table fold to reevaluate when Quarto's pandoc reaches 3.10.1/3.13
-  (#166); `scratchpad/slidediff.py`, the per-slide pixel diff of the 1.10 bump, a home in
-  `common/utils/` if a second bump comes
+- Open: `notes_clrmap.py` and `single-body.lua`'s table fold to reevaluate when Quarto's pandoc
+  reaches 3.10.1/3.13 (#166); `scratchpad/slidediff.py`, the per-slide pixel diff of the 1.10
+  bump, a home in `common/utils/` if a second bump comes
+- Closed after (#169, 2026-11-01): the sample job's second quickstart build measured 41 s on
+  CI, not ~3 min: kept as it is; `QA_PPTX_FAIL` (carried since #136–#149) flipped to failing by
+  default, the two false shapes of the pptx checks taught to deck_qa (a lone symbol's box is its
+  fallback face's; an overlap must pass `SPILL` of the taller box, a big line's leading): 42 CI
+  hints to 0 across the ten quickstarts, the sample and plots. The same PR took `runtimes` off
+  PRs that touch no runtime file and moved the image's pull-back checks beside the deck jobs
+  (~17 min of wall to ~10.5). Judged and left: gating `make measure` on PRs (2.5 min inside the
+  livery jobs, under a minute of wall; Ben keeps the sheets on every PR), splitting the latex job
+  (a second 8 GB image pull for ~1 min).
 
 ## 2026-10-24: window #136–#149
 
@@ -248,7 +254,9 @@ branched from, not a window read).
   the PDF only; `CONTENT_KINDS` in engine-beamer.lua marks it); `notes-last.lua` and
   `linked-images.lua` keep their own one-line slide-break test (neither loads engine-common);
   the sprint-124 handoff's three follow-ups (a status-color contrast warning in `livery check`,
-  `a:latin` on the ⚠ run if PowerPoint draws an emoji, the pptx box pads `type_step` does not
+  `a:latin` on the ⚠ run if PowerPoint draws an emoji (seen 2026-11-01: PowerPoint on the Mac
+  draws the caution emoji in a title and a status bullet, ✓ and ✗ as text; Ben: spacing fine,
+  left as it is), the pptx box pads `type_step` does not
   scale); stress-test-findings' measuring scripts as a `utils/` tool; the unpicked findings, now
   under Untriaged
 

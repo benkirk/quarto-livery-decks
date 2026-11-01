@@ -904,7 +904,9 @@ bit while building it:
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
   overflow and slide-count checks below, fails a pptx slide still holding a grid marker, and runs
   the pptx as LibreOffice draws it (`common/utils/pptx_pdf.py`, shared with `make measure`)
-  through the PDF's edge, footer and overlap checks as hints (`QA_PPTX_FAIL=1`: failures). Load the `deck-polish` skill for a
+  through the PDF's edge, footer and overlap checks, failures like the PDF's since 26.11.1 (a lone
+  symbol's box is its fallback face's, skipped; an overlap must pass `SPILL` of the taller box, a
+  big line's leading; `QA_PPTX_FAIL=0`: hints). Load the `deck-polish` skill for a
   format pass, `pr-review` to review a PR by number (`/pr-review N`), and
   `unplanned-city-sweep` after a run of merges or for one area of the tree (its ledger is
   `design/unplanned-city-ledger.md`).
@@ -981,7 +983,9 @@ job calls `image.yaml` (reusable): the image is built natively on `ubuntu-24.04`
 unprivileged user (`.github/scripts/smoke-test.sh`: a bare directory of `.qmd` files with a
 mermaid block, then `decks/quickstart` through its real Makefile, both bind-mounted, outputs
 owned by that user), pushed by digest, merged into one tagged manifest list (`main`,
-`sha-`, `pr-N`; `YY.MM.N`, `YY.MM` and `latest`, the newest release, on a tag) and pulled again on both platforms. Build cache: a registry
+`sha-`, `pr-N`; `YY.MM.N`, `YY.MM` and `latest`, the newest release, on a tag) and pulled again on both platforms by
+ci.yaml's `pull` jobs, beside the deck jobs rather than ahead of them (a caller waits on the whole
+called workflow, so a pull job inside image.yaml held every deck job ~1.5 min). Build cache: a registry
 cache, `ghcr.io/<repo>:buildcache-<arch>`. The merge job's step summary carries the per-platform
 size (`render_build_summary.py`, from sam-queries). The deck jobs then run INSIDE that image at
 its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the entrypoint is
@@ -1000,7 +1004,10 @@ report-only (`MEASURE_FAIL=`). A
 fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
 the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
 more; a tool the decks need goes into the Dockerfile. `runtimes` (`runtimes.yaml`, reusable, also weekly and on
-demand against `:latest`, the newest release) runs the image as HPC users do, pulled anonymously and doing nothing
+demand against `:latest`, the newest release; on every main push and tag, but on a PR only when
+`changes` finds a file a runtime reads among its files: the Dockerfile, `etc/`, `bin/`, the make
+dispatch, `conda-env.yaml`, the scripts and the three workflows, since at ~9 min it is the wall's
+tail and not a required check) runs the image as HPC users do, pulled anonymously and doing nothing
 special for them: Apptainer in unprivileged user-namespace mode (no setuid) on both
 architectures, from the PPA or else the release .deb (the runner's userns sysctl is never
 weakened), and rootless Podman on amd64, each through `smoke-test.sh` with `RUNTIME=apptainer`

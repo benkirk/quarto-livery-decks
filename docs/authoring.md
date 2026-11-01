@@ -619,11 +619,12 @@ class), or check it with `make qa`.
 - **Hints:**
   - short slides, with the share of the body they use;
   - `.smaller` without `.fill`;
-  - slides the HTML autofit had to shrink;
-  - the pptx itself, as LibreOffice draws it, through the PDF's right-margin, footer and
-    overlap checks (`QA_PPTX_FAIL=1` makes them failures). LibreOffice applies no autofit and
-    substitutes the faces it lacks, so read these against `_qa/<deck>-pptx.png` before trimming
-    a slide.
+  - slides the HTML autofit had to shrink.
+- **The pptx itself**, as LibreOffice draws it, runs through the PDF's right-margin, footer and
+  overlap checks and fails like them (`pptx s12: ...` lines; `_qa/<deck>-pptx.png` to read them
+  against). The checks know LibreOffice's ways (no autofit, a fallback face for a symbol the
+  livery's face lacks, its leading under a big line); on a machine whose LibreOffice draws
+  otherwise, `QA_PPTX_FAIL=0 make qa` keeps them as hints.
 - **Plain names:** list names that belong in backticks in `qa-names.txt` (one per line) in
   the deck directory, and every plain-text use is reported.
 
