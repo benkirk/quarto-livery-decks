@@ -59,6 +59,7 @@ ENV PATH=/opt/conda-env/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/s
     QUARTO_PANDOC=/opt/conda-env/bin/pandoc \
     QUARTO_ESBUILD=/opt/conda-env/bin/esbuild \
     QUARTO_TYPST=/opt/conda-env/bin/typst \
+    QUARTO_TYPST_GATHER=/opt/conda-env/bin/typst-gather \
     QUARTO_DART_SASS=/opt/conda-env/bin/sass \
     QUARTO_SHARE_PATH=/opt/conda-env/share/quarto \
     QUARTO_CONDA_PREFIX=/opt/conda-env \

@@ -20,6 +20,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ### Decks
 
+- The image and the conda env carry Quarto 1.10 (1.10.20: pandoc 3.10, dart-sass 1.101, deno
+  2.7; #161). Every deck renders pixel for pixel as under 1.9.38 in all three formats. A local env
+  rebuilds (`make conda-env`, which `source etc/config_env.sh` runs when `conda-env.yaml` is newer).
 - A deck's own Python packages (#158): a pinned `requirements.txt` beside the Makefile and `make
   deps` install them once (in the image under a container runtime, in your env natively) into a
   folder the build puts on `PYTHONPATH`, a `{python}` cell's kernel included; only what the env
