@@ -37,6 +37,7 @@ NOT_BODY = {PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE, PP_PLACEHOLDER.DA
 # a:pPr's children, in schema order: a bullet's elements go before the rest
 PPR_ORDER = ["lnSpc", "spcBef", "spcAft", "buClrTx", "buClr", "buSzTx", "buSzPct", "buSzPts", "buFontTx", "buFont",
              "buNone", "buAutoNum", "buChar", "buBlip", "tabLst", "defRPr", "extLst"]
+BULLET = tuple(n for n in PPR_ORDER if n.startswith("bu"))   # a paragraph's bullet: its color, size, face and kind
 
 
 def is_body(shape) -> bool:
@@ -71,6 +72,14 @@ def set_fill(rpr_el, hexv: str) -> None:
     etree.SubElement(fill, qn("a:srgbClr")).set("val", hexv)
     ln = rpr_el.find(qn("a:ln"))
     ln.addnext(fill) if ln is not None else rpr_el.insert(0, fill)
+
+
+def strip_bullets(ppr) -> None:
+    """Every bullet element (BULLET) off an a:pPr: the paragraph inherits its level's, or takes what the
+    caller places next."""
+    for el in list(ppr):
+        if etree.QName(el).localname in BULLET:
+            ppr.remove(el)
 
 
 def ppr_place(ppr, el) -> None:

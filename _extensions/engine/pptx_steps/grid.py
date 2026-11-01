@@ -57,7 +57,7 @@ from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
                      inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, ppr_place, rect, rpr, shape,
-                     slide_title, space_before, split_br, style_runs)
+                     slide_title, space_before, split_br, strip_bullets, style_runs)
 from .slide_layout import NOTE_GAP, frame_note, note_style, scale_paragraphs, use_layout
 from .measure import inherited, table_height, text_height
 
@@ -86,9 +86,7 @@ def _list_item(p, attrs):
     ppr = p.get_or_add_pPr()
     for k in ("algn", "marL", "indent"):
         ppr.attrib.pop(k, None)
-    for el in list(ppr):
-        if etree.QName(el).localname in ("buNone", "buChar", "buAutoNum", "buFont"):
-            ppr.remove(el)
+    strip_bullets(ppr)
     ppr.set("lvl", str(attrs["level"] - 1))
     if attrs.get("ordered"):
         ppr_place(ppr, etree.Element(qn("a:buAutoNum"), type="arabicPeriod", startAt=str(attrs.get("start", 1))))
