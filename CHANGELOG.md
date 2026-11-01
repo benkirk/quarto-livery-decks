@@ -35,6 +35,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `make qa` no longer reads a line under a table, at its first column's edge, as a table cell
   running into the next column in the PDF.
 
+### Liveries
+
+- nasa-dark's `highlight` (small blue text on black: examples, tips, strings, followed links) is
+  `blue-tint` `#288BFF`, the Horizon Design System's `nasa-blue-tint`, in place of the reference
+  deck's cyan `#00B0F0`, which was Office's "Light Blue" swatch and no NASA color (#66). The NASA
+  roles themselves stay: the insignia color guide gives one hex per color for every medium.
+
 ## [26.10.13] - 2026-10-24
 
 Cards on the livery's surface by default, with `boxes.card.tint` for a wash of the card's role

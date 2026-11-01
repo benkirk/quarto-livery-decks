@@ -26,31 +26,31 @@
       "text-color": "#E6E8EB"
     },
     "DecVal": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "BaseN": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "Float": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "Constant": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "Char": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "SpecialChar": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "String": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "VerbatimString": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "SpecialString": {
-      "text-color": "#00B0F0"
+      "text-color": "#288BFF"
     },
     "Import": {
       "text-color": "#6E9BFF"

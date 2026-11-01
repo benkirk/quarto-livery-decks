@@ -21,7 +21,7 @@
   --engine-primary-text: #FFFFFF;
   --engine-primary-contrast: #6E9BFF;
   --engine-accent: #E4002B;
-  --engine-highlight: #00B0F0;
+  --engine-highlight: #288BFF;
   --engine-muted: #A3A7AD;
   --engine-surface: #1C2026;
   --engine-warning: #FFC72C;
@@ -136,7 +136,7 @@
   --engine-card-code: #000000;
   --engine-card-radius: 0px;
   --engine-card-outline: 3px;
-  --engine-card-outline-color: #00B0F0;
+  --engine-card-outline-color: #288BFF;
   --engine-card-border: 1.4px;
   --engine-card-border-color: #606367;
   --engine-card-pad: 0.5em 0.8em;
@@ -145,7 +145,7 @@
   --engine-strip-tint: 18%;
   --engine-strip-pad: 0.3em 0.8em;
   --engine-strip-gap: 0.3em;
-  --engine-glyph-done: #00B0F0;
+  --engine-glyph-done: #288BFF;
   --engine-glyph-warn: #FFC72C;
   --engine-glyph-fail: #E4002B;
   --engine-rail-line: 3.6px;

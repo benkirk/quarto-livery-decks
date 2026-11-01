@@ -8,7 +8,7 @@ extends: nasa
 
 roles:
   primary-contrast: light-blue
-  highlight: cyan
+  highlight: blue-tint
   muted: steel
   surface: graphite
   code-text: frost          # the dark role is black here (bars, fields), so code text needs its own
@@ -40,4 +40,4 @@ pptx:
   template: template.pptx
   scheme:                   # the link slots follow primary and highlight; NASA Blue links vanish on black
     hlink: light-blue
-    folHlink: cyan
+    folHlink: blue-tint

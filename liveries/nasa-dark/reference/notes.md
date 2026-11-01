@@ -9,13 +9,14 @@ geometry and the title photo are nasa's.
 `_brand.yml` sets `foreground: white`, `background: black` (the reference deck's black;
 `livery.json` then says `"mode": "dark"`, which the engine and the framework read). The brand's
 blues and red are too dark for small text on black (NASA Blue 2.0:1, NASA Red 4.3:1), so the
-small-text roles are lifted: `primary-contrast` `light-blue` `#6E9BFF` (7.8:1), `highlight` the
-reference deck's own cyan `#00B0F0` (8.5:1), `muted` `steel` `#A3A7AD` (8.7:1). NASA Red stays
+small-text roles are lifted: `primary-contrast` `light-blue` `#6E9BFF` (7.8:1), `highlight`
+`blue-tint` `#288BFF` (6.6:1; HDS's `nasa-blue-tint`, NASA Blue's own screen tint, in place of
+the reference deck's cyan, see "Chart colors"), `muted` `steel` `#A3A7AD` (8.7:1). NASA Red stays
 the accent (tabs, bullets, marks of emphasis); code alerts get `light-red` `#FF4458` through
 `blends: alert-text` (the default blend darkens the accent to 2.0:1). `surface` is `graphite`
 `#1C2026` (code, table bands), and code text has its own role, `code-text: frost` `#E6E8EB`,
 because the `dark` role stays black for the bars and fields (engine >= 3.8.0). The pptx link
-slots are restated (`hlink: light-blue`, `folHlink: cyan`).
+slots are restated (`hlink: light-blue`, `folHlink: blue-tint`).
 
 ## Fields and marks
 
@@ -52,6 +53,8 @@ Graphviz as SVG, which the engine's `livery.css` flips the same way (a CSS filte
 ## Chart colors (2026-10-18)
 
 Inherited from nasa (HDS's dataviz palette, its dark set on this livery's black); see
-../nasa/reference/notes.md. The fact check found that `cyan` `#00B0F0`, taken from the NASA
-Science reference deck for `highlight`, is Office's standard "Light Blue" swatch, not a NASA
-color; it stays until the screen-color decision (see nasa's notes).
+../nasa/reference/notes.md. The fact check found that the cyan `#00B0F0` taken from the NASA
+Science reference deck for `highlight` was Office's standard "Light Blue" swatch, not a NASA
+color; the screen-color decision (#66, 2026-11-01: the insignia guide gives one hex per color for
+every medium, so the roles stay) replaced it with HDS's `nasa-blue-tint` `#288BFF`, `blue-tint`
+here, NASA Blue's own tint for a screen.
