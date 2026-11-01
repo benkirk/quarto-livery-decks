@@ -18,14 +18,18 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.11.0] - 2026-11-01
+
+The toolchain moves to Quarto 1.10, a deck can carry its own Python packages (`requirements.txt`
+and `make deps`), a framework checkout's conda env is picked before the image, a list after a
+slide's table or picture and a list in a table cell keep their bullets in pptx, a lead's lines
+take a `scale=` of their own, and nasa-dark's highlight is a NASA color.
+
 ### Decks
 
 - The image and the conda env carry Quarto 1.10 (1.10.20: pandoc 3.10, dart-sass 1.101, deno
   2.7; #161). Every deck renders pixel for pixel as under 1.9.38 in all three formats. A local env
   rebuilds (`make conda-env`, which `source etc/config_env.sh` runs when `conda-env.yaml` is newer).
-- `::: {.lead scale="1.25"}` sizes a lead's lines apart from the slide (#142): that share of the
-  body size in every format, the box's pads unchanged; the sample's "Options side by side" lead is
-  at 1.15.
 - `DECKS_RUNTIME=auto` runs a framework checkout's own `conda-env/` before the image (#143): with
   no `quarto` on your PATH but the env built and `conda` on PATH, `make` runs once under `conda
   run` (`DECKS_RUNTIME=conda` names it); the container runtimes follow as before.
@@ -43,6 +47,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   the body's list; pandoc wrote its items as plain lines there.
 - `make qa` no longer reads a line under a table, at its first column's edge, as a table cell
   running into the next column in the PDF.
+- `::: {.lead scale="1.25"}` sizes a lead's lines apart from the slide (#142): that share of the
+  body size in every format, the box's pads unchanged; the sample's "Options side by side" lead is
+  at 1.15.
 
 ### Liveries
 
@@ -900,7 +907,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.10.13...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.11.0...HEAD
+[26.11.0]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.11.0
 [26.10.13]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.13
 [26.10.12]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.12
 [26.10.11]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.11
