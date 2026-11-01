@@ -315,7 +315,8 @@ jobs:
         run: |
           make -C "$DECK" deps
           ls -d ~/.cache/quarto-livery-decks/deps-*/site-packages/tabulate
-          make -C "$DECK" deps | grep -q 'already installed'
+          again=$(make -C "$DECK" deps)   # not `| grep -q`: grep's early exit is a SIGPIPE under pipefail
+          grep -q 'already installed' <<<"$again"
 
       - name: Build pptx and HTML
         run: timeout 600 make -C "$DECK" pptx html
