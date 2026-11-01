@@ -26,7 +26,7 @@ drawer per format, every number from the livery (`design/engine-and-liveries.md`
 
 **The `livery` command** is `_extensions/engine/livery.py` (argparse subcommands; README for
 owners: `liveries/README.md`), launched as `bin/livery` (on PATH after `source etc/config_env.sh`
-and in the image; it follows links to itself; the Makefiles call `python3 $(LIVERY_PY)` and need
+and in the image; it follows links to itself; the Makefiles call `python3 $(livery_py)` and need
 no PATH). `check` is quiet (warnings, failures, a summary line; `-v` for all); a palette name
 that is not one fails with its key (`roles.accent: ...`): `new` (`livery_new.py`: a scaffold that builds as it stands, Public
 Sans from `liveries/nasa` as its stand-in face, a placeholder mark; `--from <deck>`, `--extends`),
@@ -555,7 +555,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `_*.qmd` fragments, `data/*`, `images/*` and deck-local `*.lua` filters, so editing any of
   them rebuilds all of them, and on the livery's files (`livery.py deps`: `build/`, the
   template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
-  rebuilds the decks, and on the engine's sources (`ENGINE_FILES`: its Lua, Python, `.sty`,
+  rebuilds the decks, and on the engine's sources (`engine_files`: its Lua, Python, `.sty`,
   `.scss`, `.js`, `.html`, `.theme`, `_extension.yml`, `pptx_steps/` and `mpl/`; the `_extensions` link's
   target is a directory, whose mtime an edit inside never moves). The `_livery` link is order-only (make stats a link's target, the
   directory, which would look stale forever after a switch); the `.livery` stamp is the

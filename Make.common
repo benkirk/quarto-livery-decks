@@ -13,6 +13,9 @@
 # make once in the published image (common/Make.container); auto, the default, is native when
 # quarto is on PATH, else the first of apptainer, docker, podman installed. A deck's own Python
 # packages: a pinned requirements.txt beside its Makefile, installed once by `make deps`.
+# Names (the GNU make manual's rule): UPPER CASE is a knob you set (`?=`, `override`, an export)
+# or a documented read-out (DECKS_RUNTIME_USED, FRAMEWORK_ROOT); lower case is this file's own,
+# like its defines. tests/test_make_names.py holds both, and that no name expands undefined.
 
 .PHONY: pptx html pdf all qa measure site publish overleaf charts-zip deps clean distclean
 
@@ -85,39 +88,39 @@ include $(FRAMEWORK_ROOT)common/Make.container
 else
 # ---- native: the activated conda env (or the image itself) ----
 
-PPTX_POST          := $(FRAMEWORK_ROOT)_extensions/engine/pptx_post.py
-LIVERY_PY          := $(FRAMEWORK_ROOT)_extensions/engine/livery.py
-DECK_QA            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
-COMP_MEASURE       := $(FRAMEWORK_ROOT)common/utils/comp_measure.py
-SITE_INDEX         := $(FRAMEWORK_ROOT)common/utils/site_index.py
-DECK_DEPS_PY       := $(FRAMEWORK_ROOT)common/utils/deck_deps.py
-SHARED_QUARTO_YML  := $(FRAMEWORK_ROOT)common/_quarto.yml
-SHARED_EXTENSIONS  := $(FRAMEWORK_ROOT)_extensions
-SHARED_LIVERIES    := $(FRAMEWORK_ROOT)liveries
-LIVERY_MPL_DIR     := $(abspath $(FRAMEWORK_ROOT)_extensions/engine/mpl)
+pptx_post          := $(FRAMEWORK_ROOT)_extensions/engine/pptx_post.py
+livery_py          := $(FRAMEWORK_ROOT)_extensions/engine/livery.py
+deck_qa            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
+comp_measure       := $(FRAMEWORK_ROOT)common/utils/comp_measure.py
+site_index         := $(FRAMEWORK_ROOT)common/utils/site_index.py
+deck_deps       := $(FRAMEWORK_ROOT)common/utils/deck_deps.py
+shared_quarto_yml  := $(FRAMEWORK_ROOT)common/_quarto.yml
+shared_extensions  := $(FRAMEWORK_ROOT)_extensions
+shared_liveries    := $(FRAMEWORK_ROOT)liveries
+livery_mpl_dir     := $(abspath $(FRAMEWORK_ROOT)_extensions/engine/mpl)
 
 # The brand: a directory under liveries/ (design/engine-and-liveries.md,
 # section 4). `make LIVERY=cu` switches it; LIVERY_DIR is exported for the post-render
 # steps (pptx_post.py), which read $(LIVERY_DIR)/build/livery.json through the engine's livery.py.
 LIVERY     ?= ncar
-LIVERY_DIR ?= $(SHARED_LIVERIES)/$(LIVERY)
+LIVERY_DIR ?= $(shared_liveries)/$(LIVERY)
 # A sub-make inherits the exported LIVERY_DIR, which `?=` would keep: an explicit
 # LIVERY= on its command line must win (gallery.py's `make html LIVERY=cu` once
 # stamped cu and linked ncar).
 ifeq ($(origin LIVERY),command line)
-override LIVERY_DIR := $(SHARED_LIVERIES)/$(LIVERY)
+override LIVERY_DIR := $(shared_liveries)/$(LIVERY)
 endif
 export LIVERY_DIR
 
 # Included fragments, frozen data, images, deck-local Lua filters, bibliographies, CSL styles and
 # directory metadata: {{< include >}}, ![](...), filters:, bibliography: and _metadata.yml are
 # invisible to make, so an edit to any of them rebuilds every deck in the directory.
-FRAGMENTS := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua) $(wildcard *.bib) $(wildcard *.csl)
+fragments := $(wildcard _*.qmd) $(wildcard data/*) $(wildcard images/*) $(wildcard *.lua) $(wildcard *.bib) $(wildcard *.csl)
 # The livery's files (build/, template, fonts, logos, art, its parent's too): the _livery link's
 # mtime does not change when a file in the livery does.
-LIVERY_FILES := $(shell python3 $(LIVERY_PY) deps $(LIVERY_DIR))
+livery_files := $(shell python3 $(livery_py) deps $(LIVERY_DIR))
 # the livery's code face (typography.monospace): pandoc's pptx writer takes it as monofont
-LIVERY_MONO  := $(shell python3 $(LIVERY_PY) mono $(LIVERY_DIR))
+livery_mono  := $(shell python3 $(livery_py) mono $(LIVERY_DIR))
 # Plots (design/charts-and-plots.md): matplotlib reads the livery's style with no code at all,
 # `import livery_mpl` finds the helper (fonts, colormaps, figsize(), dark()), and a figure's
 # default size is the content area in canvas inches (charts.figsize.full), so its text is the
@@ -134,24 +137,24 @@ export GNUPLOT_LIB  := $(abspath $(LIVERY_DIR))/build
 # inherits it) and is a prerequisite: a missing folder stops the build before quarto (the rule
 # below), an edit re-keys it.
 DECKS_DEPS ?= $(HOME)/.cache/quarto-livery-decks
-DECK_REQS  := $(wildcard requirements.txt)
-DECK_SITE  := $(if $(DECK_REQS),$(shell python3 $(DECK_DEPS_PY) dir $(DECKS_DEPS) $(DECK_REQS))/site-packages)
-export PYTHONPATH   := $(LIVERY_MPL_DIR)$(if $(DECK_SITE),:$(DECK_SITE))$(if $(PYTHONPATH),:$(PYTHONPATH))
-LIVERY_FIGSIZE := $(shell python3 $(LIVERY_PY) figsize $(LIVERY_DIR))
-FIG_SIZE = $(if $(LIVERY_FIGSIZE),-M fig-width:$(word 1,$(LIVERY_FIGSIZE)) -M fig-height:$(word 2,$(LIVERY_FIGSIZE)))
+requirements  := $(wildcard requirements.txt)
+deps_site  := $(if $(requirements),$(shell python3 $(deck_deps) dir $(DECKS_DEPS) $(requirements))/site-packages)
+export PYTHONPATH   := $(livery_mpl_dir)$(if $(deps_site),:$(deps_site))$(if $(PYTHONPATH),:$(PYTHONPATH))
+livery_figsize := $(shell python3 $(livery_py) figsize $(LIVERY_DIR))
+fig_size = $(if $(livery_figsize),-M fig-width:$(word 1,$(livery_figsize)) -M fig-height:$(word 2,$(livery_figsize)))
 # DECK_META: a metadata file every render reads (quarto's --metadata-file), filling keys the deck's
 # front matter leaves out: gallery.py's placeholder markings, so no image we commit reads as a real
 # restricted deck. A prerequisite too, so a different file rebuilds.
-META_FILE = $(if $(DECK_META),--metadata-file=$(abspath $(DECK_META)))
+meta_file = $(if $(DECK_META),--metadata-file=$(abspath $(DECK_META)))
 # The engine's sources (the filters, the themes, the pptx steps, the plot helper): the _extensions
 # link's target is a directory, whose mtime an edit inside it never moves, so an engine change
 # left every deck up to date (#133). The Lua and theme files serve all three formats.
-ENGINE_DIR   := $(FRAMEWORK_ROOT)_extensions/engine
-ENGINE_FILES := $(wildcard $(ENGINE_DIR)/*.lua $(ENGINE_DIR)/*.py $(ENGINE_DIR)/*.sty $(ENGINE_DIR)/*.scss $(ENGINE_DIR)/*.js \
-                $(ENGINE_DIR)/*.html $(ENGINE_DIR)/*.theme $(ENGINE_DIR)/_extension.yml $(ENGINE_DIR)/pptx_steps/*.py \
-                $(ENGINE_DIR)/mpl/*.py)
-DEPS      := $(FRAGMENTS) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(LIVERY_FILES) $(ENGINE_FILES) $(DECK_META) \
-             $(DECK_REQS) $(DECK_SITE)
+engine_dir   := $(FRAMEWORK_ROOT)_extensions/engine
+engine_files := $(wildcard $(engine_dir)/*.lua $(engine_dir)/*.py $(engine_dir)/*.sty $(engine_dir)/*.scss $(engine_dir)/*.js \
+                $(engine_dir)/*.html $(engine_dir)/*.theme $(engine_dir)/_extension.yml $(engine_dir)/pptx_steps/*.py \
+                $(engine_dir)/mpl/*.py)
+prereqs      := $(fragments) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(livery_files) $(engine_files) $(DECK_META) \
+             $(requirements) $(deps_site)
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -161,27 +164,27 @@ all:  pptx html pdf
 # Layout checks on the built decks: overflow, slide-count parity, short slides, contact
 # sheets in _qa/ (deck_qa.py). `make qa DECKS=name` checks one deck of a directory.
 qa: all
-	python3 $(DECK_QA) $(DECKS)
+	python3 $(deck_qa) $(DECKS)
 
 # The title, divider, closing and feature slides of every format against the livery's
 # compositions (comp_measure.py): _qa/measure.tsv and the contact sheet
 # _qa/compositions-<livery>.png. MEASURE_FAIL lists the formats whose deltas fail (empty: report).
 MEASURE_FAIL ?= html,pdf,pptx
 measure: all
-	python3 $(COMP_MEASURE) --fail-on "$(MEASURE_FAIL)" $(DECKS)
+	python3 $(comp_measure) --fail-on "$(MEASURE_FAIL)" $(DECKS)
 
 # A pure-LaTeX project of the livery (`livery zip`): the theme, the livery's
 # files and a starter, compiling with `latexmk -xelatex talk.tex` alone, or opened on Overleaf.
 # release.yml attaches one per livery to a GitHub Release; a consumer repo's own livery too
 # (`make overleaf LIVERY_DIR=path/to/livery`).
 overleaf:
-	python3 $(LIVERY_PY) zip $(LIVERY_DIR) -o $(LIVERY)-overleaf.zip
+	python3 $(livery_py) zip $(LIVERY_DIR) -o $(LIVERY)-overleaf.zip
 
 # The livery's plot style for matplotlib outside the decks (`livery zip --charts`): the style,
 # the livery_mpl helper, livery.json, the fonts and their licenses, the colors' contact sheet.
 # release.yml attaches one per livery beside the Overleaf zips.
 charts-zip:
-	python3 $(LIVERY_PY) zip --charts $(LIVERY_DIR) -o $(LIVERY)-charts.zip
+	python3 $(livery_py) zip --charts $(LIVERY_DIR) -o $(LIVERY)-charts.zip
 
 # One static site of the HTML decks, servable as is (`python3 -m http.server -d _site`).
 # Every deck's <deck>_files/libs/ is a subset of one union, so the site keeps a single
@@ -193,15 +196,15 @@ site: html
 	for d in $(DECKS); do \
 	  rsync -a $${d}_files/libs/ $(SITE)/libs/ && \
 	  rsync -a --exclude libs --prune-empty-dirs $${d}_files/ $(SITE)/$${d}_files/ && \
-	  sed -e "s#$${d}_files/libs/#libs/#g" $(NOINDEX_SED) $$d.html > $(SITE)/$$d.html || exit 1; \
+	  sed -e "s#$${d}_files/libs/#libs/#g" $(noindex_sed) $$d.html > $(SITE)/$$d.html || exit 1; \
 	done
 	find $(SITE) -type d -empty -delete
 	test ! -d images || rsync -a images/ $(SITE)/images/
 	for x in $(SITE_EXTRA); do rsync -a $$x/ $(SITE)/$$x/ || exit 1; done
-	python3 $(SITE_INDEX) --out $(SITE) $(if $(SITE_NOINDEX),--noindex) \
+	python3 $(site_index) --out $(SITE) $(if $(SITE_NOINDEX),--noindex) \
 	  $(foreach x,$(SITE_EXTRA),--extra $(x)) $(DECKS)
 
-NOINDEX_SED = $(if $(SITE_NOINDEX),-e 's#<head>#<head><meta name="robots" content="noindex">#')
+noindex_sed = $(if $(SITE_NOINDEX),-e 's#<head>#<head><meta name="robots" content="noindex">#')
 
 publish: site
 	$(publish_push)
@@ -214,14 +217,14 @@ publish: site
 # left for the container. So -f re-points such a link, while a real file
 # or a link that resolves (to any framework checkout) is never touched.
 _quarto.yml:
-	ln -sfn $(SHARED_QUARTO_YML) $@
+	ln -sfn $(shared_quarto_yml) $@
 
 # Same for the shared Quarto extensions (the engine: engine-pptx, engine-beamer and
 # engine-revealjs, with their filters): each deck dir is its own project root, and quarto
 # does not look above it. Every format needs it -- _quarto.yml names all three, and quarto
 # resolves all listed formats even when rendering one.
 _extensions:
-	ln -sfn $(SHARED_EXTENSIONS) $@
+	ln -sfn $(shared_extensions) $@
 
 # The livery link follows LIVERY (or LIVERY_DIR). A missing-only rule like the three above
 # would silently keep the old livery after `make LIVERY=cu`, so the link is remade whenever
@@ -245,20 +248,20 @@ _livery: .livery
 # no network (an HPC compute node has none; `make deps` runs on a login node first), and after
 # `make deps pptx` in one run the test -d, not make's view of the directory, decides.
 deps:
-ifeq ($(DECK_REQS),)
+ifeq ($(requirements),)
 	@echo "no requirements.txt beside the Makefile: nothing to install"
 else
-	python3 $(DECK_DEPS_PY) install $(DECKS_DEPS) $(DECK_REQS)
+	python3 $(deck_deps) install $(DECKS_DEPS) $(requirements)
 endif
-ifneq ($(DECK_SITE),)
-$(DECK_SITE):
+ifneq ($(deps_site),)
+$(deps_site):
 	@test -d $@ || { echo "requirements.txt's packages are not installed for this Python: $(patsubst %/,%,$(dir $@)) is missing." >&2; \
 	  echo "  Run \`make deps\` first (on a node with network; docs/container.md \"From your deck's Makefile\")." >&2; exit 1; }
 endif
 
 define render_pptx
-	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(FIG_SIZE) $(META_FILE) $(if $(LIVERY_MONO),-M "monofont=$(LIVERY_MONO)")
-	python3 $(PPTX_POST) $@
+	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(fig_size) $(meta_file) $(if $(livery_mono),-M "monofont=$(livery_mono)")
+	python3 $(pptx_post) $@
 endef
 
 # The engine's HTML dependency (livery.css, its fonts and logos) is named for the engine's
@@ -266,31 +269,31 @@ endef
 # a LIVERY switch the deck would wear the old livery's css and marks. So drop it first.
 define render_html
 	rm -rf $(@:.html=_files)/libs/quarto-contrib/engine-revealjs-*
-	ENGINE_FORMAT=html quarto render $< --to engine-revealjs -o $@ $(FIG_SIZE) $(META_FILE)
+	ENGINE_FORMAT=html quarto render $< --to engine-revealjs -o $@ $(fig_size) $(meta_file)
 endef
 
 define render_pdf
-	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@ $(META_FILE)
+	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@ $(meta_file)
 endef
 
-%.pptx: %.qmd $(DEPS) | _livery
+%.pptx: %.qmd $(prereqs) | _livery
 	$(render_pptx)
 
-%.html: %.qmd $(DEPS) | _livery
+%.html: %.qmd $(prereqs) | _livery
 	$(render_html)
 
-%.pdf: %.qmd $(DEPS) | _livery
+%.pdf: %.qmd $(prereqs) | _livery
 	$(render_pdf)
 
 # QFILE: a single-deck directory whose source is not named <OUT>.qmd.
 ifneq ($(QFILE),$(OUT).qmd)
-$(OUT).pptx: $(QFILE) $(DEPS) | _livery
+$(OUT).pptx: $(QFILE) $(prereqs) | _livery
 	$(render_pptx)
 
-$(OUT).html: $(QFILE) $(DEPS) | _livery
+$(OUT).html: $(QFILE) $(prereqs) | _livery
 	$(render_html)
 
-$(OUT).pdf: $(QFILE) $(DEPS) | _livery
+$(OUT).pdf: $(QFILE) $(prereqs) | _livery
 	$(render_pdf)
 endif
 

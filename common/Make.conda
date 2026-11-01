@@ -9,9 +9,9 @@
 
 DECKS_CONDA_ENV ?= $(abspath $(FRAMEWORK_ROOT)conda-env)
 
-DECKS_GOALS := $(or $(MAKECMDGOALS),pptx)
-.PHONY: $(DECKS_GOALS) decks-conda
-$(DECKS_GOALS): decks-conda
+goals := $(or $(MAKECMDGOALS),pptx)
+.PHONY: $(goals) decks-conda
+$(goals): decks-conda
 	@:
 decks-conda:
 	@echo "DECKS_RUNTIME=conda: $(DECKS_CONDA_ENV)" >&2

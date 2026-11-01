@@ -62,12 +62,12 @@ include common/image.mk
 sif: ## Pull the release's image into sif/ for shared Apptainer builds (module load apptainer first)
 	@set -e   # .ONESHELL: the @ quiets the whole recipe
 	command -v apptainer >/dev/null || { echo "make sif: no apptainer on PATH (module load apptainer)" >&2; exit 1; }
-	if [ -s "$(DECKS_SIF)" ]; then echo "$(DECKS_SIF): already here"; exit 0; fi
+	if [ -s "$(sif_file)" ]; then echo "$(sif_file): already here"; exit 0; fi
 	mkdir -p sif && chmod a+rx sif
-	apptainer pull --force "$(DECKS_SIF).part" docker://$(DECKS_CONTAINER_IMAGE)
-	chmod a+r "$(DECKS_SIF).part"
-	mv "$(DECKS_SIF).part" "$(DECKS_SIF)"
-	ls -l "$(DECKS_SIF)"
+	apptainer pull --force "$(sif_file).part" docker://$(DECKS_CONTAINER_IMAGE)
+	chmod a+r "$(sif_file).part"
+	mv "$(sif_file).part" "$(sif_file)"
+	ls -l "$(sif_file)"
 
 clean: ## Remove temporary files (*~)
 	rm *~
