@@ -1,8 +1,10 @@
 # The build-environment image, ghcr.io/benkirk/quarto-livery-decks (Dockerfile;
 # docs/container.md), built natively on an amd64 and an arm64 runner (no QEMU),
 # smoke-tested on each as the runner's own unprivileged user, pushed by digest, and merged
-# into one tagged multi-arch manifest list. Reusable: ci.yaml calls it and runs the deck
-# jobs inside the result. Structure after benkirk/sam-queries' build-images workflow.
+# into one tagged multi-arch manifest list. Reusable: ci.yaml calls it, runs the deck jobs
+# inside the result and pulls the index back on each platform beside them (its `pull` job: here
+# it would hold every deck job ~1.5 min longer, since a caller waits on the whole workflow).
+# Structure after benkirk/sam-queries' build-images workflow.
 name: Build the Image
 
 on:
@@ -213,34 +215,3 @@ jobs:
             '{name: $name, primary_tag: $primary_tag, all_tags: $all_tags, digest: $digest, sizes: $sizes, build_date: $build_date}' \
             | tee image-info.json
           python3 .github/scripts/render_build_summary.py . >> "$GITHUB_STEP_SUMMARY"
-
-  # -----------------------------------------------------------------------
-  # verify: the merged index resolves to a working native image on each platform
-  # -----------------------------------------------------------------------
-  verify:
-    name: Pull on ${{ matrix.arch }}
-    needs: merge
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      packages: read
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { arch: amd64, runner: ubuntu-24.04 }
-          - { arch: arm64, runner: ubuntu-24.04-arm }
-    steps:
-      - uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull the index by digest and run it
-        env:
-          REF: ${{ env.IMAGE }}@${{ needs.merge.outputs.digest }}
-        run: |
-          test "$(docker run --rm "$REF" uname -m)" = "$(uname -m)"
-          docker run --rm --user "$(id -u):$(id -g)" "$REF" quarto --version
-          docker run --rm "$REF" --help

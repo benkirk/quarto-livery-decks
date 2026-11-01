@@ -77,6 +77,37 @@ jobs:
     with:
       image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
 
+  # the merged index resolves to a working native image on each platform: beside the deck jobs
+  # (which pull the amd64 digest themselves), not ahead of them as a job of image.yaml would be
+  pull:
+    name: Pull on ${{ matrix.arch }}
+    needs: image
+    if: needs.image.outputs.digest != ''
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    steps:
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull the index by digest and run it
+        env:
+          REF: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
+        run: |
+          test "$(docker run --rm "$REF" uname -m)" = "$(uname -m)"
+          docker run --rm --user "$(id -u):$(id -g)" "$REF" quarto --version
+          docker run --rm "$REF" --help
+
   # -----------------------------------------------------------------------
   # the sample (the cookbook), quickstart (the README's exemplar), fixture and plots decks
   # -----------------------------------------------------------------------
