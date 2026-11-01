@@ -98,8 +98,9 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
 - **The container has its own HOME**, `~/.cache/quarto-livery-decks/home-<release>` on the host
   (`DECKS_HOME`), a few MB. What your own tools keep in your HOME (a conda env's Jupyter and
   IPython settings, matplotlib's font list, TeX trees, personal fonts) never reaches the build,
-  and the build's caches never touch yours; they persist there, so later builds are quicker.
-  Delete an old release's directory freely.
+  and the build's caches never touch yours; they persist there, so later builds are quicker, and
+  a deck's own packages (`make deps`, below) are installed under it. Delete an old release's
+  directory freely.
 - **A deck's own targets**: a rule of your own in the deck Makefile (`make ingest`, `make test`)
   must run only where the deck builds. Under a container runtime, Make.container forwards every
   goal into the image and leaves the goal an empty recipe on the host; a recipe of yours replaces
@@ -118,6 +119,31 @@ make pptx DECKS_RUNTIME=apptainer  # or name the runtime
   Extra prerequisites need no guard (`$(OUT).pptx: data.csv` only adds to Make.common's rules),
   but a goal's dependency on your rule does: `pptx: ingest` outside it leaves the host's make with
   no rule for `ingest`. `pytest` is in the image for a deck's own Python tests.
+- **A deck's own Python packages**: a package the image lacks (geopandas for a map, say) goes in
+  a `requirements.txt` beside the Makefile, pinned, and `make deps` installs it once, in the
+  image, so the wheels match its Python and architecture:
+
+  ```
+  geopandas==1.1.1
+  ```
+
+  ```bash
+  make deps        # once per release, and again after an edit to the file; needs the network
+  make pptx        # finds the packages; builds with no network at all
+  ```
+
+  The packages land in a venv on the env's own packages under the container's HOME
+  (`~/.cache/quarto-livery-decks/home-<release>/.cache/quarto-livery-decks/deps-<release>-py3.X-linux-<arch>-<hash>`;
+  natively `~/.cache/quarto-livery-decks/deps-...`, keyed to your env's Python), so only what the
+  env lacks is fetched, never a second numpy over its own; every build puts its `site-packages` on
+  `PYTHONPATH`, a `{python}` cell's kernel included. A build whose folder is missing stops before
+  rendering and says to run `make deps`: on an HPC system do that on a login node, since compute
+  nodes have no network; Apptainer's `--cleanenv` keeps a proxy outside, so
+  `APPTAINERENV_https_proxy=$https_proxy make deps` where one is needed. Every line must be
+  pinned (`==`, a wheel by path or URL, `@ <url>`, `--hash`); `-r`, `-c` and `-e` are refused,
+  since the folder is keyed by the file's hash. A package whose install leaves a `.pth` file is
+  warned about (PYTHONPATH does not read those); what most decks use belongs in `conda-env.yaml`.
+  Old folders can be deleted freely, with the release's HOME or alone.
 - **More of the host**: `DECKS_BINDS` lists directories the container also sees at their own
   paths, those that exist (a site's file systems; an installation's `site.mk` sets them, below).
   A symlink in the deck directory, an image linked in from elsewhere, works too: its target is

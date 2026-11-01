@@ -20,6 +20,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ### Decks
 
+- A deck's own Python packages (#158): a pinned `requirements.txt` beside the Makefile and `make
+  deps` install them once (in the image under a container runtime, in your env natively) into a
+  folder the build puts on `PYTHONPATH`, a `{python}` cell's kernel included; only what the env
+  lacks is fetched. A build whose folder is missing stops before rendering and says to run `make
+  deps` (on an HPC system, on a login node: compute nodes have no network). docs/container.md
+  "From your deck's Makefile".
 - A bullet or numbered list after a slide's one table or picture stays on the slide in pptx, as
   bullets under the table or picture, where pandoc moved it onto an untitled slide of its own; HTML
   and the PDF already drew it there. A list item holding more than one line of text (a code block,

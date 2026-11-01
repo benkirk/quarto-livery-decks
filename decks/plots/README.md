@@ -187,7 +187,8 @@ livery_mpl.use("ncar-charts.zip")         # or a livery's directory, or an unpac
 `use()` unpacks the zip once into `$XDG_CACHE_HOME/livery_mpl/` (else `~/.cache/livery_mpl/`),
 again only when the zip is newer, and registers its fonts from there. Pin the release whose
 bundles you use: `livery_mpl.__version__` is the release installed. The decks never install it:
-`Make.common` puts the helper on `PYTHONPATH`.
+`Make.common` puts the helper on `PYTHONPATH`. A plotting package the env lacks goes in the
+deck's own `requirements.txt` ([docs/container.md "From your deck's Makefile"](../../docs/container.md#from-your-decks-makefile)).
 
 ## Rebuilding the images
 
