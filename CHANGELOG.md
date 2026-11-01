@@ -18,6 +18,15 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+
+- A deck's own Python packages (#158): a pinned `requirements.txt` beside the Makefile and `make
+  deps` install them once (in the image under a container runtime, in your env natively) into a
+  folder the build puts on `PYTHONPATH`, a `{python}` cell's kernel included; only what the env
+  lacks is fetched. A build whose folder is missing stops before rendering and says to run `make
+  deps` (on an HPC system, on a login node: compute nodes have no network). docs/container.md
+  "From your deck's Makefile".
+
 ## [26.10.13] - 2026-10-24
 
 Cards on the livery's surface by default, with `boxes.card.tint` for a wash of the card's role

@@ -18,8 +18,12 @@ endif
 # The container's own HOME, on the host, one per release: what your own tools keep in your HOME (a
 # conda env's Jupyter and IPython settings, matplotlib's font list, TeX trees, personal fonts)
 # never reaches the image's, and the build's caches persist without touching yours. Every runtime
-# uses it; the entrypoint seeds matplotlib's font cache into it.
+# uses it; the entrypoint seeds matplotlib's font cache into it, and a deck's own packages (`make
+# deps`, Make.common's DECKS_DEPS, which the inner make reads under this HOME) install under it.
 DECKS_HOME ?= $(HOME)/.cache/quarto-livery-decks/home-$(DECKS_IMAGE_TAG)
+ifneq ($(filter command line environment,$(origin DECKS_DEPS)),)
+$(warning DECKS_DEPS is for a native build; under $(DECKS_RUNTIME_USED) a deck's packages live under DECKS_HOME=$(DECKS_HOME))
+endif
 
 # What the container sees, at the same paths: the deck's repository (its git toplevel, else the
 # deck directory), this framework, a LIVERY_DIR outside both, a DECK_META file's directory (a
