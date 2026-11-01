@@ -4,7 +4,11 @@ channels:
 dependencies:
   # Binaries / runtime — must come from conda.
   - python
-  - quarto >=1.6   # engine-beamer's Lua filter uses \pandocbounded (pandoc >= 3.2.1)
+  # >=1.6: engine-beamer's Lua filter uses \pandocbounded (pandoc >= 3.2.1). <1.10: conda-forge's
+  # quarto 1.10 (2026-10-30) adds QUARTO_TYPST_GATHER to its activation, which the Dockerfile's
+  # ENV mirrors and asserts, so the image build stops on it; the move to 1.10 (the ENV, the
+  # waitForServer patch, every deck looked at) is a PR of its own (#161).
+  - quarto >=1.9,<1.10
   - gh
   - make
   - pip
