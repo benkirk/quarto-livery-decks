@@ -30,7 +30,8 @@ MD = ("## List under a table\n\n" + TABLE + "\n**The point.** A line before the 
       "## Numbers under a picture\n\n![](p.jpg){height=40%}\n\n3. Three\n4. Four\n\n"
       "## Code in an item\n\n" + TABLE + "\n- One\n\n  ```\n  code\n  ```\n\n"
       "## Bullets in a cell\n\n+-------+------------+\n| Who   | What       |\n+=======+============+\n"
-      "| Staff | - One      |\n|       | - Two      |\n+-------+------------+\n")
+      "| Staff | - One      |\n|       | - Two      |\n+-------+------------+\n"
+      "## A note and a list\n\n![](p.jpg){height=40%}\n\n::: note\nThe picture's note.\n:::\n\n- One\n- Two\n")
 SHIM = ('quarto = {{ doc = {{ is_format = function(f) return f == "pptx" end }},\n'
         '           utils = {{ resolve_path = function(p) return "{engine}/" .. p end }},\n'
         '           log = {{ warning = function(s) io.stderr:write("WARNING: " .. s .. "\\n") end }},\n'
@@ -66,7 +67,18 @@ def test_slides(deck):
     """The two folded slides stay one slide each; the item holding code still splits its slide."""
     titles = [s.shapes.title.text if s.shapes.title else "" for s in deck.slides]
     assert titles[:3] == ["List under a table", "Numbers under a picture", "Code in an item"], titles
-    assert len(titles) == 5 and titles[3] == "", "the code item's continuation slide"
+    assert len(titles) == 6 and titles[3] == "", "the code item's continuation slide"
+    assert titles[4:] == ["Bullets in a cell", "A note and a list"], titles
+
+
+def test_note_stays_centered(deck):
+    """A `::: note` under the picture with a list after it: the note keeps its centered caption look
+    (as HTML and PDF draw it; the list's pass left-aligns only the plain lines), the list under it."""
+    slide = deck.slides[5]
+    note = next(sh for sh in slide.shapes if sh.name == "Note")
+    assert note.text_frame.text == "The picture’s note."   # pandoc's smart quote
+    assert note.text_frame.paragraphs[0]._p.pPr.get("algn") == "ctr", "the note left-aligned by the list's pass"
+    assert body_list(slide).top >= note.top + note.height, "the list under the note"
 
 
 def test_list_under_a_table(deck):

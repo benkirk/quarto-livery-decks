@@ -160,6 +160,7 @@ def note_style(slide):
     parts = _note_parts(slide)
     if parts is None:
         return False
+    parts[0].name = "Note"   # grid.py's left-align pass (a list under the note) leaves a Note centered
     tf = parts[0].text_frame
     split_br(tf._txBody)
     spans = marker_spans(tf._txBody.findall(qn("a:p")))   # a lead folded in after the caption: grid.py's
