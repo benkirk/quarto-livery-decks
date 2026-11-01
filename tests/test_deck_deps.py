@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import ENGINE, ROOT, bare_env
+from conftest import ENGINE, ROOT, bare_env, make_deck, one_line
 
 DECK_DEPS = ROOT / "common" / "utils" / "deck_deps.py"
 QMD = "---\ntitle: Talk\n---\n\n## One\n\nA slide.\n"
@@ -41,11 +41,6 @@ for a in "$@"; do [ "$prev" = -o ] && out=$a; prev=$a; done
 
 def deck_deps(*args, **kw):
     return subprocess.run([sys.executable, str(DECK_DEPS), *map(str, args)], capture_output=True, text=True, **kw)
-
-
-def make(d, *args, dry=False, **env):
-    e = {k: v for k, v in bare_env().items() if k not in ("QUARTO_DECKS", "MAKEFLAGS")}
-    return subprocess.run(["make", *(["-n"] if dry else []), "-C", str(d), *args], capture_output=True, text=True, env={**e, **env})
 
 
 @pytest.fixture(scope="module")
@@ -122,7 +117,7 @@ def test_option_lines_pass(tmp_path):
 
 
 def test_missing_folder_says_make_deps(deck, tmp_path):
-    r = make(deck, "pptx", "DECKS_RUNTIME=native", f"DECKS_DEPS={tmp_path / 'empty'}")
+    r = make_deck(deck, "pptx", "DECKS_RUNTIME=native", f"DECKS_DEPS={tmp_path / 'empty'}")
     assert r.returncode != 0 and "make deps" in r.stderr and "requirements.txt" in r.stderr, r.stdout + r.stderr
     assert "quarto render" not in r.stdout and not (deck / "talk.pptx").exists(), "the render ran"
 
@@ -132,7 +127,7 @@ def test_deps_then_build_in_one_go(deck, tmp_path):
     stub.mkdir()
     (stub / "quarto").write_text(STUB_QUARTO)
     (stub / "quarto").chmod((stub / "quarto").stat().st_mode | stat.S_IEXEC)
-    r = make(deck, "deps", "html", "DECKS_RUNTIME=native", f"DECKS_DEPS={tmp_path / 'deps'}",
+    r = make_deck(deck, "deps", "html", "DECKS_RUNTIME=native", f"DECKS_DEPS={tmp_path / 'deps'}",
              PATH=f"{stub}:{os.environ['PATH']}")
     assert r.returncode == 0, r.stdout[-500:] + r.stderr[-800:]
     assert (deck / "talk.html").exists() and (tmp_path / "deps" / expected_key(deck / "requirements.txt") / "site-packages").is_dir()
@@ -143,16 +138,16 @@ def test_no_requirements_is_a_noop(tmp_path):
     d.mkdir()
     (d / "Makefile").write_text(f"include {ROOT}/Make.common\n")
     (d / "plain.qmd").write_text(QMD)
-    r = make(d, "deps", "DECKS_RUNTIME=native")
+    r = make_deck(d, "deps", "DECKS_RUNTIME=native")
     assert r.returncode == 0 and "nothing to install" in r.stdout, r.stdout + r.stderr
 
 
 def test_container_forwards_deps(deck):
-    r = make(deck, "deps", "DECKS_RUNTIME=docker", dry=True)
-    flat = " ".join(r.stdout.replace("\\\n", " ").split())
+    r = make_deck(deck, "deps", "DECKS_RUNTIME=docker", dry=True)
+    flat = one_line(r.stdout)
     assert r.returncode == 0 and "docker run" in flat and "make deps DECKS_RUNTIME=native" in flat, r.stdout + r.stderr
 
 
 def test_decks_deps_under_a_container_warns(deck, tmp_path):
-    r = make(deck, "deps", "DECKS_RUNTIME=docker", f"DECKS_DEPS={tmp_path}", dry=True)
+    r = make_deck(deck, "deps", "DECKS_RUNTIME=docker", f"DECKS_DEPS={tmp_path}", dry=True)
     assert r.returncode == 0 and "DECKS_DEPS is for a native build" in r.stderr, r.stderr

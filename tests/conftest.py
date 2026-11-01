@@ -108,6 +108,18 @@ def bare_env():
     return {k: v for k, v in os.environ.items() if k not in ("LIVERY_DIR", "PYTHONPATH", "MATPLOTLIBRC")}
 
 
+def make_deck(d, *args, dry=False, **env):
+    """make in the deck directory d (`-n` under dry), on bare_env() less QUARTO_DECKS and MAKEFLAGS (a
+    new-deck Makefile reads the first, an outer make exports the second), env= over it."""
+    e = {k: v for k, v in bare_env().items() if k not in ("QUARTO_DECKS", "MAKEFLAGS")}
+    return subprocess.run(["make", *(["-n"] if dry else []), "-C", str(d), *args], capture_output=True, text=True, env={**e, **env})
+
+
+def one_line(text):
+    """make's output as one line: its `\\`-continuations joined, the white space collapsed."""
+    return " ".join(text.replace("\\\n", " ").split())
+
+
 def flat(shapes):
     """Every shape, the ones in groups too (a card, a lead, a strip is a group of its shapes)."""
     for sh in shapes:
