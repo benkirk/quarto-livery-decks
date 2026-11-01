@@ -1002,7 +1002,10 @@ report-only (`MEASURE_FAIL=`). A
 fork's PR has no `packages: write`: its image is built and smoke-tested, nothing is pushed, and
 the deck jobs are skipped. Nothing installs conda, TeX, Chrome or LibreOffice on a runner any
 more; a tool the decks need goes into the Dockerfile. `runtimes` (`runtimes.yaml`, reusable, also weekly and on
-demand against `:latest`, the newest release) runs the image as HPC users do, pulled anonymously and doing nothing
+demand against `:latest`, the newest release; on every main push and tag, but on a PR only when
+`changes` finds a file a runtime reads among its files: the Dockerfile, `etc/`, `bin/`, the make
+dispatch, `conda-env.yaml`, the scripts and the three workflows, since at ~9 min it is the wall's
+tail and not a required check) runs the image as HPC users do, pulled anonymously and doing nothing
 special for them: Apptainer in unprivileged user-namespace mode (no setuid) on both
 architectures, from the PPA or else the release .deb (the runner's userns sysctl is never
 weakened), and rootless Podman on amd64, each through `smoke-test.sh` with `RUNTIME=apptainer`

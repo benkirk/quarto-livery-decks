@@ -6,7 +6,9 @@
 # under liveries/ (`make LIVERY=<name>`, the engine's checks, `make qa`, the
 # Overleaf zip compiled and the charts bundle tried in a clean directory, the compositions measured). A new livery joins
 # by existing. The `latex` job builds the engine's pure-LaTeX examples and runs its tests. Container jobs run as root with GitHub's default `bash -eo pipefail`.
-# `runtimes` (runtimes.yaml) runs the image under Apptainer and rootless Podman, as HPC users do.
+# `runtimes` (runtimes.yaml) runs the image under Apptainer and rootless Podman, as HPC users do:
+# on every main push and tag (and weekly, runtimes.yaml's own schedule), and on a PR only when it
+# touches a file a runtime reads (`changes`): it is the slowest job by far and not a required check.
 name: CI
 
 on:
@@ -39,11 +41,38 @@ jobs:
       contents: read
       packages: write
 
-  # the image under Apptainer (amd64, arm64) and rootless Podman, pulled anonymously
+  # a PR's files against the paths a container runtime reads: the Dockerfile and its scripts, the
+  # make dispatch, the env, the smoke tests and these workflows. Only `runtimes` asks; a push
+  # (main, a tag) runs it regardless, so the job is skipped there and `runtimes` reads it as false
+  changes:
+    name: Runtime files changed?
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      runtime: ${{ steps.files.outputs.runtime }}
+    steps:
+      - name: List the PR's files against the runtime paths
+        id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename')
+          hit=$(echo "$files" | grep -E '^(Dockerfile|conda-env\.yaml|Make\.common|etc/|bin/|common/Make\.container|common/Make\.conda|common/image\.mk|\.github/scripts/|\.github/workflows/(ci|image|runtimes)\.yaml)' || true)
+          echo "${hit:-no runtime file in this PR}" | sed 's/^/runtime: /'
+          echo "runtime=$([ -n "$hit" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  # the image under Apptainer (amd64, arm64) and rootless Podman, pulled anonymously; on a PR,
+  # when `changes` says a runtime file moved (!cancelled(): `changes` is skipped on a push)
   runtimes:
     name: Runtimes
-    needs: image
-    if: needs.image.outputs.digest != ''
+    needs: [image, changes]
+    if: ${{ !cancelled() && needs.image.result == 'success' && needs.image.outputs.digest != ''
+            && (github.event_name != 'pull_request' || needs.changes.outputs.runtime == 'true') }}
     uses: ./.github/workflows/runtimes.yaml
     with:
       image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
