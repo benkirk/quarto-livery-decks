@@ -306,7 +306,8 @@ local function mark(blocks, title, level)
     if b.t == "Div" and C.has_class(b, "strip") then   -- a strip on its own, as wide as the body
       flow({ b }, title, out)
     elseif b.t == "Div" and C.has_class(b, "lead") then
-      out:insert(marker("lead"))
+      local scale = C.scale_attr(b, who)   -- scale="S": grid.py sets the lead's runs at S times their size
+      out:insert(marker("lead" .. (scale and (" scale=" .. scale) or "")))
       flow(C.split_lines(b.content), title, out)
       out:insert(marker("end"))
     elseif rail then

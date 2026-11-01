@@ -58,8 +58,8 @@ from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
                      inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, ppr_place, rect, rpr, shape,
                      slide_title, space_before, split_br, style_runs)
-from .slide_layout import NOTE_GAP, frame_note, note_style, use_layout
-from .measure import table_height, text_height
+from .slide_layout import NOTE_GAP, frame_note, note_style, scale_paragraphs, use_layout
+from .measure import inherited, table_height, text_height
 
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
@@ -160,14 +160,19 @@ def parse(paragraphs):
     return segs if any(s[0] != "text" for s in segs) else None
 
 
-def draw_lead(slide, x, y, w, room, paras, slide_height):
+def draw_lead(slide, x, y, w, room, paras, slide_height, scale=1.0):
     """The lead box: its text on boxes.lead.fill, a bar of bar-color at its left, the text padded
     by boxes.lead.pad, the box cut to its measured text; the height it takes, a pad's gap under it
-    included (HTML's margin-bottom)."""
+    included (HTML's margin-bottom). scale: the marker's scale=S, its runs at S times their size
+    (the master's body size at their level), as a slide's scale= sizes the body; the pads stay."""
     lead = BOXES["lead"]
     bar = round(lead["bar"] * slide_height)
     vpad, hpad = pads("lead")
     tb = body_box(slide, x + bar, y, w - bar, room, paras, "Lead text")
+    if scale != 1.0:
+        for r in tb.text_frame._txBody.iter(qn("a:r")):   # a bare run inherits: an rPr gives sz a home
+            rpr(r)
+        scale_paragraphs(tb.text_frame.paragraphs, scale, lambda lvl: inherited(tb, slide, lvl))
     inset(tb.text_frame, vpad, hpad)
     h = min(int(text_height(tb, slide) * SLACK), room)
     tb.height = h
@@ -701,7 +706,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
             y += h
             continue
         if seg[0] == "lead":
-            y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height)
+            y += draw_lead(slide, left, y, width, max(bottom - y, 0), seg[2], slide_height, float(seg[1].get("scale", 1)))
             continue
         if seg[0] == "agenda":
             y += draw_agenda(slide, left, y, width, max(bottom - y, 0), seg[2])

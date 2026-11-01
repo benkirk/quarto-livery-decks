@@ -71,7 +71,10 @@ WAVES        = LIVERY.get("art", {}).get("waves")
 COMP         = LIVERY["compositions"]   # the title, closing, section and feature slides as boxes
 
 
-def _scale_paragraphs(paragraphs, scale, size_at):
+def scale_paragraphs(paragraphs, scale, size_at):
+    """Every run's size times scale, to the half point; a run without a size takes size_at(level)
+    first (give each run an rPr before: a bare run inherits and has no home for sz). The slide's
+    scale= here, a .lead's in grid.py."""
     for p in paragraphs:
         if p.text.lstrip().startswith(style_footnotes.MARKERS):
             continue
@@ -119,8 +122,8 @@ def lay_out(slide, words, width):
             if scale != 1.0:
                 for r in shape.text_frame._txBody.iter(qn("a:r")):   # runs without an rPr inherit too: give each one, so sz has a home
                     rpr(r)
-                _scale_paragraphs(shape.text_frame.paragraphs, scale,
-                                  lambda lvl, s=shape: inherited(s, slide, lvl))
+                scale_paragraphs(shape.text_frame.paragraphs, scale,
+                                 lambda lvl, s=shape: inherited(s, slide, lvl))
             if vcenter:
                 shape.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         elif is_table(shape):
@@ -132,7 +135,7 @@ def lay_out(slide, words, width):
                     if scale != 1.0:
                         for r in tf._txBody.iter(qn("a:r")):
                             rpr(r)
-                        _scale_paragraphs(tf.paragraphs, scale, lambda lvl: other)
+                        scale_paragraphs(tf.paragraphs, scale, lambda lvl: other)
             if vcenter and rows:
                 est = table_height(shape, slide)
                 if est < shape.height:

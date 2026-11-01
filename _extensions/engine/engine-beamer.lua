@@ -464,13 +464,16 @@ local function galleries(blocks)
 end
 
 -- A .lead box: \begin{enginelead} round its blocks, its source lines each a paragraph
--- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes
+-- (C.split_lines()); beamerinnerthemeEngine.sty draws it from livery.sty's boxes. scale="S"
+-- (C.scale_attr()) wraps the lines in enginescale{S} inside the box, so its pads keep their size
+-- and only the text grows (the frame's scale= sizes the whole body).
 local function lead_boxes(blocks)
   return blocks:walk({ Div = function(d)
     if not has_class(d, "lead") then return nil end
-    local out = pandoc.Blocks({ latex("\\begin{enginelead}") })
+    local scale = C.scale_attr(d, "engine-beamer.lua: a .lead")
+    local out = pandoc.Blocks({ latex("\\begin{enginelead}" .. (scale and ("\\begin{enginescale}{" .. scale .. "}") or "")) })
     out:extend(C.split_lines(d.content))
-    out:insert(latex("\\end{enginelead}"))
+    out:insert(latex((scale and "\\end{enginescale}" or "") .. "\\end{enginelead}"))
     return out
   end })
 end

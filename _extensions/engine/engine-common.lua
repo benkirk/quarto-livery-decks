@@ -154,6 +154,20 @@ local function content_heading(blk, level, kinds)
   return true
 end
 
+-- scale="S" on an element, taken off it: the string, or nil, and whether it was there. One that is
+-- not a number is dropped with a warning (who: the filter and the slide). The heading's
+-- (take_layout: the whole body) and a .lead's (its lines alone), one reader.
+local function scale_attr(blk, who)
+  local scale = blk.attributes["scale"]
+  if scale == nil then return nil, false end
+  blk.attributes["scale"] = nil
+  if not tonumber(scale) then
+    warn(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
+    return nil, true
+  end
+  return scale, true
+end
+
 -- The per-slide layout controls on a heading (.hcenter, .vcenter, .center, .fill, .caution, .wide,
 -- .brand-dark, scale="S"), taken off it: { h, v, fill, caution, wide, dark, scale } (scale the
 -- string, or nil), or nil when it has none. A scale that is not a number is dropped with a warning
@@ -174,15 +188,8 @@ local function take_layout(blk, who)
       kept:insert(c)
     end
   end
-  local scale = blk.attributes["scale"]
-  if scale then
-    blk.attributes["scale"] = nil
-    found = true
-    if not tonumber(scale) then
-      warn(who .. ": scale=\"" .. scale .. "\" is not a number; ignored")
-      scale = nil
-    end
-  end
+  local scale, had = scale_attr(blk, who)
+  found = found or had
   if not found then return nil end
   blk.classes = kept
   if dark and (kept:includes("full") or kept:includes("feature")) then   -- the picture fills it: every format alike
@@ -1225,7 +1232,7 @@ return {
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
-  content_heading = content_heading, take_layout = take_layout,
+  content_heading = content_heading, take_layout = take_layout, scale_attr = scale_attr,
   theme_options = theme_options, load_livery = load_livery, marking_texts = marking_texts,
   watermark_text = watermark_text, cover_name = cover_name, fineprint_paragraphs = fineprint_paragraphs,
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
