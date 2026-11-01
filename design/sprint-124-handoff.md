@@ -1,5 +1,9 @@
 # Sprint handoff: #124's open items, the card framework, and the liveries off their workarounds
 
+**State (2026-11-01):** #164 (squash `540f4c5`) landed the nasa-jsc-eg reference notes and ticked
+#124's item; a picture or table in a grid column landed with the cells-dark sprint (#148). Open in
+#124: the 2×2 quadrant layout and the deck-level mark-swap key.
+
 **State (2026-10-21):** landed as #126, squash `ba36ec5`. Open in #124: the 2×2 quadrant layout, a
 picture or table in a grid column, the deck-level mark-swap key. Its three follow-ups below (a
 status-color contrast warning in `livery check`, `a:latin` on the ⚠ run if PowerPoint draws an

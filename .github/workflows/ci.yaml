@@ -276,8 +276,9 @@ jobs:
         with:
           path: ${{ env.FRAMEWORK }}
 
-      # what a consumer commits: a one-line Makefile, its deck, and a requirements.txt for a
-      # package the image lacks (docs/container.md "From your deck's Makefile")
+      # what a consumer commits: a one-line Makefile and its deck (the minimal consumer), plus a
+      # requirements.txt for a package the image lacks and the `{python}` cell that imports it,
+      # which is the deps path's test, not the minimum (docs/container.md "From your deck's Makefile")
       - name: Write the hello-world deck
         run: |
           mkdir -p "$DECK"

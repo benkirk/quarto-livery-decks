@@ -54,7 +54,8 @@ chrome-headless-shell` cannot download, point Quarto at any Chromium with
 
 **No conda at hand?** With Docker, Podman or Apptainer installed, the same `make pptx` builds in
 the published image, which carries the whole environment: a deck's make runs the container
-itself when `quarto` is not on your PATH, or when `DECKS_RUNTIME` says so
+itself when `quarto` is not on your PATH (a checkout whose `conda-env/` is built runs that
+first), or when `DECKS_RUNTIME` says so
 ([docs/container.md "From your deck's Makefile"](docs/container.md#from-your-decks-makefile)).
 A directory of `.qmd` files with no Makefile builds with `docker run` alone
 ([`docs/container.md`](docs/container.md)).
