@@ -99,11 +99,11 @@ def test_auto_picks_the_checkout_env_before_the_image(tmp_path):
     (d / "Makefile").write_text(f"include {fw}/Make.common\n")
     (d / "talk.qmd").write_text("---\ntitle: T\n---\n")
     path = f"{stub}:/usr/bin:/bin"   # no quarto, a conda
-    r = make(d, "pptx", PATH=path)
+    r = make(d, "pptx", "DECKS_RUNTIME=auto", PATH=path)   # auto by name: the image's ENV says native
     assert r.returncode == 0 and f"conda run -p {fw}/conda-env --no-capture-output make pptx DECKS_RUNTIME=native" in flat(r), \
         (r.stdout + r.stderr)[-400:]
     (fw / "conda-env" / "bin" / "quarto").unlink()   # no env built: a container runtime, or the error
-    r = make(d, "pptx", PATH=path)
+    r = make(d, "pptx", "DECKS_RUNTIME=auto", PATH=path)
     assert "conda run" not in r.stdout, "the env picked with no quarto in it"
 
 
