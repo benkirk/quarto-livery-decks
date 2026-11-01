@@ -1,0 +1,19 @@
+# Make.common on the framework checkout's own conda env when none is active: DECKS_RUNTIME=conda
+# (docs/container.md "From your deck's Makefile"), which `auto` picks before a container runtime
+# when <framework>/conda-env/bin/quarto exists and conda is on PATH. The goals become ONE run of the
+# same make under `conda run -p <env>`, a real activation (the activate.d exports Quarto needs,
+# which putting conda-env/bin on PATH is not), with DECKS_RUNTIME=native on its command line so it
+# never dispatches again. Command-line variables ride MAKEFLAGS, which make exports to the child;
+# the same host, so `publish` pushes from inside the run. GNU make 3.81-safe: macOS's make reads
+# this (CLAUDE.md "Runtime").
+
+DECKS_CONDA_ENV ?= $(abspath $(FRAMEWORK_ROOT)conda-env)
+
+DECKS_GOALS := $(or $(MAKECMDGOALS),pptx)
+.PHONY: $(DECKS_GOALS) decks-conda
+$(DECKS_GOALS): decks-conda
+	@:
+decks-conda:
+	@echo "DECKS_RUNTIME=conda: $(DECKS_CONDA_ENV)" >&2
+	@test -x $(DECKS_CONDA_ENV)/bin/quarto || { echo "no conda env at $(DECKS_CONDA_ENV): \`make conda-env\` in the framework checkout (docs/formats.md)" >&2; exit 1; }
+	conda run -p $(DECKS_CONDA_ENV) --no-capture-output make $(MAKECMDGOALS) DECKS_RUNTIME=native

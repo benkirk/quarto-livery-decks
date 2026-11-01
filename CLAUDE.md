@@ -136,8 +136,12 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   docker, as `image.yaml` calls it); its container calls go through one adapter (`argv`). The two
   `_quarto.yml`/`_extensions` links are `ln -sfn`, so a dangling link left by the other
   side (host or container) is re-pointed; a real file or a resolving link is never touched.
-- **Runtime**: `DECKS_RUNTIME` (`auto` default: native when `quarto` is on PATH, else the first
-  of apptainer, docker, podman) at the top of `Make.common`; anything but native includes
+- **Runtime**: `DECKS_RUNTIME` (`auto` default: native when `quarto` is on PATH, else `conda`
+  when `$(FRAMEWORK_ROOT)conda-env/bin/quarto` exists and `conda` is on PATH, else the first
+  of apptainer, docker, podman) at the top of `Make.common`; `conda` includes `common/Make.conda`
+  (#143: ONE `conda run -p <env> --no-capture-output make ... DECKS_RUNTIME=native`, a real
+  activation, the same host, `DECKS_CONDA_ENV` names another env; `tests/test_new_deck.py` covers
+  the pick and the line); the container runtimes include
   `common/Make.container`, which runs the goals as ONE `make ... DECKS_RUNTIME=native` in the image,
   the deck's git toplevel, the framework, an outside `LIVERY_DIR`, the existing `DECKS_BINDS` and
   uncovered symlink targets in the deck directory mounted at their real paths, with its own HOME

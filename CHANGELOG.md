@@ -26,6 +26,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - `::: {.lead scale="1.25"}` sizes a lead's lines apart from the slide (#142): that share of the
   body size in every format, the box's pads unchanged; the sample's "Options side by side" lead is
   at 1.15.
+- `DECKS_RUNTIME=auto` runs a framework checkout's own `conda-env/` before the image (#143): with
+  no `quarto` on your PATH but the env built and `conda` on PATH, `make` runs once under `conda
+  run` (`DECKS_RUNTIME=conda` names it); the container runtimes follow as before.
 - A deck's own Python packages (#158): a pinned `requirements.txt` beside the Makefile and `make
   deps` install them once (in the image under a container runtime, in your env natively) into a
   folder the build puts on `PYTHONPATH`, a `{python}` cell's kernel included; only what the env
