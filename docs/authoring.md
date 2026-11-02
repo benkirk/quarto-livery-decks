@@ -465,7 +465,9 @@ A `.full` slide's movie; this line is its caption.
   `python3 common/utils/frames2movie.py reencode in.mov movies/out.mp4` makes one that is. WebM plays
   in HTML only (pptx and the PDF show its poster, warned).
 - **ffmpeg** makes the movies and posters: the image has it; on a Mac, `brew install ffmpeg`.
-  Without it, give each movie a `poster=` and bring your own mp4s.
+  Without it, bring your own mp4s, each with a `poster=` of its own or a `<name>.poster.png`
+  beside it: `make` makes no poster then (it says so), a movie without one is warned and shows
+  its path in the pptx and the PDF, and a `frames/<name>/` still needs ffmpeg.
 - **Where it goes:** on the slide, in a plain two-column slide's column, or as a `{.full}` slide's
   figure. In a card, a grid's column or a gallery the pptx shows its poster only (warned).
 - **Size.** A movie is a file beside the HTML deck (`make site` copies `movies/`), and inside the

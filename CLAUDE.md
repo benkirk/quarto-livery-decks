@@ -286,7 +286,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   stills: `common/utils/frames2movie.py` (`frames`, `poster`, `reencode`, `check`; even size,
   yuv420p, the livery's background under a transparent frame, `movie.yml`), Make.common's `MOVIES`
   rule (`frames/<name>/` to `movies/<name>.mp4` and its poster, remade on a livery switch; a timed
-  poster remade with its movie), `deck_qa.py`'s `movie_findings()` (ffprobe). No grid cell or
+  poster remade with its movie; without ffmpeg on PATH no poster is a prerequisite, warned once, so
+  a brought movie with a poster of its own builds), `deck_qa.py`'s `movie_findings()` (ffprobe). No grid cell or
   gallery movie yet (its poster, warned).
 - **Linked images** (`[![](x.png)](url)`): the picture is the link in every
   format, and each shows the URL: the HTML footer and a PDF foot line come from

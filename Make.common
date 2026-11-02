@@ -161,12 +161,16 @@ engine_files := $(wildcard $(engine_dir)/*.lua $(engine_dir)/*.py $(engine_dir)/
 # MOVIES lists the frame directories' names (default: every frames/*/); a deck whose frames a script
 # draws names them and adds the script as a prerequisite of movies/<name>.mp4 (decks/movies/Makefile).
 # A livery switch remakes a frames movie (its background); all of them are prerequisites of every
-# deck in the directory, like the fragments.
+# deck in the directory, like the fragments. Without ffmpeg on PATH (a host: brew or apt install it)
+# Make makes no poster, so a brought movie with a poster of its own builds as the guide says and one
+# without is warned by the filters (ensure_poster); a frames movie still needs it (frames2movie.py says so).
 frames2movie   := $(FRAMEWORK_ROOT)common/utils/frames2movie.py
 MOVIES         ?= $(patsubst frames/%/,%,$(wildcard frames/*/))
 movie_made     := $(MOVIES:%=movies/%.mp4)
 movie_all      := $(sort $(movie_made) $(wildcard movies/*.mp4 movies/*.m4v movies/*.mov movies/*.webm))
-movie_posters  := $(addsuffix .poster.png,$(basename $(movie_all)))
+ffmpeg_found   := $(if $(movie_all),$(shell command -v ffmpeg 2>/dev/null))
+$(if $(movie_all),$(if $(ffmpeg_found),,$(warning ffmpeg not found: no movie poster is made (docs/authoring.md "Movies"))))
+movie_posters  := $(if $(ffmpeg_found),$(addsuffix .poster.png,$(basename $(movie_all))))
 define movie_rule
 movies/$(1).mp4: $$(wildcard frames/$(1)/*) $$(frames2movie) .livery
 	python3 $$(frames2movie) frames frames/$(1) $$@ --poster movies/$(1).poster.png
@@ -178,7 +182,7 @@ movies/%.poster.png: movies/%.mov ; python3 $(frames2movie) poster $< $@
 movies/%.poster.png: movies/%.webm ; python3 $(frames2movie) poster $< $@
 # a poster-time= poster (<name>.poster-<seconds>.png, which the filters make when it is missing) is
 # remade with its movie
-movie_timed    := $(wildcard $(addsuffix .poster-*.png,$(basename $(movie_all))))
+movie_timed    := $(if $(ffmpeg_found),$(wildcard $(addsuffix .poster-*.png,$(basename $(movie_all)))))
 define timed_poster_rule
 $(1): $(2) ; python3 $$(frames2movie) poster $(2) $(1) --time $(3)
 endef
