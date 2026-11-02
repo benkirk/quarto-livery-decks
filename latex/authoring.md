@@ -210,8 +210,9 @@ says why), so a movie is its poster with a play badge over its center, the whole
 ```
 
 - **`\enginemovie[<graphics options>]{<poster>}{<link>}`** is `\includegraphics[<options>]{<poster>}`
-  under the badge, linked to `<link>` (a URL, or `run:movies/vortex.mp4` for the file beside the PDF,
-  which a viewer may ask before it opens). An empty link draws the badge alone.
+  under the badge, linked to `<link>` (a URL, which every viewer opens, or `run:movies/vortex.mp4`
+  for the file beside the PDF: a launch action, which Acrobat and Okular ask about and open, and
+  Preview and the browsers' viewers ignore). An empty link draws the badge alone.
 - **`\enginemoviebox{<link>}{<picture>}`** does the same round any picture.
 - **`\enginefullmovie{<link>}`** in an `[enginefull=<poster>]` frame gives the full-slide figure the
   badge and the link.

@@ -448,8 +448,9 @@ A `.full` slide's movie; this line is its caption.
   `poster-time=2.5` takes the frame 2.5 s in instead (its own file, `<name>.poster-2.5.png`);
   `poster=other.png` names a picture of your own (give it a name of its own: Make remakes
   `<name>.poster.png` when the movie is newer).
-- **The PDF's link** goes to the movie file (a viewer may ask before it opens it); `href=` gives a
-  URL instead, for a PDF that travels without the movie.
+- **The PDF's link** goes to the movie file beside the PDF, as a launch action: Acrobat and Okular
+  ask and open it, Preview and the browsers' viewers do nothing on the click. `href=` gives a URL
+  instead, which every viewer opens, and the PDF travels without the movie.
 - **From stills.** Put a run's frames in `frames/<name>/` beside the deck's Makefile: `make` turns
   each such directory into `movies/<name>.mp4` and its poster before it renders, and again when a
   frame changes (`common/utils/frames2movie.py`). The frames go in name order, numbers read as
