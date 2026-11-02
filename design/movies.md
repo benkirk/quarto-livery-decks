@@ -19,17 +19,17 @@ decisions they rest on. Issue: #170.
   needs nothing extra. Moving the base would cost the Dockerfile's apt TeX Live and its asserts,
   and also Playwright's `--with-deps`, which supports only Debian and Ubuntu. The old image's
   players (vlc, smplayer, haruna) are no use in a headless build image.
-- **Size.** apt `ffmpeg` with `--no-install-recommends` is estimated at +100 to 200 MB, much of its
-  X, SDL and pulse stack already pulled in by LibreOffice and Chromium. The image is 8.2 GB on disk
-  and 2.3 GB compressed per platform (`design/plots-gnuplot-and-r.md` section 2). Measure the real
-  number at the first build.
-- **pandoc's pptx writer knows no video**, only pictures. python-pptx has
+- **Size.** apt `ffmpeg` with `--no-install-recommends` adds 230 MB on disk (measured: 8.39 GB for
+  26.11.0, 8.62 GB with it, arm64), a little over the 100 to 200 MB estimated. noble's build in the
+  image is 6.1.1 and lists libx264, libx265, libsvtav1, libaom-av1 and libvpx-vp9.
+- **pandoc's pptx writer knows no video**, only pictures: it embeds an `.mp4` image as a picture
+  (`image3.mpg4`) that nothing can show. It writes an image's src as the picture's `descr`. python-pptx has
   `shapes.add_movie(file, left, top, width, height, poster_frame_image, mime_type)`. It embeds
   the blob, writes the `p14:media` extension and the picture that stands for the movie, and adds
   click-to-play timing. Autoplay and loop are not in its API (an open feature request): they mean
   editing `p:timing` and `p:cMediaNode` by hand. PowerPoint (Windows and Mac) and Keynote play
-  H.264 yuv420p mp4 reliably. Google Slides' pptx import probably keeps only the poster (to
-  check).
+  H.264 yuv420p mp4 reliably. Google Slides' pptx import: not checked.
+- **Quarto and pandoc already write `<video data-src controls>`** for an `.mp4` image in revealjs.
 - **reveal.js plays `<video>`** with `data-autoplay` (it starts on entering the slide and pauses
   on leaving), along with `loop`, `muted`, `playsinline` and `poster`. HTML decks do not set
   `embed-resources` by default (`common/_quarto.yml`), so a movie is a file beside the deck. Under
@@ -73,19 +73,25 @@ movie, poster and flags. A missing poster is made from the movie by `ffmpeg` (th
 or `poster-time=`); without `ffmpeg` it is a warning and a placeholder still. `.webm` plays in
 HTML only, so it is warned in pptx and PDF.
 
-Open: does Quarto's own image handling touch a movie source in an Image before the engine's
-filters see it (its `{{< video >}}` shortcode is a separate path)? Check with a real `quarto
-render`, not the pandoc harness (the lesson of #135).
+Checked with a real `quarto render`: Quarto leaves a movie Image alone before the engine's filters
+(its `{{< video >}}` shortcode is a separate path); the HTML filter writes its own `<video>` in its
+place, last, after `.full`'s one-figure test has seen an image.
 
 ### 3.2 Stills to a movie
 
 `common/utils/frames2movie.py` wraps `ffmpeg` with the defaults section 1 names: even
-dimensions, `yuv420p`, H.264 at `crf` 18, `+faststart`, `fps` 24. It also writes the poster.
+dimensions, `yuv420p`, H.264 at `crf` 18, `+faststart`, `fps` 24, and a transparent frame laid on
+the livery's background (matplotlib's under the livery's style are transparent: yuv420p has no
+alpha, and they came out black). It also writes the poster. The background source runs at the
+movie's rate: at ffmpeg's default 25 the overlay repeated frames (6 stills made 21).
 `Make.common` gets a pattern rule from `frames/<name>/*.png` to `movies/<name>.mp4` and
 `movies/<name>.poster.png`, and `movies/*` joins a deck's prerequisites (the fragments list), so
 new frames rebuild the movie and the movie rebuilds the decks. Per-movie settings (`fps`, `crf`,
-scale) live in an optional `frames/<name>/movie.yml`. Later, perhaps: `livery_mpl` saving a
-matplotlib animation the same way.
+scale, `poster-time`: a run's first frame is often its blank start) live in an optional
+`frames/<name>/movie.yml`. A livery switch remakes a frames movie (the `.livery` stamp is its
+prerequisite: its background). A `poster-time=` poster is `<stem>.poster-<s>.png`, its own file
+(the default one is another moment's), made by the filters when missing and remade by Make with its
+movie. Later, perhaps: `livery_mpl` saving a matplotlib animation the same way.
 
 Large binaries: frames and movies under a deck are the consumer's to manage (git LFS, or built
 outputs left untracked). The framework commits none (section 4's fixture generates its frames).
@@ -106,7 +112,11 @@ outputs left untracked). The framework commits none (section 4's fixture generat
   a still.
 - **PDF** (`engine-beamer.lua`, the inner theme): the poster sized as a figure, a play badge in
   the livery's roles (the accent ring, the on-dark glyph) and `\href` to `href=`. The LaTeX layer
-  gets `\enginemovie[poster=,href=]{file}`, so a hand author writes the same thing.
+  gets `\enginemovie[<graphics options>]{<poster>}{<link>}` (over `\enginemoviebox{<link>}{<picture>}`,
+  and `\enginefullmovie{<link>}` for an `[enginefull=]` frame), so a hand author writes the same
+  thing. An unsized poster is `0.72\textheight` at most (the `{height="72%"}` recipe, HTML's 600 px):
+  at its natural size it pushed the caption off the frame. The badge has a ring in its ink: on
+  nasa-dark the dark disc vanished on a black poster.
 
 ### 3.4 Checks
 
@@ -115,15 +125,19 @@ outputs left untracked). The framework commits none (section 4's fixture generat
   `frames2movie.py --reencode` line that fixes it.
 - `Dockerfile` step 1 adds `ffmpeg`; step 4's asserts check `ffmpeg -encoders` lists `libx264`.
   `smoke-test.sh` encodes a tiny movie.
-- `decks/fixtures/movie.qmd` builds its frames at render time (matplotlib, ~20 small frames, no
-  binaries committed), in CI and in `parity.sh`.
+- `decks/movies/` (a cookbook beside `decks/plots/`, not a fixture: the fixtures' `make measure`
+  runs under every livery in CI, and a movie deck there is three renders more per job) draws its
+  frames at build time (`make_frames.py`, 24 odd-sized transparent frames, no binaries committed), in
+  CI's sample job and in `parity.sh`.
 - `tests/test_movie.py`: the reader under `pandoc lua`, and the step's XML on a tiny generated
   mp4 (`p14:media`, the timing nodes, the loop count). Keynote and PowerPoint through
   `tests/app-open.sh` at the release: play, and no Repair? prompt.
 
 ## 4. Steps
 
-One sprint PR, a commit per item, in this order:
+One sprint PR, a commit per item, in this order (all done on `sprint/movies`; still to check by
+hand: the movies play in PowerPoint's and Keynote's slideshows, `tests/app-open.sh` only opens
+them, and Google Slides' import):
 
 1. The image: `ffmpeg`, its assert, the smoke encode; the size in the merge summary noted here.
 2. `frames2movie.py` and the `Make.common` rule and prerequisites.

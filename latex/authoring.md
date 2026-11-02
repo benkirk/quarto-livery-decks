@@ -194,6 +194,32 @@ The cookbook's three gallery slides, as the Quarto ones in
   `\enginefullcaption` is the caption line, as for a full-slide figure. A `{.wide}` body
   (`enginewide`) widens a gallery with it.
 
+## Movies
+
+A PDF plays no movie (the Quarto side's [docs/authoring.md "Movies"](../docs/authoring.md#movies)
+says why), so a movie is its poster with a play badge over its center, the whole a link to it:
+
+```latex
+\begin{frame}{Vortex shedding}
+  \centering\enginemovie[width=0.8\linewidth]{movies/vortex.poster.png}{https://example.org/vortex.mp4}
+\end{frame}
+
+\begin{frame}[enginefull=movies/vortex.poster.png]   % the poster fills the slide
+  \enginefullmovie{https://example.org/vortex.mp4}\enginefullcaption{The wake, 240 frames.}
+\end{frame}
+```
+
+- **`\enginemovie[<graphics options>]{<poster>}{<link>}`** is `\includegraphics[<options>]{<poster>}`
+  under the badge, linked to `<link>` (a URL, or `run:movies/vortex.mp4` for the file beside the PDF,
+  which a viewer may ask before it opens). An empty link draws the badge alone.
+- **`\enginemoviebox{<link>}{<picture>}`** does the same round any picture.
+- **`\enginefullmovie{<link>}`** in an `[enginefull=<poster>]` frame gives the full-slide figure the
+  badge and the link.
+- The badge is the livery's `boxes.movie`: its diameter (of the paper height, at most 0.4 of the
+  picture's), the disc's `fill` and `opacity`, the `ink` of the triangle and of a `ring` round the disc.
+- A poster from a movie: `ffmpeg -ss 0 -i vortex.mp4 -frames:v 1 vortex.poster.png`, or the framework's
+  `common/utils/frames2movie.py poster vortex.mp4 vortex.poster.png`.
+
 ## Out of scope for LaTeX
 
 What the Quarto decks do that a LaTeX deck does not, and the LaTeX way:

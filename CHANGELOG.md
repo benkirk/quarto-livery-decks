@@ -26,6 +26,28 @@ A release's entry is written here before its tag is pushed, and becomes its note
   is skipped; a big line's font box reaching into the next line's is its leading, not a
   collision). `QA_PPTX_FAIL=0 make qa` keeps them hints on a machine whose LibreOffice draws
   otherwise.
+- **Movies** (docs/authoring.md "Movies"): an image whose source is a movie
+  (`![Caption](movies/vortex.mp4)`) plays in HTML and is embedded in the pptx, where PowerPoint and
+  Keynote play it in the slide's frame; by default it starts with the slide, loops and is silent
+  (`autoplay=false`, `loop=false`, `muted=false`). The PDF shows its poster with a play badge, a
+  link to the movie (`href=` for a URL): a deliberate departure, since no PDF viewer plays a movie
+  everywhere. A directory of stills, `frames/<name>/`, becomes `movies/<name>.mp4` and its poster
+  before a render (`common/utils/frames2movie.py`: H.264 in 4:2:0 color, even dimensions, a
+  transparent frame on the livery's background; `frames/<name>/movie.yml` for its fps, width,
+  quality and poster time). `make qa` fails a movie that would not play everywhere, and
+  `frames2movie.py reencode` fixes one. The cookbook is `decks/movies/`. The image has ffmpeg; on
+  a Mac, `brew install ffmpeg`.
+
+### Liveries
+
+- `boxes.movie` (new, with defaults): the PDF's play badge, its diameter, disc fill and opacity,
+  and the ink of its triangle and ring. Rebuild a livery of your own (`livery build`) to pick it up.
+
+### LaTeX
+
+- `\enginemovie[<graphics options>]{<poster>}{<link>}`, `\enginemoviebox{<link>}{<picture>}` and an
+  `[enginefull=<poster>]` frame's `\enginefullmovie{<link>}`: a movie's poster under the play badge,
+  linked to the movie (latex/authoring.md "Movies").
 
 ## [26.11.0] - 2026-11-01
 
