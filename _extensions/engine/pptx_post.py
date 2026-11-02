@@ -22,8 +22,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # livery, pptx_waves,
 from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
-    columns, embed_fonts, enable_autofit, grid, link_captions, marking, notes_clrmap, section_subtitle, slide_layout,
-    status_glyphs, style_footnotes, style_tables, svg_fallback, type_step, watermark)
+    columns, embed_fonts, enable_autofit, grid, link_captions, marking, movie, notes_clrmap, section_subtitle,
+    slide_layout, status_glyphs, style_footnotes, style_tables, svg_fallback, type_step, watermark)
 
 
 def post(path: Path) -> None:
@@ -51,7 +51,8 @@ def post(path: Path) -> None:
     # One Presentation, each step on it with the deck's path (its name for the messages). Footnotes
     # are styled before slide_layout, whose scale= leaves them at their size; columns after it,
     # which leaves a columns slide's frames alone (its {.wide} words are its own line's); grid
-    # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes);
+    # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes); the
+    # movies after every step that moves a picture (they take the poster's final frame);
     # tables after all of those, re-split inside their final frames; the marking strips and the
     # watermark before type_step, so a deck's type step scales them as HTML and PDF do (the
     # watermark after every step that adds a slide's shapes: it goes behind the first that holds
@@ -63,6 +64,7 @@ def post(path: Path) -> None:
     columns.run(prs, path)                  # a two-column slide's widths and gap (grid-pptx.lua's line)
     grid.run(prs, path)                     # a grid slide (what is_grid() counts) drawn from grid-pptx.lua's markers, its gallery by gallery.py
     status_glyphs.run(prs, path)            # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
+    movie.run(prs, path)                    # each movie over its poster, in the poster's final frame
     style_tables.run(prs, path)
     marking.run(prs, path)                  # the marking strips, on every slide
     watermark.run(prs, path)                # the watermark, on every slide, behind the text

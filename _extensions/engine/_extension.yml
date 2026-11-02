@@ -60,6 +60,8 @@ contributes:
       #                     lines), in place of pandoc's Notes slide; style_footnotes.py styles them
       #   diagram-dark      a dark livery: baked mermaid/graphviz PNGs turned to the dark (before
       #                     grid-pptx, which carries a grid column's diagram in its marker)
+      #   movie-pptx        a movie as its poster, which pandoc lays out as a picture, and a notes
+      #                     line naming the movie, for movie.py, which embeds it there
       #   grid-pptx         a two-column slide's shares as a notes line, for columns.py; a grid
       #                     slide (what engine-common.lua's is_grid() counts: three or more
       #                     columns, a card, a lead, a strip, a rail, a gallery, a quote)
@@ -81,6 +83,7 @@ contributes:
         - slide-layout.lua
         - inline-footnotes.lua
         - diagram-dark.lua
+        - movie-pptx.lua
         - grid-pptx.lua
         - notes-last.lua
         - single-body.lua
