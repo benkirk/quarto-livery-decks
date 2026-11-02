@@ -45,6 +45,7 @@ run "$img" gnuplot --version   # livery_gp.py's; gnuplot-nox, cairo's terminals
 # one argument, no shell: Apptainer's run script re-evaluates the arguments and drops backslashes,
 # so an escaped quote inside a `bash -c` string arrives split into words
 run "$img" gnuplot -e "set terminal pdfcairo; set output '/dev/null'; plot x"
+run "$img" ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=64x36:rate=4 -t 1 -c:v libx264 -pix_fmt yuv420p -f null -   # frames2movie.py's H.264
 run "$img" bash -c 'echo "QUARTO_CHROMIUM=$QUARTO_CHROMIUM"; "$QUARTO_CHROMIUM" --version'
 run "$img" bash -c 'echo "font families: $(/usr/bin/fc-list : family | sort -u | wc -l), the liveries'"'"' Poppins: $(/usr/bin/fc-list : family | grep -c Poppins)"'
 run "$img" bash -c 'test "$(/usr/bin/fc-list : family | grep -c Poppins)" -gt 0'   # LibreOffice's fontconfig sees them
