@@ -620,6 +620,18 @@
             "gap": {"type": "number", "minimum": 0, "default": 0.3, "description": "Its distance under the figure or table, in em of the caption type (HTML and PDF; the pptx places it by measure)."}
           }
         },
+        "movie": {
+          "type": "object",
+          "description": "A movie's play badge in the PDF, which shows the movie's poster as a link to it (HTML and pptx play the movie).",
+          "additionalProperties": false,
+          "properties": {
+            "badge": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.11, "description": "The badge's diameter (of the slide's height), at most 0.4 of the poster's height."},
+            "fill": {"$ref": "#/$defs/color-or-role", "default": "dark", "description": "The badge's disc, a role, a blend, a palette name or a hex."},
+            "ink": {"$ref": "#/$defs/color-or-role", "default": "on-dark", "description": "The play triangle on the disc, a role, a blend, a palette name or a hex."},
+            "opacity": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.7, "description": "The disc's opacity (the triangle and the ring are solid)."},
+            "ring": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.05, "description": "A ring round the disc in the ink, its width as a share of the badge (0: none), so the badge reads on a poster as dark as its disc."}
+          }
+        },
         "card": {
           "type": "object",
           "description": "A card (`::: {.column .card}`): a colored head band over a body.",

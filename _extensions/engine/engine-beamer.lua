@@ -647,6 +647,51 @@ function Table(tbl)
   return tbl
 end
 
+-- Movies (C.movie): the PDF plays none (a deliberate departure, docs/authoring.md "Movies"), so a movie
+-- is its poster, a link to the movie (href=, else the file: hyperref's run: for a path with no scheme)
+-- with a play badge. movies() makes it a Link (class engine-movie) round the poster's Image first, so
+-- .full, \pandocbounded and the plots' size see an ordinary picture; movie_boxes() then puts the link's
+-- content in the theme's \enginemoviebox (the badge over it, the whole the link). A movie with no
+-- poster is its path, as text (C.ensure_poster warns).
+local function movie_link(href)
+  if not href:match("^%a[%w+.-]*:") then href = "run:" .. href end
+  return (href:gsub("[%%#]", "\\%0"))
+end
+
+local function movies(blocks)
+  return blocks:walk({
+    Image = function(img)
+      if not C.is_movie(img) then return nil end
+      local m = C.movie(img)
+      if not C.ensure_poster(m, "engine-beamer") then return C.movie_stand_in(m) end
+      img.src = m.poster
+      return pandoc.Link({ C.strip_movie_attrs(img) }, m.href, "", pandoc.Attr("", { "engine-movie" }))
+    end,
+  })
+end
+
+-- an unsized poster at the column's width, at most the content height HTML caps a movie at (its 600 px
+-- of 900: the {height="72%"} of a big picture, docs/authoring.md), so a caption under it stays on the
+-- frame; a width= or height= the author gave is pandoc's
+local function movie_picture(content)
+  local img = #content == 1 and content[1].t == "Image" and content[1]
+  if not img or img.attributes.width or img.attributes.height then return content end
+  return pandoc.Inlines({ latex_inline("\\includegraphics[width=\\linewidth,height=0.72\\textheight,keepaspectratio]{"
+    .. img.src .. "}") })
+end
+
+local function movie_boxes(doc)
+  return doc:walk({
+    Link = function(l)
+      if not has_class(l, "engine-movie") then return nil end
+      local out = pandoc.Inlines({ latex_inline("\\enginemoviebox{" .. movie_link(l.target) .. "}{") })
+      out:extend(movie_picture(l.content))
+      out:insert(latex_inline("}"))
+      return out
+    end,
+  })
+end
+
 -- .full: the one figure (C.split_full: an image, whose path the frame key takes, or a gallery), its
 -- caption paragraphs and its notes. Runs before bound_sized_images, which turns the image into raw LaTeX.
 local function full_frames(blocks)
@@ -659,9 +704,12 @@ local function full_frames(blocks)
       slide, i = C.slide_from(blocks, i, slide_level)
       local fig, caption, rest = C.split_full(slide)
       local gallery = fig and C.is_gallery(fig) and C.gallery_items(fig, "engine-beamer")
-      local src   -- a figure's image path; nil for a gallery (the bare key) or a refused one
+      local src, movie   -- a figure's image path (a movie's poster, and its link); nil for a gallery (the bare key) or a refused one
       if fig and not C.is_gallery(fig) then
-        pandoc.walk_block(fig, { Image = function(im) src = src or im.src end })
+        pandoc.walk_block(fig, {
+          Image = function(im) src = src or im.src end,
+          Link = function(l) if has_class(l, "engine-movie") then movie = movie or l.target end end,
+        })
       elseif fig and not gallery then   -- refused, warned of: an ordinary frame of its pictures
         fig.classes = fig.classes:filter(function(c) return c ~= "gallery" end)   -- read once: galleries() passes it
       end
@@ -671,6 +719,7 @@ local function full_frames(blocks)
         blk.content = pandoc.Inlines({})
         out:insert(blk)
         if gallery then out:extend(gallery_latex(gallery)) end
+        if movie then out:insert(latex("\\enginefullmovie{" .. movie_link(movie) .. "}")) end
         if #caption > 0 then
           local text = pandoc.List({})
           for k, p in ipairs(caption) do
@@ -736,10 +785,10 @@ end
 function Pandoc(doc)
   slide_level = C.slide_level()
 
-  doc.blocks = galleries(full_frames(doc.blocks))
+  doc.blocks = galleries(full_frames(movies(doc.blocks)))
   doc = bound_sized_images(doc)
   load_theme(doc)
-  doc = size_plots(doc)
+  doc = movie_boxes(size_plots(doc))
 
   -- `titlegraphic: none`: the plain cover, not the livery's default photo (pandoc's template
   -- would otherwise \includegraphics{none})

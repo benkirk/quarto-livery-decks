@@ -83,6 +83,13 @@
         0.9
       ]
     },
+    "movie": {
+      "badge": 0.11,
+      "fill": "#41556B",
+      "ink": "#FFFFFF",
+      "opacity": 0.7,
+      "ring": 0.05
+    },
     "note": {
       "gap": 0.3
     },
