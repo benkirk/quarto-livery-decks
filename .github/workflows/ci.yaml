@@ -291,6 +291,21 @@ jobs:
           test "$(unzip -p plots.pptx 'ppt/slides/*.xml' | grep -o 'asvg:svgBlip' | wc -l)" -ge 11   # each with a PNG
           pdffonts plots.pdf | grep -q Poppins
 
+      # the movies cookbook (docs/authoring.md "Movies"): its stills drawn, made a movie and a poster by
+      # frames2movie.py, the deck in every format and its QA (which ffprobes each movie): HTML plays
+      # a <video>, the pptx embeds the movie over its poster with the slide's timing, the PDF links
+      # the poster under its badge
+      - name: Build and QA the movies deck
+        run: |
+          timeout 900 make -C decks/movies qa
+          cd decks/movies
+          ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,pix_fmt -of csv=p=0 movies/wave.mp4 | grep -qx 'h264,yuv420p'
+          test "$(grep -o '<video class="engine-movie' movies.html | wc -l)" -eq 4
+          test "$(unzip -l movies.pptx | grep -c 'ppt/media/.*\.mp4')" -ge 1
+          test "$(unzip -p movies.pptx 'ppt/slides/*.xml' | grep -o '<p14:media' | wc -l)" -eq 4
+          test "$(unzip -p movies.pptx 'ppt/slides/*.xml' | grep -o 'nodeType="mainSeq"' | wc -l)" -eq 3   # the click-to-play one has none
+          if unzip -p movies.pptx 'ppt/notesSlides/*.xml' | grep -q 'engine-movie:'; then echo '::error::a movie line left in the notes'; exit 1; fi
+
       - name: Upload the decks
         uses: actions/upload-artifact@v7
         with:
@@ -308,6 +323,10 @@ jobs:
             decks/plots/plots.html
             decks/plots/plots_files/
             decks/plots/plots.pdf
+            decks/movies/movies.pptx
+            decks/movies/movies.html
+            decks/movies/movies.pdf
+            decks/movies/movies/
           if-no-files-found: error
           retention-days: 14
 
