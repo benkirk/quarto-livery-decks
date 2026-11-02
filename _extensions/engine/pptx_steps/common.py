@@ -128,17 +128,24 @@ def peek_marker(slide, key):
     return [w for _, words in lines for w in words] if lines else None
 
 
-def take_marker(slide, key):
-    """The words of the slide's notes lines that start with key, those paragraphs removed (for
-    LAYOUT_KEY, slide-layout.lua writes one, single-body.lua another for a note; columns.py
-    reads grid-pptx.lua's engine-columns:). None when the slide has no such line."""
+def take_marker_lines(slide, key):
+    """Each of the slide's notes lines that start with key, as its words, those paragraphs removed
+    (movie.py: one line per movie). [] when the slide has none."""
     lines = _marker_lines(slide, key)
     for p, _ in lines:
         body = p._p.getparent()
         body.remove(p._p)
         if body.find(qn("a:p")) is None:
             etree.SubElement(body, qn("a:p"))
-    return [w for _, words in lines for w in words] if lines else None
+    return [words for _, words in lines]
+
+
+def take_marker(slide, key):
+    """The words of the slide's notes lines that start with key, those paragraphs removed (for
+    LAYOUT_KEY, slide-layout.lua writes one, single-body.lua another for a note; columns.py
+    reads grid-pptx.lua's engine-columns:). None when the slide has no such line."""
+    lines = take_marker_lines(slide, key)
+    return [w for words in lines for w in words] if lines else None
 
 
 # a light livery's dark content slide ({.brand-dark}): the colors a step draws with there, the

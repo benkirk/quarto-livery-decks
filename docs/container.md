@@ -1,8 +1,8 @@
 # Building in the container
 
 The published image `ghcr.io/benkirk/quarto-livery-decks` is the whole build
-environment (the conda env, Quarto, XeLaTeX from TeX Live, LibreOffice, gnuplot, a headless
-Chromium, a broad set of fonts) with this framework at `/opt/quarto-livery-decks`, for
+environment (the conda env, Quarto, XeLaTeX from TeX Live, LibreOffice, gnuplot, ffmpeg, a
+headless Chromium, a broad set of fonts) with this framework at `/opt/quarto-livery-decks`, for
 linux/amd64 and linux/arm64. Nothing to install but Docker (or Podman, or Apptainer):
 bind-mount a directory of decks on `/work` and run make.
 

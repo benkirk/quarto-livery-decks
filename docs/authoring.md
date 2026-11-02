@@ -415,6 +415,70 @@ With `{.full}` the cells fill the slide, and this line is the caption.
   sits over its last row: give the gallery `height=`, or put the remark in a caption.
 - The same slides in LaTeX are [latex/authoring.md "Galleries"](../latex/authoring.md#galleries).
 
+## Movies
+
+A movie is an image whose source is a movie file (`.mp4`, `.m4v`, `.mov`, `.webm`):
+
+```markdown
+## Vortex shedding at Re = 200
+
+![The wake behind the cylinder, 240 frames](movies/vortex.mp4)
+
+## Click to play
+
+![](movies/vortex.mp4){autoplay=false loop=false}
+
+## The whole slide {.full}
+
+![](movies/vortex.mp4){poster-time=2.5}
+
+A `.full` slide's movie; this line is its caption.
+```
+
+- **HTML plays it** where the image would be, as wide as its column and no taller than the
+  content area. **pptx embeds it**: PowerPoint and Keynote play it in the slide's frame, over its
+  poster. **The PDF does not play it**, on purpose: no PDF viewer plays a movie everywhere (the
+  old ways needed Flash, or played frames in Acrobat and a few others only), so the PDF shows the
+  poster with a play badge, and the picture is a link to the movie.
+- **By default a movie starts with its slide, loops and is silent.** `autoplay=false` makes it
+  wait for a click (HTML shows its controls), `loop=false` plays it once, `muted=false` plays its
+  sound (HTML shows its controls too: a browser holds a movie with sound until you have clicked or
+  pressed a key on the page).
+- **The poster** is the still pptx and the PDF show and HTML shows before it plays:
+  `<name>.poster.png` beside the movie, made from its first frame with ffmpeg when it is missing.
+  `poster-time=2.5` takes the frame 2.5 s in instead (its own file, `<name>.poster-2.5.png`);
+  `poster=other.png` names a picture of your own (give it a name of its own: Make remakes
+  `<name>.poster.png` when the movie is newer).
+- **The PDF's link** goes to the movie file beside the PDF, as a launch action: Acrobat and Okular
+  ask and open it, Preview and the browsers' viewers do nothing on the click. `href=` gives a URL
+  instead, which every viewer opens, and the PDF travels without the movie.
+- **From stills.** Put a run's frames in `frames/<name>/` beside the deck's Makefile: `make` turns
+  each such directory into `movies/<name>.mp4` and its poster before it renders, and again when a
+  frame changes (`common/utils/frames2movie.py`). The frames go in name order, numbers read as
+  numbers (`frame_9` before `frame_10`), all of one kind (PNG, JPEG, TIFF). The movie is H.264 at
+  24 frames a second, its size even (an odd frame is padded, never stretched), and a transparent
+  frame (matplotlib's under the livery's style) lies on the livery's background. A
+  `frames/<name>/movie.yml` changes that movie: `fps: 12`, `width: 1280` (scaled, the aspect
+  kept), `crf: 23` (smaller file, softer picture; 18 is the default), `background: "#000000"`,
+  `poster-time: 2.5`. A script that draws the frames can be a prerequisite of the movie, as the
+  movies cookbook's is (`decks/movies/Makefile`).
+- **A movie of your own** works as it is when it is H.264 in 4:2:0 color, which plays in every
+  browser, PowerPoint and Keynote; `make qa` fails one that is not, and
+  `python3 common/utils/frames2movie.py reencode in.mov movies/out.mp4` makes one that is. WebM plays
+  in HTML only (pptx and the PDF show its poster, warned).
+- **ffmpeg** makes the movies and posters: the image has it; on a Mac, `brew install ffmpeg`.
+  Without it, bring your own mp4s, each with a `poster=` of its own or a `<name>.poster.png`
+  beside it: `make` makes no poster then (it says so), a movie without one is warned and shows
+  its path in the pptx and the PDF, and a `frames/<name>/` still needs ffmpeg.
+- **Where it goes:** on the slide, in a plain two-column slide's column, or as a `{.full}` slide's
+  figure. In a card, a grid's column or a gallery the pptx shows its poster only (warned).
+- **Size.** A movie is a file beside the HTML deck (`make site` copies `movies/`), and inside the
+  pptx; `make qa` hints at one past 100 MB (`width:` or `crf:` in its `movie.yml`). Under
+  `embed-resources: true` the HTML holds the movie too, a third larger.
+- In the pptx a movie is a native media shape ("Movie 1"): PowerPoint's Playback tab changes its
+  start, loop and volume.
+- The same slides in LaTeX are [latex/authoring.md "Movies"](../latex/authoring.md#movies).
+
 ## Notes under a figure
 
 A remark that belongs to a figure or table, a summary line or where its numbers come from, goes

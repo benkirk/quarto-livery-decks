@@ -372,6 +372,43 @@
   \par{\usebeamerfont{caption}\vskip\engine@boxes@note@gap em\centering\color{BrandMuted}#1\par}}
 
 % ---------------------------------------------------------------------------
+% movie: the PDF plays no movie (docs/authoring.md "Movies": a deliberate departure, no viewer plays
+% one everywhere), so it shows the movie's poster with a play badge over its center, the whole a link
+% to the movie. The Quarto filter writes it for an image whose source is a movie; by hand:
+%   \enginemovie[width=0.8\linewidth]{movies/vortex.poster.png}{https://example.org/vortex.mp4}
+% \enginemoviebox{<link>}{<picture>} is the drawer under it (the filter wraps pandoc's own
+% \includegraphics in it), and \enginefullmovie{<link>} in an [enginefull=<poster>] frame's body gives
+% the full figure the same badge and link (global: the background is drawn after the body). An empty
+% link draws the badge alone. boxes.movie: the badge's diameter (of the paper height, at most 0.4 of
+% the picture's), its disc's fill and opacity, the triangle's and the ring's ink, the ring's width.
+% ---------------------------------------------------------------------------
+\newdimen\engine@moviebadge
+\newsavebox\engine@moviepic
+% the badge over a node's center: #1 the node, the diameter in \engine@moviebadge
+\def\engine@moviebadgeat#1{%
+  \fill[EngineBoxesMovieFill, opacity=\engine@boxes@movie@opacity] (#1.center) circle[radius=0.5\engine@moviebadge];
+  \ifdim\engine@boxes@movie@ring pt>\z@
+    \draw[EngineBoxesMovieInk, line width=\engine@boxes@movie@ring\engine@moviebadge]
+      (#1.center) circle[radius=0.5\engine@moviebadge-0.5*\engine@boxes@movie@ring\engine@moviebadge];
+  \fi
+  \fill[EngineBoxesMovieInk] ([shift={(-0.15\engine@moviebadge,-0.2\engine@moviebadge)}]#1.center)
+    -- ++(0.38\engine@moviebadge,0.2\engine@moviebadge) -- ++(-0.38\engine@moviebadge,0.2\engine@moviebadge) -- cycle;}
+\newcommand\enginemoviebox[2]{{%
+  \sbox\engine@moviepic{#2}%
+  \engine@moviebadge=\engine@boxes@movie@badge\paperheight
+  \ifdim\engine@moviebadge>0.4\dimexpr\ht\engine@moviepic+\dp\engine@moviepic\relax
+    \engine@moviebadge=0.4\dimexpr\ht\engine@moviepic+\dp\engine@moviepic\relax
+  \fi
+  \def\engine@tmpa{#1}%
+  \def\engine@tmpb{\begin{tikzpicture}[baseline=(engine@movie.base)]
+      \node[inner sep=0pt, outer sep=0pt] (engine@movie) {\usebox\engine@moviepic};
+      \engine@moviebadgeat{engine@movie}\end{tikzpicture}}%
+  \ifx\engine@tmpa\@empty\engine@tmpb\else\href{#1}{\engine@tmpb}\fi}}
+\newcommand\enginemovie[3][]{\enginemoviebox{#3}{\includegraphics[#1]{#2}}}
+\def\engine@fullmovie{}
+\newcommand\enginefullmovie[1]{\gdef\engine@fullmovie{#1}\gdef\engine@fullmovieon{1}}
+
+% ---------------------------------------------------------------------------
 % caution box: a warning slide's body on a soft yellow field, a brand-yellow
 % bar at its left (the Quarto filter writes it for {.caution}); the bar's width
 % (of the paper height) and the pads (em of the body) are livery.sty's boxes

@@ -17,13 +17,15 @@ ENV LANG=C.UTF-8
 #    engine's own CI list: quarto's XeLaTeX render AND the Overleaf zip's bare latexmk, which
 #    cannot install packages the way TinyTeX does; texlive-bibtex-extra is biblatex, for the
 #    cookbook's citations, which bibtex runs), LibreOffice Impress for `make measure`'s pptx leg,
-#    gnuplot-nox for livery_gp.py (cairo's terminals, ~10 MB; conda-forge's gnuplot pulls Qt).
+#    gnuplot-nox for livery_gp.py (cairo's terminals, ~10 MB; conda-forge's gnuplot pulls Qt),
+#    ffmpeg for movies (frames2movie.py, a movie's poster; design/movies.md: Debian's build has x264,
+#    x265, AV1 and VP9, so no extra repository; conda-forge's would need its gpl variant for x264).
 #    TinyTeX is per-user ($HOME) and needs the network at render time: not here.
 RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
       ca-certificates curl git rsync unzip zip jq make \
       latexmk texlive-xetex texlive-latex-recommended texlive-latex-extra texlive-bibtex-extra \
       texlive-fonts-recommended texlive-fonts-extra lmodern fonts-lmodern fonts-texgyre-math \
-      poppler-utils libreoffice-impress gnuplot-nox \
+      poppler-utils libreoffice-impress gnuplot-nox ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Fonts, a rich but bounded set (~200 MB; CJK left out, docs/container.md says how to add it). A
@@ -89,6 +91,9 @@ test "$bad" -eq 0
 quarto --version
 rsvg-convert --version   # pptx_steps/svg_fallback.py: an SVG plot's PNG fallback
 gnuplot --version        # livery_gp.py: gnuplot's cairo terminals (gnuplot-nox: no Qt, no X)
+ffmpeg -hide_banner -encoders | grep ' libx264 ' >/dev/null   # frames2movie.py: H.264 (no -q: pipefail and SIGPIPE)
+ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=64x36:rate=4 -t 1 \
+  -c:v libx264 -pix_fmt yuv420p -f null -   # and it encodes
 EOS
 
 # 5. The bash kernel (executable {bash} cells) and ONE headless Chromium, shared by Quarto

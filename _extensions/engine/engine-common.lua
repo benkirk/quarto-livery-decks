@@ -4,8 +4,8 @@
 -- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
 -- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
 -- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
--- rails, quotes, galleries and the agenda, a grid cell's picture or table, the theme options, the
--- livery, the deck's marking strips, watermark and cover fine print. What a format does with the
+-- rails, quotes, galleries and the agenda, a grid cell's picture or table, a movie and its poster,
+-- the theme options, the livery, the deck's marking strips, watermark and cover fine print. What a format does with the
 -- result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
 -- strips, rails, galleries, quotes and the agenda's rows, the tail of every slide).
 
@@ -979,6 +979,79 @@ local function decode_src(src)
   return (src:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
 end
 
+-- Movies (`![Caption](movies/vortex.mp4){poster= href= autoplay=false loop=false muted=false poster-time=}`,
+-- docs/authoring.md "Movies"): an image whose source is a movie. movie() reads one the same for every
+-- format: { src, mime, poster, href, autoplay, loop, muted, time }, the paths decoded. autoplay, loop and
+-- muted are on unless the attribute says false (false, no, off, 0); poster defaults to <stem>.poster.png
+-- beside the movie (frames2movie.py writes it there, Make.common keeps it fresh; with poster-time=<s>,
+-- <stem>.poster-<s>.png, made by ensure_poster()), href to the movie file.
+-- HTML plays it; pptx embeds it over its poster (movie-pptx.lua, pptx_steps/movie.py); the PDF shows the
+-- poster with a play badge, a link to href (a deliberate departure: no PDF viewer plays a movie everywhere).
+local MOVIE_MIME = { mp4 = "video/mp4", m4v = "video/mp4", mov = "video/quicktime", webm = "video/webm" }
+local MOVIE_KEYS = { "poster", "href", "autoplay", "loop", "muted", "poster-time" }
+
+local function movie_mime(src)
+  local ext = decode_src(src):match("%.(%w+)$")
+  return ext and MOVIE_MIME[ext:lower()] or nil
+end
+
+local function is_movie(img)
+  return img.t == "Image" and movie_mime(img.src) ~= nil
+end
+
+local function movie(img)
+  local src = decode_src(img.src)
+  local a = img.attributes
+  local function on(k)
+    local v = a[k] and a[k]:lower()
+    return not (v == "false" or v == "no" or v == "off" or v == "0")
+  end
+  return {
+    src = src, mime = movie_mime(src),
+    -- a poster-time= poster has a name of its own: the default one may be another moment's
+    poster = a.poster and decode_src(a.poster)
+      or (src:gsub("%.%w+$", "") .. ".poster" .. (a["poster-time"] and ("-" .. a["poster-time"]) or "") .. ".png"),
+    href = a.href or src,
+    autoplay = on("autoplay"), loop = on("loop"), muted = on("muted"),
+    time = a["poster-time"] or "0",
+  }
+end
+
+-- the movie's own attributes off an image (what is left, a width= or a class, is the picture's)
+local function strip_movie_attrs(img)
+  for _, k in ipairs(MOVIE_KEYS) do img.attributes[k] = nil end
+  return img
+end
+
+local function file_exists(path)
+  local f = io.open(path, "rb")
+  if f then f:close() end
+  return f ~= nil
+end
+
+-- The movie's poster on disk (pptx and the PDF draw it; HTML shows it before the movie plays): when
+-- missing, made from the movie with ffmpeg (the frame at m.time seconds). true when it is there after;
+-- else warned (who: the filter's name), false.
+local function ensure_poster(m, who)
+  if file_exists(m.poster) then return true end
+  if not file_exists(m.src) then
+    warn(who .. ": movie " .. m.src .. " not found")
+    return false
+  end
+  local ok = pcall(pandoc.pipe, "ffmpeg", { "-hide_banner", "-loglevel", "error", "-y", "-ss", m.time,
+    "-i", m.src, "-frames:v", "1", "-update", "1", m.poster }, "")
+  if ok and file_exists(m.poster) then return true end
+  warn(who .. ": no poster for " .. m.src .. " (" .. m.poster .. "): give poster=, or install ffmpeg"
+    .. " to make one from the movie (docs/authoring.md \"Movies\")")
+  return false
+end
+
+-- What a movie with no poster becomes in pptx and the PDF: its caption-like path, so the slide says
+-- what is missing (warned by ensure_poster)
+local function movie_stand_in(m)
+  return pandoc.Emph({ pandoc.Str("▶ " .. m.src) })
+end
+
 -- Image galleries (::: {.gallery cols= rows= fit= height=}): a div of image files, each its own paragraph
 -- (`![Caption](path)` a Figure, `![](path)` a Para of one Image), drawn as a grid of equal cells in every
 -- format. gallery_items() reads one: { cols, rows, fit, height = number|nil, items = { { src, caption =
@@ -1246,4 +1319,6 @@ return {
   cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file, is_rendered = is_rendered, decode_src = decode_src,
+  is_movie = is_movie, movie = movie, strip_movie_attrs = strip_movie_attrs, ensure_poster = ensure_poster,
+  movie_stand_in = movie_stand_in, file_exists = file_exists,
 }
