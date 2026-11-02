@@ -442,7 +442,8 @@ A `.full` slide's movie; this line is its caption.
   poster with a play badge, and the picture is a link to the movie.
 - **By default a movie starts with its slide, loops and is silent.** `autoplay=false` makes it
   wait for a click (HTML shows its controls), `loop=false` plays it once, `muted=false` plays its
-  sound.
+  sound (HTML shows its controls too: a browser holds a movie with sound until you have clicked or
+  pressed a key on the page).
 - **The poster** is the still pptx and the PDF show and HTML shows before it plays:
   `<name>.poster.png` beside the movie, made from its first frame with ffmpeg when it is missing.
   `poster-time=2.5` takes the frame 2.5 s in instead (its own file, `<name>.poster-2.5.png`);

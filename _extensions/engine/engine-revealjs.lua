@@ -139,7 +139,9 @@ local function html_inline(s) return pandoc.RawInline("html", s) end
 -- Movies (C.movie): a <video> in the image's place, reveal's data-src (loaded as the slide nears) and
 -- data-autoplay (it starts on entering the slide and pauses on leaving), muted, loop and playsinline by
 -- the movie's flags, the poster shown before it plays and under ?print-pdf; controls when it does not
--- start by itself. .engine-movie (the scss) fills the column's width under the content height; an
+-- start by itself, and when it has sound (a browser holds autoplay with sound until the viewer has
+-- clicked or typed on the page: the controls are the way in). .engine-movie (the scss) fills the
+-- column's width under the content height; an
 -- author's width=, height= or style= stays. Run last, so .full's one-figure test and the height map
 -- (Image(), below) have seen an image.
 local function attr_html(s)
@@ -155,7 +157,8 @@ local function movies(doc)
       local parts = { '<video class="' .. attr_html(table.concat({ "engine-movie", table.unpack(img.classes) }, " ")) .. '"',
         ' data-src="' .. attr_html(m.src) .. '"' }
       if has_poster then table.insert(parts, ' poster="' .. attr_html(m.poster) .. '"') end
-      if m.autoplay then table.insert(parts, " data-autoplay") else table.insert(parts, " controls") end
+      if m.autoplay then table.insert(parts, " data-autoplay") end
+      if not m.autoplay or not m.muted then table.insert(parts, " controls") end
       if m.muted then table.insert(parts, " muted") end
       if m.loop then table.insert(parts, " loop") end
       table.insert(parts, ' playsinline preload="metadata"')
