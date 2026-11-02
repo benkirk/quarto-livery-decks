@@ -366,6 +366,19 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
   height: auto;
 }
 
+// a movie (engine-revealjs.lua's movies(): <video class="engine-movie">): the column's width, capped
+// at the content height as the diagrams are, the picture letterboxed inside its box (a video's
+// object-fit is contain), never stretched; an author's width= or style= wins
+.reveal .slides section video.engine-movie {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(600px * var(--engine-fit, 1));  // shrinks with the autofit
+  margin: 0 auto;
+  object-fit: contain;
+}
+
 // mermaid pins its svg to its natural width (tiny on a 1600-px slide):
 // let diagrams fill the column instead, capped to the content height
 .reveal .slides section svg.mermaid-js {
@@ -1125,10 +1138,10 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
 // every wrapper Quarto puts round a figure hands the box down to it; the
 // empty paragraphs it leaves beside one would take a share of the width
 // (not inside the svg: mermaid's labels are divs too; not a gallery's, whose grid sizes its cells)
-.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(.engine-gallery, .engine-gallery *):not(:has(svg, img)) {
+.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(.engine-gallery, .engine-gallery *):not(:has(svg, img, video)) {
   display: none;
 }
-.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(.engine-gallery, .engine-gallery *):has(svg, img) {
+.reveal .slides section.slide.full .engine-full-figure :is(div, figure, p):not(svg *):not(.engine-gallery, .engine-gallery *):has(svg, img, video) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1136,7 +1149,7 @@ html.reveal-print .reveal .slides section.slide.level2.feature.engine-feature-co
   height: 100%;
   margin: 0;
 }
-.reveal .slides section.slide.full .engine-full-figure :is(svg, img):not(svg *):not(.engine-gallery *) {
+.reveal .slides section.slide.full .engine-full-figure :is(svg, img, video):not(svg *):not(.engine-gallery *) {
   width: 100%;
   height: 100%;
   max-width: 100% !important;
