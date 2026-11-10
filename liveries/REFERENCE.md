@@ -456,6 +456,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `quote` | object |  | A quote block (`::: {.quote}`, or a bare `>` blockquote): a bar at its left, no fill; `role=` colors the bar. |
 | `footnote` | object |  | The slide footnotes (paragraphs starting with †, ‡, § or ¶, and `^[...]` notes): at the slide's foot under a short rule in HTML and PDF, styled in place in pptx (no rule). |
 | `note` | object |  | A `::: note` under a figure or table (and a figure's or table's own caption, which takes the same look). |
+| `movie` | object |  | A movie's play badge in the PDF, which shows the movie's poster as a link to it (HTML and pptx play the movie). |
 | `card` | object |  | A card (`::: {.column .card}`): a colored head band over a body. |
 | `strip` | object |  | A strip (`::: {.strip}`): a band tinted in its role across a card. |
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
@@ -546,6 +547,18 @@ A `::: note` under a figure or table (and a figure's or table's own caption, whi
 | key | type | default | |
 |---|---|---|---|
 | `gap` | number | `0.3` | Its distance under the figure or table, in em of the caption type (HTML and PDF; the pptx places it by measure). |
+
+### `boxes.movie`
+
+A movie's play badge in the PDF, which shows the movie's poster as a link to it (HTML and pptx play the movie).
+
+| key | type | default | |
+|---|---|---|---|
+| `badge` | fraction | `0.11` | The badge's diameter (of the slide's height), at most 0.4 of the poster's height. |
+| `fill` | color or role | `"dark"` | The badge's disc, a role, a blend, a palette name or a hex. |
+| `ink` | color or role | `"on-dark"` | The play triangle on the disc, a role, a blend, a palette name or a hex. |
+| `opacity` | fraction | `0.7` | The disc's opacity (the triangle and the ring are solid). |
+| `ring` | fraction | `0.05` | A ring round the disc in the ink, its width as a share of the badge (0: none), so the badge reads on a poster as dark as its disc. |
 
 ### `boxes.card`
 

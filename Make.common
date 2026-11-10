@@ -153,8 +153,43 @@ engine_dir   := $(FRAMEWORK_ROOT)_extensions/engine
 engine_files := $(wildcard $(engine_dir)/*.lua $(engine_dir)/*.py $(engine_dir)/*.sty $(engine_dir)/*.scss $(engine_dir)/*.js \
                 $(engine_dir)/*.html $(engine_dir)/*.theme $(engine_dir)/_extension.yml $(engine_dir)/pptx_steps/*.py \
                 $(engine_dir)/mpl/*.py)
+# Movies (docs/authoring.md "Movies"): each frames/<name>/ directory of stills makes movies/<name>.mp4
+# and its poster (frames2movie.py: even dimensions, yuv420p, H.264, the livery's background behind a
+# transparent frame; frames/<name>/movie.yml its fps, crf, width, background and poster-time), and every
+# movie brought into movies/ gets its poster beside it too, <name>.poster.png, the
+# picture pptx and the PDF show (the engine's filters make a missing one too, wherever the movie is).
+# MOVIES lists the frame directories' names (default: every frames/*/); a deck whose frames a script
+# draws names them and adds the script as a prerequisite of movies/<name>.mp4 (decks/movies/Makefile).
+# A livery switch remakes a frames movie (its background); all of them are prerequisites of every
+# deck in the directory, like the fragments. Without ffmpeg on PATH (a host: brew or apt install it)
+# Make makes no poster, so a brought movie with a poster of its own builds as the guide says and one
+# without is warned by the filters (ensure_poster); a frames movie still needs it (frames2movie.py says so).
+frames2movie   := $(FRAMEWORK_ROOT)common/utils/frames2movie.py
+MOVIES         ?= $(patsubst frames/%/,%,$(wildcard frames/*/))
+movie_made     := $(MOVIES:%=movies/%.mp4)
+movie_all      := $(sort $(movie_made) $(wildcard movies/*.mp4 movies/*.m4v movies/*.mov movies/*.webm))
+ffmpeg_found   := $(if $(movie_all),$(shell command -v ffmpeg 2>/dev/null))
+$(if $(movie_all),$(if $(ffmpeg_found),,$(warning ffmpeg not found: no movie poster is made (docs/authoring.md "Movies"))))
+movie_posters  := $(if $(ffmpeg_found),$(addsuffix .poster.png,$(basename $(movie_all))))
+define movie_rule
+movies/$(1).mp4: $$(wildcard frames/$(1)/*) $$(frames2movie) .livery
+	python3 $$(frames2movie) frames frames/$(1) $$@ --poster movies/$(1).poster.png
+endef
+$(foreach m,$(MOVIES),$(eval $(call movie_rule,$(m))))
+movies/%.poster.png: movies/%.mp4 ; python3 $(frames2movie) poster $< $@
+movies/%.poster.png: movies/%.m4v ; python3 $(frames2movie) poster $< $@
+movies/%.poster.png: movies/%.mov ; python3 $(frames2movie) poster $< $@
+movies/%.poster.png: movies/%.webm ; python3 $(frames2movie) poster $< $@
+# a poster-time= poster (<name>.poster-<seconds>.png, which the filters make when it is missing) is
+# remade with its movie
+movie_timed    := $(if $(ffmpeg_found),$(wildcard $(addsuffix .poster-*.png,$(basename $(movie_all)))))
+define timed_poster_rule
+$(1): $(2) ; python3 $$(frames2movie) poster $(2) $(1) --time $(3)
+endef
+$(foreach p,$(movie_timed),$(eval $(call timed_poster_rule,$(p),$(filter $(firstword $(subst .poster-, ,$(p))).%,\
+  $(movie_all)),$(patsubst %.png,%,$(lastword $(subst .poster-, ,$(p)))))))
 prereqs      := $(fragments) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(livery_files) $(engine_files) $(DECK_META) \
-             $(requirements) $(deps_site)
+             $(requirements) $(deps_site) $(movie_all) $(movie_posters) $(movie_timed)
 
 pptx: $(DECKS:=.pptx)
 html: $(DECKS:=.html)
@@ -200,6 +235,7 @@ site: html
 	done
 	find $(SITE) -type d -empty -delete
 	test ! -d images || rsync -a images/ $(SITE)/images/
+	test ! -d movies || rsync -a movies/ $(SITE)/movies/
 	for x in $(SITE_EXTRA); do rsync -a $$x/ $(SITE)/$$x/ || exit 1; done
 	python3 $(site_index) --out $(SITE) $(if $(SITE_NOINDEX),--noindex) \
 	  $(foreach x,$(SITE_EXTRA),--extra $(x)) $(DECKS)
@@ -298,7 +334,8 @@ $(OUT).pdf: $(QFILE) $(prereqs) | _livery
 endif
 
 clean:
-	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip *-charts.zip
+	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip *-charts.zip \
+	  $(movie_made) $(addsuffix .poster.png,$(basename $(movie_made)))
 	rm -rf $(DECKS:=_files) $(SITE)
 
 distclean:

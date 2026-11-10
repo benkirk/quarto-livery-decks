@@ -448,13 +448,19 @@
       \engine@gallerycells{\engine@fullpad}{\paperheight-\engine@fullpad}{\paperwidth-2\engine@fullpad}%
         {\paperheight-\engine@fullpad-\engine@fullfloor}%
     \fi
-  \else
-    \node[anchor=center,inner sep=0pt]
+  \else   % a movie's poster (\enginefullmovie) is the link to it, under its play badge
+    \node[anchor=center,inner sep=0pt] (engine@full)
       at (0.5\paperwidth,{0.5*(\paperheight-\engine@fullpad+\engine@fullfloor)})
-      {\includegraphics[width=\dimexpr\paperwidth-2\engine@fullpad\relax,
+      {\ifx\engine@fullmovie\@empty\expandafter\@firstofone\else\expandafter\engine@fulllink\fi
+       {\includegraphics[width=\dimexpr\paperwidth-2\engine@fullpad\relax,
         height=\dimexpr\paperheight-\engine@fullpad-\engine@fullfloor\relax,
-        keepaspectratio]{\engine@fullimage}};
+        keepaspectratio]{\engine@fullimage}}};
+    \ifx\engine@fullmovieon\@empty\else
+      \engine@moviebadge=\engine@boxes@movie@badge\paperheight
+      \engine@moviebadgeat{engine@full}%
+    \fi
   \fi}
+\def\engine@fulllink#1{\href{\engine@fullmovie}{#1}}
 
 % ---------------------------------------------------------------------------
 % frame keys
@@ -518,8 +524,9 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
 % [enginefull]: the same frame with no image of its own; an enginegallery in
 % its body fills it.
 \define@key{beamerframe}{enginefull}[]{%
-  \def\engine@framestyle{full}\def\engine@fullimage{#1}\gdef\engine@fullcaption{}}
-\def\engine@fullcaption{}
+  \def\engine@framestyle{full}\def\engine@fullimage{#1}\gdef\engine@fullcaption{}%
+  \gdef\engine@fullmovie{}\gdef\engine@fullmovieon{}}
+\def\engine@fullcaption{}\def\engine@fullmovieon{}
 \newcommand\enginefullcaption[1]{\gdef\engine@fullcaption{#1}}
 % [engineclosing]: brand field, like the title slide
 \define@key{beamerframe}{engineclosing}[true]{%

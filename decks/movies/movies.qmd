@@ -1,0 +1,39 @@
+---
+title: "Movies in the Livery"
+subtitle: "From a directory of stills to a movie in every format"
+author: "Your Name, Your Lab"
+date: last-modified
+---
+
+## A movie from stills
+
+![A traveling wave, 24 frames drawn by make_frames.py](movies/wave.mp4)
+
+::: notes
+`frames/wave/` holds the stills; Make.common's movie rule runs frames2movie.py into
+`movies/wave.mp4` and its poster. HTML and pptx play it with the slide, looped and muted; the PDF
+shows the poster with a play badge, a link to the movie.
+:::
+
+## Click to play
+
+![](movies/wave.mp4){autoplay=false loop=false}
+
+## Beside the text
+
+:::: {.columns}
+::: {.column width="40%"}
+- A movie in a column takes its width
+- It starts with the slide, loops and is silent by default
+- `autoplay=false`, `loop=false`, `muted=false` turn each off
+:::
+::: {.column width="60%"}
+![](movies/wave.mp4){poster-time=0.5}
+:::
+::::
+
+## The whole slide {.full}
+
+![](movies/wave.mp4)
+
+A `.full` slide's movie, its caption under it.

@@ -13,9 +13,11 @@ columns: the HTML says where the table is), the pptx as LibreOffice draws it (pp
 the same edge, footer and overlap checks (QA_PPTX_FAIL=0 demotes those to hints, for a machine whose
 LibreOffice draws otherwise; <deck>-pptx.png is its contact sheet), HTML content past the right edge, a {.full}
 caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a grid
-marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), and a bare
-`<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it).
-Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank.
+marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), a bare
+`<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it), and a
+movie that would not play everywhere (not H.264, not yuv420p, odd dimensions: frames2movie.py's check).
+Hints (never fail): short slides, `.smaller` without `.fill`, slides the HTML autofit shrank, a movie
+past 100 MB or one ffprobe was not there to check.
 Needs poppler (pdftoppm, pdftotext) and Pillow; the HTML checks need Playwright for Python
 (`python -m playwright install chromium`, or set CHROME to a Chromium binary) and are skipped
 without it, the pptx checks LibreOffice (soffice) and are skipped without it.
@@ -34,6 +36,7 @@ import sys
 import threading
 import unicodedata
 import zipfile
+from pathlib import Path
 
 SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
 EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - geometry.wide-margin
@@ -62,12 +65,13 @@ MEASURE_JS = r"""
     // use: the drawn figure's share of its box (it keeps its shape, so one axis is full)
     const box = s.querySelector(':scope > .engine-full-figure');
     const cap = s.querySelector(':scope > .engine-full-caption');
-    const fig = box && box.querySelector('svg:not(svg *), img');
+    const fig = box && box.querySelector('svg:not(svg *), img, video');
     let use = 0;
     if (fig) {
       const r = fig.getBoundingClientRect(), b = box.getBoundingClientRect();
-      const vb = fig.tagName.toLowerCase() === 'img'
-        ? {width: fig.naturalWidth, height: fig.naturalHeight} : fig.viewBox && fig.viewBox.baseVal;
+      const tag = fig.tagName.toLowerCase();   // a movie's size once its metadata is in, else its box's
+      const vb = tag === 'img' ? {width: fig.naturalWidth, height: fig.naturalHeight}
+        : tag === 'video' ? {width: fig.videoWidth, height: fig.videoHeight} : fig.viewBox && fig.viewBox.baseVal;
       const aw = vb && vb.width ? vb.width : r.width, ah = vb && vb.height ? vb.height : r.height;
       const k = Math.min(r.width / aw, r.height / ah);
       use = (aw * k) * (ah * k) / (b.width * b.height);
@@ -495,6 +499,24 @@ CODE_SPAN = re.compile(r"(`+).+?\1")
 BARE_TAG = re.compile(r"</?[a-z_]+>")
 
 
+MOVIE_SRC = re.compile(r'<video class="engine-movie[^"]*"[^>]*\sdata-src="([^"]+)"')
+
+
+def movie_findings(deck):
+    """(failures, hints) for the movies the HTML deck shows (engine-revealjs.lua's <video>): what would
+    stop one playing in PowerPoint, Keynote and every browser (frames2movie.py's problems())."""
+    from frames2movie import FIX, problems   # beside this file
+    path = deck + ".html"
+    if not os.path.exists(path):
+        return [], []
+    fails, hints = [], []
+    for src in sorted(set(MOVIE_SRC.findall(open(path, encoding="utf-8").read()))):
+        f, h = problems(Path(html.unescape(src)))
+        fails += ["movie %s: %s (%s)" % (src, x, FIX) for x in f]
+        hints += ["movie %s: %s" % (src, x) for x in h]
+    return fails, hints
+
+
 def deck_sources(deck):
     """<deck>.qmd and every file it includes, recursively, in reading order."""
     seen, order = set(), []
@@ -595,6 +617,9 @@ def main():
         fails, hints = html_findings(slides)
         failed |= bool(fails)
         report += ["HTML " + f for f in fails] + ["hint " + h for h in hints]
+        fails, hints = movie_findings(deck)
+        failed |= bool(fails)
+        report += fails + ["hint " + h for h in hints]
         for n, s in enumerate(slides, 1):
             if s.get("level2"):
                 usage.append("%s\t%d\t%s\t%.2f\t%.2f\t%s\t%s"

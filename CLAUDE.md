@@ -77,7 +77,8 @@ post-render utilities); `latex/`, `design/` and `tests/` beside them. No `_quart
 root: each deck is its own Quarto project through its linked one.
 `decks/quickstart/quickstart.qmd` is the short exemplar to copy for new decks;
 `decks/sample/sample.qmd` is the cookbook of every pattern, `decks/plots/plots.qmd` that of
-plots (`jupyter: python3`; `decks/plots/README.md`). `docs/formats.md` covers the layout tree, the
+plots (`jupyter: python3`; `decks/plots/README.md`), `decks/movies/movies.qmd` that of movies (its
+stills drawn at build time by `make_frames.py`, its Makefile's rule). `docs/formats.md` covers the layout tree, the
 build pipeline, template constraints and font embedding; `docs/container.md` the image's use;
 `docs/other-repos.md` the submodule layout and publishing.
 
@@ -107,7 +108,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `activate.d` scripts export `QUARTO_DENO`, `QUARTO_PANDOC`, etc.; merely
   putting `conda-env/bin` on `PATH` fails with a missing-deno error.
 - **Container**: `ghcr.io/benkirk/quarto-livery-decks` (root `Dockerfile`; `make image` builds it
-  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, `docs/container.md`) carries the conda env, apt TeX Live, LibreOffice, gnuplot (`gnuplot-nox`), a broad font set and ONE Playwright
+  locally, `.github/workflows/image.yaml` publishes it for amd64 and arm64, `docs/container.md`) carries the conda env, apt TeX Live, LibreOffice, gnuplot (`gnuplot-nox`), ffmpeg (Ubuntu's: x264, x265, AV1, VP9; asserted to encode H.264), a broad font set and ONE Playwright
   headless Chromium that both Quarto (`QUARTO_CHROMIUM`) and `make qa` (`CHROME`) use, at
   `/opt/pw-browsers/headless_shell`; the framework is at `/opt/quarto-livery-decks`. The activation
   is baked as Dockerfile `ENV` and asserted against conda-forge's `activate.d/quarto.sh` at build
@@ -188,7 +189,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   docs/other-repos.md "Building in GitHub Actions". Phase 2, a template repository, is #118.
 - **Build**: `make pptx` (also `html`, `pdf`) inside the deck directory; pptx is
   `--to engine-pptx`, the engine's format (`_extension.yml`: the template default, `slide-level`,
-  `toc` and the eight pptx filters in order; a project's `reference-doc:` wins).
+  `toc` and the nine pptx filters in order; a project's `reference-doc:` wins).
   `Make.common` names the output after the directory (`OUT`) and auto-symlinks
   `_quarto.yml` and `_extensions`. The pptx recipe then runs the engine's `pptx_post.py`,
   which opens the deck once, runs the steps of `pptx_steps/` in order and saves once:
@@ -198,7 +199,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   (on the zip's parts), then
   `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
-  marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `style_tables` (tables drawn as in the
+  marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `movie` (each movie over its
+  poster, in the poster's final frame), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
   as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
   `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
@@ -269,6 +271,24 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   paragraph that wraps in HTML; CI
   checks the sample's notes and captions in every format, and runs its `make qa`.
   docs/authoring.md "Notes under a figure".
+- **Movies** (`![Caption](movies/x.mp4){autoplay=false loop=false muted=false poster= poster-time= href=}`;
+  docs/authoring.md "Movies", design/movies.md, #170): `engine-common.lua`'s `movie()` the one reader
+  (an image whose src is `.mp4`/`.m4v`/`.mov`/`.webm`; the flags on by default; the poster
+  `<stem>.poster.png`, a `poster-time=` one `<stem>.poster-<s>.png`), `ensure_poster()` makes a missing
+  one with ffmpeg. HTML: `engine-revealjs.lua`'s `movies()`, last, a `<video class="engine-movie">`
+  with reveal's `data-src`/`data-autoplay`. pptx: `movie-pptx.lua` (before grid-pptx) gives pandoc the
+  poster and writes `engine-movie: <poster> <movie> <flags>` per movie; `pptx_steps/movie.py` (after
+  grid, livery-free but for `run()`) finds the picture by its `descr` (pandoc writes the src there),
+  `add_movie()`s over it and writes `p:timing` itself (autoplay: the main sequence's onBegin step;
+  loop `repeatCount`, mute; python-pptx's API has neither). PDF: a deliberate departure, the poster
+  as a Link (class `engine-movie`) before `.full`, then `\enginemoviebox{link}{...}` (an unsized
+  poster at `0.72\textheight`), `\enginefullmovie` on a `.full` frame; `boxes.movie` the badge. The
+  stills: `common/utils/frames2movie.py` (`frames`, `poster`, `reencode`, `check`; even size,
+  yuv420p, the livery's background under a transparent frame, `movie.yml`), Make.common's `MOVIES`
+  rule (`frames/<name>/` to `movies/<name>.mp4` and its poster, remade on a livery switch; a timed
+  poster remade with its movie; without ffmpeg on PATH no poster is a prerequisite, warned once, so
+  a brought movie with a poster of its own builds), `deck_qa.py`'s `movie_findings()` (ffprobe). No grid cell or
+  gallery movie yet (its poster, warned).
 - **Linked images** (`[![](x.png)](url)`): the picture is the link in every
   format, and each shows the URL: the HTML footer and a PDF foot line come from
   the engine's `linked-images.lua`, the pptx caption box from `link_captions.py`
@@ -552,8 +572,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `date: last-modified` renders literally (#7). CI checks this; set editor
   modes in the editor config, not in the file.
 - **Fragments are prerequisites**: every deck in a directory depends on its
-  `_*.qmd` fragments, `data/*`, `images/*` and deck-local `*.lua` filters, so editing any of
-  them rebuilds all of them, and on the livery's files (`livery.py deps`: `build/`, the
+  `_*.qmd` fragments, `data/*`, `images/*`, deck-local `*.lua` filters and its movies (`movies/*`
+  and their posters, the ones `frames/<name>/` makes), so editing any of them rebuilds all of them, and on the livery's files (`livery.py deps`: `build/`, the
   template, fonts, logos and their `.pdf`s, art, the parent's too), so a livery change
   rebuilds the decks, and on the engine's sources (`engine_files`: its Lua, Python, `.sty`,
   `.scss`, `.js`, `.html`, `.theme`, `_extension.yml`, `pptx_steps/` and `mpl/`; the `_extensions` link's
@@ -668,7 +688,7 @@ it does, by area, beyond the format notes above:
   with the `quarto` shim, `pandoc_deck`, `tmp_livery`, `flavor`, `run_steps` for pptx steps in a
   subprocess, `title_ph`, `bare_env`, `flat`); expensive setup is a module-scoped fixture, which
   `loadfile` keeps on one worker. For anything that can move pixels, `tests/parity.sh baseline`
-  before and `check` after (every deck of quickstart, sample, fixtures and plots under
+  before and `check` after (every deck of quickstart, sample, fixtures, plots and movies under
   `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
   baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. A
@@ -992,7 +1012,8 @@ its digest (`container:`, as root, GitHub's default `bash -eo pipefail`; the ent
 bypassed, which is why the activation is `ENV`): `sample` (front matter on line 1,
 `livery build --check`, the sample deck in every format with its theme greps and its notes and
 captions check, the sample's `make qa`, quickstart and fixtures `all` with every notes slide's
-`clrMapOvr` checked, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `reusable`
+`clrMapOvr` checked, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps, the movies
+deck's `qa` with its codec, `<video>`, `p14:media` and timing greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `reusable`
 (`build-decks.yaml` on the quickstart), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new

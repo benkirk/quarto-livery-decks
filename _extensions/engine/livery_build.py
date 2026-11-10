@@ -140,6 +140,10 @@ BOXES = {
               "family": None, "style": "normal",   # its lines' face: a typography.fonts family (null: the body's), its style
               "attribution-gap": 0.5},   # the attribution's distance under the lines, em of the caption type
     "note": {"gap": 0.3},   # a ::: note under a figure or table: its distance under it, em of the caption type
+    # a movie's play badge in the PDF (which shows the poster, docs/authoring.md "Movies"): its diameter of the
+    # height (at most 0.4 of the poster's), a disc in fill at opacity, the triangle and a ring round the disc
+    # (ring its width, of the badge: the badge reads on a poster as dark as its disc) in ink
+    "movie": {"badge": 0.11, "fill": "dark", "ink": "on-dark", "opacity": 0.7, "ring": 0.05},
     # (primary-contrast: a thin bar must read on the background, and secondary does not on every livery)
     # card: its body on fill (surface: off the page, as the lead), tint a share of the card's role over it
     "card": {"fill": "surface", "tint": 0, "radius": 0, "outline": 0.0033, "outline-color": "highlight",
@@ -178,7 +182,8 @@ BOXES = {
 BOX_ROLE_NAMES = {"rail": ("role",), "table": ("head-rule-color",)}
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color", "border-color"), "status": ("done", "warn", "fail"),
-              "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",)}
+              "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",),
+              "movie": ("fill", "ink")}
 # the watermark (livery.yml watermark:): a word across every slide, centered, faint and diagonal, behind
 # the content: its default text (null: none; a deck's `watermark:` sets one, `none` drops it), color (a
 # role, a blend, a palette name or a hex; hex in livery.json), opacity, angle (degrees counter-clockwise)

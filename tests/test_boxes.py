@@ -22,7 +22,7 @@ import livery_build as lb
 from conftest import ROOT, run, run_steps
 
 HEX = re.compile(r"^#[0-9A-F]{6}$")
-FRACTIONS = ("gap", "rule", "head-rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width")
+FRACTIONS = ("gap", "rule", "head-rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width", "opacity")
 EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
        ("quote", "attribution-gap"), ("note", "gap"),
        ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
