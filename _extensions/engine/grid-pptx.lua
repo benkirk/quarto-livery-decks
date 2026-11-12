@@ -341,7 +341,7 @@ local function mark(blocks, title, level)
         local _, shares = C.column_shares(b)
         local words = { MARK, share(shares[1]), share(shares[2]) }
         if wide then table.insert(words, "wide") end
-        out:insert(pandoc.Div({ pandoc.Para({ pandoc.Str(table.concat(words, " ")) }) }, pandoc.Attr("", { "notes" })))
+        out:insert(C.notes_lines({ table.concat(words, " ") }))
       end
     end
   end

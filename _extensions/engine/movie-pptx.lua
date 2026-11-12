@@ -24,12 +24,8 @@ function Pandoc(doc)
   local level = C.slide_level()
   local out, lines = pandoc.Blocks({}), {}
   local function flush()
-    if #lines > 0 then
-      local paras = pandoc.Blocks({})
-      for _, l in ipairs(lines) do paras:insert(pandoc.Para({ pandoc.Str(l) })) end
-      out:insert(pandoc.Div(paras, pandoc.Attr("", { "notes" })))
-      lines = {}
-    end
+    if #lines > 0 then out:insert(C.notes_lines(lines)) end
+    lines = {}
   end
   for _, b in ipairs(doc.blocks) do
     if C.is_slide_break(b, level) then flush() end

@@ -171,7 +171,9 @@ engine_files := $(wildcard $(engine_dir)/*.lua $(engine_dir)/*.py $(engine_dir)/
 frames2movie   := $(FRAMEWORK_ROOT)common/utils/frames2movie.py
 MOVIES         ?= $(patsubst frames/%/,%,$(wildcard frames/*/))
 movie_made     := $(MOVIES:%=movies/%.mp4)
-movie_all      := $(sort $(movie_made) $(wildcard movies/*.mp4 movies/*.m4v movies/*.mov movies/*.webm))
+# what a movie is, by its extension: engine-common.lua's MOVIE_MIME (tests/test_movie.py holds the two equal)
+movie_exts     := mp4 m4v mov webm
+movie_all      := $(sort $(movie_made) $(wildcard $(movie_exts:%=movies/*.%)))
 ffmpeg_found   := $(if $(movie_all),$(shell command -v ffmpeg 2>/dev/null))
 $(if $(movie_all),$(if $(ffmpeg_found),,$(warning ffmpeg not found: no movie poster is made (docs/authoring.md "Movies"))))
 movie_posters  := $(if $(ffmpeg_found),$(addsuffix .poster.png,$(basename $(movie_all))))
@@ -180,10 +182,10 @@ movies/$(1).mp4: $$(wildcard frames/$(1)/*) $$(frames2movie) .livery
 	python3 $$(frames2movie) frames frames/$(1) $$@ --poster movies/$(1).poster.png
 endef
 $(foreach m,$(MOVIES),$(eval $(call movie_rule,$(m))))
-movies/%.poster.png: movies/%.mp4 ; python3 $(frames2movie) poster $< $@
-movies/%.poster.png: movies/%.m4v ; python3 $(frames2movie) poster $< $@
-movies/%.poster.png: movies/%.mov ; python3 $(frames2movie) poster $< $@
-movies/%.poster.png: movies/%.webm ; python3 $(frames2movie) poster $< $@
+define poster_rule
+movies/%.poster.png: movies/%.$(1) ; python3 $$(frames2movie) poster $$< $$@
+endef
+$(foreach e,$(movie_exts),$(eval $(call poster_rule,$(e))))
 # a poster-time= poster (<name>.poster-<seconds>.png, which the filters make when it is missing) is
 # remade with its movie
 movie_timed    := $(if $(ffmpeg_found),$(wildcard $(addsuffix .poster-*.png,$(basename $(movie_all)))))

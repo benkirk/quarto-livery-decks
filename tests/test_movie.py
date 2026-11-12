@@ -14,6 +14,8 @@ layer, \\enginemovie and an [enginefull] frame's \\enginefullmovie, compiles cle
 movie from odd-sized transparent stills, and its check names what would stop a movie playing
 (skipped without ffmpeg). The HTML drawer needs Quarto: CI renders decks/movies in every format."""
 
+import os
+import re
 import shutil
 import struct
 import subprocess
@@ -23,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import ENGINE, ROOT, lua_common, pandoc_exe, run_steps
+from conftest import ENGINE, ROOT, lua_common, make_deck, one_line, pandoc_exe, run_steps
 
 sys.path.insert(0, str(ROOT / "common" / "utils"))
 import frames2movie  # noqa: E402
@@ -54,6 +56,33 @@ def test_reader(tmp_path):
     assert lines[3] == "not a movie: images/d.png"
     assert lines[4].startswith("my movie.webm|video/webm|my movie.poster.png|"), "the paths decoded"
     assert not warns
+
+
+def test_one_list_of_extensions(tmp_path):
+    """What a movie is, by extension, is said in three places that cannot share a file (Lua, Make,
+    Python): engine-common.lua's MOVIE_MIME is the list, Make.common's movie_exts equals it (a movie
+    the filters play and make has no poster rule for would build without its poster), and
+    pptx_steps/movie.py's MIME is it less WebM (movie-pptx.lua's warning). And make's rules come
+    from its list: a brought movie of each kind gets its poster's recipe."""
+    from pptx_steps import movie
+    lua = re.search(r"^local MOVIE_MIME = \{(.*)\}", (ENGINE / "engine-common.lua").read_text(), re.M).group(1)
+    exts = set(re.findall(r"(\w+) = \"", lua))
+    make = re.search(r"^movie_exts\s*:=\s*(.*)$", (ROOT / "Make.common").read_text(), re.M).group(1).split()
+    assert set(make) == exts and len(make) == len(exts), f"Make.common movie_exts {make} is not MOVIE_MIME's {sorted(exts)}"
+    assert {k.lstrip(".") for k in movie.MIME} == exts - {"webm"}, f"movie.py MIME {sorted(movie.MIME)}"
+    d = tmp_path / "talk"
+    (d / "movies").mkdir(parents=True)
+    (d / "bin").mkdir()
+    (d / "Makefile").write_text(f"include {ROOT}/Make.common\n")
+    (d / "talk.qmd").write_text("---\ntitle: T\n---\n")
+    for e in exts:
+        (d / "movies" / f"m_{e}.{e}").write_bytes(b"")
+    (d / "bin" / "ffmpeg").write_text("#!/bin/sh\n")   # on PATH: make then names the posters as prerequisites
+    (d / "bin" / "ffmpeg").chmod(0o755)
+    r = make_deck(d, "pptx", "DECKS_RUNTIME=native", dry=True, PATH=f"{d / 'bin'}:{os.environ['PATH']}")
+    out = one_line(r.stdout)
+    for e in exts:
+        assert f"frames2movie.py poster movies/m_{e}.{e} movies/m_{e}.poster.png" in out, f".{e}: {r.stdout[-600:]}{r.stderr[-400:]}"
 
 
 def tiny_mp4(path: Path, ms: int, version: int = 0) -> Path:

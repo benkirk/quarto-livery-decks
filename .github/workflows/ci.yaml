@@ -269,6 +269,18 @@ jobs:
           test "$(grep -c 'class="engine-details-tab"' decks/fixtures/details.html)" -eq 7
           pdftotext decks/fixtures/details.pdf - | grep -c DETAILS | grep -qx 7
 
+      # the repository's own site (the root `make site`): the `site` job below runs only on a tag,
+      # and only once Pages is on, so a release would be its first run. Here both decks' HTML is
+      # built already (and before the next step, which leaves the quickstart under another
+      # livery), so it is the gathering and the index alone
+      - name: Build the repository's site
+        run: |
+          timeout 600 make site
+          test -f _site/quickstart/quickstart.html && test -f _site/sample/sample.html
+          test -d _site/sample/libs/revealjs
+          grep -q 'href="quickstart/quickstart.html"' _site/index.html
+          grep -q 'href="sample/sample.html"' _site/index.html
+
       # the whole livery-owner path, run by hand until now (#87): a livery scaffolded from a
       # reference deck (the built quickstart standing in), built and checked (`all`), then the
       # quickstart in all three formats under it from outside the repository (check --qa, which runs

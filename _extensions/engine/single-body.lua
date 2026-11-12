@@ -19,8 +19,9 @@
 --
 -- REEVALUATE WHEN QUARTO'S PANDOC ROLLS (#166): pandoc 3.10.1 "keeps tables and surrounding
 -- text on same slide" in its pptx writer, so the table half of this fold may be the writer's
--- own job then (the picture half is not in pandoc's changelog). Quarto 1.10 bundles pandoc
--- 3.10, where every case above still splits (probed bare, 2026-11-01).
+-- own job then (the picture half is not in pandoc's changelog). Quarto 1.10 and 1.11 bundle pandoc
+-- 3.10, where every case above still splits (probed bare, 2026-11-01; under 3.13 a table keeps its
+-- text and a picture still splits, 2026-11-12: CLAUDE.md's gotchas).
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -224,8 +225,7 @@ function Pandoc(doc)
     out:extend(blocks)
     out:extend(notes)
     if noted then   -- slide_layout.py reads it (slide-layout.lua writes the other words)
-      out:insert(pandoc.Div({ pandoc.Para({ pandoc.Str("engine-layout: note") }) },
-        pandoc.Attr("", { "notes" })))
+      out:insert(C.notes_lines({ "engine-layout: note" }))
     end
     body, notes = pandoc.Blocks({}), pandoc.Blocks({})
   end

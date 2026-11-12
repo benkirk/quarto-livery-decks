@@ -8,7 +8,7 @@ pipeline, the fonts, the PowerPoint template's constraints, and the beamer and r
 ```
 quarto-livery-decks/
 ├── bin/livery             # the livery command (liveries/README.md), on PATH after config_env.sh
-├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/measure/site/publish/overleaf/charts-zip/deps/clean)
+├── Make.common            # shared per-deck recipes (pptx/html/pdf/qa/shot/measure/site/publish/overleaf/charts-zip/deps/clean)
 ├── _extensions/engine/    # the engine (symlinked into decks): the pptx, beamer and revealjs
 │                          #   formats and their Lua filters, pptx_post.py and its steps
 │                          #   ("Build pipeline" below), livery.py (the `livery` command and reader), the livery tools, the chart colors (livery_charts.py), the
@@ -22,7 +22,10 @@ quarto-livery-decks/
 │   ├── _quarto.yml        #   the Quarto config (symlinked into decks)
 │   └── utils/
 │       ├── deck_qa.py          # `make qa`: overflow, slide counts, contact sheets
+│       ├── slide_shot.py       # `make shot`: one slide as a PNG, found by its title
+│       ├── frames2movie.py     # a directory of stills as a movie and its poster (ffmpeg)
 │       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
+│       ├── slide_diff.py       # two builds of the same decks, slide by slide (a Quarto bump's proof)
 │       ├── site_index.py       # `make site`: the index page
 │       └── fit-waves.py        # fits a brand's wave curves to its cover art (art.waves)
 ├── decks/
@@ -35,6 +38,8 @@ quarto-livery-decks/
 │   │                      #   for parity.sh and CI
 │   ├── plots/             # the plots cookbook (jupyter: python3, matplotlib, seaborn);
 │   │                      #   its README.md, gallery.py (make gallery) and screenshots/
+│   ├── movies/            # the movies cookbook: its stills drawn at build time
+│   │                      #   (make_frames.py), the movie made from them
 │   └── sample/            # the cookbook deck
 │       ├── Makefile        (one line: include ../../Make.common)
 │       ├── _quarto.yml     (symlink → ../../common/_quarto.yml)
@@ -78,7 +83,9 @@ Per deck, `make pptx` runs:
      quote, an agenda) into one text flow with marker paragraphs for `grid`;
    - `linked-images.lua` writes a linked picture's URL (HTML and PDF too; see [authoring.md "Linked images"](authoring.md#linked-images));
    - `diagram-dark.lua` turns the diagram pictures to the dark under a dark livery (PDF too);
-     in pptx before `grid-pptx.lua`, which carries a card's diagram in its marker.
+     in pptx before `grid-pptx.lua`, which carries a card's diagram in its marker;
+   - `movie-pptx.lua` hands pandoc a movie's poster, which it lays out as any picture, and names
+     the movie on a notes line for `movie` (see [authoring.md "Movies"](authoring.md#movies)).
 2. `python3 _extensions/engine/pptx_post.py <deck>.pptx`, the engine's post-render steps
    (`_extensions/engine/pptx_steps/`). It opens the deck once, runs them in this order and
    saves once:
@@ -128,6 +135,9 @@ Per deck, `make pptx` runs:
    - `links`: a hyperlink on a field slide (a cover, a divider, a closing, a `{.brand-dark}` slide)
      in the field's text color, underlined: PowerPoint draws a link in the theme's link color,
      which is the livery's primary and so vanished on a primary field.
+   - `movie`: embeds each movie over its poster, in the frame the steps before it left the
+     picture, and writes the slide's timing (it starts with the slide, loops, plays silent, by
+     the movie's flags), which python-pptx has no call for.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in `boxes.table`'s role, primary-contrast by default, thin rules between rows,
      every second row banded, the blends from `livery_build.py`; the widths `boxes.table`'s, as

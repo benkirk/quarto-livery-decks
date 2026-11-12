@@ -42,11 +42,11 @@ def _mathjax(route):
     route.fulfill(path=os.path.join(os.environ["MATHJAX"], rel))
 
 
-def html_slides(deck, out_dir, wait=600):
-    """Every slide of <deck>.html (in the current directory) as out_dir/sNNN.png, in order:
-    [(the slide's title, its path)], the title slide's first. Hidden details slides are shown."""
+def html_slides(deck, out_dir, wait=600, directory=None):
+    """Every slide of <deck>.html (in directory, default the current one) as out_dir/sNNN.png, in
+    order: [(the slide's title, its path)], the title slide's first. Hidden details slides are shown."""
     from playwright.sync_api import sync_playwright
-    httpd = serve(os.getcwd())
+    httpd = serve(directory or os.getcwd())
     base = "http://127.0.0.1:%d/" % httpd.server_address[1]
     shots = []
     try:
@@ -88,6 +88,12 @@ def pdf_texts(pdf):
                                                       ).stdout.splitlines() if ln.startswith("Pages:")][0])
     return [subprocess.run(["pdftotext", "-f", str(k), "-l", str(k), pdf, "-"],
                            capture_output=True, text=True, check=True).stdout for k in range(1, n + 1)]
+
+
+def pdf_pages(pdf, out_dir, dpi=80):
+    """Every page of the PDF as out_dir/pNNN.png, in order; their paths."""
+    subprocess.run(["pdftoppm", "-r", str(dpi), "-png", pdf, os.path.join(out_dir, "p")], check=True)
+    return sorted(os.path.join(out_dir, f) for f in os.listdir(out_dir) if re.fullmatch(r"p-?\d+\.png", f))
 
 
 def pdf_shot(pdf, page, prefix, dpi=160):

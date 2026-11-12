@@ -21,6 +21,42 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-11-12: window #169–#175
+
+- Mode: window
+- Range: `a994644..7373e42` (#169 the pptx QA failing by default and CI's wall, #171 movies, #174
+  details slides, the talk deck's friction and the pandoc 3.13 probe, #175 Quarto 1.11; #167 the
+  last sweep and #168 its release the start); read as one diff, ten findings, Ben picked 1–6 and 8
+- End commit: `7373e42`
+- Done (#176): the root `make site` built on every PR in the `sample` job (ci.yaml ran it only
+  on a tag with `PAGES` on: a release would have been its first run); the prose (docs/formats.md's
+  pipeline lacked the `movie` step and `movie-pptx.lua`, its tree the movies deck and two tools; the
+  release's app-open list and this skill's parity list lacked movies; the README's guide row;
+  "Quarto 1.10 bundles" in two engine comments; `design/movies.md`'s State, its hand checks done);
+  a type step scales small capitals' tracking in the pptx (`type_step.scale()` left `a:spc` at
+  the livery's size while HTML's and the PDF's em stepped, and `details.py` measured the tab as if
+  it had: a render change and parity's only difference, the `spc` of the four parts of
+  `fixtures/small` that hold a tracked run, 0.64 to 0.52 pt a letter under ncar, 2.24 to 1.40 on
+  the layouts' labels under cu and nsi); `C.notes_lines()`, one writer of a pptx filter's notes lines (two identical
+  `flush()`es and two one-liners); the movie extensions one `movie_exts` list in Make.common (its
+  wildcard and four poster rules), held to `MOVIE_MIME` and `movie.py`'s `MIME` by `test_movie.py`
+  (the #171 review's F4); `test_twins_across_languages_agree` (`RAIL_MIN` and the JS autofit floor,
+  `DETAILS_HIDE` and the Lua's script line); `common/utils/slide_diff.py`, the per-slide pixel
+  comparison of two builds, with `tests/test_slide_diff.py` (the #157–#165 entry's open item: both
+  Quarto bumps wrote it in a scratchpad)
+- Tried and dropped: nothing tried was dropped. Judged and left: the poster's ffmpeg line in both
+  `ensure_poster()` (Lua) and `frames2movie.make_poster()` (sharing it would make the engine call
+  into `common/utils`, the wrong direction, for one line); `type_step.factor(quiet=)`, a parameter
+  for one caller; `make clean` keeping a brought movie's generated posters (deliberate)
+- Open: `decks/plots/gallery.py`'s `shots()` hand-rolls the browser session `screenshots.py` gave
+  to `slide_shot.html_slides()` (no MathJax route, no `?details=show`; moving it shoots every slide,
+  a slower `make gallery`), and `comp_measure.shoot_html()` is a third copy, by selector;
+  `tests/test_talk_fixes.py` is named for a PR, six tests of five areas; the two marker-path
+  encoders (`grid-pptx.lua`'s over pandoc's URL form, `movie-pptx.lua`'s over a decoded path, both
+  read back by `unquote`); `notes_clrmap.py` and `single-body.lua`'s table fold until a Quarto
+  release bundles pandoc 3.13 (#166); the Pages deploy itself still first runs on a tag once
+  `PAGES` is on (its build no longer does)
+
 ## 2026-11-01: window #157–#165
 
 - Mode: window

@@ -5,7 +5,8 @@ in points; every size scales by it over the livery's body, livery.json type) or
 
 pandoc records both in docProps/custom.xml. Every text size in the master, the layouts and the
 slides (rPr, defRPr and endParaRPr sz, spcPts) is multiplied and rounded to the half point, so
-12 pt at type-body 10 is 10, not 10.02; a slide's own scale= (slide_layout.py) multiplies on
+12 pt at type-body 10 is 10, not 10.02; a run's letter spacing (spc, the small capitals'
+tracking) steps with its size; a slide's own scale= (slide_layout.py) multiplies on
 top. A deck without either is left alone. Last in pptx_post.py; it marks
 the deck (engine-type-step in custom.xml), so a second run changes nothing."""
 
@@ -43,11 +44,19 @@ def factor(props, quiet=False):
 
 
 def scale(root, f):
+    """Every size under root times f, to the half point; a run's letter spacing (a:spc, hundredths
+    of a point: the small capitals' tracking, type.tracking em of the size when it was written)
+    with its size, so it stays that share of it, as HTML's and the PDF's em do."""
     n = 0
     for el in root.iter(*SIZED):
+        k = f
         if el.get("sz"):
-            el.set("sz", str(round(livery_mod.half_pt(int(el.get("sz")) * f / 100) * 100)))
+            old = int(el.get("sz"))
+            el.set("sz", str(round(livery_mod.half_pt(old * f / 100) * 100)))
+            k = int(el.get("sz")) / old   # the size's own step, after its rounding
             n += 1
+        if el.get("spc"):
+            el.set("spc", str(round(int(el.get("spc")) * k)))
     for el in root.iter(qn("a:spcPts")):
         el.set("val", str(round(int(el.get("val")) * f)))
     return n

@@ -46,6 +46,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
     shrink-on-overflow used to step one long item down alone; a row too tall for its room steps
     down together, and a hyphenated name is measured as wrapping at its hyphens, as PowerPoint
     wraps it (this moves a box by a line on a few slides whose text has hyphens).
+- pptx: under a deck's size step (`type-body:`, `type-scale:`) the letter spacing of small
+  capitals (a divider's "SECTION n", a table's head, a card's label, the details tab) now steps
+  with their size, as HTML's and the PDF's does; it stayed at the livery's size's. Only a deck
+  that sets a step changes: at `type-body: 10`, a tenth of a point a letter under ncar (body 12),
+  up to 0.8 pt on a divider's label under cu and nsi (body 16).
 - `make qa` fails a code block taller than its box in HTML: it scrolls inside the box, so the
   lines past it were silently missing from the slide. It also counts and draws a hidden slide
   like any other (LibreOffice's export leaves hidden slides out, which shifted every page after

@@ -117,8 +117,9 @@ Run each pass and collect findings. The examples are real.
   window: a new host-side variable or path under Apptainer's `--cleanenv` and its own HOME; a
   cache the first run builds into an empty HOME; a timeout tuned on a fast machine; a recipe
   read under GNU make 3.81, dash and BSD tools; a release step that assumes an artifact the
-  same release has not published yet (#101). Each is a trace with the concrete input that
-  broke it, or it is not a finding.
+  same release has not published yet (#101); a job gated to tags, whose first run is then a
+  release (the root `make site`, #169–#175: build it on every PR, deploy on the tag). Each is a
+  trace with the concrete input that broke it, or it is not a finding.
 - **Gate drift.** An element's walk is gated on a different slide set per format (`content_heading`
   with one format's kinds table, every slide in another), so one input parts them: the element on
   a composed slide, a divider or an untitled slide. Name the input and gate all three alike
@@ -130,7 +131,11 @@ Run each pass and collect findings. The examples are real.
   `tests/test_compositions.py`'s `EXPECTED_DELTAS` (every decided move of a box is a row),
   `livery build --check` (the generated files match). Only ratchet a count that is going down.
   A doc example pinned to a release (`@vX.Y.Z`, an image tag in prose): hold it to
-  `_extension.yml`'s version, as `tests/test_docs.py` holds docs/other-repos.md's.
+  `_extension.yml`'s version, as `tests/test_docs.py` holds docs/other-repos.md's. A value two
+  languages must agree on and cannot share (a list in Lua, Make and Python; a constant in the JS
+  and a step): one home named in a comment, the others held to it by a test that reads the sources
+  (`test_cli.py`'s `test_twins_across_languages_agree`, `test_movie.py`'s
+  `test_one_list_of_extensions`, #169–#175).
 
 ## 5. Report
 
@@ -161,9 +166,14 @@ pick.
   the render takes the extension's defaults, ncar's template, and `LIVERY=` reaches only the
   Python steps): an agent renders its proofs from a `git archive` of its commit, or a copy of the
   deck, outside it (#136–#149). `make test` is unaffected.
+- The parity baseline builds in the working tree and takes a good half hour: start it on
+  `origin/main` while the report is read, and until it is done edit nothing a deck depends on
+  there (the engine, `Make.common`, a livery). Engine commits meanwhile go on a branch in a
+  `git worktree` outside the tree (pytest runs there) and are cherry-picked once it finishes
+  (#169–#175).
 - **If output could move**, capture it before and after and compare, by what can move:
   `tests/parity.sh baseline` on `origin/main` and `check` on the branch (every deck of
-  quickstart, sample, fixtures and plots under ncar, cu and nsi; same checkout, same day);
+  quickstart, sample, fixtures, plots and movies under ncar, cu and nsi; same checkout, same day);
   `make measure` in `decks/quickstart` when a composition drawer changes; `tests/parity-latex.sh
   baseline|check` for the LaTeX side; a Sass change is screenshotted slide by slide before and
   after (CLAUDE.md "revealjs (HTML) theme"). Keep throwaway capture scripts in the scratchpad,
