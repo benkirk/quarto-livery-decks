@@ -18,6 +18,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.11.1] - 2026-11-12
+
+Movies in decks (played in HTML and the pptx, a linked poster in the PDF, and a directory of
+stills made a movie), details slides (`{.details}`: optional-depth slides marked by a tab and
+hidden in the pptx), the fixes a talk built on 26.11.0 asked for, `make shot` for one slide as a
+picture, `make qa` failing on the pptx's problems, and Quarto 1.11.
+
 ### Decks
 
 - **Details slides** (docs/authoring.md "Details slides", #173): `## Title {.details}` marks an
@@ -1004,7 +1011,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.11.0...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.11.1...HEAD
+[26.11.1]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.11.1
 [26.11.0]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.11.0
 [26.10.13]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.13
 [26.10.12]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.12
