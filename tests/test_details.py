@@ -238,10 +238,13 @@ def test_pptx_tab_follows_the_type_step(tmp_path, pandoc_deck):
     the scaled label and its pads, as HTML and the PDF size theirs: at type-scale 1.4 the label and
     the tab's length are 1.4 times the plain deck's (8 pt to 11 on ncar), its width the livery's."""
     sizes = {}
+    tracking = json.loads((ROOT / "liveries" / "ncar" / "build" / "livery.json").read_text())["type"]["tracking"]
     for name, front in (("plain", ""), ("big", "type-scale: 1.4"), ("small", "type-body: 9")):
         (tmp_path / name).mkdir()
         (tab,) = _tabs(list(_deck(tmp_path / name, pandoc_deck, front, None).slides)[2])
         sizes[name] = (tab.text_frame.paragraphs[0].runs[0].font.size.pt, tab.width, tab.height)
+        el = tab.text_frame.paragraphs[0].runs[0]._r.find(qn("a:rPr"))   # the tracking steps with the size
+        assert abs(int(el.get("spc")) / int(el.get("sz")) - tracking) < 0.005, f"{name}: spc {el.get('spc')} at sz {el.get('sz')}"
     (pt, long, wide) = sizes["plain"]
     for name, f in (("big", 1.4), ("small", 9 / 12)):
         want = int(pt * f * 2 + 0.5) / 2   # to the half point
