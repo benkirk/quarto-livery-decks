@@ -50,9 +50,11 @@ recipe.
 
 ## Front matter and slide kinds
 
-**Theme options** go in a deck's front matter: `themeoptions: [title=light, fonts=bundled]`. A
-deck-level list replaces the shared one, so keep `fonts=bundled` (from the shared
-`_quarto.yml`): it pins the livery's bundled fonts and never probes for a system copy
+**Theme options** go in a deck's front matter: `themeoptions: [title=light, fonts=bundled]`.
+Quarto 1.11 (the image's and the conda env's) adds a deck's list to the shared one, the deck's
+value for a key winning; an older Quarto replaces the shared list, so keep `fonts=bundled` (from
+the shared `_quarto.yml`), which is right under both: it pins the livery's bundled fonts and never
+probes for a system copy
 (`fonts=brand` uses an installed brand face instead; see
 [formats.md "Installed brand fonts"](formats.md#installed-brand-fonts)).
 

@@ -107,7 +107,7 @@ did not.
 - **The first run, an empty HOME, a cold cache.** A new user's first build hung on a Casper
   login node: Chromium indexed every font into an empty HOME (#98: the index now ships in the
   image), and the root was Quarto's 3 s `waitForServer`, after which it awaits a healthy
-  browser's exit forever (#102: patched to 30 s in the image, asserted). A change to the image,
+  browser's exit forever (#102: patched to 30 s in the image; Quarto 1.11's launcher waits 15 s and kills a browser that does not answer, and the image asserts that constant). A change to the image,
   the entrypoint or a cache (`/opt/matplotlib`, `/var/cache/fontconfig`, `~/.cache/quarto-livery-decks`)
   is tested from a fresh HOME, several times when timing is involved; Ben can run commands as
   `cmipap`, a second account, on crlogin2 (memory `casper-apptainer-testing`).

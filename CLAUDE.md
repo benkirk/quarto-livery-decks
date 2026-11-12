@@ -127,10 +127,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   Everything under `/opt` must stay world-readable (asserted). Chromium (the headless shell) bundles
   its own fontconfig, whose index format the system's 2.15 does not write: step 7 builds it into
   `/var/cache/fontconfig` and asserts an empty HOME gets none. Without it a new HOME indexes every
-  font on its first diagram (~5 s on a busy login node). The root was Quarto's `waitForServer`: it
-  gives up after 3 s and then awaits the healthy browser's exit forever, so any slow start hung a
-  render; step 5 patches it to 30 s in the bundled `quarto.js`, asserting the exact line (a new
-  Quarto that changes it stops the build). The font index stays: 5 s and 88 files per new HOME. Apptainer runs `--cleanenv` in every documented form (the
+  font on its first diagram (~5 s on a busy login node). The root was Quarto's `waitForServer` (up to 1.10): it
+  gave up after 3 s and then awaited the healthy browser's exit forever, so any slow start hung a
+  render, and step 5 patched it to 30 s. Quarto 1.11's launcher (`src/core/cri/launch.ts`) waits 15 s
+  and kills and reports a browser that does not answer, so nothing is patched; step 5 asserts the
+  constant in the bundled `quarto.js` (a new Quarto that changes it stops the build). The font index stays: 5 s and 88 files per new HOME. Apptainer runs `--cleanenv` in every documented form (the
   host's variables stay outside: a Casper profile's `TMPDIR` stopped Quarto), and it still binds
   HOME, so the last `ENV` guards against what HOME holds: `PYTHONNOUSERSITE=1` (`pip --user`) and
   `JUPYTER_PREFER_ENV_PATH=1` (the image's kernels over `~/.local/share/jupyter`). `smoke-test.sh` takes `RUNTIME=docker|podman|apptainer` (default
@@ -549,16 +550,18 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   in `latex/` (`make latex`); the engine's tests are `make test`. The extension's Lua filter loads the theme in place
   through `\input@path`, so nothing is copied into deck directories. Needs
   XeLaTeX (TinyTeX or TeX Live) and Quarto >= 1.6, the engine's floor (`quarto-required` in the
-  shared `_quarto.yml`; `conda-env.yaml` pins 1.10, the image's: `>=1.10,<1.11`, since an open floor let the image take 1.11.9, whose `waitForServer` line the Dockerfile's assert refused; a new minor is evaluated first). Beamer has no autofit: dense slides
+  shared `_quarto.yml`; `conda-env.yaml` pins 1.11, the image's: `>=1.11,<1.12`, since an open floor once let the image take a new minor unseen; a new minor is evaluated first, as 1.10 and 1.11 were). Beamer has no autofit: dense slides
   overflow silently, so render the PDF and look at it, then trim the content
   or add `{.shrink}` to the heading. A full-width 16:9 screenshot is taller than
   the frame's content area; cap it with `{height="72%" fig-align="center"}`
   (pptx ignores the attribute and fits the placeholder anyway).
 - **HTML** is `--to engine-revealjs`, from the same extension (see
   "revealjs (HTML) theme" below).
-- **Theme options** (`themeoptions:` in a deck's front matter) replace the
-  shared list in `common/_quarto.yml`, so a deck that sets any must
-  repeat `fonts=bundled`. `mathfont=` (default a serif math font,
+- **Theme options** (`themeoptions:` in a deck's front matter) are added to the
+  shared list in `common/_quarto.yml` under Quarto 1.11, which combines an inherited list with a
+  document's (the deck's come last, so its value for a key wins: `fonts=brand` over the shared
+  `fonts=bundled`); a Quarto before 1.11 replaces the list, where a deck that sets any must
+  repeat `fonts=bundled`, which is right under both. `mathfont=` (default a serif math font,
   NewCM Book scaled to Poppins; `stix`, `lm`, `pagella`, `sans`, `fira`,
   `poppins` for the old Poppins-letter look, `keep`, or a font name; Quarto's
   own `mathfont:` key still wins) and `waves=false` (drops the faint wave
@@ -994,7 +997,9 @@ bit while building it:
 - **Install Chrome Headless Shell once** (`quarto install chrome-headless-shell`).
   With only the system Chrome, quarto's handshake can wedge and a render hangs
   with no output (CI hit it; so did a local `make all`, for 29 minutes). In the
-  container `QUARTO_CHROMIUM` already points at Playwright's headless shell.
+  container `QUARTO_CHROMIUM` already points at Playwright's headless shell. Up to Quarto 1.10 the
+  headless shell could hang a render too, when it took over 3 s to answer (two renders at once
+  on a laptop did it); 1.11 waits 15 s and then stops with the browser's error.
 - Layout tricks that work: subgraphs with `direction TB` + invisible `~~~`
   links to stack wide fan-outs vertically; an invisible `~~~` edge plus the
   real edge to force a child *below* its parent while the arrow points up.

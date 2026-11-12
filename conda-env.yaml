@@ -4,13 +4,12 @@ channels:
 dependencies:
   # Binaries / runtime — must come from conda.
   - python
-  # >=1.10 (#161): conda-forge's quarto 1.10 (2026-10-30; pandoc 3.10, dart-sass 1.101, deno 2.7)
-  # exports QUARTO_TYPST_GATHER in its activation, which the Dockerfile's ENV mirrors and asserts.
-  # The engine needs pandoc >= 3.2.1 (\pandocbounded) at the least.
-  # <1.11 until 1.11 is looked at as 1.10 was: conda-forge's 1.11.9 (2026-11-02; still pandoc 3.10)
-  # changed the waitForServer line the Dockerfile patches and asserts, which stopped the image
-  # build of 2026-11-12 as it is meant to. A new minor is a change of its own (#161's steps).
-  - quarto >=1.10,<1.11
+  # One minor, held: conda-forge's quarto 1.11 (1.11.9, 2026-11-02; pandoc 3.10, dart-sass 1.101,
+  # deno 2.9.8, which needs macOS 12). Its activation exports what 1.10's did, which the
+  # Dockerfile's ENV mirrors and asserts. The engine needs pandoc >= 3.2.1 (\pandocbounded) at
+  # the least. A new minor is a change of its own, looked at first as 1.10 (#161) and 1.11 were:
+  # an open floor once let an image build take 1.11.9 unseen (2026-11-12).
+  - quarto >=1.11,<1.12
   - gh
   - make
   - pip
