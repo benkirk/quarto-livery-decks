@@ -127,12 +127,8 @@ function Pandoc(doc)
   local blocks = C.ensure_refs(marked, doc.meta, level)
   local refs = C.refs_heading(blocks, level)
   local out, pending = pandoc.Blocks({}), {}
-  local function flush()   -- the slide's lines, a paragraph each (the steps read them line by line)
-    if #pending > 0 then
-      local paras = pandoc.Blocks({})
-      for _, line in ipairs(pending) do paras:insert(pandoc.Para({ pandoc.Str(line) })) end
-      out:insert(pandoc.Div(paras, pandoc.Attr("", { "notes" })))
-    end
+  local function flush()   -- the slide's lines (C.notes_lines: the steps read them line by line)
+    if #pending > 0 then out:insert(C.notes_lines(pending)) end
     pending = {}
   end
   for k, b in ipairs(blocks) do

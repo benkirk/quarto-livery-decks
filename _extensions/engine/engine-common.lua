@@ -91,6 +91,15 @@ local function is_notes(b)
   return b.t == "Div" and has_class(b, "notes")
 end
 
+-- A pptx filter's lines for the post-render steps (`engine-layout: ...`, `engine-columns: ...`,
+-- `engine-movie: ...`, `engine-details: ...`), as speaker notes: one notes Div, a paragraph per line
+-- (pptx_steps/common.py's take_marker() reads them by line and removes them).
+local function notes_lines(lines)
+  local paras = pandoc.Blocks({})
+  for _, line in ipairs(lines) do paras:insert(pandoc.Para({ pandoc.Str(line) })) end
+  return pandoc.Div(paras, pandoc.Attr("", { "notes" }))
+end
+
 -- What rides with the notes: the speaker notes, Quarto's vault (`.hidden`), and the
 -- `quarto-auto-generated-content` div (its footer and logo) Quarto appends to a revealjs document,
 -- which lands in the last slide's blocks and is moved out of the slide afterwards. A walker that
@@ -1376,7 +1385,7 @@ return {
   lone_span = lone_span, card_attrs = card_attrs, box_role = box_role, deck_type_scale = deck_type_scale,
   footnote_marker = footnote_marker, strip_marker = strip_marker, take_footnotes = take_footnotes, lift_footnotes = lift_footnotes, is_figure = is_figure,
   is_note = is_note, split_full = split_full, holds_shape = holds_shape, holds_table = holds_table, is_slide_break = is_slide_break, SLIDE_KINDS = SLIDE_KINDS,
-  slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, is_aside = is_aside, split_notes = split_notes,
+  slide_level = slide_level, slide_from = slide_from, is_notes = is_notes, notes_lines = notes_lines, is_aside = is_aside, split_notes = split_notes,
   divider_subtitle = divider_subtitle, sections = sections, is_quote = is_quote,
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,

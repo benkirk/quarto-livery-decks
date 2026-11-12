@@ -224,8 +224,7 @@ function Pandoc(doc)
     out:extend(blocks)
     out:extend(notes)
     if noted then   -- slide_layout.py reads it (slide-layout.lua writes the other words)
-      out:insert(pandoc.Div({ pandoc.Para({ pandoc.Str("engine-layout: note") }) },
-        pandoc.Attr("", { "notes" })))
+      out:insert(C.notes_lines({ "engine-layout: note" }))
     end
     body, notes = pandoc.Blocks({}), pandoc.Blocks({})
   end
