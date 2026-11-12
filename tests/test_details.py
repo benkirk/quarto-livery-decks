@@ -8,10 +8,13 @@ the paper's left edge from the body's top, the label turned), and the pptx hides
 says `details: show`. The build resolves boxes.details' nulls (details_box()) into every
 livery.json, livery.css and livery.sty; engine-common.lua's details_mode(), details_hidden() and
 details_slides() read a deck alike for every format; pptx_steps/details.py draws and hides, the
-halves of a slide pandoc split included. Needs pandoc ($QUARTO_PANDOC); the frame key needs XeLaTeX.
+halves of a slide pandoc split included; engine-revealjs.js leaves them out of an HTML show.
+Needs pandoc ($QUARTO_PANDOC); the frame key needs XeLaTeX, the HTML show Playwright and Quarto's
+reveal.js.
 """
 
 import json
+import os
 import shutil
 import subprocess
 import zipfile
@@ -281,3 +284,58 @@ def test_frame_key(tmp_path):
         y = round((j["geometry"]["body"][1] + 0.004) * im.height)     # just under the body's top: the pad above the word
         px = im.getpixel((x, y))
         assert all(abs(a - b) <= 6 for a, b in zip(px, want)), (page, px, want)
+
+
+PAGE = """<!doctype html><html{cls}><head><meta charset="utf-8">
+<link rel="stylesheet" href="reveal.css"><script src="engine-revealjs.js"></script></head><body>
+<div class="reveal"><div class="slides">
+<section><h1>Deck</h1></section>
+<section><section><h1>Part</h1></section><section><h2>Core</h2></section>
+<section class="engine-details"><h2>Deep</h2></section><section><h2>After</h2></section></section>
+<section><section class="engine-details"><h2>Alone</h2></section></section>
+<section><h2>End</h2></section>
+</div></div>
+<script src="reveal.js"></script><script>Reveal.initialize({{hash: true}});</script></body></html>
+"""
+
+
+def test_html_show(tmp_path):
+    """engine-revealjs.js on a page laid out as Quarto's (the theme's script in the head, reveal
+    started at the end of the body): the deck's `details: hide` (html.engine-details-hide) and
+    ?details=hide leave the details slides out, a stack emptied with them; ?details=show brings them
+    back; and the address is read against the slides shown (#/1/2 is the stack's third shown slide,
+    #/2 the third column: it landed on the title slide)."""
+    sync_api = pytest.importorskip("playwright.sync_api")
+    share = os.environ.get("QUARTO_SHARE_PATH") or (
+        shutil.which("quarto") and os.path.join(os.path.dirname(os.path.realpath(shutil.which("quarto"))), "..", "share", "quarto"))
+    dist = share and os.path.join(share, "formats", "revealjs", "reveal", "dist")
+    if not (dist and os.path.exists(os.path.join(dist, "reveal.js"))):
+        pytest.skip("Quarto's reveal.js")
+    import sys
+    sys.path.insert(0, str(ROOT / "common" / "utils"))
+    from deck_qa import serve
+    for f in ("reveal.js", "reveal.css"):
+        shutil.copy(os.path.join(dist, f), tmp_path)
+    shutil.copy(ENGINE / "engine-revealjs.js", tmp_path)
+    (tmp_path / "shown.html").write_text(PAGE.format(cls=""))
+    (tmp_path / "hidden.html").write_text(PAGE.format(cls=' class="engine-details-hide"'))
+    every, shown = "Deck|Part|Core|Deep|After|Alone|End", "Deck|Part|Core|After|End"
+    want = [("shown.html", every, "Deck"), ("shown.html#/1/2", every, "Deep"), ("shown.html?details=hide", shown, "Deck"),
+            ("hidden.html", shown, "Deck"), ("hidden.html?details=show", every, "Deck"), ("hidden.html?details", every, "Deck"),
+            ("hidden.html#/1/2", shown, "After"), ("hidden.html#/2", shown, "End"), ("shown.html?details=hide#/1/1", shown, "Core")]
+    httpd = serve(str(tmp_path))
+    try:
+        with sync_api.sync_playwright() as p:
+            browser = p.chromium.launch(executable_path=os.environ.get("CHROME") or None)
+            for url, slides, at in want:
+                page = browser.new_page()
+                page.goto("http://127.0.0.1:%d/%s" % (httpd.server_address[1], url))
+                page.wait_for_function("window.Reveal && Reveal.isReady()")
+                page.wait_for_timeout(100)   # reveal's ready event, a tick after it starts
+                got = page.evaluate("[Reveal.getSlides().map(s => s.querySelector('h1, h2').textContent).join('|'),"
+                                    " Reveal.getCurrentSlide().querySelector('h1, h2').textContent]")
+                assert got == [slides, at], (url, got)
+                page.close()
+            browser.close()
+    finally:
+        httpd.shutdown()

@@ -644,7 +644,8 @@ belongs, right after the slide it deepens:
 rebuilds the general one (a `.details` stamp beside the deck remembers which is built). An HTML
 deck holds every slide either way, and its URL says which show to give: `talk.html?details=show`
 (or just `?details`) shows them, `?details=hide` leaves them out, whatever the deck was built
-with. Reveal counts only the slides it shows.
+with. Reveal counts only the slides it shows, in its slide numbers and in a link to one slide
+(`talk.html?details=hide#/2/1`).
 
 The class goes with the other heading controls (`scale=`, `.vcenter`, `.wide`, `.caution`,
 `.brand-dark`, `.full`, columns, cards), on a slide that pandoc splits in the pptx (both halves are

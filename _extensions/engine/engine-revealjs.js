@@ -114,7 +114,9 @@
   // stay in the file either way (Quarto would drop a data-visibility="hidden" slide from it at
   // render time), so one HTML deck serves both audiences and `make qa` checks every slide.
   // Before reveal starts, the slide takes reveal's own data-visibility; after, it is removed as
-  // reveal removes one (an emptied stack with it) and the deck is synced.
+  // reveal removes one (an emptied stack with it) and the deck is synced. Reveal has by then read
+  // the address against every slide, and its indices count the slides shown: it is read again,
+  // or a reload and a link to a slide (#/2/1) landed on the title slide.
   function detailsHidden() {
     var m = /[?&]details(?:=([^&#]*))?(?:[&#]|$)/.exec(window.location.search);
     if (m) return m[1] === "hide";
@@ -131,7 +133,11 @@
       removed++;
       if (parent.matches("section") && !parent.querySelector(":scope > section")) parent.parentNode.removeChild(parent);
     });
-    if (removed) { R.sync(); R.slide(0, 0); }
+    if (removed) {
+      var at = /^#\/(\d+)(?:\/(\d+))?/.exec(window.location.hash);   // hash-type: number
+      R.sync();
+      R.slide(at ? +at[1] : 0, at && at[2] ? +at[2] : 0);
+    }
   }
 
   window.addEventListener("DOMContentLoaded", function () {

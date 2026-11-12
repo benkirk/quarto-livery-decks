@@ -329,7 +329,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   speaker note on the slide before a run) are the readers. HTML: `.engine-details` on the section and
   an `.engine-details-tab` element at its end (`add_details()`; the section's `::before` is the
   hairline); hiding is `engine-revealjs.js`'s `hideDetails()` at run time (`html.engine-details-hide`,
-  `?details=show|hide`), never `data-visibility` in the source, which Quarto drops from the file.
+  `?details=show|hide`; the address is read again once they are gone, since `#/2/1` counts the slides shown), never `data-visibility` in the source, which Quarto drops from the file.
   PDF: the frame key `enginedetails`, `\engine@drawdetails` in the background template. pptx:
   slide-layout.lua's own notes line, `engine-details: hide|show`; `pptx_steps/details.py` marks the
   slide and, walking back over title-less slides, the halves pandoc split (the notes land on the
