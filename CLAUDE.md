@@ -747,7 +747,7 @@ it does, by area, beyond the format notes above:
   LaTeX; Keep a Changelog) gets every user-visible change under `[Unreleased]` in the PR that
   makes it; a release renames that section to `[x.y.z] - date` before its tag, and the entry
   becomes the release's notes. Ask Ben before any tag. Before it, on a Mac with Keynote and
-  PowerPoint, build the decks (`make all` in quickstart, sample, fixtures and plots) and run
+  PowerPoint, build the decks (`make all` in quickstart, sample, fixtures, plots and movies) and run
   `tests/app-open.sh`: it opens each `decks/*/*.pptx` in both apps by their own AppleScript
   (no keystrokes; a refused import or a Repair? prompt is a FAIL), after controls that show its
   verdicts are real. No CI runner has either app (GitHub's macOS images: neither), so it is a

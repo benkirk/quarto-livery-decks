@@ -135,9 +135,12 @@ outputs left untracked). The framework commits none (section 4's fixture generat
 
 ## 4. Steps
 
-One sprint PR, a commit per item, in this order (all done on `sprint/movies`; still to check by
-hand: the movies play in PowerPoint's and Keynote's slideshows, `tests/app-open.sh` only opens
-them, and Google Slides' import):
+**State:** done, merged as #171 (squash `b2e1487`), released in 26.11.1. Checked by hand after
+it (Ben, 2026-11-02): the movies play in PowerPoint's and Keynote's slideshows and in the HTML;
+Google Slides' import drops the movie and keeps its poster, a known limit, accepted. Not covered:
+a movie in a card, a grid column or a gallery (its poster, warned).
+
+One sprint PR, a commit per item, in this order:
 
 1. The image: `ffmpeg`, its assert, the smoke encode; the size in the merge summary noted here.
 2. `frames2movie.py` and the `Make.common` rule and prerequisites.
