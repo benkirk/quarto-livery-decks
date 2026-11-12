@@ -125,3 +125,14 @@ storage (one HTML deck's artifact is some 10 MB; lower `retention-days` if that 
 
 CI exercises the workflow on every pull request (`ci.yaml`'s `reusable` job): the quickstart
 deck at the pull request's image.
+
+### This repository's own site
+
+`make site` at the top of this repository builds `_site/`: the quickstart and sample decks'
+HTML, each directory's own `make site` under its name, and one index over them. It is what a talk
+links when it says "see the cookbook". `ci.yaml`'s `site` and `pages` jobs deploy it to GitHub
+Pages on a release tag, once the repository is set up for it, which is done once by its owner:
+set the Pages source to "GitHub Actions" (Settings > Pages) and the repository variable `PAGES`
+to `on` (Settings > Secrets and variables > Actions > Variables). Until then the jobs are
+skipped, so a release carries no failed deploy. The decks are then at
+`https://<owner>.github.io/<repo>/sample/sample.html` and `.../quickstart/quickstart.html`.

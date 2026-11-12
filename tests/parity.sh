@@ -3,6 +3,7 @@
 #
 #   tests/parity.sh baseline [deck dir...]   build the decks and snapshot them into _baseline/
 #   tests/parity.sh check    [deck dir...]   rebuild, snapshot into _check/, diff against _baseline/
+#                                            (a deck added since the baseline is named and not compared)
 #
 # Default deck dirs: decks/quickstart decks/sample decks/fixtures decks/plots decks/movies, relative to the repository root,
 # each built under every livery in PARITY_LIVERIES (default "ncar cu nsi"; ncar's snapshots keep
@@ -80,7 +81,11 @@ for dir in "${dirs[@]}"; do for livery in "${liveries[@]}"; do
   if [ "$verb" = baseline ]; then
     snapshot "$dir" "$deck" "$ROOT/_baseline/$name" "$livery" && echo "baseline: $dir/$deck ($livery)"
   else
-    [ -d "$ROOT/_baseline/$name" ] || { echo "no baseline for $dir/$deck ($livery): run 'parity.sh baseline' first"; exit 2; }
+    if [ ! -d "$ROOT/_baseline/$name" ]; then   # no baseline at all, or a deck added since it was taken
+      ls "$ROOT"/_baseline/*/pdf.txt >/dev/null 2>&1 || { echo "no baseline for $dir/$deck ($livery): run 'parity.sh baseline' first"; exit 2; }
+      echo "new: $dir/$deck ($livery) has no baseline (a deck added since it was taken); not compared"
+      continue
+    fi
     snapshot "$dir" "$deck" "$ROOT/_check/$name" "$livery"
     if diff -r -q --exclude=build.log --exclude=screenshots.log --exclude=screenshots --exclude=pages \
          "$ROOT/_baseline/$name" "$ROOT/_check/$name" >"$ROOT/_check/$name.diff"; then

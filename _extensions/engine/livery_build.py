@@ -176,10 +176,19 @@ BOXES = {
     # slide's swap reaches it), and rule under each body row (1 px of 900; beamer's under the last), in the
     # table-rule blend
     "table": {"head-rule": 0.0033, "head-rule-color": "primary-contrast", "rule": 0.0011},
+    # a {.details} slide's tab (an optional-depth slide's mark): a filled tab on the paper's left edge, from the
+    # body's top down, holding the label turned to read upward. label its word; role its fill, a role or blend
+    # name (the word is knocked out in the background, as a rail badge's number); width of the slide's width
+    # (null: the title tab's, geometry.tab-width, kept inside a {.wide} body's margin); size the word's points
+    # on the canvas (null: the eyebrow's, at most what the width holds); pad the room at each end of the word,
+    # em of its size. details_box() resolves the nulls
+    "details": {"label": "Details", "role": "primary-contrast", "width": None, "size": None, "pad": 0.9},
 }
+DETAILS_WIDE = 0.85   # the tab's derived width is at most this share of geometry.wide-margin (clear of a {.wide} body)
+DETAILS_LINE = 1.45   # and its derived size at most the width over this (the word's line in the tab)
 # a box's role keys: a role or blend name kept as a name, so a drawer resolves it where a dark slide's
 # swap applies (the rail's default role, the table's head rule)
-BOX_ROLE_NAMES = {"rail": ("role",), "table": ("head-rule-color",)}
+BOX_ROLE_NAMES = {"rail": ("role",), "table": ("head-rule-color",), "details": ("role",)}
 # a box's color keys (a role, a blend, a palette name or a hex; null, where the schema allows it, for none)
 BOX_COLORS = {"lead": ("fill", "bar-color"), "quote": ("bar-color",), "agenda": ("number-color", "current-color"), "card": ("fill", "outline-color", "border-color"), "status": ("done", "warn", "fail"),
               "rail": ("line-color", "fill"), "gallery": ("fill",), "footnote": ("rule-color",),
@@ -342,6 +351,7 @@ def resolve(d: Path) -> tuple[dict, dict]:
         "color": roles.get(b.get("color", "primary-contrast")) or hex_of(b["color"], ("livery.yml", "bullets.color"))}
     out["compositions"] = compositions(d.name, data, out)
     out["type"] = type_scale(d.name, data)
+    out["boxes"]["details"] = details_box(out)
     out["furniture"] = furniture(out)
     out["marking"] = markings(d.name, data.get("marking") or {}, out,   # colors as hex: a role, a palette name or a hex
                               lambda c, k: roles.get(c) or hex_of(c, ("livery.yml", f"marking.{k}")))
@@ -482,6 +492,22 @@ def watermark(spec: dict, canvas: float, hexof) -> dict:
     height over the default's). The schema bounds the numbers."""
     w = {**WATERMARK, "size": WATERMARK["size"] * canvas, **spec}
     return {**w, "color": hexof(w["color"]), "size": half(w["size"])}
+
+
+def details_box(out: dict) -> dict:
+    """boxes.details with its nulls resolved: width the title tab's (geometry.tab-width) or DETAILS_WIDE of
+    the wide margin, whichever is less, so the tab never reaches a {.wide} body; size the eyebrow's points,
+    or what the width holds (the width in points over DETAILS_LINE), down to the half point. A livery's own
+    numbers are taken as given (`livery check` says when the word is taller than the tab)."""
+    d, g, ty = dict(out["boxes"]["details"]), out["geometry"], out["type"]
+    if d["width"] is None:
+        d["width"] = round(min(g["tab-width"], DETAILS_WIDE * g["wide-margin"]), 4)
+    if d["size"] is None:
+        room = d["width"] * ty["canvas"]["w"] / DETAILS_LINE
+        d["size"] = min(ty["roles"]["eyebrow"]["pt"], max(1.0, int(room * 2) / 2))
+    else:
+        d["size"] = half(d["size"])
+    return d
 
 
 def boxes(b: dict, hexof, roles=()) -> dict:
@@ -1162,6 +1188,10 @@ def emit_sty_boxes(livery: dict) -> list[str]:
                 L.append(f"\\def\\engine@boxes@{box}@{name}{{{','.join(val)}}}")
             elif (box, k) == ("quote", "family"):   # its files are the fonts' (\engine@quotefont@*, above)
                 continue
+            elif (box, k) == ("details", "label"):
+                L.append(f"\\def\\engine@boxes@details@label{{{tex_escape(val)}}}")
+            elif (box, k) == ("details", "size"):   # as the body's ratio with a leading of 1 (\engine@fsof), as the watermark's
+                L.append(f"\\def\\engine@boxes@details@type{{{{{round(val / livery['type']['roles']['body']['pt'], 4)}}}{{1}}}}")
             elif k in BOX_COLORS.get(box, ()):
                 if val is None:   # none (a rail's fill): the theme tests \ifcsname
                     continue
@@ -1389,6 +1419,9 @@ def emit_css(livery: dict, extra: str = "") -> str:
     # slide's swap would not reach it
     L.append(f".reveal .slides section table {{ --engine-boxes-table-head-rule-color: "
              f"var(--engine-{livery['boxes']['table']['head-rule-color']}); }}")
+    # the details tab's fill in its role (boxes.details.role), resolved on the tab for the same reason
+    L.append(f".reveal .slides section .engine-details-tab {{ --engine-details-fill: "
+             f"var(--engine-{livery['boxes']['details']['role']}); }}")
     L += emit_css_compositions(livery)
     if livery.get("mode") == "dark":
         L += emit_css_dark()
@@ -1448,6 +1481,10 @@ def emit_css_boxes(livery: dict, px) -> list[str]:
           f"--engine-footnote-rule-color: {fn['rule-color']};", f"--engine-footnote-width: {round(fn['width'] * 100, 2):g}%;",
           f"--engine-footnote-gap: {fn['gap']:g}em;", f"--engine-footnote-hang: {fn['hang']:g}em;",
           f"--engine-footnote-step: {fn['step']:g}em;"]
+    dt = b["details"]   # the details tab; its fill is set on the tab itself (emit_css), where a dark slide's swap reaches it
+    ty = livery["type"]
+    p += [f"--engine-details-width: {px(dt['width'], W)};", f"--engine-details-pad: {dt['pad']:g}em;",
+          f"--engine-details-size: calc({round(dt['size'] / ty['canvas']['h'] * H, 2):g}px * var(--engine-type-scale, 1));"]
     tb = b["table"]   # the head rule's color is set on the table itself (emit_css), where a dark slide's swap reaches it
     p += [f"--engine-boxes-table-head-rule: {px(tb['head-rule'])};", f"--engine-boxes-table-rule: {px(tb['rule'])};"]
     return p

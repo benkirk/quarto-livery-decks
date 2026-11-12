@@ -16,7 +16,7 @@
  * fitted when it is shown (and all of them for ?print-pdf); fitting is
  * idempotent, so late renderers (fonts, mermaid, MathJax) just refit.
  *
- * Also: quarto renders each mermaid diagram inside its slide, which reveal
+ * Also: the details slides' visibility (hideDetails), and: quarto renders each mermaid diagram inside its slide, which reveal
  * has scaled to the window, so mermaid measured every label at that scale
  * (0.8 at 1280 px) and clipped the text.  Rendering in mermaid's own
  * unscaled scratch element measures true sizes.
@@ -28,7 +28,7 @@
   var NEVER = ".engine-section, .closing, .feature, .full, .quarto-title-block";
   var NOSHRINK = ".scrollable, .no-autofit";
   // a slide's furniture, not its body: deck_qa.py's MEASURE_JS skips these too (tests/test_cli.py)
-  var FURNITURE = "h2, aside.notes, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, script, style";
+  var FURNITURE = "h2, aside.notes, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, .engine-details-tab, script, style";
 
   function contentBottom(s) {
     var b = 0;
@@ -108,10 +108,38 @@
     }
   }
 
+  // Details slides ({.details}: engine-revealjs.lua's section.engine-details). The deck's
+  // `details: hide` (html.engine-details-hide) leaves them out of the show, and the URL says
+  // otherwise for one visit: ?details or ?details=show shows them, ?details=hide hides them. They
+  // stay in the file either way (Quarto would drop a data-visibility="hidden" slide from it at
+  // render time), so one HTML deck serves both audiences and `make qa` checks every slide.
+  // Before reveal starts, the slide takes reveal's own data-visibility; after, it is removed as
+  // reveal removes one (an emptied stack with it) and the deck is synced.
+  function detailsHidden() {
+    var m = /[?&]details(?:=([^&#]*))?(?:[&#]|$)/.exec(window.location.search);
+    if (m) return m[1] === "hide";
+    return document.documentElement.classList.contains("engine-details-hide");
+  }
+
+  function hideDetails(R) {
+    if (!detailsHidden()) return;
+    var ready = !!(R.isReady && R.isReady()), removed = 0;
+    document.querySelectorAll(".reveal .slides section.engine-details").forEach(function (s) {
+      if (!ready) { s.setAttribute("data-visibility", "hidden"); return; }
+      var parent = s.parentNode;
+      parent.removeChild(s);
+      removed++;
+      if (parent.matches("section") && !parent.querySelector(":scope > section")) parent.parentNode.removeChild(parent);
+    });
+    if (removed) { R.sync(); R.slide(0, 0); }
+  }
+
   window.addEventListener("DOMContentLoaded", function () {
     unscaledMermaid();  // before quarto's "load" handler renders
     var R = window.Reveal;
     if (!R) return;
+    hideDetails(R);
+    R.on("ready", function () { hideDetails(R); });
     ["ready", "slidechanged", "pdf-ready"].forEach(function (e) { R.on(e, fitShown); });
     window.addEventListener("load", fitShown);
     if (document.fonts) document.fonts.ready.then(fitShown);

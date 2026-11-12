@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # livery, pptx_waves,
 from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
-    columns, embed_fonts, enable_autofit, grid, link_captions, marking, movie, notes_clrmap, section_subtitle,
+    columns, details, embed_fonts, enable_autofit, grid, link_captions, links, marking, movie, notes_clrmap, section_subtitle,
     slide_layout, status_glyphs, style_footnotes, style_tables, svg_fallback, type_step, watermark)
 
 
@@ -49,9 +49,12 @@ def post(path: Path) -> None:
     prs = Presentation(buf)
 
     # One Presentation, each step on it with the deck's path (its name for the messages). Footnotes
-    # are styled before slide_layout, whose scale= leaves them at their size; columns after it,
+    # are styled before slide_layout, whose scale= leaves them at their size; the details slides are
+    # marked before it too (a split slide's halves are found by their titles, and a full slide
+    # loses its title there); columns after it,
     # which leaves a columns slide's frames alone (its {.wide} words are its own line's); grid
-    # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes); the
+    # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes), links
+    # after every step that draws a slide's text or decides its field; the
     # movies after every step that moves a picture (they take the poster's final frame);
     # tables after all of those, re-split inside their final frames; the marking strips and the
     # watermark before type_step, so a deck's type step scales them as HTML and PDF do (the
@@ -60,10 +63,12 @@ def post(path: Path) -> None:
     # multiplies every size the steps before it set.
     style_footnotes.run(prs, path)
     link_captions.run(prs, path)            # a linked picture's URL, a box pandoc cannot add
+    details.run(prs, path)                  # a {.details} slide's tab, and hidden unless the deck shows them
     slide_layout.run(prs, path)             # layout classes, covers, closings, slide numbers
     columns.run(prs, path)                  # a two-column slide's widths and gap (grid-pptx.lua's line)
     grid.run(prs, path)                     # a grid slide (what is_grid() counts) drawn from grid-pptx.lua's markers, its gallery by gallery.py
     status_glyphs.run(prs, path)            # a ✓ ⚠ ✗ item's glyph as its bullet, in its status color
+    links.run(prs, path)                    # a hyperlink on a field slide in the field's text color
     movie.run(prs, path)                    # each movie over its poster, in the poster's final frame
     style_tables.run(prs, path)
     marking.run(prs, path)                  # the marking strips, on every slide

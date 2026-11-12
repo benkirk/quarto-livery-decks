@@ -3,7 +3,7 @@
 -- linked-images.lua and diagram-dark.lua): loaded with dofile() beside the filter (the directory of
 -- PANDOC_SCRIPT_FILE, or quarto.utils.resolve_path), returning a table. A function here reads the
 -- same in every format: the slide walk, breaks and kinds, the layout classes, the footnotes and
--- citations, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
+-- citations, the details slides, a .full slide's parts, the sections and dividers, the cards, strips, status lists,
 -- rails, quotes, galleries and the agenda, a grid cell's picture or table, a movie and its poster,
 -- the theme options, the livery, the deck's marking strips, watermark and cover fine print. What a format does with the
 -- result stays in its filter: the drawers (wrap_layout, hoist_footnotes, size_plots, the cards,
@@ -201,6 +201,71 @@ local function take_layout(blk, who)
   return { h = h, v = v, fill = fill, caution = caution, wide = wide, dark = dark, scale = scale }
 end
 
+-- Details slides (## Title {.details}): optional-depth slides, in the flow right after the slide they
+-- deepen. Every format marks one (the tab of boxes.details); the deck's `details:` says where they are
+-- hidden: unset, in the pptx alone (the presenter's file: PowerPoint skips a hidden slide, which stays
+-- in the file, in order); `show`, nowhere; `hide`, in the pptx and in HTML (the theme's script
+-- leaves them out of the show; ?details=show in the URL brings them back). The PDF always shows
+-- them: it is the reference copy, and a frame left out would renumber the rest.
+local DETAILS_MODES = { show = true, hide = true }
+
+-- The deck's `details:` as "show", "hide" or "auto" (unset; anything else, warned of).
+local function details_mode(meta, who)
+  local v = meta["details"]
+  if v == nil then return "auto" end
+  local s = pandoc.utils.stringify(v)
+  if DETAILS_MODES[s] then return s end
+  warn(who .. ": details: \"" .. s .. "\" is not show or hide; ignored")
+  return "auto"
+end
+
+-- Whether a format hides the details slides under a mode: "pptx" unless shown, "html" only when asked.
+local function details_hidden(mode, format)
+  if format == "pptx" then return mode ~= "show" end
+  if format == "html" then return mode == "hide" end
+  return false
+end
+
+-- The deck's details slides, read once: every slide-level heading with .details loses the class and
+-- is handed to mark(heading); a divider's is warned of and dropped (a section is not a detail). The
+-- slide before a run of them (a slide-level heading's, never a divider's: a block after a divider
+-- makes a slide of its own) gets a speaker note saying how many follow, "(hidden)" when hidden is
+-- set (the format hides them). Returns the blocks and the number of details slides.
+local function details_slides(blocks, level, who, hidden, mark)
+  local out, n = pandoc.Blocks({}), 0
+  local run, prev = 0, nil   -- the run of details slides being read; the slide-level heading before it
+  local at = nil             -- where that slide's blocks end in out (the note goes there)
+  local function close()
+    if run > 0 and at then
+      local text = (run == 1 and "The next slide is a details slide" or ("The next " .. run .. " slides are details slides"))
+        .. (hidden and " (hidden)." or ".")
+      out:insert(at, pandoc.Div({ pandoc.Para(pandoc.Inlines(text)) }, pandoc.Attr("", { "notes" })))
+    end
+    run, at = 0, nil
+  end
+  for _, b in ipairs(blocks) do
+    if is_slide_break(b, level) then
+      local is_slide = b.t == "Header" and b.level == level
+      if is_slide and has_class(b, "details") then
+        b.classes = b.classes:filter(function(c) return c ~= "details" end)
+        if run == 0 then at = prev and (#out + 1) or nil end
+        run, n = run + 1, n + 1
+        mark(b)
+      else
+        if b.t == "Header" and has_class(b, "details") then
+          warn(who .. ": {.details} on the divider \"" .. pandoc.utils.stringify(b.content) .. "\" is ignored (it marks a slide)")
+          b.classes = b.classes:filter(function(c) return c ~= "details" end)
+        end
+        close()
+        prev = is_slide and b or nil
+      end
+    end
+    out:insert(b)
+  end
+  close()
+  return out, n
+end
+
 -- themeoptions: a list or a comma-separated string of key=value (a bare key is "true"). Returns
 -- the options as a table and the items as written (beamer's \usetheme takes them as they are).
 local function theme_options(meta)
@@ -326,6 +391,12 @@ local CROSSREF = { fig = true, tbl = true, lst = true, sec = true, eq = true, th
   cor = true, prp = true, cnj = true, def = true, exm = true, exr = true, sol = true, rem = true,
   tip = true, nte = true, wrn = true, imp = true, cau = true }
 
+-- Whether a citation's key is one of Quarto's cross-references (@fig-x), not a bibliography entry.
+local function is_crossref(id)
+  local prefix = id:match("^(%a+)%-")
+  return (prefix and CROSSREF[prefix]) and true or false
+end
+
 -- Whether the document cites: a bibliography (or inline references) and a Cite of a key that is
 -- not a cross-reference, or a nocite:.
 local function has_cites(doc)
@@ -335,8 +406,7 @@ local function has_cites(doc)
   local found = false
   doc.blocks:walk({ Cite = function(c)
     for _, cit in ipairs(c.citations) do
-      local prefix = cit.id:match("^(%a+)%-")
-      if not (prefix and CROSSREF[prefix]) then found = true end
+      if not is_crossref(cit.id) then found = true end
     end
   end })
   return found
@@ -1311,9 +1381,10 @@ return {
   is_agenda = is_agenda, agenda_notes = agenda_notes, agenda_rows = agenda_rows,
   quote_blocks = quote_blocks,
   content_heading = content_heading, take_layout = take_layout, scale_attr = scale_attr,
+  details_mode = details_mode, details_hidden = details_hidden, details_slides = details_slides,
   theme_options = theme_options, load_livery = load_livery, marking_texts = marking_texts,
   watermark_text = watermark_text, cover_name = cover_name, fineprint_paragraphs = fineprint_paragraphs,
-  refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs,
+  refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs, is_crossref = is_crossref,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
   cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,

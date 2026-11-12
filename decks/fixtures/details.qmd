@@ -1,0 +1,79 @@
+---
+title: "Fixture: details slides"
+subtitle: "{.details}: optional depth, marked in every format, hidden in the pptx"
+author: "Parity fixture"
+date: 2026-11-12
+---
+
+# The main track
+
+Core slides, each followed by the slides that deepen it.
+
+## A core slide
+
+- Always shown, in every format
+- The two slides after it are details slides
+
+::: notes
+The author's own note stays; the engine adds how many details slides follow.
+:::
+
+## The formula {.details}
+
+- A details slide: the tab on the left edge says so
+- The body keeps its whole area
+- Hidden in the pptx unless the deck says `details: show`
+
+## The numbers, wide {.details .wide}
+
+| Level   | Share | Cores | Hours     | Note                          |
+|:--------|------:|------:|----------:|:------------------------------|
+| Lab     |  40 % |  1024 | 8 970 240 | the whole allocation's base   |
+| Group   |  35 % |   896 | 7 848 960 | by its members' recent use    |
+| Project |  25 % |   640 | 5 606 400 | what one proposal asked for   |
+
+## Another core slide
+
+- The talk goes on from here
+
+## Centered and scaled {.details .center scale="1.3"}
+
+Short, centered, larger: the layout classes compose.
+
+## Cards on a details slide {.details}
+
+:::: {.columns}
+::: {.column .card}
+### One
+
+- A card
+:::
+::: {.column .card}
+### Two
+
+- Beside it
+:::
+::: {.column .card}
+### Three
+
+- A grid slide in the pptx
+:::
+::::
+
+## A warning in the details {.details .caution}
+
+- The caution field is the body's; the tab is the slide's.
+
+## On the dark field {.details .brand-dark}
+
+- The tab takes the dark slide's colors.
+
+## A full figure {.details .full}
+
+![](images/example.jpg)
+
+A full slide draws no title; the tab stays.
+
+## Thank you! {.closing}
+
+The closing slide.

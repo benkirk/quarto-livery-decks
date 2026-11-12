@@ -191,6 +191,34 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
 .reveal .slides section.slide.level2.feature .engine-watermark { color: var(--engine-cmp-text); }
 .reveal .slides section.slide.engine-dark .engine-watermark { color: var(--engine-on-dark); }
 
+// a details slide's tab ({.details}, boxes.details; engine-revealjs.lua's .engine-details-tab): on the
+// paper's left edge from the body's top, its width the livery's, as long as its label and the pad at
+// each end (em of the label's size), the label in small capitals turned to read upward and knocked
+// out in the background (a dark slide's field). Outside the body, which keeps its whole area; over a
+// .full figure. Its fill is resolved on the tab (livery.css), so a dark slide's swap reaches it
+.reveal .slides section .engine-details-tab {
+  position: absolute;
+  left: 0;
+  top: var(--engine-body-top);
+  width: var(--engine-details-width);
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--engine-details-pad) 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  background: var(--engine-details-fill);
+  color: var(--engine-background);
+  font-size: var(--engine-details-size);
+  font-weight: 700;
+  line-height: var(--engine-details-width);   // the line is the tab's width: the label centered across it
+  letter-spacing: var(--engine-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  z-index: 5;
+  pointer-events: none;
+}
+.reveal .slides section.slide.engine-dark .engine-details-tab { color: var(--engine-dark); }
+
 // ---------------------------------------------------------------------------
 // content slides: accent tab beside the title, hairline rule (the corner marks: livery.css)
 // ---------------------------------------------------------------------------
@@ -353,6 +381,15 @@ div.reveal div.slides section.engine-title.quarto-title-block .engine-watermark,
   @include caption;
   margin-top: var(--engine-note-gap);   // boxes.note.gap, em of the caption type
   p { margin: 0; }
+}
+
+// a lone picture reveal stretches (r-stretch): reveal sizes it to the free height by the slide's whole
+// width (1600 px), not the body's, so a very wide one (a 3-across composite, ~5:1) came out wider than
+// the body and ran off the slide's right edge (#172). Capped at the body's width, its shape kept
+// inside the box reveal gave it
+.reveal .slides section img.r-stretch {
+  max-width: 100%;
+  object-fit: contain;
 }
 
 // a plot (.engine-plot): engine-revealjs.lua sets its width to the canvas scale, times the

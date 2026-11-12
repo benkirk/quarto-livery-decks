@@ -105,9 +105,15 @@ def runs_lines(pieces, width):
     return sum(_wrap(row, width) for row in rows)
 
 
+HYPHEN = re.compile(r"(?<=\w-)(?=\w)")   # a line may break after a hyphen inside a word, as PowerPoint breaks it
+
+
 def _wrap(pieces, width):
     """Greedy, by words: a word's width the sum of its pieces' (one may cross runs: a code span
-    and its comma), the space after it its run's."""
+    and its comma), the space after it its run's. A hyphenated word is its parts, each a word
+    with no space after it (a-long-repository-name wraps at its hyphens: counted as one word it
+    measured a line, and PowerPoint's autofit then shrank that box alone, #172), and a word
+    wider than the line runs on to the next ones."""
     words, cur, have = [], 0.0, False   # [width, space after]
     for text, f in pieces:
         for tok in re.split(r"(\s+)", text):
@@ -120,7 +126,12 @@ def _wrap(pieces, width):
                 elif words:
                     words[-1][1] = f.getlength(" ")
             else:
-                cur, have = cur + f.getlength(tok), True
+                parts = HYPHEN.split(tok)
+                for i, part in enumerate(parts):
+                    cur, have = cur + f.getlength(part), True
+                    if i < len(parts) - 1:
+                        words.append([cur, 0.0])
+                        cur, have = 0.0, False
     if have:
         words.append([cur, 0.0])
     n, x, gap = 1, None, 0.0
@@ -131,6 +142,9 @@ def _wrap(pieces, width):
             n, x = n + 1, w
         else:
             x += gap + w
+        if x > width > 0:   # wider than the line: broken across lines
+            over = int(x // width)
+            n, x = n + over, x - over * width
         gap = space
     return n
 

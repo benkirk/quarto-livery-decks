@@ -35,8 +35,9 @@ moved into them with their own properties, keep the template's bullets and sizes
 text box on a fill (boxes.lead.fill) with a bar at its left (bar, bar-color), padded (pad), cut to
 its text, a pad's gap under it; text after the columns is a box of its own. Marker paragraphs are
 deleted; a placeholder left with no text goes. After columns, before style_tables and type_step
-(which scales the boxes' sizes with the rest). A grid slide's body-layout classes (.caution,
-.vcenter) do not apply; scale= has run before.
+(which scales the boxes' sizes with the rest). A grid slide's {.vcenter} centers the drawn flow
+between the body's top and its foot (slide_layout leaves the placeholder anchored at its middle,
+which run() reads); .caution does not apply; scale= has run before.
 """
 
 import copy
@@ -56,7 +57,7 @@ from .columns import rules
 from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
 from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, NOTE, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
-                     inset, is_body, is_dark, is_picture, is_table, marker_spans, pads, para_text, ppr_place, rect, rpr, shape,
+                     inset, is_body, is_dark, is_picture, is_table, marker_spans, no_autofit, pads, para_text, ppr_place, rect, rpr, shape,
                      slide_title, space_before, split_br, strip_bullets, style_runs)
 from .slide_layout import NOTE_GAP, frame_note, note_style, scale_paragraphs, use_layout
 from .measure import inherited, table_height, text_height
@@ -67,6 +68,7 @@ BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the
 PIC_FLOOR = 2   # em of the body type: the least height a picture keeps when the lead under it needs its room
 LEAD_GAP = 0.5   # em of the body type: a lead's flow under pandoc's caption box, and a table under the flow
                  # (slide_layout.NOTE_GAP is a note's under its table; boxes.note.gap a caption's under its picture)
+RAIL_MIN = 0.65   # a rail's items step down together no further than this (HTML's autofit floor)
 BOXED = re.compile(r"^(Card \d+|Lead|Strip)$")   # a box with a fill of its own: it keeps its colors on a dark slide
 
 
@@ -651,7 +653,22 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
         db.top, db.height = y, date_h
     my = y + date_h   # the marks' row
     ty = my + mark    # the text boxes' top
-    text_h = min(int(max(_card_height(tb, slide) for *_, tb in texts) * SLACK), max(y + room - ty, 0))
+    # one size for the row: PowerPoint's shrink-on-overflow would step one long item down alone
+    # (#172), so the boxes take none, and a row taller than its room steps every item down together
+    avail = max(y + room - ty, 0)
+    need = lambda: int(max(_card_height(tb, slide) for *_, tb in texts) * SLACK)
+    for *_, tb in texts:
+        no_autofit(tb)
+    if need() > avail > 0:
+        f = max(avail / need(), RAIL_MIN)
+        for *_, tb in texts:
+            for r in tb.text_frame._txBody.iter(qn("a:r")):   # a bare run inherits: an rPr gives sz a home
+                rpr(r)
+            scale_paragraphs(tb.text_frame.paragraphs, f, lambda lvl, tb=tb: inherited(tb, slide, lvl))
+        if need() > avail:
+            print(f"grid: WARNING: slide \"{slide_title(slide)}\": the {'steps' if steps else 'timeline'} need more room than "
+                  "the slide has; shorten an item", file=sys.stderr)
+    text_h = min(need(), avail)
     line = round(rail["line"] * slide_height)
     x0 = frames[0][0] + hpad + mark // 2
     shapes.append(rect(slide, x0, my + (mark - line) // 2, x + w - x0, line, _hex(rail["line-color"]), "Rail"))
@@ -672,7 +689,10 @@ def draw_rail(slide, x, y, w, room, kind, items, attrs, slide_width, slide_heigh
     return ty + text_h - y + vpad
 
 
-def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
+def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir, vcenter=False):
+    """The segments drawn top down from the placeholder's frame; the y they end at. vcenter: a row
+    of plain columns is as tall as its tallest column, not the room left, so run() can center
+    what was drawn."""
     left, top, width = ph.left, ph.top, ph.width
     bottom = round(GEOM["body-bottom"] * slide_height)
     y, n_col, keep, taken = top, 0, False, set()
@@ -740,7 +760,7 @@ def lay_out(slide, ph, segs, slide_width, slide_height, deck_dir):
             cols.append(_plain_column(slide, x, y, w, room, paras, f"Column {n_col}", slide_height, deck_dir))
         h = room
         tallest = min(max(_column_height(c, slide) for c in cols), room)
-        if any(s[0] == "text" for s in later):   # text below: the row as tall as its tallest column
+        if vcenter or any(s[0] == "text" for s in later):   # text below (or a centered slide): the row as tall as its tallest column
             h = min(int(tallest * SLACK), room)
         for c in cols:
             _place(slide, c, y, h)
@@ -792,8 +812,16 @@ def run(prs, path: Path) -> None:
                 ph.left, ph.top, ph.width, ph.height = body_frame(prs, ph)
             left, width = ph.left, ph.width
             before = {sh._element for sh in slide.shapes}
-            y = lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent)
+            # {.vcenter}: slide_layout anchored the placeholder at its middle, which is all it can do for
+            # a body grid redraws; the flow is centered here, between the body's top and its foot, as
+            # HTML and the PDF center it (not under a picture or table, or beside one: those are placed)
+            vcenter = ph.text_frame.vertical_anchor == MSO_ANCHOR.MIDDLE and not (above or tables or beside)
+            y = lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent, vcenter)
             bottom = round(GEOM["body-bottom"] * prs.slide_height)
+            if vcenter and y < bottom:
+                for sh in slide.shapes:
+                    if sh._element not in before or sh._element is ph._element:
+                        sh.top += (bottom - y) // 2
             if above and y > bottom:   # the lead needs more room than the caption had: the picture yields
                 # no further than PIC_FLOOR em of its height: past that the lead runs over the foot, warned,
                 # rather than the picture going negative (python-pptx refuses it and the build fails)

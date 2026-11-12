@@ -173,7 +173,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `/glade/work/benkirk/repos/quarto-livery-decks`): `make sif` pulls the checkout's release into
   `sif/quarto-livery-decks_<tag>.sif` (gitignored, kept by `clobber`), which Make.container runs
   when no image is named; `bin/new-deck DIR` starts a deck from the quickstart with an absolute
-  `include` of this checkout's Make.common. Its untracked `site.mk` (read by Make.common and the
+  `include` of this checkout's Make.common (`--also PATH`, repeatable: `QUARTO_DECKS_PATH`, the first
+  of this checkout and the paths that holds Make.common, for a deck used on a laptop and a cluster). Its untracked `site.mk` (read by Make.common and the
   top Makefile, kept by `clobber`) holds `DECKS_BINDS ?= /glade /lustre/desc1 /gpfs/csfs1
   /local_scratch` (NCAR's file systems appear under two names). Lmod module support is deferred.
 - **Cloud**: `.devcontainer/devcontainer.json` runs the image in GitHub Codespaces (`:main`, the
@@ -197,9 +198,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rsvg-convert`: conda-forge librsvg), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
-  `style_footnotes`, `link_captions`, `slide_layout`, `columns` (a two-column slide at its
+  `style_footnotes`, `link_captions`, `details` (a details slide's tab and hidden flag, before `slide_layout`: a split slide's halves are found by their titles, and a full slide loses its title there), `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
-  marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `movie` (each movie over its
+  marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `links` (a hyperlink on a field slide, `common.field_ink()`: a dark or composed slide, in the field's text color with Office's `hlinkClr val="tx"` extension, since PowerPoint draws a link in the theme's hlink, the livery's primary, whatever its run says), `movie` (each movie over its
   poster, in the poster's final frame), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
   as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
@@ -218,7 +219,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   the livery's colors with its fonts copied to `fonts/`;
   `SITE_NOINDEX=1` marks every page noindex) and `make publish` force-pushes it
   as the one commit on `PUBLISH_BRANCH` (gh-pages) under `PUBLISH_PREFIX`.
-  docs/other-repos.md "Publishing the HTML decks".
+  docs/other-repos.md "Publishing the HTML decks". The root `make site` is this repository's own:
+  the quickstart and sample decks' sites under one index, which ci.yaml's `site` and `pages` jobs
+  deploy to GitHub Pages on a `v*` tag once the repository variable `PAGES` is `on` (and its Pages
+  source "GitHub Actions"; Ben's switch, off until then).
 - **Overleaf**: `make overleaf LIVERY=<name>` (any deck directory; `LIVERY_DIR=` for a consumer's
   own livery) writes `<name>-overleaf.zip` with `livery zip`: the theme's `.sty`,
   the livery's `build/livery.sty`, fonts, logos and art (a flavor's parent files beside it), a
@@ -252,7 +256,11 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   one): the slide holding `#refs` is `engine-references` (HTML), `allowframebreaks` (PDF; the
   continuation count only past one page), `engine-layout: references` (pptx,
   `slide_layout.py`'s `references_style()`), every one in the footnote size. Author-year styles
-  only: a note style needs citeproc in the filter. The LaTeX cookbook cites with biblatex on
+  only: a note style needs citeproc in the filter. In beamer a citation survives only where the
+  filter leaves pandoc's inlines (`wrapped()`: a footnote, a quote's attribution, a `::: note`, a
+  `.full` caption); `inlines_to_latex()` warns of one it turns to text (a title, a card's head, a
+  gallery caption), which would print its key (#172; `tests/test_beamer_filter.py` runs the filter
+  and citeproc under plain pandoc). The LaTeX cookbook cites with biblatex on
   bibtex (the image's `texlive-bibtex-extra`; biber is not installed); the theme's `bibliography
   item` must not assume `\insertbiblabel` (biblatex defines none).
 - **Notes under a figure** (`::: note` right after a slide's figure or table): its
@@ -300,7 +308,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   format (pptx: the body placeholders, a columns slide's columns). pptx drops slide classes, so the engine's `slide-layout.lua`
   writes them as a notes line, `engine-layout: vcenter scale=1.4`, which
   `slide_layout.py` applies and deletes; it can't do `hcenter` or `fill`, and
-  centers a table by its measured height (rows in PowerPoint's own sizing can still differ). `.center` is the theme's, not
+  centers a table by its measured height (rows in PowerPoint's own sizing can still differ); a grid
+  slide's `vcenter` is `grid.py`'s (the placeholder's middle anchor is its signal: the drawn flow moves
+  to the middle of the body, plain columns then as tall as their tallest). `.center` is the theme's, not
   Quarto's (which moves the title). docs/authoring.md "Centering and scaling a short slide".
 - **Warning slides** (`{.caution}`): the body on a soft yellow
   field with a brand-yellow bar; footnotes stay below it in HTML and PDF. pptx:
@@ -308,6 +318,25 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   text, measured (pandoc gives it the whole content area). Set all four of
   a placeholder's left/top/width/height together: it inherits its frame, and
   setting one leaves the others at 0 (the text vanishes).
+- **Details slides** (`## Title {.details}`, #173; docs/authoring.md "Details slides"): an optional-depth
+  slide in the flow, marked alike in every format by a tab on the paper's left edge from the body's top
+  (`boxes.details`: `label`, `role` a role name kept as a name, the word knocked out in the background,
+  `width`, `size`, `pad`; `livery_build.details_box()` resolves the null width and size from
+  `geometry.tab-width`, the wide margin and the eyebrow type), outside the body, on any slide kind.
+  `engine-common.lua`'s `details_mode()` (the deck's `details: show|hide`, `make ... DETAILS=`, a
+  `.details` stamp as `.livery`), `details_hidden(mode, format)` (pptx unless shown, HTML only under
+  hide, the PDF never) and `details_slides()` (the one walk: the class off, a divider's warned, a
+  speaker note on the slide before a run) are the readers. HTML: `.engine-details` on the section and
+  an `.engine-details-tab` element at its end (`add_details()`; the section's `::before` is the
+  hairline); hiding is `engine-revealjs.js`'s `hideDetails()` at run time (`html.engine-details-hide`,
+  `?details=show|hide`), never `data-visibility` in the source, which Quarto drops from the file.
+  PDF: the frame key `enginedetails`, `\engine@drawdetails` in the background template. pptx:
+  slide-layout.lua's own notes line, `engine-details: hide|show`; `pptx_steps/details.py` marks the
+  slide and, walking back over title-less slides, the halves pandoc split (the notes land on the
+  last), draws "Details tab" (a turned rectangle, measured) and sets `show="0"`. `pptx_pdf.to_pdf()`
+  shows hidden slides in LibreOffice's copy (its export drops them, shifting every later page), and
+  `deck_qa` loads the HTML with `?details=show`, so counts are of every slide in the file.
+  `decks/fixtures/details.qmd` is CI's and parity's deck; `tests/test_details.py`.
 - **Full-slide figures** (`{.full}`): one diagram or image fills
   the slide, the paragraph (or `::: note`) after it is a one-line caption. HTML and PDF are the
   theme's (PDF frame key `enginefull=`). pptx: `slide-layout.lua` writes
@@ -589,7 +618,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
   cache, so `Make.common` is `.NOTPARALLEL`. `decks/fixtures/` is such a directory:
-  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, in
+  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, and `details` (the details slides, a body of its own), in
   CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
   ncar, cu and nsi).
 - **Installed brand fonts**: a livery may name a proprietary face (`installed-fonts`, cu:
@@ -599,7 +628,9 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   pptx already names `pptx.typeface`. docs/formats.md "Installed brand fonts".
 - Executable ```{bash} cells run at render time via the jupyter `bash` kernel
   (deck frontmatter: `engine: jupyter`, `jupyter: bash`). Keep them
-  deterministic — CI renders the sample deck.
+  deterministic — CI renders the sample deck. An inline expression (`` `{python} x` ``) is run
+  wherever its pattern stands, code blocks included: a non-breaking space after `{python}` shows
+  one unrun (docs/authoring.md "Values in the text"; the plots deck's "Numbers in a sentence").
 
 ## The engine
 
@@ -689,7 +720,7 @@ it does, by area, beyond the format notes above:
   subprocess, `title_ph`, `bare_env`, `flat`); expensive setup is a module-scoped fixture, which
   `loadfile` keeps on one worker. For anything that can move pixels, `tests/parity.sh baseline`
   before and `check` after (every deck of quickstart, sample, fixtures, plots and movies under
-  `PARITY_LIVERIES`, default `ncar cu nsi`; under `nasa` and `nasa-dark` the quickstart's
+  `PARITY_LIVERIES`, default `ncar cu nsi`; a deck added since the baseline is named and not compared; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
   baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. A
   Sass change is checked by screenshotting every slide before and after (Playwright).
@@ -716,6 +747,16 @@ it does, by area, beyond the format notes above:
   manual step; it would have caught the notes slides Keynote refused (26.10.5).
 
 ## pandoc pptx gotchas (hard-won — read before restructuring slides)
+
+These are pandoc 3.10's, the one Quarto 1.10 and 1.11 bundle. Probed against pandoc 3.13 (Quarto
+1.12's prereleases bundle it; #166): a table keeps the text before and after it on its slide (the
+content area shared out between them, no Content with Caption demotion) and notes slides carry
+`clrMapOvr`; a picture followed by text still splits, and columns, widths and a picture in a Div
+are unchanged. The engine's filters and steps pass their tests under 3.13 but for the canaries that
+say a workaround is still needed (`test_notes_clrmap`'s, `test_list_after`'s): when a Quarto
+release bundles it, retire `notes_clrmap` and decide the fold's table branch (the fold places a
+note by measure; pandoc's own placement is equal shares). `QUARTO_PANDOC=<pandoc> make test` runs
+the suite on another pandoc.
 
 - **Content after a table or image splits the slide** into an untitled
   continuation. `single-body.lua` (the engine-pptx
@@ -790,7 +831,10 @@ it does, by area, beyond the format notes above:
   items are `display: contents`, so a row's parts line up. pptx: a grid slide, `⟦engine:rail
   kind=steps role=...⟧`, `⟦engine:item⟧`/`⟦engine:item done⟧` ... `⟦engine:end⟧`; `grid.py`'s
   `draw_rail()` draws an `MSO_SHAPE.OVAL` badge with its own text frame (Keynote and PowerPoint
-  open it) or dot, a rail rectangle and `body_box` texts, one group ("Steps", "Timeline"). PDF:
+  open it) or dot, a rail rectangle and `body_box` texts, one group ("Steps", "Timeline"); the item
+  boxes take no autofit (`common.no_autofit()`: PowerPoint stepped one long item down alone, #172) and
+  a row taller than its room steps every item down together (to `RAIL_MIN`). `measure._wrap()` breaks
+  a word after a hyphen and runs an over-wide word on, as PowerPoint does. PDF:
   `enginesteps`/`enginestep`, `enginetimeline`/`\enginemilestone[done]` on the cards' six save
   boxes, drawn by one tikzpicture at `\end`.
 - **Galleries** (`::: {.gallery cols= rows= fit=contain|cover height=}` of image paragraphs; at most
@@ -922,14 +966,17 @@ bit while building it:
 - **`chalkboard` blocks `embed-resources`**, and `-M chalkboard:false` does
   not override a format option; set it in the deck's `format:` block.
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
-  overflow and slide-count checks below, fails a pptx slide still holding a grid marker, and runs
+  overflow and slide-count checks below, fails a pptx slide still holding a grid marker and an HTML code block taller than its box (it scrolls
+  inside it, so nothing overflows: `codeClip`), and runs
   the pptx as LibreOffice draws it (`common/utils/pptx_pdf.py`, shared with `make measure`)
   through the PDF's edge, footer and overlap checks, failures like the PDF's since 26.11.1 (a lone
   symbol's box is its fallback face's, skipped; an overlap must pass `SPILL` of the taller box, a
   big line's leading; `QA_PPTX_FAIL=0`: hints). Load the `deck-polish` skill for a
   format pass, `pr-review` to review a PR by number (`/pr-review N`), and
   `unplanned-city-sweep` after a run of merges or for one area of the tree (its ledger is
-  `design/unplanned-city-ledger.md`).
+  `design/unplanned-city-ledger.md`). `make shot TITLE="..." [FORMAT=html|pdf|pptx|all]`
+  (`common/utils/slide_shot.py`, which the quickstart's `screenshots.py` is built on) is one slide as
+  a PNG, found by its title.
 - **Check it in a browser, not the source**: serve the deck directory
   (`python3 -m http.server`; Playwright blocks `file://`) and screenshot each
   slide type, at 16:9 and a letterboxed size, plus `?print-pdf`. Run
@@ -1014,7 +1061,7 @@ bypassed, which is why the activation is `ENV`): `sample` (front matter on line 
 captions check, the sample's `make qa`, quickstart and fixtures `all` with every notes slide's
 `clrMapOvr` checked, the plots deck's `qa` with its SVG, pptx-media and `pdffonts` greps, the movies
 deck's `qa` with its codec, `<video>`, `p14:media` and timing greps), `consumer` (the submodule layout, `docs/other-repos.md`, plus `make site`), `reusable`
-(`build-decks.yaml` on the quickstart), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
+(`build-decks.yaml` on the quickstart), `site` and `pages` (the root `make site` to GitHub Pages: tags only, and only under `vars.PAGES == 'on'`), `latex` (the engine's `tests/`, then `latex`'s starter, examples,
 variants and the demo's HTML, with the Poppins and math-font `pdffonts` checks), and `livery`,
 one per directory under `liveries/` (a new
 livery joins by existing): `livery check --qa` (the engine's checks, then

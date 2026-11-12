@@ -6,7 +6,8 @@ Reads the built quickstart.{html,pdf} and writes the committed PNGs in screensho
   hero.png        2x2 grid of the HERO slides, for the top of the README
   overview.png    every HTML slide, four across
   pdf.png         2x2 grid of the PDF pages of PDF_SLIDES
-Slides are found by title, so adding a slide does not shift the shots. Needs Playwright
+Slides are found by title, so adding a slide does not shift the shots; the shooting is
+common/utils/slide_shot.py's (`make shot TITLE=...` is one slide of any deck). Needs Playwright
 (set CHROME to use a Chromium other than Playwright's), poppler and Pillow, as `make qa` does.
 Offline, or behind a proxy that blocks the MathJax CDN, set MATHJAX to a local MathJax 2.7
 directory (the npm package's contents) or the math slide shows raw TeX.
@@ -14,14 +15,12 @@ directory (the npm package's contents) or the math slide shows raw TeX.
 
 import glob
 import os
-import re
-import subprocess
 import sys
 import tempfile
 
-sys.dont_write_bytecode = True   # no __pycache__ beside deck_qa.py
+sys.dont_write_bytecode = True   # no __pycache__ beside slide_shot.py
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "common", "utils"))
-from deck_qa import serve  # noqa: E402
+import slide_shot  # noqa: E402  (the shooting: every HTML slide in one browser session, a PDF page by its text)
 
 DECK = "quickstart"
 OUT = "screenshots"
@@ -68,65 +67,29 @@ def grid(paths, out, cols, width, gap=12):
     sheet.save(out, optimize=True)
 
 
-def local_mathjax(route):
-    rel = re.sub(r".*/mathjax@[^/]+/", "", route.request.url).split("?")[0]
-    route.fulfill(path=os.path.join(os.environ["MATHJAX"], rel))
-
-
 def html_shots(tmp):
-    """Every HTML slide as tmp/sNNN.png; returns {name: path} for SLIDES."""
-    from playwright.sync_api import sync_playwright
-    httpd = serve(os.getcwd())
-    base = "http://127.0.0.1:%d/" % httpd.server_address[1]
+    """Every HTML slide as tmp/sNNN.png (slide_shot.html_slides); returns {name: path} for SLIDES."""
+    shots = slide_shot.html_slides(DECK, tmp)
     found = {}
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(executable_path=os.environ.get("CHROME") or None)
-            page = browser.new_page(viewport={"width": 1600, "height": 900})
-            if os.environ.get("MATHJAX"):
-                page.route(re.compile(r".*/mathjax@[^/]+/.*"), local_mathjax)
-            page.goto(base + DECK + ".html")
-            page.wait_for_function("window.Reveal && Reveal.isReady()")
-            page.evaluate("document.fonts.ready.then(() => true)")
-            page.evaluate("Reveal.configure({transition: 'none', backgroundTransition: 'none'})")
-            titles = page.evaluate("Reveal.getSlides().map(s => "
-                                   "(s.querySelector('h1, h2') || {textContent: ''}).textContent)")
-            for i, title in enumerate(titles):
-                # `##` slides nest under their `#` divider: Reveal.slide(i) would stay on it
-                page.evaluate("i => { const ix = Reveal.getIndices(Reveal.getSlides()[i]);"
-                              " Reveal.slide(ix.h, ix.v); }", i)
-                page.wait_for_timeout(600)
-                path = os.path.join(tmp, "s%03d.png" % (i + 1))
-                page.screenshot(path=path)
-                for name, want in SLIDES:
-                    if name not in found and (want in title if want else i == 0):
-                        found[name] = path
-            browser.close()
-    finally:
-        httpd.shutdown()
+    for i, (title, path) in enumerate(shots):
+        for name, want in SLIDES:
+            if name not in found and (want in title if want else i == 0):
+                found[name] = path
     missing = [name for name, _ in SLIDES if name not in found]
     if missing:
-        sys.exit("no HTML slide for %s; titles: %s" % (", ".join(missing), titles))
+        sys.exit("no HTML slide for %s; titles: %s" % (", ".join(missing), [t for t, _ in shots]))
     return found
 
 
 def pdf_pages(tmp):
     """The PDF pages whose text holds each PDF_SLIDES title, in that order."""
-    n = int([ln.split()[-1] for ln in subprocess.run(
-        ["pdfinfo", DECK + ".pdf"], capture_output=True, text=True, check=True
-    ).stdout.splitlines() if ln.startswith("Pages:")][0])
-    texts = [subprocess.run(["pdftotext", "-f", str(k), "-l", str(k), DECK + ".pdf", "-"],
-                            capture_output=True, text=True, check=True).stdout
-             for k in range(1, n + 1)]
+    texts = slide_shot.pdf_texts(DECK + ".pdf")
     pages = []
     for want in PDF_SLIDES:
-        k = next((k for k, t in enumerate(texts, 1) if want in " ".join(t.split())), None)
+        k = slide_shot.find(texts, want)
         if k is None:
             sys.exit("no PDF page with %r" % want)
-        prefix = os.path.join(tmp, "p%02d" % k)
-        subprocess.run(["pdftoppm", "-r", "160", "-png", "-singlefile", "-f", str(k), "-l", str(k),
-                        DECK + ".pdf", prefix], check=True)
-        pages.append(prefix + ".png")
+        pages.append(slide_shot.pdf_shot(DECK + ".pdf", k + 1, os.path.join(tmp, "p%02d" % (k + 1))))
     return pages
 
 

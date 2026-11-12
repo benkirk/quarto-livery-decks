@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# new-deck [--bare] DIR: a deck directory building against this checkout (docs/container.md
+# new-deck [--bare] [--also PATH]... DIR: a deck directory building against this checkout (docs/container.md
 # "Sharing an installation"):
 #   DIR/<name>.qmd   the quickstart deck, renamed for DIR (make names the outputs after DIR)
 #   DIR/images/      its picture
 #   DIR/Makefile     QUARTO_DECKS ?= <this checkout>, then include $(QUARTO_DECKS)/Make.common
 #   DIR/.gitignore   the links and outputs a build writes
+# --also PATH (repeatable) names another place the framework may be: a deck kept in a repository
+# used on a laptop and on a cluster (#172). The Makefile then takes the first of this checkout and
+# those paths that holds Make.common, in that order; a relative PATH is read from the deck's directory.
 # --bare writes only the Makefile and .gitignore, into a directory that may hold files already (a
 # repository's own deck): it refuses an existing Makefile, and adds to an existing .gitignore only
 # the lines it lacks. Then: cd DIR && make pptx. Bash only, so it runs before any toolchain is set
@@ -19,9 +22,18 @@ done
 fw=$(cd "$(dirname "$src")/.." && pwd -P)
 
 bare=
-[ "${1:-}" = --bare ] && { bare=1; shift; }
+also=()
+while [ $# -gt 0 ]; do
+  case $1 in
+    --bare) bare=1; shift ;;
+    --also) [ $# -ge 2 ] || { echo "new-deck: --also needs a path" >&2; exit 2; }
+            also+=("$2"); shift 2 ;;
+    *) break ;;
+  esac
+done
 if [ $# -ne 1 ] || [[ $1 == -* ]]; then
-  echo "usage: new-deck [--bare] DIR   (a new deck from $fw/decks/quickstart; --bare: Makefile and .gitignore only)" >&2
+  echo "usage: new-deck [--bare] [--also PATH]... DIR   (a new deck from $fw/decks/quickstart; --bare: Makefile and" >&2
+  echo "       .gitignore only; --also: another place the framework may be, tried after this checkout)" >&2
   exit 2
 fi
 deck=$1
@@ -32,6 +44,25 @@ esac
 case $fw in
   *[[:space:]%#]*) echo "new-deck: the framework's path '$fw' has a space, % or #, which make and LaTeX cannot take" >&2; exit 1 ;;
 esac
+# the Makefile's QUARTO_DECKS: this checkout, or with --also the first candidate holding Make.common
+# (functions GNU make 3.81 has: macOS's /usr/bin/make reads this line before the dispatch)
+where="QUARTO_DECKS ?= $fw"
+if [ ${#also[@]} -gt 0 ]; then
+  cands=$fw
+  for a in "${also[@]}"; do
+    case $a in
+      *[[:space:]%#]*) echo "new-deck: --also '$a' has a space, % or #, which make cannot take" >&2; exit 2 ;;
+      /*|'$'*) cands="$cands $a" ;;
+      *) cands="$cands \$(CURDIR)/$a" ;;
+    esac
+  done
+  where="# the first of these that holds the framework (new-deck --also):
+QUARTO_DECKS_PATH ?= $cands
+QUARTO_DECKS ?= \$(patsubst %/Make.common,%,\$(firstword \$(wildcard \$(addsuffix /Make.common,\$(QUARTO_DECKS_PATH)))))
+ifeq (\$(QUARTO_DECKS),)
+\$(error no quarto-livery-decks checkout at any of: \$(QUARTO_DECKS_PATH) (set QUARTO_DECKS=<checkout>))
+endif"
+fi
 if [ -n "$bare" ]; then
   if [ -e "$deck/Makefile" ]; then
     echo "new-deck: $deck/Makefile exists; add QUARTO_DECKS ?= $fw and include \$(QUARTO_DECKS)/Make.common to it" >&2
@@ -51,7 +82,7 @@ cat > "$deck/Makefile" <<EOF
 # A deck on the framework at $fw (docs/container.md "Sharing an installation").
 # make pptx | html | pdf | all | qa: natively in its conda env, else in its image (DECKS_RUNTIME).
 # Another framework checkout: make QUARTO_DECKS=<checkout>.
-QUARTO_DECKS ?= $fw
+$where
 include \$(QUARTO_DECKS)/Make.common
 
 # Rules of the deck's own, and a goal's dependency on one, run where the deck builds, never again
@@ -69,6 +100,7 @@ _quarto.yml
 _extensions
 _livery
 .livery
+.details
 
 # Quarto's caches and the build outputs
 /.quarto/

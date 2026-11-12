@@ -462,6 +462,7 @@ The columns and boxes every format draws: gaps, bars, rules and radii as fractio
 | `status` | object |  | The status glyphs in a list item (✓ done, ⚠ warn, ✗ fail), their colors. |
 | `rail` | object |  | Steps and timelines (`::: {.steps}`, `::: {.timeline}`): a thin rail across the row, a numbered badge per step or a dot per milestone on it, the text below. |
 | `table` | object |  | A table's rules, in every format (HTML's th and td borders, the PDF's \midrule and \bottomrule, the pptx's cell borders). |
+| `details` | object |  | A `{.details}` slide's mark (an optional-depth slide): a filled tab on the paper's left edge, from the body's top down, holding the label turned to read upward. The body keeps its whole area. |
 | `references` | object |  | The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size. |
 | `gallery` | object |  | Image galleries (`::: {.gallery}`): equal cells of pictures, a one-line caption under each. |
 
@@ -621,6 +622,18 @@ A table's rules, in every format (HTML's th and td borders, the PDF's \midrule a
 | `head-rule` | fraction | `0.0033` | The rule under the header row, its width (of the slide's height; 3 px of 900). |
 | `head-rule-color` | string | `"primary-contrast"` | That rule's color: a role or blend name (not a hex), so a dark slide's swap reaches it; primary-contrast, the primary that reads on the background, by default. |
 | `rule` | fraction | `0.0011` | The rule under each body row (the PDF: under the table), its width (of the slide's height; 1 px of 900), in the `table-rule` blend. |
+
+### `boxes.details`
+
+A `{.details}` slide's mark (an optional-depth slide): a filled tab on the paper's left edge, from the body's top down, holding the label turned to read upward. The body keeps its whole area.
+
+| key | type | default | |
+|---|---|---|---|
+| `label` | string | `"Details"` | The tab's word, set in small capitals. |
+| `role` | string | `"primary-contrast"` | The tab's fill: a role or blend name (not a hex); primary-contrast, the primary that reads on the background, by default. The word is knocked out in the background color. |
+| `width` | null or number | `null` | The tab's width (of the slide's width); null for the title tab's (`geometry.tab-width`), kept inside a `{.wide}` body's margin. |
+| `size` | null or number | `null` | The word's size in points on the canvas; null for the eyebrow's, at most what the width holds. |
+| `pad` | number | `0.9` | The room at each end of the word, in em of its size. |
 
 ### `boxes.references`
 

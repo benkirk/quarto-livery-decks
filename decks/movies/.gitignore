@@ -1,6 +1,7 @@
 /.quarto/
 **/*.quarto_ipynb
 /.livery
+/.details
 /_livery
 # the stills and movies, drawn and made at build time (Makefile)
 /frames/

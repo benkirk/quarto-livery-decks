@@ -497,6 +497,24 @@ local function add_tail(blocks, text)
   return out
 end
 
+-- A details slide's tab (boxes.details; the heading carries .engine-details, C.details_slides): the
+-- label in a box at the end of the slide's own elements, which the scss places on the paper's left
+-- edge and turns. A real element, not a pseudo-element: the slide's ::before is its hairline.
+local function add_details(blocks, label)
+  local tab = html('<div class="engine-details-tab">'
+    .. pandoc.write(pandoc.Pandoc({ pandoc.Plain({ pandoc.Str(label) }) }), "html"):gsub("%s+$", "") .. '</div>')
+  local out, open = pandoc.Blocks({}), false
+  for _, blk in ipairs(blocks) do
+    if (blk.t == "Header" and blk.level <= slide_level) or blk.t == "HorizontalRule" then
+      if open then out:insert(tab) end
+      open = blk.t == "Header" and has_class(blk, "engine-details")
+    end
+    out:insert(blk)
+  end
+  if open then out:insert(tab) end
+  return out
+end
+
 local function hoist_footnotes(blocks)
   local out, i = pandoc.Blocks({}), 1
   while i <= #blocks do
@@ -821,6 +839,18 @@ function Pandoc(doc)
   if refs then cited[refs].classes:insert("engine-references") end
   doc.blocks = cited
 
+  -- the details slides (C.details_slides): .engine-details on the slide, which add_details() gives
+  -- its tab. Under `details: hide` the page says so (html.engine-details-hide) and the theme's script
+  -- leaves them out of the show; they stay in the file (Quarto drops a data-visibility="hidden"
+  -- slide at render time), so ?details=show brings them back and `make qa` checks them
+  local dhide = C.details_hidden(C.details_mode(meta, "engine-revealjs"), "html")
+  doc.blocks = C.details_slides(doc.blocks, slide_level, "engine-revealjs", dhide, function(h)
+    h.classes:insert("engine-details")
+  end)
+  if dhide then
+    quarto.doc.include_text("in-header", "<script>document.documentElement.classList.add('engine-details-hide')</script>")
+  end
+
   local out = pandoc.Blocks({})
   local i, blocks, section = 1, wrap_layout(lead_boxes(card_columns(strips(quote_boxes(flex_columns(status_items(galleries(rails(doc.blocks, livery)))), livery), livery), livery)), livery), 0
   local secs = C.sections(blocks, slide_level)   -- the dividers, for an agenda slide
@@ -952,6 +982,7 @@ function Pandoc(doc)
       end
     end
   end
-  doc.blocks = add_tail(mark_notes(unwrap_layout(hoist_footnotes(add_marks(out, livery)))), (marking or "") .. (watermark or ""))
+  doc.blocks = add_tail(add_details(mark_notes(unwrap_layout(hoist_footnotes(add_marks(out, livery)))), livery.boxes.details.label),
+                        (marking or "") .. (watermark or ""))
   return movies(doc)
 end

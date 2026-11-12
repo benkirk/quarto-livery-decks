@@ -120,3 +120,22 @@ def test_bare_into_new_dir(tmp_path):
     r = new("--bare", tmp_path / "empty")
     assert r.returncode == 0 and (tmp_path / "empty" / ".gitignore").read_text().startswith("# links"), \
         f"--bare into a new directory: {r.stderr.strip()}"
+
+
+def test_also_takes_the_first_checkout_there_is(tmp_path):
+    """--also PATH (#172: one deck, a laptop and a cluster): the Makefile takes the first of this
+    checkout and the paths that holds Make.common, a relative one read from the deck's directory;
+    none there is an error that names them; the plain Makefile is unchanged without the option."""
+    d = tmp_path / "talk"
+    r = new("--also", "/nowhere/quarto-livery-decks", "--also", "../fw", d)
+    assert r.returncode == 0, r.stderr
+    mk = (d / "Makefile").read_text()
+    assert f"QUARTO_DECKS_PATH ?= {ROOT.resolve()} /nowhere/quarto-livery-decks $(CURDIR)/../fw\n" in mk, mk
+    r = make_deck(d, "pptx", "DECKS_RUNTIME=native", dry=True)
+    assert r.returncode == 0 and f"{ROOT.resolve()}/common/_quarto.yml" in r.stdout, (r.stdout + r.stderr)[-400:]
+    (tmp_path / "fw").symlink_to(ROOT)   # this checkout gone from the list: the relative candidate is found
+    r = make_deck(d, "pptx", "DECKS_RUNTIME=native", "QUARTO_DECKS_PATH=/nowhere/a $(CURDIR)/../fw", dry=True)
+    assert r.returncode == 0 and "/../fw/common/_quarto.yml" in r.stdout, (r.stdout + r.stderr)[-400:]
+    r = make_deck(d, "pptx", "QUARTO_DECKS_PATH=/nowhere/a /nowhere/b", dry=True)
+    assert r.returncode != 0 and "no quarto-livery-decks checkout at any of: /nowhere/a /nowhere/b" in r.stderr, r.stderr
+    assert new("--also", tmp_path / "x").returncode == 2 and new("--also", "a b", tmp_path / "y").returncode == 2

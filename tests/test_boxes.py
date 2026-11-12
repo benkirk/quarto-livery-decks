@@ -25,7 +25,8 @@ HEX = re.compile(r"^#[0-9A-F]{6}$")
 FRACTIONS = ("gap", "rule", "head-rule", "bar", "outline", "border", "radius", "tint", "line", "badge", "dot", "ring", "rule-length", "width", "opacity")
 EMS = {("references", "hang"), ("references", "gap"), ("agenda", "gap"), ("agenda", "number-width"),
        ("quote", "attribution-gap"), ("note", "gap"),
-       ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap")}   # em of a type role, not a fraction
+       ("footnote", "gap"), ("footnote", "hang"), ("footnote", "step"), ("strip", "gap"),
+       ("details", "pad")}   # em of a type role, not a fraction
 
 
 def test_every_key(livery):
@@ -43,6 +44,10 @@ def test_every_key(livery):
                 assert v is None or isinstance(v, str), f"{where} is not a family or null"
             elif (box, k) == ("quote", "style"):
                 assert v in ("normal", "italic"), f"{where} is not normal or italic"
+            elif (box, k) == ("details", "label"):   # the tab's word (tests/test_details.py has the rest)
+                assert isinstance(v, str) and v, f"{where} is not a word"
+            elif (box, k) == ("details", "size"):    # points on the canvas, derived
+                assert isinstance(v, (int, float)) and v > 0, f"{where} is not a size in points"
             elif k in lb.BOX_ROLE_NAMES.get(box, ()):   # a role or blend name, kept as a name
                 lv = json.loads((livery / "build" / "livery.json").read_text())
                 assert v in lv["roles"] or v in lv["blends"], f"{where} is not a role or blend"

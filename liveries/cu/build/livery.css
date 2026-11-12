@@ -168,6 +168,9 @@
   --engine-footnote-gap: 0.55em;
   --engine-footnote-hang: 0.9em;
   --engine-footnote-step: 0.3em;
+  --engine-details-width: 28.8px;
+  --engine-details-pad: 0.9em;
+  --engine-details-size: calc(18.33px * var(--engine-type-scale, 1));
   --engine-boxes-table-head-rule: 3px;
   --engine-boxes-table-rule: 1px;
 }
@@ -238,6 +241,7 @@ html:root {
 .reveal .slides section.engine-field .engine-mark-bottom-left { background-image: var(--engine-mark-primary-signoff); }
 .reveal .slides section.engine-dark .engine-mark-bottom-left { background-image: var(--engine-mark-dark-signoff); }
 .reveal .slides section table { --engine-boxes-table-head-rule-color: var(--engine-primary-contrast); }
+.reveal .slides section .engine-details-tab { --engine-details-fill: var(--engine-primary-contrast); }
 /* compositions (livery_build.py compositions()): boxes in slide px, roles as vars */
 div.reveal div.slides section.engine-title.quarto-title-block {
   --engine-cmp-field-display: block;

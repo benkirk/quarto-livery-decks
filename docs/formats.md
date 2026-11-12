@@ -108,6 +108,9 @@ Per deck, `make pptx` runs:
      draw where the paragraph will land.
    - `link_captions`: captions each linked picture (see [authoring.md "Linked images"](authoring.md#linked-images)) with its URL,
      bottom center, muted; the caption box is itself the link.
+   - `details`: draws a details slide's tab (`boxes.details`) and hides the slide unless the deck
+     says `details: show` (see [authoring.md "Details slides"](authoring.md#details-slides)); the halves of a slide
+     pandoc split are found by their titles, so it runs before `slide_layout`.
    - `slide_layout`: applies a slide's layout controls (see [authoring.md "Centering and scaling a short slide"](authoring.md#centering-and-scaling-a-short-slide)); builds the photo covers and feature slides; draws the cover's byline and fine print; points closing and light
      title slides at the template's extra layouts; sets a `::: note` in the caption's look
      under its figure (see [authoring.md "Notes under a figure"](authoring.md#notes-under-a-figure)); copies the slide number onto every slide.
@@ -122,6 +125,9 @@ Per deck, `make pptx` runs:
      and `figures.py` a picture in a column or card (from the deck's directory, or the bytes an
      executed plot's marker carries) and a simple table in a column, a native table.
    - `status_glyphs`: makes a status item's ✓ ⚠ ✗ its bullet, in the livery's status color.
+   - `links`: a hyperlink on a field slide (a cover, a divider, a closing, a `{.brand-dark}` slide)
+     in the field's text color, underlined: PowerPoint draws a link in the theme's link color,
+     which is the livery's primary and so vanished on a primary field.
    - `style_tables`: styles every table as the HTML theme does (a bold capitalized header
      over a rule in `boxes.table`'s role, primary-contrast by default, thin rules between rows,
      every second row banded, the blends from `livery_build.py`; the widths `boxes.table`'s, as

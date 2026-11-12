@@ -7,7 +7,8 @@ logos, the marks, art, the template, the font blobs when pptx.fonts is set); tem
 pandoc-compliant (the seven layout names and our two extra ones, slideLayout1's five placeholders,
 the chrome placeholders at idx 20-22 and no content box there, the color and font schemes
 matching the json, media numbered without gaps) and rebuilds byte-identically from the data (a
-hand-edited template fails); WCAG 4.5:1 warnings for the small-text roles, which never fail; the chart
+hand-edited template fails); WCAG 4.5:1 warnings for the small-text roles and the details tab's label, which
+never fail; the chart
 colors' checks (livery_charts.py: a generated palette must pass, a published one only warns), and
 with --swatch DIR their contact sheet, DIR/charts-<livery>.png (needs Pillow).
 Exit 1 on any failure. With --qa (the `livery` command's), the quickstart deck's `make qa` follows."""
@@ -128,9 +129,28 @@ def check_livery(d: Path, swatch: Path | None = None, verbose: bool = False) -> 
         if fg in roles and bg in roles:
             ratio = livery_mod.contrast(roles[fg], roles[bg])
             (r.ok if ratio >= 4.5 else r.warn)(f"contrast {fg} on {bg}: {ratio:.1f}:1")
+    check_details(r, livery, roles)
     check_charts(r, livery, swatch)
     r.summary()
     return not r.failed
+
+
+def check_details(r, livery, roles):
+    """A details slide's tab (boxes.details): its word, knocked out in the slide's field, must read on its
+    fill (the background on the role; on a light livery's dark slide the dark role on the role's twin),
+    stand inside the tab, and the tab stay clear of a {.wide} body. Warnings, as the other contrasts."""
+    d, g = livery["boxes"]["details"], livery["geometry"]
+    pairs = [("background", d["role"])]
+    if livery["mode"] != "dark":
+        pairs.append(("dark", livery_mod.DARK_SWAP.get(d["role"], d["role"])))
+    for fg, bg in pairs:
+        if fg in roles and bg in roles:
+            ratio = livery_mod.contrast(roles[fg], roles[bg])
+            (r.ok if ratio >= 4.5 else r.warn)(f"contrast details label, {fg} on {bg}: {ratio:.1f}:1")
+    room = d["width"] * livery["type"]["canvas"]["w"]
+    (r.ok if d["size"] <= room else r.warn)(f"details label ({d['size']:g} pt) inside its tab ({room:.1f} pt wide)")
+    (r.ok if d["width"] <= g["wide-margin"] else r.warn)(
+        f"details tab ({d['width']:g} of the width) clear of a {{.wide}} body (wide-margin {g['wide-margin']:g})")
 
 
 def check_charts(r, livery, swatch=None):
