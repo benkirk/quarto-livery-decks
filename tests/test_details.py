@@ -21,6 +21,7 @@ import zipfile
 
 import pytest
 from pptx import Presentation
+from pptx.oxml.ns import qn
 from pptx.util import Pt
 
 import livery_build as lb
@@ -223,6 +224,8 @@ def test_pptx_tab_geometry(tmp_path, pandoc_deck):
         run = tab.text_frame.paragraphs[0].runs[0]
         assert run.text == "Details" and run.font.size == Pt(d["size"]) and run.font.bold
         assert run.font._rPr.get("cap") == "all"
+        fits = [e.tag.split("}")[1] for e in tab.text_frame._txBody.find(qn("a:bodyPr"))]
+        assert fits == ["noAutofit"], f"never shrunk or grown (common.no_autofit()): {fits}"
         dark = i == 6
         assert str(run.font.color.rgb) == j["roles"]["dark" if dark else "background"][1:].upper()
         assert str(tab.fill.fore_color.rgb) == j["roles"]["secondary" if dark else "primary-contrast"][1:].upper()

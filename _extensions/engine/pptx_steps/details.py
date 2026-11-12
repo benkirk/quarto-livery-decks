@@ -21,13 +21,12 @@ from pathlib import Path
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
-from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
 import livery as livery_mod
 
 from . import measure
-from .common import BOXES, GEOM, LIVERY, TRACKING, palette, style_runs, take_marker
+from .common import BOXES, GEOM, LIVERY, TRACKING, no_autofit, palette, style_runs, take_marker
 
 KEY = "engine-details:"   # slide-layout.lua's notes line
 TAB = "Details tab"       # the shape's name
@@ -65,9 +64,7 @@ def draw(slide, width, height):
     p.alignment = PP_ALIGN.CENTER
     p.add_run().text = D["label"]
     style_runs(p._p, D["size"], bold=True, color=ink["background"], caps=True)
-    bp = tf._txBody.find(qn("a:bodyPr"))   # never shrunk or grown: the tab is the livery's size
-    for fit in [e for e in bp if e.tag in (qn("a:spAutoFit"), qn("a:normAutofit"), qn("a:noAutofit"))]:
-        bp.remove(fit)
+    no_autofit(box)   # never shrunk or grown: the tab is the livery's size
 
 
 def run(prs, path: Path) -> None:
