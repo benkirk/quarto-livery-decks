@@ -108,6 +108,10 @@ RUN <<'EOS'
 set -eo pipefail
 python -m bash_kernel.install --sys-prefix
 apt-get update -qq
+# Playwright 1.65's bundled node needs libatomic.so.1, which neither the base image nor
+# `install --with-deps` (the browser's libraries, not the driver's) brings: without it the driver
+# does not start ("error while loading shared libraries", the image build of 2026-11-12)
+apt-get install -y -qq --no-install-recommends libatomic1
 python -m playwright install --with-deps --only-shell chromium
 rm -rf /var/lib/apt/lists/* /root/.cache
 # Playwright >= 1.49 ships Chrome for Testing's shell, `chrome-headless-shell`; older ones `headless_shell`

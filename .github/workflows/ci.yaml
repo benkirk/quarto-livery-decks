@@ -255,6 +255,20 @@ jobs:
           timeout 900 make -C decks/quickstart all
           timeout 900 make -C decks/fixtures all
 
+      # the details fixture (#173): its QA with the seven details slides hidden in the pptx, counted
+      # and drawn like the rest; none hidden under DETAILS=show, and the tab on every one
+      - name: Check the details slides
+        run: |
+          timeout 900 make -C decks/fixtures qa DECKS=details
+          grep -q 'hidden: 7 in the pptx' decks/fixtures/_qa/report.txt
+          timeout 300 make -C decks/fixtures pptx DECKS=details DETAILS=show
+          hidden=$(unzip -p decks/fixtures/details.pptx 'ppt/slides/slide*.xml' | { grep -o 'show="0"' || true; } | wc -l)
+          tabs=$(unzip -p decks/fixtures/details.pptx 'ppt/slides/slide*.xml' | { grep -o 'name="Details tab"' || true; } | wc -l)
+          echo "DETAILS=show: $hidden hidden, $tabs tabs"
+          test "$hidden" -eq 0 && test "$tabs" -eq 7
+          test "$(grep -c 'class="engine-details-tab"' decks/fixtures/details.html)" -eq 7
+          pdftotext decks/fixtures/details.pdf - | grep -c DETAILS | grep -qx 7
+
       # the whole livery-owner path, run by hand until now (#87): a livery scaffolded from a
       # reference deck (the built quickstart standing in), built and checked (`all`), then the
       # quickstart in all three formats under it from outside the repository (check --qa, which runs
@@ -456,6 +470,52 @@ jobs:
     with:
       decks: decks/quickstart
       image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
+
+  # This repository's own site (docs/other-repos.md "This repository's own site", #172): the
+  # quickstart and sample decks' HTML under one index (the root `make site`), on GitHub Pages, so
+  # a talk can link the cookbook. On a release tag, and only once the repository says so: its
+  # Pages source set to "GitHub Actions" and the repository variable PAGES set to `on` (a deploy
+  # to a repository without Pages fails, and a release should not carry a red job for it).
+  site:
+    name: Build the quickstart and sample decks' site
+    needs: image
+    if: needs.image.outputs.digest != '' && startsWith(github.ref, 'refs/tags/v') && vars.PAGES == 'on'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # `container:` bypasses the entrypoint: seed matplotlib's font cache as it would
+      - name: Seed the font cache
+        run: /usr/local/bin/entrypoint.sh true
+
+      - name: Build the site
+        run: make site
+
+      - name: Attach the site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  pages:
+    name: Deploy the site to GitHub Pages
+    needs: site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
 
   # -----------------------------------------------------------------------
   # the engine's pure-LaTeX side (latex) and its tests: what beamer-livery-theme's own

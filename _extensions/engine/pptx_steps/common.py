@@ -13,7 +13,7 @@ height is grown by so PowerPoint's autofit stays idle. measure.py holds the text
 Shape names are the steps' interface: a step that marks a slide for a later one does it by a
 name held here (PHOTO, NOTE), and the names the drawers give their shapes ("Body list", "Lead
 text", "Card n fill", the groups "Card n", "Steps", "Gallery") are what the tests and a reader
-of the deck find.
+of the deck find. field_ink() is a field slide's text color (the watermark's, a hyperlink's).
 """
 
 import copy
@@ -174,6 +174,18 @@ def palette(slide) -> dict:
     livery's, or on a dark slide (is_dark()) the dark ones, on-dark, dark-muted, secondary, the
     dark table blends, the dark role."""
     return DARK_INK if is_dark(slide) else LIGHT_INK
+
+
+def field_ink(slide):
+    """The text color (a six-digit hex) of a slide that is a field of its own: on-dark on a dark
+    slide; a composed slide's column role (a cover, divider or closing by its layout, a feature by
+    its photo, slide_layout.draw_feature()'s). None on a content slide."""
+    if is_dark(slide):
+        return livery_mod.hex(LIVERY, "on-dark")
+    comp = livery_mod.comp_of(slide.slide_layout.name, BAND)
+    if comp is None and any(sh.name == PHOTO for sh in slide.shapes):
+        comp = "feature"
+    return livery_mod.hex(LIVERY, LIVERY["compositions"][comp]["column"]["role"]) if comp else None
 
 
 def on_dark(paragraphs, hexv, skip=()):
@@ -381,6 +393,15 @@ def body_box(slide, x, y, w, h, paragraphs, name):
     if not paragraphs:
         etree.SubElement(body, qn("a:p"))
     return tb
+
+
+def no_autofit(tb):
+    """A text box PowerPoint never shrinks (body_box() sets shrink on overflow): boxes that must
+    keep one size among them (a rail's items), sized by measure instead."""
+    bp = tb.text_frame._txBody.find(qn("a:bodyPr"))
+    for fit in [e for e in bp if e.tag in (qn("a:spAutoFit"), qn("a:noAutofit"), qn("a:normAutofit"))]:
+        bp.remove(fit)
+    etree.SubElement(bp, qn("a:noAutofit"))
 
 
 def group(slide, shapes, name):

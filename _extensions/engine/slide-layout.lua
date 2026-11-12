@@ -11,7 +11,9 @@
 -- marking strips' texts the strings `engine-marking-<name>` (C.marking_texts, the one reader of
 -- `marking:`; pandoc records a map as empty too), the watermark's text `engine-watermark`
 -- (C.watermark_text) and the cover's fine print `engine-fineprint`, a line per paragraph
--- (C.fineprint_paragraphs), each `none` for none.
+-- (C.fineprint_paragraphs), each `none` for none. A details slide ({.details}, C.details_slides) gets a
+-- notes line of its own, `engine-details: hide` (or `show`, the deck's `details: show`), for
+-- pptx_steps/details.py.
 
 if not quarto.doc.is_format("pptx") then
   return {}
@@ -119,18 +121,29 @@ function Pandoc(doc)
   watermark_meta(doc.meta, livery)
   fineprint_meta(doc.meta, livery)
   local level = C.slide_level()
-  local blocks = C.ensure_refs(doc.blocks, doc.meta, level)
+  -- the details slides (C.details_slides: the one reader), each marked for the loop below
+  local hide = C.details_hidden(C.details_mode(doc.meta, "slide-layout"), "pptx")
+  local marked = C.details_slides(doc.blocks, level, "slide-layout", hide, function(h) h.attributes["engine-details"] = "1" end)
+  local blocks = C.ensure_refs(marked, doc.meta, level)
   local refs = C.refs_heading(blocks, level)
-  local out, pending = pandoc.Blocks({}), nil
-  local function flush()
-    if pending then
-      out:insert(pandoc.Div({ pandoc.Para({ pandoc.Str(pending) }) }, pandoc.Attr("", { "notes" })))
-      pending = nil
+  local out, pending = pandoc.Blocks({}), {}
+  local function flush()   -- the slide's lines, a paragraph each (the steps read them line by line)
+    if #pending > 0 then
+      local paras = pandoc.Blocks({})
+      for _, line in ipairs(pending) do paras:insert(pandoc.Para({ pandoc.Str(line) })) end
+      out:insert(pandoc.Div(paras, pandoc.Attr("", { "notes" })))
     end
+    pending = {}
   end
   for k, b in ipairs(blocks) do
     if C.is_slide_break(b, level) then flush() end
-    if b.t == "Header" and b.level == level then pending = take_layout(b, k == refs) end
+    if b.t == "Header" and b.level == level then
+      local details = b.attributes["engine-details"]
+      b.attributes["engine-details"] = nil
+      local line = take_layout(b, k == refs)
+      if line then table.insert(pending, line) end
+      if details then table.insert(pending, "engine-details: " .. (hide and "hide" or "show")) end
+    end
     out:insert(b)
   end
   flush()

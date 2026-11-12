@@ -17,7 +17,7 @@
 # or a documented read-out (DECKS_RUNTIME_USED, FRAMEWORK_ROOT); lower case is this file's own,
 # like its defines. tests/test_make_names.py holds both, and that no name expands undefined.
 
-.PHONY: pptx html pdf all qa measure site publish overleaf charts-zip deps clean distclean
+.PHONY: pptx html pdf all qa shot measure site publish overleaf charts-zip deps clean distclean
 
 # Every deck in a directory shares one .quarto/ project cache.
 .NOTPARALLEL:
@@ -91,6 +91,7 @@ else
 pptx_post          := $(FRAMEWORK_ROOT)_extensions/engine/pptx_post.py
 livery_py          := $(FRAMEWORK_ROOT)_extensions/engine/livery.py
 deck_qa            := $(FRAMEWORK_ROOT)common/utils/deck_qa.py
+slide_shot         := $(FRAMEWORK_ROOT)common/utils/slide_shot.py
 comp_measure       := $(FRAMEWORK_ROOT)common/utils/comp_measure.py
 site_index         := $(FRAMEWORK_ROOT)common/utils/site_index.py
 deck_deps       := $(FRAMEWORK_ROOT)common/utils/deck_deps.py
@@ -146,6 +147,9 @@ fig_size = $(if $(livery_figsize),-M fig-width:$(word 1,$(livery_figsize)) -M fi
 # front matter leaves out: gallery.py's placeholder markings, so no image we commit reads as a real
 # restricted deck. A prerequisite too, so a different file rebuilds.
 meta_file = $(if $(DECK_META),--metadata-file=$(abspath $(DECK_META)))
+# DETAILS=show|hide: the deck's `details:` from the command line (docs/authoring.md "Details slides"):
+# `make pptx DETAILS=show` is the deck with its {.details} slides shown, no edit of the deck
+details_meta = $(if $(DETAILS),-M details:$(DETAILS))
 # The engine's sources (the filters, the themes, the pptx steps, the plot helper): the _extensions
 # link's target is a directory, whose mtime an edit inside it never moves, so an engine change
 # left every deck up to date (#133). The Lua and theme files serve all three formats.
@@ -188,7 +192,19 @@ $(1): $(2) ; python3 $$(frames2movie) poster $(2) $(1) --time $(3)
 endef
 $(foreach p,$(movie_timed),$(eval $(call timed_poster_rule,$(p),$(filter $(firstword $(subst .poster-, ,$(p))).%,\
   $(movie_all)),$(patsubst %.png,%,$(lastword $(subst .poster-, ,$(p)))))))
-prereqs      := $(fragments) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(livery_files) $(engine_files) $(DECK_META) \
+# DETAILS on the command line rebuilds the decks when it changes (and when it is dropped again): a
+# stamp holding it, phony until it matches, as .livery is. No stamp until DETAILS is first given.
+DETAILS ?=
+details_stamp :=
+ifneq ($(DETAILS)$(wildcard .details),)
+details_stamp := .details
+ifneq ($(shell cat .details 2>/dev/null),$(DETAILS))
+.PHONY: .details
+endif
+.details:
+	@echo $(DETAILS) > $@
+endif
+prereqs      := $(fragments) $(wildcard _metadata.yml) _quarto.yml _extensions .livery $(details_stamp) $(livery_files) $(engine_files) $(DECK_META) \
              $(requirements) $(deps_site) $(movie_all) $(movie_posters) $(movie_timed)
 
 pptx: $(DECKS:=.pptx)
@@ -200,6 +216,17 @@ all:  pptx html pdf
 # sheets in _qa/ (deck_qa.py). `make qa DECKS=name` checks one deck of a directory.
 qa: all
 	python3 $(deck_qa) $(DECKS)
+
+# One slide as a PNG, found by its title, from the built deck (slide_shot.py; docs/authoring.md
+# "A picture of one slide"): make shot TITLE="Columns" [FORMAT=html|pdf|pptx|all] [SHOT_OUT=dir]
+# [SHOT_WIDTH=px] [DECKS=name]. TITLE="" is the title slide. Only the formats shot are built.
+FORMAT      ?= html
+SHOT_OUT    ?= _qa/shots
+SHOT_WIDTH  ?=
+TITLE       ?=
+shot: $(foreach f,$(if $(filter all,$(FORMAT)),html pdf pptx,$(FORMAT)),$(DECKS:=.$(f)))
+	@test "$(origin TITLE)" = "command line" || { echo 'usage: make shot TITLE="text in the slide title" [FORMAT=html|pdf|pptx|all] [SHOT_OUT=dir] [SHOT_WIDTH=px]' >&2; exit 2; }
+	for d in $(DECKS); do python3 $(slide_shot) $$d "$(TITLE)" --format $(FORMAT) --out $(SHOT_OUT) $(if $(SHOT_WIDTH),--width $(SHOT_WIDTH)) || exit 1; done
 
 # The title, divider, closing and feature slides of every format against the livery's
 # compositions (comp_measure.py): _qa/measure.tsv and the contact sheet
@@ -296,7 +323,7 @@ $(deps_site):
 endif
 
 define render_pptx
-	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(fig_size) $(meta_file) $(if $(livery_mono),-M "monofont=$(livery_mono)")
+	ENGINE_FORMAT=pptx quarto render $< --to engine-pptx -o $@ $(fig_size) $(meta_file) $(details_meta) $(if $(livery_mono),-M "monofont=$(livery_mono)")
 	python3 $(pptx_post) $@
 endef
 
@@ -305,11 +332,11 @@ endef
 # a LIVERY switch the deck would wear the old livery's css and marks. So drop it first.
 define render_html
 	rm -rf $(@:.html=_files)/libs/quarto-contrib/engine-revealjs-*
-	ENGINE_FORMAT=html quarto render $< --to engine-revealjs -o $@ $(fig_size) $(meta_file)
+	ENGINE_FORMAT=html quarto render $< --to engine-revealjs -o $@ $(fig_size) $(meta_file) $(details_meta)
 endef
 
 define render_pdf
-	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@ $(meta_file)
+	ENGINE_FORMAT=pdf quarto render $< --to engine-beamer -o $@ $(meta_file) $(details_meta)
 endef
 
 %.pptx: %.qmd $(prereqs) | _livery
@@ -334,7 +361,7 @@ $(OUT).pdf: $(QFILE) $(prereqs) | _livery
 endif
 
 clean:
-	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery _livery *-overleaf.zip *-charts.zip \
+	rm -f $(foreach d,$(DECKS),$(d).pptx $(d).html $(d).pdf) .livery .details _livery *-overleaf.zip *-charts.zip \
 	  $(movie_made) $(addsuffix .poster.png,$(basename $(movie_made)))
 	rm -rf $(DECKS:=_files) $(SITE)
 

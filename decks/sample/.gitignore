@@ -1,4 +1,5 @@
 /.quarto/
 **/*.quarto_ipynb
 /.livery
+/.details
 /_livery

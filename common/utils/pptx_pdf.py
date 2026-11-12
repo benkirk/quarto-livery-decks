@@ -6,10 +6,13 @@ bundle (cu's Helvetica Neue) is drawn in its bundled stand-in, the base family, 
 measured in a serif. A private profile also keeps a running LibreOffice from blocking the default
 one. LibreOffice is not PowerPoint: it applies no autofit and substitutes the faces it lacks, so a
 box that overflows here may be shrunk there; the checks on its PDF are hints until the numbers
-prove quiet (deck_qa.check_pptx).
+prove quiet (deck_qa.check_pptx). A hidden slide (`show="0"`: a details slide, pptx_steps/details.py)
+is drawn like the rest: LibreOffice's export leaves hidden slides out, which would shift every page
+after one against its slide, so the copy it reads has them shown.
 """
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -23,8 +26,18 @@ def soffice():
     return next((s for s in SOFFICE if s and os.path.exists(s)), None)
 
 
+SLIDE = re.compile(r"ppt/slides/slide\d+\.xml")
+HIDDEN = re.compile(rb'(<p:sld\b[^>]*?)\s+show="0"')   # the slide's own attribute, on its root
+
+
 def _family(spec):
     return spec if isinstance(spec, str) else (spec or {}).get("family")
+
+
+def hidden_slides(pptx):
+    """How many of the pptx's slides are hidden (`show="0"`)."""
+    with zipfile.ZipFile(pptx) as z:
+        return sum(bool(HIDDEN.search(z.read(f))) for f in z.namelist() if SLIDE.fullmatch(f))
 
 
 def to_pdf(pptx, livery, out_dir):
@@ -46,13 +59,18 @@ def to_pdf(pptx, livery, out_dir):
                     bundled.add(font.get("family"))
         src, typeface = pptx, (livery.get("pptx") or {}).get("typeface")
         base = _family(livery["typography"].get("base"))
-        if typeface and typeface not in bundled and base in bundled:
+        stand_in = bool(typeface and typeface not in bundled and base in bundled)
+        if stand_in or hidden_slides(pptx):   # a copy: the stand-in face, every slide shown
             src = os.path.join(tmp, stem + ".pptx")
             old, new = ('typeface="%s"' % typeface).encode(), ('typeface="%s"' % base).encode()
             with zipfile.ZipFile(pptx) as zin, zipfile.ZipFile(src, "w", zipfile.ZIP_DEFLATED) as zout:
                 for item in zin.infolist():
                     data = zin.read(item.filename)
-                    zout.writestr(item, data.replace(old, new) if item.filename.endswith(".xml") else data)
+                    if stand_in and item.filename.endswith(".xml"):
+                        data = data.replace(old, new)
+                    if SLIDE.fullmatch(item.filename):
+                        data = HIDDEN.sub(rb"\1", data)
+                    zout.writestr(item, data)
         subprocess.run([exe, f"-env:UserInstallation=file://{tmp}/profile", "--headless", "--convert-to", "pdf",
                         "--outdir", out_dir, src], check=True, capture_output=True)
     return os.path.join(out_dir, stem + ".pdf"), None

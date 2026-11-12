@@ -475,6 +475,18 @@ the `on-dark` role, its accents in `secondary`, the dark role's mark.
 
 *† Footnotes stay below the box (in pptx, inside it).*
 
+## A details slide {.details}
+
+- `{.details}` marks an optional-depth slide: the tab on the left edge says so, in every format
+- It follows the slide it deepens, and the body keeps its whole area
+- The pptx hides it (the slide stays in the file); `make pptx DETAILS=show` shows them all
+- In HTML, `?details=hide` in the address leaves them out of the show
+
+::: notes
+`details: show` or `details: hide` in the front matter sets it for the deck; the PDF always
+shows a details slide. The slide before a run of them gets a note saying how many follow.
+:::
+
 ## A short table, centered and scaled {.center scale="1.4"}
 
 | Control | Moves |

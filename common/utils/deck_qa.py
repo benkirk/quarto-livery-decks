@@ -12,7 +12,8 @@ into the footer band, overlapping other text or running into the next table colu
 columns: the HTML says where the table is), the pptx as LibreOffice draws it (pptx_pdf.py) through
 the same edge, footer and overlap checks (QA_PPTX_FAIL=0 demotes those to hints, for a machine whose
 LibreOffice draws otherwise; <deck>-pptx.png is its contact sheet), HTML content past the right edge, a {.full}
-caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a grid
+caption or a ::: note paragraph that wraps in HTML (a gallery caption past its cell too), a code block
+taller than its box in HTML (it scrolls inside it, so the lines past it are not on the slide), a grid
 marker (`⟦engine:…⟧`) left in a pptx slide's text (an element the pptx steps did not draw), a bare
 `<word>` in the sources (revealjs reads it as a tag, and `<code>` swallows the slides after it), and a
 movie that would not play everywhere (not H.264, not yuv420p, odd dimensions: frames2movie.py's check).
@@ -50,6 +51,8 @@ STRIPS = []           # set in main(): the livery's marking strips' boxes, furni
 WATERMARK = ""        # set per deck in main(): the watermark's text (an HTML slide's), which the text checks skip
 WM_HEIGHT = 0.0       # set in main(): the watermark's size, of the page's height (livery.json watermark)
 
+DETAILS_HIDE = "classList.add('engine-details-hide')"   # engine-revealjs.lua's line under `details: hide`
+
 MEASURE_JS = r"""
 (i) => {
   const s = Reveal.getSlides()[i];
@@ -58,6 +61,10 @@ MEASURE_JS = r"""
   const watermark = wm ? wm.textContent.trim() : null;
   if (!s.classList.contains('level2') || !h) return {level2: false, watermark};
   const cls = [...s.classList];
+  // a code block taller than its box: it scrolls inside the box, so the slide never overflows and the
+  // lines past the box are simply not on the slide (the share of its height that shows)
+  const codeClip = Math.min(1, ...[...s.querySelectorAll('pre, pre > code')].map(
+    c => c.scrollHeight > c.clientHeight + 2 ? c.clientHeight / c.scrollHeight : 1));
   // a gallery caption past its cell (one line, nowrap: its text overflows the box)
   const galleryCapOver = [...s.querySelectorAll('.engine-gallery-item figcaption')].some(
     c => c.scrollWidth > c.clientWidth + 1);
@@ -85,7 +92,7 @@ MEASURE_JS = r"""
   const fit = parseFloat(s.style.getPropertyValue('--engine-fit')) || 1;
   const scale = parseFloat(s.getAttribute('data-engine-scale')) || 1;
   // engine-revealjs.js's FURNITURE (tests/test_cli.py holds it a subset), and what the QA leaves out besides
-  const skip = 'h2, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
+  const skip = 'h2, .engine-waves, .engine-footnotes, .engine-signoff, .engine-marks, .engine-marking, .engine-watermark, .engine-details-tab, .engine-feature-bar, .engine-title-photo-img, aside, style, script, .footer';
   const kids = [...s.children].filter(e => !e.matches(skip));
   let bot = 0, right = 0;
   for (const k of kids) for (const e of [k, ...k.querySelectorAll('*')]) {
@@ -116,7 +123,7 @@ MEASURE_JS = r"""
           // the right edge: the padding, or on a {.wide} slide the wide margin the body widens to
           overRight: right > sr.width - (s.classList.contains('engine-wide')
             ? parseFloat(cs.getPropertyValue('--engine-wide-margin')) : parseFloat(cs.paddingRight)) + 16,  // inline-code padding overhangs
-          noteWrap, galleryCapOver, tableBox, watermark};
+          noteWrap, galleryCapOver, codeClip, tableBox, watermark};
 }
 """
 
@@ -328,7 +335,7 @@ def serve(directory):
 
 
 def check_html(decks, qa):
-    """{deck: (count, [slide dicts])}, or a string saying why the HTML checks were skipped."""
+    """{deck: (count, [slide dicts], hidden slides)}, or a string saying why the HTML checks were skipped."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -351,7 +358,9 @@ def check_html(decks, qa):
                 os.makedirs(d, exist_ok=True)
                 for old in glob.glob(os.path.join(d, "*.png")):
                     os.remove(old)
-                page.goto(base + deck + ".html")
+                # ?details=show: a deck's hidden details slides (details: hide; engine-revealjs.js) are
+                # counted and checked like the rest
+                page.goto(base + deck + ".html?details=show")
                 page.wait_for_function("window.Reveal && Reveal.isReady()")
                 # mermaid draws after reveal is ready; measuring a {.full} diagram before it
                 # has finished reads an empty figure (seen on a busy machine)
@@ -372,7 +381,10 @@ def check_html(decks, qa):
                     slides.append(page.evaluate(MEASURE_JS, i))
                 contact_sheet(sorted(glob.glob(os.path.join(d, "*.png"))),
                               os.path.join(qa, deck + "-html.png"))
-                results[deck] = (n, slides)
+                with open(deck + ".html", encoding="utf-8") as fh:
+                    text = fh.read()
+                hidden = text.count('class="engine-details-tab"') if DETAILS_HIDE in text else 0
+                results[deck] = (n, slides, hidden)
             browser.close()
     finally:
         httpd.shutdown()
@@ -395,6 +407,10 @@ def html_findings(slides):
                          "paragraphs (each a caption line)" % tag)
         if s.get("galleryCapOver"):
             fails.append("%s: a gallery caption runs past its cell; shorten it" % tag)
+        if s.get("codeClip", 1) < 1 and "scrollable" not in cls:
+            fails.append("%s: a code block is taller than its box: %.0f%% of it shows in the HTML, the rest "
+                         "scrolls out of sight; shorten it, split the slide, or give it the room "
+                         "(a wider column, a smaller scale=)" % (tag, 100 * s["codeClip"]))
         if s.get("noFigure"):
             fails.append("%s: {.full} slide without a drawn figure" % tag)
         # (Quarto marks the references slide .smaller itself; the theme sets that list's size)
@@ -567,6 +583,7 @@ def main():
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
+    import pptx_pdf
     livery = livery_mod.load()
     geom = livery["geometry"]
     EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
@@ -586,7 +603,7 @@ def main():
                 for h in bare_tags(f)]
         failed |= bool(tags)
         report += ["source " + h for h in tags]
-        html_n, slides = html_res.get(deck, (None, []))
+        html_n, slides, html_hidden = html_res.get(deck, (None, [], 0))
         WATERMARK = next((s["watermark"] for s in slides if s.get("watermark")), "")
         pdf_n, pdf_lines = check_pdf(deck, qa, slides)
         pptx_n, markers = pptx_scan(deck)
@@ -594,8 +611,13 @@ def main():
         known = {k: v for k, v in counts.items() if v is not None}
         same = len(set(known.values())) <= 1
         failed |= not same
-        report.append("slides: %s%s" % (", ".join("%s %d" % kv for kv in known.items()),
-                                        "" if same else "  MISMATCH"))
+        # every slide in the file counts, a hidden one too (a details slide: the pptx's show="0", the
+        # HTML's under `details: hide`), and is drawn and checked like the rest
+        pptx_hidden = pptx_pdf.hidden_slides(deck + ".pptx") if pptx_n else 0
+        hid = ["%d in the %s" % (n, f) for f, n in (("pptx", pptx_hidden), ("html", html_hidden)) if n]
+        report.append("slides: %s%s%s" % (", ".join("%s %d" % kv for kv in known.items()),
+                                          "" if same else "  MISMATCH",
+                                          "  (hidden: %s)" % ", ".join(hid) if hid else ""))
         titles = {n: s.get("title", "") for n, s in enumerate(slides, 1)} if same else {}
         for line in pdf_lines:
             m = re.match(r"p\d+ \[s(\d+)\]", line)

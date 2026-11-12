@@ -382,8 +382,27 @@
     \engine@ifstyle{feature}{\engine@drawcomp{feature}{feature}}{}%
     \engine@ifstyle{full}{\engine@drawfullbg}{}%
     \engine@drawwatermark
+    \engine@drawdetails
     \engine@drawmarking
   \end{tikzpicture}}
+
+% a details frame's tab ([enginedetails], boxes.details): on the paper's left edge from the body's top,
+% its width the livery's (of the paper's width), as long as its label and the pad at each end (em of
+% the label's size), the label in small capitals turned to read upward, knocked out in the background
+% (a dark frame's field); its fill the box's role (\engine@role@<name>, which a dark frame's swap
+% reaches). On any frame style: a full frame's figure lies under it
+\newif\ifengine@detailsframe
+\def\engine@drawdetails{\ifengine@detailsframe
+  \edef\engine@tmpc{\csname engine@role@\engine@boxes@details@role\endcsname}%
+  % the pad in points: em of the label's size (its ratio to the body, \engine@boxes@details@type's first)
+  \edef\engine@tmpa{\fpeval{\engine@boxes@details@pad*\expandafter\@firstoftwo\engine@boxes@details@type*\strip@pt\engine@typebody}}%
+  \node[anchor=north east,rotate=90,inner ysep=0pt,outer sep=0pt,inner xsep=\engine@tmpa pt,
+        minimum height=\engine@boxes@details@width\paperwidth,fill=\engine@tmpc,
+        text=\ifengine@darkframe BrandDark\else BrandBackground\fi,
+        font=\expandafter\engine@fsof\engine@boxes@details@type\selectfont\bfseries]
+    at (0,\paperheight-\engine@ft@bodytop\paperheight)
+    {\engine@tracking\MakeUppercase{\engine@boxes@details@label}};
+  \fi}
 
 % the watermark (watermark:), on every frame, centered and turned, behind the body and over the
 % art, field and waves: its text the deck's (\enginewatermark{<text>} in the preamble, which the Quarto
@@ -503,7 +522,7 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
   \engine@copycolors{engine@saved@}{beamer@}}
 \def\engine@resetframe{%
   \def\engine@framestyle{normal}\global\engine@haspanelfalse\global\engine@galn=\z@   % no gallery carried over
-  \engine@darkframefalse\engine@ftroom{light}%
+  \engine@darkframefalse\engine@detailsframefalse\engine@ftroom{light}%
   % the text color too: a field's hook (\engine@fieldcolors) sets it where the frame's group
   % does not undo it, so the frame after a closing slide had white body text
   \def\engine@framehook{\usebeamercolor[fg]{normal text}}%
@@ -563,6 +582,9 @@ background canvas,frametitle rule,page number in head/foot,footline,caption,foot
   \setbeamercolor{footnote}{fg=BrandDarkMuted}%
   \engine@darkswap
   \engine@ftroom{dark}}
+
+% [enginedetails]: a details frame ({.details}): the background draws its tab (\engine@drawdetails)
+\define@key{beamerframe}{enginedetails}[true]{\engine@detailsframetrue}
 
 % \engine@fieldcolors{<color>}: every text color for a field in <color>
 \def\engine@fieldcolors#1{%

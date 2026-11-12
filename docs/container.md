@@ -44,7 +44,7 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" \
   your HOME out too (Jupyter and IPython settings, TeX trees, personal fonts), add `--home` and a
   directory of the container's own, as a deck's make does.
 - **What the build writes** into the directory: the `_quarto.yml`, `_extensions`
-  and `_livery` links, the `.livery` stamp, `.quarto/`, `<deck>_files/` and the
+  and `_livery` links, the `.livery` stamp (and `.details`, once a build names `DETAILS=`), `.quarto/`, `<deck>_files/` and the
   outputs (gitignore them, as a submodule consumer does). The links point into
   `/opt/quarto-livery-decks`, which the host cannot see; a host build re-points them and
   the container re-points the host's, so the two can alternate in one directory.
@@ -186,6 +186,11 @@ cd ~/my-talk && make pptx                  # or html, pdf, all, qa
   setting to build, and `make QUARTO_DECKS=<checkout>` (or the variable in your environment) builds
   it on another framework checkout, such as one on your laptop. It refuses a directory that is not
   empty.
+- **`bin/new-deck --also PATH DIR`** (repeatable) is for a deck kept in a repository you use in
+  two places, a laptop and the cluster: the Makefile lists this installation and each `PATH`
+  (`QUARTO_DECKS_PATH`), and takes the first that holds the framework. A relative `PATH` is read
+  from the deck's directory (`--also ../../quarto-livery-decks`, a checkout beside the
+  repository). With none of them there, make stops and names the places it tried.
 - **`bin/new-deck --bare DIR`** adds only the Makefile and `.gitignore`, for decks a repository
   already holds (`DIR/<DIR's name>.qmd`, or `DECKS := a b` above the include for several). It
   refuses an existing Makefile, and adds to an existing `.gitignore` only the lines it lacks.

@@ -253,6 +253,35 @@ plot '++' using 1:2:(exp(-($1**2 + $2**2) / 3) * sin(2 * $1) * cos($2)) with ima
 """, dark=True)
 ```
 
+## Numbers in a sentence
+
+```{python}
+#| include: false
+# values a sentence can use: an inline expression, `{python} name`, is run and shown as its value
+n_slots = len(plt.rcParams["axes.prop_cycle"])
+peak = float(np.max(np.sin(np.linspace(0, np.pi, 101))))
+```
+
+::::: {.columns}
+::: {.column width="58%"}
+- The livery's cycle has `{python} n_slots` categorical colors before a plot repeats one
+- A computed value reads the same in every format: the peak is `{python} f"{peak:.2f}"`
+- In a table cell too
+:::
+::: {.column width="42%"}
+| Quantity       | Value                    |
+|:---------------|-------------------------:|
+| Colors         | `{python} n_slots`       |
+| Twice that     | `{python} 2 * n_slots`   |
+:::
+:::::
+
+::: notes
+An inline expression, a backtick, {python}, a space and the expression, is evaluated at render
+time wherever it stands, inline code and fenced blocks included. To show one without running it,
+put a non-breaking space after {python} (docs/authoring.md "Values in the text").
+:::
+
 ## ⚠︎ What breaks the style {.caution}
 
 - `sns.set_theme()` or `plt.style.use(...)` replaces the livery's style: leave both out

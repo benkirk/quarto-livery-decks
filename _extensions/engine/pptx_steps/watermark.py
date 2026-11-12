@@ -23,19 +23,15 @@ from pptx.util import Pt
 import livery as livery_mod
 
 from . import docprops
-from .common import BAND, LIVERY, PHOTO, is_dark
+from .common import LIVERY, field_ink
 
 WM = LIVERY["watermark"]   # color hex, opacity, angle (degrees counter-clockwise), size in points
 
 
 def ink(slide) -> str:
-    """The watermark's six-digit hex on this slide (the module's docstring)."""
-    if is_dark(slide):
-        return livery_mod.hex(LIVERY, "on-dark")
-    comp = livery_mod.comp_of(slide.slide_layout.name, BAND)   # a composed slide's, by its layout
-    if comp is None and any(sh.name == PHOTO for sh in slide.shapes):   # slide_layout.draw_feature()'s
-        comp = "feature"
-    return livery_mod.hex(LIVERY, LIVERY["compositions"][comp]["column"]["role"] if comp else WM["color"])
+    """The watermark's six-digit hex on this slide (the module's docstring): a field slide's text
+    color (common.field_ink()), else the livery's."""
+    return field_ink(slide) or livery_mod.hex(LIVERY, WM["color"])
 
 
 def run(prs, path: Path) -> None:

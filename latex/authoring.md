@@ -52,6 +52,7 @@ A Quarto deck writes the same things in Markdown ([docs/formats.md "PDF (beamer)
 | The reference list | `\begin{frame}[allowframebreaks]{References}\printbibliography[heading=none]\end{frame}`: the footnote size, a 1.5 em hanging indent; a long list runs on, (1), (2) |
 | Photo "feature" slide | `\begin{frame}[enginebg=photo.jpg]`, the body in `\begin{enginefeaturepanel}` |
 | Dark slide: the frame on the livery's dark role, its text on-dark, its accents secondary, the dark role's mark; a card keeps its colors (a no-op on a dark livery) | `\begin{frame}[enginedark]{Title}` |
+| Details slide: an optional-depth frame, marked by a tab on the paper's left edge holding the livery's word (`boxes.details`); with any other key, a dark or full frame too | `\begin{frame}[enginedetails]{Title}` |
 | Full-slide figure (no title, logo or rule; optional caption) | `\begin{frame}[enginefull=diagram.pdf]`, `\enginefullcaption{...}` in the body; the bare `[enginefull]` with an `enginegallery` in the body fills the slide with the gallery |
 | Closing slide | `\engineclosingframe{Thank you!}{...}` |
 | Speaker notes | `\note{...}` in the frame; `\setbeameroption{show notes}` in the preamble shows them |

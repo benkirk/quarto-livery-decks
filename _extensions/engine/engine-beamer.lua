@@ -93,9 +93,28 @@ end
 local function latex(s) return pandoc.RawBlock("latex", s) end
 local function latex_inline(s) return pandoc.RawInline("latex", s) end
 
+-- Inlines as LaTeX text, for a macro's argument written in one raw block. citeproc runs after this
+-- filter, on the document's Cite inlines: one turned into text here would print its key ("@key") and
+-- leave its entry out of the references, so it is warned of. What commonly cites (a quote's
+-- attribution, a note under a figure, a full slide's caption) goes through wrapped() instead.
 local function inlines_to_latex(inlines)
   local doc = pandoc.Pandoc({ pandoc.Plain(inlines) })
+  local cited = false
+  doc:walk({ Cite = function(c) cited = cited or (c.citations[1] and not C.is_crossref(c.citations[1].id)) end })
+  if cited then
+    C.warn("engine-beamer: a citation in \"" .. pandoc.utils.stringify(inlines) .. "\" prints as its key in the PDF "
+      .. "(a title, a card's head, a gallery caption): cite in the slide's body, a note or a footnote")
+  end
   return (pandoc.write(doc, "latex"):gsub("%s+$", ""))
+end
+
+-- open, the inlines and close as one Plain, the inlines left pandoc's: citeproc (after this filter)
+-- reaches a citation in them, and a Code inline makes the frame [fragile] as pandoc decides
+local function wrapped(open, inlines, close)
+  local il = pandoc.Inlines({ latex_inline(open) })
+  il:extend(inlines)
+  il:insert(latex_inline(close))
+  return pandoc.Plain(il)
 end
 
 -- slide footnotes: † ‡ § ¶ paragraphs and ^[...] notes (C.take_footnotes()), lifted to the frame's foot
@@ -388,11 +407,12 @@ local function strips(blocks, livery)
 end
 
 -- Quote blocks (C.quote_blocks(): ::: {.quote}, or a bare `>`), at any depth:
--- \begin{enginequote}[role=<role>]{<attribution>} round its lines (no role=: the box's bar-color)
+-- \begin{enginequote}[role=<role>]{<attribution>} round its lines (no role=: the box's bar-color); the
+-- attribution stays pandoc's inlines (wrapped()), so one that cites reads as it does in HTML and the pptx
 local function quote_boxes(blocks, livery)
   return C.quote_blocks(blocks, livery, "engine-beamer", function(q)
-    local who = q.attribution and inlines_to_latex(q.attribution) or ""
-    local out = pandoc.Blocks({ latex("\\begin{enginequote}" .. (q.role and ("[role=" .. q.role .. "]") or "") .. "{" .. who .. "}") })
+    local open = "\\begin{enginequote}" .. (q.role and ("[role=" .. q.role .. "]") or "") .. "{"
+    local out = pandoc.Blocks({ q.attribution and wrapped(open, q.attribution, "}") or latex(open .. "}") })
     out:extend(q.body)
     out:insert(latex("\\end{enginequote}"))
     return out
@@ -726,7 +746,7 @@ local function full_frames(blocks)
             if k > 1 then text:insert(pandoc.RawInline("latex", "\\par ")) end
             text:extend(p.content)
           end
-          out:insert(latex("\\enginefullcaption{" .. inlines_to_latex(text) .. "}"))
+          out:insert(wrapped("\\enginefullcaption{", text, "}"))   -- its inlines pandoc's: a caption may cite
         end
         out:extend(rest)
       else
@@ -755,9 +775,19 @@ local function note_frames(blocks)
         if not is_note(d) then
           out:insert(d)
         elseif #d.content > 0 then
-          local tex = pandoc.write(pandoc.Pandoc(d.content), "latex"):gsub("%s+$", "")
           local back = (k > 1 and bs[k - 1].t == "Table") and "\\vskip-\\LTpost" or ""
-          out:insert(latex(back .. "\\enginenote{" .. tex .. "}"))
+          local text, plain = pandoc.Inlines({}), true   -- its paragraphs' inlines, pandoc's (a note may cite)
+          for j, b in ipairs(d.content) do
+            if b.t ~= "Para" and b.t ~= "Plain" then plain = false; break end
+            if j > 1 then text:insert(latex_inline("\\par ")) end
+            text:extend(b.content)
+          end
+          if plain then
+            out:insert(wrapped(back .. "\\enginenote{", text, "}"))
+          else   -- anything else in a note: as LaTeX text
+            local tex = pandoc.write(pandoc.Pandoc(d.content), "latex"):gsub("%s+$", "")
+            out:insert(latex(back .. "\\enginenote{" .. tex .. "}"))
+          end
         end
       end
       return out
@@ -785,6 +815,10 @@ end
 function Pandoc(doc)
   slide_level = C.slide_level()
 
+  -- the details slides (C.details_slides): the frame key enginedetails, the theme's tab; the PDF
+  -- shows every one whatever `details:` says (C.details_hidden)
+  C.details_mode(doc.meta, "engine-beamer")   -- for its warning alone
+  doc.blocks = C.details_slides(doc.blocks, slide_level, "engine-beamer", false, function(h) add_frameoption(h, "enginedetails") end)
   doc.blocks = galleries(full_frames(movies(doc.blocks)))
   doc = bound_sized_images(doc)
   load_theme(doc)

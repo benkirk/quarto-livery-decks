@@ -25,8 +25,9 @@ SIZED = (qn("a:rPr"), qn("a:defRPr"), qn("a:endParaRPr"))
 FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"   # a user-defined property's, as pandoc writes them
 
 
-def factor(props):
-    """The step from type-body or type-scale, or None (absent or not a positive number)."""
+def factor(props, quiet=False):
+    """The step from type-body or type-scale, or None (absent or not a positive number, which is
+    said unless quiet: details.py reads the step before this one applies it)."""
     for key, f in (("type-body", lambda v: v / livery_mod.type_pt(LIVERY, "body")), ("type-scale", lambda v: v)):
         raw = props.get(key)
         if raw:
@@ -36,7 +37,8 @@ def factor(props):
                 v = 0
             if v > 0:
                 return f(v)
-            print(f"type_step: {key}: {raw!r} is not a positive number; ignored", file=sys.stderr)
+            if not quiet:
+                print(f"type_step: {key}: {raw!r} is not a positive number; ignored", file=sys.stderr)
     return None
 
 

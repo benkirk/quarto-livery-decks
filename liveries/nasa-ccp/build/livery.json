@@ -57,6 +57,13 @@
       "gap": 0.03,
       "rule": 0
     },
+    "details": {
+      "label": "Details",
+      "pad": 0.9,
+      "role": "primary-contrast",
+      "size": 9,
+      "width": 0.017
+    },
     "footnote": {
       "gap": 0.55,
       "hang": 0.9,

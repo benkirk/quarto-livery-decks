@@ -20,6 +20,47 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ### Decks
 
+- **Details slides** (docs/authoring.md "Details slides", #173): `## Title {.details}` marks an
+  optional-depth slide in the flow, right after the slide it deepens. Every format marks it with a
+  tab on the slide's left edge holding the word DETAILS, outside the body, which keeps its whole
+  area; the pptx hides it (the slide stays in the file, in order), and the PDF and HTML show it.
+  `details: show` in the front matter, or `make pptx DETAILS=show`, shows them everywhere;
+  `details: hide` hides them in HTML too, where `?details=show` or `?details=hide` in the address
+  decides for one visit. It goes with `scale=`, `.vcenter`, `.wide`, `.caution`, `.brand-dark`,
+  `.full`, columns and cards, and both halves of a slide pandoc splits are marked and hidden. The
+  slide before a run of them gets a speaker note saying how many follow. A build with `DETAILS=`
+  leaves a `.details` stamp beside the deck: add it to the deck's `.gitignore` (a new
+  `bin/new-deck` deck has it).
+- Fixes from a talk built on 26.11.0 (#172):
+  - PDF: a citation in a quote's attribution (`— @key`), a `::: note` or a `{.full}` slide's
+    caption printed as its key and was missing from the references; it now reads as in HTML and
+    the pptx. A citation where the PDF still cannot draw one (a slide title, a card's head, a
+    gallery caption) is warned of at build time.
+  - HTML: a lone, very wide picture (about 5:1) ran off the slide's right edge; it is capped at
+    the body's width.
+  - pptx: a hyperlink on a cover, divider, closing or `{.brand-dark}` slide was invisible (the
+    link color is the field's); it takes the field's text color, underlined.
+  - pptx: `{.vcenter}` now centers a slide of cards, a lead, steps, a timeline or three or more
+    columns, as HTML and the PDF do.
+  - pptx: the items of a `.steps` or `.timeline` row keep one text size. PowerPoint's
+    shrink-on-overflow used to step one long item down alone; a row too tall for its room steps
+    down together, and a hyphenated name is measured as wrapping at its hyphens, as PowerPoint
+    wraps it (this moves a box by a line on a few slides whose text has hyphens).
+- `make qa` fails a code block taller than its box in HTML: it scrolls inside the box, so the
+  lines past it were silently missing from the slide. It also counts and draws a hidden slide
+  like any other (LibreOffice's export leaves hidden slides out, which shifted every page after
+  one).
+- `make shot TITLE="..."` (docs/authoring.md "A picture of one slide"): one slide of a built deck
+  as a PNG, found by its title, from the HTML, the PDF, the pptx or all three
+  (`common/utils/slide_shot.py`).
+- **Values in the text** (docs/authoring.md "Values in the text"): an inline expression is run
+  and shown as its value in all three formats; the guide says how, and how to show one without
+  running it. The plots deck's "Numbers in a sentence" is the example.
+- `bin/new-deck --also PATH` (docs/container.md "Sharing an installation"): a Makefile that takes
+  the first of several places the framework may be, for a deck used on a laptop and a cluster.
+- The quickstart and sample decks' HTML can be published as this repository's site: `make site`
+  at its top, deployed to GitHub Pages on a release once the repository turns it on
+  (docs/other-repos.md "This repository's own site").
 - `make qa` fails on the pptx's problems as it does on the PDF's: text past the right margin,
   into the footer or overlapping another word, as LibreOffice draws the deck. The checks allow
   for LibreOffice's ways (a symbol the livery's face lacks is drawn from a fallback face, whose box
@@ -42,9 +83,16 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 - `boxes.movie` (new, with defaults): the PDF's play badge, its diameter, disc fill and opacity,
   and the ink of its triangle and ring. Rebuild a livery of your own (`livery build`) to pick it up.
+- `boxes.details` (new, with defaults): a details slide's tab, its `label` ("Details"), its fill
+  (`role`, primary-contrast), `width`, `size` and `pad`; the width and size are derived from the
+  title tab, the wide margin and the eyebrow type unless set. `livery check` reports the label's
+  contrast on its fill (nsi's on its dark slide is low: a `role` of its own would fix it). Rebuild
+  a livery of your own to pick it up.
 
 ### LaTeX
 
+- `\begin{frame}[enginedetails]{Title}`: a details frame, marked by the livery's tab on the paper's
+  left edge (latex/authoring.md); with any other key, `[enginedetails,enginedark]`.
 - `\enginemovie[<graphics options>]{<poster>}{<link>}`, `\enginemoviebox{<link>}{<picture>}` and an
   `[enginefull=<poster>]` frame's `\enginefullmovie{<link>}`: a movie's poster under the play badge,
   linked to the movie (latex/authoring.md "Movies").

@@ -702,6 +702,42 @@
             "rule": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.0011, "description": "The rule under each body row (the PDF: under the table), its width (of the slide's height; 1 px of 900), in the `table-rule` blend."}
           }
         },
+        "details": {
+          "type": "object",
+          "description": "A `{.details}` slide's mark (an optional-depth slide): a filled tab on the paper's left edge, from the body's top down, holding the label turned to read upward. The body keeps its whole area.",
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24,
+              "default": "Details",
+              "description": "The tab's word, set in small capitals."
+            },
+            "role": {
+              "type": "string",
+              "minLength": 1,
+              "default": "primary-contrast",
+              "description": "The tab's fill: a role or blend name (not a hex); primary-contrast, the primary that reads on the background, by default. The word is knocked out in the background color."
+            },
+            "width": {
+              "oneOf": [{"type": "null"}, {"type": "number", "exclusiveMinimum": 0, "maximum": 0.1}],
+              "default": null,
+              "description": "The tab's width (of the slide's width); null for the title tab's (`geometry.tab-width`), kept inside a `{.wide}` body's margin."
+            },
+            "size": {
+              "oneOf": [{"type": "null"}, {"type": "number", "exclusiveMinimum": 0}],
+              "default": null,
+              "description": "The word's size in points on the canvas; null for the eyebrow's, at most what the width holds."
+            },
+            "pad": {
+              "type": "number",
+              "minimum": 0,
+              "default": 0.9,
+              "description": "The room at each end of the word, in em of its size."
+            }
+          }
+        },
         "references": {
           "type": "object",
           "description": "The references slide's list (`::: {#refs}`, a deck's bibliography), set in the footnote size.",

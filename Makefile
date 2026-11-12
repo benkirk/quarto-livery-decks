@@ -5,7 +5,7 @@ CONDA_ROOT := $(shell conda info --base)
 # Common way to initialize environment across various types of systems
 config_env := module load conda >/dev/null 2>&1 || true && . $(CONDA_ROOT)/etc/profile.d/conda.sh
 
-.PHONY: help latex test livery image sif clean clobber distclean
+.PHONY: help latex test livery site image sif clean clobber distclean
 
 # -------------------------------------------------------------------
 # Default target: help
@@ -44,6 +44,21 @@ test: ## Run the engine's tests: livery build --check, livery check, pytest over
 livery: ## Build, template and check a livery: make livery LIVERY=<name> (or LIVERY_DIR=<dir>)
 	test -n "$(or $(LIVERY_DIR),$(LIVERY))" || { echo "usage: make livery LIVERY=<name> | LIVERY_DIR=<dir>"; exit 2; }
 	python3 _extensions/engine/livery.py all $(or $(LIVERY_DIR),liveries/$(LIVERY))
+
+# The repository's own site: the HTML of the decks an audience is sent to (the quickstart and the
+# sample, the cookbook), each directory's `make site` under its name, and one index over them.
+# ci.yaml's `site` job deploys it to GitHub Pages on a release (docs/other-repos.md "This
+# repository's own site").
+SITE_DECKS ?= quickstart sample
+site: ## Build _site/: the quickstart and sample decks' HTML under one index (GitHub Pages on a release)
+	set -e
+	rm -rf _site && mkdir -p _site
+	for d in $(SITE_DECKS); do
+	  $(MAKE) -C decks/$$d site
+	  cp -R decks/$$d/_site _site/$$d
+	done
+	cd decks && LIVERY_DIR=$(CURDIR)/liveries/ncar python3 ../common/utils/site_index.py --out ../_site \
+	  --title "quarto-livery-decks" $(foreach d,$(SITE_DECKS),$(d)/$(d))
 
 # The build-environment image (docs/container.md); CI publishes it
 # multi-platform as ghcr.io/benkirk/quarto-livery-decks (.github/workflows/image.yaml).

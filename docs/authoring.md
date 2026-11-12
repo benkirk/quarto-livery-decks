@@ -115,6 +115,9 @@ element once for every format; a format-specific variant of an element is not su
   nothing. A plot in it takes `with livery_mpl.dark():`. A mermaid or Graphviz picture baked for
   the pptx and the PDF stays light on it under a light livery, and HTML's live mermaid keeps the
   slide's light colors: put a diagram on a light slide.
+- `## Title {.details}` marks an optional-depth slide, in the flow right after the slide it
+  deepens: a tab on the slide's left edge in every format, and hidden in the pptx unless the deck
+  says otherwise (["Details slides"](#details-slides)).
 - `## Thank you! {.closing}` makes a closing slide.
 - `### Heading {.example}` / `{.alert}` give block variants.
 - `[text]{.alert}` emphasizes text.
@@ -227,7 +230,7 @@ Each trades local capacity against a share of the consortium system.
   card is not a card in any format: a row holding a card and a table is drawn as plain columns,
   with a warning. A lead beside a table goes in the title or the
   notes: a lead makes the slide a card slide, and the table would split it. A card slide's
-  `.caution` and `.vcenter` do not apply in pptx.
+  `.caution` does not apply in pptx (`.vcenter` does: the drawn flow is centered).
 - The same slide in LaTeX is [latex/authoring.md "Cards, strips and status lists"](../latex/authoring.md#cards-strips-and-status-lists).
 
 A lead may also follow a figure or precede a table, and lands the same way in every format: under
@@ -571,6 +574,11 @@ longer makes a "Notes" slide at the end). On a two-column slide pptx puts it at 
 last column. A note in the speaker notes stays as pandoc writes it; a fifth note on a slide, or one
 holding more than paragraphs (a list), warns and stays as pandoc writes it.
 
+A citation may stand in the body, a slide footnote, a quote's attribution (`— @knuth84`), a
+`::: note` under a figure and a `{.full}` slide's caption, in every format. In a slide title, a
+card's head or a gallery caption the PDF would print its key, so the build warns: cite in the
+body.
+
 Limits: author-year styles only (a note style, whose citations are footnotes, would need the
 engine to run citeproc itself); pptx shows a citation as text, not a link. A very long list in
 HTML shrinks to the autofit floor and then scrolls; split it over two slides.
@@ -590,11 +598,67 @@ in HTML and PDF; pptx gets them through `slide_layout.py`, a step of the
 | Control | HTML | PDF | pptx |
 |---|---|---|---|
 | `.hcenter`: center the body across as a block | yes | prose, lists, plain code (a table centers anyway) | no |
-| `.vcenter`: center it between the title and the floor | yes | yes | text yes; a table to its measured center |
+| `.vcenter`: center it between the title and the floor | yes | yes | yes: text, a table to its measured center, a grid slide's drawn flow (cards, a lead, a rail, three or more columns) |
 | `.center`: both (the theme's, not Quarto's) | yes | yes | as `.vcenter` |
 | `scale="S"`: text, tables and code × S | yes (autofit shrinks an overshoot) | yes (no autofit: check the page) | yes |
 | `.fill`: grow until it just fits, up to 3× | yes | no; add `scale=` | no; add `scale=` |
 | `.caution`: the body on a soft field with a bar in the warning color, for warning slides | yes | yes | yes; the box cut to its measured text, footnotes inside it |
+
+## Details slides
+
+A talk for two audiences has two depths: the slides everyone sees, and the ones that deepen them
+for the audience that asks (the formula, the level-by-level table). Mark the second kind where it
+belongs, right after the slide it deepens:
+
+```markdown
+## How the share is set
+
+- The idea, in three bullets
+
+## The formula {.details}
+
+- The same, in full
+
+## The numbers, level by level {.details .wide}
+```
+
+- **Marked in every format**: a small tab on the slide's left edge, level with the body's top,
+  holding the word DETAILS turned to read upward. It sits outside the body, so the slide keeps
+  its whole area, and it says what it is in a word, not by color alone. On a `{.full}` slide,
+  which draws no title, it lies over the figure's edge.
+- **Hidden in the pptx**: PowerPoint, Keynote and LibreOffice skip a hidden slide in a slide
+  show. It stays in the file, in order, editable; "Unhide Slide" on its thumbnail brings one
+  back. A hidden slide keeps its number, so the numbers the audience sees jump over it.
+- **Shown in the PDF and HTML**: they are the reference copies. A PDF that left frames out
+  would renumber the rest.
+
+`details:` in the front matter, or `DETAILS=` on the command line, changes that for a build:
+
+| | pptx | HTML | PDF |
+|---|---|---|---|
+| unset | hidden | shown | shown |
+| `details: show` (`make pptx DETAILS=show`) | shown | shown | shown |
+| `details: hide` (`make html DETAILS=hide`) | hidden | hidden | shown |
+
+`make pptx DETAILS=show` is the power-user deck from the same source; the next plain `make pptx`
+rebuilds the general one (a `.details` stamp beside the deck remembers which is built). An HTML
+deck holds every slide either way, and its URL says which show to give: `talk.html?details=show`
+(or just `?details`) shows them, `?details=hide` leaves them out, whatever the deck was built
+with. Reveal counts only the slides it shows, in its slide numbers and in a link to one slide
+(`talk.html?details=hide#/2/1`).
+
+The class goes with the other heading controls (`scale=`, `.vcenter`, `.wide`, `.caution`,
+`.brand-dark`, `.full`, columns, cards), on a slide that pandoc splits in the pptx (both halves are
+marked and hidden), and not on a `#` divider (a section is not a detail: warned and ignored). The
+agenda and the section count read dividers only, so details slides change neither. The slide
+before a run of them gets a line in its speaker notes, "The next 2 slides are details slides
+(hidden).", in the formats that have notes. `make qa` counts and checks a hidden slide like any
+other.
+
+The tab is the livery's `boxes.details`: its word (`label`, "Details"), its fill (`role`, the
+primary that reads on the background; the word is knocked out in the background color), `width`,
+`size` and `pad` ([liveries/REFERENCE.md](../liveries/REFERENCE.md)). `livery check` reports the
+word's contrast on its fill.
 
 ## Executable shell chunks
 
@@ -619,6 +683,29 @@ jupyter: bash
 
 Code runs on the build host, not the viewer's machine: output is baked
 into the .pptx.
+
+## Values in the text
+
+A deck on a Jupyter kernel (`jupyter: python3`) can put a computed value in a sentence, a table
+cell, a card or a timeline item: an inline expression, written as inline code that starts with the
+kernel's name in braces and a space. It is evaluated at render time and reads the same in pptx,
+HTML and PDF:
+
+````markdown
+```{python}
+#| include: false
+n_liveries = 10
+```
+
+The engine ships `{python} n_liveries` liveries, `{python} f"{n_liveries / 2:.0f}"` of them flavors.
+````
+
+**Showing one without running it.** Quarto evaluates an inline expression wherever its pattern
+stands (a backtick, `{python}`, then a space or a tab), inside a fenced code block and inside
+inline code too, so a slide that shows the syntax fails the render with a `NameError`. On such a
+slide put a non-breaking space (U+00A0) after `{python}` in place of the space: it reads the same
+and is not run. A cell's fence is shown, not run, with doubled braces (`{{python}}`) inside a
+four-backtick block. The plots deck's "Numbers in a sentence" slide is the working example.
 
 ## Text sizes and the slide size
 
@@ -671,11 +758,15 @@ class), or check it with `make qa`.
 `make qa` builds every format, then checks the outputs (`common/utils/deck_qa.py`):
 
 - **Failures:**
-  - slide counts that differ between pptx, PDF and HTML;
+  - slide counts that differ between pptx, PDF and HTML (every slide in the file counts, a
+    hidden [details slide](#details-slides) too, and is drawn and checked like the rest);
   - PDF text past the right margin, into the footer, overlapping other text, or running into
     the next table column (the table's own columns: bullets or a plot beside it are not read);
   - HTML content past the right edge, a `{.full}` caption that wraps, and a `::: note`
     paragraph that wraps (each is one caption line);
+  - a code block taller than its box in HTML: it scrolls inside the box, so the slide never
+    overflows and the lines past it are simply not on the slide (the report says what share
+    shows; `{.scrollable}` on the heading says the scrolling is meant);
   - a pptx slide whose text still holds a grid marker (`⟦engine:…⟧`): an element the pptx steps
     did not draw, which their warnings name;
   - a bare `<word>` in the sources, outside code and backticks: revealjs reads it as a tag
@@ -695,6 +786,16 @@ class), or check it with `make qa`.
 Everything lands in `_qa/` (gitignored): `report.txt`, `usage.tsv`, a contact sheet per
 format, and per-slide PNGs. In a directory with several decks, `make qa DECKS=name`
 checks one.
+
+### A picture of one slide
+
+`make shot TITLE="Columns"` writes one slide of the built deck as a PNG, found by text in its
+title (`TITLE=""` is the title slide), to `_qa/shots/<deck>-<title>-<format>.png`:
+`FORMAT=html` (the default: the slide in a browser at 1600 x 900), `pdf` (the page), `pptx` (the
+slide as LibreOffice draws it) or `all`; `SHOT_WIDTH=960` resizes it, `SHOT_OUT=dir` writes
+elsewhere. Only the formats it shoots are built. For a README's images, a talk about a deck or a
+review; `common/utils/slide_shot.py` is the same as a command and a module
+(`slide_shot(deck, title, fmt)`), and the quickstart's `screenshots.py` is built on it.
 
 `make measure` checks the slides a livery composes, the title, divider, feature and closing
 slides, against their **compositions**: the boxes in the livery's `build/livery.json` that
