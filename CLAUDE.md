@@ -725,7 +725,11 @@ it does, by area, beyond the format notes above:
   before and `check` after (every deck of quickstart, sample, fixtures, plots and movies under
   `PARITY_LIVERIES`, default `ncar cu nsi`; a deck added since the baseline is named and not compared; under `nasa` and `nasa-dark` the quickstart's
   screenshot step stops it, no PDF page reads "MPAS-A") and `tests/parity-latex.sh
-  baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. A
+  baseline|check` (latex's PDFs page by page, the demo's HTML), same checkout, same day. Two builds
+  of the same decks under two environments (a Quarto minor against the one before, #165 and #175)
+  are compared as a reader sees them, slide by slide and pixel by pixel in every format, by
+  `common/utils/slide_diff.py A B` (`tests/test_slide_diff.py`); parity compares what a build
+  wrote, which a new Quarto changes wholesale. A
   Sass change is checked by screenshotting every slide before and after (Playwright).
 - **Version**: one calendar version, `YY.MM.N` (Ben, 2026-10-18: the month unpadded, `N` the
   month's release count from 0; the container image also gets `YY.MM`, the month's newest; the

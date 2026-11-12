@@ -23,6 +23,7 @@ quarto-livery-decks/
 │   └── utils/
 │       ├── deck_qa.py          # `make qa`: overflow, slide counts, contact sheets
 │       ├── comp_measure.py     # `make measure`: the drawn slides against their compositions
+│       ├── slide_diff.py       # two builds of the same decks, slide by slide (a Quarto bump's proof)
 │       ├── site_index.py       # `make site`: the index page
 │       └── fit-waves.py        # fits a brand's wave curves to its cover art (art.waves)
 ├── decks/
