@@ -549,7 +549,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   in `latex/` (`make latex`); the engine's tests are `make test`. The extension's Lua filter loads the theme in place
   through `\input@path`, so nothing is copied into deck directories. Needs
   XeLaTeX (TinyTeX or TeX Live) and Quarto >= 1.6, the engine's floor (`quarto-required` in the
-  shared `_quarto.yml`; `conda-env.yaml` pins 1.10, the image's). Beamer has no autofit: dense slides
+  shared `_quarto.yml`; `conda-env.yaml` pins 1.10, the image's: `>=1.10,<1.11`, since an open floor let the image take 1.11.9, whose `waitForServer` line the Dockerfile's assert refused; a new minor is evaluated first). Beamer has no autofit: dense slides
   overflow silently, so render the PDF and look at it, then trim the content
   or add `{.shrink}` to the heading. A full-width 16:9 screenshot is taller than
   the frame's content area; cap it with `{height="72%" fig-align="center"}`
