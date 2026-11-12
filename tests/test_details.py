@@ -233,6 +233,24 @@ def test_pptx_tab_geometry(tmp_path, pandoc_deck):
     assert [s._element.get("show") for s in slides] == [None, None, "0", "0", "0", None, "0"]
 
 
+def test_pptx_tab_follows_the_type_step(tmp_path, pandoc_deck):
+    """A deck's type step scales the label (type_step, the last step), so the tab is drawn as long as
+    the scaled label and its pads, as HTML and the PDF size theirs: at type-scale 1.4 the label and
+    the tab's length are 1.4 times the plain deck's (8 pt to 11 on ncar), its width the livery's."""
+    sizes = {}
+    for name, front in (("plain", ""), ("big", "type-scale: 1.4"), ("small", "type-body: 9")):
+        (tmp_path / name).mkdir()
+        (tab,) = _tabs(list(_deck(tmp_path / name, pandoc_deck, front, None).slides)[2])
+        sizes[name] = (tab.text_frame.paragraphs[0].runs[0].font.size.pt, tab.width, tab.height)
+    (pt, long, wide) = sizes["plain"]
+    for name, f in (("big", 1.4), ("small", 9 / 12)):
+        want = int(pt * f * 2 + 0.5) / 2   # to the half point
+        assert sizes[name][0] == want, sizes
+        # (PIL's widths at these small sizes are not quite linear in the size: within 5 %)
+        assert abs(sizes[name][1] / long - want / pt) < 0.05, f"the tab is as long as its label at {want} pt: {sizes}"
+        assert sizes[name][2] == wide, "its width is the livery's"
+
+
 def test_step_is_idempotent(tmp_path, pandoc_deck):
     prs = _deck(tmp_path, pandoc_deck, "", ["details", "details"])
     assert [len(_tabs(s)) for s in prs.slides] == [0, 0, 1, 1, 1, 0, 1]

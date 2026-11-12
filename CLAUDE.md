@@ -333,7 +333,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   PDF: the frame key `enginedetails`, `\engine@drawdetails` in the background template. pptx:
   slide-layout.lua's own notes line, `engine-details: hide|show`; `pptx_steps/details.py` marks the
   slide and, walking back over title-less slides, the halves pandoc split (the notes land on the
-  last), draws "Details tab" (a turned rectangle, measured) and sets `show="0"`. `pptx_pdf.to_pdf()`
+  last), draws "Details tab" (a turned rectangle, measured at the deck's type step, which `type_step` applies to its label last) and sets `show="0"`. `pptx_pdf.to_pdf()`
   shows hidden slides in LibreOffice's copy (its export drops them, shifting every later page), and
   `deck_qa` loads the HTML with `?details=show`, so counts are of every slide in the file.
   `decks/fixtures/details.qmd` is CI's and parity's deck; `tests/test_details.py`.
