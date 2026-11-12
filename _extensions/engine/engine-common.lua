@@ -1066,6 +1066,8 @@ end
 -- <stem>.poster-<s>.png, made by ensure_poster()), href to the movie file.
 -- HTML plays it; pptx embeds it over its poster (movie-pptx.lua, pptx_steps/movie.py); the PDF shows the
 -- poster with a play badge, a link to href (a deliberate departure: no PDF viewer plays a movie everywhere).
+-- (the extensions are Make.common's movie_exts too, and pptx_steps/movie.py's MIME less WebM, which
+-- PowerPoint does not play: tests/test_movie.py holds the three lists together)
 local MOVIE_MIME = { mp4 = "video/mp4", m4v = "video/mp4", mov = "video/quicktime", webm = "video/webm" }
 local MOVIE_KEYS = { "poster", "href", "autoplay", "loop", "muted", "poster-time" }
 
