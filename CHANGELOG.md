@@ -67,6 +67,19 @@ A release's entry is written here before its tag is pushed, and becomes its note
   is skipped; a big line's font box reaching into the next line's is its leading, not a
   collision). `QA_PPTX_FAIL=0 make qa` keeps them hints on a machine whose LibreOffice draws
   otherwise.
+- The image and the conda env carry Quarto 1.11 (1.11.9: pandoc 3.10 still, dart-sass 1.101, deno
+  2.9.8, which needs macOS 12 or later). Every deck renders as under 1.10.20: each pptx slide and
+  PDF page pixel for pixel, each HTML slide but for a pixel or two at the tip of reveal's progress
+  bar, which differ between two builds on one Quarto too. A local env rebuilds (`make conda-env`,
+  which `source etc/config_env.sh` runs when `conda-env.yaml` is newer).
+- A render no longer hangs on a headless browser that is slow to start (a mermaid or Graphviz
+  diagram's): Quarto 1.11 waits 15 s for it and then stops with the browser's own error, where
+  1.10 waited 3 s and then for good. The image had patched 1.10's wait to 30 s and patches nothing
+  now; a native build was never patched, and gains the fix.
+- `themeoptions:` in a deck's front matter now adds to the shared list (`fonts=bundled`) where it
+  replaced it: Quarto 1.11 combines a list a deck inherits with its own. The deck's value for a
+  key still wins (`fonts=brand`), and a deck that repeats `fonts=bundled`, as the guide said to,
+  builds the same.
 - **Movies** (docs/authoring.md "Movies"): an image whose source is a movie
   (`![Caption](movies/vortex.mp4)`) plays in HTML and is embedded in the pptx, where PowerPoint and
   Keynote play it in the slide's frame; by default it starts with the slide, loops and is silent

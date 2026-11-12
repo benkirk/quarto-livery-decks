@@ -668,8 +668,8 @@ verbatim. The next slide explains what it sets.
 **How it's shared**
 
 - Make links it into each deck directory, beside `_extensions` and `_livery`.
-- A deck's front matter overrides it key by key; `themeoptions:` replaces the list, so
-  repeat `fonts=bundled`.
+- A deck's front matter overrides it key by key; `themeoptions:` adds to the list (before
+  Quarto 1.11 it replaced it: repeat `fonts=bundled`).
 - A real `_quarto.yml` in the deck directory replaces the link.
 :::
 ::: {.column width="50%"}

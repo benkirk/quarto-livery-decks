@@ -250,7 +250,7 @@ beamer theme in `_extensions/engine/` (until 2026-10 its own repository,
 
 - **You need Quarto 1.6 or newer**: the engine's floor (`quarto-required` in the shared
   `_quarto.yml`), since the theme's Lua filter uses a pandoc macro that older releases lack. The
-  conda env and the image carry a newer one (`conda-env.yaml` pins Quarto 1.10, its activation
+  conda env and the image carry a newer one (`conda-env.yaml` pins Quarto 1.11, its activation
   being what the image asserts).
 - **You need TeX with XeLaTeX.** Quarto's own TinyTeX (`quarto install
   tinytex`) works and installs missing LaTeX packages on the fly. So does a

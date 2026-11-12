@@ -121,16 +121,17 @@ echo "headless shell: $shell"
 ln -s "$shell" "$QUARTO_CHROMIUM"
 chmod -R a+rX "$PLAYWRIGHT_BROWSERS_PATH"   # the zip carries 600 on a few files (deb.deps); any uid runs this
 "$QUARTO_CHROMIUM" --version
-# Quarto's wait for that browser. It gives the browser 3 s to answer, then waits for it to exit,
-# which a healthy browser never does: the render hangs for good (quarto src/core/cri/cri.ts,
-# waitForServer). A first start on a busy login node, through Apptainer's FUSE, took 5 s (a new
-# user's first build on Casper hung so). 30 s here. The exact line must be there, or the build
-# stops: a new Quarto has changed it, and this needs another look.
+# Quarto's wait for that browser. Up to 1.10 it gave the browser 3 s to answer and then waited
+# for it to exit, which a healthy browser never does: a first start on a busy login node, through
+# Apptainer's FUSE, took 5 s, and a new user's first build on Casper hung for good; this step
+# patched the wait to 30 s. Quarto 1.11 rewrote the launcher (quarto src/core/cri/launch.ts):
+# 15 s, and a browser that does not answer in time is killed and reported with its own error.
+# Nothing is patched now. The constant must still be there, or the build stops: a new Quarto has
+# changed the wait, and this needs another look.
 q="$(dirname "$(readlink -f "$(command -v quarto)")")/quarto.js"
-n=$(grep -c -F 'async function waitForServer(port, timeout = 3e3)' "$q" || true)
-test "$n" = 1 || { echo "Quarto's waitForServer is not the one patched here: $(grep -n -o 'async function waitForServer([^)]*)' "$q")" >&2; exit 1; }
-sed -i 's/async function waitForServer(port, timeout = 3e3)/async function waitForServer(port, timeout = 3e4)/' "$q"
-echo "quarto $(quarto --version): $(grep -o 'async function waitForServer([^)]*)' "$q")"
+n=$(grep -c -E 'kDefaultLaunchTimeout = (15e3|15000)\b' "$q" || true)
+test "$n" = 1 || { echo "Quarto's browser launch timeout is not the 15 s read here: $(grep -n -o 'kDefaultLaunchTimeout = [^;,]*' "$q")" >&2; exit 1; }
+echo "quarto $(quarto --version): $(grep -o -E 'kDefaultLaunchTimeout = (15e3|15000)' "$q")"
 EOS
 
 # 6. Fonts beyond the system's: /opt/fonts, an empty mount point for the host's own (a
