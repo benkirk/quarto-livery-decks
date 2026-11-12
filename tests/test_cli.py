@@ -285,6 +285,18 @@ def test_furniture_skip_lists_agree():
     assert not missing, f"deck_qa.py's MEASURE_JS skip list lacks {missing}"
 
 
+def test_twins_across_languages_agree():
+    """Two values one side restates from the other, held equal: a rail's items step down in the pptx
+    no further than the HTML autofit's floor (grid.py RAIL_MIN, engine-revealjs.js MIN), and make
+    qa knows a deck built under `details: hide` by the line engine-revealjs.lua writes into its head
+    (deck_qa.py DETAILS_HIDE: were it another line, the report's hidden count would read 0)."""
+    floor = re.search(r"\bMIN = ([\d.]+)", (ENGINE / "engine-revealjs.js").read_text()).group(1)
+    rail = re.search(r"^RAIL_MIN = ([\d.]+)", (ENGINE / "pptx_steps" / "grid.py").read_text(), re.M).group(1)
+    assert float(rail) == float(floor), f"grid.py RAIL_MIN {rail} is not engine-revealjs.js MIN {floor}"
+    hide = re.search(r'^DETAILS_HIDE = "([^"]*)"', (ROOT / "common" / "utils" / "deck_qa.py").read_text(), re.M).group(1)
+    assert hide in (ENGINE / "engine-revealjs.lua").read_text(), f"engine-revealjs.lua does not write {hide!r}"
+
+
 def test_no_private_imports():
     """A step or tool imports no other module's `_private` name: what two modules need is public in
     pptx_steps/common.py, measure.py or livery.py (the #126 sweep found grid.py and columns.py on
