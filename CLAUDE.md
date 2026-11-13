@@ -199,13 +199,17 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rsvg-convert`: conda-forge librsvg), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
-  `style_footnotes`, `link_captions`, `details` (a details slide's tab and hidden flag, before `slide_layout`: a split slide's halves are found by their titles, and a full slide loses its title there), `slide_layout`, `columns` (a two-column slide at its
+  `code_blocks.normalize` (a code block's lines: pandoc writes an unhighlighted one's as raw line
+  feeds, which LibreOffice draws as paragraphs, double-spaced; they become `a:br`, each line's
+  leading spaces no-break spaces; `common.is_code_para()`, which `split_br()` leaves whole), `style_footnotes`, `link_captions`, `details` (a details slide's tab and hidden flag, before `slide_layout`: a split slide's halves are found by their titles, and a full slide loses its title there), `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `links` (a hyperlink on a field slide, `common.field_ink()`: a dark or composed slide, in the field's text color with Office's `hlinkClr val="tx"` extension, since PowerPoint draws a link in the theme's hlink, the livery's primary, whatever its run says), `movie` (each movie over its
   poster, in the poster's final frame), `style_tables` (tables drawn as in the
   HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
   as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
-  `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
+  `type_step` (a deck's `type-body:`/`type-scale:`) and `code_blocks.fit` (a block wider than its
+  box set smaller, to the half point, no smaller than the table type, warned of past it; last, at
+  the sizes the deck shows) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`/`peek_marker`, `BAND`, `PHOTO`, the shape tests), `measure.py` the text
   measuring (`text_height`, `table_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text

@@ -29,6 +29,12 @@ A release's entry is written here before its tag is pushed, and becomes its note
   in a column is still dropped, and the render now warns, naming the slide.
 - **A linked picture followed by a list or text stays on its slide** in pptx (#178), as a bare
   picture does; it split the slide.
+- **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
+  terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
+  and a block wider than its box is set smaller until its longest line fits, no smaller than the
+  table type (past that it wraps, and the render warns, naming the slide). `make qa` draws the
+  pptx's code in a monospace face (DejaVu Sans Mono for Courier), as PowerPoint does, where
+  LibreOffice drew a serif.
 
 ## [26.11.1] - 2026-11-12
 

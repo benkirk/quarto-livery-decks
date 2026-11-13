@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # livery, pptx_waves,
 from pptx import Presentation  # noqa: E402
 
 from pptx_steps import (  # noqa: E402  (each reads the livery as it loads)
-    columns, details, embed_fonts, enable_autofit, grid, link_captions, links, marking, movie, notes_clrmap, section_subtitle,
+    code_blocks, columns, details, embed_fonts, enable_autofit, grid, link_captions, links, marking, movie, notes_clrmap, section_subtitle,
     slide_layout, status_glyphs, style_footnotes, style_tables, svg_fallback, type_step, watermark)
 
 
@@ -48,7 +48,8 @@ def post(path: Path) -> None:
             z.writestr(name, data)
     prs = Presentation(buf)
 
-    # One Presentation, each step on it with the deck's path (its name for the messages). Footnotes
+    # One Presentation, each step on it with the deck's path (its name for the messages). A code
+    # block's lines first, so every step after it measures and moves the block as its lines. Footnotes
     # are styled before slide_layout, whose scale= leaves them at their size; the details slides are
     # marked before it too (a split slide's halves are found by their titles, and a full slide
     # loses its title there); columns after it,
@@ -59,8 +60,10 @@ def post(path: Path) -> None:
     # tables after all of those, re-split inside their final frames; the marking strips and the
     # watermark before type_step, so a deck's type step scales them as HTML and PDF do (the
     # watermark after every step that adds a slide's shapes: it goes behind the first that holds
-    # text, a cover's after its field and marks); type_step last, since it
-    # multiplies every size the steps before it set.
+    # text, a cover's after its field and marks); type_step next to last, since it
+    # multiplies every size the steps before it set; a wide code block fit to its box last, at the
+    # sizes the deck shows.
+    code_blocks.normalize(prs, path)        # a code block's lines as a:br, their indentation kept
     style_footnotes.run(prs, path)
     link_captions.run(prs, path)            # a linked picture's URL, a box pandoc cannot add
     details.run(prs, path)                  # a {.details} slide's tab, and hidden unless the deck shows them
@@ -74,6 +77,7 @@ def post(path: Path) -> None:
     marking.run(prs, path)                  # the marking strips, on every slide
     watermark.run(prs, path)                # the watermark, on every slide, behind the text
     type_step.run(prs, path)                # a deck's type-body:/type-scale:
+    code_blocks.fit(prs, path)              # a code block wider than its box set smaller, to the table type
     prs.save(str(path))
 
 
