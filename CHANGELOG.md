@@ -50,6 +50,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - **A text tree in a PDF code block keeps its branches** (#178): LM Mono has no box drawing
   (`├── └── │`), which dropped out of the PDF; the theme borrows DejaVu Sans Mono's, which line
   up with LM Mono's columns.
+- **A long PDF deck keeps its colors** (#178): every frame left one color pushed on xdvipdfmx's
+  stack (the theme's per-frame color hook runs outside any group, where its pop is lost), so past
+  about 125 frames every color change was ignored, and an 82-slide deck's page came out on the
+  text color; the hook's pushes are popped at the next frame.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the

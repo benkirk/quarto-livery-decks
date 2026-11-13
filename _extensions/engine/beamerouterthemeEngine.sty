@@ -497,7 +497,20 @@
 \def\engine@atframe#1{%
   \expandafter\def\expandafter\engine@framehook\expandafter{\engine@framehook#1}}
 \let\engine@calculateheadfoot\beamer@calculateheadfoot
-\def\beamer@calculateheadfoot{\engine@framehook\engine@calculateheadfoot}
+% The hook runs at group level 0, so a color it sets (\usebeamercolor[fg]) pushes onto the driver's
+% color stack with no group to pop it (\set@color's \aftergroup\reset@color does nothing there): one
+% push a frame, and past xdvipdfmx's 128 every later color change was ignored, a long deck's page
+% drawn in the text color (#178). The pushes made at level 0 are counted and popped at the next
+% frame's hook, before it sets its own.
+\newcount\engine@hookpushes
+\def\engine@pophook{\ifnum\engine@hookpushes>\z@
+  \special{color pop}\global\advance\engine@hookpushes\m@ne\expandafter\engine@pophook\fi}
+\def\beamer@calculateheadfoot{\engine@pophook
+  \let\engine@setcolor\set@color
+  \def\set@color{\engine@setcolor\ifnum\currentgrouplevel=\z@\global\advance\engine@hookpushes\@ne\fi}%
+  \engine@framehook
+  \let\set@color\engine@setcolor
+  \engine@calculateheadfoot}
 
 \def\engine@touchedcolors{normal text,title,subtitle,author,institute,date,%
 frametitle,framesubtitle,structure,item,subitem,subsubitem,local structure,%
