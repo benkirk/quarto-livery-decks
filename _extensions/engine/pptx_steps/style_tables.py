@@ -141,10 +141,11 @@ def rebalance(tbl, base, start=None):
     else:
         widths = _give(widths, [max(f - w, 0) for f, w in zip(least, widths)], least)
         # a short cell ("41.2 %": its whole text under SHORT words' width) kept on one line, from
-        # the columns whose text wraps anyway, as a browser gives a column its max-content
+        # what a column has beyond its whole text and, past that, from the columns whose text wraps
+        # anyway (down to their widest word), as a browser gives a column its max-content
         brief = [max(h - w, 0) if h <= SHORT * f else 0 for f, h, w in zip(least, whole, widths)]
         wraps = [h > w for h, w in zip(whole, widths)]
-        donors = [f if wrap and not b else w for f, w, b, wrap in zip(least, widths, brief, wraps)]
+        donors = [w if b else f if wrap else h for f, h, w, b, wrap in zip(least, whole, widths, brief, wraps)]
         if any(brief) and sum(brief) <= sum(w - d for w, d in zip(widths, donors)):
             widths = _give(widths, brief, donors)
     if all(abs(w - int(c.get("w"))) <= len(cols) for w, c in zip(widths, cols)):
@@ -165,6 +166,18 @@ def _give(widths, need, keep):
     return [w + n - (max(w - k, 0) * take if not n else 0) for w, n, k in zip(widths, need, keep)]
 
 
+def drawn(tbl, base):
+    """A copy of the table with its header as style_table() draws it (capitals, bold, tracked, at
+    HEAD_SCALE of its size), for measuring before style_tables runs (settle(), measure.table_height())."""
+    tmp = copy.deepcopy(tbl)
+    rows = tmp.findall(qn("a:tr"))
+    tbl_pr = tmp.find(qn("a:tblPr"))
+    if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and rows and any((t.text or "").strip() for t in rows[0].iter(qn("a:t"))):
+        for tc in rows[0].findall(qn("a:tc")):
+            _header_runs(tc, base)
+    return tmp
+
+
 def settle(tbl, base):
     """The table's columns as style_table() will split them (rebalance(), on a copy whose header is
     in its capitals), so a step measuring it before style_tables runs measures its rows at their
@@ -172,12 +185,7 @@ def settle(tbl, base):
     slide_layout's scale= still sizes them (a header styled first kept its tracking at the old
     size). rebalance()'s True: a word still breaks."""
     ORIGINAL.setdefault(tbl, [int(c.get("w")) for c in tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))])
-    tmp = copy.deepcopy(tbl)
-    rows = tmp.findall(qn("a:tr"))
-    tbl_pr = tmp.find(qn("a:tblPr"))
-    if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and rows and any((t.text or "").strip() for t in rows[0].iter(qn("a:t"))):
-        for tc in rows[0].findall(qn("a:tc")):
-            _header_runs(tc, base)
+    tmp = drawn(tbl, base)
     short = rebalance(tmp, base, ORIGINAL[tbl])
     grid = lambda t: t.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
     for col, settled in zip(grid(tbl), grid(tmp)):

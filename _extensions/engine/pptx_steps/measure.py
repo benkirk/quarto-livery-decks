@@ -254,9 +254,14 @@ def table_height(shape, slide):
     measured in the livery's base face in its column's width (less the cell's margins), at the
     table's biggest size (at least the slide's other size), plus the cell's top and bottom margins
     as style_tables sets them (CELL_MAR: it runs after the steps that read this, so the cells still
-    carry PowerPoint's defaults). What a note under it, a slide centering it or a flow above it
+    carry PowerPoint's defaults), its header in the capitals style_tables will set (style_tables.drawn()). What a note under it, a slide centering it or a flow above it
     reads, since the frame's own height is pandoc's nominal."""
     table, other = shape.table, other_size(slide)
+    tbl_pr = table._tbl.find(qn("a:tblPr"))
+    if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and not any(r.get("cap") == "all" for r in table._tbl.iter(qn("a:rPr"))):
+        from pptx.table import Table
+        from .style_tables import drawn   # here: style_tables measures with this module
+        table = Table(drawn(table._tbl, other), shape)   # its header as it will be drawn, which wraps more (#179)
     biggest = max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
     widths = [col.width for col in table.columns]
     total = 0

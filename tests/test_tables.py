@@ -109,3 +109,20 @@ def test_settled_narrow_then_widened(deck):
         "print(','.join(c.get('w') for c in grid(t)), ','.join(c.get('w') for c in grid(fresh)))\n")
     a, b = (list(map(int, x.split(","))) for x in (narrow_then_wide, wide))
     assert all(abs(x - y) <= len(a) for x, y in zip(a, b)), (a, b)
+
+
+def test_header_measured_as_drawn(tmp_path):
+    """table_height() before style_tables measures the header in the capitals and tracking it will
+    be drawn in: a header that wraps only in capitals made the table taller than measured, and a †
+    line placed under it was drawn over the last row (#179, the Derecho deck's "Why no factor
+    reaches 0.5")."""
+    head = " | ".join(["abcdefgh ijk"] * 8)   # one line in lower case at the table size, two in its header capitals (ncar)
+    md = "## T\n\n| " + head + " |\n|" + "---|" * 8 + "\n| " + " | ".join(["x"] * 8) + " |\n"
+    out = tmp_path / "h.pptx"
+    subprocess.run([pandoc_exe(), "--reference-doc", str(NCAR / "template.pptx"), "-o", str(out)], input=md, text=True,
+                   cwd=tmp_path, check=True, capture_output=True)
+    before, after = measured(out, "from pptx_steps import style_tables\nfrom pptx_steps.common import palette\n"
+                                  "s = prs.slides[0]\nt = next(sh for sh in s.shapes if sh.has_table)\nb = table_height(t, s)\n"
+                                  "style_tables.style_table(t.table._tbl, other_size(s), palette(s))\n"
+                                  "print(b, table_height(t, s))\n")
+    assert int(before) >= int(after), (before, after)
