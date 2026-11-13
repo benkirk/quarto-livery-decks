@@ -8,20 +8,25 @@ header row with no fill, bold letter-spaced capitals at 0.8x the body size over 
 boxes.table's head-rule-color; body rows with a rule in the derived table-rule blend (the widths
 boxes.table's, of the slide's height), every second
 row filled with the table-band blend; columns left alone when pandoc took widths from the
-source, else re-split in proportion to each column's longest cell, each 10-60% wide; a list in a
+source, else re-split in proportion to each column's longest cell, each 10-60% wide, and then no
+column narrower than its widest word (a word broke inside a narrow cell, #178), warned of when the
+words together pass the table's width; a list in a
 cell (a grid table's) bulleted and indented as the body's list, which a cell does not inherit.
-Run after slide_layout has scaled the runs (pptx_post.py). Idempotent."""
+Run after slide_layout has scaled the runs (pptx_post.py); prepare() first settles every table's
+header and widths (settle()) so the steps between measure each as drawn. Idempotent."""
 
 import copy
+import sys
 from pathlib import Path
 
 from lxml import etree
 from pptx.oxml.ns import qn
+from pptx.util import Pt
 
 import livery as livery_mod
 
-from .common import BOXES, BULLET, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, ppr_place, rpr, strip_bullets
-from .measure import CANVAS, other_size
+from .common import BOXES, BULLET, CELL_MAR, DARK_INK, LIVERY, is_table, on_dark, palette, ppr_place, rpr, slide_title, strip_bullets
+from .measure import BODY, CANVAS, PX, other_size, pieces, widest_word
 
 NO_STYLE    = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
 TABLE       = BOXES["table"]
@@ -30,6 +35,8 @@ ROW_RULE    = TABLE["rule"] * CANVAS["h"] * 12700        # in the table-rule ble
 HEAD_SCALE  = 0.8                      # th 0.8em of the table's 0.85em, ~0.8x td
 HEAD_SPC    = LIVERY["type"]["tracking"]   # the small caps' letter spacing, em (type.tracking, every format)
 SHARE       = (0.10, 0.60)             # column width bounds when re-split
+FIT         = 1.08                     # a measured width (PIL's) times this: a renderer's own wrap with room to spare
+SHORT       = 2.0                      # a cell whose whole text is under this many times its widest word's width stays one line
 
 
 def _ln(tag, rule):
@@ -76,21 +83,90 @@ def _header_runs(tc, base):
         r_pr.set("cap", "all")
 
 
-def _rebalance(tbl):
+def _cell_mar(tc):
+    """A cell's left and right margins (EMU): its tcPr's, else PowerPoint's 0.1 in."""
+    tc_pr = tc.find(qn("a:tcPr"))
+    return sum(int(tc_pr.get(k)) if tc_pr is not None and tc_pr.get(k) else 91440 for k in ("marL", "marR"))
+
+
+def floors(tbl, base):
+    """Each column's least and whole widths (EMU), as a browser's table reads them (min- and
+    max-content): its widest word (measure.widest_word(), in the face, size, capitals and tracking
+    the cell shows) and its widest unwrapped cell, each FIT times as measured, plus the cell's margins; a cell spanning
+    columns is not counted."""
     cols = tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
-    widths = [int(c.get("w")) for c in cols]
-    if len(cols) < 2 or max(widths) - min(widths) > len(cols):
-        return
-    longest = [1] * len(cols)
+    least, whole = [0] * len(cols), [0] * len(cols)
     for tr in tbl.findall(qn("a:tr")):
         for i, tc in enumerate(tr.findall(qn("a:tc"))[:len(cols)]):
-            text = "".join(t.text or "" for t in tc.iter(qn("a:t")))
-            longest[i] = max(longest[i], len(text))
+            if tc.get("gridSpan") or tc.get("hMerge"):
+                continue
+            mar = _cell_mar(tc)
+            for p in tc.iter(qn("a:p")):
+                ps = pieces(p, BODY, Pt(base / 100))
+                least[i] = max(least[i], round(widest_word(ps) * PX * FIT) + mar)
+                whole[i] = max(whole[i], round(sum(f.getlength(t) for t, f in ps if f is not None) * PX * FIT) + mar)
+    return least, whole
+
+
+def rebalance(tbl, base):
+    """The table's columns re-split inside its width: pandoc's equal columns in proportion to each
+    column's longest cell, each SHARE wide (columns pandoc took from the source's widths kept);
+    then no column narrower than its floor (floors()), the room taken from the columns wider than
+    theirs, in proportion to what they have over it. True when the floors together pass the width:
+    the columns then in proportion to their floors, and a word still breaks."""
+    cols = tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
+    widths = [int(c.get("w")) for c in cols]
+    if len(cols) < 2:
+        return False
     total = sum(widths)
-    shares = [min(max(n / sum(longest), SHARE[0]), SHARE[1]) for n in longest]
-    norm = sum(shares)
-    for col, share in zip(cols, shares):
-        col.set("w", str(round(total * share / norm)))
+    if max(widths) - min(widths) <= len(cols):   # pandoc's equal columns: by their longest cells
+        longest = [1] * len(cols)
+        for tr in tbl.findall(qn("a:tr")):
+            for i, tc in enumerate(tr.findall(qn("a:tc"))[:len(cols)]):
+                text = "".join(t.text or "" for t in tc.iter(qn("a:t")))
+                longest[i] = max(longest[i], len(text))
+        shares = [min(max(n / sum(longest), SHARE[0]), SHARE[1]) for n in longest]
+        widths = [total * share / sum(shares) for share in shares]
+    least, whole = floors(tbl, base)
+    short = sum(least) > total
+    if short:
+        widths = [total * f / sum(least) for f in least]
+    else:
+        widths = _give(widths, [max(f - w, 0) for f, w in zip(least, widths)], least)
+        # a short cell ("41.2 %": its whole text under SHORT words' width) kept on one line, from
+        # the columns whose text wraps anyway, as a browser gives a column its max-content
+        brief = [max(h - w, 0) if h <= SHORT * f else 0 for f, h, w in zip(least, whole, widths)]
+        wraps = [h > w for h, w in zip(whole, widths)]
+        donors = [f if wrap and not b else w for f, w, b, wrap in zip(least, widths, brief, wraps)]
+        if any(brief) and sum(brief) <= sum(w - d for w, d in zip(widths, donors)):
+            widths = _give(widths, brief, donors)
+    edges = [round(sum(widths[:i + 1]) * total / sum(widths)) for i in range(len(widths))]   # integers summing to the width
+    for col, a, b in zip(cols, [0] + edges[:-1], edges):
+        col.set("w", str(b - a))
+    return short
+
+
+def _give(widths, need, keep):
+    """widths with need[i] more for each column, taken from the columns over their keep[i] in
+    proportion to what they have over it (all of it when that is all there is)."""
+    want = sum(need)
+    spare = sum(max(w - k, 0) for w, k in zip(widths, keep))
+    if want <= 0 or spare <= 0:
+        return widths
+    take = min(want, spare) / spare
+    return [w + n - (max(w - k, 0) * take if not n else 0) for w, n, k in zip(widths, need, keep)]
+
+
+def settle(tbl, base):
+    """What style_table() does to a table's text and widths, the header's capitals and the columns'
+    split (rebalance()), so a step measuring it before style_tables runs measures it as drawn
+    (prepare(), figures.draw_table()); idempotent. rebalance()'s True: a word still breaks."""
+    rows = tbl.findall(qn("a:tr"))
+    tbl_pr = tbl.find(qn("a:tblPr"))
+    if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and rows and any((t.text or "").strip() for t in rows[0].iter(qn("a:t"))):
+        for tc in rows[0].findall(qn("a:tc")):
+            _header_runs(tc, base)
+    return rebalance(tbl, base)
 
 
 def style_table(tbl, base, ink):
@@ -121,7 +197,7 @@ def style_table(tbl, base, ink):
                 _header_runs(tc, base)
     if ink is DARK_INK:   # the cells' text on the dark slide
         on_dark(list(tbl.iter(qn("a:p"))), ink["foreground"])
-    _rebalance(tbl)
+    return rebalance(tbl, base)
 
 
 def cell_lists(tbl, master):
@@ -154,6 +230,15 @@ def cell_lists(tbl, master):
                 ppr_place(ppr, copy.deepcopy(el))
 
 
+def prepare(prs, path: Path) -> None:
+    """Every table settled (settle()) before the steps that measure one (slide_layout, grid)."""
+    for slide in prs.slides:
+        base = other_size(slide)
+        for shape in slide.shapes:
+            if is_table(shape):
+                settle(shape.table._tbl, base)
+
+
 def run(prs, path: Path) -> None:
     """The open deck, changed in place; path for the message."""
     styled = 0
@@ -161,7 +246,9 @@ def run(prs, path: Path) -> None:
         base = other_size(slide)
         for shape in slide.shapes:
             if is_table(shape):
-                style_table(shape.table._tbl, base, palette(slide))
+                if style_table(shape.table._tbl, base, palette(slide)):
+                    print(f"style_tables: WARNING: slide {slide_title(slide)!r}: a table's longest words are wider than "
+                          f"its columns together; a word breaks inside its cell (fewer columns, or {{.wide}})", file=sys.stderr)
                 cell_lists(shape.table._tbl, slide.slide_layout.slide_master._element)
                 styled += 1
     print(f"style_tables: styled {styled} table(s) → {path.name}")

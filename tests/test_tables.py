@@ -1,0 +1,90 @@
+"""Check a pptx table's columns and the note under it (pptx_steps/style_tables.py, #178).
+
+    python3 -m pytest tests/test_tables.py
+
+style_tables re-splits pandoc's equal columns by their longest cells and then holds every column at
+least as wide as its widest word (in the face, size, capitals and tracking its cells show), the
+columns pandoc took from the source's dash runs too, a short cell ("41.2 %") on one line where a
+wrapping column can give the room; words wider than the table together warn. Its settle() runs
+before slide_layout (prepare()), so a ::: note under a table is placed by the table as drawn: a
+column the re-split narrows wraps the last row, and the note measured against the equal columns
+overlapped it. single-body.lua folds the note (a `quarto` shim under plain pandoc), the driver runs
+every step under ncar's LIVERY_DIR. Needs pandoc ($QUARTO_PANDOC).
+"""
+
+import os
+import subprocess
+import sys
+
+import pytest
+
+from conftest import ENGINE, ROOT, pandoc_exe, run_steps
+
+NCAR = ROOT / "liveries" / "ncar"
+SHIM = ('quarto = {{ doc = {{ is_format = function(f) return f == "pptx" end }},\n'
+        '           utils = {{ resolve_path = function(p) return "{engine}/" .. p end }},\n'
+        '           log = {{ warning = function(s) io.stderr:write("WARNING: " .. s .. "\\n") end }},\n'
+        '           json = {{ decode = pandoc.json.decode }} }}\n'
+        'dofile("{engine}/single-body.lua")\n')
+LONG = "a long cell " * 8
+MD = ("## Wrapped\n\n| Key | Value |\n|---|---|\n| " + LONG + " | short |\n"
+      "| k | a value of some length that wraps when narrower |\n\n"
+      "::: note\nThe note under the table.\n:::\n\n"
+      "## Dashes\n\n| Group | Share | Of the allocation, by group and year, as the panel set it |\n|-|-|----|\n"
+      "| COMMUNITY | 41.2 % | Allocated through the community panel for the year |\n"
+      "| UNIVERSITY | 30.5 % | Allocated to university researchers for the year |\n\n"
+      "## Crowded\n\n| " + " | ".join(f"Supercalifragilistic{i}" for i in range(9)) + " |\n|"
+      + "---|" * 9 + "\n| " + " | ".join("x" for _ in range(9)) + " |\n")
+
+
+@pytest.fixture(scope="module")
+def deck(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("tables")
+    shim = tmp / "single-body-shim.lua"
+    shim.write_text(SHIM.format(engine=ENGINE))
+    out = tmp / "t.pptx"
+    subprocess.run([pandoc_exe(), "--lua-filter", str(shim), "--reference-doc", str(NCAR / "template.pptx"), "-o", str(out)],
+                   input=MD, text=True, cwd=tmp, check=True, capture_output=True)
+    r = run_steps(out, None, NCAR)
+    return out, r.stderr
+
+
+def measured(out, script):
+    """script run on the deck under ncar's livery (the steps' modules import it as they load)."""
+    env = {**os.environ, "LIVERY_DIR": str(NCAR), "PYTHONPATH": str(ENGINE)}
+    head = ("import sys, json\nfrom pptx import Presentation\nfrom pptx.oxml.ns import qn\n"
+            "from pptx_steps.measure import table_height, other_size\nfrom pptx_steps.style_tables import floors\n"
+            "prs = Presentation(sys.argv[1])\n")
+    r = subprocess.run([sys.executable, "-c", head + script, str(out)], env=env, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    return r.stdout.split()
+
+
+def test_note_under_the_drawn_table(deck):
+    """The note sits under the table as drawn (its re-split columns, its header in capitals)."""
+    out, _ = deck
+    top, bottom = measured(out, "s = prs.slides[0]\n"
+                                "t = next(sh for sh in s.shapes if sh.has_table)\n"
+                                "n = next(sh for sh in s.shapes if sh.name == 'Note')\n"
+                                "print(n.top, t.top + table_height(t, s))\n")
+    assert int(top) >= int(bottom), "the note overlaps the table's last row"
+
+
+def test_no_column_under_its_widest_word(deck):
+    """Columns pandoc took from short dash runs are raised to their widest words, a short cell's
+    column to its whole text; no warning for a table that fits."""
+    out, err = deck
+    widths, least, whole = (list(map(int, x.split(","))) for x in measured(out,
+        "s = prs.slides[1]\nt = next(sh for sh in s.shapes if sh.has_table).table._tbl\n"
+        "w = [int(c.get('w')) for c in t.findall(qn('a:tblGrid') + '/' + qn('a:gridCol'))]\n"
+        "least, whole = floors(t, other_size(s))\n"
+        "print(','.join(map(str, w)), ','.join(map(str, least)), ','.join(map(str, whole)))\n"))
+    assert all(w >= f - 2 for w, f in zip(widths, least)), (widths, least)
+    assert widths[1] >= whole[1] - 2, "the short cell's column under its whole text"
+    assert "'Dashes'" not in err and "'Wrapped'" not in err, err
+
+
+def test_crowded_table_warns(deck):
+    """Nine columns of long words: wider together than the table, warned of, naming the slide."""
+    _, err = deck
+    assert "slide 'Crowded': a table's longest words are wider than its columns together" in err, err

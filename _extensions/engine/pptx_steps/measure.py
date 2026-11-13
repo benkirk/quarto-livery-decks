@@ -46,6 +46,15 @@ class _Mono:
         return 0.6 * self.px * len(text)
 
 
+class _Tracked:
+    """A face with letter spacing (a:spc, a header's tracked capitals): px more a character."""
+    def __init__(self, f, px):
+        self.f, self.px = f, px
+
+    def getlength(self, text):
+        return self.f.getlength(text) + self.px * len(text)
+
+
 @functools.lru_cache
 def font(family, weight, pt):
     """The family's face at weight (400 when it has no such file) and pt points."""
@@ -189,10 +198,11 @@ def para_size(p, shape, slide):
 
 def pieces(p, family, size, weight=None):
     """A paragraph as (text, face) pieces for runs_lines(): each run in the face the pptx shows it
-    in, at its own size (else the paragraph's, EMU) and weight (else `weight`, else regular); a
-    line break (pandoc's subtitle and author share a paragraph) as "\v"."""
+    in, at its own size (else the paragraph's, EMU) and weight (else `weight`, else regular), in
+    capitals under cap="all" and with its letter spacing (spc: a table header's); a line break
+    (pandoc's subtitle and author share a paragraph) as "\v". p is a paragraph or its a:p."""
     out = []
-    for el in p._p:
+    for el in getattr(p, "_p", p):
         if el.tag == qn("a:br"):
             out.append(("\v", None))
         elif el.tag in (qn("a:r"), qn("a:fld")):
@@ -203,8 +213,35 @@ def pieces(p, family, size, weight=None):
             pt = int(rpr.get("sz")) / 100 if rpr is not None and rpr.get("sz") else size / 12700
             b = rpr.get("b") if rpr is not None else None
             w = 700 if b in ("1", "true") else 400 if b in ("0", "false") else (weight or 400)
-            out.append((t.text or "" if t is not None else "", face(name, family, w, pt)))
+            text, f = t.text or "" if t is not None else "", face(name, family, w, pt)
+            if rpr is not None and rpr.get("cap") == "all":
+                text = text.upper()
+            if rpr is not None and rpr.get("spc"):
+                f = _Tracked(f, int(rpr.get("spc")) / 100 / PT_PX)
+            out.append((text, f))
     return out
+
+
+def widest_word(pieces):
+    """The widest piece a line cannot break inside, in px, of (text, face) pieces: a word (one may
+    cross runs), a hyphenated word's parts each a word, as _wrap() breaks them."""
+    widest, cur = 0.0, 0.0
+    for text, f in pieces:
+        if f is None:   # a line break
+            widest, cur = max(widest, cur), 0.0
+            continue
+        for tok in re.split(r"(\s+)", text):
+            if not tok:
+                continue
+            if tok.isspace():
+                widest, cur = max(widest, cur), 0.0
+                continue
+            parts = HYPHEN.split(tok)
+            for i, part in enumerate(parts):
+                cur += f.getlength(part)
+                if i < len(parts) - 1:
+                    widest, cur = max(widest, cur), 0.0
+    return max(widest, cur)
 
 
 def para_lines(p, family, size, width, weight=None):

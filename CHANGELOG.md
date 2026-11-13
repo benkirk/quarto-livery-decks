@@ -29,6 +29,11 @@ A release's entry is written here before its tag is pushed, and becomes its note
   in a column is still dropped, and the render now warns, naming the slide.
 - **A linked picture followed by a list or text stays on its slide** in pptx (#178), as a bare
   picture does; it split the slide.
+- **pptx table columns no narrower than their widest word** (#178): a narrow table (in a
+  column, or with short dash runs in its separator) no longer breaks a word inside a cell
+  ("COMMUNI TY"), a short cell ("41.2 %") stays on one line when a wrapping column can give the
+  room, and a table whose words cannot fit together warns, naming the slide. A `::: note` under
+  a table whose last row wraps no longer overlaps it.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the
