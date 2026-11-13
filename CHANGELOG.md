@@ -18,6 +18,14 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+## [26.11.2] - 2026-11-13
+
+What a long consumer talk (the Derecho explainer, #178) asked for: pptx slides of text and a
+picture or table drawn as HTML and the PDF stack them, code blocks that keep their lines and fit
+their box, table columns no narrower than their widest word, a long PDF deck that keeps its colors
+(past about 125 frames every deck lost them), a PDF card beside a picture column that ends with
+it, and `make qa` checks that see a split pptx slide and a PDF figure that runs off its page.
+
 ### Decks
 
 - **pptx slides of text and a picture or table read as HTML and PDF stack them** (#178): text
@@ -1062,7 +1070,8 @@ sprint, v1.0.0 and v1.1.0, were withdrawn when the versions became calendar ones
   `footer=`, `typescale=` and the rest (latex/README.md "Theme options"); each release attaches an
   Overleaf project per livery.
 
-[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.11.1...HEAD
+[Unreleased]: https://github.com/benkirk/quarto-livery-decks/compare/v26.11.2...HEAD
+[26.11.2]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.11.2
 [26.11.1]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.11.1
 [26.11.0]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.11.0
 [26.10.13]: https://github.com/benkirk/quarto-livery-decks/releases/tag/v26.10.13
