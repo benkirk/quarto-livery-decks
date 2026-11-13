@@ -116,4 +116,4 @@ Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
 
 ![](images/example.jpg)
 
-A caption a little longer than its line on the slide: the pptx wraps it under the picture, as the PDF does.
+A caption wider than the body's margins allow, inside its own box: the slide less a narrow pad, as HTML lays it out.
