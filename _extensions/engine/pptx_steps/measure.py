@@ -37,6 +37,19 @@ PPTX_FACES = {PPTX.get("typeface"): BODY, PPTX.get("heading-typeface"): TYPE.get
 LINE = 1.2                                  # line height / font size, for the text estimates
 
 
+@functools.lru_cache
+def face_line(family):
+    """A face's own line height over its size (its ascent and descent, PIL's from the font's metrics),
+    at least LINE: what a renderer gives a single-spaced line (Poppins 1.4; LibreOffice in the image
+    drew a table's rows at it, where LINE measured them 15% short, #179). LINE for a stand-in (the
+    pptx names a face the livery does not bundle, cu's Helvetica Neue): its metrics are not the face's."""
+    if PPTX.get("typeface") not in (None, family):
+        return LINE
+    f = font(family, 400, 100)
+    asc, desc = f.getmetrics()
+    return max(LINE, (asc + desc) / f.size)
+
+
 class _Mono:
     """A face the livery does not bundle (pandoc's Courier): 0.6 em a character."""
     def __init__(self, px):
@@ -274,7 +287,7 @@ def table_height(shape, slide):
                 sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
                 n += para_lines(p, BODY, Pt(sz / 100), inner)
             most = max(most, n)
-        total += int(most * Pt(biggest / 100) * LINE + 2 * CELL_MAR)
+        total += int(most * Pt(biggest / 100) * face_line(BODY) + 2 * CELL_MAR)
     return total
 
 

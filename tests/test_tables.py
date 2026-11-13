@@ -126,3 +126,19 @@ def test_header_measured_as_drawn(tmp_path):
                                   "style_tables.style_table(t.table._tbl, other_size(s), palette(s))\n"
                                   "print(b, table_height(t, s))\n")
     assert int(before) >= int(after), (before, after)
+
+
+def test_rows_measured_at_the_faces_line(tmp_path):
+    """A table's rows measure at the face's own line height (Poppins 1.4 em, ncar's), not the 1.2 the
+    text estimates take: LibreOffice in the image drew the rows that tall, and a † line placed under
+    a measure of 1.2 sat on the last row (#179). A stand-in face (cu's Heros for Helvetica Neue) keeps
+    1.2: its metrics are not the face's."""
+    md = "## T\n\n| a |\n|---|\n" + "".join(f"| r{k} |\n" for k in range(6))
+    out = tmp_path / "r.pptx"
+    subprocess.run([pandoc_exe(), "--reference-doc", str(NCAR / "template.pptx"), "-o", str(out)], input=md, text=True,
+                   cwd=tmp_path, check=True, capture_output=True)
+    h, line, size = measured(out, "from pptx_steps.measure import face_line, BODY\nfrom pptx_steps.common import CELL_MAR\n"
+                                  "s = prs.slides[0]\nt = next(sh for sh in s.shapes if sh.has_table)\n"
+                                  "print(table_height(t, s), face_line(BODY), other_size(s))\n")
+    assert float(line) >= 1.4, line
+    assert int(h) >= 7 * int(size) * 127 * 1.4, (h, size)   # sz in hundredths of a point; 12700 EMU a point
