@@ -503,3 +503,29 @@ def test_long_deck_keeps_its_colors(tmp_path):
                    check=True)
     im = Image.open(tmp_path / "last.png").convert("RGB")
     assert im.getpixel((im.width - 3, im.height // 2)) == (255, 255, 255), "the last page is not on the background"
+
+
+def test_card_beside_a_plain_column(tmp_path):
+    """A row's height is the tallest of each card's body and its own head: a titled card beside a
+    taller plain column (a picture) ends with the column, not a head band lower (it took the row's
+    tallest body, the column's, plus the row's tallest head, the card's)."""
+    if not (shutil.which("xelatex") and shutil.which("latexmk")):
+        pytest.skip("xelatex and latexmk")
+    from PIL import Image
+    tex = (r"\documentclass[aspectratio=169]{beamer}" "\n"
+           r"\usetheme[livery=liveries/ncar,fonts=bundled,waves=false]{Engine}" "\n"
+           r"\begin{document}\begin{frame}{Mixed row}" "\n"
+           r"\begin{enginecards}{0.5,0.5}" "\n"
+           r"\begin{enginecard}[plain]{}{}{\color{red}\rule{2cm}{3cm}}\end{enginecard}" "\n"
+           r"\begin{enginecard}{ONE ENVIRONMENT}{A sub-line}A line.\end{enginecard}" "\n"
+           r"\end{enginecards}\end{frame}\end{document}" "\n")
+    r, log = compile_tex(tmp_path, "mixed", tex)
+    assert r.returncode == 0, log[-2000:]
+    subprocess.run(["pdftoppm", "-r", "72", "-singlefile", "-png", str(tmp_path / "mixed.pdf"), str(tmp_path / "m")], check=True)
+    im = Image.open(tmp_path / "m.png").convert("RGB")
+    w, h = im.size
+    red = [y for y in range(h) for x in range(w // 2) if im.getpixel((x, y)) == (255, 0, 0)]
+    card = [y for y in range(int(0.2 * h), int(0.9 * h)) if im.getpixel((3 * w // 4, y)) != im.getpixel((3 * w // 4, h - 2))]
+    assert red and card, (bool(red), bool(card))
+    pad = min(red) - min(card)   # the plain column's top pad over its picture, which it has under it too
+    assert abs(max(card) - (max(red) + pad)) <= 2, f"the card ends at {max(card)}px, the plain column at {max(red) + pad}px"

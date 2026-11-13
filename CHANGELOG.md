@@ -58,6 +58,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   stack (the theme's per-frame color hook runs outside any group, where its pop is lost), so past
   about 125 frames every color change was ignored, and an 82-slide deck's page came out on the
   text color; the hook's pushes are popped at the next frame.
+- **A PDF card beside a picture column ends with it**: a row of cards was as tall as its tallest
+  body plus its tallest head, so a titled card beside a taller plain column (a plot) took the
+  column's height and its own head band again, empty at its foot. The row is now the tallest of
+  each card's body and its own head, as HTML and the pptx end a card at its text.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the
