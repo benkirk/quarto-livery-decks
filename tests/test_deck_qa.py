@@ -279,5 +279,26 @@ def test_ink_under_the_body(deck_qa, monkeypatch, tmp_path):
     monkeypatch.setattr(deck_qa, "STRIPS", [(0, 0.9, 1, 0.1)])
     assert deck_qa.ink_below(over) == 0, "a marking strip's box counted"
     monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "MARKS", [(0.03, 0.9, 0.84, 0.1)])   # a corner mark reaching far in (nasa-jsc-eg's bar)
+    assert deck_qa.ink_below(over) == 0, "a corner mark's box counted"
+    monkeypatch.setattr(deck_qa, "MARKS", [])
     dark = page("dark.png", fill=(0, 30, 60))
     assert deck_qa.ink_below(dark, dark=True) == 0 and deck_qa.ink_below(dark) > deck_qa.INK_SHARE
+
+    # a livery whose content art fills the paper (cu's photo): the band reads against the art, pixel by
+    # pixel, so every clean content page passes and a picture over the art still fails; a light
+    # livery's dark slide has no art (the dark role's paper), a dark livery's keeps it
+    art = Image.new("RGB", (800, 450), (255, 255, 255))
+    ImageDraw.Draw(art).rectangle((0, 300, 800, 450), fill=(120, 120, 120))   # a mountain at the foot
+    art.save(tmp_path / "art.png")
+    on_art = page("on-art.png", draw=lambda d: (d.rectangle((0, 150, 400, 225), fill=(120, 120, 120)),
+                                                d.rectangle((60, 40, 340, 180), fill=(200, 80, 40))))
+    over_art = page("over-art.png", draw=lambda d: (d.rectangle((0, 150, 400, 225), fill=(120, 120, 120)),
+                                                    d.rectangle((60, 40, 340, 224), fill=(200, 80, 40))))
+    assert deck_qa.ink_below(on_art) > deck_qa.INK_SHARE, "the premise: against the background the art reads as ink"
+    monkeypatch.setattr(deck_qa, "ART", str(tmp_path / "art.png"))
+    assert deck_qa.ink_below(on_art) == 0, "the content art read as ink"
+    assert deck_qa.ink_below(over_art) > deck_qa.INK_SHARE, "a picture over the art missed"
+    assert deck_qa.ink_below(dark, dark=True) == 0, "a light livery's dark slide read against the art"
+    monkeypatch.setattr(deck_qa, "DARK_MODE", True)
+    assert deck_qa.ink_below(on_art, dark=True) == 0, "a dark livery's .brand-dark (a no-op) lost its art"

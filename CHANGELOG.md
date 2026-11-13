@@ -45,8 +45,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   counts.
 - **`make qa` fails a PDF figure that runs off its page** (#178): a picture or drawing too tall
   for the room the text above it leaves ran past the body's foot with only a hint; the check
-  reads the band under the body from the page's pixels (marking strips and the corners' number
-  and marks left out; `{.full}`, feature and closing slides skipped).
+  reads the band under the body from the page's pixels, against a livery's content art where it
+  has one (marking strips and the corners' number and marks left out; `{.full}`, feature and
+  closing slides skipped).
 - **A text tree in a PDF code block keeps its branches** (#178): LM Mono has no box drawing
   (`├── └── │`), which dropped out of the PDF; the theme borrows DejaVu Sans Mono's, which line
   up with LM Mono's columns.

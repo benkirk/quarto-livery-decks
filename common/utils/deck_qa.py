@@ -306,26 +306,41 @@ def pdf_problems(w, h, words, lines, slide=None):
 
 BODY_BOTTOM = None   # set in main(): geometry.body-bottom, the body's foot (a share of the height)
 INKS = {}            # set in main(): the background's and the dark role's RGB, the band's paper
+ART = None           # set in main(): the livery's art.content file, the content slide's paper when it names one
+DARK_MODE = False    # set in main(): a dark livery, whose .brand-dark is a no-op (its slides keep the art)
+MARKS = []           # set in main(): the content slide's corner marks' boxes (furniture.marks), left out of the band
 INK_SHARE = 0.2      # of the band under the body: inked past this, a picture or drawing runs into it
                      # (content pages measure under 0.07, nsi's furniture the most; an overflow ~0.6)
 INK_SKIP = {"full", "feature", "closing"}   # a slide drawn to the paper's foot on purpose
 
 
+@functools.lru_cache
+def _art(path, size):
+    """The art file as the PDF draws it (stretched to the paper, \\engine@art), at the page PNG's size."""
+    from PIL import Image
+    return Image.open(path).convert("RGB").resize(size, Image.BILINEAR).load()
+
+
 def ink_below(png, dark=False):
     """The share of the band under the body's foot (geometry.body-bottom to 0.97 of the height,
-    0.12 to 0.88 of the width: off the corners' number and marks; a marking strip's box left out)
-    whose pixels are far from the slide's paper (the livery's background, or the dark role's)."""
+    0.12 to 0.88 of the width: off the corners' number and marks; a marking strip's box and a corner
+    mark's left out, which may reach far in: nasa-jsc-eg's division bar spans 0.79 of the width)
+    whose pixels are far from the slide's paper: the dark role's on a light livery's dark slide (no
+    art there), else the livery's content art pixel by pixel when it names one (cu's photo fills the
+    band: against the background every content page read 81% inked), else the background."""
     from PIL import Image
     im = Image.open(png).convert("RGB")
     w, h = im.size
-    paper = INKS["dark" if dark else "background"]
-    px, n, inked = im.load(), 0, 0
+    flat = dark and not DARK_MODE
+    art = _art(ART, (w, h)) if ART and not flat else None
+    paper = INKS["dark" if flat else "background"]
+    px, n, inked, skip = im.load(), 0, 0, STRIPS + MARKS
     for y in range(int(BODY_BOTTOM * h) + 1, int(0.97 * h)):
         for x in range(int(0.12 * w), int(0.88 * w)):
-            if any(sx <= x / w <= sx + sw and sy <= y / h <= sy + sh for sx, sy, sw, sh in STRIPS):
+            if any(sx <= x / w <= sx + sw and sy <= y / h <= sy + sh for sx, sy, sw, sh in skip):
                 continue
             n += 1
-            inked += sum(abs(a - b) for a, b in zip(px[x, y], paper)) > 90
+            inked += sum(abs(a - b) for a, b in zip(px[x, y], art[x, y] if art else paper)) > 90
     return inked / n if n else 0.0
 
 
@@ -652,7 +667,7 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, WIDE_EDGE, FULL_EDGE, STRIPS, WATERMARK, WM_HEIGHT, BODY_BOTTOM, INKS
+    global EDGE, WIDE_EDGE, FULL_EDGE, STRIPS, WATERMARK, WM_HEIGHT, BODY_BOTTOM, INKS, ART, DARK_MODE, MARKS
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
@@ -663,6 +678,10 @@ def main():
     STRIPS = [s["box"] for s in livery.get("marking") or []]
     BODY_BOTTOM = geom["body-bottom"]
     INKS = {r: tuple(int(livery_mod.hex(livery, r).lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)) for r in ("background", "dark")}
+    art = (livery.get("art") or {}).get("content")
+    ART = os.path.join(livery["dir"], art) if isinstance(art, str) else None
+    DARK_MODE = livery.get("mode") == "dark"
+    MARKS = [m["box"] for m in livery["furniture"]["marks"].values() if m]
     WM_HEIGHT = livery["watermark"]["size"] / livery["type"]["canvas"]["h"]
     pptx_fail = os.environ.get("QA_PPTX_FAIL", "1") != "0"   # the pptx's problems fail; =0 for hints
 
