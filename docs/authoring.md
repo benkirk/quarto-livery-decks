@@ -136,7 +136,8 @@ Each format also shows the URL, small and muted, so a reader knows the
 picture is live: the slide footer in HTML, a line at the foot of the PDF page
 (the engine's `linked-images.lua`), and a caption box in pptx (`link_captions.py`;
 pandoc can't add one without splitting the slide). One line per slide, from
-its first linked image. `{height="72%"}` is the full-width screenshot recipe
+its first linked image. Text or a list after a linked picture stays on its slide, under it, as after
+a bare one. `{height="72%"}` is the full-width screenshot recipe
 and fits all three.
 
 ## Columns

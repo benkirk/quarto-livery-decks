@@ -780,7 +780,8 @@ the suite on another pandoc.
   more than a line and its sublists) still splits, on purpose. Never
   wrap such a body in a 100% column: pandoc gives the table the whole
   placeholder and silently drops the text after it (the slide count doesn't
-  change, so `make qa` can't see it). Text *before* one picture or simple table (pandoc's Two Content, the
+  change, so `make qa` can't see it). A picture inside a link folds as a bare one
+  (`C.is_figure()`). Text *before* one picture or simple table (pandoc's Two Content, the
   picture at half width; Content with Caption before a table) is `grid-pptx.lua`'s
   `text_then_figure()`: the text stays in the placeholder, the shape and what follows it a
   one-column grid flow (`⟦engine:columns widths=1⟧`), a `::: note` right after it its

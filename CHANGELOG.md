@@ -27,6 +27,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   line, a `^[...]` note) are drawn by the engine, as cards and leads are. Where the engine
   cannot draw the picture or table (a linked picture, a table with merged cells), text after it
   in a column is still dropped, and the render now warns, naming the slide.
+- **A linked picture followed by a list or text stays on its slide** in pptx (#178), as a bare
+  picture does; it split the slide.
 
 ## [26.11.1] - 2026-11-12
 
