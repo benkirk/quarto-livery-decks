@@ -621,7 +621,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
   cache, so `Make.common` is `.NOTPARALLEL`. `decks/fixtures/` is such a directory:
-  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, and `details` (the details slides, a body of its own), in
+  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, `details` (the details slides, a body of its own) and `shapes` (what pandoc's pptx writer and the checks got wrong, #178), in
   CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
   ncar, cu and nsi).
 - **Installed brand fonts**: a livery may name a proprietary face (`installed-fonts`, cu:
@@ -780,8 +780,12 @@ the suite on another pandoc.
   more than a line and its sublists) still splits, on purpose. Never
   wrap such a body in a 100% column: pandoc gives the table the whole
   placeholder and silently drops the text after it (the slide count doesn't
-  change, so `make qa` can't see it). Content *after* `.columns` still splits,
-  so put it inside the last column. Code blocks are text and never split.
+  change, so `make qa` can't see it). Text *before* one picture or simple table (pandoc's Two Content, the
+  picture at half width; Content with Caption before a table) is `grid-pptx.lua`'s
+  `text_then_figure()`: the text stays in the placeholder, the shape and what follows it a
+  one-column grid flow (`⟦engine:columns widths=1⟧`), a `::: note` right after it its
+  caption. Text before or after `.columns` is a grid slide (`is_grid()`). Code blocks are text
+  and never split.
 - **Columns: two tiers.** pandoc keeps the first two `.column`s of a pptx slide and drops the
   rest, silently. Columns take their `width=` shares of the content box less `boxes.columns.gap`
   in every format. A *plain* slide (two columns, no card or lead) stays pandoc's Two Content:
@@ -789,7 +793,9 @@ the suite on another pandoc.
   frames the placeholders, moving a column's picture or table with them. Never a marker paragraph
   there: beside a picture or table it demotes the slide. A *grid* slide (what `is_grid()` counts,
   the one list above it: more than two columns, a `.card`, a `.lead`, a `.strip`, a rail, a
-  `.gallery`, a quote) is flattened on purpose into one
+  `.gallery`, a quote; and, when the grid draws its pictures and tables (`grid_draws()`), a column
+  with text after one, which pandoc drops, or body text before or after the columns, which pandoc
+  splits off: #178) is flattened on purpose into one
   placeholder with marker paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`,
   `⟦engine:end⟧`), which `grid.py` redraws as text boxes carrying the master's body list style
   and deletes. A picture in a grid column or card (`cell_figure()`: a figure, an image line, a
@@ -905,11 +911,11 @@ the suite on another pandoc.
   `strip-raw-figure.lua` (an engine-pptx
   filter) strips them; don't remove it.
 - **A lead paragraph before a table demotes the slide** to Content with
-  Caption: the title moves into a small side caption and the title bar stays
-  empty. Put the lead in the slide title (or the notes) and start the body
-  with the table. Text followed by an image lands in Two Content the same
-  way, so a wide chart shrinks to half width; bake a chart's footnote into the
-  PNG instead.
+  Caption (the title in a small side caption, the title bar empty), and text
+  followed by an image lands in Two Content (a wide chart at half width), in
+  pandoc's own writer. `text_then_figure()` (above) redraws both as HTML and PDF
+  stack them, when the grid draws the shape (`cell_figure()`, `simple_table()`);
+  text before a linked picture or a table with spans still demotes.
 - **Diagnosing layout problems**: `unzip -p deck.pptx
   ppt/slides/_rels/slideN.xml.rels` — in a generated template, layout2 = Title and
   Content, 4 = Two Content, 5 = Comparison (the `LAYOUTS` order in `livery_template.py`). Hunt for orphan slides by

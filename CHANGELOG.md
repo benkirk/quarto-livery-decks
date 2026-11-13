@@ -18,6 +18,16 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+
+- **pptx slides of text and a picture or table read as HTML and PDF stack them** (#178): text
+  above one picture or table (pandoc set the picture beside the text at half width, or the
+  paragraph as a side caption), body text before or after a `.columns` div (pandoc split the
+  slide), and text after a table or picture inside a column (pandoc dropped it, silently: a †
+  line, a `^[...]` note) are drawn by the engine, as cards and leads are. Where the engine
+  cannot draw the picture or table (a linked picture, a table with merged cells), text after it
+  in a column is still dropped, and the render now warns, naming the slide.
+
 ## [26.11.1] - 2026-11-12
 
 Movies in decks (played in HTML and the pptx, a linked poster in the PDF, and a directory of

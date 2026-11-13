@@ -52,14 +52,17 @@ end
 -- Whether a block holds a picture or a table anywhere inside it: pandoc's pptx writer draws either
 -- as a shape of its own, outside any text, so a rail item cannot hold one, and a grid column or card
 -- holds one only as cell_figure() or simple_table() reads it (grid-pptx.lua's picture and table markers).
+-- The block itself counts: walk_block visits what is inside it, never the block it is given.
 local function holds_shape(blk)
+  if blk.t == "Table" then return true end
   local found = false
   pandoc.walk_block(blk, { Image = function() found = true end, Table = function() found = true end })
   return found
 end
 
--- Whether a block holds a table anywhere inside it.
+-- Whether a block holds a table anywhere inside it (the block itself counts).
 local function holds_table(blk)
+  if blk.t == "Table" then return true end
   local found = false
   pandoc.walk_block(blk, { Table = function() found = true end })
   return found
@@ -764,13 +767,43 @@ local function simple_table(tbl)
   return { cols = cols, header = header, rows = rows, aligns = aligns, caption = #caption > 0 and caption or nil }
 end
 
+local cell_figure   -- below (is_grid() reads it first)
+
+-- Whether the grid tier draws every picture and table in blocks: each is cell_figure()'s or
+-- simple_table()'s (inside a cell's or a figure's wrapper divs); grid-pptx.lua leaves any other in the
+-- flow, where pandoc splits the slide over it.
+local function grid_draws(blocks)
+  for _, b in ipairs(blocks) do
+    if not is_aside(b) and holds_shape(b) and not cell_figure(b) and not simple_table(b) then
+      if b.t ~= "Div" or not grid_draws(b.content) then return false end
+    end
+  end
+  return true
+end
+
+-- Whether a column has text after a picture or table: pandoc's pptx writer drops it, silently (a †
+-- line, a lifted ^[...] note), so the grid tier draws the column.
+local function text_after_shape(col)
+  local seen = false
+  for _, b in ipairs(col.content) do
+    if not is_aside(b) then
+      if seen then return true end
+      if holds_shape(b) then seen = true end
+    end
+  end
+  return false
+end
+
 -- A grid slide, the one list (the prose elsewhere says "what is_grid() counts"): the columns div has
 -- more than two columns, a .card column (unless the row holds a table: tabled_row(), plain columns in
 -- every format), or a column holding a quote (unless a column holds a picture
 -- or table, which a grid column cannot: the slide stays pandoc's, the quote its own); or the slide (its
 -- blocks) has a .lead, a .strip, a .steps, a .timeline, a .gallery or a quote of its own. pptx draws one
 -- from marker paragraphs (grid-pptx.lua, pptx_steps/grid.py and gallery.py); pandoc's two placeholders
--- cannot hold it.
+-- cannot hold it. Two shapes pandoc's own writer gets wrong are grid slides too, when the grid draws
+-- their pictures and tables (grid_draws()): a column with text after a picture or table (pandoc drops
+-- that text), and body text before or after the columns div (pandoc splits the slide; a heading at or
+-- above the slide level and the asides are not body).
 local function is_grid(div, blocks)
   local cols = column_shares(div)
   if #cols > 2 then return true end
@@ -782,9 +815,17 @@ local function is_grid(div, blocks)
     if holds_shape(c) then pictured = true end
   end
   if quoted and not pictured then return true end
+  local level = slide_level()
+  local beside = false   -- body text before or after the columns
   for _, b in ipairs(blocks or {}) do
     if b.t == "Div" and (has_class(b, "lead") or has_class(b, "steps") or has_class(b, "timeline") or has_class(b, "gallery")) then return true end
     if is_quote(b) then return true end
+    if b ~= div and not is_aside(b) and not (b.t == "Header" and b.level <= level) then beside = true end
+  end
+  local drawn = grid_draws(div.content)
+  if beside and drawn then return true end
+  for _, c in ipairs(cols) do
+    if text_after_shape(c) and drawn then return true end
   end
   return false
 end
@@ -1171,7 +1212,7 @@ end
 -- inside a link (para_images()'s linked), which the caller warns of.
 local FIGURE_DIVS = { "cell", "cell-output-display", "quarto-figure", "quarto-float" }
 
-local function cell_figure(b)
+function cell_figure(b)   -- the local declared above is_grid()
   local img, caption, linked
   if b.t == "Figure" and #b.content == 1 then
     local imgs
@@ -1398,7 +1439,7 @@ return {
   refs_div = refs_div, refs_heading = refs_heading, ensure_refs = ensure_refs, is_crossref = is_crossref,
   rail_kind = rail_kind, rail_items = rail_items, top_level = top_level, top_rails = top_rails,
   is_gallery = is_gallery, gallery_items = gallery_items, para_images = para_images, top_galleries = top_galleries,
-  cell_figure = cell_figure, latex_figure = latex_figure, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
+  cell_figure = cell_figure, latex_figure = latex_figure, text_after_shape = text_after_shape, grid_draws = grid_draws, base64 = base64, simple_table = simple_table, tabled_row = tabled_row,
   composed_kind = composed_kind, unwrap_galleries = unwrap_galleries,
   latex_file = latex_file, is_rendered = is_rendered, decode_src = decode_src,
   is_movie = is_movie, movie = movie, strip_movie_attrs = strip_movie_attrs, ensure_poster = ensure_poster,

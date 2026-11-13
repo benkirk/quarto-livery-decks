@@ -425,3 +425,57 @@ def test_gallery_marked(tmp_path):
     assert 'grid-pptx.lua: slide "Refused": a .gallery of 2 images does not fit cols=1 rows=1' in r.stderr, r.stderr
     assert "⟦engine:" not in slides[closing] and "<p:pic>" in slides[closing], "a closing slide's gallery: pandoc's picture"
     assert 'grid-pptx.lua: slide "Thanks": a .gallery on a closing slide is not drawn; left as its pictures' in r.stderr, r.stderr
+
+
+SHAPES = (   # the shapes pandoc's own writer gets wrong (#178), routed to the grid tier
+    "## Above\n\nA line first.\n\n- A bullet\n\n![The caption](p.png)\n\n::: note\nThe note.\n:::\n\nA line after.\n\n"
+    "## Above a table\n\nA line first.\n\n" + TABLE + "\n"
+    "## Picture first\n\n![](p.png)\n\nA line after.\n\n"
+    "## Column table\n\n:::: {.columns}\n" + COL.format("", "Left") + COL.format("", TABLE + "\n† A footnote.") + "::::\n\n"
+    "## Column linked\n\n:::: {.columns}\n" + COL.format("", "Left") + COL.format("", "[![](p.png)](https://example.org)\n\nAfter.") + "::::\n\n"
+    "## Before\n\nA line before.\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n\n"
+    "## After\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n\nA line after.\n\n"
+    "## Plain\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n")
+
+
+@pytest.fixture(scope="module")
+def shapes(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("shapes")
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp / "p.png")
+    err, slides = marked(tmp, SHAPES)
+    return err, {s[0]: s for s in slides if s}
+
+
+def test_text_above_a_picture(shapes):
+    """Text, then one picture, then text: the text before stays body text, the picture and what
+    follows a one-column flow, a note right after the picture its caption (it was Two Content)."""
+    _, slides = shapes
+    assert slides["Above"] == ["Above", "A line first.", "A bullet", "⟦engine:columns widths=1⟧", "⟦engine:column⟧",
+                               "⟦engine:picture src=p.png⟧", "The caption", "The note.", "⟦engine:end⟧", "A line after.",
+                               "⟦engine:end⟧", "⟦engine:end⟧"], slides["Above"]
+    above = slides["Above a table"]
+    assert above[:4] == ["Above a table", "A line first.", "⟦engine:columns widths=1⟧", "⟦engine:column⟧"], above
+    assert above[4].startswith("⟦engine:table cols=3 header"), above
+    assert not any("⟦" in p for p in slides["Picture first"]), "a picture first is single-body.lua's"
+
+
+def test_text_after_a_column_shape(shapes):
+    """A column with text after its table is a grid slide (pandoc dropped the text); after a linked
+    picture, which the grid does not draw, it stays pandoc's, warned of."""
+    err, slides = shapes
+    col = slides["Column table"]
+    assert col[1].startswith("⟦engine:columns") and "† A footnote." in col, col
+    assert col.index("† A footnote.") > max(i for i, p in enumerate(col) if p.startswith("⟦engine:cell⟧")), col
+    assert not any("⟦" in p for p in slides["Column linked"]), slides["Column linked"]
+    assert 'slide "Column linked": text after a picture or table in a column is dropped' in err, err
+    assert 'slide "Column table"' not in err, err
+
+
+def test_text_beside_columns(shapes):
+    """Body text before or after the columns makes a grid slide (pandoc split it); plain columns stay
+    pandoc's, marked on their notes line."""
+    _, slides = shapes
+    assert slides["Before"][:3] == ["Before", "A line before.", "⟦engine:columns widths=0.5,0.5⟧"], slides["Before"]
+    after = slides["After"]
+    assert after[1] == "⟦engine:columns widths=0.5,0.5⟧" and after[-1] == "A line after.", after
+    assert not any("⟦" in p for p in slides["Plain"]), slides["Plain"]
