@@ -250,15 +250,19 @@ def full_slide(slide, width, height):
     hide_furniture(slide)
     pad, floor = int(FULL_PAD * width), int(FULL_FLOOR * height)
     if caption is not None:
-        cap = int(FULL_CAP * height)
-        caption.left, caption.width = pad, width - 2 * pad
-        caption.top, caption.height = height - floor - cap, cap
         tf = caption.text_frame
         tf.vertical_anchor = MSO_ANCHOR.MIDDLE
         for p in tf.paragraphs:
             p.alignment = PP_ALIGN.CENTER
             for r in p.runs:
                 r.font.size, r.font.color.rgb = CAP_SIZE, CAP_COLOR
+        # one caption line (geometry.full.caption), a line taller for each it wraps to (HTML's QA fails
+        # a wrapped one; the PDF wraps at 0.8 of the width): never off the slide's foot
+        inner = width - 2 * pad - (tf.margin_left or 0) - (tf.margin_right or 0)
+        n = max(sum(para_lines(p, measure.BODY, CAP_SIZE, inner) for p in tf.paragraphs), 1)
+        cap = int(FULL_CAP * height) + (n - 1) * int(CAP_SIZE * LINE)
+        caption.left, caption.width = pad, width - 2 * pad
+        caption.top, caption.height = height - floor - cap, cap
         floor += cap
     box_w, box_h = width - 2 * pad, height - pad - floor
     pic.left, pic.top, pic.width, pic.height = contain_box(*pic.image.size, pad, pad, box_w, box_h)

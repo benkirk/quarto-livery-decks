@@ -18,6 +18,50 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+
+- **pptx slides of text and a picture or table read as HTML and PDF stack them** (#178): text
+  above one picture or table (pandoc set the picture beside the text at half width, or the
+  paragraph as a side caption), body text before or after a `.columns` div (pandoc split the
+  slide), and text after a table or picture inside a column (pandoc dropped it, silently: a †
+  line, a `^[...]` note) are drawn by the engine, as cards and leads are. Where the engine
+  cannot draw the picture or table (a linked picture, a table with merged cells), text after it
+  in a column is still dropped, and the render now warns, naming the slide.
+- **A linked picture followed by a list or text stays on its slide** in pptx (#178), as a bare
+  picture does; it split the slide.
+- **pptx table columns no narrower than their widest word** (#178): a narrow table (in a
+  column, or with short dash runs in its separator) no longer breaks a word inside a cell
+  ("COMMUNI TY"), a short cell ("41.2 %") stays on one line when a wrapping column can give the
+  room, and a table whose words cannot fit together warns, naming the slide. A `::: note` under
+  a table whose last row wraps no longer overlaps it.
+- **A `{.full}` caption as wide as its box** (#178): `make qa` measured a pptx full slide's
+  caption against the content margin, failing one that fit its box (the slide less
+  `geometry.full.pad` a side, HTML's too); it measures it against the box now, and a caption that
+  does wrap grows its box upward, the picture giving way, rather than running off the slide.
+- **No false "runs into the next table column"** for a paragraph just over a table (#178): its
+  last line, inside the margin `make qa` reads the table's box with, read as a cell.
+- **`make qa` names a split pptx slide** (#178): a slide-count mismatch with more pptx slides
+  reports each untitled continuation and the slide pandoc split it from, where it said only the
+  counts.
+- **`make qa` fails a PDF figure that runs off its page** (#178): a picture or drawing too tall
+  for the room the text above it leaves ran past the body's foot with only a hint; the check
+  reads the band under the body from the page's pixels, against a livery's content art where it
+  has one (marking strips and the corners' number and marks left out; `{.full}`, feature and
+  closing slides skipped).
+- **A text tree in a PDF code block keeps its branches** (#178): LM Mono has no box drawing
+  (`├── └── │`), which dropped out of the PDF; the theme borrows DejaVu Sans Mono's, which line
+  up with LM Mono's columns.
+- **A long PDF deck keeps its colors** (#178): every frame left one color pushed on xdvipdfmx's
+  stack (the theme's per-frame color hook runs outside any group, where its pop is lost), so past
+  about 125 frames every color change was ignored, and an 82-slide deck's page came out on the
+  text color; the hook's pushes are popped at the next frame.
+- **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
+  terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
+  and a block wider than its box is set smaller until its longest line fits, no smaller than the
+  table type (past that it wraps, and the render warns, naming the slide). `make qa` draws the
+  pptx's code in a monospace face (DejaVu Sans Mono for Courier), as PowerPoint does, where
+  LibreOffice drew a serif.
+
 ## [26.11.1] - 2026-11-12
 
 Movies in decks (played in HTML and the pptx, a linked poster in the PDF, and a directory of

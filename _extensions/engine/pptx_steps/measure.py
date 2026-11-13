@@ -37,6 +37,19 @@ PPTX_FACES = {PPTX.get("typeface"): BODY, PPTX.get("heading-typeface"): TYPE.get
 LINE = 1.2                                  # line height / font size, for the text estimates
 
 
+@functools.lru_cache
+def face_line(family):
+    """A face's own line height over its size (its ascent and descent, PIL's from the font's metrics),
+    at least LINE: what a renderer gives a single-spaced line (Poppins 1.4; LibreOffice in the image
+    drew a table's rows at it, where LINE measured them 15% short, #179). LINE for a stand-in (the
+    pptx names a face the livery does not bundle, cu's Helvetica Neue): its metrics are not the face's."""
+    if PPTX.get("typeface") not in (None, family):
+        return LINE
+    f = font(family, 400, 100)
+    asc, desc = f.getmetrics()
+    return max(LINE, (asc + desc) / f.size)
+
+
 class _Mono:
     """A face the livery does not bundle (pandoc's Courier): 0.6 em a character."""
     def __init__(self, px):
@@ -44,6 +57,15 @@ class _Mono:
 
     def getlength(self, text):
         return 0.6 * self.px * len(text)
+
+
+class _Tracked:
+    """A face with letter spacing (a:spc, a header's tracked capitals): px more a character."""
+    def __init__(self, f, px):
+        self.f, self.px = f, px
+
+    def getlength(self, text):
+        return self.f.getlength(text) + self.px * len(text)
 
 
 @functools.lru_cache
@@ -189,10 +211,11 @@ def para_size(p, shape, slide):
 
 def pieces(p, family, size, weight=None):
     """A paragraph as (text, face) pieces for runs_lines(): each run in the face the pptx shows it
-    in, at its own size (else the paragraph's, EMU) and weight (else `weight`, else regular); a
-    line break (pandoc's subtitle and author share a paragraph) as "\v"."""
+    in, at its own size (else the paragraph's, EMU) and weight (else `weight`, else regular), in
+    capitals under cap="all" and with its letter spacing (spc: a table header's); a line break
+    (pandoc's subtitle and author share a paragraph) as "\v". p is a paragraph or its a:p."""
     out = []
-    for el in p._p:
+    for el in getattr(p, "_p", p):
         if el.tag == qn("a:br"):
             out.append(("\v", None))
         elif el.tag in (qn("a:r"), qn("a:fld")):
@@ -203,8 +226,35 @@ def pieces(p, family, size, weight=None):
             pt = int(rpr.get("sz")) / 100 if rpr is not None and rpr.get("sz") else size / 12700
             b = rpr.get("b") if rpr is not None else None
             w = 700 if b in ("1", "true") else 400 if b in ("0", "false") else (weight or 400)
-            out.append((t.text or "" if t is not None else "", face(name, family, w, pt)))
+            text, f = t.text or "" if t is not None else "", face(name, family, w, pt)
+            if rpr is not None and rpr.get("cap") == "all":
+                text = text.upper()
+            if rpr is not None and rpr.get("spc"):
+                f = _Tracked(f, int(rpr.get("spc")) / 100 / PT_PX)
+            out.append((text, f))
     return out
+
+
+def widest_word(pieces):
+    """The widest piece a line cannot break inside, in px, of (text, face) pieces: a word (one may
+    cross runs), a hyphenated word's parts each a word, as _wrap() breaks them."""
+    widest, cur = 0.0, 0.0
+    for text, f in pieces:
+        if f is None:   # a line break
+            widest, cur = max(widest, cur), 0.0
+            continue
+        for tok in re.split(r"(\s+)", text):
+            if not tok:
+                continue
+            if tok.isspace():
+                widest, cur = max(widest, cur), 0.0
+                continue
+            parts = HYPHEN.split(tok)
+            for i, part in enumerate(parts):
+                cur += f.getlength(part)
+                if i < len(parts) - 1:
+                    widest, cur = max(widest, cur), 0.0
+    return max(widest, cur)
 
 
 def para_lines(p, family, size, width, weight=None):
@@ -217,9 +267,14 @@ def table_height(shape, slide):
     measured in the livery's base face in its column's width (less the cell's margins), at the
     table's biggest size (at least the slide's other size), plus the cell's top and bottom margins
     as style_tables sets them (CELL_MAR: it runs after the steps that read this, so the cells still
-    carry PowerPoint's defaults). What a note under it, a slide centering it or a flow above it
+    carry PowerPoint's defaults), its header in the capitals style_tables will set (style_tables.drawn()). What a note under it, a slide centering it or a flow above it
     reads, since the frame's own height is pandoc's nominal."""
     table, other = shape.table, other_size(slide)
+    tbl_pr = table._tbl.find(qn("a:tblPr"))
+    if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and not any(r.get("cap") == "all" for r in table._tbl.iter(qn("a:rPr"))):
+        from pptx.table import Table
+        from .style_tables import drawn   # here: style_tables measures with this module
+        table = Table(drawn(table._tbl, other), shape)   # its header as it will be drawn, which wraps more (#179)
     biggest = max([other] + [int(r.get("sz")) for r in table._tbl.iter(qn("a:rPr")) if r.get("sz")])
     widths = [col.width for col in table.columns]
     total = 0
@@ -232,7 +287,7 @@ def table_height(shape, slide):
                 sz = next((int(r.get("sz")) for r in p._p.iter(qn("a:rPr")) if r.get("sz")), other)
                 n += para_lines(p, BODY, Pt(sz / 100), inner)
             most = max(most, n)
-        total += int(most * Pt(biggest / 100) * LINE + 2 * CELL_MAR)
+        total += int(most * Pt(biggest / 100) * face_line(BODY) + 2 * CELL_MAR)
     return total
 
 

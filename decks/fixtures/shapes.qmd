@@ -1,0 +1,119 @@
+---
+title: "Fixture: slide shapes"
+subtitle: "What pandoc's pptx writer and the checks got wrong, drawn as every format draws it (#178)"
+author: "Parity fixture"
+date: 2026-11-12
+---
+
+## Text above a picture
+
+The text before a picture stacks above it, as in HTML and the PDF.
+
+- A bullet over the picture
+
+![A picture under its text](images/example.jpg){width="40%"}
+
+## A paragraph above a table
+
+One paragraph across the content area, above the table, long enough to reach the right edge of the slide's body.
+
+| Queue    | Nodes | Wall time |
+|----------|------:|----------:|
+| main     | 2,488 |     12 h  |
+| develop  |   168 |      6 h  |
+| preempt  | 2,488 |     24 h  |
+
+## A footnote after a table in a column
+
+:::: {.columns}
+::: {.column width="40%"}
+The table's column keeps the line after its table.
+:::
+::: {.column width="60%"}
+| Queue   | Nodes | Share  |
+|---------|------:|-------:|
+| main    | 2,488 | 87.1 % |
+| develop |   168 |  5.9 % |
+
+† Nodes as of the last maintenance.
+:::
+::::
+
+## A paragraph before columns
+
+One line across the slide, then two columns.
+
+:::: {.columns}
+::: {.column}
+- The left column
+:::
+::: {.column}
+- The right column
+:::
+::::
+
+## A linked picture and a list
+
+[![](images/example.jpg){width="35%"}](https://www.nasa.gov)
+
+- A list after the linked picture
+- Stays on its slide
+
+## A note under a wrapped table
+
+| Setting  | What it does |
+|----------|--------------|
+| select   | Chunks of nodes, each with its cores, memory and GPUs |
+| walltime | The longest the job may run, after which the scheduler stops it and frees its nodes for the next job in the queue |
+
+::: note
+The last row wraps; the note sits under it.
+:::
+
+## Narrow columns of a table
+
+:::: {.columns}
+::: {.column width="60%"}
+| Group | Share | Of the allocation |
+|-|-|----|
+| COMMUNITY | 41.2 % | Allocated through the community panel, reviewed twice a year |
+| UNIVERSITY | 30.5 % | Allocated to university researchers through their proposals |
+:::
+::: {.column width="40%"}
+Its lines pass 72 characters, so the dash runs set its widths: narrow first columns, and no word breaks inside a cell.
+:::
+::::
+
+## A tree in a code block
+
+```
+decks/
+├── quickstart/
+│   ├── quickstart.qmd
+│   └── Makefile
+└── sample/
+    ├── sample.qmd
+    └── images/
+        └── example.jpg
+```
+
+## Terminal output
+
+```
+$ qstat -u $USER
+                                                             Req'd  Req'd   Elap
+Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
+--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
+4012345.desche* someuser main     wrf_conus   84211   4 512  235gb 06:00 R 01:12
+4012346.desche* someuser main     wrf_conus      --   4 512  235gb 06:00 Q   --
+4012350.desche* someuser develop  test_mpi    90112   1 128  235gb 00:30 R 00:04
+4012351.desche* someuser preempt  ens_mem01      --   8 1024 235gb 12:00 Q   --
+4012352.desche* someuser preempt  ens_mem02      --   8 1024 235gb 12:00 Q   --
+4012353.desche* someuser preempt  ens_mem03      --   8 1024 235gb 12:00 Q   --
+```
+
+## A full figure {.full}
+
+![](images/example.jpg)
+
+A caption wider than the body's margins allow, inside its own box: the slide less a narrow pad, as HTML lays it out.

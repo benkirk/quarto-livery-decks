@@ -199,13 +199,17 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `rsvg-convert`: conda-forge librsvg), `notes_clrmap` (each notes slide's `p:clrMapOvr`,
   which pandoc omits and Keynote requires), `section_subtitle`, `enable_autofit`, `embed_fonts`
   (on the zip's parts), then
-  `style_footnotes`, `link_captions`, `details` (a details slide's tab and hidden flag, before `slide_layout`: a split slide's halves are found by their titles, and a full slide loses its title there), `slide_layout`, `columns` (a two-column slide at its
+  `code_blocks.normalize` (a code block's lines: pandoc writes an unhighlighted one's as raw line
+  feeds, which LibreOffice draws as paragraphs, double-spaced; they become `a:br`, each line's
+  leading spaces no-break spaces; `common.is_code_para()`, which `split_br()` leaves whole), `style_footnotes`, `link_captions`, `details` (a details slide's tab and hidden flag, before `slide_layout`: a split slide's halves are found by their titles, and a full slide loses its title there), `style_tables.prepare` (every table's columns as drawn, `settle()`: widths only, computed on a copy whose header is in its capitals, since `scale=` still sizes the runs; so a note under a table or a centered one is placed by the table's rows as drawn; `figures.draw_table()` settles its own), `slide_layout`, `columns` (a two-column slide at its
   widths and the livery's gap, from `grid-pptx.lua`'s notes line), `grid` (a grid slide from its
   marker paragraphs), `status_glyphs` (a ✓ ⚠ ✗ item's glyph as its bullet), `links` (a hyperlink on a field slide, `common.field_ink()`: a dark or composed slide, in the field's text color with Office's `hlinkClr val="tx"` extension, since PowerPoint draws a link in the theme's hlink, the livery's primary, whatever its run says), `movie` (each movie over its
-  poster, in the poster's final frame), `style_tables` (tables drawn as in the
+  poster, in the poster's final frame), `style_tables` (no column narrower than its widest word, `floors()`, a short cell kept on one line from a wrapping column, warned of when the words pass the width; tables drawn as in the
   HTML theme), `marking` (the marking strips, before the size step so a deck's type step scales them
   as HTML and PDF do), `watermark` (the same, and after every step that adds a slide's shapes) and
-  `type_step` (a deck's `type-body:`/`type-scale:`, last) on one
+  `type_step` (a deck's `type-body:`/`type-scale:`) and `code_blocks.fit` (a block wider than its
+  box set smaller, to the half point, no smaller than the table type, warned of past it; last, at
+  the sizes the deck shows) on one
   python-pptx Presentation; each is a module with a `run()`, the order's reasons are in the driver; `pptx_steps/common.py` reads the livery once and holds what the
   steps share (`LIVERY`, `K`, `BOXES`, `SLACK`, `rect`, `rpr`, `set_fill`, `take_marker`/`peek_marker`, `BAND`, `PHOTO`, the shape tests), `measure.py` the text
   measuring (`text_height`, `table_height`); a step imports no other step's private name (`tests/test_cli.py` greps for it). Text
@@ -343,7 +347,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   theme's (PDF frame key `enginefull=`). pptx: `slide-layout.lua` writes
   `engine-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
-  one picture to the slide and centers pandoc's caption box under it. Any other
+  one picture to the slide and centers pandoc's caption box under it (a line taller for each line it
+  wraps to; `make qa` measures it against its box, the slide less `geometry.full.pad` a side). Any other
   body is left alone with a warning. `make qa` fails a caption that wraps. A `.gallery` may be
   the figure ("Galleries" below): HTML puts its grid in `.engine-full-figure`, beamer writes the
   bare `[enginefull]` key and the background draws the stored cells, and pptx's `slide_layout.py`
@@ -572,8 +577,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `engine-beamer` format; `when-format="engine-beamer"` matches nothing. Always
   write `beamer`.
 - **Poppins has no arrows or ⚠**: the theme borrows ⚠ → ← ↔ ⇒ from DejaVu
-  Sans in the PDF, so `## ⚠︎ Title` and `A → B` work in every format. Any other
-  missing symbol still drops out of the PDF, with a warning in the log.
+  Sans in the PDF, so `## ⚠︎ Title` and `A → B` work in every format, and the box drawing
+  (`├── └── │`, a text tree in a code block) from DejaVu Sans Mono, whose 0.6 em advance is LM
+  Mono's at its scale (`\engine@boxchar`; the theme's own `\engine@box` is another macro). Any
+  other missing symbol still drops out of the PDF, with a warning in the log.
 - **Divider subtitles**: a paragraph right after a `#` divider becomes that
   divider's subtitle in every format: `section_subtitle.py` for pptx, the
   theme's `\sectionsubtitle` (via its Lua filter) for beamer, and
@@ -621,7 +628,7 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
 - **Several decks in one directory**: set `DECKS := a b c` before the include;
   each `<name>.qmd` builds `<name>.{pptx,html,pdf}`. They share one `.quarto/`
   cache, so `Make.common` is `.NOTPARALLEL`. `decks/fixtures/` is such a directory:
-  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, and `details` (the details slides, a body of its own), in
+  `photo` (a `titlegraphic:` title), `light` (`title=light`), `small` and `draft` (`watermark:`) on one `_body.qmd`, `details` (the details slides, a body of its own) and `shapes` (what pandoc's pptx writer and the checks got wrong, #178), in
   CI and in `parity.sh` (which snapshots every deck of `DECKS`, PDF pages included, under
   ncar, cu and nsi).
 - **Installed brand fonts**: a livery may name a proprietary face (`installed-fonts`, cu:
@@ -780,8 +787,13 @@ the suite on another pandoc.
   more than a line and its sublists) still splits, on purpose. Never
   wrap such a body in a 100% column: pandoc gives the table the whole
   placeholder and silently drops the text after it (the slide count doesn't
-  change, so `make qa` can't see it). Content *after* `.columns` still splits,
-  so put it inside the last column. Code blocks are text and never split.
+  change, so `make qa` can't see it). A picture inside a link folds as a bare one
+  (`C.is_figure()`). Text *before* one picture or simple table (pandoc's Two Content, the
+  picture at half width; Content with Caption before a table) is `grid-pptx.lua`'s
+  `text_then_figure()`: the text stays in the placeholder, the shape and what follows it a
+  one-column grid flow (`⟦engine:columns widths=1⟧`), a `::: note` right after it its
+  caption. Text before or after `.columns` is a grid slide (`is_grid()`). Code blocks are text
+  and never split.
 - **Columns: two tiers.** pandoc keeps the first two `.column`s of a pptx slide and drops the
   rest, silently. Columns take their `width=` shares of the content box less `boxes.columns.gap`
   in every format. A *plain* slide (two columns, no card or lead) stays pandoc's Two Content:
@@ -789,7 +801,9 @@ the suite on another pandoc.
   frames the placeholders, moving a column's picture or table with them. Never a marker paragraph
   there: beside a picture or table it demotes the slide. A *grid* slide (what `is_grid()` counts,
   the one list above it: more than two columns, a `.card`, a `.lead`, a `.strip`, a rail, a
-  `.gallery`, a quote) is flattened on purpose into one
+  `.gallery`, a quote; and, when the grid draws its pictures and tables (`grid_draws()`), a column
+  with text after one, which pandoc drops, or body text before or after the columns, which pandoc
+  splits off: #178) is flattened on purpose into one
   placeholder with marker paragraphs (`⟦engine:columns widths=...⟧`, `⟦engine:column⟧`,
   `⟦engine:end⟧`), which `grid.py` redraws as text boxes carrying the master's body list style
   and deletes. A picture in a grid column or card (`cell_figure()`: a figure, an image line, a
@@ -905,11 +919,11 @@ the suite on another pandoc.
   `strip-raw-figure.lua` (an engine-pptx
   filter) strips them; don't remove it.
 - **A lead paragraph before a table demotes the slide** to Content with
-  Caption: the title moves into a small side caption and the title bar stays
-  empty. Put the lead in the slide title (or the notes) and start the body
-  with the table. Text followed by an image lands in Two Content the same
-  way, so a wide chart shrinks to half width; bake a chart's footnote into the
-  PNG instead.
+  Caption (the title in a small side caption, the title bar empty), and text
+  followed by an image lands in Two Content (a wide chart at half width), in
+  pandoc's own writer. `text_then_figure()` (above) redraws both as HTML and PDF
+  stack them, when the grid draws the shape (`cell_figure()`, `simple_table()`);
+  text before a linked picture or a table with spans still demotes.
 - **Diagnosing layout problems**: `unzip -p deck.pptx
   ppt/slides/_rels/slideN.xml.rels` — in a generated template, layout2 = Title and
   Content, 4 = Two Content, 5 = Comparison (the `LAYOUTS` order in `livery_template.py`). Hunt for orphan slides by
@@ -974,7 +988,9 @@ bit while building it:
   not override a format option; set it in the deck's `format:` block.
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
   overflow and slide-count checks below, fails a pptx slide still holding a grid marker and an HTML code block taller than its box (it scrolls
-  inside it, so nothing overflows: `codeClip`), and runs
+  inside it, so nothing overflows: `codeClip`) and a PDF content page whose band under the body's foot is
+  inked (`ink_below()`: a figure past the room its text leaves; read against the livery's `art.content`
+  pixel by pixel when it names one, else the background; `{.full}`, feature, closing skipped), and runs
   the pptx as LibreOffice draws it (`common/utils/pptx_pdf.py`, shared with `make measure`)
   through the PDF's edge, footer and overlap checks, failures like the PDF's since 26.11.1 (a lone
   symbol's box is its fallback face's, skipped; an overlap must pass `SPILL` of the taller box, a

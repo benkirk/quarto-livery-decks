@@ -32,8 +32,10 @@ local is_note = C.is_note
 
 local is_aside = C.is_aside   -- speaker notes and Quarto's own divs stay outside the wrapper
 
-local function is_image_para(blk)   -- a paragraph of images alone (C.para_images)
-  return C.para_images(blk) ~= nil
+-- a paragraph of images alone (C.para_images), or of one image inside a link (C.is_figure: a linked
+-- picture, [![](x.png)](url), splits the slide as a bare one does)
+local function is_image_para(blk)
+  return C.para_images(blk) ~= nil or ((blk.t == "Para" or blk.t == "Plain") and C.is_figure(blk))
 end
 
 local function is_nontext(blk)
@@ -145,10 +147,9 @@ local function fold(blk, paras)
     return blk
   end
   if is_image_para(blk) then
-    local content = blk.content:map(function(il)
-      if il.t == "Image" then il.caption = caption_lines(pandoc.Inlines({}), paras) end
-      return il
-    end)
+    local content = blk.content:walk({   -- into a link round the image too
+      Image = function(il) il.caption = caption_lines(pandoc.Inlines({}), paras); return il end,
+    })
     return pandoc.Figure({ pandoc.Plain(content) }, { long = paras })
   end
   if blk.t == "Div" then

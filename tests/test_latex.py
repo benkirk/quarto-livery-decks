@@ -479,3 +479,27 @@ def test_too_many_images(deck, tex, why):
     d, _ = deck
     r, log = compile_tex(d, tex.lower(), globals()[tex])
     assert r.returncode != 0 and why in log, log[-1500:]
+
+
+def test_long_deck_keeps_its_colors(tmp_path):
+    """The frame hook's color (it runs at group level 0, where \\set@color's pop is lost) is popped at
+    the next frame's hook: a deck of 140 frames, dividers among them, stays under xdvipdfmx's color
+    stack (128), and its last page is the livery's background, not the text color (#178: an 82-slide
+    deck's 79th page was drawn navy)."""
+    if not (shutil.which("xelatex") and shutil.which("latexmk")):
+        pytest.skip("xelatex and latexmk")
+    from PIL import Image
+    tex = DECK.split("\\begin{document}")[0] + "\\begin{document}\n"
+    for k in range(140):
+        if k % 20 == 0:
+            tex += f"\\section{{Part {k // 20}}}\n"
+        tex += f"\\begin{{frame}}{{Frame {k}}}Text {k}.\\end{{frame}}\n"
+    tex += "\\end{document}\n"
+    r, log = compile_tex(tmp_path, "long", tex)
+    assert r.returncode == 0, log[-2000:]
+    assert "Color stack overflow" not in r.stdout + r.stderr, "xdvipdfmx's color stack overflowed"
+    n = int(re.search(r"Pages:\s+(\d+)", subprocess.run(["pdfinfo", str(tmp_path / "long.pdf")], capture_output=True, text=True).stdout).group(1))
+    subprocess.run(["pdftoppm", "-r", "20", "-singlefile", "-f", str(n), "-l", str(n), "-png", str(tmp_path / "long.pdf"), str(tmp_path / "last")],
+                   check=True)
+    im = Image.open(tmp_path / "last.png").convert("RGB")
+    assert im.getpixel((im.width - 3, im.height // 2)) == (255, 255, 255), "the last page is not on the background"

@@ -40,7 +40,7 @@ import zipfile
 from pathlib import Path
 
 SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
-EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - geometry.wide-margin
+EDGE = WIDE_EDGE = FULL_EDGE = None   # set in main() from the livery: 1 - margin, 1 - geometry.wide-margin, 1 - geometry.full.pad
                           # on a {.wide} slide (columns keep to the text width, onlytextwidth)
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
 SYMBOL = ("So", "Sm", "Mn", "Cf")   # a lone symbol word's characters (⚠ ✓ ✗ →, a variation selector): a fallback face's
@@ -209,7 +209,8 @@ def table_overruns(lines, w, h, span=None):
     so a cell that overruns its column is a line spanning the next column's edge. Only a cell
     counts: a line that starts at a column edge itself (a merged cell starts at its own column's),
     or sits within the rows of the column it crosses. A table's caption above it, or a note
-    under it, is wider than its columns but neither, and an edge within INDENT of a cell's own
+    under it, is wider than its columns but neither, nor is a line alone on its line ending above
+    every other column's first line (a paragraph over the table), and an edge within INDENT of a cell's own
     start is its column's indented sub-rows (a hierarchy table's), not a column it crosses.
     `span` is the table's (left, right) as shares
     of the width, the HTML's measure of the same slide: only the lines reaching into it are read,
@@ -230,6 +231,13 @@ def table_overruns(lines, w, h, span=None):
     out = []
     for a in body:
         in_column = len(starts[round(a[0])]) >= 3
+        # alone on its line and above the first line of every other column: above the table (a
+        # paragraph's last line inside the box's padding, #178), not a cell; a cell has its row's others
+        # beside it (a header overrunning, the other headers)
+        tops = [b[1] for x, col in starts.items() if len(col) >= 3 and x != round(a[0]) for b in col]
+        beside = any(b is not a and min(a[3], b[3]) - max(a[1], b[1]) > 0.5 * min(a[3] - a[1], b[3] - b[1]) for b in body)
+        if tops and not beside and a[3] <= min(tops) + 1:
+            continue
         for x, col in starts.items():
             # an edge within INDENT of the line's own start is an indented sub-row of its column
             if len(col) < 3 or not a[0] + max(5, INDENT * w) < x < a[2] - 1:
@@ -258,8 +266,10 @@ def pdf_problems(w, h, words, lines, slide=None):
     # the watermark's: furniture too, turned across the slide, which pdftotext gives as glyphs or pieces of
     # its text in boxes as tall as the turned letters (a body word that is one is a line's height)
     words = [wd for wd in words if not (WATERMARK and wd[4] in WATERMARK and wd[3] - wd[1] > 0.4 * WM_HEIGHT * h)]
-    wide = slide is None or "engine-wide" in slide.get("cls", "").split()
-    edge = w * (WIDE_EDGE if wide else EDGE) + TOL
+    cls = (slide or {}).get("cls", "").split()
+    wide = slide is None or "engine-wide" in cls
+    # a {.full} slide's caption spans the slide less geometry.full.pad a side (HTML's box, the pptx's)
+    edge = w * (FULL_EDGE if "full" in cls else WIDE_EDGE if wide else EDGE) + TOL
     # the frame number (a bottom corner) marks the footline: furniture, which may sit past the
     # text's margin (the pptx's in the bottom right); small words beside it are the linked-image
     # URL line, which belongs there
@@ -294,6 +304,46 @@ def pdf_problems(w, h, words, lines, slide=None):
     return out
 
 
+BODY_BOTTOM = None   # set in main(): geometry.body-bottom, the body's foot (a share of the height)
+INKS = {}            # set in main(): the background's and the dark role's RGB, the band's paper
+ART = None           # set in main(): the livery's art.content file, the content slide's paper when it names one
+DARK_MODE = False    # set in main(): a dark livery, whose .brand-dark is a no-op (its slides keep the art)
+MARKS = []           # set in main(): the content slide's corner marks' boxes (furniture.marks), left out of the band
+INK_SHARE = 0.2      # of the band under the body: inked past this, a picture or drawing runs into it
+                     # (content pages measure under 0.07, nsi's furniture the most; an overflow ~0.6)
+INK_SKIP = {"full", "feature", "closing"}   # a slide drawn to the paper's foot on purpose
+
+
+@functools.lru_cache
+def _art(path, size):
+    """The art file as the PDF draws it (stretched to the paper, \\engine@art), at the page PNG's size."""
+    from PIL import Image
+    return Image.open(path).convert("RGB").resize(size, Image.BILINEAR).load()
+
+
+def ink_below(png, dark=False):
+    """The share of the band under the body's foot (geometry.body-bottom to 0.97 of the height,
+    0.12 to 0.88 of the width: off the corners' number and marks; a marking strip's box and a corner
+    mark's left out, which may reach far in: nasa-jsc-eg's division bar spans 0.79 of the width)
+    whose pixels are far from the slide's paper: the dark role's on a light livery's dark slide (no
+    art there), else the livery's content art pixel by pixel when it names one (cu's photo fills the
+    band: against the background every content page read 81% inked), else the background."""
+    from PIL import Image
+    im = Image.open(png).convert("RGB")
+    w, h = im.size
+    flat = dark and not DARK_MODE
+    art = _art(ART, (w, h)) if ART and not flat else None
+    paper = INKS["dark" if flat else "background"]
+    px, n, inked, skip = im.load(), 0, 0, STRIPS + MARKS
+    for y in range(int(BODY_BOTTOM * h) + 1, int(0.97 * h)):
+        for x in range(int(0.12 * w), int(0.88 * w)):
+            if any(sx <= x / w <= sx + sw and sy <= y / h <= sy + sh for sx, sy, sw, sh in skip):
+                continue
+            n += 1
+            inked += sum(abs(a - b) for a, b in zip(px[x, y], art[x, y] if art else paper)) > 90
+    return inked / n if n else 0.0
+
+
 def check_pdf(deck, qa, slides):
     pdf = deck + ".pdf"
     if not os.path.exists(pdf):
@@ -301,6 +351,15 @@ def check_pdf(deck, qa, slides):
     pages = pdf_pages(pdf)
     index = frames(pages)
     nframes = index[-1] + 1 if index else 0
+    pngs = []
+    if shutil.which("pdftoppm"):
+        d = os.path.join(qa, deck, "pdf")
+        os.makedirs(d, exist_ok=True)
+        for old in glob.glob(os.path.join(d, "*.png")):
+            os.remove(old)
+        run(["pdftoppm", "-r", "80", "-png", pdf, os.path.join(d, "p")])
+        pngs = sorted(glob.glob(os.path.join(d, "*.png")))
+        contact_sheet(pngs, os.path.join(qa, deck + "-pdf.png"))
     lines = []
     for n, ((w, h, words, text_lines), f) in enumerate(zip(pages, index), 1):
         slide = slides[f] if len(slides) == nframes else None
@@ -308,17 +367,18 @@ def check_pdf(deck, qa, slides):
         found = {}
         for kind, detail in pdf_problems(w, h, words, text_lines, meta):
             found.setdefault(kind, []).append(detail)
+        # a picture or drawing past the body's foot: no text check sees one (beamer's \pandocbounded caps a
+        # figure at the text height, not at the room the text above it leaves, #178)
+        cls = set((meta or {}).get("cls", "").split())
+        if meta and len(pngs) == len(pages) and not cls & INK_SKIP:
+            share = ink_below(pngs[n - 1], dark="engine-dark" in cls)
+            if share > INK_SHARE:
+                found.setdefault("past the body's foot", []).append(
+                    "a picture or drawing runs under the body (%d%% of the band inked); size it to fit, or trim the text above it"
+                    % round(100 * share))
         for kind, details in found.items():
             more = " (+%d more)" % (len(details) - 3) if len(details) > 3 else ""
             lines.append("p%d [s%d]: %s: %s%s" % (n, f + 1, kind, ", ".join(details[:3]), more))
-    if shutil.which("pdftoppm"):
-        d = os.path.join(qa, deck, "pdf")
-        os.makedirs(d, exist_ok=True)
-        for old in glob.glob(os.path.join(d, "*.png")):
-            os.remove(old)
-        run(["pdftoppm", "-r", "80", "-png", pdf, os.path.join(d, "p")])
-        contact_sheet(sorted(glob.glob(os.path.join(d, "*.png"))),
-                      os.path.join(qa, deck + "-pdf.png"))
     return nframes, lines
 
 
@@ -486,6 +546,34 @@ def pptx_scan(deck):
     return count, sorted(left)
 
 
+TITLE_PH = re.compile(r'<p:sp>(?:(?!</p:sp>).)*?<p:ph type="(?:title|ctrTitle)"(?:(?!</p:sp>).)*?</p:sp>', re.S)
+
+
+def pptx_splits(deck):
+    """The pptx's continuation slides, as (number, the title before it), in the deck's order: a slide
+    with no title that keeps the master's furniture (a {.full} slide loses its title but hides the
+    master, showMasterSp="0"): where pandoc split a slide, which a slide count only says happened."""
+    path = deck + ".pptx"
+    if not os.path.exists(path):
+        return []
+    with zipfile.ZipFile(path) as z:
+        rels = z.read("ppt/_rels/presentation.xml.rels").decode("utf-8")
+        target = dict(re.findall(r'Id="(rId\d+)"[^>]*?Target="(slides/slide\d+\.xml)"', rels))
+        target.update({k: v for v, k in re.findall(r'Target="(slides/slide\d+\.xml)"[^>]*?Id="(rId\d+)"', rels)})
+        order = [target[r] for r in re.findall(r'<p:sldId [^>]*?r:id="(rId\d+)"', z.read("ppt/presentation.xml").decode("utf-8"))
+                 if r in target]
+        out, prev = [], ""
+        for n, part in enumerate(order, 1):
+            xml = z.read("ppt/" + part).decode("utf-8")
+            ph = TITLE_PH.search(xml)
+            title = "".join(re.findall(r"<a:t>([^<]*)</a:t>", ph.group(0))).strip() if ph else ""
+            root = re.search(r"<p:sld\b[^>]*>", xml)
+            if not title and not (root and 'showMasterSp="0"' in root.group(0)):
+                out.append((n, prev))
+            prev = title or prev
+    return out
+
+
 def plain_names(names):
     """file:line hits of each listed name outside code, notes, link targets and attributes."""
     pat = re.compile(r"(?<![\w/.`-])(%s)(?![\w`-])" % "|".join(map(re.escape, names)))
@@ -579,15 +667,21 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, WIDE_EDGE, STRIPS, WATERMARK, WM_HEIGHT
+    global EDGE, WIDE_EDGE, FULL_EDGE, STRIPS, WATERMARK, WM_HEIGHT, BODY_BOTTOM, INKS, ART, DARK_MODE, MARKS
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
     import pptx_pdf
     livery = livery_mod.load()
     geom = livery["geometry"]
-    EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
+    EDGE, WIDE_EDGE, FULL_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"], 1 - geom["full"]["pad"]
     STRIPS = [s["box"] for s in livery.get("marking") or []]
+    BODY_BOTTOM = geom["body-bottom"]
+    INKS = {r: tuple(int(livery_mod.hex(livery, r).lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)) for r in ("background", "dark")}
+    art = (livery.get("art") or {}).get("content")
+    ART = os.path.join(livery["dir"], art) if isinstance(art, str) else None
+    DARK_MODE = livery.get("mode") == "dark"
+    MARKS = [m["box"] for m in livery["furniture"]["marks"].values() if m]
     WM_HEIGHT = livery["watermark"]["size"] / livery["type"]["canvas"]["h"]
     pptx_fail = os.environ.get("QA_PPTX_FAIL", "1") != "0"   # the pptx's problems fail; =0 for hints
 
@@ -618,6 +712,12 @@ def main():
         report.append("slides: %s%s%s" % (", ".join("%s %d" % kv for kv in known.items()),
                                           "" if same else "  MISMATCH",
                                           "  (hidden: %s)" % ", ".join(hid) if hid else ""))
+        others = [v for k, v in known.items() if k != "pptx"]
+        if pptx_n and others and pptx_n > max(others):
+            for n, before in pptx_splits(deck)[:3]:   # the pptx has more: where pandoc split a slide
+                report.append('pptx s%d has no title: pandoc split it from s%d "%s" (content after a picture or table, '
+                              "a paragraph before columns, or a refused gallery; the render's warnings name the slide)"
+                              % (n, n - 1, before))
         titles = {n: s.get("title", "") for n, s in enumerate(slides, 1)} if same else {}
         for line in pdf_lines:
             m = re.match(r"p\d+ \[s(\d+)\]", line)

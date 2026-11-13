@@ -136,7 +136,8 @@ Each format also shows the URL, small and muted, so a reader knows the
 picture is live: the slide footer in HTML, a line at the foot of the PDF page
 (the engine's `linked-images.lua`), and a caption box in pptx (`link_captions.py`;
 pandoc can't add one without splitting the slide). One line per slide, from
-its first linked image. `{height="72%"}` is the full-width screenshot recipe
+its first linked image. Text or a list after a linked picture stays on its slide, under it, as after
+a bare one. `{height="72%"}` is the full-width screenshot recipe
 and fits all three.
 
 ## Columns
@@ -157,7 +158,9 @@ without a width takes an equal share of what is left.
 ```
 
 - **Two columns** are pandoc's own two-column layout in pptx, set to their widths after
-  rendering; a picture or table in a column moves and scales with it.
+  rendering; a picture or table in a column moves and scales with it. Text before or after the
+  columns, or after a picture or table in a column, makes the slide one the engine draws (the
+  next point's way): pandoc would split the slide over it, or drop the text.
 - **Three or more columns** are drawn in pptx as text boxes at the same widths (pandoc's pptx
   keeps only two). A picture in one of them (`![Caption](path)`, an image line, or a plot cell)
   takes the column's width in every format, its aspect kept (a `width=` keeps its own), the
@@ -170,7 +173,9 @@ without a width takes an equal share of what is left.
   (`geometry.wide-margin`), in every format: the deliberate way to room for four columns or a
   wide table.
 - A livery may draw a **rule** between columns (`boxes.columns.rule`; nasa-jsc-eg does).
-- In pptx, text after a picture in a column is dropped by pandoc; keep it above the picture.
+- In pptx, text after a picture or table the engine cannot draw in a column (a linked picture, a
+  table with merged cells or blocks in them) is dropped by pandoc; the render warns, naming the
+  slide. Keep that text above it or in the other column.
 
 ## Cards and lead boxes
 
@@ -761,9 +766,13 @@ class), or check it with `make qa`.
 
 - **Failures:**
   - slide counts that differ between pptx, PDF and HTML (every slide in the file counts, a
-    hidden [details slide](#details-slides) too, and is drawn and checked like the rest);
+    hidden [details slide](#details-slides) too, and is drawn and checked like the rest); when
+    the pptx has more, the report names each untitled slide pandoc split off and the slide it
+    came from;
   - PDF text past the right margin, into the footer, overlapping other text, or running into
     the next table column (the table's own columns: bullets or a plot beside it are not read);
+  - a PDF picture or drawing that runs under the body's foot (a figure too tall for the room
+    the text above it leaves: the PDF has no autofit), read from the page's pixels;
   - HTML content past the right edge, a `{.full}` caption that wraps, and a `::: note`
     paragraph that wraps (each is one caption line);
   - a code block taller than its box in HTML: it scrolls inside the box, so the slide never

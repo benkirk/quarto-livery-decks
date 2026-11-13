@@ -204,3 +204,101 @@ def test_a_big_lines_spill_is_not_a_collision(deck_qa, monkeypatch):
     assert deck_qa.pdf_problems(W, H, [big, inside], []) == [("overlapping text", "'$5M'/'Shared'")]
     body, foot = (30, 100, 120, 114, "Body"), (30, 107, 90, 117, "footnote")   # a footnote half over a body line
     assert deck_qa.pdf_problems(W, H, [body, foot], []) == [("overlapping text", "'Body'/'footnote'")]
+
+
+def test_a_full_caption_reaches_its_box(deck_qa, monkeypatch):
+    """A {.full} slide's caption spans the slide less geometry.full.pad a side (HTML's box, the
+    pptx's): a centered caption past the content margin but inside its box is no overrun (#178); a
+    word past the box still is, and a content slide keeps the content margin."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "FULL_EDGE", 0.975)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "WATERMARK", "")
+    caption = (20, 180, 348, 186, "a-caption-as-wide-as-its-box")   # to 0.961 of the width
+    full, content = {"cls": "full", "kind": "pptx"}, {"cls": "", "kind": "pptx"}
+    assert deck_qa.pdf_problems(W, H, [caption], [], full) == []
+    assert deck_qa.pdf_problems(W, H, [caption], [], content) == [("past the right margin", repr(caption[4]))]
+    past = (20, 180, 356, 186, "past-the-box")   # 0.983
+    assert deck_qa.pdf_problems(W, H, [past], [], full) == [("past the right margin", repr(past[4]))]
+
+
+def test_a_paragraph_over_a_table_is_no_cell(deck_qa):
+    """A paragraph's last line just over the table, at its first column's edge and inside the box's
+    padding (SPAN_VPAD), is above every other column's first line: no cell (#178); a header cell
+    that overruns, level with the other headers, still is."""
+    over = row(60, (120, 236, "A paragraph's last line, over the table"))
+    box = (*SPAN, 66 / H, 101 / H)
+    assert deck_qa.table_overruns(lines(over, HEADER, *ROWS), W, H, box) == []
+    header = row(70, (120, 170, "RESOURCE-AND-TYPE"), (190, 240, "CORES PER NODE"))
+    out = deck_qa.table_overruns(lines(over, header, *ROWS), W, H, box)
+    assert out == [("runs into the next table column", repr("RESOURCE-AND-TYPE"))], out
+
+
+def test_pptx_splits_name_the_slide(deck_qa, tmp_path):
+    """pptx_splits(): a slide pandoc split (text after a picture: an untitled continuation) named with
+    the title before it, in the deck's order; a {.full} slide's missing title (its master hidden) is
+    none. pandoc's own writer, no filter: the split it makes."""
+    import shutil
+    import subprocess
+    import zipfile
+    from conftest import pandoc_exe
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / "p.png")
+    md = "## First\n\nx\n\n## Split\n\n![](p.png)\n\nText after the picture.\n\n## Last\n\ny\n"
+    subprocess.run([pandoc_exe(), "-o", str(tmp_path / "d.pptx")], input=md, text=True, cwd=tmp_path, check=True)
+    assert deck_qa.pptx_splits(str(tmp_path / "d")) == [(3, "Split")]
+    with zipfile.ZipFile(tmp_path / "d.pptx") as z:   # the continuation with its master hidden: a full slide's look
+        parts = {n: z.read(n) for n in z.namelist()}
+    parts["ppt/slides/slide3.xml"] = parts["ppt/slides/slide3.xml"].replace(b"<p:sld ", b'<p:sld showMasterSp="0" ', 1)
+    with zipfile.ZipFile(tmp_path / "f.pptx", "w") as z:
+        for n, data in parts.items():
+            z.writestr(n, data)
+    assert deck_qa.pptx_splits(str(tmp_path / "f")) == []
+
+
+def test_ink_under_the_body(deck_qa, monkeypatch, tmp_path):
+    """ink_below(): a page whose picture runs past the body's foot inks the band under it (#178); a
+    clean page, a page with its furniture in the corners (left out) and a marking strip at the foot
+    (left out) do not; a dark slide reads against the dark role."""
+    from PIL import Image, ImageDraw
+    monkeypatch.setattr(deck_qa, "BODY_BOTTOM", 0.9)
+    monkeypatch.setattr(deck_qa, "INKS", {"background": (255, 255, 255), "dark": (0, 30, 60)})
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+
+    def page(name, fill=(255, 255, 255), draw=None):
+        im = Image.new("RGB", (400, 225), fill)
+        if draw:
+            draw(ImageDraw.Draw(im))
+        im.save(tmp_path / name)
+        return str(tmp_path / name)
+    clean = page("clean.png", draw=lambda d: d.rectangle((60, 40, 340, 180), fill=(200, 80, 40)))
+    corner = page("corner.png", draw=lambda d: d.rectangle((380, 205, 398, 223), fill=(0, 0, 0)))
+    over = page("over.png", draw=lambda d: d.rectangle((60, 40, 340, 224), fill=(200, 80, 40)))
+    assert deck_qa.ink_below(clean) == 0 and deck_qa.ink_below(corner) == 0
+    assert deck_qa.ink_below(over) > deck_qa.INK_SHARE
+    monkeypatch.setattr(deck_qa, "STRIPS", [(0, 0.9, 1, 0.1)])
+    assert deck_qa.ink_below(over) == 0, "a marking strip's box counted"
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "MARKS", [(0.03, 0.9, 0.84, 0.1)])   # a corner mark reaching far in (nasa-jsc-eg's bar)
+    assert deck_qa.ink_below(over) == 0, "a corner mark's box counted"
+    monkeypatch.setattr(deck_qa, "MARKS", [])
+    dark = page("dark.png", fill=(0, 30, 60))
+    assert deck_qa.ink_below(dark, dark=True) == 0 and deck_qa.ink_below(dark) > deck_qa.INK_SHARE
+
+    # a livery whose content art fills the paper (cu's photo): the band reads against the art, pixel by
+    # pixel, so every clean content page passes and a picture over the art still fails; a light
+    # livery's dark slide has no art (the dark role's paper), a dark livery's keeps it
+    art = Image.new("RGB", (800, 450), (255, 255, 255))
+    ImageDraw.Draw(art).rectangle((0, 300, 800, 450), fill=(120, 120, 120))   # a mountain at the foot
+    art.save(tmp_path / "art.png")
+    on_art = page("on-art.png", draw=lambda d: (d.rectangle((0, 150, 400, 225), fill=(120, 120, 120)),
+                                                d.rectangle((60, 40, 340, 180), fill=(200, 80, 40))))
+    over_art = page("over-art.png", draw=lambda d: (d.rectangle((0, 150, 400, 225), fill=(120, 120, 120)),
+                                                    d.rectangle((60, 40, 340, 224), fill=(200, 80, 40))))
+    assert deck_qa.ink_below(on_art) > deck_qa.INK_SHARE, "the premise: against the background the art reads as ink"
+    monkeypatch.setattr(deck_qa, "ART", str(tmp_path / "art.png"))
+    assert deck_qa.ink_below(on_art) == 0, "the content art read as ink"
+    assert deck_qa.ink_below(over_art) > deck_qa.INK_SHARE, "a picture over the art missed"
+    assert deck_qa.ink_below(dark, dark=True) == 0, "a light livery's dark slide read against the art"
+    monkeypatch.setattr(deck_qa, "DARK_MODE", True)
+    assert deck_qa.ink_below(on_art, dark=True) == 0, "a dark livery's .brand-dark (a no-op) lost its art"

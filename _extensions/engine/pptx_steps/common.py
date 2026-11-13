@@ -286,11 +286,37 @@ def para_text(p):
 MARK = re.compile(r"^⟦engine:(\w+)(?:\s+(.*))?⟧$")   # a grid-pptx.lua marker paragraph, on its own
 
 
+_MONO = LIVERY["typography"].get("monospace")
+CODE_FACES = {"Courier", (LIVERY.get("pptx") or {}).get("code-typeface"),
+              _MONO.get("family") if isinstance(_MONO, dict) else _MONO} - {None, ""}   # pandoc's code faces (its monofont)
+
+
+def is_code_para(p):
+    """Whether a paragraph (a:p) is a code block as pandoc writes one: every run with text in a code
+    face (CODE_FACES), and its lines parted (a:br, or line feeds in a run, unhighlighted) or, one line,
+    its properties a code block's (no bullet, no indent and no left margin of its own: a paragraph of
+    inline code alone carries marL="0")."""
+    runs = [r for r in p.iterchildren(qn("a:r")) if (r.findtext(qn("a:t")) or "")]
+    if not runs:
+        return False
+    for r in runs:
+        latin = r.find(qn("a:rPr") + "/" + qn("a:latin"))
+        if latin is None or latin.get("typeface") not in CODE_FACES:
+            return False
+    if p.find(qn("a:br")) is not None or any("\n" in r.findtext(qn("a:t")) for r in runs):
+        return True
+    ppr = p.find(qn("a:pPr"))
+    return ppr is not None and ppr.get("indent") == "0" and ppr.get("marL") is None and ppr.find(qn("a:buNone")) is not None
+
+
 def split_br(txBody):
     """Each paragraph cut at its line breaks (a:br) into paragraphs of their own, each with a copy
     of the paragraph's properties: pandoc writes a caption single-body.lua folded (a ::: note, a
-    lead's markers and lines) as one paragraph, its lines joined by a:br."""
+    lead's markers and lines) as one paragraph, its lines joined by a:br. A code block (is_code_para())
+    stays one paragraph: its lines are a block's, no paragraph spacing between them."""
     for p in list(txBody.iterchildren(qn("a:p"))):
+        if is_code_para(p):
+            continue
         ppr, cur = p.find(qn("a:pPr")), p
         for el in list(p):
             if el.tag == qn("a:br"):

@@ -8,9 +8,9 @@ single-body.lua folds a bullet or numbered list there into the caption, as `⟦e
 paragraphs (a nested list a span of its own), with the paragraphs beside it; grid.py draws the list
 as the body's list under the table or picture: one "Body list" text box carrying the master's body
 style, each item a paragraph at its level, no marker left, the lines beside it left-aligned. A list
-item holding more than a line (code, a second paragraph) still splits the slide. A list in a grid
-table's cell, which pandoc writes as leveled paragraphs a cell gives no bullet, takes the body
-list's bullet and indent; the cell's plain line keeps none. single-body.lua runs under plain pandoc
+item holding more than a line (code, a second paragraph) still splits the slide; a picture inside a
+link folds as a bare one. A list in a grid table's cell, which pandoc writes as leveled paragraphs a
+cell gives no bullet, takes the body list's bullet and indent; the cell's plain line keeps none. single-body.lua runs under plain pandoc
 with a `quarto` shim, the steps in a subprocess under ncar's LIVERY_DIR. Needs pandoc
 ($QUARTO_PANDOC).
 """
@@ -31,7 +31,8 @@ MD = ("## List under a table\n\n" + TABLE + "\n**The point.** A line before the 
       "## Code in an item\n\n" + TABLE + "\n- One\n\n  ```\n  code\n  ```\n\n"
       "## Bullets in a cell\n\n+-------+------------+\n| Who   | What       |\n+=======+============+\n"
       "| Staff | - One      |\n|       | - Two      |\n+-------+------------+\n"
-      "## A note and a list\n\n![](p.jpg){height=40%}\n\n::: note\nThe picture's note.\n:::\n\n- One\n- Two\n")
+      "## A note and a list\n\n![](p.jpg){height=40%}\n\n::: note\nThe picture's note.\n:::\n\n- One\n- Two\n\n"
+      "## A linked picture and a list\n\n[![](p.jpg){height=40%}](https://example.org)\n\n- One\n- Two\n")
 SHIM = ('quarto = {{ doc = {{ is_format = function(f) return f == "pptx" end }},\n'
         '           utils = {{ resolve_path = function(p) return "{engine}/" .. p end }},\n'
         '           log = {{ warning = function(s) io.stderr:write("WARNING: " .. s .. "\\n") end }},\n'
@@ -67,8 +68,8 @@ def test_slides(deck):
     """The two folded slides stay one slide each; the item holding code still splits its slide."""
     titles = [s.shapes.title.text if s.shapes.title else "" for s in deck.slides]
     assert titles[:3] == ["List under a table", "Numbers under a picture", "Code in an item"], titles
-    assert len(titles) == 6 and titles[3] == "", "the code item's continuation slide"
-    assert titles[4:] == ["Bullets in a cell", "A note and a list"], titles
+    assert len(titles) == 7 and titles[3] == "", "the code item's continuation slide"
+    assert titles[4:] == ["Bullets in a cell", "A note and a list", "A linked picture and a list"], titles
 
 
 def test_note_stays_centered(deck):
@@ -111,6 +112,15 @@ def test_numbers_under_a_picture(deck):
     nums = [p._p.pPr.find(qn("a:buAutoNum")) for p in box.text_frame.paragraphs]
     assert all(n is not None and n.get("startAt") == "3" for n in nums), "numbered from 3"
     assert "⟦" not in slide._element.xml, "a marker left"
+
+
+def test_list_under_a_linked_picture(deck):
+    """A picture inside a link folds as a bare one does (it split its slide, #178): the list under it,
+    the picture still the link."""
+    slide = deck.slides[6]
+    pic = next(sh for sh in slide.shapes if sh.shape_type == 13)
+    assert body_list(slide).top >= pic.top + pic.height, "the list under the picture"
+    assert pic.click_action.hyperlink.address == "https://example.org", "the picture's link lost"
 
 
 def test_bullets_in_a_cell(deck):
