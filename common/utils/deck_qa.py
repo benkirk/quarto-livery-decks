@@ -496,6 +496,34 @@ def pptx_scan(deck):
     return count, sorted(left)
 
 
+TITLE_PH = re.compile(r'<p:sp>(?:(?!</p:sp>).)*?<p:ph type="(?:title|ctrTitle)"(?:(?!</p:sp>).)*?</p:sp>', re.S)
+
+
+def pptx_splits(deck):
+    """The pptx's continuation slides, as (number, the title before it), in the deck's order: a slide
+    with no title that keeps the master's furniture (a {.full} slide loses its title but hides the
+    master, showMasterSp="0"): where pandoc split a slide, which a slide count only says happened."""
+    path = deck + ".pptx"
+    if not os.path.exists(path):
+        return []
+    with zipfile.ZipFile(path) as z:
+        rels = z.read("ppt/_rels/presentation.xml.rels").decode("utf-8")
+        target = dict(re.findall(r'Id="(rId\d+)"[^>]*?Target="(slides/slide\d+\.xml)"', rels))
+        target.update({k: v for v, k in re.findall(r'Target="(slides/slide\d+\.xml)"[^>]*?Id="(rId\d+)"', rels)})
+        order = [target[r] for r in re.findall(r'<p:sldId [^>]*?r:id="(rId\d+)"', z.read("ppt/presentation.xml").decode("utf-8"))
+                 if r in target]
+        out, prev = [], ""
+        for n, part in enumerate(order, 1):
+            xml = z.read("ppt/" + part).decode("utf-8")
+            ph = TITLE_PH.search(xml)
+            title = "".join(re.findall(r"<a:t>([^<]*)</a:t>", ph.group(0))).strip() if ph else ""
+            root = re.search(r"<p:sld\b[^>]*>", xml)
+            if not title and not (root and 'showMasterSp="0"' in root.group(0)):
+                out.append((n, prev))
+            prev = title or prev
+    return out
+
+
 def plain_names(names):
     """file:line hits of each listed name outside code, notes, link targets and attributes."""
     pat = re.compile(r"(?<![\w/.`-])(%s)(?![\w`-])" % "|".join(map(re.escape, names)))
@@ -628,6 +656,12 @@ def main():
         report.append("slides: %s%s%s" % (", ".join("%s %d" % kv for kv in known.items()),
                                           "" if same else "  MISMATCH",
                                           "  (hidden: %s)" % ", ".join(hid) if hid else ""))
+        others = [v for k, v in known.items() if k != "pptx"]
+        if pptx_n and others and pptx_n > max(others):
+            for n, before in pptx_splits(deck)[:3]:   # the pptx has more: where pandoc split a slide
+                report.append('pptx s%d has no title: pandoc split it from s%d "%s" (content after a picture or table, '
+                              "a paragraph before columns, or a refused gallery; the render's warnings name the slide)"
+                              % (n, n - 1, before))
         titles = {n: s.get("title", "") for n, s in enumerate(slides, 1)} if same else {}
         for line in pdf_lines:
             m = re.match(r"p\d+ \[s(\d+)\]", line)

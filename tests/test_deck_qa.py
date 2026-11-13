@@ -233,3 +233,24 @@ def test_a_paragraph_over_a_table_is_no_cell(deck_qa):
     header = row(70, (120, 170, "RESOURCE-AND-TYPE"), (190, 240, "CORES PER NODE"))
     out = deck_qa.table_overruns(lines(over, header, *ROWS), W, H, box)
     assert out == [("runs into the next table column", repr("RESOURCE-AND-TYPE"))], out
+
+
+def test_pptx_splits_name_the_slide(deck_qa, tmp_path):
+    """pptx_splits(): a slide pandoc split (text after a picture: an untitled continuation) named with
+    the title before it, in the deck's order; a {.full} slide's missing title (its master hidden) is
+    none. pandoc's own writer, no filter: the split it makes."""
+    import shutil
+    import subprocess
+    import zipfile
+    from conftest import pandoc_exe
+    shutil.copy(ROOT / "decks" / "quickstart" / "screenshots" / "hero.png", tmp_path / "p.png")
+    md = "## First\n\nx\n\n## Split\n\n![](p.png)\n\nText after the picture.\n\n## Last\n\ny\n"
+    subprocess.run([pandoc_exe(), "-o", str(tmp_path / "d.pptx")], input=md, text=True, cwd=tmp_path, check=True)
+    assert deck_qa.pptx_splits(str(tmp_path / "d")) == [(3, "Split")]
+    with zipfile.ZipFile(tmp_path / "d.pptx") as z:   # the continuation with its master hidden: a full slide's look
+        parts = {n: z.read(n) for n in z.namelist()}
+    parts["ppt/slides/slide3.xml"] = parts["ppt/slides/slide3.xml"].replace(b"<p:sld ", b'<p:sld showMasterSp="0" ', 1)
+    with zipfile.ZipFile(tmp_path / "f.pptx", "w") as z:
+        for n, data in parts.items():
+            z.writestr(n, data)
+    assert deck_qa.pptx_splits(str(tmp_path / "f")) == []

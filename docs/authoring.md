@@ -766,7 +766,9 @@ class), or check it with `make qa`.
 
 - **Failures:**
   - slide counts that differ between pptx, PDF and HTML (every slide in the file counts, a
-    hidden [details slide](#details-slides) too, and is drawn and checked like the rest);
+    hidden [details slide](#details-slides) too, and is drawn and checked like the rest); when
+    the pptx has more, the report names each untitled slide pandoc split off and the slide it
+    came from;
   - PDF text past the right margin, into the footer, overlapping other text, or running into
     the next table column (the table's own columns: bullets or a plot beside it are not read);
   - HTML content past the right edge, a `{.full}` caption that wraps, and a `::: note`
