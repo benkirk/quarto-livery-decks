@@ -38,6 +38,8 @@ A release's entry is written here before its tag is pushed, and becomes its note
   caption against the content margin, failing one that fit its box (the slide less
   `geometry.full.pad` a side, HTML's too); it measures it against the box now, and a caption that
   does wrap grows its box upward, the picture giving way, rather than running off the slide.
+- **No false "runs into the next table column"** for a paragraph just over a table (#178): its
+  last line, inside the margin `make qa` reads the table's box with, read as a cell.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the

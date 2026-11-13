@@ -221,3 +221,15 @@ def test_a_full_caption_reaches_its_box(deck_qa, monkeypatch):
     assert deck_qa.pdf_problems(W, H, [caption], [], content) == [("past the right margin", repr(caption[4]))]
     past = (20, 180, 356, 186, "past-the-box")   # 0.983
     assert deck_qa.pdf_problems(W, H, [past], [], full) == [("past the right margin", repr(past[4]))]
+
+
+def test_a_paragraph_over_a_table_is_no_cell(deck_qa):
+    """A paragraph's last line just over the table, at its first column's edge and inside the box's
+    padding (SPAN_VPAD), is above every other column's first line: no cell (#178); a header cell
+    that overruns, level with the other headers, still is."""
+    over = row(60, (120, 236, "A paragraph's last line, over the table"))
+    box = (*SPAN, 66 / H, 101 / H)
+    assert deck_qa.table_overruns(lines(over, HEADER, *ROWS), W, H, box) == []
+    header = row(70, (120, 170, "RESOURCE-AND-TYPE"), (190, 240, "CORES PER NODE"))
+    out = deck_qa.table_overruns(lines(over, header, *ROWS), W, H, box)
+    assert out == [("runs into the next table column", repr("RESOURCE-AND-TYPE"))], out

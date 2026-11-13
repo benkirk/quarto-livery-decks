@@ -209,7 +209,8 @@ def table_overruns(lines, w, h, span=None):
     so a cell that overruns its column is a line spanning the next column's edge. Only a cell
     counts: a line that starts at a column edge itself (a merged cell starts at its own column's),
     or sits within the rows of the column it crosses. A table's caption above it, or a note
-    under it, is wider than its columns but neither, and an edge within INDENT of a cell's own
+    under it, is wider than its columns but neither, nor is a line alone on its line ending above
+    every other column's first line (a paragraph over the table), and an edge within INDENT of a cell's own
     start is its column's indented sub-rows (a hierarchy table's), not a column it crosses.
     `span` is the table's (left, right) as shares
     of the width, the HTML's measure of the same slide: only the lines reaching into it are read,
@@ -230,6 +231,13 @@ def table_overruns(lines, w, h, span=None):
     out = []
     for a in body:
         in_column = len(starts[round(a[0])]) >= 3
+        # alone on its line and above the first line of every other column: above the table (a
+        # paragraph's last line inside the box's padding, #178), not a cell; a cell has its row's others
+        # beside it (a header overrunning, the other headers)
+        tops = [b[1] for x, col in starts.items() if len(col) >= 3 and x != round(a[0]) for b in col]
+        beside = any(b is not a and min(a[3], b[3]) - max(a[1], b[1]) > 0.5 * min(a[3] - a[1], b[3] - b[1]) for b in body)
+        if tops and not beside and a[3] <= min(tops) + 1:
+            continue
         for x, col in starts.items():
             # an edge within INDENT of the line's own start is an indented sub-row of its column
             if len(col) < 3 or not a[0] + max(5, INDENT * w) < x < a[2] - 1:
