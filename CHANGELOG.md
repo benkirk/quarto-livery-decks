@@ -47,6 +47,9 @@ A release's entry is written here before its tag is pushed, and becomes its note
   for the room the text above it leaves ran past the body's foot with only a hint; the check
   reads the band under the body from the page's pixels (marking strips and the corners' number
   and marks left out; `{.full}`, feature and closing slides skipped).
+- **A text tree in a PDF code block keeps its branches** (#178): LM Mono has no box drawing
+  (`├── └── │`), which dropped out of the PDF; the theme borrows DejaVu Sans Mono's, which line
+  up with LM Mono's columns.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the

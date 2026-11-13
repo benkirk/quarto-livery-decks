@@ -577,8 +577,10 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   `engine-beamer` format; `when-format="engine-beamer"` matches nothing. Always
   write `beamer`.
 - **Poppins has no arrows or ⚠**: the theme borrows ⚠ → ← ↔ ⇒ from DejaVu
-  Sans in the PDF, so `## ⚠︎ Title` and `A → B` work in every format. Any other
-  missing symbol still drops out of the PDF, with a warning in the log.
+  Sans in the PDF, so `## ⚠︎ Title` and `A → B` work in every format, and the box drawing
+  (`├── └── │`, a text tree in a code block) from DejaVu Sans Mono, whose 0.6 em advance is LM
+  Mono's at its scale (`\engine@boxchar`; the theme's own `\engine@box` is another macro). Any
+  other missing symbol still drops out of the PDF, with a warning in the log.
 - **Divider subtitles**: a paragraph right after a `#` divider becomes that
   divider's subtitle in every format: `section_subtitle.py` for pptx, the
   theme's `\sectionsubtitle` (via its Lua filter) for beamer, and

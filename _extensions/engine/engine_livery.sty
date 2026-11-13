@@ -209,6 +209,21 @@
     \newunicodechar{^^^^2033}{\engine@symbol{"2033}{^^^^2033}}%
     \newunicodechar{^^^^fe0e}{}%
   }{}
+  % LM Mono (and a livery's code face) has no box drawing, so a text tree in a code block lost its
+  % branches (#178): DejaVu Sans Mono's, which advance 0.6 em, as LM Mono at its 1.15 scale does,
+  % so the tree's columns stay in line.
+  \IfFontExistsTF{DejaVuSansMono.ttf}{%
+    \RequirePackage{newunicodechar}%
+    \newfontfamily\engine@boxes{DejaVuSansMono}[Extension=.ttf]%
+    \def\engine@boxchar#1{{\engine@boxes\symbol{#1}}}%   ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼, the rounded corners, the double lines
+    \newunicodechar{^^^^2500}{\engine@boxchar{"2500}}\newunicodechar{^^^^2502}{\engine@boxchar{"2502}}\newunicodechar{^^^^250c}{\engine@boxchar{"250C}}\newunicodechar{^^^^2510}{\engine@boxchar{"2510}}%
+    \newunicodechar{^^^^2514}{\engine@boxchar{"2514}}\newunicodechar{^^^^2518}{\engine@boxchar{"2518}}\newunicodechar{^^^^251c}{\engine@boxchar{"251C}}\newunicodechar{^^^^2524}{\engine@boxchar{"2524}}%
+    \newunicodechar{^^^^252c}{\engine@boxchar{"252C}}\newunicodechar{^^^^2534}{\engine@boxchar{"2534}}\newunicodechar{^^^^253c}{\engine@boxchar{"253C}}\newunicodechar{^^^^256d}{\engine@boxchar{"256D}}%
+    \newunicodechar{^^^^256e}{\engine@boxchar{"256E}}\newunicodechar{^^^^256f}{\engine@boxchar{"256F}}\newunicodechar{^^^^2570}{\engine@boxchar{"2570}}\newunicodechar{^^^^2550}{\engine@boxchar{"2550}}%
+    \newunicodechar{^^^^2551}{\engine@boxchar{"2551}}\newunicodechar{^^^^2554}{\engine@boxchar{"2554}}\newunicodechar{^^^^2557}{\engine@boxchar{"2557}}\newunicodechar{^^^^255a}{\engine@boxchar{"255A}}%
+    \newunicodechar{^^^^255d}{\engine@boxchar{"255D}}\newunicodechar{^^^^2560}{\engine@boxchar{"2560}}\newunicodechar{^^^^2563}{\engine@boxchar{"2563}}\newunicodechar{^^^^2566}{\engine@boxchar{"2566}}%
+    \newunicodechar{^^^^2569}{\engine@boxchar{"2569}}\newunicodechar{^^^^256c}{\engine@boxchar{"256C}}%
+  }{}
 \fi
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

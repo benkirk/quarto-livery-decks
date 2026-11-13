@@ -73,14 +73,14 @@ The last row wraps; the note sits under it.
 ## Narrow columns of a table
 
 :::: {.columns}
-::: {.column width="45%"}
-| Group | Share | Of the allocation, by group and year |
+::: {.column width="60%"}
+| Group | Share | Of the allocation |
 |-|-|----|
-| COMMUNITY | 41.2 % | Allocated through the community panel |
-| UNIVERSITY | 30.5 % | Allocated to university researchers |
+| COMMUNITY | 41.2 % | Allocated through the community panel, reviewed twice a year |
+| UNIVERSITY | 30.5 % | Allocated to university researchers through their proposals |
 :::
-::: {.column width="55%"}
-The dash runs ask for narrow first columns; no word breaks inside a cell.
+::: {.column width="40%"}
+Its lines pass 72 characters, so the dash runs set its widths: narrow first columns, and no word breaks inside a cell.
 :::
 ::::
 
