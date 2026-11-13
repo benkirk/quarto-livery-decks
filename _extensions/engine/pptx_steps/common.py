@@ -345,15 +345,6 @@ def marker_spans(paragraphs):
     return out
 
 
-def body_frame(prs, ph):
-    """The Title and Content layout's body frame (left, top, width, height), the placeholder's own
-    when the template has no such layout: all four, since a placeholder inherits its frame and
-    setting one side alone leaves the rest at 0."""
-    layout = next((l for l in prs.slide_layouts if l.name == "Title and Content"), None)
-    body = next((sh for sh in layout.placeholders if sh.placeholder_format.idx == 1), None) if layout else None
-    return (body.left, body.top, body.width, body.height) if body is not None else (ph.left, ph.top, ph.width, ph.height)
-
-
 def style_runs(p, size=None, bold=None, color=None, caps=False):
     """Every run of the paragraph at a size (pt), bold, a six-digit color, small caps tracked by
     type.tracking (em of the run's size; a:spc is in hundredths of a point)."""

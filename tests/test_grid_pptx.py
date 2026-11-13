@@ -435,7 +435,12 @@ SHAPES = (   # the shapes pandoc's own writer gets wrong (#178), routed to the g
     "## Column linked\n\n:::: {.columns}\n" + COL.format("", "Left") + COL.format("", "[![](p.png)](https://example.org)\n\nAfter.") + "::::\n\n"
     "## Before\n\nA line before.\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n\n"
     "## After\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n\nA line after.\n\n"
-    "## Plain\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n")
+    "## Plain\n\n:::: {.columns}\n" + COL.format("", "L") + COL.format("", "R") + "::::\n\n"
+    "## Lead above\n\n::: {.lead}\n**Head**\nline\n:::\n\n![The caption](p.png)\n\n> A quote.\n> — Someone\n\n"
+    "## Lead above a table\n\n::: {.lead}\n**Head**\n:::\n\n" + TABLE + "\n"
+    "## Caution\n\nRead first.\n\n![](p.png)\n\n::: notes\nengine-layout: caution\n:::\n\n"
+    "## Linked above\n\nA line first.\n\n[![](p.png)](https://example.org)\n\n"
+    "## Code cell\n\nA line first.\n\n::: {.cell}\n```\nhostname\n```\n:::\n")
 
 
 @pytest.fixture(scope="module")
@@ -479,3 +484,26 @@ def test_text_beside_columns(shapes):
     after = slides["After"]
     assert after[1] == "⟦engine:columns widths=0.5,0.5⟧" and after[-1] == "A line after.", after
     assert not any("⟦" in p for p in slides["Plain"]), slides["Plain"]
+
+
+def test_box_above_a_picture(shapes):
+    """A lead above one picture or table stacks as text does (pandoc set them side by side): the lead
+    mark()'s, the shape and what follows (a quote) a one-column flow."""
+    _, slides = shapes
+    lead = slides["Lead above"]
+    assert lead[:5] == ["Lead above", "⟦engine:lead⟧", "Head", "line", "⟦engine:end⟧"], lead
+    assert lead[5:8] == ["⟦engine:columns widths=1⟧", "⟦engine:column⟧", "⟦engine:picture src=p.png⟧"], lead
+    q = lead.index("⟦engine:quote⟧")
+    assert lead.index("The caption") < q and lead[-2:] == ["⟦engine:end⟧", "⟦engine:end⟧"], lead
+    table = slides["Lead above a table"]
+    assert table[1:6:2] == ["⟦engine:lead⟧", "⟦engine:end⟧", "⟦engine:column⟧"] and table[6].startswith("⟦engine:table cols=3 header"), table
+
+
+def test_stack_refused_warned(shapes):
+    """A caution slide's picture, and a linked picture under text, stay pandoc's, warned of."""
+    err, slides = shapes
+    assert not any("⟦" in p for p in slides["Caution"] + slides["Linked above"]), (slides["Caution"], slides["Linked above"])
+    assert 'slide "Caution": a picture or table under the text of a .caution slide is set beside it' in err, err
+    assert 'slide "Linked above": a linked picture, or a table with spans or blocks in its cells, is set beside' in err, err
+    assert 'slide "Above"' not in err and 'slide "Lead above"' not in err, err
+    assert 'slide "Code cell"' not in err, "a code cell (no picture) under text warned of"

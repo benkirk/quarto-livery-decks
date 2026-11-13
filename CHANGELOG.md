@@ -26,7 +26,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   slide), and text after a table or picture inside a column (pandoc dropped it, silently: a †
   line, a `^[...]` note) are drawn by the engine, as cards and leads are. Where the engine
   cannot draw the picture or table (a linked picture, a table with merged cells), text after it
-  in a column is still dropped, and the render now warns, naming the slide.
+  in a column is still dropped, and the render now warns, naming the slide. A lead, a quote, a strip or a
+  steps list above the picture or table stacks the same way, and a quote or strip after it stays
+  under it. A caution slide's picture, and text above a linked picture or a table with merged
+  cells, are still set beside the text, and the render warns.
 - **A linked picture followed by a list or text stays on its slide** in pptx (#178), as a bare
   picture does; it split the slide.
 - **pptx table columns no narrower than their widest word** (#178): a narrow table (in a

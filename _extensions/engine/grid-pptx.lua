@@ -41,10 +41,12 @@ template's half width each, keeps the first two `.column`s (dropping the rest, s
 - Two shapes of pandoc's own writer are grid slides too (is_grid(), when grid_draws() holds: the grid
   draws every picture and table in the columns): a column with text after a picture or table (pandoc
   drops the text, silently) and body text before or after the columns div (pandoc splits the slide).
-  A column with text after a shape the grid cannot draw stays pandoc's, warned of. A slide of text,
-  then one picture or simple table, then text or nothing (no columns) is text_then_figure()'s: the
-  text before stays in the placeholder, the shape and what follows it a one-column flow
-  (`⟦engine:columns widths=1⟧`), a `::: note` right after it its caption (#178).
+  A column with text after a shape the grid cannot draw stays pandoc's, warned of. A slide of text
+  or boxes (a .lead, a .strip, a rail, a quote), then one picture or simple table, then text, a
+  strip, a quote or nothing (no columns) is text_then_figure()'s: the text before stays in the
+  placeholder and the boxes are drawn as on any slide, the shape and what follows it a one-column
+  flow (`⟦engine:columns widths=1⟧`), a `::: note` right after it its caption (#178). On a .caution
+  slide, or before a linked picture or a table with spans, it stays pandoc's, warned of.
 - Steps and a timeline (engine-common.lua's rail_items()) are `⟦engine:rail kind=steps role=r⟧`
   (kind=timeline; `start=4` when the ordered list begins past 1: the badges count from it), per
   item `⟦engine:item⟧` (`⟦engine:item done⟧`, a done milestone), its title
@@ -272,14 +274,24 @@ local function agenda_marks(blocks, title, secs, current)
 end
 
 -- Text, then one picture (C.cell_figure()) or simple table (C.simple_table()), then text or nothing:
--- pandoc's writer sets the text before a picture beside it (Two Content, the picture at half width)
--- and a paragraph before a table as a side caption (Content with Caption), where HTML and the PDF
--- stack them. Drawn by the grid tier as they stack: the text before stays in the placeholder (grid.py
--- keeps a flow's leading text there), the shape and what follows it a one-column flow, a `::: note` of
--- paragraphs right after it its caption (the caption look, as a note's). nil when the slide is not
--- that shape (a shape first is single-body.lua's fold; anything but paragraphs, lists, code and line
--- blocks around it stays pandoc's) or the picture's bytes cannot ride along.
+-- pandoc's writer sets what comes before a picture beside it (Two Content or Content with Caption, the
+-- picture at half width) and a paragraph before a table as a side caption (Content with Caption), where
+-- HTML and the PDF stack them. Drawn by the grid tier as they stack: the text before stays in the
+-- placeholder (grid.py keeps a flow's leading text there) and a box before it (a .lead, a .strip, a
+-- rail, a quote) is mark()'s, as on any slide; the shape and what follows it (text, a strip, a quote)
+-- a one-column flow, a `::: note` of paragraphs right after it its caption (the caption look, as a
+-- note's). The slide's blocks with that flow as one .engine-flow Div of markers, for mark() to finish;
+-- nil when the slide is not that shape (a shape first is single-body.lua's fold; anything else around
+-- it stays pandoc's) or the picture's bytes cannot ride along, and then true as well when something
+-- comes before a picture or table the grid cannot draw (a linked picture, a table with spans).
 local TEXT = { Para = true, Plain = true, BulletList = true, OrderedList = true, CodeBlock = true, LineBlock = true }
+
+local function boxed(b, before)   -- a box mark() draws before the shape, or flow() after it
+  if C.holds_shape(b) then return false end
+  if C.is_quote(b) then return true end
+  if b.t ~= "Div" then return false end
+  return C.has_class(b, "strip") or (before and (C.has_class(b, "lead") or C.rail_kind(b) ~= nil))
+end
 
 local function text_then_figure(blocks, title, level)
   local head, before, after, asides = pandoc.Blocks({}), pandoc.Blocks({}), pandoc.Blocks({}), pandoc.Blocks({})
@@ -293,11 +305,11 @@ local function text_then_figure(blocks, title, level)
     elseif not (fig or tbl) then
       local f, t = C.cell_figure(b), C.simple_table(b)
       if (f or t) and #before > 0 then fig, tbl = f, t
-      elseif text then before:insert(b)
-      else return nil end
+      elseif text or boxed(b, true) then before:insert(b)
+      else return nil, #before > 0 and C.holds_shape(b) and (b.t == "Table" or C.is_figure(b)) end   -- not a code cell
     elseif #after == 0 and not note and C.is_note(b) and #b.content:filter(function(x) return x.t ~= "Para" and x.t ~= "Plain" end) == 0 then
       note = b.content
-    elseif text then
+    elseif text or boxed(b, false) then
       after:insert(b)
     else
       return nil
@@ -311,15 +323,15 @@ local function text_then_figure(blocks, title, level)
     for _, p in ipairs(note) do marks:insert(pandoc.Para(p.content)) end
     marks:insert(last)
   end
+  local drawn = pandoc.Blocks({ marker("columns widths=1"), marker("column") })
+  drawn:extend(marks)
+  flow(C.quote_blocks(after, nil, "grid-pptx.lua", quote_marks), title, drawn, true)
+  drawn:insert(marker("end"))
+  drawn:insert(marker("end"))
   local out = pandoc.Blocks({})
   out:extend(head)
   out:extend(before)
-  out:insert(marker("columns widths=1"))
-  out:insert(marker("column"))
-  out:extend(marks)
-  flow(after, title, out, true)
-  out:insert(marker("end"))
-  out:insert(marker("end"))
+  out:insert(pandoc.Div(drawn, pandoc.Attr("", { "engine-flow" })))
   out:extend(asides)
   return out
 end
@@ -331,9 +343,17 @@ local function mark(blocks, title, level)
   -- drawn in any format (C.composed_kind(); the kind classes are off the heading here, so the words)
   local where = (words.feature and "feature") or (words.closing and "closing") or C.composed_kind(blocks[1] or {}, level)
   if where then blocks = C.unwrap_galleries(blocks, string.format("grid-pptx.lua: slide %q", title), where) end
-  if not where and not words.full and not words.caution then   -- text above a picture
-    local stacked = text_then_figure(blocks, title, level)
-    if stacked then return stacked end
+  if not where and not words.full then   -- text above a picture
+    local stacked, refused = text_then_figure(blocks, title, level)
+    if stacked and words.caution then   -- slide_layout fills and cuts the body box before grid draws a flow
+      warn(title, "a picture or table under the text of a .caution slide is set beside it in pptx (pandoc's layout); "
+        .. "give it a slide of its own")
+    elseif stacked then
+      blocks = stacked
+    elseif refused then
+      warn(title, "a linked picture, or a table with spans or blocks in its cells, is set beside the text above it in "
+        .. "pptx (pandoc's layout); give it a slide of its own, or put the text after it")
+    end
   end
   local out, wide = pandoc.Blocks({}), words.wide
   local grid, kept = {}, {}   -- which columns divs are a grid slide's, read before the quotes become markers;
@@ -404,6 +424,8 @@ local function mark(blocks, title, level)
     elseif C.is_gallery(b) then   -- refused (warned of): its pictures, unwrapped, which pandoc draws (a Div's it drops)
       out:extend(b.content)
     elseif b.t == "Div" and C.has_class(b, "engine-quote-marks") then   -- a quote on its own
+      out:extend(b.content)
+    elseif b.t == "Div" and C.has_class(b, "engine-flow") then   -- text_then_figure()'s flow, its markers
       out:extend(b.content)
     elseif b.t == "Div" and C.has_class(b, "columns") and grid[k] then
       out:extend(flatten(b, title))

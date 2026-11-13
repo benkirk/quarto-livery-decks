@@ -114,8 +114,8 @@ def rebalance(tbl, base, start=None):
     column narrower than its floor (floors()), the room taken from the columns wider than theirs, in
     proportion to what they have over it. True when the floors together pass the width: the columns
     then in proportion to their floors, and a word still breaks. From pandoc's widths each time,
-    never an earlier split's: a table settled in a narrow frame (a lead's Content with Caption) and
-    widened after kept that frame's floor-bound shares."""
+    never an earlier split's: a table settled in its first frame and widened after (slide_layout's
+    {.wide}) would keep that frame's floor-bound shares."""
     cols = tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
     if len(cols) < 2:
         return False

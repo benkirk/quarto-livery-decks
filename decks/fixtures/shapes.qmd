@@ -117,3 +117,14 @@ Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
 ![](images/example.jpg)
 
 A caption wider than the body's margins allow, inside its own box: the slide less a narrow pad, as HTML lays it out.
+
+## A lead above a picture
+
+::: {.lead}
+**A lead over the picture.** It stacks above it, as text does.
+:::
+
+![A picture under a lead](images/example.jpg){width="40%"}
+
+> A quote under the picture stays on the slide.
+> — The fixture

@@ -788,11 +788,12 @@ the suite on another pandoc.
   wrap such a body in a 100% column: pandoc gives the table the whole
   placeholder and silently drops the text after it (the slide count doesn't
   change, so `make qa` can't see it). A picture inside a link folds as a bare one
-  (`C.is_figure()`). Text *before* one picture or simple table (pandoc's Two Content, the
-  picture at half width; Content with Caption before a table) is `grid-pptx.lua`'s
-  `text_then_figure()`: the text stays in the placeholder, the shape and what follows it a
-  one-column grid flow (`⟦engine:columns widths=1⟧`), a `::: note` right after it its
-  caption. Text before or after `.columns` is a grid slide (`is_grid()`). Code blocks are text
+  (`C.is_figure()`). Text or a box (a lead, a strip, a rail, a quote) *before* one picture or
+  simple table (pandoc's Two Content or Content with Caption, the picture at half width, a paragraph
+  a side caption before a table) is `grid-pptx.lua`'s `text_then_figure()`: the text stays in the
+  placeholder, the boxes are drawn as on any grid slide, the shape and what follows it a one-column
+  grid flow (`⟦engine:columns widths=1⟧`), a `::: note` right after it its caption; on a caution
+  slide, or before a linked picture or a table with spans, it stays pandoc's, warned. Text before or after `.columns` is a grid slide (`is_grid()`). Code blocks are text
   and never split.
 - **Columns: two tiers.** pandoc keeps the first two `.column`s of a pptx slide and drops the
   rest, silently. Columns take their `width=` shares of the content box less `boxes.columns.gap`
@@ -923,8 +924,8 @@ the suite on another pandoc.
   Caption (the title in a small side caption, the title bar empty), and text
   followed by an image lands in Two Content (a wide chart at half width), in
   pandoc's own writer. `text_then_figure()` (above) redraws both as HTML and PDF
-  stack them, when the grid draws the shape (`cell_figure()`, `simple_table()`);
-  text before a linked picture or a table with spans still demotes.
+  stack them, when the grid draws the shape (`cell_figure()`, `simple_table()`), a `.lead` or
+  quote before it too; text before a linked picture or a table with spans still demotes (warned).
 - **Diagnosing layout problems**: `unzip -p deck.pptx
   ppt/slides/_rels/slideN.xml.rels` — in a generated template, layout2 = Title and
   Content, 4 = Two Content, 5 = Comparison (the `LAYOUTS` order in `livery_template.py`). Hunt for orphan slides by
