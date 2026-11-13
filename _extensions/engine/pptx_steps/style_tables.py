@@ -13,7 +13,7 @@ column narrower than its widest word (a word broke inside a narrow cell, #178), 
 words together pass the table's width; a list in a
 cell (a grid table's) bulleted and indented as the body's list, which a cell does not inherit.
 Run after slide_layout has scaled the runs (pptx_post.py); prepare() first settles every table's
-header and widths (settle()) so the steps between measure each as drawn. Idempotent."""
+widths (settle()) so the steps between measure its rows as drawn. Idempotent."""
 
 import copy
 import sys
@@ -140,6 +140,8 @@ def rebalance(tbl, base):
         donors = [f if wrap and not b else w for f, w, b, wrap in zip(least, widths, brief, wraps)]
         if any(brief) and sum(brief) <= sum(w - d for w, d in zip(widths, donors)):
             widths = _give(widths, brief, donors)
+    if all(abs(w - int(c.get("w"))) <= len(cols) for w, c in zip(widths, cols)):
+        return short   # as they were, but for rounding: left alone
     edges = [round(sum(widths[:i + 1]) * total / sum(widths)) for i in range(len(widths))]   # integers summing to the width
     for col, a, b in zip(cols, [0] + edges[:-1], edges):
         col.set("w", str(b - a))
@@ -158,15 +160,22 @@ def _give(widths, need, keep):
 
 
 def settle(tbl, base):
-    """What style_table() does to a table's text and widths, the header's capitals and the columns'
-    split (rebalance()), so a step measuring it before style_tables runs measures it as drawn
-    (prepare(), figures.draw_table()); idempotent. rebalance()'s True: a word still breaks."""
-    rows = tbl.findall(qn("a:tr"))
-    tbl_pr = tbl.find(qn("a:tblPr"))
+    """The table's columns as style_table() will split them (rebalance(), on a copy whose header is
+    in its capitals), so a step measuring it before style_tables runs measures its rows at their
+    widths (prepare(), figures.draw_table()). Only the widths: the runs stay as they are, since
+    slide_layout's scale= still sizes them (a header styled first kept its tracking at the old
+    size). rebalance()'s True: a word still breaks."""
+    tmp = copy.deepcopy(tbl)
+    rows = tmp.findall(qn("a:tr"))
+    tbl_pr = tmp.find(qn("a:tblPr"))
     if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and rows and any((t.text or "").strip() for t in rows[0].iter(qn("a:t"))):
         for tc in rows[0].findall(qn("a:tc")):
             _header_runs(tc, base)
-    return rebalance(tbl, base)
+    short = rebalance(tmp, base)
+    grid = lambda t: t.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
+    for col, settled in zip(grid(tbl), grid(tmp)):
+        col.set("w", settled.get("w"))
+    return short
 
 
 def style_table(tbl, base, ink):

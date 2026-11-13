@@ -16,7 +16,7 @@ A simple table in a column (engine-common.lua's simple_table()) is `⟦engine:ta
 per row `⟦engine:row⟧` and a paragraph per cell led by `⟦engine:cell⟧`, the caption a paragraph,
 `⟦engine:end⟧` (` align=l,r,c,d` a column's alignment, d its default): drawn as a native table at the column's width, its columns equal, then
 settled (style_tables.settle(): re-split by their longest cells and no narrower than their widest
-words, the header in its capitals) before it is measured; style_tables, after grid, styles it as
+words, measured with the header in its capitals) before it is measured; style_tables, after grid, styles it as
 the HTML deck's, each cell's paragraph moved in with its runs, the master's table size
 inherited as pandoc's are, the first row the header when the marker says so; its caption under it
 as a picture's. "<name>" and "<name> caption". A table is never in a card: a row with a card and a
@@ -174,7 +174,7 @@ def draw_table(slide, x, y, w, room, attrs, paras, name):
             for old in body.findall(qn("a:p")):
                 body.remove(old)
             body.append(_cell(row[c] if c < len(row) else etree.Element(qn("a:p")), align(c)))
-    settle(tbl._tbl, other_size(slide))   # its header and columns as style_tables draws them, before it is measured
+    settle(tbl._tbl, other_size(slide))   # its columns as style_tables splits them, before it is measured
     th = table_height(frame, slide)
     cb, cap_h = _caption_box(slide, x, y + th, w, max(room - th, 0), caption, name)
     frame.height = Emu(th)

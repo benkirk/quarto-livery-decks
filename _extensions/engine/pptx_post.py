@@ -52,8 +52,8 @@ def post(path: Path) -> None:
     # block's lines first, so every step after it measures and moves the block as its lines. Footnotes
     # are styled before slide_layout, whose scale= leaves them at their size; the details slides are
     # marked before it too (a split slide's halves are found by their titles, and a full slide
-    # loses its title there); every table settled before it (its header's capitals and its columns,
-    # so a note under a table or a centered one is placed by the table as drawn); columns after it,
+    # loses its title there); every table's columns settled before it (so a note under a table or a
+    # centered one is placed by the table's rows as drawn); columns after it,
     # which leaves a columns slide's frames alone (its {.wide} words are its own line's); grid
     # after columns (its frames and rules), status_glyphs after grid (the cards' text boxes), links
     # after every step that draws a slide's text or decides its field; the
@@ -68,7 +68,7 @@ def post(path: Path) -> None:
     style_footnotes.run(prs, path)
     link_captions.run(prs, path)            # a linked picture's URL, a box pandoc cannot add
     details.run(prs, path)                  # a {.details} slide's tab, and hidden unless the deck shows them
-    style_tables.prepare(prs, path)         # each table's header and widths as drawn, before a step measures one
+    style_tables.prepare(prs, path)         # each table's columns as drawn, before a step measures one
     slide_layout.run(prs, path)             # layout classes, covers, closings, slide numbers
     columns.run(prs, path)                  # a two-column slide's widths and gap (grid-pptx.lua's line)
     grid.run(prs, path)                     # a grid slide (what is_grid() counts) drawn from grid-pptx.lua's markers, its gallery by gallery.py
