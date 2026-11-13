@@ -142,9 +142,8 @@ def rebalance(tbl, base):
             widths = _give(widths, brief, donors)
     if all(abs(w - int(c.get("w"))) <= len(cols) for w, c in zip(widths, cols)):
         return short   # as they were, but for rounding: left alone
-    edges = [round(sum(widths[:i + 1]) * total / sum(widths)) for i in range(len(widths))]   # integers summing to the width
-    for col, a, b in zip(cols, [0] + edges[:-1], edges):
-        col.set("w", str(b - a))
+    for col, w in zip(cols, widths):   # integers: a float makes PowerPoint repair the deck
+        col.set("w", str(round(total * w / sum(widths))))
     return short
 
 
