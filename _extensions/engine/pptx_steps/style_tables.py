@@ -108,18 +108,25 @@ def floors(tbl, base):
     return least, whole
 
 
-def rebalance(tbl, base):
-    """The table's columns re-split inside its width: pandoc's equal columns in proportion to each
-    column's longest cell, each SHARE wide (columns pandoc took from the source's widths kept);
-    then no column narrower than its floor (floors()), the room taken from the columns wider than
-    theirs, in proportion to what they have over it. True when the floors together pass the width:
-    the columns then in proportion to their floors, and a word still breaks."""
+ORIGINAL = {}   # a table (its a:tbl) -> the column widths pandoc wrote, the first time settle() saw it
+
+
+def rebalance(tbl, base, start=None):
+    """The table's columns re-split inside its width, from start (the widths pandoc wrote, ORIGINAL's,
+    at this width; else the table's own): pandoc's equal columns in proportion to each column's
+    longest cell, each SHARE wide (columns pandoc took from the source's widths kept); then no
+    column narrower than its floor (floors()), the room taken from the columns wider than theirs, in
+    proportion to what they have over it. True when the floors together pass the width: the columns
+    then in proportion to their floors, and a word still breaks. From pandoc's widths each time,
+    never an earlier split's: a table settled in a narrow frame (a lead's Content with Caption) and
+    widened after kept that frame's floor-bound shares."""
     cols = tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
-    widths = [int(c.get("w")) for c in cols]
     if len(cols) < 2:
         return False
-    total = sum(widths)
-    if max(widths) - min(widths) <= len(cols):   # pandoc's equal columns: by their longest cells
+    total = sum(int(c.get("w")) for c in cols)
+    start = start or ORIGINAL.get(tbl) or [int(c.get("w")) for c in cols]
+    widths = [total * w / sum(start) for w in start]
+    if max(start) - min(start) <= len(cols):   # pandoc's equal columns: by their longest cells
         longest = [1] * len(cols)
         for tr in tbl.findall(qn("a:tr")):
             for i, tc in enumerate(tr.findall(qn("a:tc"))[:len(cols)]):
@@ -164,13 +171,14 @@ def settle(tbl, base):
     widths (prepare(), figures.draw_table()). Only the widths: the runs stay as they are, since
     slide_layout's scale= still sizes them (a header styled first kept its tracking at the old
     size). rebalance()'s True: a word still breaks."""
+    ORIGINAL.setdefault(tbl, [int(c.get("w")) for c in tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))])
     tmp = copy.deepcopy(tbl)
     rows = tmp.findall(qn("a:tr"))
     tbl_pr = tmp.find(qn("a:tblPr"))
     if tbl_pr is not None and tbl_pr.get("firstRow") == "1" and rows and any((t.text or "").strip() for t in rows[0].iter(qn("a:t"))):
         for tc in rows[0].findall(qn("a:tc")):
             _header_runs(tc, base)
-    short = rebalance(tmp, base)
+    short = rebalance(tmp, base, ORIGINAL[tbl])
     grid = lambda t: t.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
     for col, settled in zip(grid(tbl), grid(tmp)):
         col.set("w", settled.get("w"))

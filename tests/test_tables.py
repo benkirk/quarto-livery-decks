@@ -88,3 +88,24 @@ def test_crowded_table_warns(deck):
     """Nine columns of long words: wider together than the table, warned of, naming the slide."""
     _, err = deck
     assert "slide 'Crowded': a table's longest words are wider than its columns together" in err, err
+
+
+def test_settled_narrow_then_widened(deck):
+    """A table settled in a narrow frame (a lead's Content with Caption: its floors pass that width,
+    so its columns go by their floors) and widened after is re-split from pandoc's widths at its new
+    width, as if settled there: it kept the narrow frame's shares (#179, the Derecho deck's "The
+    formula": its code headers took the width, its long column wrapped every row)."""
+    out, _ = deck
+    narrow_then_wide, wide = measured(out,
+        "import copy\nfrom pptx_steps.style_tables import settle, rebalance\n"
+        "s = prs.slides[1]\nt = next(sh for sh in s.shapes if sh.has_table).table._tbl\n"
+        "grid = lambda x: x.findall(qn('a:tblGrid') + '/' + qn('a:gridCol'))\n"
+        "fresh = copy.deepcopy(t)\nsettle(fresh, other_size(s))\n"
+        "for c in grid(t): c.set('w', str(int(c.get('w')) * 3 // 10))\n"
+        "settle(t, other_size(s))\n"
+        "total = sum(int(c.get('w')) for c in grid(fresh))\nnow = sum(int(c.get('w')) for c in grid(t))\n"
+        "for c in grid(t): c.set('w', str(round(int(c.get('w')) * total / now)))\n"
+        "rebalance(t, other_size(s))\n"
+        "print(','.join(c.get('w') for c in grid(t)), ','.join(c.get('w') for c in grid(fresh)))\n")
+    a, b = (list(map(int, x.split(","))) for x in (narrow_then_wide, wide))
+    assert all(abs(x - y) <= len(a) for x, y in zip(a, b)), (a, b)
