@@ -253,6 +253,12 @@ def table_overruns(lines, w, h, span=None):
     return out
 
 
+def watermark_piece(box, h):
+    """Whether a pdftotext box (a word or a line) is a piece of the deck's watermark: its text within
+    the watermark's, in a box as tall as the turned letters (a body word that matches is a line's height)."""
+    return bool(WATERMARK) and box[4] in WATERMARK and box[3] - box[1] > 0.4 * WM_HEIGHT * h
+
+
 def pdf_problems(w, h, words, lines, slide=None):
     """Text past the right margin, into the footer, overlapping, or across a table column.
 
@@ -264,8 +270,10 @@ def pdf_problems(w, h, words, lines, slide=None):
     words = [wd for wd in words if not any(x <= (wd[0] + wd[2]) / 2 / w <= x + bw and y <= (wd[1] + wd[3]) / 2 / h <= y + bh
                                            for x, y, bw, bh in STRIPS)]
     # the watermark's: furniture too, turned across the slide, which pdftotext gives as glyphs or pieces of
-    # its text in boxes as tall as the turned letters (a body word that is one is a line's height)
-    words = [wd for wd in words if not (WATERMARK and wd[4] in WATERMARK and wd[3] - wd[1] > 0.4 * WM_HEIGHT * h)]
+    # its text in boxes as tall as the turned letters, as words and as lines (a letter over a table is
+    # no cell running into the next column)
+    words = [wd for wd in words if not watermark_piece(wd, h)]
+    lines = [ln for ln in lines if not watermark_piece(ln, h)]
     cls = (slide or {}).get("cls", "").split()
     wide = slide is None or "engine-wide" in cls
     # a {.full} slide's caption spans the slide less geometry.full.pad a side (HTML's box, the pptx's)
