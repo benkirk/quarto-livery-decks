@@ -120,3 +120,29 @@ def test_split_br_keeps_code(deck, tmp_path):
                     "print(n, len(body.findall('{http://schemas.openxmlformats.org/drawingml/2006/main}p')))")
     before, after = r.stdout.split()
     assert before == after, "split_br cut the code block"
+
+
+def test_fit_in_a_group(tmp_path):
+    """A code block in a group (a card or a column: grid.py groups them) is measured against the box
+    that holds it, not the group's frame: a line that fits the placeholder is set smaller in a box half
+    its width, beside a shape twice as wide (the group's frame, which it fits)."""
+    out = tmp_path / "g.pptx"
+    subprocess.run([pandoc_exe(), "--reference-doc", str(NCAR / "template.pptx"), "-o", str(out)],
+                   input="## Wide\n\n```\n" + "x" * 60 + "\n```\n", text=True, cwd=tmp_path, check=True, capture_output=True)
+    steps(out, "import copy\nfrom pptx.oxml.ns import qn\n"
+               "code_blocks.normalize(prs, p)\n"
+               "s = prs.slides[0]; ph = s.shapes.placeholders[1]\n"
+               "grp = s.shapes.add_group_shape()\n"
+               "tb = grp.shapes.add_textbox(ph.left, ph.top, ph.width // 2, ph.height)\n"
+               "grp.shapes.add_shape(1, ph.left, ph.top + ph.height, ph.width * 2, 100)\n"
+               "body = tb.text_frame._txBody\n"
+               "body.remove(body.find(qn('a:p')))\n"
+               "body.append(copy.deepcopy(next(q for q in ph.text_frame._txBody.iter(qn('a:p')) if q.find('.//' + qn('a:latin')) is not None)))\n"
+               "code_blocks.fit(prs, p)")
+    from pptx import Presentation
+    from pptx.oxml.ns import qn
+    slide = Presentation(str(out)).slides[0]
+    size = lambda el: {r.get("sz") for p in el.iter(qn("a:p")) for r in p.iter(qn("a:rPr")) if p.find(".//" + qn("a:latin")) is not None}
+    placeholder, grouped = size(slide.shapes.placeholders[1]._element), size(slide.shapes[-1]._element)
+    assert placeholder == {None}, placeholder
+    assert len(grouped) == 1 and None not in grouped, grouped
