@@ -347,7 +347,8 @@ and the image's smoke test a bare directory with no Makefile at all (`make -f
   theme's (PDF frame key `enginefull=`). pptx: `slide-layout.lua` writes
   `engine-layout: full`, and `slide_layout.py` sets the slide's `showMasterSp="0"`
   (hiding the master's logo, tab, rule and waves), deletes the title, fits the
-  one picture to the slide and centers pandoc's caption box under it. Any other
+  one picture to the slide and centers pandoc's caption box under it (a line taller for each line it
+  wraps to; `make qa` measures it against its box, the slide less `geometry.full.pad` a side). Any other
   body is left alone with a warning. `make qa` fails a caption that wraps. A `.gallery` may be
   the figure ("Galleries" below): HTML puts its grid in `.engine-full-figure`, beamer writes the
   bare `[enginefull]` key and the background draws the stored cells, and pptx's `slide_layout.py`

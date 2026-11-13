@@ -34,6 +34,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   ("COMMUNI TY"), a short cell ("41.2 %") stays on one line when a wrapping column can give the
   room, and a table whose words cannot fit together warns, naming the slide. A `::: note` under
   a table whose last row wraps no longer overlaps it.
+- **A `{.full}` caption as wide as its box** (#178): `make qa` measured a pptx full slide's
+  caption against the content margin, failing one that fit its box (the slide less
+  `geometry.full.pad` a side, HTML's too); it measures it against the box now, and a caption that
+  does wrap grows its box upward, the picture giving way, rather than running off the slide.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the

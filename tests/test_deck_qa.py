@@ -204,3 +204,20 @@ def test_a_big_lines_spill_is_not_a_collision(deck_qa, monkeypatch):
     assert deck_qa.pdf_problems(W, H, [big, inside], []) == [("overlapping text", "'$5M'/'Shared'")]
     body, foot = (30, 100, 120, 114, "Body"), (30, 107, 90, 117, "footnote")   # a footnote half over a body line
     assert deck_qa.pdf_problems(W, H, [body, foot], []) == [("overlapping text", "'Body'/'footnote'")]
+
+
+def test_a_full_caption_reaches_its_box(deck_qa, monkeypatch):
+    """A {.full} slide's caption spans the slide less geometry.full.pad a side (HTML's box, the
+    pptx's): a centered caption past the content margin but inside its box is no overrun (#178); a
+    word past the box still is, and a content slide keeps the content margin."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "FULL_EDGE", 0.975)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "WATERMARK", "")
+    caption = (20, 180, 348, 186, "a-caption-as-wide-as-its-box")   # to 0.961 of the width
+    full, content = {"cls": "full", "kind": "pptx"}, {"cls": "", "kind": "pptx"}
+    assert deck_qa.pdf_problems(W, H, [caption], [], full) == []
+    assert deck_qa.pdf_problems(W, H, [caption], [], content) == [("past the right margin", repr(caption[4]))]
+    past = (20, 180, 356, 186, "past-the-box")   # 0.983
+    assert deck_qa.pdf_problems(W, H, [past], [], full) == [("past the right margin", repr(past[4]))]

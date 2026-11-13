@@ -40,7 +40,7 @@ import zipfile
 from pathlib import Path
 
 SHORT_USE = 0.65      # a text slide using less of its body than this is "short"
-EDGE = WIDE_EDGE = None   # set in main() from the livery: 1 - margin, and 1 - geometry.wide-margin
+EDGE = WIDE_EDGE = FULL_EDGE = None   # set in main() from the livery: 1 - margin, 1 - geometry.wide-margin, 1 - geometry.full.pad
                           # on a {.wide} slide (columns keep to the text width, onlytextwidth)
 TOL = 1.5             # pt of slack before a PDF word counts as past an edge
 SYMBOL = ("So", "Sm", "Mn", "Cf")   # a lone symbol word's characters (⚠ ✓ ✗ →, a variation selector): a fallback face's
@@ -258,8 +258,10 @@ def pdf_problems(w, h, words, lines, slide=None):
     # the watermark's: furniture too, turned across the slide, which pdftotext gives as glyphs or pieces of
     # its text in boxes as tall as the turned letters (a body word that is one is a line's height)
     words = [wd for wd in words if not (WATERMARK and wd[4] in WATERMARK and wd[3] - wd[1] > 0.4 * WM_HEIGHT * h)]
-    wide = slide is None or "engine-wide" in slide.get("cls", "").split()
-    edge = w * (WIDE_EDGE if wide else EDGE) + TOL
+    cls = (slide or {}).get("cls", "").split()
+    wide = slide is None or "engine-wide" in cls
+    # a {.full} slide's caption spans the slide less geometry.full.pad a side (HTML's box, the pptx's)
+    edge = w * (FULL_EDGE if "full" in cls else WIDE_EDGE if wide else EDGE) + TOL
     # the frame number (a bottom corner) marks the footline: furniture, which may sit past the
     # text's margin (the pptx's in the bottom right); small words beside it are the linked-image
     # URL line, which belongs there
@@ -579,14 +581,14 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, WIDE_EDGE, STRIPS, WATERMARK, WM_HEIGHT
+    global EDGE, WIDE_EDGE, FULL_EDGE, STRIPS, WATERMARK, WM_HEIGHT
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
     import pptx_pdf
     livery = livery_mod.load()
     geom = livery["geometry"]
-    EDGE, WIDE_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"]
+    EDGE, WIDE_EDGE, FULL_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"], 1 - geom["full"]["pad"]
     STRIPS = [s["box"] for s in livery.get("marking") or []]
     WM_HEIGHT = livery["watermark"]["size"] / livery["type"]["canvas"]["h"]
     pptx_fail = os.environ.get("QA_PPTX_FAIL", "1") != "0"   # the pptx's problems fail; =0 for hints
