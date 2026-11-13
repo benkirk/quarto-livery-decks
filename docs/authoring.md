@@ -771,6 +771,8 @@ class), or check it with `make qa`.
     came from;
   - PDF text past the right margin, into the footer, overlapping other text, or running into
     the next table column (the table's own columns: bullets or a plot beside it are not read);
+  - a PDF picture or drawing that runs under the body's foot (a figure too tall for the room
+    the text above it leaves: the PDF has no autofit), read from the page's pixels;
   - HTML content past the right edge, a `{.full}` caption that wraps, and a `::: note`
     paragraph that wraps (each is one caption line);
   - a code block taller than its box in HTML: it scrolls inside the box, so the slide never

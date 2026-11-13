@@ -986,7 +986,8 @@ bit while building it:
   not override a format option; set it in the deck's `format:` block.
 - **`make qa` first** (docs/authoring.md "Checking a deck"): it does the screenshots,
   overflow and slide-count checks below, fails a pptx slide still holding a grid marker and an HTML code block taller than its box (it scrolls
-  inside it, so nothing overflows: `codeClip`), and runs
+  inside it, so nothing overflows: `codeClip`) and a PDF content page whose band under the body's foot is
+  inked (`ink_below()`: a figure past the room its text leaves; `{.full}`, feature, closing skipped), and runs
   the pptx as LibreOffice draws it (`common/utils/pptx_pdf.py`, shared with `make measure`)
   through the PDF's edge, footer and overlap checks, failures like the PDF's since 26.11.1 (a lone
   symbol's box is its fallback face's, skipped; an overlap must pass `SPILL` of the taller box, a

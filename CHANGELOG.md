@@ -43,6 +43,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
 - **`make qa` names a split pptx slide** (#178): a slide-count mismatch with more pptx slides
   reports each untitled continuation and the slide pandoc split it from, where it said only the
   counts.
+- **`make qa` fails a PDF figure that runs off its page** (#178): a picture or drawing too tall
+  for the room the text above it leaves ran past the body's foot with only a hint; the check
+  reads the band under the body from the page's pixels (marking strips and the corners' number
+  and marks left out; `{.full}`, feature and closing slides skipped).
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the

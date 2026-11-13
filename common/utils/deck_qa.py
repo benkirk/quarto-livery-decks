@@ -304,6 +304,31 @@ def pdf_problems(w, h, words, lines, slide=None):
     return out
 
 
+BODY_BOTTOM = None   # set in main(): geometry.body-bottom, the body's foot (a share of the height)
+INKS = {}            # set in main(): the background's and the dark role's RGB, the band's paper
+INK_SHARE = 0.2      # of the band under the body: inked past this, a picture or drawing runs into it
+                     # (content pages measure under 0.07, nsi's furniture the most; an overflow ~0.6)
+INK_SKIP = {"full", "feature", "closing"}   # a slide drawn to the paper's foot on purpose
+
+
+def ink_below(png, dark=False):
+    """The share of the band under the body's foot (geometry.body-bottom to 0.97 of the height,
+    0.12 to 0.88 of the width: off the corners' number and marks; a marking strip's box left out)
+    whose pixels are far from the slide's paper (the livery's background, or the dark role's)."""
+    from PIL import Image
+    im = Image.open(png).convert("RGB")
+    w, h = im.size
+    paper = INKS["dark" if dark else "background"]
+    px, n, inked = im.load(), 0, 0
+    for y in range(int(BODY_BOTTOM * h) + 1, int(0.97 * h)):
+        for x in range(int(0.12 * w), int(0.88 * w)):
+            if any(sx <= x / w <= sx + sw and sy <= y / h <= sy + sh for sx, sy, sw, sh in STRIPS):
+                continue
+            n += 1
+            inked += sum(abs(a - b) for a, b in zip(px[x, y], paper)) > 90
+    return inked / n if n else 0.0
+
+
 def check_pdf(deck, qa, slides):
     pdf = deck + ".pdf"
     if not os.path.exists(pdf):
@@ -311,6 +336,15 @@ def check_pdf(deck, qa, slides):
     pages = pdf_pages(pdf)
     index = frames(pages)
     nframes = index[-1] + 1 if index else 0
+    pngs = []
+    if shutil.which("pdftoppm"):
+        d = os.path.join(qa, deck, "pdf")
+        os.makedirs(d, exist_ok=True)
+        for old in glob.glob(os.path.join(d, "*.png")):
+            os.remove(old)
+        run(["pdftoppm", "-r", "80", "-png", pdf, os.path.join(d, "p")])
+        pngs = sorted(glob.glob(os.path.join(d, "*.png")))
+        contact_sheet(pngs, os.path.join(qa, deck + "-pdf.png"))
     lines = []
     for n, ((w, h, words, text_lines), f) in enumerate(zip(pages, index), 1):
         slide = slides[f] if len(slides) == nframes else None
@@ -318,17 +352,18 @@ def check_pdf(deck, qa, slides):
         found = {}
         for kind, detail in pdf_problems(w, h, words, text_lines, meta):
             found.setdefault(kind, []).append(detail)
+        # a picture or drawing past the body's foot: no text check sees one (beamer's \pandocbounded caps a
+        # figure at the text height, not at the room the text above it leaves, #178)
+        cls = set((meta or {}).get("cls", "").split())
+        if meta and len(pngs) == len(pages) and not cls & INK_SKIP:
+            share = ink_below(pngs[n - 1], dark="engine-dark" in cls)
+            if share > INK_SHARE:
+                found.setdefault("past the body's foot", []).append(
+                    "a picture or drawing runs under the body (%d%% of the band inked); size it to fit, or trim the text above it"
+                    % round(100 * share))
         for kind, details in found.items():
             more = " (+%d more)" % (len(details) - 3) if len(details) > 3 else ""
             lines.append("p%d [s%d]: %s: %s%s" % (n, f + 1, kind, ", ".join(details[:3]), more))
-    if shutil.which("pdftoppm"):
-        d = os.path.join(qa, deck, "pdf")
-        os.makedirs(d, exist_ok=True)
-        for old in glob.glob(os.path.join(d, "*.png")):
-            os.remove(old)
-        run(["pdftoppm", "-r", "80", "-png", pdf, os.path.join(d, "p")])
-        contact_sheet(sorted(glob.glob(os.path.join(d, "*.png"))),
-                      os.path.join(qa, deck + "-pdf.png"))
     return nframes, lines
 
 
@@ -617,7 +652,7 @@ def main():
     args = ap.parse_args()
     qa = args.out
     os.makedirs(qa, exist_ok=True)
-    global EDGE, WIDE_EDGE, FULL_EDGE, STRIPS, WATERMARK, WM_HEIGHT
+    global EDGE, WIDE_EDGE, FULL_EDGE, STRIPS, WATERMARK, WM_HEIGHT, BODY_BOTTOM, INKS
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "_extensions", "engine"))
     sys.path.append(os.path.dirname(os.path.realpath(__file__)))   # pptx_pdf
     import livery as livery_mod   # the engine's; here, not at import: screenshots.py imports serve() alone
@@ -626,6 +661,8 @@ def main():
     geom = livery["geometry"]
     EDGE, WIDE_EDGE, FULL_EDGE = 1 - geom["margin"], 1 - geom["wide-margin"], 1 - geom["full"]["pad"]
     STRIPS = [s["box"] for s in livery.get("marking") or []]
+    BODY_BOTTOM = geom["body-bottom"]
+    INKS = {r: tuple(int(livery_mod.hex(livery, r).lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)) for r in ("background", "dark")}
     WM_HEIGHT = livery["watermark"]["size"] / livery["type"]["canvas"]["h"]
     pptx_fail = os.environ.get("QA_PPTX_FAIL", "1") != "0"   # the pptx's problems fail; =0 for hints
 

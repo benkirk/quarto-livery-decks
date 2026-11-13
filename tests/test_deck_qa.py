@@ -254,3 +254,30 @@ def test_pptx_splits_name_the_slide(deck_qa, tmp_path):
         for n, data in parts.items():
             z.writestr(n, data)
     assert deck_qa.pptx_splits(str(tmp_path / "f")) == []
+
+
+def test_ink_under_the_body(deck_qa, monkeypatch, tmp_path):
+    """ink_below(): a page whose picture runs past the body's foot inks the band under it (#178); a
+    clean page, a page with its furniture in the corners (left out) and a marking strip at the foot
+    (left out) do not; a dark slide reads against the dark role."""
+    from PIL import Image, ImageDraw
+    monkeypatch.setattr(deck_qa, "BODY_BOTTOM", 0.9)
+    monkeypatch.setattr(deck_qa, "INKS", {"background": (255, 255, 255), "dark": (0, 30, 60)})
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+
+    def page(name, fill=(255, 255, 255), draw=None):
+        im = Image.new("RGB", (400, 225), fill)
+        if draw:
+            draw(ImageDraw.Draw(im))
+        im.save(tmp_path / name)
+        return str(tmp_path / name)
+    clean = page("clean.png", draw=lambda d: d.rectangle((60, 40, 340, 180), fill=(200, 80, 40)))
+    corner = page("corner.png", draw=lambda d: d.rectangle((380, 205, 398, 223), fill=(0, 0, 0)))
+    over = page("over.png", draw=lambda d: d.rectangle((60, 40, 340, 224), fill=(200, 80, 40)))
+    assert deck_qa.ink_below(clean) == 0 and deck_qa.ink_below(corner) == 0
+    assert deck_qa.ink_below(over) > deck_qa.INK_SHARE
+    monkeypatch.setattr(deck_qa, "STRIPS", [(0, 0.9, 1, 0.1)])
+    assert deck_qa.ink_below(over) == 0, "a marking strip's box counted"
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    dark = page("dark.png", fill=(0, 30, 60))
+    assert deck_qa.ink_below(dark, dark=True) == 0 and deck_qa.ink_below(dark) > deck_qa.INK_SHARE
