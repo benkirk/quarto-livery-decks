@@ -22,6 +22,7 @@ import sys
 from pathlib import Path
 
 from lxml import etree
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.ns import qn
 from pptx.text.text import _Paragraph
 
@@ -32,7 +33,6 @@ from .common import LIVERY, is_code_para, slide_title
 from .measure import PX, face, para_size, BODY
 
 NBSP = " "
-DEFAULT_INS = 91440   # a:bodyPr's lIns/rIns when unset: 0.1 in
 
 
 def _split_run(r):
@@ -77,10 +77,20 @@ def _keep_indent(p):
                 start = False
 
 
+def _leaves(shapes):
+    """The shapes, a group's (a card, a column: grid.py's) by its members."""
+    for sh in shapes:
+        if sh.shape_type == MSO_SHAPE_TYPE.GROUP:
+            yield from _leaves(sh.shapes)
+        else:
+            yield sh
+
+
 def _code_paras(prs):
-    """(slide, shape, a:p) for each code paragraph on the deck's slides, a table's cells included."""
+    """(slide, shape, a:p) for each code paragraph on the deck's slides, in the shape that holds it
+    (a group's member, a table's cells included)."""
     for slide in prs.slides:
-        for sh in slide.shapes:
+        for sh in _leaves(slide.shapes):
             for p in sh._element.iter(qn("a:p")):
                 if is_code_para(p):
                     yield slide, sh, p
@@ -119,8 +129,8 @@ def _width(rows, pt):
 def _room(sh, p, slide):
     """The width a paragraph of the shape has, in slide pixels: the frame less its insets and the
     paragraph's left margin (its own, else its level's in the master's body style)."""
-    body = sh._element.find(".//" + qn("a:bodyPr"))
-    ins = sum(int(body.get(k, DEFAULT_INS)) if body is not None else DEFAULT_INS for k in ("lIns", "rIns"))
+    tf = sh.text_frame
+    ins = tf.margin_left + tf.margin_right   # python-pptx's: the bodyPr's, else 0.1 in
     ppr = p.find(qn("a:pPr"))
     mar = ppr.get("marL") if ppr is not None else None
     if mar is None:

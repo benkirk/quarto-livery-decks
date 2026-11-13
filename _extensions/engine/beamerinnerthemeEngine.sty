@@ -632,8 +632,10 @@
 % list at commas), solid (all the role's, its text in primary-text) and plain (a column
 % beside cards: no fill, no band). {} for no sub-line. Each body is set first into a box (as the
 % feature panel's: verbatim works), its width the card's share of the line less the gaps, its
-% pads and outline; the row then draws every card as a tcolorbox one height, the tallest body and
-% head (one run, no aux; each head its own text's height, as HTML's and the pptx's): a head band
+% pads and outline; the row then draws every card as a tcolorbox one height, the tallest of each
+% card's body and its own head (one run, no aux; each head its own text's height, as HTML's and the
+% pptx's; a plain or untitled card's body alone, so a picture column beside a card does not add the
+% card's head to its own height): a head band
 % in the role (the title in the block title font, bold, its sub in the body's) over the body on
 % the card fill under boxes.card.tint of its role (code in it on EngineBoxesCardCode), rounded by
 % boxes.card.radius. \enginelabel and \enginebig are a card's small-caps
@@ -649,7 +651,7 @@
   solid/.is if=engine@cardsolid,
   plain/.is if=engine@cardplain}
 \newcount\engine@ncards
-\newdimen\engine@cardbody \newdimen\engine@cardhead \newdimen\engine@cardw \newdimen\engine@cardrule
+\newdimen\engine@cardbody \newdimen\engine@cardhead \newdimen\engine@cardrow \newdimen\engine@cardw \newdimen\engine@cardrule
 \newbox\engine@cardboxi \newbox\engine@cardboxii \newbox\engine@cardboxiii
 \newbox\engine@cardboxiv \newbox\engine@cardboxv \newbox\engine@cardboxvi
 \def\engine@cardbox#1{\csname engine@cardbox\romannumeral#1\endcsname}
@@ -659,10 +661,10 @@
 \newcommand\enginelabel[1]{\par{\usebeamerfont{eyebrow}\color{\engine@labelcolor}\engine@tracking\MakeUppercase{#1}\par}}
 \newcommand\enginebig[1]{\par{\usebeamerfont{display}\color{\engine@bigcolor}#1\par}}
 \newenvironment{enginecards}[1]{\par\engine@shares{cards}{#1}%
-  \global\engine@ncards=\z@ \global\engine@cardbody=\z@ \global\engine@cardhead=\z@}%
+  \global\engine@ncards=\z@ \global\engine@cardrow=\z@}%
   {\engine@drawcards\par}
 % \engine@tallest{<box>}{<dimen>}: the dimen raised, globally, to the box's height and depth (a
-% row's tallest body, head or date)
+% card's body, a rail row's tallest body or date)
 \def\engine@tallest#1#2{\ifdim\dimexpr\ht#1+\dp#1\relax>#2
   \global#2=\dimexpr\ht#1+\dp#1\relax\fi}
 % \engine@cellbox{<k>}{<width>} ... \endengine@cellbox{<k>}{<dimen>}: a card's or a rail item's body
@@ -692,11 +694,12 @@
   \ifengine@cardpick\engine@cardrule=\engine@boxes@card@outline\paperheight
   \else\ifengine@cardsolid\else\ifengine@cardplain\else\engine@cardrule=\engine@boxes@card@border\paperheight\fi\fi\fi
   \expandafter\xdef\csname engine@card@rule@\the\engine@ncards\endcsname{\the\engine@cardrule}%
-  \def\engine@tmpa{#2#3}\ifx\engine@tmpa\@empty\else   % the head's height, the row's tallest
+  \global\engine@cardbody=\z@ \global\engine@cardhead=\z@
+  \def\engine@tmpa{#2#3}\ifx\engine@tmpa\@empty\else   % the head's height and its pads (none: no head)
     \setbox\@tempboxa=\vbox{\hsize=\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@headpadx em\relax\relax
       \raggedright{\usebeamerfont{block title}\bfseries\strut#2\par}%
       \def\engine@tmpa{#3}\ifx\engine@tmpa\@empty\else{\normalsize\mdseries\strut#3\par}\fi}%
-    \engine@tallest{\@tempboxa}{\engine@cardhead}%
+    \global\engine@cardhead=\dimexpr\ht\@tempboxa+\dp\@tempboxa+2\dimexpr\engine@boxes@card@headpady em\relax\relax
   \fi
   \engine@cellbox{\engine@ncards}{\dimexpr\engine@cardw-2\engine@cardrule-2\dimexpr\engine@boxes@card@padx em\relax\relax}%
     \engine@incardtrue\ifengine@cardsolid\engine@solidcardtrue\else\engine@solidcardfalse\fi
@@ -706,8 +709,11 @@
     \ifengine@cardsolid\setbeamercolor{normal text}{fg=BrandPrimaryText}%
       \def\engine@labelcolor{BrandPrimaryText}\def\engine@bigcolor{BrandPrimaryText}%
     \else\@ifundefined{\string\color@shadecolor}{}{\colorlet{shadecolor}{EngineBoxesCardCode}}\fi}   % code off the card's fill
-\def\endenginecard{\endengine@cellbox{\engine@ncards}{\engine@cardbody}}
-% the row: each card a tcolorbox, the gap between them; its height the tallest body and head
+% the row's height: the tallest of each card's body and its own head (\engine@cardrow)
+\def\endenginecard{\endengine@cellbox{\engine@ncards}{\engine@cardbody}%
+  \ifdim\dimexpr\engine@cardbody+\engine@cardhead\relax>\engine@cardrow
+    \global\engine@cardrow=\dimexpr\engine@cardbody+\engine@cardhead\relax\fi}
+% the row: each card a tcolorbox, the gap between them, all \engine@cardrow tall inside their pads
 \def\engine@drawcards{\hbox{\@tempcnta=\z@   % a box in the vertical list: no paragraph, no \parskip
   \loop\advance\@tempcnta\@ne
     \ifnum\@tempcnta>\@ne\hskip\engine@boxes@columns@gap\paperwidth\fi
@@ -726,8 +732,7 @@
   \expandafter\let\expandafter\engine@ctitle\csname engine@card@title@#1\endcsname
   \expandafter\let\expandafter\engine@csub\csname engine@card@sub@#1\endcsname
   \edef\engine@ckeys{,width=\csname engine@card@w@#1\endcsname,
-    height=\the\dimexpr\engine@cardbody+\engine@cardhead
-      +2\dimexpr\engine@boxes@card@pady em\relax+2\dimexpr\engine@boxes@card@headpady em\relax
+    height=\the\dimexpr\engine@cardrow+2\dimexpr\engine@boxes@card@pady em\relax
       +2\dimexpr\csname engine@card@rule@#1\endcsname\relax\relax,
     boxrule=\csname engine@card@rule@#1\endcsname,
     left=\the\dimexpr\engine@boxes@card@padx em\relax,right=\the\dimexpr\engine@boxes@card@padx em\relax,

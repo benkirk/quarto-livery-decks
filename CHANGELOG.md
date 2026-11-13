@@ -26,7 +26,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   slide), and text after a table or picture inside a column (pandoc dropped it, silently: a †
   line, a `^[...]` note) are drawn by the engine, as cards and leads are. Where the engine
   cannot draw the picture or table (a linked picture, a table with merged cells), text after it
-  in a column is still dropped, and the render now warns, naming the slide.
+  in a column is still dropped, and the render now warns, naming the slide. A lead, a quote, a strip or a
+  steps list above the picture or table stacks the same way, and a quote or strip after it stays
+  under it. A caution slide's picture, and text above a linked picture or a table with merged
+  cells, are still set beside the text, and the render warns.
 - **A linked picture followed by a list or text stays on its slide** in pptx (#178), as a bare
   picture does; it split the slide.
 - **pptx table columns no narrower than their widest word** (#178): a narrow table (in a
@@ -55,6 +58,10 @@ A release's entry is written here before its tag is pushed, and becomes its note
   stack (the theme's per-frame color hook runs outside any group, where its pop is lost), so past
   about 125 frames every color change was ignored, and an 82-slide deck's page came out on the
   text color; the hook's pushes are popped at the next frame.
+- **A PDF card beside a picture column ends with it**: a row of cards was as tall as its tallest
+  body plus its tallest head, so a titled card beside a taller plain column (a plot) took the
+  column's height and its own head band again, empty at its foot. The row is now the tallest of
+  each card's body and its own head, as HTML and the pptx end a card at its text.
 - **pptx code blocks are blocks of lines** (#178): a block without a language (a text tree,
   terminal output) keeps its indentation and its lines single-spaced, as a highlighted one does,
   and a block wider than its box is set smaller until its longest line fits, no smaller than the

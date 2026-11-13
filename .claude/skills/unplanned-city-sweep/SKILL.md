@@ -126,6 +126,14 @@ Run each pass and collect findings. The examples are real.
   (`composed_kind()`, #127–#135: a gallery on a `.closing` slide drew in PDF and pptx, not HTML).
   Its cousin: a format filter calling a common reader twice on the same blocks, the second run on
   attributes the first mutated (beamer's `.full` frame called `split_full` twice).
+- **Sibling shapes.** A friction fix is written for the input that was reported, and its fixture
+  holds only that input. List the inputs beside it (the element list `is_grid()` keeps, the layout
+  classes) and render a probe deck of them in the format the fix touched before calling the fix
+  complete. A silent one does not show in `make qa`'s slide count. #179's `text_then_figure()` took
+  plain text above a picture, but a `.lead`, a quote or a caution body above one stayed side by side
+  (#179's window). The same probe checks a fix's mechanism on its neighbors: the color-stack pop on
+  every frame kind, and the table line height on the other measured boxes. Both came out flat
+  there, so the answer was no.
 - **Ratchet.** Where a fix is cheap to pin, add an equality ratchet so the city does not
   regrow. Models: `tests/test_docs.py` (every link and section pointer resolves),
   `tests/test_compositions.py`'s `EXPECTED_DELTAS` (every decided move of a box is a row),

@@ -21,6 +21,52 @@ branched from, not a window read).
 
 ## Entries
 
+## 2026-11-13: window #176–#179
+
+- Mode: window
+- Range: `7373e42..7952bd3`. #179, the Derecho deck's friction (#178), is the one PR read; #176 was
+  the last sweep and #177 its release. The question was whether the fixes reach further and what
+  debt they retire. Three findings; Ben picked all three. A fourth fix, the PDF card height, came in
+  from a teammate session during the sweep.
+- End commit: `7952bd3`
+- Done (this PR):
+  - **The lead, quote, strip or rail above a picture or table.** pptx set them beside it (Content
+    with Caption), silently, and the probe deck caught it. #179's `text_then_figure()` took plain
+    text only. It now takes those boxes before the shape, and a strip or quote after it, by
+    returning the slide's blocks with its flow as one `.engine-flow` Div for `mark()` to finish. A
+    `.caution` slide's picture and text above a linked picture or a spanned table now warn.
+    `grid.py`'s lead-beside-table branch is gone, and with it `common.body_frame()`.
+  - **The prose.** CLAUDE.md's "dropped by pandoc, silently, in either tier", and two sample speaker
+    notes: text after a table splits the slide, text before a diagram demotes it.
+  - **`code_blocks.fit()` in a group.** It measured a code block in a card or column group against
+    the group's frame. It now uses the box that holds it, with python-pptx's insets, and
+    `style_tables.floors()` reads a cell's margins the same way.
+  - **The PDF card row.** Its height is now the tallest of each card's body plus its own head; it
+    was the tallest body plus the tallest head, so a titled card beside a taller plain column got
+    an empty head band at its foot.
+  - **Parity** (ncar, cu, nsi):
+    - pptx changes only on sample's "A lead over a table" (s9: the table drawn by `figures.py`
+      under the lead), plus the title date and the notes text.
+    - fixtures/shapes gains "A lead above a picture"; its 11 earlier PDF pages are pixel-identical.
+    - No PDF page moved anywhere. `parity-latex`: 435 pages identical. So the card fix is flat on
+      every existing row; only a mixed row changes, and `test_latex.py` pins that from the page.
+  - **The skill** gains a "Sibling shapes" heuristic.
+- Tried and dropped:
+  - The table line height (#179's `face_line()`, Poppins 1.4) for every measured box. In
+    LibreOffice's drawing of `sample.pptx` under ncar, all 80 grid text boxes hold their text with
+    room to spare (`text_height()`'s 1.2 times `SLACK` 1.1), and the other liveries' faces measure
+    1.2. Moving them would shift every ncar box with no failure behind it.
+  - The color-stack fix on other frame kinds: the LaTeX layer's deck repeated to 143 frames and the
+    cookbook to 168 compile with no overflow.
+- Open:
+  - **Two routes for a picture and text in pptx.** The fold (`single-body.lua`; `grid.py`'s
+    `above`, `tables` and `listed` placement) handles the picture first, `text_then_figure()` the
+    text first. The flow could take the picture-first case and retire most of the fold, but it would
+    move every picture-with-footnote slide. Pair it with the pandoc 3.13 retirement (#166).
+  - **PDF table widths** (#179's "not done"): a word wider than its `p{}` column overruns.
+  - **`pptx_pdf.py`'s Courier stand-in** misses `pptx.code-typeface` (Courier New, nasa-jsc-eg).
+    No failure seen.
+
 ## 2026-11-12: window #169–#175
 
 - Mode: window

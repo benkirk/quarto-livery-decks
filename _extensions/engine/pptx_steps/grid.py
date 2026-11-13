@@ -56,18 +56,17 @@ import livery as livery_mod
 from .columns import rules
 from .figures import draw_picture, draw_table, place_picture, shrink_picture
 from .gallery import draw_gallery
-from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, NOTE, SLACK, body_box, body_frame, column_frames, darken, em, fit_table, group,
+from .common import (BODY_PT, BOXES, GEOM, LIVERY, MARK, NOTE, SLACK, body_box, column_frames, darken, em, group,
                      inset, is_body, is_dark, is_picture, is_table, marker_spans, no_autofit, pads, para_text, ppr_place, rect, rpr, shape,
                      slide_title, space_before, split_br, strip_bullets, style_runs)
-from .slide_layout import NOTE_GAP, frame_note, note_style, scale_paragraphs, use_layout
+from .slide_layout import scale_paragraphs
 from .measure import inherited, table_height, text_height
 
 PREFIX = re.compile(r"^⟦engine:(title|sub|label|big|attribution)⟧")   # a card's lines, a quote's attribution (grid-pptx.lua)
 CARD_GAP = 0.25   # a card's paragraphs sit this share of the body's spacing apart (beamer's card \parskip)
 BODY_GAP = livery_mod.SPC_BEFORE[0] * BODY_PT * CARD_GAP   # pt: CARD_GAP of the template's space before a body paragraph
 PIC_FLOOR = 2   # em of the body type: the least height a picture keeps when the lead under it needs its room
-LEAD_GAP = 0.5   # em of the body type: a lead's flow under pandoc's caption box, and a table under the flow
-                 # (slide_layout.NOTE_GAP is a note's under its table; boxes.note.gap a caption's under its picture)
+LEAD_GAP = 0.5   # em of the body type: a lead's flow under pandoc's caption box
 RAIL_MIN = 0.65   # a rail's items step down together no further than this (HTML's autofit floor)
 BOXED = re.compile(r"^(Card \d+|Lead|Strip)$")   # a box with a fill of its own: it keeps its colors on a dark slide
 
@@ -806,16 +805,11 @@ def run(prs, path: Path) -> None:
             if above or tables:   # pandoc's caption box, under the picture or table: the flow starts just below it
                 under = max([sh.top + sh.height for sh in above] + tables)
                 ph.left, ph.top, ph.width, ph.height = ph.left, under + em(LEAD_GAP), ph.width, ph.height
-            beside = [sh for sh in slide.shapes if is_table(sh) and sh.left >= ph.left + ph.width - em(1)]
-            if beside:   # a lead before a table: pandoc's Content with Caption set them side by side
-                use_layout(prs, slide, "Title and Content")
-                ph.left, ph.top, ph.width, ph.height = body_frame(prs, ph)
-            left, width = ph.left, ph.width
             before = {sh._element for sh in slide.shapes}
             # {.vcenter}: slide_layout anchored the placeholder at its middle, which is all it can do for
             # a body grid redraws; the flow is centered here, between the body's top and its foot, as
-            # HTML and the PDF center it (not under a picture or table, or beside one: those are placed)
-            vcenter = ph.text_frame.vertical_anchor == MSO_ANCHOR.MIDDLE and not (above or tables or beside)
+            # HTML and the PDF center it (not under a picture or table: those are placed)
+            vcenter = ph.text_frame.vertical_anchor == MSO_ANCHOR.MIDDLE and not (above or tables)
             y = lay_out(slide, ph, segs, prs.slide_width, prs.slide_height, path.parent, vcenter)
             bottom = round(GEOM["body-bottom"] * prs.slide_height)
             if vcenter and y < bottom:
@@ -841,14 +835,6 @@ def run(prs, path: Path) -> None:
                 for sh in slide.shapes:
                     if sh._element not in before and not BOXED.match(sh.name):
                         darken(sh._element)
-            if beside:   # the note's look, which slide_layout skipped beside two bodies (one is left now)
-                note_style(slide)
-            notes = [sh for sh in slide.shapes if is_body(sh) and sh._element is not ph._element]
-            for t in beside:   # the table under the flow, as wide as the body, its note under it
-                fit_table(t, left, width)
-                t.top, t.height = y + em(LEAD_GAP), table_height(t, slide)
-                for note in notes:   # under the table, raised when the text would pass the body's foot
-                    frame_note(note, slide, left, width, t.top + t.height + NOTE_GAP, bottom)
             done += 1
         left = [t.text for t in slide._element.iter(qn("a:t")) if t.text and "⟦" in t.text]
         if left:

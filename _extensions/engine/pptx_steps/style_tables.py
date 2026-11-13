@@ -21,6 +21,7 @@ from pathlib import Path
 
 from lxml import etree
 from pptx.oxml.ns import qn
+from pptx.table import _Cell
 from pptx.util import Pt
 
 import livery as livery_mod
@@ -83,12 +84,6 @@ def _header_runs(tc, base):
         r_pr.set("cap", "all")
 
 
-def _cell_mar(tc):
-    """A cell's left and right margins (EMU): its tcPr's, else PowerPoint's 0.1 in."""
-    tc_pr = tc.find(qn("a:tcPr"))
-    return sum(int(tc_pr.get(k)) if tc_pr is not None and tc_pr.get(k) else 91440 for k in ("marL", "marR"))
-
-
 def floors(tbl, base):
     """Each column's least and whole widths (EMU), as a browser's table reads them (min- and
     max-content): its widest word (measure.widest_word(), in the face, size, capitals and tracking
@@ -100,7 +95,8 @@ def floors(tbl, base):
         for i, tc in enumerate(tr.findall(qn("a:tc"))[:len(cols)]):
             if tc.get("gridSpan") or tc.get("hMerge"):
                 continue
-            mar = _cell_mar(tc)
+            cell = _Cell(tc, None)   # python-pptx's margins: the tcPr's, else 0.1 in (measure.table_height()'s)
+            mar = cell.margin_left + cell.margin_right
             for p in tc.iter(qn("a:p")):
                 ps = pieces(p, BODY, Pt(base / 100))
                 least[i] = max(least[i], round(widest_word(ps) * PX * FIT) + mar)
@@ -118,8 +114,8 @@ def rebalance(tbl, base, start=None):
     column narrower than its floor (floors()), the room taken from the columns wider than theirs, in
     proportion to what they have over it. True when the floors together pass the width: the columns
     then in proportion to their floors, and a word still breaks. From pandoc's widths each time,
-    never an earlier split's: a table settled in a narrow frame (a lead's Content with Caption) and
-    widened after kept that frame's floor-bound shares."""
+    never an earlier split's: a table settled in its first frame and widened after (slide_layout's
+    {.wide}) would keep that frame's floor-bound shares."""
     cols = tbl.findall(qn("a:tblGrid") + "/" + qn("a:gridCol"))
     if len(cols) < 2:
         return False

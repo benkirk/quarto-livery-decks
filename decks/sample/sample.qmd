@@ -84,7 +84,8 @@ A `::: {.quote}` block, or a bare `>` blockquote, sets its lines in the quote si
 
 ::: {.notes}
 Column alignment is set with `:---`, `:---:`, and `---:` in the separator
-row. (Text after a table would split the pptx slide; notes never do.)
+row. (A paragraph or a list after a table stays on its pptx slide, under it, as the
+next slides show; notes may go anywhere.)
 :::
 
 ## A lead over a table
@@ -552,8 +553,8 @@ is baked into the .pptx. Engine is `jupyter` with the `bash` kernel
 Mermaid blocks render to PNG automatically for PPTX (configured in
 `_quarto.yml`). Use `graph TD` for top-down, `sequenceDiagram` for
 sequence diagrams, etc. A remark under the diagram goes in a `::: note`,
-which every format draws as its caption; text before a diagram demotes the
-pptx layout, so a longer explanation lives in these notes.
+which every format draws as its caption; a line above it stacks over it, but
+the diagram needs the room, so a longer explanation lives in these notes.
 :::
 
 ```{mermaid}
