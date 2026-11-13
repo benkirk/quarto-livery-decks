@@ -816,8 +816,9 @@ the suite on another pandoc.
   text-node limit); `diagram-dark.lua` runs before it in pptx for that reason. A table in a card
   is refused in every format alike (`tabled_row()`: the row is drawn as plain columns, warned). Any
   other picture or table in a grid column is not drawn in it (`grid-pptx.lua` warns; pandoc splits
-  the slide, which `make qa`'s count catches). Text after a picture in a pandoc column is dropped by
-  pandoc, silently, in either tier.
+  the slide, which `make qa`'s count catches). Text after a picture or table in a column makes a
+  grid slide when the grid draws the shape (`text_after_shape()`); after one it cannot draw (a linked
+  picture, a table with spans), pandoc drops the text and `grid-pptx.lua` warns, naming the slide.
 - **Cards and boxes** (`::: {.lead}`, `::: {.column .card role= .pick .solid}` with `###`,
   `[..]{.sub}`, `[..]{.label}`, `[..]{.big}`, `::: {.strip role=}`, status items `- [x]`/`[!]`/`[-]`
   in a card or `::: {.status}`): `engine-common.lua` reads them once (`card_attrs()`,
