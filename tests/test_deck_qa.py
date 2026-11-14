@@ -132,6 +132,23 @@ def test_the_watermark_is_furniture(deck_qa, monkeypatch):
     assert ".engine-watermark" in deck_qa.MEASURE_JS.split("const skip = ")[1].split(";")[0]
 
 
+def test_the_watermark_is_no_table_cell(deck_qa, monkeypatch):
+    """A watermark letter over a table (pdftotext gives it as a line of its own, as tall as the turned
+    letter) is no cell running into the next column: a deck under watermark: DRAFT failed its table
+    slides on an 'A' and a 'T'."""
+    monkeypatch.setattr(deck_qa, "EDGE", 0.94)
+    monkeypatch.setattr(deck_qa, "WIDE_EDGE", 0.97)
+    monkeypatch.setattr(deck_qa, "STRIPS", [])
+    monkeypatch.setattr(deck_qa, "WM_HEIGHT", 0.22)
+    letter = (150, 72, 200, 112, "A")   # from inside the first column across the second's edge
+    page = lines(HEADER, *ROWS) + [letter]
+    slide = {"kind": "table", "cls": ""}
+    monkeypatch.setattr(deck_qa, "WATERMARK", "")
+    assert ("runs into the next table column", repr("A")) in deck_qa.pdf_problems(W, H, [], page, slide), "the premise"
+    monkeypatch.setattr(deck_qa, "WATERMARK", "DRAFT")
+    assert deck_qa.pdf_problems(W, H, [], page, slide) == []
+
+
 def test_a_bottom_right_frame_number_is_furniture(deck_qa, monkeypatch):
     """The frame number in the bottom right (cu, nsi, the NASA liveries; the pptx as LibreOffice
     draws it puts it past the text's margin) is no text past the right margin, and the footline

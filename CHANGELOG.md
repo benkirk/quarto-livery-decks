@@ -18,6 +18,13 @@ A release's entry is written here before its tag is pushed, and becomes its note
 
 ## [Unreleased]
 
+### Decks
+
+- **`make qa` no longer fails a table slide under a watermark**: a letter of the turned watermark
+  over a table read as a cell running into the next column (a deck with `watermark: DRAFT` failed
+  three table slides on an "A" and a "T"). The table check now drops the watermark's pieces, as
+  the other text checks already did.
+
 ## [26.11.2] - 2026-11-13
 
 What a long consumer talk (the Derecho explainer, #178) asked for: pptx slides of text and a
